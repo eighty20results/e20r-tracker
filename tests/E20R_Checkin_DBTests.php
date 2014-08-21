@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 8/20/14
- * Time: 10:40 PM
+ * Unit tests for Database access & manipulation
+ * By: Thomas Sjolshagen @ Eighty / 20 results
  */
 
 require_once('./e20r-tracker.php');
