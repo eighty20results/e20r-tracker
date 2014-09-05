@@ -14,7 +14,7 @@ License: GPL2
 define('E20R_T_DEBUG', true);
 
 if ( ! class_exists( 'E20R_Checkin' ) ):
-    require_once(plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.checkin.php");
+    require_once(plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.E20R_Checkin.php");
     require_once(plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php");
 endif;
 
@@ -90,16 +90,16 @@ if( ! function_exists( 'e20r_tracker_dbInstall' ) ):
         $itemsTableSql =
             "CREATE TABLE IF NOT EXISTS {$cItems} (
                 id int not null auto_increment,
-                shortname varchar(20) null,
+                short_name varchar(20) null,
                 program_id int null,
-                itemname varchar(50) null,
+                item_name varchar(50) null,
                 startdate datetime null,
                 enddate datetime null,
                 item_order int not null default 1,
                 maxcount int null,
-                membership_level_id int not null default 1,
+                membership_level_id int not null default 0,
             primary key  (id) ,
-            unique key shortname_UNIQUE (shortname asc) )
+            unique key shortname_UNIQUE (short_name asc) )
             {$charset_collate}";
 
         $businessRulesSql =
@@ -128,7 +128,7 @@ if( ! function_exists( 'e20r_tracker_dbInstall' ) ):
         dbDelta( $businessRulesSql );
         dbDelta( $checkinSql );
 
-        // add_option( 'e20rTracker_db_version', $e20r_db_version );
+        add_option( 'e20rTracker_db_version', $e20r_db_version );
 
         flush_rewrite_rules();
     };
