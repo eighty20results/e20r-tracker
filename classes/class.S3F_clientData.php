@@ -11,7 +11,7 @@ class S3F_clientData {
 
         global $wpdb;
 
-        $this->load_levels( 'nourish' );
+        $this->load_levels();
 
         $this->tables = new stdClass();
 
@@ -23,7 +23,7 @@ class S3F_clientData {
 
     }
 
-    private function load_levels( $name ) {
+    private function load_levels( $name = null ) {
 
         global $wpdb;
 
@@ -32,14 +32,18 @@ class S3F_clientData {
         }
 
         $allLevels = pmpro_getAllLevels( true );
-        $pattern = "/{$name}/i";
+
+        if ( ! empty( $name ) ) {
+            $pattern = "/{$name}/i";
+        }
 
         foreach( $allLevels as $level ) {
 
             if ( preg_match($pattern, $level->name ) == 1 ) {
-                dbg("Level found: " . $level->name);
                 $this->nourish_level[] = $level->id;
-
+            }
+            elseif ( empty( $name ) ) {
+                $this->nourish_level[] = $level->id;
             }
         }
     }
@@ -60,7 +64,7 @@ class S3F_clientData {
                 wp_die('Paid Memberships Pro plugin is not installed');
 
                 break;
-            case '':
+            case 'other':
 
                 break;
             default:
@@ -149,12 +153,6 @@ class S3F_clientData {
                             ?><option value="<?php echo esc_attr( $user->ID ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
                         } ?>
                         </select>
-                        <span class="e20r-tracker-btns">
-                            <a href="#e20r_tracker_client"
-                               id="ok-e20r-client" class="save-e20rtracker-offset button">
-                                <?php _e('Select', 'e20r-tracker'); ?>
-                            </a>
-                        </span>
                         <input type="hidden" name="hidden_e20r_tracker_user" id="hidden_e20r_tracker_user" value="0" >
                     </div>
                 </form>
@@ -168,11 +166,40 @@ class S3F_clientData {
     }
 
     /* TODO: Create the client pages for the menu */
-    public function client_pages() {
+    public function client_page() {
 
-        ?><H1>Review Client Data</H1><?php
-        dbg("loading e20r_client_pages()");
-        echo $this->createMemberSelect();
+        ?>
+        <H1>Client Data</H1>
+        <div class="e20r-client-select">
+            <?php echo $this->createMemberSelect(); ?>
+        </div>
+        <hr class="e20r-admin-hr" />
+        <div class="e20r-data-choices">
+            <!-- Where the choices for the client data to fetch gets listed -->
+            <table style="e20r-single-row-table">
+                <tbody>
+                    <tr>
+                        <td><a href="#e20r_tracker_client" id="e20r-client-billing" class="e20r-choice-button button"><?php _e('Billing Info', 'e20r-tracker'); ?></a></td>
+                        <td><a href="#e20r_tracker_client" id="e20r-client-compliance" class="e20r-choice-button button"><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
+                        <td><a href="#e20r_tracker_client" id="e20r-client-assignments" class="e20r-choice-button button"><?php _e('Assignments', 'e20r-tracker'); ?></a></td>
+                        <td><a href="#e20r_tracker_client" id="e20r-client-measurements" class="e20r-choice-button button"><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr class="e20r-admin-hr" />
+<?php
+    }
+
+    public function load_billing_data( $client_id = 0 ) {
+
+        if ( $client_id == 0 ) {
+
+            global $current_user;
+
+            $client_id = $current_user->ID;
+        }
+
     }
 
     public function assignments_page() {
@@ -183,7 +210,7 @@ class S3F_clientData {
 
     }
 
-    public function habits_page() {
+    public function compliance_page() {
 
     }
 
@@ -194,7 +221,7 @@ class S3F_clientData {
     /**
      *  Add the datepicker scripts for the admin pages (TODO: Figure out how to use the jQuery datepicker in Wordpress
      */
-    public function admin_scripts() {
+    public function load_admin_scripts() {
 
     }
 
@@ -202,24 +229,12 @@ class S3F_clientData {
 
         dbg("Running Init for wp-admin");
 
-        $page = add_menu_page( 'S3F Clients',
-                    __('S3F Clients','e20r_tracker'),
-                    'manage_options',
-                    'e20r_tracker',
-                    array( &$this, 'client_pages' ),
-                    'dashicons-admin-generic'
-        );
-        add_submenu_page( 'e20r_tracker', __('Assignments','e20r_tracker'), __('Assignments','e20r_tracker'), 'manage-options', "e20r_tracker_assign", array( $this,'assignment_page' ));
-        add_submenu_page( 'e20r_tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( $this,'measurement_page' ));
-        add_submenu_page( 'e20r_tracker', __('Habits','e20r_tracker'), __('Habits','e20r_tracker'), 'manage_options', "e20r_tracker_habit", array( $this,'habits_page'));
-        add_submenu_page( 'e20r_tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( $this,'meals_page'));
+        $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r_tracker', array( &$this, 'client_page' ), 'dashicons-admin-generic', '71.1' );
+        add_submenu_page( 'e20r_tracker', __('Assignments','e20r_tracker'), __('Assignments','e20r_tracker'), 'manage-options', "e20r_tracker_assign", array( &$this,'assignment_page' ));
+        add_submenu_page( 'e20r_tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'measurement_page' ));
+        add_submenu_page( 'e20r_tracker', __('Compliance','e20r_tracker'), __('Compliance','e20r_tracker'), 'manage_options', "e20r_tracker_habit", array( &$this,'compliance_page'));
+        add_submenu_page( 'e20r_tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'meals_page'));
 
-        // add_action( "admin_print_scripts-$page", array( &$this, 'admin_scripts' ) );
-/*
-  add_submenu_page('appointments', __('Shortcodes','e20r_tracker'), __('Shortcodes','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_SHORTCODES), "app_shortcodes", array(&$this,'shortcodes_page'));
-        add_submenu_page('appointments', __('FAQ','e20r_tracker'), __('FAQ','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_FAQ), "app_faq", array(&$this,'faq_page'));
-        // Add datepicker to appointments page
-        add_action( "admin_print_scripts-$page", array( &$this, 'admin_scripts' ) );
-*/
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_admin_scripts') ); // Load datepicker, etc (see apppontments+)
     }
 } 
