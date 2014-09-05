@@ -14,22 +14,41 @@ License: GPL2
 define('E20R_T_DEBUG', true);
 
 if ( ! class_exists( 'E20R_Checkin' ) ):
-    require_once(plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.E20R_Checkin.php");
-    require_once(plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php");
+    require_once( plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.E20R_Checkin.php" );
+    require_once( plugin_dir_path(__FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php" );
+endif;
+
+if ( ! class_exists( 'S3F_clientData' )):
+
+    require_once( plugin_dir_path( __FILE__) . DIRECTORY_SEPARATOR . "classes" . DIRECTORY_SEPARATOR . "class.S3F_clientData.php" );
+
 endif;
 
 global $e20r_db_version;
 
 $e20r_db_version = "1.0";
 
-if ( ! function_exists( 'dbgOut' ) ):
+if ( ! function_exists( 'e20r_loadAdmin') ):
+
+    add_action( 'admin_menu', 'e20r_loadAdmin' );
+
+    function e20r_loadAdmin() {
+        dbg("loadAdmin() - Starting");
+        $adminPgs = new S3F_clientData();
+        $adminPgs->registerAdminPages();
+
+    }
+
+endif;
+
+if ( ! function_exists( 'dbg' ) ):
 
     /**
      * Debug function (if executes if DEBUG is defined)
      *
      * @param $msg -- Debug message to print to debug log.
      */
-    function dbgOut($msg)
+    function dbg($msg)
     {
         $dbgPath = plugin_dir_path( __FILE__ ) . DIRECTORY_SEPARATOR . 'debug';
 
@@ -123,7 +142,7 @@ if( ! function_exists( 'e20r_tracker_dbInstall' ) ):
 
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-        dbgOut('dbInstall() - Creating tables in database');
+        dbg('dbInstall() - Creating tables in database');
         dbDelta( $itemsTableSql );
         dbDelta( $businessRulesSql );
         dbDelta( $checkinSql );
@@ -152,7 +171,7 @@ if ( ! function_exists( 'e20r_tracker_dbUninstall' ) ):
 
         foreach ( $tableList as $tblName ) {
 
-            dbgOut("dbUninstall() - {$tblName} being dropped");
+            dbg("dbUninstall() - {$tblName} being dropped");
 
             $sql = "DROP TABLE IF EXISTS {$tblName}";
             $wpdb->query( $sql );
