@@ -3,7 +3,7 @@
 class S3F_clientData {
 
     public $tables;
-    private $nourish_level = array(); // Empty array
+    private $levels = array(); // Empty array
 
     function __construct() {
 
@@ -40,10 +40,10 @@ class S3F_clientData {
         foreach( $allLevels as $level ) {
 
             if ( preg_match($pattern, $level->name ) == 1 ) {
-                $this->nourish_level[] = $level->id;
+                $this->levels[] = $level->id;
             }
             elseif ( empty( $name ) ) {
-                $this->nourish_level[] = $level->id;
+                $this->levels[] = $level->id;
             }
         }
     }
@@ -73,14 +73,14 @@ class S3F_clientData {
 
     }
 
-    public function get_nourishLevels() {
+    public function get_level_ids() {
 
-        return $this->nourish_level;
+        return $this->levels;
     }
 
-    public function set_nourishLevel( $level ) {
+    public function set_levels( $level ) {
 
-        $this->nourish_level[] = $level; // Add a level
+        $this->levels[] = $level; // Add a level
     }
 
     public function displayData() {
@@ -113,41 +113,60 @@ class S3F_clientData {
         return $sql;
     }
 
-    private function createMemberSelect( ) {
-
-        global $wpdb;
+    public function viewLevelSelect() {
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
             $this->raise_error( 'pmpro' );
         }
 
-        $levels = $this->get_nourishLevels();
+        ob_start(); ?>
+
+        <div class="e20r-selectLevel">
+            <form action="<?php admin_url('admin-ajax.php'); ?>" method="post">
+                <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-levels-nonce' ); ?>
+                <div class="e20r-level-select">
+                    <input type="hidden" name="hidden_e20r_level" id="hidden_e20r_level" value="0" >
+                    <label for="e20r_levels">Filter by Membership Level</label>
+                    <span class="e20r-level-select-span">
+                        <select name="e20r_levels" id="e20r_levels">
+                            <option value="0" selected="selected">All levels</option>
+                        <?php
+
+                        $level_list = $this->fetch_levelList();
+
+                        foreach( $level_list as $name => $key ) {
+                            ?><option value="<?php echo esc_attr( $key ); ?>"  ><?php echo esc_attr( $name ); ?></option><?php
+                        }
+                ?>
+                        </select>
+                    </span>
+                    <span class="e20r-level-select-span"><a href="#e20r_tracker_client" id="e20r-client-billing" class="e20r-choice-button button"><?php _e('Load Users', 'e20r-tracker'); ?></a></span>
+                </div>
+            </form>
+        </div>
+        <?php
+        $html = ob_get_clean();
+    }
+
+    public function viewMemberSelect( $levelName = '' ) {
+
+        if ( ! defined( 'PMPRO_VERSION' ) ) {
+            // Display error message.
+            $this->raise_error( 'pmpro' );
+        }
 
         ob_start(); ?>
-        <div class="e20r_selectMember">
+        <div class="e20r-selectMember">
             <div class="e20r-client-list">
                 <div class="seq_spinner"></div>
                 <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="post">
-                    <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-levels-nonce' ); ?>
+                    <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                     <div class="e20r-client-select">
                         <label for="e20r_tracker_client">Select client to view data for:</label>
                         <select name="e20r_tracker_client" id="e20r_tracker_client">
                         <?php
-
-                        $sql = "
-                                SELECT m.user_id AS id, u.display_name AS name
-                                FROM $wpdb->users AS u
-                                  INNER JOIN {$wpdb->pmpro_memberships_users} AS m
-                                    ON ( u.ID = m.user_id )
-                                WHERE ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
-                        ";
-
-                        // $sql = $wpdb->prepare( $sql );
-                        $sql = $this->prepare_in( $sql, $levels );
-
-                        $user_list = $wpdb->get_results( $sql, OBJECT );
-
+                        $user_list = $this->fetch_userList( $levelName );
                         foreach ( $user_list as $user ) {
 
                             ?><option value="<?php echo esc_attr( $user->ID ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
@@ -165,31 +184,88 @@ class S3F_clientData {
         return $html;
     }
 
+    public function fetch_levelList() {
+
+        $allLevels = pmpro_getAllLevels();
+        $levels = array();
+
+        foreach ($allLevels as $level ) {
+
+            $levels[$level->id] = $level->name;
+        }
+
+        return $levels;
+    }
+
+    public function fetch_userList( $level = '' ) {
+
+        global $wpdb;
+
+        if ( empty($level) ) {
+
+            $levels = $this->get_level_ids();
+        }
+        else {
+
+            $this->load_levels( $level );
+            $levels = $this->get_level_ids();
+        }
+
+        $sql = "
+                SELECT m.user_id AS id, u.display_name AS name
+                FROM $wpdb->users AS u
+                  INNER JOIN {$wpdb->pmpro_memberships_users} AS m
+                    ON ( u.ID = m.user_id )
+                WHERE ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
+        ";
+
+        $sql = $this->prepare_in( $sql, $levels );
+
+        $user_list = $wpdb->get_results( $sql, OBJECT );
+
+        return $user_list;
+
+    }
+
     /* TODO: Create the client pages for the menu */
-    public function client_page() {
+    public function client_page( $lvlName = '' ) {
 
         ?>
         <H1>Client Data</H1>
-        <div class="e20r-client-select">
-            <?php echo $this->createMemberSelect(); ?>
+        <div class="e20r-client-service-select">
+            <?php echo $this->viewLevelSelect(); ?>
+            <?php echo $this->viewMemberSelect( $lvlName ); ?>
         </div>
         <hr class="e20r-admin-hr" />
         <div class="e20r-data-choices">
             <!-- Where the choices for the client data to fetch gets listed -->
-            <table class="e20r-single-row-table">
-                <tbody>
-                    <tr>
-                        <td><a href="#e20r_tracker_client" id="e20r-client-billing" class="e20r-choice-button button"><?php _e('Billing Info', 'e20r-tracker'); ?></a></td>
-                        <td><a href="#e20r_tracker_client" id="e20r-client-compliance" class="e20r-choice-button button"><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
-                        <td><a href="#e20r_tracker_client" id="e20r-client-assignments" class="e20r-choice-button button"><?php _e('Assignments', 'e20r-tracker'); ?></a></td>
-                        <td><a href="#e20r_tracker_client" id="e20r-client-measurements" class="e20r-choice-button button"><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
-                    </tr>
-                </tbody>
-            </table>
+            <form action="" method="post" onsubmit="javascript:e20rLoadClientData();">
+                <table class="e20r-single-row-table">
+                    <tbody>
+                        <tr>
+                            <td><a href="#e20r_tracker_client" id="e20r-client-billing" class="e20r-choice-button button" onclick="javascript:e20rLoadClientData('billing');" ><?php _e('Billing Info', 'e20r-tracker'); ?></a></td>
+                            <td><a href="#e20r_tracker_client" id="e20r-client-compliance" class="e20r-choice-button button" onclick="javascript:e20rLoadClientData('compliance');" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
+                            <td><a href="#e20r_tracker_client" id="e20r-client-assignments" class="e20r-choice-button button" onclick="javascript:e20rLoadClientData('assignments');" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td>
+                            <td><a href="#e20r_tracker_client" id="e20r-client-measurements" class="e20r-choice-button button" onclick="javascript:e20rLoadClientData('measurements');" ><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
         </div>
         <hr class="e20r-admin-hr" />
-
-<?php
+        <div id="e20r-client-billing">
+            <?php echo $this->viewBilling( $client_id ); ?>
+        </div>
+        <div id="e20r-client-compliance">
+            <?php echo $this->viewCompliance( $client_id ); ?>
+        </div>
+        <div id="e20r-client-assignments">
+            <?php echo $this->viewAssignments( $client_id ); ?>
+        </div>
+        <div id="e20r-client-measurements">
+            <?php echo $this->viewMeasurements( $client_id ); ?>
+        </div>
+    <?php
     }
 
     public function load_billing_data( $client_id = 0 ) {

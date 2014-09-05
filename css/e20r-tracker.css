@@ -2,3 +2,11 @@
 .e20r-admin-hr {
     width: 80%;
 }
+
+.e20r-client-service-select {
+    border: solid 1px gray;
+    width: 1024px;
+    /* Center the box */
+    margin-left: auto;
+    margin-right: auto;
+}
