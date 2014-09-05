@@ -176,7 +176,7 @@ class S3F_clientData {
         <hr class="e20r-admin-hr" />
         <div class="e20r-data-choices">
             <!-- Where the choices for the client data to fetch gets listed -->
-            <table style="e20r-single-row-table">
+            <table class="e20r-single-row-table">
                 <tbody>
                     <tr>
                         <td><a href="#e20r_tracker_client" id="e20r-client-billing" class="e20r-choice-button button"><?php _e('Billing Info', 'e20r-tracker'); ?></a></td>
@@ -188,6 +188,7 @@ class S3F_clientData {
             </table>
         </div>
         <hr class="e20r-admin-hr" />
+
 <?php
     }
 
