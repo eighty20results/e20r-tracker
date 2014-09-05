@@ -33,11 +33,13 @@ class S3F_clientData {
     }
 
     public function initAdmin() {
-        // TODO: Understand what the add_menu_page() functions do.
-        $page = add_menu_page('S3FClients', __('Client Data','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_APPOINTMENTS),  'appointments', array(&$this,'e20r_clients'),'div');
-        add_submenu_page('s3fclients', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_TRANSACTIONS), "e20r_measurements", array(&$this,'transactions'));
-        add_submenu_page('s3fclients', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_SETTINGS), "app_settings", array(&$this,'settings'));
-/*        add_submenu_page('appointments', __('Shortcodes','e20r_tracker'), __('Shortcodes','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_SHORTCODES), "app_shortcodes", array(&$this,'shortcodes_page'));
+        $page = add_menu_page('Client Tracker', __('Client Tracker','e20r_tracker'), 'manage_options',  'e20r-tracker', array(&$this,'e20r_client_pages'),'div');
+        add_submenu_page('s3fclients', __('Assignments','e20r_tracker'), __('Assignments','e20r_tracker'), 'manage-optison', "e20r-tracker-data", array(&$this,'client_assignments_page'));
+        add_submenu_page('s3fclients', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r-tracker-data", array(&$this,'client_measurements_page'));
+        add_submenu_page('s3fclients', __('Habits','e20r_tracker'), __('Habits','e20r_tracker'), 'manage_options', "e20r-tracker-data", array(&$this,'client_habits_page'));
+        add_submenu_page('s3fclients', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r-tracker-data", array(&$this,'client_meals_page'));
+/*
+  add_submenu_page('appointments', __('Shortcodes','e20r_tracker'), __('Shortcodes','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_SHORTCODES), "app_shortcodes", array(&$this,'shortcodes_page'));
         add_submenu_page('appointments', __('FAQ','e20r_tracker'), __('FAQ','e20r_tracker'), App_Roles::get_capability('manage_options', App_Roles::CTX_PAGE_FAQ), "app_faq", array(&$this,'faq_page'));
         // Add datepicker to appointments page
         add_action( "admin_print_scripts-$page", array( &$this, 'admin_scripts' ) );
