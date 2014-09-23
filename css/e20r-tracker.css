@@ -1,12 +1,50 @@
 
 .e20r-admin-hr {
-    width: 80%;
+    width: 90%;
 }
 
 .e20r-client-service-select {
-    border: solid 1px gray;
+    border: solid 1px #ffffff;
+    padding: 5px 5px 5px 5px;
     width: 1024px;
     /* Center the box */
     margin-left: auto;
     margin-right: auto;
+}
+
+.startHidden {
+    display: none;
+}
+
+.e20r-selectMember {
+
+}
+
+.e20r-select {
+    max-width: 1024px;
+    min-width: 300px;
+    padding: 20px 20px 0px 20px;
+}
+
+.e20r-select label {
+    min-width:150px;
+    width: 290px;
+    max-width: 350px;
+}
+
+.e20r-select select {
+    min-width: 100px;
+    width: 250px;
+    max-width: 300px;
+}
+
+.e20r-select a {
+    min-width: 100px;
+    max-width: 100px;
+    text-align: center;
+}
+
+.e20r-client-select {
+    max-width: 1024px;
+    min-width: 480px;
 }
