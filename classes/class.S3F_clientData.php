@@ -259,6 +259,7 @@ class S3F_clientData {
 
             $client_id = $current_user->ID;
         }
+
         ?>
         <H1>Client Data</H1>
         <div class="e20r-client-service-select">
@@ -300,7 +301,12 @@ class S3F_clientData {
     <?php
     }
 
-    private function viewClientDetail( $clientId ) {
+    public function viewClientDetail( $clientId ) {
+        // TODO: Display upcoming appointments, track attendance (and timeliness - multiple statuses)?
+        // TODO: Pull data from appointments table and use Checkin tables for status(es)..?
+
+        $billingInfo = $this->load_billing_data( $clientId );
+        $appointments = $this->load_client_appointments( $clientId );
 
     }
 
@@ -318,6 +324,7 @@ class S3F_clientData {
 
     public function load_billing_data( $client_id = 0 ) {
 
+        // TODO: Build array (of stdClass objects?) containing the billing info for this client
         if ( $client_id == 0 ) {
 
             global $current_user;
@@ -327,6 +334,33 @@ class S3F_clientData {
 
     }
 
+    public function load_client_appointments( $clientId ) {
+
+        // TODO: Build an array (of stdClass objects?) containing the booked appointments for this client (all "confirmed" ones?)
+
+        if ( $clientId == 0 ) {
+
+            global $current_user;
+
+            $client_id = $current_user->ID;
+        }
+
+        global $wpdb;
+
+        // TODO: Complete this to get a list of appointments for the clientId so we can set the status for it in the checkin table(s).
+
+        $sql = $wpdb->prepare(
+            "
+                SELECT ID, user, start, status, created
+                FROM $wpdb->app_table AS app
+                INNER JOIN ( app.user = )
+                 WHERE user = %d AND status NOT IN ( )
+
+            ",
+            $client_id
+        );
+
+    }
     public function render_assignments_page() {
 
     }
