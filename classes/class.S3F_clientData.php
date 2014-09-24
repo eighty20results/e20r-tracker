@@ -319,6 +319,13 @@ class S3F_clientData {
     }
 
     private function viewMeasurements( $clientId ) {
+        // TESTING: using $clientId = 12;
+
+        $clientId = 12;
+
+        $measurements = $this->load_measurements( $clientId );
+
+        dbg("Measurements for $clientId: " . print_r($measurements, true ) );
 
     }
 
@@ -361,6 +368,68 @@ class S3F_clientData {
         );
 
     }
+
+    public function load_measurements( $clientId = 0 ) {
+
+        global $wpdb, $current_user;
+
+        $measurements = array();
+
+        $oldNC = array( 12, 20, 21, 27 ); // Members of the beta group...
+        if ( $clientId == 0 ) {
+
+            $clientId = $current_user->ID;
+        }
+
+        if ( in_array( $clientId, $oldNC ) ) {
+            $sql = $wpdb->prepare("
+                SELECT recordedDate AS recorded_date,
+                     weight AS weight,
+                     neckCM as neck,
+                     shoulderCM as shoulder,
+                     chestCM as chest,
+                     armCM as arm,
+                     waitCM as waist,
+                     hipCM as hip,
+                     thighCM as thigh,
+                     calfCM as calf,
+                     totalGirthCM as girth
+                FROM {$wpdb->prefix}nourish_measurements
+                WHERE created_by = %d
+            ",
+                $clientId
+            );
+        }
+        else {
+            $sql = $wpdb->prepare("
+                SELECT recorded_date AS recorded_date,
+                     weight,
+                     neck,
+                     shoulder,
+                     chest,
+                     arm,
+                     wait,
+                     hip,
+                     thigh,
+                     calf,
+                     girth
+                FROM {$wpdb->prefix}nourish_measurements
+                WHERE created_by = %d
+            ",
+                $clientId
+            );
+        }
+
+        $results = $wpdb->get_results( $sql );
+
+        foreach ( $results as $measurement ) {
+
+            $measurements[] = $measurement;
+        }
+
+        return $measurements;
+    }
+
     public function render_assignments_page() {
 
     }
