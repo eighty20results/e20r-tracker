@@ -48,3 +48,33 @@
     max-width: 1024px;
     min-width: 480px;
 }
+
+.e20r_mHead {
+    padding-left: 10px;
+    padding-right: 5px;
+    text-align: center;
+}
+
+.e20r_mData {
+    padding-right: 5px;
+    padding-left: 10px;
+    max-width: 150px;
+    min-width: 20px;
+    text-align: right;
+}
+
+#e20r-measurement-table {
+    background-color: #ffffff;
+}
+
+.e20rEven {
+    background-color: #e5e5e5;
+}
+
+.e20rOdd {
+    background-color: #c5c5c5;
+}
+
+#e20r_reload_btn {
+    margin: 20px 20px;
+}

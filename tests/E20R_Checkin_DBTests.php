@@ -13,7 +13,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
     function setUp() {
 
         parent::setUp();
-        $this->plugin = $GLOBALS['E20R_Checkin'];
+        $this->plugin = $GLOBALS['e20rTracker'];
 
     } // end setUp()
 
@@ -26,7 +26,9 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         global $wpdb;
 
         // Create database tables
-        e20r_tracker_dbInstall();
+        $tracker = new e20rTracker();
+        $tracker->activateE20R_Plugin();
+
 
         // Iterate through and check that DB was correctly created
         foreach ( $this->plugin->_tables as $tblName ) {
@@ -40,7 +42,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         } // End foreach
 
         // Do whatever uninstall magic we need to do
-        e20r_tracker_dbUninstall();
+        $tracker->deactivateE20R_Plugin();
 
         // Validate that the tables are now gone.
         foreach ( $this->plugin->_tables as $tblName ) {
@@ -58,7 +60,8 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         global $wpdb;
 
         // Create database tables
-        e20r_tracker_dbInstall();
+        $tracker = new e20rTracker();
+        $tracker->activateE20R_Plugin();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         $ID2 = $this->plugin->addItem('nourish_test2', 'Test Habit for Nourish', '07/22/2014', '07/24/2014', 1, 1, 12);
@@ -72,7 +75,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         $this->plugin->delItem( $ID );
 
         // Do whatever uninstall magic we need to do
-        e20r_tracker_dbUninstall();
+        $tracker->deactivateE20R_Plugin();
 
     }
 
@@ -81,7 +84,8 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         global $wpdb;
 
         // Create database tables
-        e20r_tracker_dbInstall();
+        $tracker = new e20rTracker();
+        $tracker->activateE20R_Plugin();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         dbgOut("Updated data from DB:" . print_r( $wpdb->get_row( "SELECT * FROM {$this->plugin->_tables['items']} WHERE id = {$ID}" ), true));
@@ -103,7 +107,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         }
 
         // Do whatever uninstall magic we need to do
-        e20r_tracker_dbUninstall();
+        $tracker->deactivateE20R_Plugin();
 
 
     }

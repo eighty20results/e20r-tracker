@@ -3,8 +3,19 @@
 class e20rTracker {
 
     private $clientData;
+    protected $tables;
 
     public function init() {
+
+        global $wpdb;
+
+        $this->tables = new stdClass();
+
+        $this->tables->checkin_items = $wpdb->prefix . 'e20r_checkin_items';
+        $this->tables->checkin_rules = $wpdb->prefix . 'e20r_checkin_rules';
+        $this->tables->checkin = $wpdb->prefix . 'e20r_checkin';
+        $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
+        $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
 
         dbg("Running e20r-Tracker init()");
 
@@ -41,6 +52,14 @@ class e20rTracker {
 
         // $this->clientData = new S3F_clientData();
 
+    }
+
+    /**
+     * @return mixed -- stdClass() list of tables used by the tracker.
+     */
+    function get_tables() {
+
+        return $this->tables;
     }
 
     function loadAdminPage() {
@@ -110,10 +129,6 @@ class e20rTracker {
         global $wpdb;
         global $e20r_db_version;
 
-        $cItems = $wpdb->prefix . 'e20r_checkinItems';
-        $cRules = $wpdb->prefix . 'e20r_checkinRules';
-        $cTable = $wpdb->prefix . 'e20r_checkin';
-
         $charset_collate = '';
 
         if ( ! empty( $wpdb->charset ) ) {
@@ -124,8 +139,50 @@ class e20rTracker {
             $charset_collate .= " COLLATE {$wpdb->collate}";
         }
 
+
+        $intakeTableSql =
+            "CREATE TABLE If NOT EXISTS {$this->tables->client_info} (
+                id int not null auto_increment,
+                user_id int not null,
+                user_dob date not null,
+                height decimal(18, 3) null,
+                heritage int null,
+                waist_circumference decimal(18,3),
+                weight decimal(18,3) null,
+                is_metric tinyint default 0,
+                is_imperial tinyint default 0,
+                is_gb_imperial tinyint default 0,
+                use_pictures tinyint default 0,
+                for_research tinyint default 0,
+                chronic_pain tinyint default 0,
+                injuries tinyint default 0,
+                primary_key (id),
+                key user_id (user_id asc) )
+              {$charset_collate}
+            ";
+
+        $measurementTableSql =
+            "CREATE TABLE IF NOT EXISTS {$this->tables->measurements} (
+                id int not null auto_increment,
+                user_id int not null,
+                recorded_date datetime null,
+                weight decimal(18,3) null,
+                neck decimal(18,3) null,
+                shoulder decimal(18,3) null,
+                chest decimal(18,3) null,
+                arm decimal(18,3) null,
+                waist decimal(18,3) null,
+                hip decimal(18,3) null,
+                thigh decimal(18,3) null,
+                calf decimal(18,3) null,
+                girth decimal(18,3) null,
+                primary key  (id),
+                key user_id ( user_id asc) )
+              {$charset_collate}
+          ";
+
         $itemsTableSql =
-            "CREATE TABLE IF NOT EXISTS {$cItems} (
+            "CREATE TABLE IF NOT EXISTS {$this->tables->checkin_items} (
                 id int not null auto_increment,
                 short_name varchar(20) null,
                 program_id int null,
@@ -140,7 +197,7 @@ class e20rTracker {
             {$charset_collate}";
 
         $businessRulesSql =
-            "CREATE TABLE IF NOT EXISTS {$cRules} (
+            "CREATE TABLE IF NOT EXISTS {$this->tables->checkin_rules} (
                 id int not null auto_increment,
                 checkin_id int null,
                 success_rule mediumtext null,
@@ -149,22 +206,23 @@ class e20rTracker {
             {$charset_collate}";
 
         $checkinSql =
-            "CREATE TABLE IF NOT EXISTS {$cTable} (
+            "CREATE TABLE IF NOT EXISTS {$this->tables->checkin} (
                 id int not null auto_increment,
                 user_id int null,
                 checkin_date datetime null,
                 checkin_id int null,
-                program_id int null,
+                program_id int null, -- Uses the membership_level->ID value (unless it's nourish)
                 primary key  (id) )
             {$charset_collate}";
 
-        // TODO: Fix this...
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('dbInstall() - Creating tables in database');
         dbDelta( $itemsTableSql );
         dbDelta( $businessRulesSql );
         dbDelta( $checkinSql );
+        dbDelta( $measurementTableSql );
+        dbDelta( $intakeTableSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
@@ -176,13 +234,7 @@ class e20rTracker {
         global $wpdb;
         global $e20r_db_version;
 
-        $tableList = array(
-            $wpdb->prefix . 'e20r_checkinItems',
-            $wpdb->prefix . 'e20r_checkinRules',
-            $wpdb->prefix . 'e20r_checkin',
-        );
-
-        foreach ( $tableList as $tblName ) {
+        foreach ( $this->tables as $tblName ) {
 
             dbg("dbUninstall() - {$tblName} being dropped");
 

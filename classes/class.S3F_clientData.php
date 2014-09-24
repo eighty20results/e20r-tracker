@@ -14,10 +14,11 @@ class S3F_clientData {
 
        $this->tables = new stdClass();
 
+
         $this->tables->Assignments = "{$wpdb->prefix}s3f_nourishAssignments";
         $this->tables->Habits = "{$wpdb->prefix}s3f_nourishHabits";
-        $this->tables->Surveys = "{$wpdb->prefix}s3f_Surveys";
-        $this->tables->Measuremetns = "{$wpdb->prefix}nourish_measurements";
+        $this->tables->Surveys = "{$wpdb->prefix}e20r_Surveys";
+        $this->tables->Measurements = "{$wpdb->prefix}nourish_measurements";
         $this->tables->Meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
 
     }
@@ -39,7 +40,10 @@ class S3F_clientData {
             $allLevels = pmpro_getAllLevels( true );
 
             if ( ! empty( $name ) ) {
+
+                $name = str_replace( '+', '\+', $name);
                 $pattern = "/{$name}/i";
+                dbg("Pattern: {$pattern}");
             }
 
             foreach( $allLevels as $level ) {
@@ -139,7 +143,7 @@ class S3F_clientData {
                             <option value="0" selected="selected">All levels</option>
                         <?php
 
-                        $level_list = $this->fetch_levelList( true );
+                        $level_list = $this->fetch_levelList( false );
 
                         foreach( $level_list as $key => $name ) {
                             ?><option value="<?php echo esc_attr( $key ); ?>"  ><?php echo esc_attr( $name ); ?></option><?php
@@ -176,6 +180,7 @@ class S3F_clientData {
                         <select name="e20r_tracker_client" id="e20r_tracker_client">
                         <?php
                         $user_list = $this->fetch_userList( $levelId );
+
                         foreach ( $user_list as $user ) {
 
                             ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
@@ -207,7 +212,7 @@ class S3F_clientData {
                 $levels[ $level->id ] = $level->name;
             }
         }
-
+        // dbg("Levels fetched: " . print_r( $levels, true ) );
         return $levels;
     }
 
@@ -215,15 +220,13 @@ class S3F_clientData {
 
         global $wpdb;
 
-        if ( empty($level) ) {
-
-            $levels = $this->get_level_ids();
-        }
-        else {
-
+        if ( ! empty($level) ) {
             $this->load_levels( $level );
-            $levels = $this->get_level_ids();
         }
+
+        $levels = $this->get_level_ids();
+
+        //dbg("Levels being loaded: " . print_r( $levels, true ) );
 
         $sql = "
                 SELECT m.user_id AS id, u.display_name AS name
@@ -234,6 +237,8 @@ class S3F_clientData {
         ";
 
         $sql = $this->prepare_in( $sql, $levels );
+
+        ///dbg("SQL for user list: " . print_r( $sql, true));
 
         $user_list = $wpdb->get_results( $sql, OBJECT );
 
@@ -274,10 +279,10 @@ class S3F_clientData {
                 <table class="e20r-single-row-table">
                     <tbody>
                         <tr>
-                            <td><a href="#e20r_tracker_data" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
+<!--                            <td><a href="#e20r_tracker_data" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
                             <td><a href="#e20r_tracker_data" id="e20r-client-compliance" class="e20r-choice-button button" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
                             <td><a href="#e20r_tracker_data" id="e20r-client-assignments" class="e20r-choice-button button" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td>
-                            <td><a href="#e20r_tracker_data" id="e20r-client-measurements" class="e20r-choice-button button" ><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
+-->                            <td><a href="#e20r_tracker_data" id="e20r-client-measurements" class="e20r-choice-button button" ><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
                             <td><div id="load-client-data" class="seq_spinner"></div></td>
                         </tr>
                     </tbody>
@@ -285,18 +290,18 @@ class S3F_clientData {
             </form>
         </div>
         <hr class="e20r-admin-hr" />
-        <div id="e20r-client-detail">
+        <div id="e20r-info">
 
             <?php echo $this->viewClientDetail( $client_id ); ?>
         </div>
-        <div id="e20r-client-compliance">
+        <div id="e20r-compliance">
             <?php echo $this->viewCompliance( $client_id ); ?>
         </div>
-        <div id="e20r-client-assignments">
+        <div id="e20r-assignments">
             <?php echo $this->viewAssignments( $client_id ); ?>
         </div>
-        <div id="e20r-client-measurements">
-            <?php echo $this->viewMeasurements( $client_id ); ?>
+        <div id="e20r-measurements">
+            <?php //echo $this->viewTaMeasurements( $client_id ); ?>
         </div>
     <?php
     }
@@ -318,14 +323,87 @@ class S3F_clientData {
 
     }
 
-    private function viewMeasurements( $clientId ) {
+    private function viewTableOfMeasurements( $clientId ) {
         // TESTING: using $clientId = 12;
 
-        $clientId = 12;
+        // $clientId = 12;
 
         $measurements = $this->load_measurements( $clientId );
+        $user = get_user_by( 'id', $clientId );
 
-        dbg("Measurements for $clientId: " . print_r($measurements, true ) );
+        $reloadBtn = '
+            <div id="e20r_reload_btn">
+                <a href="#e20r_tracker_data" id="e20r-reload-measurements" class="e20r-choice-button button" > ' . __("Reload Measurements", "e20r-tracker") . '</a>
+            </div>
+        ';
+
+        if ( count( $measurements ) < 1 ) {
+
+            ob_start();
+            // echo $reloadBtn;
+            ?>
+                <div id="e20r_errorMsg"><em>No measurements found for <?php echo $user->first_name . " " . $user->last_name; ?></em></div>
+         <?php
+            $html = ob_get_clean();
+        }
+        else {
+            dbg( "Measurements for $clientId: " . print_r( $measurements, true ) );
+
+            ob_start();
+            // echo $reloadBtn;
+
+            ?>
+            <h3>Measurements for <?php echo $user->first_name; ?></h3>
+            <table id="e20r-measurement-table">
+                <thead>
+                <tr>
+                    <th class="e20r_mHead">Date</th>
+                    <th class="e20r_mHead">Weight</th>
+                    <th class="e20r_mHead">Neck</th>
+                    <th class="e20r_mHead">Shoulder</th>
+                    <th class="e20r_mHead">Chest</th>
+                    <th class="e20r_mHead">Arm</th>
+                    <th class="e20r_mHead">Waist</th>
+                    <th class="e20r_mHead">Hip</th>
+                    <th class="e20r_mHead">Thigh</th>
+                    <th class="e20r_mHead">Calf</th>
+                    <th class="e20r_mHead">Total Girth</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+
+                $counter = 0;
+
+                foreach ( $measurements as $measurement ) {
+
+                    ?>
+                    <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+                        <td class="e20r_mData "><?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->weight, 1 ), 1 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->neck, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->shoulder, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->chest, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->arm, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->waist, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->hip, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->thigh, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->calf, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->girth, 2 ), 2 ); ?></td>
+                    </tr>
+                    <?php
+
+                    $counter ++;
+                }
+
+                ?>
+                </tbody>
+            </table>
+            <?php
+
+            $html = ob_get_clean();
+        }
+        return $html;
 
     }
 
@@ -376,12 +454,14 @@ class S3F_clientData {
         $measurements = array();
 
         $oldNC = array( 12, 20, 21, 27 ); // Members of the beta group...
+
         if ( $clientId == 0 ) {
 
             $clientId = $current_user->ID;
         }
 
         if ( in_array( $clientId, $oldNC ) ) {
+
             $sql = $wpdb->prepare("
                 SELECT recordedDate AS recorded_date,
                      weight AS weight,
@@ -389,18 +469,19 @@ class S3F_clientData {
                      shoulderCM as shoulder,
                      chestCM as chest,
                      armCM as arm,
-                     waitCM as waist,
+                     waistCM as waist,
                      hipCM as hip,
                      thighCM as thigh,
                      calfCM as calf,
-                     totalGirthCM as girth
-                FROM {$wpdb->prefix}nourish_measurements
+                     totalGrithCM as girth
+                FROM {$this->tables->Measurements}
                 WHERE created_by = %d
             ",
                 $clientId
             );
         }
         else {
+
             $sql = $wpdb->prepare("
                 SELECT recorded_date AS recorded_date,
                      weight,
@@ -413,8 +494,8 @@ class S3F_clientData {
                      thigh,
                      calf,
                      girth
-                FROM {$wpdb->prefix}nourish_measurements
-                WHERE created_by = %d
+                FROM {$wpdb->prefix}e20r_measurements
+                WHERE client_id = %d
             ",
                 $clientId
             );
@@ -467,10 +548,13 @@ class S3F_clientData {
 
         $level = ( isset($_POST['hidden_e20r_level']) ? intval( $_POST['hidden_e20r_level']) : 0 );
 
+        dbg("Level returned: {$level}");
+
         if ( $level != 0 ) {
 
             $levelObj = pmpro_getLevel( $level );
-            $this->load_levels( $levelObj->name );
+            // $this->load_levels( $levelObj->name );
+            dbg(" Loading members for {$levelObj->name}");
             $data = $this->viewMemberSelect( $levelObj->name );
         }
         else {
@@ -486,7 +570,7 @@ class S3F_clientData {
     function ajax_clientDetail() {
         dbg('Requesting client detail');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
 
@@ -497,7 +581,7 @@ class S3F_clientData {
     function ajax_complianceData() {
         dbg('Requesting Check-In details');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
     }
@@ -505,7 +589,7 @@ class S3F_clientData {
     function ajax_assignmentsData() {
         dbg('Requesting Assignment details');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
     }
@@ -514,21 +598,25 @@ class S3F_clientData {
 
         dbg('Requesting measurement data');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
 
-        if ( $this->valdiateClient( ( $clientId = isset( $_POST['hidden_e20r_client_id'] ) ) ? intval($_POST['hidden_e20r_client_id']) : null ) ) {
+        $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
+
+        if ( $this->validateClientAccess( $clientId ) ) {
             $this->client_id = $clientId;
         }
          else {
-             dbg( "Logged in user ID does not have access to the $clientId data" );
+             dbg( "Logged in user ID does not have access to the data for user ${clientId}" );
              wp_send_json_error( 'You do not have permission to access the data you requested.' );
          }
 
-        $measurements = $this->fetchMeasurements( $this->client_id );
+        // $measurements = $this->fetchMeasurements( $this->client_id );
+        dbg("Loading table of measurements, sort of.");
+        $data = $this->viewTableOfMeasurements( $this->client_id );
 
-        $data = $this->viewTableOfMeasurements( $measurements );
+        wp_send_json_success( $data );
     }
 
     /**
@@ -555,7 +643,7 @@ class S3F_clientData {
             dbg("Real user Id provided ");
             $client = get_user_by("id", $clientId );
 
-            if ( ($current_user->ID != $clientId ) &&  ( $current_user->has_cap( 'admin') ) ) {
+            if ( ($current_user->ID != $clientId ) &&  ( $current_user->membership_level->id == 18 ) ) {
                 return true;
             }
             elseif ( $current_user->ID == $clientId ) {

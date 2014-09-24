@@ -40,7 +40,7 @@ global $e20r_db_version;
 
 $e20r_db_version = "1.0";
 
-if ( ! function_exists( 'dbgOut' ) ):
+if ( ! function_exists( 'dbg' ) ):
 
     /**
      * Debug function (if executes if DEBUG is defined)
