@@ -323,12 +323,15 @@ class S3F_clientData {
 
     }
 
-    private function viewTableOfMeasurements( $clientId ) {
+    private function viewTableOfMeasurements( $clientId, $measurements = null ) {
         // TESTING: using $clientId = 12;
 
         // $clientId = 12;
 
-        $measurements = $this->load_measurements( $clientId );
+        if ( $measurements === null ) {
+            $measurements = $this->load_measurements($clientId);
+        }
+
         $user = get_user_by( 'id', $clientId );
 
         $reloadBtn = '
@@ -399,6 +402,8 @@ class S3F_clientData {
                 ?>
                 </tbody>
             </table>
+            <div id="weight_chart" style="height:500px;width:650px; "></div>
+            <div id="girth_chart" style="height:600px;width:650px; "></div>
             <?php
 
             $html = ob_get_clean();
@@ -445,6 +450,34 @@ class S3F_clientData {
             $client_id
         );
 
+    }
+
+    public function generate_plot_data ( $data, $variable ) {
+
+        // [ [ $date, $weight ], [ $date, $weight ], [ $date, $weight ] ]
+
+        $data_matrix = array();
+        $set = array();
+
+        foreach ( $data as $measurement ) {
+
+            if ( is_object( $measurement ) ) {
+
+                switch ( $variable ) {
+                    case 'weight':
+
+                        $data_matrix[] = array( "{$measurement->recorded_date} 10:00AM", number_format( (float) $measurement->weight, 2) );
+                        break;
+
+                    case 'girth':
+
+                        $data_matrix[] = array( "{$measurement->recorded_date} 10:00AM", number_format( (float) $measurement->girth, 2 ) );
+                        break;
+                }
+            }
+        }
+        dbg("Matrix: " . print_r( $data_matrix, true ) );
+        return $data_matrix;
     }
 
     public function load_measurements( $clientId = 0 ) {
@@ -532,10 +565,10 @@ class S3F_clientData {
         dbg("Loading Client data page for wp-admin");
 
         $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r_tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r_tracker', __('Assignments','e20r_tracker'), __('Assignments','e20r_tracker'), 'manage-options', "e20r_tracker_assign", array( &$this,'render_assignment_page' ));
-        add_submenu_page( 'e20r_tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-        add_submenu_page( 'e20r_tracker', __('Compliance','e20r_tracker'), __('Compliance','e20r_tracker'), 'manage_options', "e20r_tracker_habit", array( &$this,'render_compliance_page'));
-        add_submenu_page( 'e20r_tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
+//        add_submenu_page( 'e20r_tracker', __('Assignments','e20r_tracker'), __('Assignments','e20r_tracker'), 'manage-options', "e20r_tracker_assign", array( &$this,'render_assignment_page' ));
+//        add_submenu_page( 'e20r_tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
+//        add_submenu_page( 'e20r_tracker', __('Compliance','e20r_tracker'), __('Compliance','e20r_tracker'), 'manage_options', "e20r_tracker_habit", array( &$this,'render_compliance_page'));
+//        add_submenu_page( 'e20r_tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
 
         // add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
     }
@@ -614,9 +647,17 @@ class S3F_clientData {
 
         // $measurements = $this->fetchMeasurements( $this->client_id );
         dbg("Loading table of measurements, sort of.");
-        $data = $this->viewTableOfMeasurements( $this->client_id );
+        $measurements = $this->load_measurements( $clientId );
 
-        wp_send_json_success( $data );
+        $data = $this->viewTableOfMeasurements( $this->client_id, $measurements );
+
+        $weight = $this->generate_plot_data( $measurements, 'weight' );
+        $girth = $this->generate_plot_data( $measurements, 'girth' );
+
+        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
+        dbg("Data being returned: " . print_r(  $data, true ) );
+        echo $data;
+        exit;
     }
 
     /**

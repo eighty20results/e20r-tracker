@@ -57,22 +57,23 @@ jQuery(document).ready( function($) {
 
         console.log("Client to find changed");
         saveClientId( $oldClientId );
-
+/*
         $detailBtn.prop('disabled', false);
         $complianceBtn.prop('disabled', false);
         $assignBtn.prop('disabled', false);
         $measureBtn.prop('disabled', false);
-
+*/
     });
 
     $detailBtn.click( function() {
 
+        /*
         // Flip all the buttons
-        $detailBtn.prop('disabled', true);
+        $detailBtn.prop('disabled', false);
         $complianceBtn.prop('disabled', false);
         $assignBtn.prop('disabled', false);
         $measureBtn.prop('disabled', false);
-
+        */
         // saveClientId($oldClientId);
         e20r_LoadClientData('info');
         saveClientId( $oldClientId );
@@ -80,12 +81,13 @@ jQuery(document).ready( function($) {
     })
 
     $complianceBtn.click( function() {
+        /*
         // Flip all the buttons
-        $detailBtn.removeAttr('disabled');
-        $complianceBtn.attr('disabled', 'disabled');;
-        $assignBtn.removeAttr('disabled');
-        $measureBtn.removeAttr('disabled');
-
+        $detailBtn.prop('disabled', false);
+        $complianceBtn.prop('disabled', false);
+        $assignBtn.prop('disabled', false);
+        $measureBtn.prop('disabled', false);
+        */
         // saveClientId($oldClientId);
         e20r_LoadClientData('compliance');
         saveClientId( $oldClientId );
@@ -93,12 +95,13 @@ jQuery(document).ready( function($) {
     })
 
     $assignBtn.click( function() {
+        /*
         // Flip all the buttons
-        $detailBtn.removeAttr('disabled');
-        $complianceBtn.removeAttr('disabled');
-        $assignBtn.attr('disabled', 'disabled');
-        $measureBtn.removeAttr('disabled');
-
+        $detailBtn.prop('disabled', false);
+        $complianceBtn.prop('disabled', false);
+        $assignBtn.prop('disabled', false);
+        $measureBtn.prop('disabled', false);
+        */
         // saveClientId($oldClientId);
         e20r_LoadClientData('assignments');
         saveClientId( $oldClientId );
@@ -106,19 +109,18 @@ jQuery(document).ready( function($) {
     })
 
     $measureBtn.click( function() {
+        /*
         // Flip all the buttons
-        $detailBtn.removeAttr('disabled');
-        $complianceBtn.removeAttr('disabled');
-        $assignBtn.removeAttr('disabled');
-        $measureBtn.attr('disabled', 'disabled');
-
+        $detailBtn.prop('disabled', false);
+        $complianceBtn.prop('disabled', false);
+        $assignBtn.prop('disabled', false);
+        $measureBtn.prop('disabled', false);
+        */
         // saveClientId($oldClientId);
         e20r_LoadClientData('measurements');
         saveClientId( $oldClientId );
 
     })
-
-
 
 });
 
@@ -251,8 +253,64 @@ function e20r_LoadClientData( $type ) {
             }
 
             if ( ( $data.data !== '' ) && ( $type == 'measurements') ) {
+                // console.dir($data);
                 jQuery('#e20r-measurements').html($data.data);
-            }
+                console.dir( 'Weight: ' + $data.weight );
+                console.dir( 'Girth: ' + $data.girth );
+
+                var $ticks = ['Date', 'Weight'];
+
+                var $wPlot = jQuery.jqplot( 'weight_chart', [ $data.weight ], {
+                    title: 'Weight History',
+                    gridPadding:{right:35},
+                    seriesDefaults: {
+                        showMarker:false,
+                        pointLabels: { show:true }
+                    },
+                    axes: {
+                        xaxis: {
+                            renderer: jQuery.jqplot.DateAxisRenderer
+                            //tickOptions:{formatString:'%m-%#d-%y'}
+                            // tickInterval:'1 week'
+                        }
+                    },
+                    series:[{
+                        color: '#9C0000',
+                        lineWidth:4,
+                        markerOptions:{
+                            style:'circle'
+                        }
+                    }],
+                    legend: {
+                        show: true,
+                        location: 'ne'
+                    }
+                } );
+
+                var gPlot = jQuery.jqplot('girth_chart', [ $data.girth ], {
+                    title: 'Total Girth',
+                    gridPadding:{right:35},
+                    seriesDefaults: {
+                        showMarker:false,
+                        pointLabels: { show:true }
+                    },
+                    axes: {
+                        xaxis: {
+                            renderer: jQuery.jqplot.DateAxisRenderer
+                            // tickOptions:{formatString:'%m-%#d-%y'}
+                            //tickInterval:'1 week'
+                        }
+                    },
+                    series:[{
+                        color: '#9C0000',
+                        lineWidth:4,
+                        markerOptions:{
+                            style:'circle'
+                        }
+                    }]
+                });
+
+                }
 
         },
         complete: function () {
@@ -265,6 +323,9 @@ function e20r_LoadClientData( $type ) {
 
             // Disable the spinner again
             jQuery('#load-client-data').hide();
+            $btn.removeAttr('disabled');
         }
     });
+
+
 }
