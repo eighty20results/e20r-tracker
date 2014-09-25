@@ -244,14 +244,21 @@ function e20r_LoadClientData( $type ) {
             }
 
             if ( ( data.data !== '' ) && ( $type == 'measurements') ) {
-                // console.dir(data);
-                jQuery('#e20r-measurements').html(data.data);
-                // console.log( data.weight );
-                //console.log(  );
-                console.dir( data.weight[data.weight.length - 1][0] );
-                // console.dir( [ data.girth ] );
 
-                var $ticks = ['Date', 'Weight'];
+                jQuery('#e20r-admin-measurements').html(data.data);
+
+                var firstDate = data.weight[0][0];
+                var lastDate = data.weight[data.weight.length - 1][0];
+
+                var $minTick = firstDate - 604800000;
+                var $maxTick = lastDate + 604800000;
+
+                var $entries = data.weight.length;
+                var $stepSize = '1 week';
+
+                if ( $entries >= 26 ) {
+                    $stepSize = '2 weeks';
+                }
 
                 var $wPlot = jQuery.jqplot( 'weight_chart', [ data.weight ], {
                     title: 'Weight History',
@@ -267,14 +274,16 @@ function e20r_LoadClientData( $type ) {
                             labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                             tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
                             tickOptions: {
-                                angle: 90,
+                                fontFamily: 'Verdana',
+                                fontSize: '9px',
+                                angle: 30,
                                 formatString: '%v',
                                 showLabel: true
                             },
                             showTicks: true,
-                            tickInterval: '1 week',
-                            min: data.weight[0][0],
-                            max: data.weight[data.weight.length-1][0]
+                            tickInterval: $stepSize,
+                            min: $minTick,
+                            max: $maxTick
                         },
                         yaxis: {
                             labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
@@ -306,14 +315,16 @@ function e20r_LoadClientData( $type ) {
                             labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
                             tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
                             tickOptions: {
-                                angle: 90,
+                                fontFamily: 'Verdana',
+                                fontSize: '9px',
+                                angle: 30,
                                 formatString: '%v',
                                 showLabel: true
                             },
                             showTicks: true,
-                            tickInterval: '1 week',
-                            min: data.girth[0][0],
-                            max: data.girth[data.girth.length-1][0]
+                            tickInterval: $stepSize,
+                            min: $minTick,
+                            max: $maxTick
                         },
                         yaxis: {
                             labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
