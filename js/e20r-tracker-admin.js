@@ -126,11 +126,7 @@ jQuery(document).ready( function($) {
 
 function saveClientId( $oldClientId ) {
 
-    console.log("Modifying the client to process");
-
     var $clientId = jQuery('#e20r_tracker_client').find('option:selected').val();
-
-    console.dir($clientId);
 
     if ( $clientId != $oldClientId ) {
 
@@ -143,8 +139,6 @@ function loadMemberList( $levelId ) {
 
     jQuery('#spin-for-level').show();
     jQuery('#e20r_tracker_client').prop('disabled', true);
-
-    console.log("Loading the list of members for he specified level");
 
     jQuery.ajax({
         url: e20r_tracker.ajaxurl,
@@ -168,7 +162,6 @@ function loadMemberList( $levelId ) {
             // Refresh the sequence post list (include the new post.
             if ($data.data !== '') {
                 jQuery(".e20r-selectMember").html($data.data);
-                console.log("Member list returned")
                 jQuery(".e20r-selectMember").show();
                 jQuery(".e20r-admin-hr").show();
                 jQuery(".e20r-data-choices").show();
@@ -238,74 +231,103 @@ function e20r_LoadClientData( $type ) {
             e20r_client_detail_nonce: jQuery('#e20r_tracker_client_detail_nonce').val(),
             hidden_e20r_client_id: jQuery('#e20r_tracker_client').val()
         },
-        error: function ($data) {
-            console.dir($data);
-            // alert($data);
+        error: function (data) {
+            console.dir(data);
+            // alert(data);
 
         },
-        success: function ($data) {
-
-            setLabels();
+        success: function (data) {
 
             // Refresh the sequence post list (include the new post.
-            if ( ( $data.data !== '' ) && ( $type == 'info') ) {
-                jQuery('#e20r-info').html($data.data);
+            if ( ( data.data !== '' ) && ( $type == 'info') ) {
+                jQuery('#e20r-info').html(data.data);
             }
 
-            if ( ( $data.data !== '' ) && ( $type == 'measurements') ) {
-                // console.dir($data);
-                jQuery('#e20r-measurements').html($data.data);
-                console.dir( 'Weight: ' + $data.weight );
-                console.dir( 'Girth: ' + $data.girth );
+            if ( ( data.data !== '' ) && ( $type == 'measurements') ) {
+                // console.dir(data);
+                jQuery('#e20r-measurements').html(data.data);
+                // console.log( data.weight );
+                //console.log(  );
+                console.dir( data.weight[data.weight.length - 1][0] );
+                // console.dir( [ data.girth ] );
 
                 var $ticks = ['Date', 'Weight'];
 
-                var $wPlot = jQuery.jqplot( 'weight_chart', [ $data.weight ], {
+                var $wPlot = jQuery.jqplot( 'weight_chart', [ data.weight ], {
                     title: 'Weight History',
                     gridPadding:{right:35},
+                    // legend: {show: false },
                     seriesDefaults: {
-                        showMarker:false,
-                        pointLabels: { show:true }
+                        showMarker: false,
+                        pointLabels: { show: false }
                     },
                     axes: {
                         xaxis: {
-                            renderer: jQuery.jqplot.DateAxisRenderer
-                            //tickOptions:{formatString:'%m-%#d-%y'}
-                            // tickInterval:'1 week'
+                            renderer: jQuery.jqplot.DateAxisRenderer,
+                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                            tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                            tickOptions: {
+                                angle: 90,
+                                formatString: '%v',
+                                showLabel: true
+                            },
+                            showTicks: true,
+                            tickInterval: '1 week',
+                            min: data.weight[0][0],
+                            max: data.weight[data.weight.length-1][0]
+                        },
+                        yaxis: {
+                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                            tickOptions: { formatString: '%.0f' }
                         }
                     },
                     series:[{
-                        color: '#9C0000',
+                        color: '#004DFF',
                         lineWidth:4,
                         markerOptions:{
-                            style:'circle'
+                            style:'square'
+                        },
+                        rendererOptions: {
+                            smooth: true
                         }
-                    }],
-                    legend: {
-                        show: true,
-                        location: 'ne'
-                    }
-                } );
+                    }]
+                });
 
-                var gPlot = jQuery.jqplot('girth_chart', [ $data.girth ], {
+                var gPlot = jQuery.jqplot('girth_chart', [ data.girth ], {
                     title: 'Total Girth',
                     gridPadding:{right:35},
                     seriesDefaults: {
                         showMarker:false,
-                        pointLabels: { show:true }
+                        pointLabels: { show:false }
                     },
                     axes: {
                         xaxis: {
-                            renderer: jQuery.jqplot.DateAxisRenderer
-                            // tickOptions:{formatString:'%m-%#d-%y'}
-                            //tickInterval:'1 week'
+                            renderer: jQuery.jqplot.DateAxisRenderer,
+                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                            tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                            tickOptions: {
+                                angle: 90,
+                                formatString: '%v',
+                                showLabel: true
+                            },
+                            showTicks: true,
+                            tickInterval: '1 week',
+                            min: data.girth[0][0],
+                            max: data.girth[data.girth.length-1][0]
+                        },
+                        yaxis: {
+                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                            tickOptions: { formatString: '%.0f' }
                         }
                     },
                     series:[{
-                        color: '#9C0000',
+                        color: '#004DFF',
                         lineWidth:4,
                         markerOptions:{
-                            style:'circle'
+                            style:'square'
+                        },
+                        rendererOptions: {
+                            smooth: true
                         }
                     }]
                 });

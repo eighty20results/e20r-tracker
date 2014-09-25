@@ -119,6 +119,30 @@ class e20rTracker {
         wp_deregister_script('jqplot' );
         wp_enqueue_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', false, '0.1' );
 
+        wp_deregister_script('jqplot_export' );
+        wp_enqueue_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', false, '0.1' );
+
+        wp_deregister_script('jqplot_pie' );
+        wp_enqueue_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', false, '0.1' );
+
+        wp_deregister_script('jqplot_text' );
+        wp_enqueue_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', false, '0.1' );
+
+        wp_deregister_script('jqplot_mobile' );
+        wp_enqueue_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', false, '0.1' );
+
+        wp_deregister_script( 'jqplot_date');
+        wp_enqueue_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', false, '0.1');
+
+        wp_deregister_script( 'jqplot_label');
+        wp_enqueue_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', false, '0.1');
+
+        wp_deregister_script( 'jqplot_pntlabel');
+        wp_enqueue_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', false, '0.1');
+
+        wp_deregister_script( 'jqplot_ticks');
+        wp_enqueue_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', false, '0.1');
+
         wp_deregister_style( 'jqplot' );
         wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
 

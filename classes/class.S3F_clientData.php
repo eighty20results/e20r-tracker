@@ -212,7 +212,11 @@ class S3F_clientData {
                 $levels[ $level->id ] = $level->name;
             }
         }
+
+        asort( $levels );
+
         // dbg("Levels fetched: " . print_r( $levels, true ) );
+
         return $levels;
     }
 
@@ -229,16 +233,19 @@ class S3F_clientData {
         //dbg("Levels being loaded: " . print_r( $levels, true ) );
 
         $sql = "
-                SELECT m.user_id AS id, u.display_name AS name
+                SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
                 FROM $wpdb->users AS u
                   INNER JOIN {$wpdb->pmpro_memberships_users} AS m
                     ON ( u.ID = m.user_id )
-                WHERE ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
+                    INNER JOIN {$wpdb->usermeta} AS um
+                    ON ( u.ID = um.user_id )
+                WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
+                ORDER BY last_name ASC
         ";
 
         $sql = $this->prepare_in( $sql, $levels );
 
-        ///dbg("SQL for user list: " . print_r( $sql, true));
+        // dbg("SQL for user list: " . print_r( $sql, true));
 
         $user_list = $wpdb->get_results( $sql, OBJECT );
 
@@ -426,30 +433,29 @@ class S3F_clientData {
 
     public function load_client_appointments( $clientId ) {
 
-        // TODO: Build an array (of stdClass objects?) containing the booked appointments for this client (all "confirmed" ones?)
+        global $current_user, $wpdb;
+
+        $statuses = array( "completed", "removed" );
 
         if ( $clientId == 0 ) {
 
-            global $current_user;
-
-            $client_id = $current_user->ID;
+            $clientId = $current_user->ID;
         }
-
-        global $wpdb;
-
-        // TODO: Complete this to get a list of appointments for the clientId so we can set the status for it in the checkin table(s).
 
         $sql = $wpdb->prepare(
             "
                 SELECT ID, user, start, status, created
                 FROM $wpdb->app_table AS app
                 INNER JOIN ( app.user = )
-                 WHERE user = %d AND status NOT IN ( )
-
+                 WHERE user = %d AND status NOT IN ( [IN] )
+                 ORDER BY start ASC
             ",
-            $client_id
+            $clientId
         );
 
+        $sql = $this->prepare_in( $sql, $statuses );
+
+        return $wpdb->get_results( $sql, OBJECT );
     }
 
     public function generate_plot_data ( $data, $variable ) {
@@ -458,7 +464,7 @@ class S3F_clientData {
 
         $data_matrix = array();
         $set = array();
-
+        $count = 0;
         foreach ( $data as $measurement ) {
 
             if ( is_object( $measurement ) ) {
@@ -466,16 +472,17 @@ class S3F_clientData {
                 switch ( $variable ) {
                     case 'weight':
 
-                        $data_matrix[] = array( "{$measurement->recorded_date} 10:00AM", number_format( (float) $measurement->weight, 2) );
+                        $data_matrix[] = array( (strtotime( $measurement->recorded_date ) * 1000), number_format( (float) $measurement->weight, 2) );
                         break;
 
                     case 'girth':
 
-                        $data_matrix[] = array( "{$measurement->recorded_date} 10:00AM", number_format( (float) $measurement->girth, 2 ) );
+                        $data_matrix[] = array( (strtotime( $measurement->recorded_date ) * 1000), number_format( (float) $measurement->girth, 2 ) );
                         break;
                 }
             }
         }
+
         dbg("Matrix: " . print_r( $data_matrix, true ) );
         return $data_matrix;
     }
@@ -509,6 +516,7 @@ class S3F_clientData {
                      totalGrithCM as girth
                 FROM {$this->tables->Measurements}
                 WHERE created_by = %d
+                ORDER BY recorded_date ASC
             ",
                 $clientId
             );
@@ -529,19 +537,13 @@ class S3F_clientData {
                      girth
                 FROM {$wpdb->prefix}e20r_measurements
                 WHERE client_id = %d
+                ORDER BY recorded_date ASC
             ",
                 $clientId
             );
         }
 
-        $results = $wpdb->get_results( $sql );
-
-        foreach ( $results as $measurement ) {
-
-            $measurements[] = $measurement;
-        }
-
-        return $measurements;
+        return $wpdb->get_results( $sql, OBJECT );
     }
 
     public function render_assignments_page() {
