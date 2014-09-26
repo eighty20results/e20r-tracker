@@ -3,6 +3,8 @@
 class e20rTracker {
 
     private $clientData;
+    private $checkinData;
+
     public $tables;
 
     public function init() {
@@ -18,6 +20,7 @@ class e20rTracker {
         $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
 
         $this->clientData = new S3F_clientData();
+        $this->checkinData = new E20Rcheckin();
 
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
 
@@ -26,6 +29,7 @@ class e20rTracker {
 
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_plotSW' ) );
 
+        add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_checkin_item' ) );
         add_action( 'wp_ajax_e20r_clientDetail', array( &$this->clientData, 'ajax_clientDetail' ) );
         add_action( 'wp_ajax_e20r_complianceData', array( &$this->clientData, 'ajax_complianceData' ) );
         add_action( 'wp_ajax_e20r_assignmentsData', array( &$this->clientData, 'ajax_assignmentsData' ) );

@@ -22,16 +22,16 @@ if ( ! class_exists( 'e20rTracker' ) ):
 
 endif;
 
-if ( ! class_exists( 'E20R_Checkin' ) ):
-
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.E20R_Checkin.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php" );
-
-endif;
-
 if ( ! class_exists( 'S3F_clientData' )):
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.S3F_clientData.php" );
+
+endif;
+
+if ( ! class_exists( 'E20Rcheckin' ) ):
+
+    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.E20Rcheckin.php" );
+//     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php" );
 
 endif;
 

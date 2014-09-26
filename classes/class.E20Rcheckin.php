@@ -1,8 +1,8 @@
 <?php
 
-if ( ! array_key_exists( 'E20R_Checkin', $GLOBALS ) ) {
+if ( ! class_exists( 'E20Rcheckin' ) ):
 
-    class E20R_Checkin {
+    class E20Rcheckin {
 
         public $_tables;
 
@@ -10,13 +10,96 @@ if ( ! array_key_exists( 'E20R_Checkin', $GLOBALS ) ) {
 
             global $wpdb;
 
+            dbg("Loading E20Rcheckin class");
             $this->_tables = array(
-                'items' => $wpdb->prefix . 'e20r_checkinItems',
-                'rules' => $wpdb->prefix . 'e20r_checkinRules',
+                'items' => $wpdb->prefix . 'e20r_checkin_items',
+                'rules' => $wpdb->prefix . 'e20r_checkin_rules',
                 'checkin' => $wpdb->prefix . 'e20r_checkin',
             );
 
         } // end constructor
+
+        public function viewManageCheckinItems() {
+
+            dbg("Loading manage_checkin_items page");
+
+            ob_start();
+            ?>
+            <H1>Manage Check-In/Activity Items</H1>
+            <?php echo $this->checkinItemSelect(); ?>
+            <hr />
+            <div id="edit-checkin-items">
+            </div>
+            <?php
+            $html = ob_get_clean();
+
+            return $html;
+        }
+
+        public function checkinItemSelect() {
+
+            ob_start(); ?>
+
+            <div class="e20r-select-checkin">
+                <form action="<?php admin_url('admin-ajax.php'); ?>" method="post">
+                    <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_checkin_items_nonce' ); ?>
+                    <div class="e20r-select">
+                        <input type="hidden" name="hidden_e20r_checkin_item_id" id="hidden_e20r_checkin_item_id" value="0" >
+                        <label for="e20r_checkin_items">Add / Update Items</label>
+                    <span class="e20r-checkin-select-span">
+                        <select name="e20r_checkin_items" id="e20r_checkin_items">
+                            <?php
+
+                            $checkin_list = $this->load_checkin_itemList( false );
+
+                            dbg("List: " . print_r( $checkin_list, true ) );
+                            foreach( $checkin_list as $item ) {
+                                ?><option value="<?php echo esc_attr( $item->id ); ?>"  ><?php echo esc_attr( $item->item_name ); ?></option><?php
+                            }
+                            ?>
+                        </select>
+                    </span>
+                        <span class="e20r-checkin_item-select-span"><a href="#e20r_tracker_checkin_items" id="e20r-load-checkin-items" class="e20r-choice-button button"><?php _e('Load', 'e20r-tracker'); ?></a></span>
+                        <span class="seq_spinner" id="spin-for-checkin-item"></span>
+                    </div>
+                </form>
+            </div>
+            <?php
+
+            $html = ob_get_clean();
+
+            return $html;
+
+        }
+
+        private function load_checkin_itemList( $cached = true ) {
+
+            global $wpdb;
+
+            $sql = "
+                SELECT id, item_name
+                FROM {$this->_tables['items']}
+                ORDER BY item_name ASC
+            ";
+
+            $item_list = $wpdb->get_results( $sql, OBJECT );
+
+            dbg(" SQL: " . $sql);
+
+            $data = new stdClass();
+            $data->id = 0;
+            $data->item_name = 'New Check-in Item';
+
+            return ( array( $data ) + $item_list );
+
+
+        }
+
+        public function ajax_checkin_item() {
+
+            check_ajax_referer( 'e20r-tracker-data', 'e20r_tracker_checkin_items_nonce' );
+            dbg("Running checkin_item locator");
+        }
 
         /**
          * @param string $sname - The short name for the check-in
@@ -43,7 +126,7 @@ if ( ! array_key_exists( 'E20R_Checkin', $GLOBALS ) ) {
                 $start = current_time( 'timestamp' );
             }
             else {
-                dbgOut("Start time defined as {$start}");
+                dbg("Start time defined as {$start}");
                 $start = strtotime( $start );
             }
 
@@ -54,21 +137,21 @@ if ( ! array_key_exists( 'E20R_Checkin', $GLOBALS ) ) {
                 $end = $start + ( 604800 * 2 );
             } else {
 
-                dbgOut("End time defined as {$end}");
+                dbg("End time defined as {$end}");
                 $end = strtotime( $end );
             }
 
             $dayDiff = ( $end - $start ) / ( 60 * 60 * 24 );
-            dbgOut("Day Difference: {$dayDiff} vs max: {$max}");
+            dbg("Day Difference: {$dayDiff} vs max: {$max}");
 
             if ( $max > $dayDiff ) {
-                dbgOut("Number of days specified as max is greater than specified end-date: {$dayDiff}" );
+                dbg("Number of days specified as max is greater than specified end-date: {$dayDiff}" );
                 $end = $start + ( $max * ( 60 * 60 * 24 ) );
 
             }
 
-            dbgOut("Received start time: {$start}, " . date("Y-m-d H:i:s", $start));
-            dbgOut("Received end time: {$end}, " . date("Y-m-d H:i:s", $end));
+            dbg("Received start time: {$start}, " . date("Y-m-d H:i:s", $start));
+            dbg("Received end time: {$end}, " . date("Y-m-d H:i:s", $end));
 
             $data = array(
                 'program_id' => $prgm,
@@ -134,7 +217,4 @@ if ( ! array_key_exists( 'E20R_Checkin', $GLOBALS ) ) {
 
     } // end class
 
-    // Store reference to the plugin in $GLOBALS so our unit tests can access it
-    $GLOBALS['E20R_Checkin'] = new E20R_Checkin();
-
-} // end if
+endif; // end if

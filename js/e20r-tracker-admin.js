@@ -6,7 +6,6 @@ console.log("Loading back-end javascript script for e20r-tracker");
 jQuery.noConflict();
 jQuery(document).ready( function($) {
 
-
     console.log("WP-Admin script for E20R Tracker loaded");
     var $clientIdSelect = $("#e20r_tracker_client");
     var $levelIdSelect = $("#e20r_levels");
@@ -18,6 +17,8 @@ jQuery(document).ready( function($) {
     var $assignBtn = $("#e20r-client-assignments");
     var $measureBtn = $("#e20r-client-measurements");
     var $loadBtn = $("#e20r-load-users");
+
+    var $loadItem = $("#e20r-load-checkin-items");
 
     $levelIdSelect.change( function() {
 
@@ -64,6 +65,16 @@ jQuery(document).ready( function($) {
         $measureBtn.prop('disabled', false);
 */
     });
+
+    $loadItem.click( function() {
+
+        $loadItem.prop('disabled', true);
+        jQuery('#spin-for-checkin-item').show();
+
+        loadCheckinItem( $('#e20r_checkin_items').find('option:selected').val() );
+        jQuery('#spin-for-checkin-item').show();
+        $loadItem.prop('disabled', false);
+    })
 
     $detailBtn.click( function() {
 
@@ -359,6 +370,31 @@ function e20r_LoadClientData( $type ) {
             $btn.removeAttr('disabled');
         }
     });
+}
 
+function loadCheckinItem( $itemId ) {
 
+    jQuery.ajax({
+        url: e20r_tracker.ajaxurl,
+        type: 'POST',
+        timeout: 5000,
+        dataType: 'JSON',
+        data: {
+            action: 'get_checkinItem',
+            e20r_tracker_checkin_items_nonce: jQuery('#e20r_tracker_checkin_items_nonce').val(),
+            hidden_e20r_checkin_item_id: $itemId
+        },
+        error: function (data) {
+            console.dir(data);
+            // alert(data);
+
+        },
+        success: function (data) {
+
+            // Refresh the sequence post list (include the new post.
+            if (data.data !== '') {
+                jQuery('#edit-checkin-items').html(data.data);
+            }
+        }
+    });
 }

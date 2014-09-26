@@ -606,7 +606,8 @@ class S3F_clientData {
 
     public function render_management_page() {
 
-
+        $manage_checkin_items = new E20Rcheckin();
+        echo $manage_checkin_items->viewManageCheckinItems();
     }
 
     public function render_meals_page() {
@@ -615,13 +616,12 @@ class S3F_clientData {
 
     public function registerAdminPages() {
 
-        dbg("Loading Client data page for wp-admin");
+        $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+//        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
+        add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20-tracker-habit", array( &$this,'render_management_page'));
+        //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
 
-        $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r_tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r_tracker', __('Manage','e20r_tracker'), __('Habits','e20r_tracker'), 'manage-options', "e20r_tracker_habits", array( &$this,'render_management_page' ));
-//        add_submenu_page( 'e20r_tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-//        add_submenu_page( 'e20r_tracker', __('Compliance','e20r_tracker'), __('Compliance','e20r_tracker'), 'manage_options', "e20r_tracker_habit", array( &$this,'render_compliance_page'));
-//        add_submenu_page( 'e20r_tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
+//        add_submenu_page( 'e20r-tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
 
         // add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
     }
@@ -710,7 +710,6 @@ class S3F_clientData {
         $girth = $this->generate_plot_data( $measurements, 'girth' );
 
         $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
-        dbg("Data being returned: " . print_r(  $data, true ) );
         echo $data;
         exit;
     }
