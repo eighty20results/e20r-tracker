@@ -1,10 +1,8 @@
 <?php
 /**
- * Created by Wicked Strong Chicks, LLC.
- * User: Thomas Sjolshagen
- * Date: 9/26/14
- * Time: 9:24 AM
- * 
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
  * License Information:
  *  the GPL v2 license(?)
  */
@@ -12,16 +10,20 @@
 class e20rPrograms {
 
     public $_tables = array();
+    private $programId = null;
     private $programs;
     private $loadedTS;
 
-    public function __construct() {
+    public function __construct( $programId = null ) {
 
         global $wpdb;
 
+        $this->programId = $programId;
+
         $this->_tables['programs'] = $wpdb->prefix . "e20r_programs";
 
-        $this->programs = $this->load_program_info();
+        $this->programs = $this->load_program_info( $programId );
+
         if ( ! empty( $this->programs ) ) {
             $this->loadedTS = current_time('timestamp');
         }
@@ -50,18 +52,44 @@ class e20rPrograms {
             );
         }
 
-        $programs = $wpdb->get_results( $sql , OBJECT);
-
         $data = new stdClass();
         $data->id = 0;
         $data->program_name = 'Add a new program';
 
-        return ( array( $data ) + $programs );
+        $this->programs = $wpdb->get_results( $sql , OBJECT );
+
+        return ( array( $data ) + $this->programs );
 
     }
 
-    public function viewProgramSelect() {
-        $programs = $this->load_program_info(); // Load all programs & generate a select <div></div>
+    public function viewProgramSelectDropDown() {
+
+        // Generate a select box for the program and highlight the requested ProgramId
+
+        $this->programs = $this->load_program_info( null ); // Get all programs in the DB
+
+        // Todo: create simple select box w/the program identified in $this->programId as 'selected'.
+        ob_start();
+        ?>
+        <label for="e20r_choose_programs">Program</label>
+        <span class="e20r-program-select-span">
+            <select name="e20r_choose_programs" id="e20r_choose_programs">
+                <?php
+
+                dbg("Select List " . print_r( $this->programs, true ) );
+
+                foreach( $this->programs as $program ) {
+                ?><option value="<?php echo esc_attr( $this->program->id ); ?>"  <?php selected( $this->programId, $this->program->id, true); ?>><?php echo esc_attr( $this->program->program_name ); ?></option><?php
+                }
+                ?>
+            </select>
+        </span>
+        <?php
+
+        $html = ob_get_clean();
+
+        return $html;
+
     }
 
     public function viewProgramEditSelect() {

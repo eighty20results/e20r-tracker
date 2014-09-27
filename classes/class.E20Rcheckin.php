@@ -93,6 +93,7 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             return ( array( $data ) + $item_list );
         }
 
+
         public function ajax_getCheckin_item() {
 
             check_ajax_referer( 'e20r-tracker-data', 'e20r_tracker_checkin_items_nonce' );
@@ -103,8 +104,23 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             $item = $this->getItem( $itemId );
 
             dbg("Item Object: " . print_r( $item, true  ) );
+            // Build HTML for the item...
 
-            return $item;
+            $program = new e20rPrograms( $item->program_id );
+
+            ob_start();
+            ?>
+
+            <!-- Data record for the Item object -->
+
+            <!-- Load the selected program drop-down -->
+            <?php echo $program->viewProgramSelectDropDown(); ?>
+
+            <?php
+
+            $html = ob_get_clean();
+
+            wp_send_json_success( $html );
         }
 
         // Ben Code: BenK-F0ED76527F
@@ -133,10 +149,9 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
                 $sql = $wpdb->prepare("
                         SELECT *
-                        FROM %s
+                        FROM {$this->_tables['items']}
                         WHERE id = %d
                     ",
-                    $this->_tables['items'],
                     $itemId
                 );
 
