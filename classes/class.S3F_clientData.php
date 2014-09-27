@@ -817,7 +817,7 @@ class S3F_clientData {
                   subscription_transaction_id AS stripe_cust_id,
                   timestamp AS created
                 FROM wp_pmpro_membership_orders
-                WHERE user_id = %d AND status = 'success' AND gateway = 'stripe'
+                WHERE ( user_id = %d ) AND ( status = 'success' ) AND ( gateway = 'stripe' )
                 ORDER BY user_id ASC
                 LIMIT 1
               ",
