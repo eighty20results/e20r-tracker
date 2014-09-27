@@ -91,16 +91,82 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             $data->item_name = 'New Check-in Item';
 
             return ( array( $data ) + $item_list );
-
-
         }
 
-        public function ajax_checkin_item() {
+        public function ajax_getCheckin_item() {
 
             check_ajax_referer( 'e20r-tracker-data', 'e20r_tracker_checkin_items_nonce' );
             dbg("Running checkin_item locator");
+
+            $itemId = isset( $_POST['hidden_e20r_checkin_item_id'] ) ? intval( $_POST['hidden_e20r_checkin_item_id'] ) : 0;
+
+            $item = $this->getItem( $itemId );
+
+            dbg("Item Object: " . print_r( $item, true  ) );
+
+            return $item;
         }
 
+        // Ben Code: BenK-F0ED76527F
+
+        public function getItem( $itemId ) {
+
+            global $wpdb;
+
+            if ( $itemId == 0) {
+                // Want a new item.
+                $item = new stdClass();
+
+                $item->id = null;
+                $item->short_name = null;
+                $item->program_id = null;
+                $item->item_name = null;
+                $item->startdate = date( 'Y-m-d' ) . " 00:00:00";
+                $item->enddate = date( 'Y-m-d', (current_time('timestamp') + 1209600 ) ) . " 00:00:00";
+                $item->item_order = $this->get_nextItemOrderNum( $this->short_name );
+                $item->maxcount = null;
+                $item->membership_level_id;
+
+                $results = array( $item );
+            }
+            else {
+
+                $sql = $wpdb->prepare("
+                        SELECT *
+                        FROM %s
+                        WHERE id = %d
+                    ",
+                    $this->_tables['items'],
+                    $itemId
+                );
+
+                $results = $wpdb->get_results( $sql );
+            }
+
+            return $results;
+        }
+
+        /**
+         * @param $short_name -- Name of habit/item (short & unique)
+         * @return mixed -- The next number in the sequence.
+         */
+        private function get_nextItemOrderNum( $short_name ) {
+
+            global $wpdb;
+
+            $sql = "
+                SELECT MAX(item_order) as max_order
+                FROM {$this->_tables['items']}
+                WHERE short_name = '{$short_name}'
+            ";
+
+            $max_order = $wpdb->get_var( $sql );
+
+            // Increment value
+            $max_order++;
+
+            return $max_order;
+        }
         /**
          * @param string $sname - The short name for the check-in
          * @param string $fname - The full name for the check-in

@@ -40,6 +40,7 @@ jQuery(document).ready( function($) {
 
 
     })
+
     // Load the list of users selected by the Level ID currently active.
     $loadBtn.click( function() {
 

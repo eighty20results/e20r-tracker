@@ -18,6 +18,7 @@ class e20rTracker {
         $this->tables->checkin = $wpdb->prefix . 'e20r_checkin';
         $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
+        $this->tables->programs = $wpdb->prefix . 'e20r_programs';
 
         $this->clientData = new S3F_clientData();
         $this->checkinData = new E20Rcheckin();
@@ -29,7 +30,7 @@ class e20rTracker {
 
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_plotSW' ) );
 
-        add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_checkin_item' ) );
+        add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
         add_action( 'wp_ajax_e20r_clientDetail', array( &$this->clientData, 'ajax_clientDetail' ) );
         add_action( 'wp_ajax_e20r_complianceData', array( &$this->clientData, 'ajax_complianceData' ) );
         add_action( 'wp_ajax_e20r_assignmentsData', array( &$this->clientData, 'ajax_assignmentsData' ) );
@@ -164,6 +165,14 @@ class e20rTracker {
 
         dbg("e20r_tracker_activate() - Loading table SQL");
 
+        $programsTableSql = "
+            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_programs (
+                    id int not null auto_increment,
+                    program_name varchar(255) null,
+                    primary key (id) )
+                  {$charset_collate}
+        ";
+
         $intakeTableSql =
             "CREATE TABLE If NOT EXISTS {$wpdb->prefix}e20r_client_info (
                     id int not null auto_increment,
@@ -249,6 +258,7 @@ class e20rTracker {
         dbDelta( $checkinSql );
         dbDelta( $measurementTableSql );
         dbDelta( $intakeTableSql );
+        dbDelta( $programsTableSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
@@ -270,6 +280,7 @@ class e20rTracker {
             $wpdb->prefix . 'e20r_checkin',
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
+            $wpdb->prefix . 'e20r_programs',
         );
 
         if ( $deleteTables !== false) {
