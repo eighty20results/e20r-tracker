@@ -37,7 +37,7 @@ endif;
 if ( ! class_exists( 'E20Rcheckin' ) ):
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.E20Rcheckin.php" );
-//     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.exercise.php" );
+//     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.ExercisePrograms.php" );
 
 endif;
 

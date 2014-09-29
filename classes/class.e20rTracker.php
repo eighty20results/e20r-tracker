@@ -4,6 +4,7 @@ class e20rTracker {
 
     private $clientData;
     private $checkinData;
+    private $exercises;
 
     public $tables;
 
@@ -19,9 +20,12 @@ class e20rTracker {
         $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
         $this->tables->programs = $wpdb->prefix . 'e20r_programs';
+        $this->tables->sets = $wpdb->prefix . 'e20r_sets';
+        $this->tables->exercise = $wpdb->prefix . 'e20r_exercises';
 
         $this->clientData = new S3F_clientData();
         $this->checkinData = new E20Rcheckin();
+        $this->exercises = new ExercisePrograms();
 
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
 
@@ -169,21 +173,24 @@ class e20rTracker {
             CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_programs (
                     id int not null auto_increment,
                     program_name varchar(255) null,
+                    description mediumtext null,
                     starttime timestamp not null default current_timestamp,
                     endtime timestamp null,
                     primary key (id) )
                   {$charset_collate}
         ";
 
-        // TODO: Check that this is correct (check PN exercise matrix)
         $setsTableSql = "
             CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_sets (
                 id int not null auto_increment,
+                set_name varchar(50) null,
+                rounds int not null default 1,
+                set_rest int not null default 60,
                 program_id int not null default 0,
                 exercise_id int not null default 0,
-                repetitions int not null default 1,
-                set_rest int not null default 60,
-                primary key (id) )
+                primary key (id),
+                key exercises ( exercise_id asc ),
+                key programs ( program_id asc ) )
                 {$charset_collate}
         ";
 
@@ -193,12 +200,11 @@ class e20rTracker {
                 exercise_name varchar(100) not null default '',
                 description mediumtext null,
                 repetitions int not null default 10,
+                duration int null,
                 ex_rest int not null default 30,
                 primary key (id) )
                 {$charset_collate}
         ";
-
-        // TODO: Add "exercises" table
 
         $intakeTableSql =
             "CREATE TABLE If NOT EXISTS {$wpdb->prefix}e20r_client_info (
@@ -277,8 +283,6 @@ class e20rTracker {
 
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
-        dbg("SQL: " . $checkinSql );
-
         dbg('e20r_tracker_activate() - Creating tables in database');
         dbDelta( $itemsTableSql );
         dbDelta( $businessRulesSql );
@@ -286,6 +290,8 @@ class e20rTracker {
         dbDelta( $measurementTableSql );
         dbDelta( $intakeTableSql );
         dbDelta( $programsTableSql );
+        dbDelta( $setsTableSql );
+        dbDelta( $exercisesTableSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
@@ -308,6 +314,8 @@ class e20rTracker {
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
             $wpdb->prefix . 'e20r_programs',
+            $wpdb->prefix . 'e20r_sets',
+            $wpdb->prefix . 'e20r_exercises',
         );
 
         if ( $deleteTables !== false) {
