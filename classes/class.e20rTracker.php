@@ -169,9 +169,36 @@ class e20rTracker {
             CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_programs (
                     id int not null auto_increment,
                     program_name varchar(255) null,
+                    starttime timestamp not null default current_timestamp,
+                    endtime timestamp null,
                     primary key (id) )
                   {$charset_collate}
         ";
+
+        // TODO: Check that this is correct (check PN exercise matrix)
+        $setsTableSql = "
+            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_sets (
+                id int not null auto_increment,
+                program_id int not null default 0,
+                exercise_id int not null default 0,
+                repetitions int not null default 1,
+                set_rest int not null default 60,
+                primary key (id) )
+                {$charset_collate}
+        ";
+
+        $exercisesTableSql = "
+            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_exercises (
+                id int not null auto_increment,
+                exercise_name varchar(100) not null default '',
+                description mediumtext null,
+                repetitions int not null default 10,
+                ex_rest int not null default 30,
+                primary key (id) )
+                {$charset_collate}
+        ";
+
+        // TODO: Add "exercises" table
 
         $intakeTableSql =
             "CREATE TABLE If NOT EXISTS {$wpdb->prefix}e20r_client_info (
