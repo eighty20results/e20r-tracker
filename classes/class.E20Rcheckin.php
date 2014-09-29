@@ -19,9 +19,31 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
         } // end constructor
 
-        public function viewManageCheckinItems() {
+        public function viewManageCheckinItems( $itemId = null ) {
 
             dbg("Loading manage_checkin_items page");
+
+            // Fetch the Checkin Item we're looking to manage
+            if ( $itemId ) {
+                $item = $this->getItem( $itemId );
+            }
+
+            $programs = new e20rPrograms();
+
+            $prog_list = $programs->load_program_info(null, false);
+
+            if ( ! empty($item) ) {
+
+                $start = new DateTime( $item->startdate );
+                $end = new DateTime( $item->enddate );
+
+                $diff = $end->diff( $start );
+
+                $max = $diff->format( '%a' );
+            }
+            else {
+                $max = 14; // Default max if a habit is 14 days.
+            }
 
             ob_start();
             ?>
@@ -29,6 +51,47 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             <?php echo $this->checkinItemSelect(); ?>
             <hr />
             <div id="edit-checkin-items">
+                <form action="" method="post">
+                    <?php wp_nonce_field('e20r-tracker-data', 'e20r_tracker_edit_checkins'); ?>
+                    <div class="e20r-checkin-editform">
+                        <input type="hidden" name="hidden_e20r_checkin_item_id" id="hidden_e20r_checkin_item_id" value="<?php echo ( ( ! empty($item) ) ? $item->id : 0 ); ?>">
+                        <table id="e20r-manage-checkin-items">
+                            <tbody>
+                                <tr>
+                                    <!-- Load the list of available programs -->
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-short_name">Short name:</label></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-short_name" id="e20r_checkin_item_short_name" size="25" value="<?php echo ( ( ! empty($item->short_name) ) ? $item->short_name : null ); ?>"></td>
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-item_name">Descriptive name:</label></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-item_name" id="e20r_checkin_item_name" size="50" value="<?php echo ( ( ! empty($item->item_name) ) ? $item->item_name : null ); ?>" ></td>
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-startdate">Starts on:</label></td>
+                                    <td class="text-input"><input type="date" name="e20r-checkin-startdate" id="e20r_checkin_item_startdate" value="<?php echo ( ( ! empty($item->startdate) ) ? $item->startdate : null ); ?>" ></td>
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-enddate">Ends on:</label></td>
+                                    <td class="text-input"><input type="date" name="e20r-checkin-enddate" id="e20r_checkin_item_enddate" value="<?php echo ( ( ! empty($item->enddate) ) ? $item->enddate : null ); ?>" ></td>
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-item_order">Sort order:</label></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-item_order" id="e20r_checkin_item_order" size="4" value="<?php echo ( ( ! empty($item->item_order) ) ? $item->item_order : null ); ?>" ></td>
+                                </tr>
+                                <tr>
+                                    <td class="e20r-label"><label for="e20r-checkin-maxcount">Max check-in count:</label></td>
+                                    <td class="e20r-label"><input type="text" name="e20r-checkin-maxcount" id="e20r_checkin_maxcount" size="4" value="<?php echo ( ( ! empty($item->maxcount) ) ? $item->maxcount : 14 ); ?>" ></td>
+                                </tr>
+                                <tr>
+                                    <!-- select for choosing the membership type to tie this check-in to -->
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
             </div>
             <?php
             $html = ob_get_clean();
@@ -72,7 +135,7 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
         }
 
-        private function load_checkin_itemList( $cached = true ) {
+        private function load_checkin_itemList( $cached = true, $add_new = true ) {
 
             global $wpdb;
 
@@ -86,11 +149,18 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
             dbg(" SQL: " . $sql);
 
-            $data = new stdClass();
-            $data->id = 0;
-            $data->item_name = 'New Check-in Item';
+            if ( $add_new ) {
+                $data = new stdClass();
+                $data->id = 0;
+                $data->item_name = 'New Check-in Item';
 
-            return ( array( $data ) + $item_list );
+                return ( array( $data ) + $item_list );
+            }
+            else {
+                return $item_list;
+            }
+
+
         }
 
 

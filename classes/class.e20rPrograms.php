@@ -11,6 +11,7 @@ class e20rPrograms {
 
     public $_tables = array();
     private $programId = null;
+    private $type;
     private $programs;
     private $loadedTS;
 
@@ -29,7 +30,7 @@ class e20rPrograms {
         }
     }
 
-    public function load_program_info( $programId = null ) {
+    public function load_program_info( $programId = null, $add_new = true ) {
 
         global $wpdb;
 
@@ -52,21 +53,29 @@ class e20rPrograms {
             );
         }
 
-        $data = new stdClass();
-        $data->id = 0;
-        $data->program_name = 'Add a new program';
-
         $this->programs = $wpdb->get_results( $sql , OBJECT );
 
-        return ( array( $data ) + $this->programs );
+        // Do we want to be able to add new programs to the database
 
+        if ( $add_new ) {
+
+            $data = new stdClass();
+            $data->id = 0;
+            $data->program_name = 'Add a new program';
+
+            return ( array( $data ) + $this->programs );
+        }
+        else {
+            // Just give the list of existing programs.
+            return $this->programs;
+        }
     }
 
-    public function viewProgramSelectDropDown() {
+    public function viewProgramSelectDropDown( $add_new = true ) {
 
         // Generate a select box for the program and highlight the requested ProgramId
 
-        $this->programs = $this->load_program_info( null ); // Get all programs in the DB
+        $this->programs = $this->load_program_info( null, $add_new ); // Get all programs in the DB
 
         // Todo: create simple select box w/the program identified in $this->programId as 'selected'.
         ob_start();
@@ -94,7 +103,7 @@ class e20rPrograms {
 
     public function viewProgramEditSelect() {
 
-        $programs = $this->load_program_info(); // Load all programs & generate a select <div></div>
+        $programs = $this->load_program_info( null, true ); // Load all programs & generate a select <div></div>
 
         ob_start();
 

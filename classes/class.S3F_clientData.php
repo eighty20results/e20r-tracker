@@ -318,7 +318,10 @@ class S3F_clientData {
         // TODO: Pull data from appointments table and use Checkin tables for status(es)..?
 
         $billingInfo = $this->load_billing_data( $clientId );
+        $programData = $this->load_programs( $clientId );
+
         $appointments = $this->load_client_appointments( $clientId );
+
 
     }
 
@@ -471,13 +474,19 @@ class S3F_clientData {
 
     public function load_billing_data( $client_id = 0 ) {
 
-        // TODO: Build array (of stdClass objects?) containing the billing info for this client
+        // TODO: Build array wpdb objects containing the billing info for this client
         if ( $client_id == 0 ) {
 
             global $current_user;
 
             $client_id = $current_user->ID;
         }
+
+        // timestamp is the billing date, Stripe customer_id (hidden)
+        // gateway = stripe
+        // subscription_transaction_id == Stripe plan?
+        //
+
 
     }
 
@@ -607,7 +616,9 @@ class S3F_clientData {
     public function render_management_page() {
 
         $manage_checkin_items = new E20Rcheckin();
-        echo $manage_checkin_items->viewManageCheckinItems();
+        $data = $manage_checkin_items->viewManageCheckinItems();
+
+        echo $data;
     }
 
     public function render_meals_page() {
@@ -665,11 +676,16 @@ class S3F_clientData {
     }
 
     function ajax_complianceData() {
+
         dbg('Requesting Check-In details');
 
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
+
+        $checkins = new E20Rcheckin();
+
+
     }
 
     function ajax_assignmentsData() {
@@ -761,11 +777,14 @@ class S3F_clientData {
 
         global $wpdb;
 
+        $user_id = 62;
+        /*
         if ( $user_id == 0 ) {
 
             global $current_user;
             $user_id = $current_user->ID;
         }
+        */
 
         $customer_id = "cus_4iXJe8n4SR4phk"; // Test user
 
@@ -801,8 +820,9 @@ class S3F_clientData {
             dbg( "Stripe class is loaded" );
 
             try {
-                Stripe::setApiKey( pmpro_getOption( "stripe_secretkey" ) );
-                // Stripe::setApiKey( "sk_live_gjA9cX6TO1nxnjiY0Q7sglFd" );
+                // Stripe::setApiKey( pmpro_getOption( "stripe_secretkey" ) );
+                // Use test key & test user.
+                Stripe::setApiKey( "sk_test_J57vfoBXUGCNnJWY6gwuVt8I" );
             }
             catch ( Exception $e ) {
 
