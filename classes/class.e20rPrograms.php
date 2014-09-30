@@ -102,7 +102,6 @@ class e20rPrograms {
 
         $this->programs = $this->load_program_info( null, $add_new ); // Get all programs in the DB
 
-        // Todo: create simple select box w/the program identified in $this->programId as 'selected'.
         ob_start();
         ?>
         <label for="e20r_choose_programs">Program</label>
@@ -167,7 +166,6 @@ class e20rPrograms {
         // Fetch the Checkin Item we're looking to manage
         $program_list = $this->load_program_info( null, false );
 
-
         ob_start();
         ?>
         <H1>List of Programs</H1>
@@ -222,11 +220,11 @@ class e20rPrograms {
                             <tr id="<?php echo $pid; ?>" class="program-inputs">
 
                                 <td class="text-input"><input type="checkbox" name="edit_<?php echo $pid ?>" id="edit_<?php echo $pid ?>"></td>
-                                <td class="text-input"><input type="text" id="e20r-program_id_<?php echo $pid ?>" disabled="1" name="e20r_program_id" size="5" value="<?php echo ( ( ! empty( $program->id ) ) ? $program->id : null ); ?>"></td>
-                                <td class="text-input"><input type="text" id="e20r-program_name_<?php echo $pid ?>" disabled="1" name="e20r_program_name" size="25" value="<?php echo ( ( ! empty($program->program_name) ) ? $program->program_name : null ); ?>"></td>
-                                <td class="text-input"><input type="date" id="e20r-program-starttime_<?php echo $pid ?>" disabled="1" name="e20r_program_starttime" value="<?php echo $start; ?>"></td>
-                                <td class="text-input"><input type="date" id="e20r-program-endtime_<?php echo $pid ?>" disabled="1" name="e20r_program_endtime" value="<?php echo $end; ?>"></td>
-                                <td class="text-descr"><textarea class="expand" id="e20r-program-descr_<?php echo $pid ?>" disabled="1" name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea></td>
+                                <td class="text-input"><input type="text" id="e20r-program_id_<?php echo $pid ?>" disabled name="e20r_program_id" size="5" value="<?php echo ( ( ! empty( $program->id ) ) ? $program->id : null ); ?>"></td>
+                                <td class="text-input"><input type="text" id="e20r-program_name_<?php echo $pid ?>" disabled name="e20r_program_name" size="25" value="<?php echo ( ( ! empty($program->program_name) ) ? $program->program_name : null ); ?>"></td>
+                                <td class="text-input"><input type="date" id="e20r-program-starttime_<?php echo $pid ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>"></td>
+                                <td class="text-input"><input type="date" id="e20r-program-endtime_<?php echo $pid ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>"></td>
+                                <td class="text-descr"><textarea class="expand" id="e20r-program-descr_<?php echo $pid ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea></td>
                                 <td class="select-input"><!-- Insert membership type this program belongs to --></td>
                                 <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
                                 <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>"><a href="#save-edited-program" class="e20r-save-edit button">Save</a></td>
@@ -277,31 +275,39 @@ class e20rPrograms {
 
         global $wpdb, $current_user;
 
-        if ( user_can( $current_user->ID, 'manage-options' ) ) {
+        if ( current_user_can( 'manage_options' ) ) {
+
+            dbg("Has permission to update data");
 
             $tmp        = ( isset( $_POST['e20r_program_id'] ) ? $_POST['e20r_program_id'] : null );
             $program_id = is_numeric( $tmp ) ? intval( $tmp ) : sanitize_text_field( $_POST['e20r_program_id'] );
 
             $data = array(
                 'program_name' => ( isset( $_POST['e20r_program_name'] ) ? sanitize_text_field( $_POST['e20r_program_name'] ) : null ),
-                'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ),
-                'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ),
+                'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ) . " 00:00:00",
+                'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ) . " 00:00:00",
                 'description'  => ( isset( $_POST['e20r_program_descr'] ) ? sanitize_text_field( $_POST['e20r_program_descr'] ) : null ),
             );
 
             if ( $program_id == 'auto' ) {
                 // We'll add this data as a new program
+                dbg("We're adding: " . print_r( $data, true ) );
                 $wpdb->insert( $this->_tables['programs'], $data );
 
             }
             elseif ( is_numeric( $program_id ) ) {
 
+                dbg("We're updating: " . print_r( $data, true ) );
                 $where = array( 'id' => $program_id );
 
                 $wpdb->update( $this->_tables['programs'], $data, $where );
             }
 
             wp_send_json_success( $this->view_listPrograms() );
+        }
+        else {
+
+            wp_send_json_error('You do not have permission to add/edit programs' );
         }
     }
 } 
