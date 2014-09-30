@@ -292,7 +292,10 @@ class e20rPrograms {
             if ( $program_id == 'auto' ) {
                 // We'll add this data as a new program
                 $wpdb->insert( $this->_tables['programs'], $data );
-            } elseif ( is_numeric( $program_id ) ) {
+
+            }
+            elseif ( is_numeric( $program_id ) ) {
+
                 $where = array( 'id' => $program_id );
 
                 $wpdb->update( $this->_tables['programs'], $data, $where );
