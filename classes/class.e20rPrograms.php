@@ -300,6 +300,8 @@ class e20rPrograms {
 
                 $wpdb->update( $this->_tables['programs'], $data, $where );
             }
+
+            wp_send_json_success( $this->view_listPrograms() );
         }
     }
 } 
