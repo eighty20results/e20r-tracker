@@ -28,6 +28,13 @@ if (! class_exists( 'e20rPrograms' ) ):
 
 endif;
 
+
+if (! class_exists( 'ExercisePrograms' ) ):
+
+    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.ExercisePrograms.php" );
+
+endif;
+
 if ( ! class_exists( 'S3F_clientData' )):
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.S3F_clientData.php" );

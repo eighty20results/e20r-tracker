@@ -318,7 +318,8 @@ class S3F_clientData {
         // TODO: Pull data from appointments table and use Checkin tables for status(es)..?
 
         $billingInfo = $this->load_billing_data( $clientId );
-        $programData = $this->load_programs( $clientId );
+        $program_list = new e20rPrograms();
+        // $programData = $program_list->load_client_programs( $clientId );
 
         $appointments = $this->load_client_appointments( $clientId );
 
@@ -613,12 +614,28 @@ class S3F_clientData {
 
     }
 
-    public function render_management_page() {
+    public function render_new_item_page() {
 
         $manage_checkin_items = new E20Rcheckin();
-        $data = $manage_checkin_items->viewManageCheckinItems();
+        $data = $manage_checkin_items->view_AddNewCheckinItem();
 
         echo $data;
+    }
+
+    public function render_new_program_page() {
+        $programs = new e20rPrograms();
+
+        echo $programs->viewProgramEditSelect();
+
+    }
+    public function render_programs_page() {
+        $programs = new e20rPrograms();
+
+        ?><div id="e20r-program-list"><?php
+
+        echo $programs->view_listPrograms();
+
+        ?></div><?php
     }
 
     public function render_meals_page() {
@@ -629,7 +646,13 @@ class S3F_clientData {
 
         $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-        add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20-tracker-habit", array( &$this,'render_management_page'));
+        add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
+        add_submenu_page( 'e20r-tracker', __('Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this,'render_programs_page'));
+
+        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
+        add_submenu_page( 'e20r-tracker', __('Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this, 'render_items_page'));
+
+
         //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
 
 //        add_submenu_page( 'e20r-tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));

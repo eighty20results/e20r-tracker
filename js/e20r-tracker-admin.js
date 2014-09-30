@@ -3,6 +3,12 @@
 
 console.log("Loading back-end javascript script for e20r-tracker");
 
+var $old_Id;
+var $old_Name;
+var $old_startDate;
+var $old_endDate;
+var $old_Description;
+
 jQuery.noConflict();
 jQuery(document).ready( function($) {
 
@@ -17,6 +23,7 @@ jQuery(document).ready( function($) {
     var $assignBtn = $("#e20r-client-assignments");
     var $measureBtn = $("#e20r-client-measurements");
     var $loadBtn = $("#e20r-load-users");
+
 
     var $loadItem = $("#e20r-load-checkin-items");
 
@@ -54,6 +61,14 @@ jQuery(document).ready( function($) {
 
         $("#e20r_tracker_client").prop('disabled', false);
     })
+
+
+    $('.e20r-save-edit').click( function() {
+
+       // TODO: Implement AJAX save of edited program info.
+       console.log("Saving this edited row of program information.");
+
+    });
 
     $clientIdSelect.change( function() {
 
@@ -134,7 +149,140 @@ jQuery(document).ready( function($) {
 
     })
 
+    $('.program-inputs input:checkbox').click(function() {
+
+        console.log('Program List checkbox checked');
+
+        if ( $(this).is(':checked') ) {
+            jQuery('.e20r-save-col').show();
+            jQuery('.e20r-cancel-col').show();
+            console.log("Enabling edit of this line")
+
+            $(this).attr( 'checked', true);
+            enableEditProgram();
+        }
+        else {
+            console.log("Disabling edit of this line");
+            $(this).attr( 'checked', false);
+            disableEditProgram();
+        }
+
+        // $('input:checkbox').attr('checked', false);
+
+    });
+
+    $('#e20r-add-new-program').click(function() {
+
+        $('.add-new').hide();
+        $('#add-new-program').show();
+    });
+
+    $('#e20r-save-new-program').click(function() {
+        console.log("Save new program info to database - Ajax'ed");
+
+    })
+
+    $('#e20r-cancel-new-program').click( function() {
+        console.log("Clear & hide the new program row");
+
+        $('.add-new').show();
+        $('#add-new-program').hide();
+
+        /* Clear out any entries - we cancelled, remember...*/
+        $( '#e20r-program_name' ).val( null );
+        $( '#e20r-program-starttime' ).val( null );
+        $( '#e20r-program-endtime' ).val( null );
+        $( '#e20r-program-descr' ).val( null );
+
+    })
+
+    $('.e20r-cancel-edit').click( function() {
+
+        if ( $('#edit_' + $old_Id).is(':checked') ) {
+            console.log("Edit checkbox is checked, undo it.");
+            $('#edit_' + $old_Id).prop('checked', false);
+        }
+        // jQuery( '#e20r-program_id_' + $old_Id ).val($old_Id);
+        $( '#e20r-program_name_' + $old_Id ).val($old_Name);
+        $( '#e20r-program-starttime_' + $old_Id ).val($old_startDate);
+        $( '#e20r-program-endtime_' + $old_Id ).val($old_endDate);
+        $( '#e20r-program-descr_' + $old_Id ).val($old_Description);
+
+        disableEditProgram();
+    })
+
+    $('textarea.expand').focus( function() {
+
+        $(this).animate({height: "10em", width: "400px"}, 500);
+
+    });
+
+    $('textarea.expand').focusout( function() {
+
+        $(this).animate({height: "28px", width: "250px"}, 500);
+
+    });
+
+/*    $('input:checkbox').change( function() {
+
+        console.log("Processing the list of programs.")
+
+        var $checkedIds = $(":checkbox:checked").map(function() {
+            return this.id.split('_')[1];
+        }).get();
+
+    })
+ */
 });
+
+function enableEditProgram() {
+
+    var $checkedIds = jQuery(":checkbox:checked").map(function() {
+        return this.id.split('_')[1];
+    }).get();
+
+    jQuery.each( $checkedIds, function() {
+
+        $old_Id = jQuery( '#e20r-program_id_' + this ).val();
+        $old_Name = jQuery( '#e20r-program_name_' + this ).val();
+        $old_startDate = jQuery( '#e20r-program-starttime_' + this ).val();
+        $old_endDate = jQuery( '#e20r-program-endtime_' + this ).val();
+        $old_Description = jQuery( '#e20r-program-descr_' + this ).val();
+
+        jQuery( '#e20r-program_id_' + this ).prop("disabled", false);
+        jQuery( '#e20r-program_name_' + this ).prop("disabled", false);
+        jQuery( '#e20r-program-starttime_' + this ).prop("disabled", false );
+        jQuery( '#e20r-program-endtime_' + this ).prop("disabled", false );
+        jQuery( '#e20r-program-descr_' + this ).prop("disabled", false );
+        jQuery( '#e20r-td-save_' + this ).show();
+        jQuery( '#e20r-td-cancel_' + this).show();
+        // jQuery( '#e20r-edit-save_' + this ).show();
+    });
+
+}
+
+function disableEditProgram() {
+
+    var $unCheckedIds = jQuery(":checkbox:not(:checked)").map( function() {
+        return this.id.split('_')[1];
+    }).get();
+
+    if ($unCheckedIds.length == 0) {
+        jQuery('.e20r-save-col').hide();
+    }
+
+    jQuery.each( $unCheckedIds, function() {
+
+        /* Disable all input boxes */
+        jQuery( '#e20r-program_id_' + this ).prop("disabled", true );
+        jQuery( '#e20r-program_name_' + this ).prop("disabled", true );
+        jQuery( '#e20r-program-starttime_' + this ).prop("disabled", true );
+        jQuery( '#e20r-program-endtime_' + this ).prop("disabled", true );
+        jQuery( '#e20r-program-descr_' + this ).prop("disabled", true );
+        jQuery( '#e20r-td-save_' + this ).hide();
+        jQuery( '#e20r-td-cancel_' + this).hide();
+    });
+}
 
 function saveClientId( $oldClientId ) {
 
@@ -195,6 +343,49 @@ function loadMemberList( $levelId ) {
 
 }
 
+function saveProgram( $programArray ) {
+
+    jQuery.ajax({
+        url: e20r_tracker.ajaxurl,
+        type: 'POST',
+        timeout: 5000,
+        dataType: 'JSON',
+        data: {
+            action: 'save_program_info',
+            e20r_tracker_edit_programs_nonce: jQuery('#e20r_tracker_edit_programs').val(),
+            e20r_program_id: $programArray['id'],
+            e20r_program_name: $programArray['name'],
+            e20r_program_start: $programArray['start'],
+            e20r_program_end: $programArray['end'],
+            e20r_program_descr: $programArray['descr']
+        },
+        error: function (data) {
+            console.dir(data);
+            // alert(data);
+
+        },
+        success: function (data) {
+
+            // Refresh the sequence post list (include the new post.
+            if ( data.data !== '' ) {
+                jQuery('#e20r-program-list').html(data.data);
+            }
+
+        },
+        complete: function () {
+
+            // Enable the Save button again.
+            // saveBtn.removeAttr('disabled');
+
+            // Reset the text for the 'Save Settings" button
+            // saveBtn.html(e20r-tracker-admin.lang.saveSettings);
+
+            // Disable the spinner again
+            // jQuery('#load-new-programs').hide();
+            // $btn.removeAttr('disabled');
+        }
+    });
+}
 function e20r_LoadClientData( $type ) {
 
     console.log("e20r_LoadClientData");

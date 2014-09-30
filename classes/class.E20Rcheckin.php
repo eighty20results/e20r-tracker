@@ -19,9 +19,9 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
         } // end constructor
 
-        public function viewManageCheckinItems( $itemId = null ) {
+        public function view_AddNewCheckinItem( $itemId = null ) {
 
-            dbg("Loading manage_checkin_items page");
+            dbg("Loading add new checkin item page");
 
             // Fetch the Checkin Item we're looking to manage
             if ( $itemId ) {
@@ -29,8 +29,6 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             }
 
             $programs = new e20rPrograms();
-
-            $prog_list = $programs->load_program_info(null, false);
 
             if ( ! empty($item) ) {
 
@@ -58,7 +56,9 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
                         <table id="e20r-manage-checkin-items">
                             <tbody>
                                 <tr>
-                                    <!-- Load the list of available programs -->
+                                    <td class="e20r-loabel">Check-in belongs to:</td>
+                                    <td class="select-input"><?php echo $programs->programSelector( false ); ?></td>
+                                    <td><a class="e20r-choice-button button" href="<?php echo admin_url('admin.php?page=e20r-add-new-program'); ?>" target="_blank">Add new</a></td>
                                 </tr>
                                 <tr>
                                     <td class="e20r-label"><label for="e20r-checkin-short_name">Short name:</label></td>
@@ -92,6 +92,81 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
                         </table>
                     </div>
                 </form>
+            </div>
+            <?php
+            $html = ob_get_clean();
+
+            return $html;
+        }
+
+        public function view_manageCheckinItems() {
+
+            // Fetch the Checkin Item we're looking to manage
+            $item_list = $this->load_checkin_itemList( null, false );
+
+            $programs = new e20rPrograms();
+
+            if ( ! empty($item) ) {
+
+                $start = new DateTime( $item->startdate );
+                $end = new DateTime( $item->enddate );
+
+                $diff = $end->diff( $start );
+
+                $max = $diff->format( '%a' );
+            }
+            else {
+                $max = 14; // Default max if a habit is 14 days.
+            }
+
+            ob_start();
+            ?>
+            <H1>List of Check-In/Activity Items</H1>
+            <hr />
+            <div id="edit-checkin-items">
+                <?php if ( count($item_list) > 0) { ?>
+                    <form action="" method="post">
+                    <?php wp_nonce_field('e20r-tracker-data', 'e20r_tracker_edit_checkins'); ?>
+                    <div class="e20r-checkin-editform">
+                        <input type="hidden" name="hidden_e20r_checkin_item_id" id="hidden_e20r_checkin_item_id" value="<?php echo ( ( ! empty($item) ) ? $item->id : 0 ); ?>">
+                        <table id="e20r-manage-checkin-items">
+                            <thead>
+                                <tr>
+                                    <td class="e20r-label header">Program</td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-short_name">Short name:</label></td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-item_name">Name:</label></td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-startdate">Starts on:</label></td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-enddate">Ends on:</label></td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-item_order">Sort order:</label></td>
+                                    <td class="e20r-label header"><label for="e20r-checkin-maxcount">Max # of check-ins:</label></td>
+                                </tr>
+                                <tr>
+                                    <!-- select for choosing the membership type to tie this check-in to -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                        <?php
+                            foreach ($item_list as $item ) {
+                        ?>
+                                <tr>
+                                    <td class="select-input"><?php echo $programs->programSelector( false, $item->program_id ); ?></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-short_name" id="e20r_checkin_item_short_name" size="25" value="<?php echo ( ( ! empty($item->short_name) ) ? $item->short_name : null ); ?>"></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-item_name" id="e20r_checkin_item_name" size="50" value="<?php echo ( ( ! empty($item->item_name) ) ? $item->item_name : null ); ?>" ></td>
+                                    <td class="text-input"><input type="date" name="e20r-checkin-startdate" id="e20r_checkin_item_startdate" value="<?php echo ( ( ! empty($item->startdate) ) ? $item->startdate : null ); ?>" ></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-item_order" id="e20r_checkin_item_order" size="4" value="<?php echo ( ( ! empty($item->item_order) ) ? $item->item_order : null ); ?>" ></td>
+                                    <td class="text-input"><input type="date" name="e20r-checkin-enddate" id="e20r_checkin_item_enddate" value="<?php echo ( ( ! empty($item->enddate) ) ? $item->enddate : null ); ?>" ></td>
+                                    <td class="text-input"><input type="text" name="e20r-checkin-item_order" id="e20r_checkin_item_order" size="4" value="<?php echo ( ( ! empty($item->item_order) ) ? $item->item_order : null ); ?>" ></td>
+                                    <td class="select-input"><!-- Insert membership type this program belongs to --></td>
+                                    <td><a class="e20r-choice-button button" href="<?php echo admin_url('admin.php?page=e20r-edit-program'); ?>" target="_blank">Edit</a></td>
+                                </tr>
+                        <?php } ?>
+                                </tbody>
+                        </table>
+                    </div>
+                </form>
+        <?php } else { ?>
+            No programs found in the database. Please add one or more new programs first.
+        <?php } ?>
             </div>
             <?php
             $html = ob_get_clean();
@@ -192,8 +267,6 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
             wp_send_json_success( $html );
         }
-
-        // Ben Code: BenK-F0ED76527F
 
         public function getItem( $itemId ) {
 

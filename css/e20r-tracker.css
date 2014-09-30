@@ -115,3 +115,17 @@
 [type=radio]:checked ~ label ~ .content {
     z-index: 1;
 }
+
+.expand {
+    height: 28px;
+    min-width: 250px;
+    width: 250px;
+    max-width: 400px;
+    padding: 3px;
+}
+
+.text-input,
+.text-descr {
+    font-size: 12pt;
+    line-height: 1em;
+}

@@ -26,6 +26,7 @@ class e20rTracker {
         $this->clientData = new S3F_clientData();
         $this->checkinData = new E20Rcheckin();
         $this->exercises = new ExercisePrograms();
+        $this->programInfo = new e20rPrograms();
 
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
 
@@ -40,7 +41,7 @@ class e20rTracker {
         add_action( 'wp_ajax_e20r_assignmentsData', array( &$this->clientData, 'ajax_assignmentsData' ) );
         add_action( 'wp_ajax_e20r_measurementsData', array( &$this->clientData, 'ajax_measurementsData' ) );
         add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->clientData, 'ajax_getMemberlistForLevel' ) );
-
+        add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
         add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this->clientData, 'ajaxUnprivError' ) );
         add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this->clientData, 'ajaxUnprivError' ) );
         add_action( 'wp_ajax_nopriv_e20r_assignmentsData', array( &$this->clientData, 'ajaxUnprivError' ) );
