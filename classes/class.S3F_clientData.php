@@ -399,7 +399,7 @@ class S3F_clientData {
                         <input type="radio" id="girth-tab" name="tab-group-1" checked>
                         <label for="girth-tab">Total Girth</label>
 
-                        <div class="content">
+                        <div class="tab-content">
                             <div id="girth_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>;width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
                         </div>
                     </div>
@@ -408,7 +408,7 @@ class S3F_clientData {
                         <input type="radio" id="weight-tab" name="tab-group-1" checked>
                         <label for="weight-tab">Weight History</label>
 
-                        <div class="content">
+                        <div class="tab-content">
                             <div id="weight_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>; width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
                         </div>
                     </div>
