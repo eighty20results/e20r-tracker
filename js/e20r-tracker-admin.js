@@ -63,23 +63,11 @@ jQuery(document).ready( function($) {
     })
 
 
-    $('.e20r-save-edit').click( function() {
-
-       // TODO: Implement AJAX save of edited program info.
-       console.log("Saving this edited row of program information.");
-
-    });
-
     $clientIdSelect.change( function() {
 
         console.log("Client to find changed");
         saveClientId( $oldClientId );
-/*
-        $detailBtn.prop('disabled', false);
-        $complianceBtn.prop('disabled', false);
-        $assignBtn.prop('disabled', false);
-        $measureBtn.prop('disabled', false);
-*/
+
     });
 
     $loadItem.click( function() {
@@ -94,13 +82,6 @@ jQuery(document).ready( function($) {
 
     $detailBtn.click( function() {
 
-        /*
-        // Flip all the buttons
-        $detailBtn.prop('disabled', false);
-        $complianceBtn.prop('disabled', false);
-        $assignBtn.prop('disabled', false);
-        $measureBtn.prop('disabled', false);
-        */
         // saveClientId($oldClientId);
         e20r_LoadClientData('info');
         saveClientId( $oldClientId );
@@ -108,13 +89,7 @@ jQuery(document).ready( function($) {
     })
 
     $complianceBtn.click( function() {
-        /*
-        // Flip all the buttons
-        $detailBtn.prop('disabled', false);
-        $complianceBtn.prop('disabled', false);
-        $assignBtn.prop('disabled', false);
-        $measureBtn.prop('disabled', false);
-        */
+
         // saveClientId($oldClientId);
         e20r_LoadClientData('compliance');
         saveClientId( $oldClientId );
@@ -122,13 +97,7 @@ jQuery(document).ready( function($) {
     })
 
     $assignBtn.click( function() {
-        /*
-        // Flip all the buttons
-        $detailBtn.prop('disabled', false);
-        $complianceBtn.prop('disabled', false);
-        $assignBtn.prop('disabled', false);
-        $measureBtn.prop('disabled', false);
-        */
+
         // saveClientId($oldClientId);
         e20r_LoadClientData('assignments');
         saveClientId( $oldClientId );
@@ -136,13 +105,7 @@ jQuery(document).ready( function($) {
     })
 
     $measureBtn.click( function() {
-        /*
-        // Flip all the buttons
-        $detailBtn.prop('disabled', false);
-        $complianceBtn.prop('disabled', false);
-        $assignBtn.prop('disabled', false);
-        $measureBtn.prop('disabled', false);
-        */
+
         // saveClientId($oldClientId);
         e20r_LoadClientData('measurements');
         saveClientId( $oldClientId );
@@ -154,6 +117,7 @@ jQuery(document).ready( function($) {
         console.log('Program List checkbox checked');
 
         if ( $(this).is(':checked') ) {
+
             jQuery('.e20r-save-col').show();
             jQuery('.e20r-cancel-col').show();
             console.log("Enabling edit of this line")
@@ -162,6 +126,7 @@ jQuery(document).ready( function($) {
             enableEditProgram();
         }
         else {
+
             console.log("Disabling edit of this line");
             $(this).attr( 'checked', false);
             disableEditProgram();
@@ -175,14 +140,48 @@ jQuery(document).ready( function($) {
 
         $('.add-new').hide();
         $('#add-new-program').show();
+
     });
 
     $('#e20r-save-new-program').click(function() {
+
         console.log("Save new program info to database - Ajax'ed");
 
-    })
+        var $programInfo = new Array();
+
+        $programInfo['id'] = $( '#e20r-program_id' ).val();
+        $programInfo['name'] = $( '#e20r-program_name' ).val();
+        $programInfo['start'] = $( '#e20r-program-starttime' ).val();
+        $programInfo['end'] = $( '#e20r-program-endtime' ).val();
+        $programInfo['descr'] = $( '#e20r-program-descr' ).val();
+
+        console.dir($programInfo);
+
+        saveProgram( $programInfo );
+
+    });
+
+    $('.e20r-save-edit').click( function() {
+
+
+        var $programInfo = new Array();
+
+        // Get the ID to use for the edited input boxes
+        var $id = $(this).parent().attr("id").split('_')[1];
+
+        $programInfo['id'] = $( '#e20r-program_id_' + $id ).val();
+        $programInfo['name'] = $( '#e20r-program_name_' + $id ).val();
+        $programInfo['start'] = $( '#e20r-program-starttime_' + $id ).val();
+        $programInfo['end'] = $( '#e20r-program-endtime_' + $id ).val();
+        $programInfo['descr'] = $( '#e20r-program-descr_' + $id ).val();
+
+        console.dir($programInfo);
+        saveProgram( $programInfo );
+
+    });
 
     $('#e20r-cancel-new-program').click( function() {
+
         console.log("Clear & hide the new program row");
 
         $('.add-new').show();
@@ -202,6 +201,7 @@ jQuery(document).ready( function($) {
             console.log("Edit checkbox is checked, undo it.");
             $('#edit_' + $old_Id).prop('checked', false);
         }
+
         // jQuery( '#e20r-program_id_' + $old_Id ).val($old_Id);
         $( '#e20r-program_name_' + $old_Id ).val($old_Name);
         $( '#e20r-program-starttime_' + $old_Id ).val($old_startDate);
@@ -361,7 +361,7 @@ function saveProgram( $programArray ) {
         },
         error: function (data) {
             console.dir(data);
-            // alert(data);
+            alert( data.msg );
 
         },
         success: function (data) {
@@ -369,6 +369,7 @@ function saveProgram( $programArray ) {
             // Refresh the sequence post list (include the new post.
             if ( data.data !== '' ) {
                 jQuery('#e20r-program-list').html(data.data);
+                console.log("Data returned from save program functionality");
             }
 
         },
