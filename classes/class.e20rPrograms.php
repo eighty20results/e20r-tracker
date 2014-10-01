@@ -269,7 +269,7 @@ class e20rPrograms {
                                 <td colspan="7"><hr/></td>
                             </tr>
                             <tr>
-                                <td colspan="2" class="add-new" style="text-align: left;"><a class="e20r-button button" id="e20r-add-new-program" href="#new-program">Add New</a></td>
+                                <td colspan="2" class="add-new" style="text-align: left;"><a class="e20r-button button" id="e20r-add-new-program" href="#">Add New</a></td>
                             </tr>
                             <tr id="add-new-program" class="hidden">
                                 <td class="text-input"><input type="checkbox" disabled name="edit" id="edit"></td>
@@ -309,7 +309,7 @@ class e20rPrograms {
             }
             else {
 
-                ?><select name="e20r-memberships" id="e20r-memberships" disabled><?php
+                ?><select name="e20r-memberships" id="e20r-memberships"><?php
             }
 
             foreach ( $levels as $level ) { ?>
