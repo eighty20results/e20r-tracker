@@ -27,7 +27,7 @@ jQuery(document).ready( function($) {
 
     var $loadItem = $("#e20r-load-checkin-items");
 
-    $levelIdSelect.change( function() {
+    $(document).on("change", "#e20r_levels", function() {
 
         $detailBtn.prop('disabled', true);
         $complianceBtn.prop('disabled', true);
@@ -46,10 +46,10 @@ jQuery(document).ready( function($) {
         $measureBtn.prop('disabled', false);
 
 
-    })
+    });
 
     // Load the list of users selected by the Level ID currently active.
-    $loadBtn.click( function() {
+    $(document).on("click", "#e20r-load-users", function() {
 
         $("#e20r_tracker_client").prop('disabled', true);
 
@@ -60,17 +60,17 @@ jQuery(document).ready( function($) {
         loadMemberList( $levelId );
 
         $("#e20r_tracker_client").prop('disabled', false);
-    })
+    });
 
 
-    $clientIdSelect.change( function() {
+    $(document).on("change", "#e20r_tracker_client",function() {
 
         console.log("Client to find changed");
         saveClientId( $oldClientId );
 
     });
 
-    $loadItem.click( function() {
+    $(document).on("click", "#e20r-load-checkin-items", function() {
 
         $loadItem.prop('disabled', true);
         jQuery('#spin-for-checkin-item').show();
@@ -80,7 +80,7 @@ jQuery(document).ready( function($) {
         $loadItem.prop('disabled', false);
     })
 
-    $detailBtn.click( function() {
+    $(document).on("click","#e20r-client-info", function() {
 
         // saveClientId($oldClientId);
         e20r_LoadClientData('info');
@@ -88,7 +88,7 @@ jQuery(document).ready( function($) {
 
     })
 
-    $complianceBtn.click( function() {
+    $(document).on("click", "#e20r-client-compliance", function() {
 
         // saveClientId($oldClientId);
         e20r_LoadClientData('compliance');
@@ -96,7 +96,7 @@ jQuery(document).ready( function($) {
 
     })
 
-    $assignBtn.click( function() {
+    $(document).on("click", "#e20r-client-assignments", function() {
 
         // saveClientId($oldClientId);
         e20r_LoadClientData('assignments');
@@ -104,7 +104,7 @@ jQuery(document).ready( function($) {
 
     })
 
-    $measureBtn.click( function() {
+    $(document).on("click", "#e20r-client-measurements", function() {
 
         // saveClientId($oldClientId);
         e20r_LoadClientData('measurements');
@@ -145,10 +145,7 @@ jQuery(document).ready( function($) {
         $('#add-new-program').show();
 
     });
-/*    $('#e20r-add-new-program').click(function() {
 
-    });
-*/
     $(document).on( "click", '#e20r-save-new-program', function() {
 
         console.log("Save new program info to database - Ajax'ed");
@@ -166,11 +163,6 @@ jQuery(document).ready( function($) {
         saveProgram( $programInfo );
     });
 
-/*    $('#e20r-save-new-program').click(function() {
-
-
-    });
-*/
     $(document).on( "click", '.e20r-save-edit', function() {
         var $programInfo = new Array();
 
@@ -187,11 +179,7 @@ jQuery(document).ready( function($) {
         saveProgram( $programInfo );
 
     });
-/*    $('.e20r-save-edit').click( function() {
 
-
-    });
-*/
     $(document).on( "click", '#e20r-cancel-new-program', function() {
         console.log("Clear & hide the new program row");
 
@@ -205,11 +193,7 @@ jQuery(document).ready( function($) {
         $( '#e20r-program-descr' ).val( null );
 
     });
-/*    $('#e20r-cancel-new-program').click( function() {
 
-
-    });
-*/
     $(document).on( "click", '.e20r-cancel-edit', function() {
         if ( $('#edit_' + $old_Id).is(':checked') ) {
             console.log("Edit checkbox is checked, undo it.");
@@ -226,17 +210,13 @@ jQuery(document).ready( function($) {
 
     })
 
-/*    $('.e20r-cancel-edit').click( function() {
-
-    })
-*/
-    $('textarea.expand').focus( function() {
+    $(document).on("focus", 'textarea.expand', function() {
 
         $(this).animate({height: "10em", width: "400px"}, 500);
 
     });
 
-    $('textarea.expand').focusout( function() {
+    $(document).on("focusout", 'textarea.expand', function() {
 
         $(this).animate({height: "28px", width: "250px"}, 500);
 
