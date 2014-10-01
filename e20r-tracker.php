@@ -29,6 +29,12 @@ if (! class_exists( 'e20rPrograms' ) ):
 endif;
 
 
+if ( ! class_exists( 'E20Rcheckin' ) ):
+
+    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.E20Rcheckin.php" );
+
+endif;
+
 if (! class_exists( 'ExercisePrograms' ) ):
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.ExercisePrograms.php" );
@@ -41,12 +47,6 @@ if ( ! class_exists( 'S3F_clientData' )):
 
 endif;
 
-if ( ! class_exists( 'E20Rcheckin' ) ):
-
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.E20Rcheckin.php" );
-//     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.ExercisePrograms.php" );
-
-endif;
 
 
 global $e20r_db_version;
