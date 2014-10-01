@@ -166,7 +166,6 @@ class e20rPrograms {
         // Fetch the Checkin Item we're looking to manage
         $program_list = $this->load_program_info( null, false );
 
-        // TODO: Figure out why the javascript stops working after returning from the save operation.
         ob_start();
         ?>
         <H1>List of Programs</H1>
