@@ -112,7 +112,7 @@ jQuery(document).ready( function($) {
 
     })
 
-    $('.program-inputs input:checkbox').click(function() {
+    $( document).on( "click", '.program-inputs input:checkbox', function() {
 
         console.log('Program List checkbox checked');
 
@@ -133,17 +133,23 @@ jQuery(document).ready( function($) {
         }
 
         // $('input:checkbox').attr('checked', false);
+    });
+/*
+    $('.program-inputs input:checkbox').click(function() {
 
     });
-
-    $('#e20r-add-new-program').click(function() {
+*/
+    $(document).on( "click", '#e20r-add-new-program', function() {
 
         $('.add-new').hide();
         $('#add-new-program').show();
 
     });
+/*    $('#e20r-add-new-program').click(function() {
 
-    $('#e20r-save-new-program').click(function() {
+    });
+*/
+    $(document).on( "click", '#e20r-save-new-program', function() {
 
         console.log("Save new program info to database - Ajax'ed");
 
@@ -158,12 +164,14 @@ jQuery(document).ready( function($) {
         console.dir($programInfo);
 
         saveProgram( $programInfo );
-
     });
 
-    $('.e20r-save-edit').click( function() {
+/*    $('#e20r-save-new-program').click(function() {
 
 
+    });
+*/
+    $(document).on( "click", '.e20r-save-edit', function() {
         var $programInfo = new Array();
 
         // Get the ID to use for the edited input boxes
@@ -179,9 +187,12 @@ jQuery(document).ready( function($) {
         saveProgram( $programInfo );
 
     });
+/*    $('.e20r-save-edit').click( function() {
 
-    $('#e20r-cancel-new-program').click( function() {
 
+    });
+*/
+    $(document).on( "click", '#e20r-cancel-new-program', function() {
         console.log("Clear & hide the new program row");
 
         $('.add-new').show();
@@ -193,10 +204,13 @@ jQuery(document).ready( function($) {
         $( '#e20r-program-endtime' ).val( null );
         $( '#e20r-program-descr' ).val( null );
 
-    })
+    });
+/*    $('#e20r-cancel-new-program').click( function() {
 
-    $('.e20r-cancel-edit').click( function() {
 
+    });
+*/
+    $(document).on( "click", '.e20r-cancel-edit', function() {
         if ( $('#edit_' + $old_Id).is(':checked') ) {
             console.log("Edit checkbox is checked, undo it.");
             $('#edit_' + $old_Id).prop('checked', false);
@@ -209,8 +223,13 @@ jQuery(document).ready( function($) {
         $( '#e20r-program-descr_' + $old_Id ).val($old_Description);
 
         disableEditProgram();
+
     })
 
+/*    $('.e20r-cancel-edit').click( function() {
+
+    })
+*/
     $('textarea.expand').focus( function() {
 
         $(this).animate({height: "10em", width: "400px"}, 500);

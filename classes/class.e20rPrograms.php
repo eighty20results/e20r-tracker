@@ -189,6 +189,7 @@ class e20rPrograms {
                             <td class="e20r-label header hidden"><!-- Hidden ID--></td>
                             <td class="e20r-save-col hidden"></td>
                             <td class="e20r-cancel-col hidden"></td>
+                            <td class="e20r-delete-col hidden"></td>
                         </tr>
                         <tr>
                             <!-- select for choosing the membership type to tie this check-in to -->
@@ -230,6 +231,7 @@ class e20rPrograms {
                                 <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
                                 <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>"><a href="#save-edited-program" class="e20r-save-edit button">Save</a></td>
                                 <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php echo $pid; ?>"><a href="#" class="e20r-cancel-edit button">Cancel</a></td>
+                                <td class="hidden delete-button-row" id="e20r-td-delete_<?php echo $pid; ?>"><a href="#" class="e20r-cancel-delete button">Remove</a></td>
                             </tr>
                         <?php } ?>
                         </tbody>
@@ -251,6 +253,7 @@ class e20rPrograms {
                                 <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
                                 <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#save-new-program">Save</a></td>
                                 <td class="cancel"><a class="e20r-button button" id="e20r-cancel-new-program" href="#">Cancel</a></td>
+                                <td class="hidden"><!-- Nothing here, it's for the delete/remove button --></td>
                             </tr>
                             </tfoot>
                     </table>
