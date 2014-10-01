@@ -261,6 +261,14 @@ jQuery(document).ready( function($) {
 
     })
  */
+
+    $(document).on( "click", '#e20r-add-new-item', function() {
+
+        $('.add-new').hide();
+        $('#add-new-checkin-item').show();
+
+    });
+
 });
 
 function getCheckboxWithStatus( $status ) {
