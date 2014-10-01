@@ -177,19 +177,20 @@ class e20rPrograms {
                     <table id="e20r-list-programs-table">
                         <thead>
                         <tr>
-                            <td class="e20r-label header"><label for="e20r-program_id">Edit</label></td>
-                            <td class="e20r-label header"><label for="e20r-program_id">ID</label></td>
-                            <td class="e20r-label header"><label for="e20r-program_name">Name</label></td>
-                            <td class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></td>
-                            <td class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></td>
-                            <td class="e20r-label header"><label for="e20r-program-descr">Description</label></td>
-                            <td class="e20r-label header"><label for="e20r-memberships">Belongs to (Membership)</label></td>
-                            <td class="e20r-save-col hidden">Save</td>
-                            <td class="e20r-cancel-col hidden">Cancel</td>
-                            <td class="e20r-delete-col hidden">Remove</td>
-                            <td class="e20r-label header hidden"></td>
+                            <th class="e20r-label header"><label for="e20r-program_id">Edit</label></th>
+                            <th class="e20r-label header"><label for="e20r-program_id">ID</label></th>
+                            <th class="e20r-label header"><label for="e20r-program_name">Name</label></th>
+                            <th class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></th>
+                            <th class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></th>
+                            <th class="e20r-label header"><label for="e20r-program-descr">Description</label></th>
+                            <th class="e20r-label header"><label for="e20r-memberships">Belongs to (Membership)</label></th>
+                            <th class="e20r-save-col hidden">Save</td>
+                            <th class="e20r-cancel-col hidden">Cancel</td>
+                            <th class="e20r-delete-col hidden">Remove</td>
+                            <th class="e20r-label header hidden"></td>
                         </tr>
                         <tr>
+                            <td colspan="11"><hr/></td>
                             <!-- select for choosing the membership type to tie this check-in to -->
                         </tr>
                         </thead>
@@ -258,7 +259,7 @@ class e20rPrograms {
                         }
                         else { ?>
                             <tr>
-                                <td colspan="7">No programs found in the database. Please add a new program first.</td>
+                                <td colspan="7">No programs found in the database. Please add a new program by clicking the "Add New" button.</td>
                             </tr><?php
                         }
                         ?>
@@ -271,14 +272,14 @@ class e20rPrograms {
                                 <td colspan="2" class="add-new" style="text-align: left;"><a class="e20r-button button" id="e20r-add-new-program" href="#new-program">Add New</a></td>
                             </tr>
                             <tr id="add-new-program" class="hidden">
-                                <td class="text-input"><input type="checkbox" disabled="yes" name="edit" id="edit"></td>
+                                <td class="text-input"><input type="checkbox" disabled name="edit" id="edit"></td>
                                 <td class="text-input"><input type="text" id="e20r-program_id" name="e20r_program_id" disabled size="5" value="auto"></td>
                                 <td class="text-input"><input type="text" id="e20r-program_name" name="e20r_program_name" size="25" value=""></td>
                                 <td class="text-input"><input type="date" id="e20r-program-starttime" name="e20r_program_starttime" value=""></td>
                                 <td class="text-input"><input type="date" id="e20r-program-endtime" name="e20r_program_endtime" value=""></td>
                                 <td class="text-descr"><textarea class="expand" id="e20r-program-descr" name="e20r_program_descr" rows="1" wrap="soft"></textarea></td>
                                 <td class="select-input"><?php echo $this->view_selectMemberships( 0, null ); ?></td>
-                                <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#save-new-program">Save</a></td>
+                                <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#">Save</a></td>
                                 <td class="cancel"><a class="e20r-button button" id="e20r-cancel-new-program" href="#">Cancel</a></td>
                                 <td class="hidden"><!-- Nothing here, it's for the delete/remove button --></td>
                                 <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
