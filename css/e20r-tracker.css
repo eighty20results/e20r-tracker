@@ -112,7 +112,7 @@
     z-index: 2;
 }
 
-[type=radio]:checked ~ label ~ .content {
+[type=radio]:checked ~ label ~ .tab-content {
     z-index: 1;
 }
 
