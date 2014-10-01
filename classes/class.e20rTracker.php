@@ -179,6 +179,7 @@ class e20rTracker {
                     description mediumtext null,
                     starttime timestamp not null default current_timestamp,
                     endtime timestamp null,
+                    member_id int null,
                     primary key (id) )
                   {$charset_collate}
         ";

@@ -170,7 +170,6 @@ class e20rPrograms {
         ?>
         <H1>List of Programs</H1>
         <hr />
-        <?php if ( count($program_list) > 0) { ?>
             <form action="" method="post">
                 <?php wp_nonce_field('e20r-tracker-data', 'e20r_tracker_edit_programs'); ?>
                 <div class="e20r-editform">
@@ -184,11 +183,11 @@ class e20rPrograms {
                             <td class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></td>
                             <td class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></td>
                             <td class="e20r-label header"><label for="e20r-program-descr">Description</label></td>
-                            <td class="e20r-label header hidden">Program</td>
-                            <td class="e20r-label header hidden"><!-- Hidden ID--></td>
-                            <td class="e20r-save-col hidden"></td>
-                            <td class="e20r-cancel-col hidden"></td>
-                            <td class="e20r-delete-col hidden"></td>
+                            <td class="e20r-label header"><label for="e20r-memberships">Belongs to (Membership)</label></td>
+                            <td class="e20r-save-col hidden">Save</td>
+                            <td class="e20r-cancel-col hidden">Cancel</td>
+                            <td class="e20r-delete-col hidden">Remove</td>
+                            <td class="e20r-label header hidden"></td>
                         </tr>
                         <tr>
                             <!-- select for choosing the membership type to tie this check-in to -->
@@ -196,43 +195,73 @@ class e20rPrograms {
                         </thead>
                         <tbody>
                         <?php
-                        foreach ($program_list as $program ) {
+
+                        if ( count($program_list) > 0) {
+
+                            foreach ($program_list as $program) {
 
                             if ( is_null( $program->starttime ) ) {
                                 $start = '';
-                            }
-                            else {
+                            } else {
                                 $start = new DateTime( $program->starttime );
                                 $start = $start->format( 'Y-m-d' );
                             }
 
                             if ( is_null( $program->endtime ) ) {
                                 $end = '';
-                            }
-                            else {
+                            } else {
                                 $end = new DateTime( $program->endtime );
                                 $end = $end->format( 'Y-m-d' );
                             }
 
                             $pid = $program->id;
 
-                            dbg("Program - Start: {$start}, End: {$end}");
+                            dbg( "Program - Start: {$start}, End: {$end}" );
                             ?>
                             <tr id="<?php echo $pid; ?>" class="program-inputs">
-
-                                <td class="text-input"><input type="checkbox" name="edit_<?php echo $pid ?>" id="edit_<?php echo $pid ?>"></td>
-                                <td class="text-input"><input type="text" id="e20r-program_id_<?php echo $pid ?>" disabled name="e20r_program_id" size="5" value="<?php echo ( ( ! empty( $program->id ) ) ? $program->id : null ); ?>"></td>
-                                <td class="text-input"><input type="text" id="e20r-program_name_<?php echo $pid ?>" disabled name="e20r_program_name" size="25" value="<?php echo ( ( ! empty($program->program_name) ) ? $program->program_name : null ); ?>"></td>
-                                <td class="text-input"><input type="date" id="e20r-program-starttime_<?php echo $pid ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>"></td>
-                                <td class="text-input"><input type="date" id="e20r-program-endtime_<?php echo $pid ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>"></td>
-                                <td class="text-descr"><textarea class="expand" id="e20r-program-descr_<?php echo $pid ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea></td>
-                                <td class="select-input"><!-- Insert membership type this program belongs to --></td>
-                                <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
-                                <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>"><a href="#save-edited-program" class="e20r-save-edit button">Save</a></td>
-                                <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php echo $pid; ?>"><a href="#" class="e20r-cancel-edit button">Cancel</a></td>
-                                <td class="hidden delete-button-row" id="e20r-td-delete_<?php echo $pid; ?>"><a href="#" class="e20r-cancel-delete button">Remove</a></td>
+                                <td class="text-input">
+                                    <input type="checkbox" name="edit_<?php echo $pid ?>" id="edit_<?php echo $pid ?>">
+                                </td>
+                                <td class="text-input">
+                                    <input type="text" id="e20r-program_id_<?php echo $pid ?>" disabled name="e20r_program_id" size="5" value="<?php echo( ( ! empty( $program->id ) ) ? $program->id : null ); ?>">
+                                </td>
+                                <td class="text-input">
+                                    <input type="text" id="e20r-program_name_<?php echo $pid ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
+                                </td>
+                                <td class="text-input">
+                                    <input type="date" id="e20r-program-starttime_<?php echo $pid ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>">
+                                </td>
+                                <td class="text-input">
+                                    <input type="date" id="e20r-program-endtime_<?php echo $pid ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>">
+                                </td>
+                                <td class="text-descr">
+                                    <textarea class="expand" id="e20r-program-descr_<?php echo $pid ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
+                                </td>
+                                <td class="select-input">
+                                    <?php echo $this->view_selectMemberships( $program->member_id, $pid ); ?>
+                                </td>
+                                <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>">
+                                    <a href="#" class="e20r-save-edit button">Save</a>
+                                </td>
+                                <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php echo $pid; ?>">
+                                    <a href="#" class="e20r-cancel-edit button">Cancel</a>
+                                </td>
+                                <td class="hidden delete-button-row" id="e20r-td-delete_<?php echo $pid; ?>">
+                                    <a href="#" class="e20r-delete button">Remove</a>
+                                </td>
+                                <td class="hidden-input">
+                                    <input type="hidden" class="hidden_id" value="<?php echo $pid; ?>">
+                                </td>
                             </tr>
-                        <?php } ?>
+                            <?php
+                            }
+                        }
+                        else { ?>
+                            <tr>
+                                <td colspan="7">No programs found in the database. Please add a new program first.</td>
+                            </tr><?php
+                        }
+                        ?>
                         </tbody>
                         <tfoot>
                             <tr>
@@ -248,22 +277,49 @@ class e20rPrograms {
                                 <td class="text-input"><input type="date" id="e20r-program-starttime" name="e20r_program_starttime" value=""></td>
                                 <td class="text-input"><input type="date" id="e20r-program-endtime" name="e20r_program_endtime" value=""></td>
                                 <td class="text-descr"><textarea class="expand" id="e20r-program-descr" name="e20r_program_descr" rows="1" wrap="soft"></textarea></td>
-                                <td class="select-input"><!-- Insert membership type this program belongs to --></td>
-                                <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
+                                <td class="select-input"><?php echo $this->view_selectMemberships( 0, null ); ?></td>
                                 <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#save-new-program">Save</a></td>
                                 <td class="cancel"><a class="e20r-button button" id="e20r-cancel-new-program" href="#">Cancel</a></td>
                                 <td class="hidden"><!-- Nothing here, it's for the delete/remove button --></td>
+                                <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
                             </tr>
                             </tfoot>
                     </table>
 
                 </div>
             </form>
-        <?php } else { ?>
-            No programs found in the database. Please add one or more new programs first.
-        <?php } ?>
         <?php
         $html = ob_get_clean();
+
+        return $html;
+    }
+
+    public function view_selectMemberships( $mId, $rowId = null ) {
+
+        if ( function_exists( 'pmpro_getAllLevels' ) ) {
+
+           $levels = pmpro_getAllLevels(false, true);
+
+            ob_start();
+
+            if ( ! empty( $rowId ) ) {
+
+                ?><select name="e20r-memberships_<?php echo $rowId; ?>" id="e20r-memberships_<?php echo $rowId; ?>" disabled><?php
+            }
+            else {
+
+                ?><select name="e20r-memberships" id="e20r-memberships" disabled><?php
+            }
+
+            foreach ( $levels as $level ) { ?>
+
+                <option value="<?php echo esc_attr( $level->id ); ?>" <?php selected( $level->id, $mId ); ?>><?php echo esc_attr( $level->name ); ?></option><?php
+            } ?>
+
+            </select>
+            <?php
+            $html = ob_get_clean();
+        }
 
         return $html;
     }
@@ -285,32 +341,54 @@ class e20rPrograms {
             $tmp        = ( isset( $_POST['e20r_program_id'] ) ? $_POST['e20r_program_id'] : null );
             $program_id = is_numeric( $tmp ) ? intval( $tmp ) : sanitize_text_field( $_POST['e20r_program_id'] );
 
-            $data = array(
-                'program_name' => ( isset( $_POST['e20r_program_name'] ) ? sanitize_text_field( $_POST['e20r_program_name'] ) : null ),
-                'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ) . " 00:00:00",
-                'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ) . " 00:00:00",
-                'description'  => ( isset( $_POST['e20r_program_descr'] ) ? sanitize_text_field( $_POST['e20r_program_descr'] ) : null ),
-            );
+            dbg( "Delete: " . $_POST['e20r_program_delete'] );
 
-            if ( $program_id == 'auto' ) {
-                // We'll add this data as a new program
-                dbg("We're adding: " . print_r( $data, true ) );
-                $wpdb->insert( $this->_tables['programs'], $data );
+            $delete_only = ( ( isset( $_POST['e20r_program_delete'] ) && ( esc_attr( $_POST['e20r_program_delete'] ) == 'true' ) ) ? true : false );
 
+            if ( ! $delete_only ) {
+
+                $data = array(
+                    'program_name' => ( isset( $_POST['e20r_program_name'] ) ? sanitize_text_field( $_POST['e20r_program_name'] ) : null ),
+                    'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ) . " 00:00:00",
+                    'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ) . " 00:00:00",
+                    'description'  => ( isset( $_POST['e20r_program_descr'] ) ? sanitize_text_field( $_POST['e20r_program_descr'] ) : null ),
+                    'member_id'    => ( isset( $_POST['e20r_program_memberships'] ) ? sanitize_text_field( $_POST['e20r_program_memberships'] ) : null ),
+                );
+
+                if ( $program_id == 'auto' ) {
+                    // We'll add this data as a new program
+                    dbg( "We're adding: " . print_r( $data, true ) );
+                    if ( false === $wpdb->insert( $this->_tables['programs'], $data ) ) {
+
+                        wp_send_json_error( $wpdb->last_error );
+                    }
+
+                } elseif ( is_numeric( $program_id ) ) {
+
+                    dbg( "We're updating: " . print_r( $data, true ) );
+                    $where = array( 'id' => $program_id );
+
+                    if ( false === $wpdb->update( $this->_tables['programs'], $data, $where ) ) {
+
+                        wp_send_json_error( $wpdb->last_error );
+                    }
+                }
             }
-            elseif ( is_numeric( $program_id ) ) {
+             else {
 
-                dbg("We're updating: " . print_r( $data, true ) );
-                $where = array( 'id' => $program_id );
+                 dbg("Deleting record # {$program_id}");
 
-                $wpdb->update( $this->_tables['programs'], $data, $where );
-            }
+                 if ( false === $wpdb->delete( $this->_tables['programs'], array( 'id' => $program_id ) ) ) {
+
+                     wp_send_json_error( $wpdb->last_error );
+                 }
+             }
 
             wp_send_json_success( $this->view_listPrograms() );
         }
         else {
 
-            wp_send_json_error('You do not have permission to add/edit programs' );
+            wp_send_json_error( 'You do not have permission to add/edit programs' );
         }
     }
 } 

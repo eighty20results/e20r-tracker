@@ -8,6 +8,7 @@ var $old_Name;
 var $old_startDate;
 var $old_endDate;
 var $old_Description;
+var $old_membershipId;
 
 jQuery.noConflict();
 jQuery(document).ready( function($) {
@@ -120,12 +121,23 @@ jQuery(document).ready( function($) {
 
             jQuery('.e20r-save-col').show();
             jQuery('.e20r-cancel-col').show();
-            console.log("Enabling edit of this line")
+            jQuery('.e20r-delete-col').show();
+            console.log("Enabling edit of this line");
 
             $(this).attr( 'checked', true);
             enableEditProgram();
         }
         else {
+
+            var $checkedIds = jQuery(":checkbox:checked").map(function() {
+                return this.id.split('_')[1];
+            }).get();
+
+            if ($checkedIds.length == 0) {
+                jQuery('.e20r-save-col').hide();
+                jQuery('.e20r-cancel-col').hide();
+                jQuery('.e20r-delete-col').hide();
+            }
 
             console.log("Disabling edit of this line");
             $(this).attr( 'checked', false);
@@ -134,11 +146,7 @@ jQuery(document).ready( function($) {
 
         // $('input:checkbox').attr('checked', false);
     });
-/*
-    $('.program-inputs input:checkbox').click(function() {
 
-    });
-*/
     $(document).on( "click", '#e20r-add-new-program', function() {
 
         $('.add-new').hide();
@@ -157,6 +165,7 @@ jQuery(document).ready( function($) {
         $programInfo['start'] = $( '#e20r-program-starttime' ).val();
         $programInfo['end'] = $( '#e20r-program-endtime' ).val();
         $programInfo['descr'] = $( '#e20r-program-descr' ).val();
+        $programInfo['membership_id'] = $( '#e20r-memberships' ).val();
 
         console.dir($programInfo);
 
@@ -164,6 +173,7 @@ jQuery(document).ready( function($) {
     });
 
     $(document).on( "click", '.e20r-save-edit', function() {
+
         var $programInfo = new Array();
 
         // Get the ID to use for the edited input boxes
@@ -174,6 +184,7 @@ jQuery(document).ready( function($) {
         $programInfo['start'] = $( '#e20r-program-starttime_' + $id ).val();
         $programInfo['end'] = $( '#e20r-program-endtime_' + $id ).val();
         $programInfo['descr'] = $( '#e20r-program-descr_' + $id ).val();
+        $programInfo['membership_id'] = $( '#e20r-memberships_' + $id ).val();
 
         console.dir($programInfo);
         saveProgram( $programInfo );
@@ -191,10 +202,12 @@ jQuery(document).ready( function($) {
         $( '#e20r-program-starttime' ).val( null );
         $( '#e20r-program-endtime' ).val( null );
         $( '#e20r-program-descr' ).val( null );
+        $( '#e20r-memberships' ).val(0);
 
     });
 
     $(document).on( "click", '.e20r-cancel-edit', function() {
+
         if ( $('#edit_' + $old_Id).is(':checked') ) {
             console.log("Edit checkbox is checked, undo it.");
             $('#edit_' + $old_Id).prop('checked', false);
@@ -205,6 +218,7 @@ jQuery(document).ready( function($) {
         $( '#e20r-program-starttime_' + $old_Id ).val($old_startDate);
         $( '#e20r-program-endtime_' + $old_Id ).val($old_endDate);
         $( '#e20r-program-descr_' + $old_Id ).val($old_Description);
+        $( '#e20r-memberships_' + $old_Id).val($old_membershipId);
 
         disableEditProgram();
 
@@ -222,6 +236,21 @@ jQuery(document).ready( function($) {
 
     });
 
+    $(document).on("click", ".e20r-delete", function() {
+
+        var $programInfo = new Array();
+
+        // Get the ID to use for the edited input boxes
+        var $id = $(this).parent().attr("id").split('_')[1];
+
+        $programInfo['id'] = $( '#e20r-program_id_' + $id ).val();
+        $programInfo['delete'] = true;
+
+        console.dir($programInfo);
+        saveProgram( $programInfo );
+
+    });
+
 /*    $('input:checkbox').change( function() {
 
         console.log("Processing the list of programs.")
@@ -234,11 +263,23 @@ jQuery(document).ready( function($) {
  */
 });
 
+function getCheckboxWithStatus( $status ) {
+
+    if ( $status == 'unchecked' ) {
+        return jQuery(":checkbox:not(:checked)").map(function () {
+            return this.id.split('_')[1];
+        }).get();
+    }
+    else {
+        return jQuery(":checkbox:checked").map(function() {
+            return this.id.split('_')[1];
+        }).get();
+    }
+}
+
 function enableEditProgram() {
 
-    var $checkedIds = jQuery(":checkbox:checked").map(function() {
-        return this.id.split('_')[1];
-    }).get();
+    var $checkedIds = getCheckboxWithStatus( 'checked' );
 
     jQuery.each( $checkedIds, function() {
 
@@ -247,14 +288,17 @@ function enableEditProgram() {
         $old_startDate = jQuery( '#e20r-program-starttime_' + this ).val();
         $old_endDate = jQuery( '#e20r-program-endtime_' + this ).val();
         $old_Description = jQuery( '#e20r-program-descr_' + this ).val();
+        $old_membershipId = jQuery( '#e20r-memberships_' + this).val();
 
         jQuery( '#e20r-program_id_' + this ).prop("disabled", false);
         jQuery( '#e20r-program_name_' + this ).prop("disabled", false);
         jQuery( '#e20r-program-starttime_' + this ).prop("disabled", false );
         jQuery( '#e20r-program-endtime_' + this ).prop("disabled", false );
         jQuery( '#e20r-program-descr_' + this ).prop("disabled", false );
+        jQuery( '#e20r-memberships_' + this).prop("disabled", false);
         jQuery( '#e20r-td-save_' + this ).show();
         jQuery( '#e20r-td-cancel_' + this).show();
+        jQuery( '#e20r-td-delete_' + this).show();
         // jQuery( '#e20r-edit-save_' + this ).show();
     });
 
@@ -262,13 +306,7 @@ function enableEditProgram() {
 
 function disableEditProgram() {
 
-    var $unCheckedIds = jQuery(":checkbox:not(:checked)").map( function() {
-        return this.id.split('_')[1];
-    }).get();
-
-    if ($unCheckedIds.length == 0) {
-        jQuery('.e20r-save-col').hide();
-    }
+    var $unCheckedIds = getCheckboxWithStatus( 'unchecked' );
 
     jQuery.each( $unCheckedIds, function() {
 
@@ -278,8 +316,10 @@ function disableEditProgram() {
         jQuery( '#e20r-program-starttime_' + this ).prop("disabled", true );
         jQuery( '#e20r-program-endtime_' + this ).prop("disabled", true );
         jQuery( '#e20r-program-descr_' + this ).prop("disabled", true );
+        jQuery( '#e20r-memberships_' + this).prop("disabled", true);
         jQuery( '#e20r-td-save_' + this ).hide();
         jQuery( '#e20r-td-cancel_' + this).hide();
+        jQuery( '#e20r-td-delete_' + this).hide();
     });
 }
 
@@ -344,6 +384,12 @@ function loadMemberList( $levelId ) {
 
 function saveProgram( $programArray ) {
 
+    var $delete_action = false;
+
+    if ( $programArray['delete'] == true ) {
+        $delete_action = true;
+    }
+
     jQuery.ajax({
         url: e20r_tracker.ajaxurl,
         type: 'POST',
@@ -356,11 +402,13 @@ function saveProgram( $programArray ) {
             e20r_program_name: $programArray['name'],
             e20r_program_start: $programArray['start'],
             e20r_program_end: $programArray['end'],
-            e20r_program_descr: $programArray['descr']
+            e20r_program_descr: $programArray['descr'],
+            e20r_program_memberships: $programArray['membership_id'],
+            e20r_program_delete: $delete_action
         },
         error: function (data) {
             console.dir(data);
-            alert( data.msg );
+            alert( data.data );
 
         },
         success: function (data) {
