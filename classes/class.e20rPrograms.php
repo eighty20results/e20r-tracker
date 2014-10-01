@@ -220,22 +220,22 @@ class e20rPrograms {
                             ?>
                             <tr id="<?php echo $pid; ?>" class="program-inputs">
                                 <td class="text-input">
-                                    <input type="checkbox" name="edit_<?php echo $pid ?>" id="edit_<?php echo $pid ?>">
+                                    <input type="checkbox" name="edit_<?php echo $pid; ?>" id="edit_<?php echo $pid ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="text" id="e20r-program_id_<?php echo $pid ?>" disabled name="e20r_program_id" size="5" value="<?php echo( ( ! empty( $program->id ) ) ? $program->id : null ); ?>">
+                                    <input type="text" id="e20r-program_id_<?php echo $pid; ?>" disabled name="e20r_program_id" size="5" value="<?php echo( ( ! empty( $program->id ) ) ? $program->id : null ); ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="text" id="e20r-program_name_<?php echo $pid ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
+                                    <input type="text" id="e20r-program_name_<?php echo $pid; ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-starttime_<?php echo $pid ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>">
+                                    <input type="date" id="e20r-program-starttime_<?php echo $pid; ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-endtime_<?php echo $pid ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>">
+                                    <input type="date" id="e20r-program-endtime_<?php echo $pid; ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>">
                                 </td>
                                 <td class="text-descr">
-                                    <textarea class="expand" id="e20r-program-descr_<?php echo $pid ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
+                                    <textarea class="expand" id="e20r-program-descr_<?php echo $pid; ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
                                 </td>
                                 <td class="select-input">
                                     <?php echo $this->view_selectMemberships( $program->member_id, $pid ); ?>
