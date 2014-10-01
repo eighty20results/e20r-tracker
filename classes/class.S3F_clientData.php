@@ -621,14 +621,39 @@ class S3F_clientData {
 
         echo $data;
     }
-
+/*
     public function render_new_program_page() {
+
         $programs = new e20rPrograms();
 
         echo $programs->viewProgramEditSelect();
 
     }
+
+*/
+    /**
+     * Function renders the page to add/edit/remove check-in items for the E20R tracker plugin
+     */
+    public function render_items_page() {
+
+        $items = new E20Rcheckin();
+
+        ?>
+        <div id="e20r-checkin-items">
+        <?php
+
+            echo $items->view_manageCheckinItems();
+
+        ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Function renders the page to add/edit/remove programs from the E20R tracker plugin
+     */
     public function render_programs_page() {
+
         $programs = new e20rPrograms();
 
         ?><div id="e20r-program-list"><?php
@@ -646,10 +671,11 @@ class S3F_clientData {
 
         $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-        add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
+
+//      add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
         add_submenu_page( 'e20r-tracker', __('Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this,'render_programs_page'));
 
-        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
+//        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
         add_submenu_page( 'e20r-tracker', __('Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this, 'render_items_page'));
 
 
