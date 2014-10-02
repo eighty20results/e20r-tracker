@@ -631,60 +631,11 @@ class S3F_clientData {
     }
 
 */
-    /**
-     * Function renders the page to add/edit/remove check-in items for the E20R tracker plugin
-     */
-    public function render_items_page() {
-
-        $items = new E20Rcheckin();
-
-        ?>
-        <div id="e20r-checkin-items">
-        <?php
-
-            echo $items->view_manageCheckinItems();
-
-        ?>
-        </div>
-        <?php
-    }
-
-    /**
-     * Function renders the page to add/edit/remove programs from the E20R tracker plugin
-     */
-    public function render_programs_page() {
-
-        $programs = new e20rPrograms();
-
-        ?><div id="e20r-program-list"><?php
-
-        echo $programs->view_listPrograms();
-
-        ?></div><?php
-    }
 
     public function render_meals_page() {
 
     }
 
-    public function registerAdminPages() {
-
-        $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-//        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-
-//      add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
-        add_submenu_page( 'e20r-tracker', __('Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this,'render_programs_page'));
-
-//        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
-        add_submenu_page( 'e20r-tracker', __('Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this, 'render_items_page'));
-
-
-        //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
-
-//        add_submenu_page( 'e20r-tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
-
-        // add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
-    }
 
     // TODO: Return data that can be viewed both by Shortcode and by back-end. I.e. only fetch data for user specified in request.
 
@@ -733,6 +684,12 @@ class S3F_clientData {
         dbg("Nonce is OK");
 
         $checkins = new E20Rcheckin();
+
+        // TODO: 10/02/2014 - Multiple steps: For different habits, get & generate different graphs.
+        // NOTE: Special care for existing Nourish group... :(
+        // Get the list of check-ins so far - SQL.
+        // Calculate the max # of check-ins per check-in type (day/calendar based)
+        //
 
 
     }
