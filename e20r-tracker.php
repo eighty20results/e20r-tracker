@@ -100,7 +100,6 @@ endif;
 $e20rTracker = new e20rTracker();
 $e20rTracker->init();
 
-dbg("Register activation/deactiviation hooks");
 register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
 register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );
 
