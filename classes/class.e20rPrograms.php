@@ -392,4 +392,16 @@ class e20rPrograms {
             wp_send_json_error( 'You do not have permission to add/edit programs' );
         }
     }
+
+    /**
+     * Function renders the page to add/edit/remove programs from the E20R tracker plugin
+     */
+    public function render_submenu_page() {
+
+        ?><div id="e20r-program-list"><?php
+
+        echo $this->view_listPrograms();
+
+        ?></div><?php
+    }
 } 
