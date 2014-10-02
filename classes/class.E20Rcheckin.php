@@ -555,6 +555,24 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             }
         }
 
+        /**
+         * Function renders the page to add/edit/remove check-in items for the E20R tracker plugin
+         */
+        public function render_submenu_page() {
+
+            // $items = new E20Rcheckin();
+
+            ?>
+            <div id="e20r-checkin-items">
+                <?php
+
+                echo $this->view_manageCheckinItems();
+
+                ?>
+            </div>
+        <?php
+        }
+
     } // end class
 
 endif; // end if
