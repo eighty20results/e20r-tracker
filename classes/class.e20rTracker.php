@@ -66,6 +66,7 @@ class e20rTracker {
 
         /* Load various back-end pages/settings */
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
+        add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
         add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
     }
@@ -183,7 +184,7 @@ class e20rTracker {
 
 //        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
         add_submenu_page( 'e20r-tracker', __('Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this->checkinData, 'render_submenu_page'));
-        add_submenu_page( 'e20r-tracker', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), 'manage_options', "e20r-tracker-settings", array( &$this, 'registerSettingsPage'));
+//        add_submenu_page( 'e20r-tracker', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), 'manage_options', "e20r-tracker-settings", array( &$this, 'registerSettingsPage'));
 
         //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
 
@@ -400,6 +401,9 @@ class e20rTracker {
                     key checkin_id ( checkin_id asc ) )
                 {$charset_collate}";
 
+        /**
+         *
+         */
         // TODO: How do you combine Assignments (flexibility, unlimited # of boxes & questions) and
         $checkinSql =
             "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_checkin (
