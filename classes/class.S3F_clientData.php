@@ -2,7 +2,9 @@
 
 class S3F_clientData {
 
+    public $old_tables;
     public $tables;
+
     private $levels = array(); // Empty array
     protected $client_id;
 
@@ -12,14 +14,16 @@ class S3F_clientData {
 
         global $wpdb;
 
-       $this->tables = new stdClass();
+       $this->old_tables = new stdClass();
 
+        $this->old_tables->assignments = "{$wpdb->prefix}s3f_nourishAssignments";
+        $this->old_tables->compliance = "{$wpdb->prefix}s3f_nourishHabits";
+        $this->old_tables->surveys = "{$wpdb->prefix}e20r_Surveys";
+        $this->old_tables->measurements = "{$wpdb->prefix}nourish_measurements";
+        $this->old_tables->meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
 
-        $this->tables->Assignments = "{$wpdb->prefix}s3f_nourishAssignments";
-        $this->tables->Habits = "{$wpdb->prefix}s3f_nourishHabits";
-        $this->tables->Surveys = "{$wpdb->prefix}e20r_Surveys";
-        $this->tables->Measurements = "{$wpdb->prefix}nourish_measurements";
-        $this->tables->Meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
+        $tmp = new e20rTracker();
+        $this->tables = $tmp->tables;
 
     }
 
@@ -97,6 +101,13 @@ class S3F_clientData {
 
         // TODO: Create page for back-end to display customers.
     }
+
+    public function get_item_count( $item_id, $habit_name, $user_id ) {
+
+        $item_list = $this->get_items( $item_id );
+
+    }
+
 
     private function prepare_in( $sql, $values ) {
 
@@ -302,7 +313,7 @@ class S3F_clientData {
             <?php echo $this->viewClientDetail( $client_id ); ?>
         </div>
         <div id="e20r-compliance">
-            <?php echo $this->viewCompliance( $client_id ); ?>
+            <?php echo $this->viewCompliance( $client_id, null ); ?>
         </div>
         <div id="e20r-assignments">
             <?php echo $this->viewAssignments( $client_id ); ?>
@@ -326,9 +337,28 @@ class S3F_clientData {
 
     }
 
-    private function viewCompliance( $clientId ) {
+    public function viewCompliance( $clientId = null, $shortname = null ) {
 
+        if ( empty( $clientId ) ) {
+
+            global $current_user;
+            $clientId = $current_user->id;
+
+            $level_id = pmpro_getMembershipLevelForUser( $clientId );
+
+        }
+
+        if ( empty( $shortname ) ) {
+
+            $level_id = pmpro_getMembershipLevelForUser( $clientId );
+        }
+
+        $checkins = new E20Rcheckin();
+        $items = $checkins->get_checkinItems( $shortname, $level_id );
+
+        // TODO: show a graph for the users compliance.
     }
+
 
     private function viewAssignments( $clientId ) {
 
@@ -570,7 +600,7 @@ class S3F_clientData {
                      thighCM as thigh,
                      calfCM as calf,
                      totalGrithCM as girth
-                FROM {$this->tables->Measurements}
+                FROM {$this->old_tables->measurements}
                 WHERE created_by = %d
                 ORDER BY recorded_date ASC
             ",
@@ -591,7 +621,7 @@ class S3F_clientData {
                      thigh,
                      calf,
                      girth
-                FROM {$wpdb->prefix}e20r_measurements
+                FROM {$this->tables->measurements}
                 WHERE client_id = %d
                 ORDER BY recorded_date ASC
             ",
