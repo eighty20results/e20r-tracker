@@ -19,6 +19,16 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
 
         } // end constructor
 
+        public function get_checkinItems( $shortname = null, $level_id = 0) {
+
+            $item_list = array();
+
+            // TODO: SQL to return the checkin count for the shortname and levelID provided.
+
+
+            return $item_list;
+        }
+
         public function view_AddNewCheckinItem( $itemId = null ) {
 
             dbg("Loading add new checkin item page");
