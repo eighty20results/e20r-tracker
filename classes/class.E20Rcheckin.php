@@ -5,6 +5,7 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
     class E20Rcheckin {
 
         public $_tables;
+        private $_beta = array();
 
         function __construct() {
 
@@ -17,6 +18,8 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
                 'checkin' => $wpdb->prefix . 'e20r_checkin',
             );
 
+            $this->_beta = array( 12, 20, 21, 27, 62 );
+
         } // end constructor
 
         public function get_checkinItems( $shortname = null, $level_id = 0) {
@@ -24,7 +27,19 @@ if ( ! class_exists( 'E20Rcheckin' ) ):
             $item_list = array();
 
             // TODO: SQL to return the checkin count for the shortname and levelID provided.
+            if ( ! in_array( $user_id, $this->beta_members ) ) {
+                $table = $this->_tables['checkin'];
+            }
+            else {
+                $table =
+            }
 
+
+            $SQL = "SELECT COUNT(*)
+                    FROM {$table}
+                    WHERE
+                      habit_name = '{$shortname}' AND
+                      check_in_value = 'Yes'";
 
             return $item_list;
         }
