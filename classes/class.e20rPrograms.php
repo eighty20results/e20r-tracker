@@ -45,16 +45,15 @@ class e20rPrograms {
             );
         }
         else {
-            $sql = $wpdb->prepare("
+            $sql = "
                     SELECT *
                     FROM {$this->_tables['programs']}
-              ",
-                $programId
-            );
+              ";
         }
 
         $this->programs = $wpdb->get_results( $sql , OBJECT );
 
+        // dbg("Loaded program list: " . print_r( $this->programs, true ) );
         // Do we want to be able to add new programs to the database
 
         if ( $add_new ) {
@@ -63,7 +62,9 @@ class e20rPrograms {
             $data->id = 0;
             $data->program_name = 'Add a new program';
 
-            return ( array( $data ) + $this->programs );
+            array_unshift( $this->programs, $data );
+
+            return $this->programs;
         }
         else {
             // Just give the list of existing programs.
@@ -71,16 +72,14 @@ class e20rPrograms {
         }
     }
 
-    public function programSelector( $add_new = true, $selectedId ) {
+    public function programSelector( $add_new = true, $selectedId = 0, $listId = null, $disabled = false ) {
 
         $this->programs = $this->load_program_info( null, $add_new ); // Get all programs in the DB
 
         ob_start();
         ?>
-        <select name="e20r_choose_program" id="e20r_choose_program">
+        <select name="e20r_choose_program" id="e20r-choose-program<?php echo ( is_null( $listId ) ? "" : "_{$listId}" ); ?>" <?php echo ( $disabled == true ? 'disabled' : ''); ?>>
             <?php
-
-            dbg("Select List " . print_r( $this->programs, true ) );
 
             foreach( $this->programs as $program ) {
                 ?><option value="<?php echo esc_attr( $program->id ); ?>"  <?php selected( $selectedId, $program->id, true); ?>><?php echo esc_attr( $program->program_name ); ?></option><?php
@@ -91,9 +90,7 @@ class e20rPrograms {
 
         $html = ob_get_clean();
 
-        dbg("Returning select box: " . $html);
         return $html;
-
     }
 
     public function viewProgramSelectDropDown( $add_new = true ) {
@@ -106,10 +103,10 @@ class e20rPrograms {
         ?>
         <label for="e20r_choose_programs">Program</label>
         <span class="e20r-program-select-span">
-            <select name="e20r_choose_programs" id="e20r_choose_programs">
+            <select name="e20r_choose_programs" id="e20r-choose-program">
                 <?php
 
-                dbg("Select List " . print_r( $this->programs, true ) );
+                // dbg("Select List " . print_r( $this->programs, true ) );
 
                 foreach( $this->programs as $program ) {
                 ?><option value="<?php echo esc_attr( $this->program->id ); ?>"  <?php selected( $this->programId, $this->program->id, true); ?>><?php echo esc_attr( $this->program->program_name ); ?></option><?php
@@ -242,13 +239,13 @@ class e20rPrograms {
                                     <?php echo $this->view_selectMemberships( $program->member_id, $pid ); ?>
                                 </td>
                                 <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>">
-                                    <a href="#" class="e20r-save-edit button">Save</a>
+                                    <a href="#" class="e20r-save-edit-program button">Save</a>
                                 </td>
                                 <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php echo $pid; ?>">
-                                    <a href="#" class="e20r-cancel-edit button">Cancel</a>
+                                    <a href="#" class="e20r-cancel-edit-program button">Cancel</a>
                                 </td>
                                 <td class="hidden delete-button-row" id="e20r-td-delete_<?php echo $pid; ?>">
-                                    <a href="#" class="e20r-delete button">Remove</a>
+                                    <a href="#" class="e20r-delete-program button">Remove</a>
                                 </td>
                                 <td class="hidden-input">
                                     <input type="hidden" class="hidden_id" value="<?php echo $pid; ?>">

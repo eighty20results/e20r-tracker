@@ -47,7 +47,11 @@ if ( ! class_exists( 'S3F_clientData' )):
 
 endif;
 
+if (! class_exists( 'e20rArticles' ) ):
 
+    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rArticles.php" );
+
+endif;
 
 global $e20r_db_version;
 

@@ -42,6 +42,7 @@ class e20rTracker {
         $this->checkinData = new E20Rcheckin();
         $this->exercises = new ExercisePrograms();
         $this->programInfo = new e20rPrograms();
+        $this->articles = new e20rArticles();
 
         /* Load scripts & CSS */
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
@@ -57,6 +58,7 @@ class e20rTracker {
         add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->clientData, 'ajax_getMemberlistForLevel' ) );
 
         add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
+        add_action( 'wp_ajax_save_item_data', array( &$this->checkinData, 'ajax_save_item_data' ) );
 
         /* AJAX call-backs if user is unprivileged */
         add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this->clientData, 'ajaxUnprivError' ) );
@@ -176,14 +178,14 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        $page = add_menu_page( 'S3F Clients', __('S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        $page = add_menu_page( 'S3F Clients', __( 'S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
 
 //      add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
-        add_submenu_page( 'e20r-tracker', __('Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this->programInfo, 'render_submenu_page'));
+        add_submenu_page( 'e20r-tracker', __( 'Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this->programInfo, 'render_submenu_page'));
 
-//        add_submenu_page( 'e20r-tracker', __('Manage Item','e20r_tracker'), __('Add Item','e20r_tracker'), 'manage_options', "e20-add-new-item", array( &$this,'render_new_item_page'));
-        add_submenu_page( 'e20r-tracker', __('Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this->checkinData, 'render_submenu_page'));
+        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$this->articles,'render_submenu_page') );
+        add_submenu_page( 'e20r-tracker', __( 'Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this->checkinData, 'render_submenu_page'));
 //        add_submenu_page( 'e20r-tracker', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), 'manage_options', "e20r-tracker-settings", array( &$this, 'registerSettingsPage'));
 
         //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
@@ -387,7 +389,6 @@ class e20rTracker {
                     enddate datetime null,
                     item_order int not null default 1,
                     maxcount int null,
-                    membership_level_id int not null default 0,
                 primary key  ( id ) ,
                 unique key shortname_UNIQUE ( short_name asc ) )
                 {$charset_collate}";
@@ -412,11 +413,58 @@ class e20rTracker {
                     checkin_date datetime null,
                     checkin_item_id int null,
                     checkedin tinyint not null default 0,
-                    answer_id int null,
                     primary key  (id),
-                      key checkin_item_id ( checkin_item_id asc ),
-                      key answer_id ( answer_id asc ) )
+                      key checkin_item_id ( checkin_item_id asc )
                 {$charset_collate}";
+
+
+        /**
+         * For lessons
+         */
+
+        $articlesSql =
+            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_articles (
+                  id as bigint not null auto_increment,
+                  title as varchar(255) null,
+                  title_prefix as varchar(30) not null default 'Lesson:'
+                  post_id as int not null,
+                  program_id as int not null,
+                  assignment_question_id as int null,
+                  checkin_item_id as int null,
+                  measurements_id as int null,
+                  release_date as date null,
+                  release_day as int null,
+                  primary key (id),
+                    key assignment ( assignment_id asc ),
+                    key checkin_items ( checkin_item_id asc ) )
+                {$charset_collate}
+            ";
+        /**
+         * For assignments
+         */
+        $assignmentQsSql =
+            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_aquestions (
+                    id int not null auto_increment,
+                    article_id int not null,
+                    question text null,
+                    primary key (id),
+
+                    ) {$charset_collate}
+        ";
+
+        $assignmentAsSql =
+            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_aanswers (
+                    id int not null auto_increment,
+                    lesson_id int not null,
+                    question_id int not null,
+                    user_id int not null,
+                    answer text null,
+                    primary key id (id),
+                     key lessons (lesson_id asc),
+                     key user ( user_id asc ),
+                     )
+                    {$charset_collate}
+        ";
 
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
@@ -429,6 +477,7 @@ class e20rTracker {
         dbDelta( $programsTableSql );
         dbDelta( $setsTableSql );
         dbDelta( $exercisesTableSql );
+        dbDelta( $articlesSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
@@ -453,6 +502,7 @@ class e20rTracker {
             $wpdb->prefix . 'e20r_programs',
             $wpdb->prefix . 'e20r_sets',
             $wpdb->prefix . 'e20r_exercises',
+            $wpdb->prefix . 'e20r_articles',
         );
 
 

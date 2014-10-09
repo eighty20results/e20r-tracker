@@ -113,6 +113,40 @@ jQuery(document).ready( function($) {
 
     })
 
+    $( document).on( "click", '.checkin-inputs input:checkbox', function() {
+
+        console.log('Check-in Item List checkbox checked');
+
+        if ( $(this).is(':checked') ) {
+
+            jQuery('.e20r-save-col').show();
+            jQuery('.e20r-cancel-col').show();
+            jQuery('.e20r-delete-col').show();
+            console.log("Enabling edit of this line");
+
+            $(this).attr( 'checked', true);
+            enableEditItem();
+        }
+        else {
+
+            var $checkedIds = jQuery(":checkbox:checked").map(function() {
+                return this.id.split('_')[1];
+            }).get();
+
+            if ($checkedIds.length == 0) {
+                jQuery('.e20r-save-col').hide();
+                jQuery('.e20r-cancel-col').hide();
+                jQuery('.e20r-delete-col').hide();
+            }
+
+            console.log("Disabling edit of this line");
+            $(this).attr( 'checked', false);
+            disableEditItem();
+        }
+
+        // $('input:checkbox').attr('checked', false);
+    });
+
     $( document).on( "click", '.program-inputs input:checkbox', function() {
 
         console.log('Program List checkbox checked');
@@ -154,6 +188,27 @@ jQuery(document).ready( function($) {
 
     });
 
+    $(document).on( "click", "#e20r-save-new-checkin-item", function() {
+
+        console.log("Saving new Checkin-item to database - AJAX'ed.");
+
+        var $itemInfo = new Array();
+
+        $itemInfo['nonce'] = $( '#e20r_tracker_edit_nonce' ).val();
+        $itemInfo['id'] = $( '#e20r-checkin-item-id' ).val();
+        $itemInfo['program_id'] = $( '#e20r-choose-program' ).find( 'option:selected' ).val();
+        $itemInfo['order'] = $( '#e20r-checkin-item-order' ).val();
+        $itemInfo['short_name'] = $( '#e20r-checkin-item-short-name' ).val();
+        $itemInfo['item_name'] = $( '#e20r-checkin-item-name' ).val();
+        $itemInfo['startdate'] = $( '#e20r-checkin-item-startdate' ).val();
+        $itemInfo['enddate'] = $( '#e20r-checkin-item-enddate' ).val();
+        $itemInfo['maxcount'] = $( '#e20r-checkin-item-maxcount' ).val();
+
+        console.dir( $itemInfo );
+
+        saveItem( $itemInfo );
+    });
+
     $(document).on( "click", '#e20r-save-new-program', function() {
 
         console.log("Save new program info to database - Ajax'ed");
@@ -172,7 +227,31 @@ jQuery(document).ready( function($) {
         saveProgram( $programInfo );
     });
 
-    $(document).on( "click", '.e20r-save-edit', function() {
+    $(document).on( "click", ".e20r-save-edit-checkin-item", function() {
+
+        console.log("Saving edited check-in item to database - AJAX'ed.");
+
+        var $itemInfo = new Array();
+        var $id = $(this).parent().attr("id").split('_')[1];
+
+        console.log(" Row ID: " + $id );
+
+        $itemInfo['nonce'] = $( '#e20r_tracker_edit_nonce' ).val();
+        $itemInfo['id'] = $( '#e20r-checkin-item-id_' + $id ).val();
+        $itemInfo['program_id'] = $( '#e20r-choose-program_' + $id ).find( 'option:selected' ).val();
+        $itemInfo['order'] = $( '#e20r-checkin-item-order_' + $id ).val();
+        $itemInfo['short_name'] = $( '#e20r-checkin-item-short-name_' + $id ).val();
+        $itemInfo['item_name'] = $( '#e20r-checkin-item-name_'  + $id ).val();
+        $itemInfo['startdate'] = $( '#e20r-checkin-item-startdate_'  + $id ).val();
+        $itemInfo['enddate'] = $( '#e20r-checkin-item-enddate_' + $id ).val();
+        $itemInfo['maxcount'] = $( '#e20r-checkin-item-maxcount_'  + $id ).val();
+
+        console.dir( $itemInfo );
+
+        saveItem( $itemInfo );
+    });
+
+    $(document).on( "click", '.e20r-save-edit-program', function() {
 
         var $programInfo = new Array();
 
@@ -191,7 +270,26 @@ jQuery(document).ready( function($) {
 
     });
 
+    $(document).on( "click", '#e20r-cancel-new-checkin-item', function() {
+
+        console.log("Clear & hide the new checkin item row");
+
+        $('.add-new').show();
+        $('#add-new-checkin-item').hide();
+
+        /* Clear out any entries - we cancelled, remember...*/
+        $( '#e20r-checkin-item-order' ).val( null );
+        $( '#e20r-choose-program option:eq(0)' ).prop( 'selected', true );
+        $( '#e20r-checkin-item-name' ).val( null );
+        $( '#e20r-checkin-item-short-name' ).val( null );
+        $( '#e20r-checkin-item-startdate' ).val( null );
+        $( '#e20r-checkin-item-enddate' ).val( null );
+        $( '#e20r-checkin-item-maxcount' ).val( null );
+
+    });
+
     $(document).on( "click", '#e20r-cancel-new-program', function() {
+
         console.log("Clear & hide the new program row");
 
         $('.add-new').show();
@@ -206,11 +304,13 @@ jQuery(document).ready( function($) {
 
     });
 
-    $(document).on( "click", '.e20r-cancel-edit', function() {
+    $(document).on( "click", '.e20r-cancel-edit-program', function() {
 
-        if ( $('#edit_' + $old_Id).is(':checked') ) {
+        var $edit_id = '#edit_' + $old_Id;
+
+        if ( $( $edit_id ).is(':checked') ) {
             console.log("Edit checkbox is checked, undo it.");
-            $('#edit_' + $old_Id).prop('checked', false);
+            $( $edit_id ).prop('checked', false);
         }
 
         // jQuery( '#e20r-program_id_' + $old_Id ).val($old_Id);
@@ -222,7 +322,7 @@ jQuery(document).ready( function($) {
 
         disableEditProgram();
 
-    })
+    });
 
     $(document).on("focus", 'textarea.expand', function() {
 
@@ -236,7 +336,23 @@ jQuery(document).ready( function($) {
 
     });
 
-    $(document).on("click", ".e20r-delete", function() {
+    $(document).on("click", ".e20r-delete-checkin-item", function() {
+
+        var $itemInfo = new Array();
+
+        // Get the ID to use for the edited input boxes
+        var $id = $(this).parent().attr("id").split('_')[1];
+
+        $itemInfo['nonce'] = $( '#e20r_tracker_edit_nonce' ).val();
+        $itemInfo['id'] = $( '#e20r-checkin-item-id_' + $id ).val();
+        $itemInfo['delete'] = true;
+
+        console.dir($itemInfo);
+        saveItem( $itemInfo );
+
+    });
+
+    $(document).on("click", ".e20r-delete-program", function() {
 
         var $programInfo = new Array();
 
@@ -283,6 +399,50 @@ function getCheckboxWithStatus( $status ) {
             return this.id.split('_')[1];
         }).get();
     }
+}
+
+function enableEditItem() {
+
+    var $checkedIds = getCheckboxWithStatus( 'checked' );
+
+    jQuery.each( $checkedIds, function() {
+
+        // TODO: Save old values first - in case we cancel
+        jQuery( '#e20r-checkin-item-id_' + this ).prop("disabled", false);
+        jQuery( '#e20r-checkin-item-order_' + this ).prop("disabled", false );
+        jQuery( '#e20r-choose-program_' + this ).prop("disabled", false );
+        jQuery( '#e20r-checkin-item-short-name_' + this ).prop("disabled", false);
+        jQuery( '#e20r-checkin-item-name_' + this ).prop("disabled", false);
+        jQuery( '#e20r-checkin-item-startdate_' + this ).prop("disabled", false );
+        jQuery( '#e20r-checkin-item-enddate_' + this ).prop("disabled", false );
+        jQuery( '#e20r-checkin-item-maxcount_' + this ).prop("disabled", false );
+        jQuery( '#e20r-td-save_' + this ).show();
+        jQuery( '#e20r-td-cancel_' + this).show();
+        jQuery( '#e20r-td-delete_' + this).show();
+        // jQuery( '#e20r-edit-save_' + this ).show();
+    });
+}
+
+function disableEditItem() {
+
+    var $checkedIds = getCheckboxWithStatus( 'unchecked' );
+
+    jQuery.each( $checkedIds, function() {
+
+        jQuery( '#e20r-checkin-item-id_' + this ).prop("disabled", true);
+        jQuery( '#e20r-checkin-item-order_' + this ).prop("disabled", true );
+        jQuery( '#e20r-choose-program_' + this ).prop("disabled", true );
+        jQuery( '#e20r-checkin-item-short-name_' + this ).prop("disabled", true);
+        jQuery( '#e20r-checkin-item-name_' + this ).prop("disabled", true);
+        jQuery( '#e20r-checkin-item-startdate_' + this ).prop("disabled", true );
+        jQuery( '#e20r-checkin-item-enddate_' + this ).prop("disabled", true );
+        jQuery( '#e20r-checkin-item-maxcount_' + this ).prop("disabled", true );
+        jQuery( '#e20r-td-save_' + this ).hide();
+        jQuery( '#e20r-td-cancel_' + this).hide();
+        jQuery( '#e20r-td-delete_' + this).hide();
+        // jQuery( '#e20r-edit-save_' + this ).show();
+    });
+
 }
 
 function enableEditProgram() {
@@ -388,6 +548,63 @@ function loadMemberList( $levelId ) {
         }
     });
 
+}
+
+function saveItem( $valueArray ) {
+
+    var $delete_action = false;
+
+    if ( $valueArray['delete'] == true ) {
+        console.log("User requested we delete a check-in item.");
+        $delete_action = true;
+    }
+
+    jQuery.ajax({
+        url: e20r_tracker.ajaxurl,
+        type: 'POST',
+        timeout: 5000,
+        dataType: 'JSON',
+        data: {
+            action: 'save_item_data',
+            e20r_tracker_edit_nonce: $valueArray['nonce'],
+            e20r_checkin_item_id:  $valueArray['id'],
+            e20r_checkin_item_order: $valueArray['order'],
+            e20r_checkin_item_program_id: $valueArray['program_id'],
+            e20r_checkin_item_short_name: $valueArray['short_name'],
+            e20r_checkin_item_name: $valueArray['item_name'],
+            e20r_checkin_item_startdate: $valueArray['startdate'],
+            e20r_checkin_item_enddate: $valueArray['enddate'],
+            e20r_checkin_item_maxcount: $valueArray['maxcount'],
+            e20r_checkin_item_delete: $delete_action
+        },
+        error: function (data) {
+            console.dir(data);
+            alert( data.data );
+
+        },
+        success: function (data) {
+
+            // Refresh the sequence post list (include the new post.
+            if ( data.data !== '' ) {
+                console.dir( data );
+                jQuery('#e20r-checkin-items').html(data.data);
+                console.log("Data returned from save checkin item functionality");
+            }
+
+        },
+        complete: function () {
+
+            // Enable the Save button again.
+            // saveBtn.removeAttr('disabled');
+
+            // Reset the text for the 'Save Settings" button
+            // saveBtn.html(e20r-tracker-admin.lang.saveSettings);
+
+            // Disable the spinner again
+            // jQuery('#load-new-programs').hide();
+            // $btn.removeAttr('disabled');
+        }
+    });
 }
 
 function saveProgram( $programArray ) {
