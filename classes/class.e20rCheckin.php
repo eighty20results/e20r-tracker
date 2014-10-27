@@ -1,8 +1,8 @@
 <?php
 
-if ( ! class_exists( 'E20Rcheckin' ) ):
+if ( ! class_exists( 'e20rCheckin' ) ):
 
-    class E20Rcheckin {
+    class e20rCheckin {
 
         public $_tables;
         private $_beta = array();

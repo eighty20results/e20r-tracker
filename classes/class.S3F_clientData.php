@@ -23,6 +23,7 @@ class S3F_clientData {
         $this->old_tables->meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
 
         $tmp = new e20rTracker();
+
         $this->tables = $tmp->tables;
 
     }
@@ -108,8 +109,7 @@ class S3F_clientData {
 
     }
 
-
-    private function prepare_in( $sql, $values ) {
+    private function prepare_in( $sql, $values, $type = '%d' ) {
 
         global $wpdb;
 
@@ -118,7 +118,7 @@ class S3F_clientData {
         if ( $not_in_count > 0 ) {
 
             $args = array( str_replace( '[IN]',
-                        implode( ', ', array_fill( 0, count( $values ), '%d' ) ),
+                        implode( ', ', array_fill( 0, count( $values ), ( $type == '%d' ? '%d' : '%s' ) ) ),
                         str_replace( '%', '%%', $sql ) ) );
 
             for ( $i = 0; $i < substr_count( $sql, '[IN]' ); $i++ ) {
@@ -241,22 +241,35 @@ class S3F_clientData {
 
         $levels = $this->get_level_ids();
 
-        //dbg("Levels being loaded: " . print_r( $levels, true ) );
+        dbg("Levels being loaded: " . print_r( $levels, true ) );
 
-        $sql = "
-                SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
-                FROM $wpdb->users AS u
-                  INNER JOIN {$wpdb->pmpro_memberships_users} AS m
-                    ON ( u.ID = m.user_id )
-                    INNER JOIN {$wpdb->usermeta} AS um
-                    ON ( u.ID = um.user_id )
-                WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
-                ORDER BY last_name ASC
-        ";
-
+        if ( ! empty($levels) ) {
+            $sql = "
+                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
+                    FROM {$wpdb->users} AS u
+                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
+                        ON ( u.ID = m.user_id )
+                        INNER JOIN {$wpdb->usermeta} AS um
+                        ON ( u.ID = um.user_id )
+                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
+                    ORDER BY last_name ASC
+            ";
+        }
+        else {
+            $sql = "
+                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
+                    FROM {$wpdb->users} AS u
+                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
+                        ON ( u.ID = m.user_id )
+                        INNER JOIN {$wpdb->usermeta} AS um
+                        ON ( u.ID = um.user_id )
+                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' )
+                    ORDER BY last_name ASC
+            ";
+        }
         $sql = $this->prepare_in( $sql, $levels );
 
-        // dbg("SQL for user list: " . print_r( $sql, true));
+        dbg("SQL for user list: " . print_r( $sql, true));
 
         $user_list = $wpdb->get_results( $sql, OBJECT );
 
@@ -331,9 +344,13 @@ class S3F_clientData {
         $billingInfo = $this->load_billing_data( $clientId );
         $program_list = new e20rPrograms();
         // $programData = $program_list->load_client_programs( $clientId );
-
-        $appointments = $this->load_client_appointments( $clientId );
-
+        try {
+            $appointments = $this->load_client_appointments( $clientId );
+        }
+        catch ( Exception $e ) {
+            dbg("Exception thrown: " . $e->getMessage() );
+            return false;
+        }
 
     }
 
@@ -344,17 +361,27 @@ class S3F_clientData {
             global $current_user;
             $clientId = $current_user->id;
 
-            $level_id = pmpro_getMembershipLevelForUser( $clientId );
-
+            if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
+                $level_id = pmpro_getMembershipLevelForUser( $clientId );
+            }
+            else {
+                throw new Exception("Paid Memberships Pro is not installed!");
+            }
         }
 
         if ( empty( $shortname ) ) {
 
-            $level_id = pmpro_getMembershipLevelForUser( $clientId );
+            if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
+                $level_id = pmpro_getMembershipLevelForUser( $clientId );
+            }
+            else {
+                throw new Exception("Paid Memberships Pro is not installed!");
+            }
         }
 
-        $checkins = new E20Rcheckin();
-        $items = $checkins->get_checkinItems( $shortname, $level_id );
+        // TODO: Implement compliance data loader.
+//        $checkins = new e20rCheckin();
+//        $items = $checkins->get_checkinItems( $shortname, $level_id );
 
         // TODO: show a graph for the users compliance.
     }
@@ -375,8 +402,10 @@ class S3F_clientData {
         }
 
         if ( $measurements === null ) {
-
-            $measurements = $this->load_measurements($clientId);
+            // TODO: Load measurements from e20rMeasurements() class!
+            $mClass = new e20rMeasurements( $clientId );
+            $measurements = $mClass->getMeasurements();
+            // $measurements = $this->load_measurements($clientId);
         }
 
         $user = get_user_by( 'id', $clientId );
@@ -397,7 +426,7 @@ class S3F_clientData {
             $html = ob_get_clean();
         }
         else {
-            dbg( "Tabbed measurements for $clientId: " . print_r( $measurements, true ) );
+            // dbg( "Tabbed measurements for $clientId: " . print_r( $measurements, true ) );
 
             ob_start();
             // echo $reloadBtn;
@@ -523,7 +552,13 @@ class S3F_clientData {
 
     public function load_client_appointments( $clientId ) {
 
-        global $current_user, $wpdb;
+        global $current_user, $wpdb, $appointments;
+
+        if ( empty( $appointments ) ) {
+
+            throw new Exception("Appointments+ Plugin is not installed.");
+            return false;
+        }
 
         $statuses = array( "completed", "removed" );
 
@@ -535,15 +570,17 @@ class S3F_clientData {
         $sql = $wpdb->prepare(
             "
                 SELECT ID, user, start, status, created
-                FROM $wpdb->app_table AS app
-                INNER JOIN ( app.user = )
-                 WHERE user = %d AND status NOT IN ( [IN] )
-                 ORDER BY start ASC
+                FROM {$appointments->app_table} AS app
+                INNER JOIN {$wpdb->users} AS usr
+                  ON ( app.user = usr.ID )
+                WHERE user = %d AND status NOT IN ( [IN] )
+                ORDER BY start ASC
             ",
             $clientId
         );
 
-        $sql = $this->prepare_in( $sql, $statuses );
+        $sql = $this->prepare_in( $sql, $statuses, '%s' );
+        // dbg("SQL for appointment list: " . print_r( $sql, true ) );
 
         return $wpdb->get_results( $sql, OBJECT );
     }
@@ -724,7 +761,7 @@ class S3F_clientData {
 
     }
 
-    function ajax_assignmentsData() {
+    function ajax_assignmentData() {
         dbg('Requesting Assignment details');
 
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
@@ -732,7 +769,7 @@ class S3F_clientData {
         dbg("Nonce is OK");
     }
 
-    function ajax_measurementsData() {
+    function ajax_measurementData() {
 
         dbg('Requesting measurement data');
 
@@ -754,7 +791,9 @@ class S3F_clientData {
         dbg("Loading measurement data");
         $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
 
-        $measurements = $this->load_measurements( $clientId );
+        // $measurements = $this->load_measurements( $clientId );
+        $mClass = new e20rMeasurements( $this->client_id );
+        $measurements = $mClass->get_Measurements();
 
         $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
 

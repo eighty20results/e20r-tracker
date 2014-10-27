@@ -27,7 +27,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
         // Create database tables
         $tracker = new e20rTracker();
-        $tracker->activateE20R_Plugin();
+        $tracker->e20r_tracker_activate();
 
 
         // Iterate through and check that DB was correctly created
@@ -42,7 +42,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         } // End foreach
 
         // Do whatever uninstall magic we need to do
-        $tracker->deactivateE20R_Plugin();
+        $tracker->e20r_tracker_deactivate();
 
         // Validate that the tables are now gone.
         foreach ( $this->plugin->_tables as $tblName ) {
@@ -61,7 +61,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
         // Create database tables
         $tracker = new e20rTracker();
-        $tracker->activateE20R_Plugin();
+        $tracker->e20r_tracker_activate();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         $ID2 = $this->plugin->addItem('nourish_test2', 'Test Habit for Nourish', '07/22/2014', '07/24/2014', 1, 1, 12);
@@ -75,7 +75,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         $this->plugin->delItem( $ID );
 
         // Do whatever uninstall magic we need to do
-        $tracker->deactivateE20R_Plugin();
+        $tracker->e20r_tracker_deactivate();
 
     }
 
@@ -85,7 +85,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
         // Create database tables
         $tracker = new e20rTracker();
-        $tracker->activateE20R_Plugin();
+        $tracker->e20r_tracker_activate();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         dbgOut("Updated data from DB:" . print_r( $wpdb->get_row( "SELECT * FROM {$this->plugin->_tables['items']} WHERE id = {$ID}" ), true));
@@ -107,9 +107,18 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         }
 
         // Do whatever uninstall magic we need to do
-        $tracker->deactivateE20R_Plugin();
+        $tracker->e20r_tracker_deactivate();
 
+    }
 
+    function testInitMeasurements() {
+
+        global $wpdb;
+
+        $tracker = new e20rTracker();
+        $tracker->e20r_tracker_activate();
+
+        $tracker->e20r_tracker_deactivate();
     }
 }// The end (end class)
  

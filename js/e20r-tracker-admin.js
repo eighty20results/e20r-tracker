@@ -683,7 +683,7 @@ function e20r_LoadClientData( $type ) {
 
     } else if ($type === 'measurements') {
 
-        $action = 'e20r_measurementsData';
+        $action = 'e20r_measurementData';
         $btn = jQuery("#e20r-client-measurements");
 
     } else {
@@ -723,103 +723,135 @@ function e20r_LoadClientData( $type ) {
 
                 jQuery('#e20r-admin-measurements').html(data.data);
 
-                var firstDate = data.weight[0][0];
-                var lastDate = data.weight[data.weight.length - 1][0];
+                var firstDate;
+                var lastDate;
 
-                var $minTick = firstDate - 604800000;
-                var $maxTick = lastDate + 604800000;
+                var $minTick;
+                var $maxTick;
 
-                var $entries = data.weight.length;
-                var $stepSize = '1 week';
+                var $entries;
+                var $stepSize;
 
-                if ( $entries >= 26 ) {
-                    $stepSize = '2 weeks';
+
+                if ( ( typeof data.weight !== 'undefined' ) && ( data.weight.length > 0 ) ) {
+
+                    firstDate = data.weight[0][0];
+                    lastDate = data.weight[data.weight.length - 1][0];
+
+                    $minTick = firstDate - 604800000;
+                    $maxTick = lastDate + 604800000;
+
+                    $entries = data.weight.length;
+                    $stepSize = '1 week';
+
+                    if ($entries >= 26) {
+                        $stepSize = '2 weeks';
+                    }
+
+                    var $wPlot = jQuery.jqplot('weight_chart', [data.weight], {
+                        title: 'Weight History',
+                        gridPadding: {right: 35},
+                        // legend: {show: false },
+                        seriesDefaults: {
+                            showMarker: false,
+                            pointLabels: {show: false}
+                        },
+                        axes: {
+                            xaxis: {
+                                renderer: jQuery.jqplot.DateAxisRenderer,
+                                labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                                tickOptions: {
+                                    fontFamily: 'Verdana',
+                                    fontSize: '9px',
+                                    angle: 30,
+                                    formatString: '%v',
+                                    showLabel: true
+                                },
+                                showTicks: true,
+                                tickInterval: $stepSize,
+                                min: $minTick,
+                                max: $maxTick
+                            },
+                            yaxis: {
+                                labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                tickOptions: {formatString: '%.0f'}
+                            }
+                        },
+                        series: [{
+                            color: '#004DFF',
+                            lineWidth: 4,
+                            markerOptions: {
+                                style: 'square'
+                            },
+                            rendererOptions: {
+                                smooth: true
+                            }
+                        }]
+                    });
                 }
 
-                var $wPlot = jQuery.jqplot( 'weight_chart', [ data.weight ], {
-                    title: 'Weight History',
-                    gridPadding:{right:35},
-                    // legend: {show: false },
-                    seriesDefaults: {
-                        showMarker: false,
-                        pointLabels: { show: false }
-                    },
-                    axes: {
-                        xaxis: {
-                            renderer: jQuery.jqplot.DateAxisRenderer,
-                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                            tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
-                            tickOptions: {
-                                fontFamily: 'Verdana',
-                                fontSize: '9px',
-                                angle: 30,
-                                formatString: '%v',
-                                showLabel: true
-                            },
-                            showTicks: true,
-                            tickInterval: $stepSize,
-                            min: $minTick,
-                            max: $maxTick
-                        },
-                        yaxis: {
-                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                            tickOptions: { formatString: '%.0f' }
-                        }
-                    },
-                    series:[{
-                        color: '#004DFF',
-                        lineWidth:4,
-                        markerOptions:{
-                            style:'square'
-                        },
-                        rendererOptions: {
-                            smooth: true
-                        }
-                    }]
-                });
+                if ( ( typeof data.girth !== 'undefined' ) && ( data.girth.length > 0 ) ) {
 
-                var gPlot = jQuery.jqplot('girth_chart', [ data.girth ], {
-                    title: 'Total Girth',
-                    gridPadding:{right:35},
-                    seriesDefaults: {
-                        showMarker:false,
-                        pointLabels: { show:false }
-                    },
-                    axes: {
-                        xaxis: {
-                            renderer: jQuery.jqplot.DateAxisRenderer,
-                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                            tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
-                            tickOptions: {
-                                fontFamily: 'Verdana',
-                                fontSize: '9px',
-                                angle: 30,
-                                formatString: '%v',
-                                showLabel: true
+                    firstDate = data.girth[0][0];
+                    lastDate = data.girth[data.girth.length - 1][0];
+
+                    $minTick = firstDate - 604800000;
+                    $maxTick = lastDate + 604800000;
+
+                    $entries = data.girth.length;
+                    $stepSize = '1 week';
+
+                    if ($entries >= 26) {
+                        $stepSize = '2 weeks';
+                    }
+
+                    var gPlot = jQuery.jqplot('girth_chart', [data.girth], {
+                        title: 'Total Girth',
+                        gridPadding: {right: 35},
+                        seriesDefaults: {
+                            showMarker: false,
+                            pointLabels: {show: false}
+                        },
+                        axes: {
+                            xaxis: {
+                                renderer: jQuery.jqplot.DateAxisRenderer,
+                                labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                                tickOptions: {
+                                    fontFamily: 'Verdana',
+                                    fontSize: '9px',
+                                    angle: 30,
+                                    formatString: '%v',
+                                    showLabel: true
+                                },
+                                showTicks: true,
+                                tickInterval: $stepSize,
+                                min: $minTick,
+                                max: $maxTick
                             },
-                            showTicks: true,
-                            tickInterval: $stepSize,
-                            min: $minTick,
-                            max: $maxTick
+                            yaxis: {
+                                labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                tickOptions: {formatString: '%.0f'}
+                            }
                         },
-                        yaxis: {
-                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                            tickOptions: { formatString: '%.0f' }
-                        }
-                    },
-                    series:[{
-                        color: '#004DFF',
-                        lineWidth:4,
-                        markerOptions:{
-                            style:'square'
-                        },
-                        rendererOptions: {
-                            smooth: true
-                        }
-                    }]
-                });
+                        series: [{
+                            color: '#004DFF',
+                            lineWidth: 4,
+                            markerOptions: {
+                                style: 'square'
+                            },
+                            rendererOptions: {
+                                smooth: true
+                            }
+                        }]
+                    });
 
                 }
+                else {
+                    alert("This user has no available data at this time");
+                }
+            }
 
         },
         complete: function () {

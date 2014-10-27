@@ -129,3 +129,17 @@
     font-size: 12pt;
     line-height: 1em;
 }
+
+.e20r-progress-border {
+    width: 20px;
+    color: darkgrey;
+}
+
+.e20r-number-col {
+    width: 62px;
+    text-align: center;
+    padding-top: 8px;
+    line-height: 50px;
+    color: #666666;
+    font-size: 58px;
+}

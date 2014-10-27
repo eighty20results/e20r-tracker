@@ -31,6 +31,8 @@ class e20rTracker {
         $this->tables->checkin_items = $wpdb->prefix . 'e20r_checkin_items';
         $this->tables->checkin_rules = $wpdb->prefix . 'e20r_checkin_rules';
         $this->tables->checkin = $wpdb->prefix . 'e20r_checkin';
+        $this->tables->assignments = $wpdb->prefix . 'e20r_assignment';
+        $this->tables->responses = $wpdb->prefix . '';
         $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
         $this->tables->programs = $wpdb->prefix . 'e20r_programs';
@@ -39,10 +41,11 @@ class e20rTracker {
 
         /* Load required classes used by the plugin */
         $this->clientData = new S3F_clientData();
-        $this->checkinData = new E20Rcheckin();
+        $this->checkinData = new e20rCheckin();
         $this->exercises = new ExercisePrograms();
         $this->programInfo = new e20rPrograms();
-        $this->articles = new e20rArticles();
+        $this->articles = new e20rArticle();
+        $this->assignment = new e20rAssignment();
 
         /* Load scripts & CSS */
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
@@ -53,8 +56,8 @@ class e20rTracker {
         add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
         add_action( 'wp_ajax_e20r_clientDetail', array( &$this->clientData, 'ajax_clientDetail' ) );
         add_action( 'wp_ajax_e20r_complianceData', array( &$this->clientData, 'ajax_complianceData' ) );
-        add_action( 'wp_ajax_e20r_assignmentsData', array( &$this->clientData, 'ajax_assignmentsData' ) );
-        add_action( 'wp_ajax_e20r_measurementsData', array( &$this->clientData, 'ajax_measurementsData' ) );
+        add_action( 'wp_ajax_e20r_assignmentData', array( &$this->clientData, 'ajax_assignmentData' ) );
+        add_action( 'wp_ajax_e20r_measurementData', array( &$this->clientData, 'ajax_measurementData' ) );
         add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->clientData, 'ajax_getMemberlistForLevel' ) );
 
         add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
@@ -63,13 +66,15 @@ class e20rTracker {
         /* AJAX call-backs if user is unprivileged */
         add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this->clientData, 'ajaxUnprivError' ) );
         add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this->clientData, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_assignmentsData', array( &$this->clientData, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_measurementsData', array( &$this->clientData, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_assignmentData', array( &$this->clientData, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_measurementData', array( &$this->clientData, 'ajaxUnprivError' ) );
 
         /* Load various back-end pages/settings */
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
         add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
         add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
+
+        add_action( 'add_meta_boxes', array( &$this->articles, 'editor_metabox_setup') );
 
     }
 
@@ -178,7 +183,7 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        $page = add_menu_page( 'S3F Clients', __( 'S3F Clients','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        $page = add_menu_page( 'S3F Clients', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
 
 //      add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
@@ -443,7 +448,7 @@ class e20rTracker {
          * For assignments
          */
         $assignmentQsSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_aquestions (
+            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_questions (
                     id int not null auto_increment,
                     article_id int not null,
                     question text null,
@@ -453,15 +458,17 @@ class e20rTracker {
         ";
 
         $assignmentAsSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_aanswers (
+            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_answers (
                     id int not null auto_increment,
-                    lesson_id int not null,
+                    article_id int not null,
                     question_id int not null,
                     user_id int not null,
                     answer text null,
+                    field_type text null default 'textbox',
                     primary key id (id),
-                     key lessons (lesson_id asc),
-                     key user ( user_id asc ),
+                     key lessons (article_id asc),
+                     key user_id ( user_id asc ),
+                     key questions ( question_id asc )
                      )
                     {$charset_collate}
         ";

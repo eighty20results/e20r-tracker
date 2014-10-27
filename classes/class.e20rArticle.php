@@ -6,7 +6,7 @@
  * Time: 3:10 PM
  */
 
-class e20rArticles {
+class e20rArticle {
 
     public $_tables;
 
@@ -21,9 +21,57 @@ class e20rArticles {
         );
     }
 
-    public function view_articleMetabox() {
+    public function initArticle() {
 
 
+    }
+
+    public function view_articlePostMetabox() {
+
+        $metabox = '';
+
+        global $post;
+
+        dbg("Post loaded");
+
+        ob_start();
+        ?>
+        <div class="submitbox" id="e20r-tracker-article-postmeta">
+            <div id="minor-publishing">
+                <div id="e20r-article-metabox">
+                    <?php echo $this->view_articleMetabox( $post->ID ) ?>
+                </div>
+            </div>
+        </div>
+        <?php
+
+        $metabox = ob_get_clean();
+
+        echo $metabox;
+    }
+
+    public function view_articleMetabox( $post_id ) {
+
+        /**
+         * Tie $article_id to $post_id, checkin_id, assignment Question ID (and answers)
+         */
+
+
+    }
+
+    public function editor_metabox_setup( $object, $box ) {
+
+        dbg("Metabox for Post/Page editor being loaded");
+
+        $post_types = apply_filters("e20r_article_edit_types", array("post", "page") );
+
+        foreach( $post_types as $type ) {
+
+            add_meta_box( 'e20r-editor-meta', __( 'Article configuration', 'e20r_tracker' ), array(
+                "e20rArticles",
+                'view_articlePostMetabox'
+            ), $type, 'advanced', 'high' );
+        }
     }
 
     public function view_manageArticles() {
@@ -32,11 +80,12 @@ class e20rArticles {
         $article_list = $this->load_articles( false );
 
         $programs = new e20rPrograms();
-        $items = new E20Rcheckin();
+        $items = new e20rCheckin();
+
 
         ob_start();
         ?>
-        <H1>List of Check-In/Activity Items</H1>
+        <H1>Articles, Check-Ins and Assignments</H1>
         <hr />
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r_tracker_edit_nonce'); ?>
