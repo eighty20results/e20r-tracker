@@ -130,9 +130,33 @@
     line-height: 1em;
 }
 
+.e20r-progress-padding {
+    height: 25px;
+    background-color: #9C0000;
+}
 .e20r-progress-border {
-    width: 20px;
-    color: darkgrey;
+    width: 15px;
+    background-color: #9C0000;
+}
+
+.tl-corner {
+    border-top-left-radius: 15px;
+    -moz-border-radius-topleft: 15px;
+}
+
+.bl-corner {
+    border-bottom-left-radius: 15px;
+    -moz-border-radius-bottomleft: 15px;
+}
+
+.tr-corner {
+    border-top-right-radius: 15px;
+    -moz-border-radius-topright: 15px;
+}
+
+.br-corner {
+    border-bottom-right-radius: 15px;
+    -moz-border-radius-bottomright: 15px;
 }
 
 .e20r-number-col {
@@ -143,3 +167,266 @@
     color: #666666;
     font-size: 58px;
 }
+
+#e20r-progress-header {
+    color: white;
+    background-color: #9C0000;
+    font-size: 18px;
+}
+
+.e20r-settings-table td {
+    padding: 0px;
+    margin: 0px;
+}
+
+.e20r-settings-table td h3 {
+    padding: 5px 10px 0px 25px;
+    margin: 0px;
+}
+
+.e20r-inline-table {
+    border: 1px solid gray;
+    margin: 5px;
+    padding: 5px;
+}
+
+#saturday-progress-container {
+    background: rgba( 0, 76, 255, 0.95 );
+    border: 1px solid rgb( 0, 76, 255);
+}
+
+#saturday-progress-container .progress-canvas {
+    padding-top: 10px;
+}
+
+.progress-container {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    background: #C5C5C5;
+    border: #5C5C5C;
+    padding: 14px;
+}
+
+.progress-container > h3 {
+    font-variant: small-caps;
+    color: #FFF !important;
+    font-size: 20px !important;
+    line-height: 50% !important;
+    font-weight: bold;
+}
+
+.progress-container > h3 span {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+#e20r-progress-canvas {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    background: #FFF;
+    min-height: 300px;
+    padding: 14px;
+
+}
+#e20r-progress-form tfoot button.submit {
+    font-size: 22px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+    text-align: center;
+    cursor: default;
+    /*
+    color: buttontext;
+    padding: 2px 6px 3px;
+    border: 2px outset buttonface;
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    background-color: buttonface;
+    box-sizing: border-box;
+    margin: 0em;
+    */
+}
+
+
+table.e20r-progress-form > tbody > tr td {
+    vertical-align: top;
+    padding: 4px;
+    padding-bottom: 22px;
+    padding-top: 22px;
+    border-bottom: 1px solid #C8CBCC;
+}
+
+.table.e20r-progress-form td.content {
+    padding-left: 16px;
+}
+
+#saturday-progress-container legend {
+    float: left;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-variant: small-caps;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+    color: #9C0000;
+    margin-top: 2px;
+}
+
+#saturday-progress-container .help {
+    clear: left;
+    font-size: 14px;
+    line-height: 18px;
+    margin-bottom: 12px;
+    color: #000;
+}
+
+.measurement-header {
+    zoom: 1;
+    font-size: 16px;
+    padding: 8px;
+    border-top: 1px solid #004CFF;
+    background: rgba( 0, 76, 255, 0.2 );
+    color: #9C0000;
+}
+
+/* Norma @ Raintree: 713-275-0528 */
+
+.measurement-descr-container {
+    width: 452px;
+    float: left;
+}
+
+.progress-container p {
+    color: #000;
+}
+
+.girth-row-container p {
+    display: none;
+    font-size: 14px !important;
+}
+
+.measurement-field-container {
+    zoom: 1;
+    -moz-border-radius: 3px;
+    -webkit-border-right: 3px;
+    border: 1px solid #CCC;
+    background: #F7F7F7;
+    cursor: default;
+}
+
+.measurement-field-container label {
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    float: left;
+    display: block;
+    margin-left: 16px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    padding: 0 2px;
+    font-size: 14px;
+    line-height: 12px;
+    background: #FFF;
+    margin-top: -5px;
+}
+
+.measurement-field-container input {
+    clear: left;
+    margin-left: 20px;
+    display: block;
+    float: left;
+    margin-bottom: 10px;
+}
+
+.measurement-field-container span.unit {
+    float: left;
+    font-size: 16px;
+    margin: 8px;
+    color: #333;
+}
+
+.measurement-saved-container {
+    zoom: 1;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #CCC;
+    background: #F7F7F7;
+    cursor: default;
+    display: none; /* TODO: Use javascript to set this to/from 'none' */
+    background: #F6FEE1;
+    border: 1px solid #9FBE50;
+}
+
+.measurement-saved-container span.value {
+    clear: left;
+    float: left;
+    margin: 8px;
+    margin-right: 0;
+    font-weight: bold;
+    margin-left: 20px;
+    font-size: 28px;
+    line-height: 26px;
+}
+
+.measurement-saved-container span.unit {
+    margin-left: 6px;
+    margin-top: 12px;
+    float: left;
+    font-size: 16px;
+    maring: 8px;
+    color: #000;
+}
+
+.measurement-saved-container button.edit {
+    font-size: 14px;
+    float: right;
+    margin-right: 12px;
+    margin-top: 9px;
+}
+
+.measurement-field-container.saved {
+    display: block; /* TODO: Use javascript to change this to/from 'none' */
+}
+
+.measurement-field-container.active {
+
+}
+
+.active {
+    padding-top: 6px;
+}
+
+.girth-row-container {
+    zoom: 1;
+    margin-bottom: 12px;
+    padding: 6px 8px;
+    padding-top: 16px;
+    /* display: none; */
+    font-size: 14px;
+}
+
+.measurement-descr-container.active {
+    width: 362px;
+}
+
+.measurement-image.active {
+    width: 144px;
+    height: 145px;
+}
+
+.measurement-image {
+    width: 60px;
+    height: 57px;
+    display: block;
+    border: 1px solid #0B3E56;
+    float: left;
+    margin-right: 8px;
+}
+
+.girth-row-container:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+

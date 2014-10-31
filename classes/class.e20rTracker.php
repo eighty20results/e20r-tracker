@@ -51,6 +51,9 @@ class e20rTracker {
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_plotSW' ) );
+        add_action( 'wp_enqueue_scripts', array( &$this, 'load_JScript') );
+
+        add_action( "init", array( &$this, 'register_shortcodes' ) );
 
         /* AJAX call-backs */
         add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
@@ -75,6 +78,22 @@ class e20rTracker {
         add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
         add_action( 'add_meta_boxes', array( &$this->articles, 'editor_metabox_setup') );
+
+    }
+
+    public function register_shortcodes() {
+
+        global $current_user;
+
+        try {
+            // Generates the Measurement check-in form
+            $measurements = new e20rMeasurements( $current_user->ID );
+
+            add_shortcode( 'track_measurements', array( &$measurements, 'sc_editMeasurements' ) );
+        }
+        catch ( Exception $e ) {
+            dbg("Error loading measurement shortcode: " . $e->getMessage() );
+        }
 
     }
 
@@ -131,6 +150,8 @@ class e20rTracker {
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
+        add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
+
         // $this->render_settings_page();
 
     }
@@ -152,6 +173,82 @@ class e20rTracker {
     <?php
     }
 
+    public function render_measurement_list() {
+
+        global $current_user;
+
+        $options = get_option( $this->setting_name );
+
+        $mClass = new e20rMeasurements();
+        $measured_items = $mClass->getItems();
+        unset($mClass);
+
+        dbg( "Measured Items: " . print_r($measured_items, true ) );
+        ?>
+        <table class="e20r-settings-table">
+            <tbody>
+            <?php
+
+            foreach ( $measured_items as $key => $list ) {
+
+                if ( ! is_array( $list ) ) {
+                    dbg("Item: {$list}");
+                    ?>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="<?php echo $list; ?>-measurement" name="<?php echo $this->setting_name; ?>[measuring][<?php echo $list; ?>]" value="1" <?php checked( $options['measuring'][ $list ], 1 ); ?>>
+                        </td>
+                        <td>
+                            <label for="<?php echo $list ?>-measurement"><strong style="text-transform: capitalize;"><?php echo $list; ?></strong></label>
+                        </td>
+                    </tr>
+                <?php
+                }
+                else {
+                    $i = 1;
+                    dbg("Item List: " . print_r( $list, true ) );
+                    ?>
+                    <tr>
+                        <td colspan="2" style="text-transform: capitalize;"><h3><?php echo $key; ?></h3></td>
+                    </tr>
+                    <tr><td colspan="2">
+                        <table class="e20r-inline-table">
+                            <tbody>
+                                <tr><?php
+
+                            foreach ( $list as $item ) {
+                                $i++;
+                                    ?>
+                                    <td>
+                                        <input type="checkbox" id="<?php echo $item; ?>-measurement" name="<?php echo $this->setting_name; ?>[measuring][<?php echo $key; ?>][<?php echo $item; ?>]" value="1" <?php checked( $options['measuring'][ $key ][ $item ], 1 ); ?>>
+                                    </td>
+                                    <td>
+                                        <label for="<?php echo $item ?>-measurement"><strong style="text-transform: capitalize;"><?php echo $item; ?></strong></label>
+                                    </td><?php
+
+                                if ( $i == 3 ) {
+                                    $i = 1;
+                                    ?>
+                                </tr><tr><?php
+                                }
+                            }
+                            ?>
+                            </tr>
+                            </tbody>
+                        </table>
+                        </td>
+                    </tr><?php
+                }
+            }
+            ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    public function make_MeasurementCheckboxRow( $item ) {
+
+    }
     public function render_section_text() {
 
         $html = "<p>These settings will determine the behavior of the plugin during deactivation.</p>";
@@ -231,12 +328,12 @@ class e20rTracker {
             )
         );
 
-        wp_enqueue_style("e20r_tracker_css", E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
+        wp_enqueue_style("e20r_tracker_admin_css", E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
         wp_enqueue_script('e20r_tracker_admin');
 
     }
 
-    public function load_JSscript() {
+    public function load_JScript() {
 
         wp_register_script('e20r_tracker_js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array('jquery'), '0.1', true);
 
@@ -246,7 +343,10 @@ class e20rTracker {
             )
         );
 
+        wp_deregister_style("e20r_tracker_css");
+        wp_enqueue_style("e20r_tracker_css", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
         wp_enqueue_script('e20r_tracker_js');
+
     }
     /* Load graphing scripts */
     public function load_plotSW() {

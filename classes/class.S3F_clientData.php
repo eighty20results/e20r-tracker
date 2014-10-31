@@ -404,6 +404,8 @@ class S3F_clientData {
         if ( $measurements === null ) {
             // TODO: Load measurements from e20rMeasurements() class!
             $mClass = new e20rMeasurements( $clientId );
+            $mClass->init();
+
             $measurements = $mClass->getMeasurements();
             // $measurements = $this->load_measurements($clientId);
         }
@@ -793,6 +795,8 @@ class S3F_clientData {
 
         // $measurements = $this->load_measurements( $clientId );
         $mClass = new e20rMeasurements( $this->client_id );
+        $mClass->init();
+
         $measurements = $mClass->get_Measurements();
 
         $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
