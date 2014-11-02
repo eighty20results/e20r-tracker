@@ -2,10 +2,11 @@
 
 class e20rTracker {
 
-    private $clientData;
+    private $client = null;
     private $checkinData;
-    private $exercises;
+    private $workouts = null;
     private $programInfo;
+    private $articles = null;
 
     protected $settings = array();
     protected $setting_name = 'e20r-tracker';
@@ -23,7 +24,9 @@ class e20rTracker {
 
     public function init() {
 
-        global $wpdb;
+        global $wpdb, $current_user;
+
+        // $this->clientData = new S3F_clientData();
 
         $this->tables = new stdClass();
 
@@ -31,8 +34,8 @@ class e20rTracker {
         $this->tables->checkin_items = $wpdb->prefix . 'e20r_checkin_items';
         $this->tables->checkin_rules = $wpdb->prefix . 'e20r_checkin_rules';
         $this->tables->checkin = $wpdb->prefix . 'e20r_checkin';
-        $this->tables->assignments = $wpdb->prefix . 'e20r_assignment';
-        $this->tables->responses = $wpdb->prefix . '';
+        $this->tables->assignments = $wpdb->prefix . 'e20r_assignments';
+        $this->tables->responses = $wpdb->prefix . 'e20r_answers';
         $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
         $this->tables->programs = $wpdb->prefix . 'e20r_programs';
@@ -40,37 +43,36 @@ class e20rTracker {
         $this->tables->exercise = $wpdb->prefix . 'e20r_exercises';
 
         /* Load required classes used by the plugin */
-        $this->clientData = new S3F_clientData();
+        $this->client = new e20rClient();
         $this->checkinData = new e20rCheckin();
-        $this->exercises = new ExercisePrograms();
         $this->programInfo = new e20rPrograms();
         $this->articles = new e20rArticle();
-        $this->assignment = new e20rAssignment();
 
         /* Load scripts & CSS */
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_plotSW' ) );
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_JScript') );
+        add_action( 'wp_enqueue_scripts', array( &$this->client, 'load_scripts') );
 
         add_action( "init", array( &$this, 'register_shortcodes' ) );
 
         /* AJAX call-backs */
         add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
-        add_action( 'wp_ajax_e20r_clientDetail', array( &$this->clientData, 'ajax_clientDetail' ) );
-        add_action( 'wp_ajax_e20r_complianceData', array( &$this->clientData, 'ajax_complianceData' ) );
-        add_action( 'wp_ajax_e20r_assignmentData', array( &$this->clientData, 'ajax_assignmentData' ) );
-        add_action( 'wp_ajax_e20r_measurementData', array( &$this->clientData, 'ajax_measurementData' ) );
-        add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->clientData, 'ajax_getMemberlistForLevel' ) );
+        add_action( 'wp_ajax_e20r_clientDetail', array( &$this->client, 'ajax_clientDetail' ) );
+        add_action( 'wp_ajax_e20r_complianceData', array( &$this->client, 'ajax_complianceData' ) );
+        add_action( 'wp_ajax_e20r_assignmentData', array( &$this->client, 'ajax_assignmentData' ) );
+        add_action( 'wp_ajax_e20r_measurementData', array( &$this->client, 'ajax_measurementData' ) );
+        add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->client, 'ajax_getMemberlistForLevel' ) );
 
         add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
         add_action( 'wp_ajax_save_item_data', array( &$this->checkinData, 'ajax_save_item_data' ) );
 
         /* AJAX call-backs if user is unprivileged */
-        add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this->clientData, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this->clientData, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_assignmentData', array( &$this->clientData, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_measurementData', array( &$this->clientData, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_assignmentData', array( &$this, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_measurementData', array( &$this, 'ajaxUnprivError' ) );
 
         /* Load various back-end pages/settings */
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
@@ -86,10 +88,10 @@ class e20rTracker {
         global $current_user;
 
         try {
-            // Generates the Measurement check-in form
-            $measurements = new e20rMeasurements( $current_user->ID );
+            // Generates the Measurement check-in form for the logged in client/user.
+            // $client = new e20rClient( $current_user->ID );
 
-            add_shortcode( 'track_measurements', array( &$measurements, 'sc_editMeasurements' ) );
+            add_shortcode( 'track_measurements', array( &$this->client, 'shortcode_editProgress' ) );
         }
         catch ( Exception $e ) {
             dbg("Error loading measurement shortcode: " . $e->getMessage() );
@@ -122,6 +124,7 @@ class e20rTracker {
 
         return ( 1 == intval( $value ) ? 1 : 0);
     }
+
 
     /**
      * @return mixed -- stdClass() list of tables used by the tracker.
@@ -333,6 +336,9 @@ class e20rTracker {
 
     }
 
+    /*
+     *
+     */
     public function load_JScript() {
 
         wp_register_script('e20r_tracker_js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array('jquery'), '0.1', true);
@@ -380,6 +386,19 @@ class e20rTracker {
 
         wp_deregister_style( 'jqplot' );
         wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
+
+    }
+
+    /**
+     * Functions returns error message. Used by nopriv Ajax traps.
+     */
+    function ajaxUnprivError() {
+
+        dbg('Unprivileged ajax call attempted');
+
+        wp_send_json_error( array(
+            'message' => __('You must be logged in to access/view tracker data', 'e20r_tracker')
+        ));
 
     }
 
@@ -444,24 +463,32 @@ class e20rTracker {
 
         $intakeTableSql =
             "CREATE TABLE If NOT EXISTS {$wpdb->prefix}e20r_client_info (
-                    id int not null auto_increment,
+                    id int not null,
                     user_id int not null,
-                    user_dob date not null,
-                    height decimal(18, 3) null,
+                    birthdate date not null,
+                    program_start date not null,
+                    height decimal(18,3) null,
                     heritage int null,
                     waist_circumference decimal(18,3),
                     weight decimal(18,3) null,
                     is_metric tinyint default 0,
                     is_imperial tinyint default 0,
                     is_gb_imperial tinyint default 0,
+                    lengthunits varchar(20) null,
+                    weightunits varchar(20) null,
+                    gender varchar(1) null,
+                    progress_photo_dir varchar(255) not null default 'e20r-pics/',
+                    user_enc_key varchar(64) not null,
                     use_pictures tinyint default 0,
                     for_research tinyint default 0,
                     chronic_pain tinyint default 0,
                     injuries tinyint default 0,
                     primary key (id),
-                    key user_id (user_id asc) )
+                    key user_id (user_id asc),
+                    key programstart (program_start asc)
+              )
                   {$charset_collate}
-                ";
+        ";
 
         $measurementTableSql =
             "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_measurements (
@@ -516,10 +543,10 @@ class e20rTracker {
                     id int not null auto_increment,
                     user_id int null,
                     checkin_date datetime null,
-                    checkin_item_id int null,
+                    checkin_item_id int not null,
                     checkedin tinyint not null default 0,
                     primary key  (id),
-                      key checkin_item_id ( checkin_item_id asc )
+                    key checkin_item_id ( checkin_item_id asc ) )
                 {$charset_collate}";
 
 
@@ -529,18 +556,18 @@ class e20rTracker {
 
         $articlesSql =
             "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_articles (
-                  id as bigint not null auto_increment,
-                  title as varchar(255) null,
-                  title_prefix as varchar(30) not null default 'Lesson:'
-                  post_id as int not null,
-                  program_id as int not null,
-                  assignment_question_id as int null,
-                  checkin_item_id as int null,
-                  measurements_id as int null,
-                  release_date as date null,
-                  release_day as int null,
+                  id bigint not null auto_increment,
+                  title varchar(255) null,
+                  title_prefix varchar(30) not null default 'Lesson:',
+                  post_id int not null,
+                  program_id int not null,
+                  assignment_question_id int null,
+                  checkin_item_id int not null,
+                  measurements_id int null,
+                  release_date date null,
+                  release_day int null,
                   primary key (id),
-                    key assignment ( assignment_id asc ),
+                    key assignment ( assignment_question_id asc ),
                     key checkin_items ( checkin_item_id asc ) )
                 {$charset_collate}
             ";
@@ -552,8 +579,7 @@ class e20rTracker {
                     id int not null auto_increment,
                     article_id int not null,
                     question text null,
-                    primary key (id),
-
+                    primary key (id)
                     ) {$charset_collate}
         ";
 
@@ -585,6 +611,7 @@ class e20rTracker {
         dbDelta( $setsTableSql );
         dbDelta( $exercisesTableSql );
         dbDelta( $articlesSql );
+        dbDelta( $intakeTableSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 

@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 8/15/14
- * Time: 10:06 AM
- */
 
-class ExercisePrograms {
+class e20rWorkouts {
 
     private $_tables;
 
@@ -14,7 +8,7 @@ class ExercisePrograms {
 
         global $wpdb;
 
-        dbg("Running constructor for ExercisePrograms");
+        dbg("Running constructor for e20rWorkouts");
 
         $this->_tables = new stdClass();
 

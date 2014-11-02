@@ -1,6 +1,6 @@
 <?php
 
-class S3F_clientData {
+class e20rClientViews {
 
     public $old_tables;
     public $tables;
@@ -8,23 +8,18 @@ class S3F_clientData {
     private $levels = array(); // Empty array
     protected $client_id;
 
-    function __construct() {
+    function e20rClientViews( $id = null ) {
 
-        dbg("Constructor for S3F_clientData");
+        dbg("Constructor for e20rClientViews");
 
-        global $wpdb;
-
-       $this->old_tables = new stdClass();
-
-        $this->old_tables->assignments = "{$wpdb->prefix}s3f_nourishAssignments";
-        $this->old_tables->compliance = "{$wpdb->prefix}s3f_nourishHabits";
-        $this->old_tables->surveys = "{$wpdb->prefix}e20r_Surveys";
-        $this->old_tables->measurements = "{$wpdb->prefix}nourish_measurements";
-        $this->old_tables->meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
+        if ( ! empty( $id ) ) {
+            $this->client_id = $id;
+        }
 
         $tmp = new e20rTracker();
 
         $this->tables = $tmp->tables;
+
 
     }
 
@@ -32,38 +27,9 @@ class S3F_clientData {
 
         $this->load_levels();
     }
-    private function load_levels( $name = null ) {
 
-        global $wpdb;
 
-        if ( ! function_exists( 'pmpro_getAllLevels' ) ) {
-            $this->raise_error( 'pmpro' );
-        } else {
-
-            dbg("Loading levels from PMPro");
-
-            $allLevels = pmpro_getAllLevels( true );
-
-            if ( ! empty( $name ) ) {
-
-                $name = str_replace( '+', '\+', $name);
-                $pattern = "/{$name}/i";
-                dbg("Pattern: {$pattern}");
-            }
-
-            foreach( $allLevels as $level ) {
-
-                if ( preg_match($pattern, $level->name ) == 1 ) {
-                    $this->levels[] = $level->id;
-                }
-                elseif ( empty( $name ) ) {
-                    $this->levels[] = $level->id;
-                }
-            }
-        }
-    }
-
-    private function raise_error( $type ) {
+    public function raise_error( $type ) {
 
         switch ( $type ) {
 
@@ -210,7 +176,7 @@ class S3F_clientData {
         return $html;
     }
 
-    public function fetch_levelList( $onlyVisible = false) {
+    public function fetch_levelList( $onlyVisible = false ) {
 
         $allLevels = pmpro_getAllLevels();
         $levels = array();
@@ -345,7 +311,7 @@ class S3F_clientData {
         $program_list = new e20rPrograms();
         // $programData = $program_list->load_client_programs( $clientId );
         try {
-            $appointments = $this->load_client_appointments( $clientId );
+            $appointments = $this->client->load_appointments();
         }
         catch ( Exception $e ) {
             dbg("Exception thrown: " . $e->getMessage() );
@@ -402,7 +368,7 @@ class S3F_clientData {
         }
 
         if ( $measurements === null ) {
-            // TODO: Load measurements from e20rMeasurements() class!
+
             $mClass = new e20rMeasurements( $clientId );
             $mClass->init();
 
@@ -552,40 +518,6 @@ class S3F_clientData {
 
     }
 
-    public function load_client_appointments( $clientId ) {
-
-        global $current_user, $wpdb, $appointments;
-
-        if ( empty( $appointments ) ) {
-
-            throw new Exception("Appointments+ Plugin is not installed.");
-            return false;
-        }
-
-        $statuses = array( "completed", "removed" );
-
-        if ( $clientId == 0 ) {
-
-            $clientId = $current_user->ID;
-        }
-
-        $sql = $wpdb->prepare(
-            "
-                SELECT ID, user, start, status, created
-                FROM {$appointments->app_table} AS app
-                INNER JOIN {$wpdb->users} AS usr
-                  ON ( app.user = usr.ID )
-                WHERE user = %d AND status NOT IN ( [IN] )
-                ORDER BY start ASC
-            ",
-            $clientId
-        );
-
-        $sql = $this->prepare_in( $sql, $statuses, '%s' );
-        // dbg("SQL for appointment list: " . print_r( $sql, true ) );
-
-        return $wpdb->get_results( $sql, OBJECT );
-    }
 
     public function generate_plot_data ( $data, $variable ) {
 
@@ -797,7 +729,7 @@ class S3F_clientData {
         $mClass = new e20rMeasurements( $this->client_id );
         $mClass->init();
 
-        $measurements = $mClass->get_Measurements();
+        $measurements = $mClass->getMeasurements();
 
         $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
 
@@ -807,19 +739,6 @@ class S3F_clientData {
         $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
         echo $data;
         exit;
-    }
-
-    /**
-     * Functions returns error message. Used by nopriv Ajax traps.
-     */
-    function ajaxUnprivError() {
-
-        dbg('Unprivileged ajax call attempted');
-
-        wp_send_json_error( array(
-            'message' => __('You must be logged in to access/view tracker data', 'e20r_tracker')
-        ));
-
     }
 
     private function validateClientAccess( $clientId ) {

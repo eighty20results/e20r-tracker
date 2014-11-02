@@ -17,16 +17,22 @@ define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
 define( 'E20R_QUESTIONS', 1 );
 define( 'E20R_ANSWERS', 1 );
+define( 'CONST_SATURDAY', 6 );
+define( 'CONST_SUNDAY', 0 );
+define( 'CONST_MONDAY', 1 );
 
 if ( ! class_exists( 'e20rTracker' ) ):
 
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR ."class.e20rTracker.php");
+    require_once( E20R_PLUGIN_DIR . "classes/class.e20rTracker.php");
+
+    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
+    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
+
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rPrograms.php" );
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rCheckin.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rClient.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.ExercisePrograms.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rMeasurements.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.S3F_clientData.php" );
+
+    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rWorkouts.php" );
+
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rAssignment.php" );
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rArticle.php" );
 
