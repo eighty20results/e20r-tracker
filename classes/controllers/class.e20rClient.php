@@ -15,18 +15,6 @@ class e20rClient {
 
     function e20rClient( $user_id = null ) {
 
-        if ( $user_id === null ) {
-
-            global $current_user;
-
-            if ( $current_user->id != 0 ) {
-                dbg("User ID: " . $current_user->id );
-                $user_id = $current_user->id;
-            } /* else {
-                throw new Exception( "Error: Unauthorized user" );
-            }*/
-        }
-
         $this->id = $user_id;
 
     }
@@ -35,8 +23,20 @@ class e20rClient {
 
         dbg('Running INIT for Client Controller');
 
+        if ( $this->id  == null ) {
+            global $current_user;
+
+            if ( $current_user->ID != 0 ) {
+                dbg("User ID: " . $current_user->ID );
+                $user_id = $current_user->ID;
+            }
+            else {
+                throw new Exception( "Error: Unauthorized user" );
+            }
+        }
+
         if ( ! class_exists( 'e20rClientModel' ) ) {
-            require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
+            include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
         }
 
         $this->data = new e20rClientModel( $this->id );
@@ -53,7 +53,7 @@ class e20rClient {
     public function initClientViews() {
 
         if ( ! class_exists( 'e20rClientViews' ) ) {
-            require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
+            include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
         }
 
         $this->show = new e20rClientViews();
@@ -105,8 +105,13 @@ class e20rClient {
         wp_localize_script('e20r_progress_js', 'e20r_tracker',
             array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
-                'user_info' => array (
+                'settings' => array(
+                    'article_id' => $this->getArticleID(),
+                ),
+                'user_info' => array(
+                    "user_id" => $this->data->info->user_id,
                     "program_startdate" => $this->data->info->program_start,
+                    "display_birthdate" => ( is_null( $this->data->info->birthdate) ? 1 : 0),
 //                    'article_id' => $this->getArticleId(),
                     "birthdate" => $this->data->info->birthdate,
                     "lengthunits" => $this->data->info->lengthunits,
@@ -122,6 +127,12 @@ class e20rClient {
         wp_enqueue_script('e20r_progress_js');
     }
 
+    private function getArticleID() {
+
+        global $post;
+
+        return $post->ID;
+    }
     public function getInfo() {
 
         if ( empty( $this->info ) ) {

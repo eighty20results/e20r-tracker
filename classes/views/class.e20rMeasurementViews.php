@@ -11,11 +11,16 @@ class e20rMeasurementViews {
 
     private $unitInfo;
 
-    public function e20rMeasurementViews( $when, $data, $fields ) {
+    public function e20rMeasurementViews( $when, $data, $fields, $unit ) {
+
+        dbg("When: {$when}");
+        dbg("Data: " . print_r( $data, true ) );
+        dbg("Fields: " . print_r( $fields, true ) );
 
         $this->when = $when;
         $this->data = $data;
         $this->fields = $fields;
+        $this->unitInfo = $unit;
 
     }
 
@@ -68,7 +73,7 @@ class e20rMeasurementViews {
         <fieldset>
         <legend>
             <?php echo $key . " Measurement"; ?><a href="e20r-tracker-help.php?topic=<?php echo str_replace( ' ', '-', strtolower($key) ); ?>" class="lbp_secondary">
-                <img src="<?php echo plugins_url('../images/help.png', __FILE__); ?>">
+                <img src="<?php echo plugins_url('../../images/help.png', __FILE__); ?>">
             </a>
         </legend>
         <div class="help" style="margin-bottom: 24px;">
@@ -105,7 +110,7 @@ class e20rMeasurementViews {
             <fieldset>
             <legend>
                 Progress Photos <a href="e20r-tracker-help.php?topic=<?php echo str_replace( ' ', '-', strtolower($key) ); ?>" class="lbp_secondary">
-                    <img src="<?php echo plugins_url('../images/help.png', __FILE__); ?>">
+                    <img src="<?php echo plugins_url('../../images/help.png', __FILE__); ?>">
                 </a>
             </legend>
             <div class="help" style="margin-bottom: 24px;">
@@ -126,37 +131,36 @@ class e20rMeasurementViews {
         // TODO: Fix the data for this table (it's assumed to be available.)
 
         dbg("In createBlockTable()");
-        dbg("Content of list: " . print_r( $list, true));
-
-        dbg( "{$key} measurements on {$this->when}" );
+                dbg( "{$key} measurements on {$this->when}" );
 
         ob_start();
 
-        foreach ( $list as $item => $value ) {
+        foreach ( $list as $idx => $value ) {
             ?>
             <h5 class="measurement-header">
-                <span class="title"><?php echo ucfirst($item) . " " . ucfirst($key); ?></span>
-                <img src="<?php echo plugins_url('../images/help.png', __FILE__); ?>">
+                <span class="title"><?php echo ucfirst($value) . " " . ucfirst($key); ?></span>
+                <img src="<?php echo plugins_url('../../images/help.png', __FILE__); ?>" class="measurement-descript-toggle">
             </h5>
             <div class="<?php echo strtolower($key); ?>-row-container">
                 <div class="measurement-image" style="<?php echo $this->bgImage( strtolower($item), strtolower($key) ); ?>"></div>
                 <div class="measurement-descr-container">
                     <p style="margin-bottom: 52px;">
-                        <?php echo $this->measurementDescr( $item ); ?>
+                        <?php   dbg("Load description for the {$value} measurement");
+                                echo $this->measurementDescr( $value ); ?>
                     </p>
                     <div class="measurement-field-container">
                         <div class="label-container">
-                            <label>Enter <?php echo ucfirst($item) . ' ' . ucfirst($key); ?></label>
+                            <label>Enter <?php echo ucfirst($value) . ' ' . ucfirst($key); ?></label>
                         </div>
-                            <input type="text" class="measurement-input" value="<?php echo ( ! empty( $this->data->{$this->fields[strtolower($item)]} ) ? $this->data->{$this->fields[strtolower($item)]} : '' ); ?>" data-measurement-type="<?php echo strtolower($key) .'_'. strtolower($item); ?>" style="width: 70px; font-size: 20px; text-align: center;">
-                        <span class="unit length"><?php echo $this->unit_type->distance; ?></span>
+                            <input type="text" class="measurement-input" value="<?php echo ( ! empty( $this->data->{$this->fields[strtolower($value)]} ) ? $this->data->{$this->fields[strtolower($value)]} : '' ); ?>" data-measurement-type="<?php echo strtolower($key) .'_'. strtolower($value); ?>" style="width: 70px; font-size: 20px; text-align: center;">
+                        <span class="unit length"><?php echo $this->unitInfo->distance; ?></span>
                     </div>
                     <div class="measurement-saved-container">
                         <div class="label-container">
                             <label>Entered <?php echo ucfirst($item) . ' ' . ucfirst($key); ?></label>
                         </div>
-                        <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($item)]} ) ? $this->data->{$this->fields[strtolower($item)]} : '' ); ?></span>
-                        <span class="unit length"><?php echo $this->unit_type->distance; ?></span>
+                        <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($value)]} ) ? $this->data->{$this->fields[strtolower($value)]} : '' ); ?></span>
+                        <span class="unit length"><?php echo $this->unitInfo->distance; ?></span>
                         <button class="edit">Change <?php echo $key; ?></button>
                     </div>
                 </div>
@@ -176,16 +180,28 @@ class e20rMeasurementViews {
                 <label>Enter Current <?php echo $item; ?></label>
             </div>
             <input type="text" value="<?php echo ( ! empty( $this->data->{$this->fields[strtolower($item)]} ) ? $this->data->{$this->fields[strtolower($item)]} : '' ); ?>" class="e20r-measurement-input" data-measurement-type="<?php echo strtolower($item); ?>" style="width: 70px; font-size: 20px; text-align: center;">
-            <span class="unit <?php echo strtolower($item); ?>"> </span>
+            <span class="unit <?php echo strtolower($item); ?>"><?php echo $this->unitInfo->mass; ?></span>
         </div>
         <div class="measurement-saved-container">
             <div class="e20r-label">
                 <label>Entered <?php echo $item; ?></label>
             </div>
             <span class="value"><?php echo (! empty( $this->data->{$this->fields[strtolower($item)]} ) ? $this->data->{$this->fields[strtolower($item)]} : null ); ?></span>
-            <span class="unit <?php echo strtolower($item); ?>"><?php echo $this->unit_type->mass; ?></span>
+            <span class="unit <?php echo strtolower($item); ?>"><?php echo $this->unitInfo->mass; ?></span>
             <button class="edit">Change <?php echo $item; ?></button>
         </div>
     <?php
     }
+
+    public function measurementDescr( $key ) {
+        dbg("Loading measurement description for {$key}");
+        // TODO: Read XML document containing measurement descriptions and help items.
+        $desc = "Measured just below the Adam's apple and at the level of the 7th cervical vertebra";
+        return $desc;
+    }
+
+    private function bgImage( $what, $type ) {
+        return "background-image: url(" . plugins_url( "../images/{$what}-{$type}.jpg);", __FILE__ );
+    }
+
 } 

@@ -19,6 +19,9 @@ class e20rArticle {
         $this->_tables = array(
             'articles' => $wpdb->prefix . 'e20r_articles',
         );
+
+        add_action( 'add_meta_boxes', array( &$this->articles, 'editor_metabox_setup') );
+
     }
 
     public function initArticle() {

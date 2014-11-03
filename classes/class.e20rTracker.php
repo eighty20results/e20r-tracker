@@ -42,12 +42,6 @@ class e20rTracker {
         $this->tables->sets = $wpdb->prefix . 'e20r_sets';
         $this->tables->exercise = $wpdb->prefix . 'e20r_exercises';
 
-        /* Load required classes used by the plugin */
-        $this->client = new e20rClient();
-        $this->checkinData = new e20rCheckin();
-        $this->programInfo = new e20rPrograms();
-        $this->articles = new e20rArticle();
-
         /* Load scripts & CSS */
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
@@ -55,9 +49,26 @@ class e20rTracker {
         add_action( 'wp_enqueue_scripts', array( &$this, 'load_JScript') );
         add_action( 'wp_enqueue_scripts', array( &$this->client, 'load_scripts') );
 
-        add_action( "init", array( &$this, 'register_shortcodes' ) );
-
         /* AJAX call-backs */
+
+        /* Load various back-end pages/settings */
+        add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
+        add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
+        add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
+
+        add_action( 'wp_loaded', array( &$this, 'configure_ajax_hooks' ) );
+        add_action( "wp_loaded", array( &$this, 'register_shortcodes' ) );
+
+    }
+
+    public function configure_ajax_hooks() {
+
+        /* Load required classes used by the plugin */
+        $this->client = new e20rClient();
+        $this->checkinData = new e20rCheckin();
+        $this->programInfo = new e20rPrograms();
+        $this->articles = new e20rArticle();
+
         add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
         add_action( 'wp_ajax_e20r_clientDetail', array( &$this->client, 'ajax_clientDetail' ) );
         add_action( 'wp_ajax_e20r_complianceData', array( &$this->client, 'ajax_complianceData' ) );
@@ -73,14 +84,6 @@ class e20rTracker {
         add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this, 'ajaxUnprivError' ) );
         add_action( 'wp_ajax_nopriv_e20r_assignmentData', array( &$this, 'ajaxUnprivError' ) );
         add_action( 'wp_ajax_nopriv_e20r_measurementData', array( &$this, 'ajaxUnprivError' ) );
-
-        /* Load various back-end pages/settings */
-        add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
-        add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
-        add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
-
-        add_action( 'add_meta_boxes', array( &$this->articles, 'editor_metabox_setup') );
-
     }
 
     public function register_shortcodes() {

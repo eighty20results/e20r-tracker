@@ -13,10 +13,11 @@ if ( ! class_exists( 'e20rCheckin' ) ):
 
             dbg("Loading E20Rcheckin class");
 
-            $this->_beta = array( 12, 20, 21, 27, 62 );
+            if ( ! function_exists( 'in_betagroup' ) ) {
+                dbg("in_betagroup function is missing???");
+            }
 
-
-            if ( ! in_array( $current_user->ID, $this->_beta ) ) {
+            if ( ! in_betagroup( $current_user->ID ) ) {
                 $this->_tables = array(
                     'items' => $wpdb->prefix . 'e20r_checkin_items',
                     'rules' => $wpdb->prefix . 'e20r_checkin_rules',
@@ -36,7 +37,7 @@ if ( ! class_exists( 'e20rCheckin' ) ):
 
             global $current_user;
 
-            return in_array( $current_user->ID, $this->_beta );
+            return in_betagroup( $current_user->ID );
         }
 
         public function get_checkinList( $shortname = null, $level_id = 0) {

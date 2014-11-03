@@ -78,7 +78,9 @@ class e20rMeasurements {
 
                 if ( ! class_exists( ' e20rMeasurementModel' ) ) {
                     dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
-                    require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
+                    if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
+                        wp_die( "Unable to load e20rMeasurementModel class" );
+                    }
                     dbg("Class loaded");
                 }
 
@@ -87,7 +89,7 @@ class e20rMeasurements {
 
                 if ( $when != 'all' ) {
                     dbg("Loading measurement data by date ({$when}) for {$this->id}");
-                    $this->model->loadByDate( $when );
+                    $this->model->loadForDate( $when );
 
                     return true;
                 }
@@ -163,24 +165,32 @@ class e20rMeasurements {
     }
 
 
+
     public function view_EditProgress( $date = null ) {
 
         if ( ! class_exists( 'e20rMeasurementViews' ) ) {
-            require_once( E20R_PLUGIN_DIR . "classes/views/class.MeasurementViews.php" );
+            if ( ! include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" ) )
+                wp_die( "Unable to load the e20rMeasurementViews() class" );
         }
 
         $count = 1;
 
-        $date = ( empty( $this->measurementDate ) && ( empty( $date ) ) ? $this->measurementDate->format( 'Y-m-d' ) : date( 'Y-m-d', current_time( 'timestamp' ) ) );
+        // TODO: Fix this so it uses the saturday date info for the date specified.
+        $date = ( ! empty( $this->measurementDate ) && ( ! empty( $date ) ) ? $this->measurementDate->format( 'Y-m-d' ) : date( 'Y-m-d', current_time( 'timestamp' ) ) );
 
         dbg("Date for use with progress tracking form: {$date}");
 
         $items = $this->getItems();
 
-        $data = $this->model->getByDate( $date );
-        $tables = $this->model->getFields();
+        $this->setUnitType();
 
-        $this->view = new e20rMeasurementViews( $date, $data, $tables['fields'] );
+        $data = $this->model->getByDate( $date );
+        $fields = $this->model->getFields();
+
+        dbg( "Items: " . print_r( $items, true ) );
+
+        $this->view = new e20rMeasurementViews( $date, $data, $fields, $this->unit_type );
+
         dbg("Views for measurements are loaded");
 
         ob_start();
@@ -195,19 +205,19 @@ class e20rMeasurements {
                 echo $this->view->createBlockTable( $list, $key, $count );
                 echo $this->view->generateMeasurementEnd();
             }
-            elseif ( ( ! is_array( $list ) ) && ( strtolower($key) != 'photos' ) ) {
+            elseif ( ( ! is_array( $list ) ) && ( strtolower($list) != 'photos' ) ) {
 
-                echo $this->view->generateMeasurementHelp( $count, $key );
-                echo $this->view->createInputBlock( $key, $count );
+                echo $this->view->generateMeasurementHelp( $count, $list );
+                echo $this->view->createInputBlock( $list, $count );
                 echo $this->view->generateMeasurementEnd();
             }
-            elseif ( ( strtolower( $key ) == 'photos' ) && ( $this->requestPhotos() ) ) {
+            elseif ( ( strtolower( $list ) == 'photos' ) && ( $this->requestPhotos() ) ) {
 
                 echo $this->view->createPhotoBlock( $list, $count );
                 echo $this->view->generateMeasurementEnd();
             }
 
-            if ( ( strtolower( $key ) != 'photos' ) && ! $this->requestPhotos() )  {
+            if ( ( strtolower( $list ) != 'photos' ) && ! $this->requestPhotos() )  {
                 $count++;
             }
 
@@ -395,17 +405,6 @@ class e20rMeasurements {
         var ASSIGNMENT_ID = 6541166;
     </script>
     <?php
-    }
-
-    private function bgImage( $what, $type ) {
-        return "background-image: url(" . plugins_url( "../images/{$what}-{$type}.jpg);", __FILE__ );
-    }
-
-    private function measurementDescr( $key ) {
-        dbg("Loading measurement description for {$key}");
-        // TODO: Read XML document containing measurement descriptions and help items.
-        $desc = "Measured just below the Adam's apple and at the level of the 7th cervical vertebra";
-        return $desc;
     }
 
     private function setUnitType() {

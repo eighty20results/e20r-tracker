@@ -12,6 +12,7 @@ class e20rMeasurementModel {
     private $lDate = null;
 
     private $measured_items = array();
+
     public $all = array();
     public $byDate = array();
 
@@ -19,7 +20,7 @@ class e20rMeasurementModel {
 
     public function e20rMeasurementModel( $user_id = null, $forDate = null ) {
 
-        // global $wpdb;
+        global $wpdb;
 
         $this->client_id = $user_id;
 
@@ -37,7 +38,6 @@ class e20rMeasurementModel {
         // $this->unit_type = $this->userInfo( 'unit-type' );
 
         // dbg("Last weeks date: " . $this->getMeasurements( 'last_week' ) );
-        global $wpdb;
 
         if ( ! function_exists( 'in_betagroup' ) ) {
             dbg("in_betagroup function is missing???");
@@ -96,7 +96,7 @@ class e20rMeasurementModel {
             'Progress Questionnaire'
         );
 
-        add_action( 'wp_enqueue_scripts', array( &$this, 'load_progress_scripts') );
+        //add_action( 'wp_enqueue_scripts', array( &$this, 'load_progress_scripts') );
 
         return true;
     }
@@ -155,6 +155,12 @@ class e20rMeasurementModel {
 
 
     }
+
+    public function getFields() {
+
+        return $this->tables['fields'];
+    }
+
     /**
      * Load and return all measurement records for the specific user ID
      *

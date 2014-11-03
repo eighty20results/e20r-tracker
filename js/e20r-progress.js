@@ -377,7 +377,7 @@ jQuery(function() {
         save: function(self) {
             var data = {
                 'action': 'saveMeasurement',
-                'assignment-id': ASSIGNMENT_ID,
+                'article-id': e20r_tracker.settings.article_id,
                 'measurement-type': self.type,
                 'measurement-value': self.value,
                 'uid': CPUSER.id
@@ -503,7 +503,7 @@ jQuery(function() {
         else {
             // passed
             var data = {
-                'assignment-id': ASSIGNMENT_ID,
+                'article-id': e20r_tracker.settings.article_id,
                 'action': 'saveMeasurement',
                 'measurement-type': 'completed',
                 'measurement-value': 1
@@ -540,7 +540,7 @@ jQuery(function() {
                         'action': 'saveMeasurement',
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
-                        'assignment-id': ASSIGNMENT_ID
+                        'article-id': e20r_tracker.settings.article_id
                     }
 
 
@@ -581,7 +581,7 @@ jQuery(function() {
 
             });
         });
-
+/*
     jQuery('.help-lightbox-handle')
         .colorbox({
             opacity: .5,
@@ -589,8 +589,8 @@ jQuery(function() {
             initialWidth: 100,
             initialHeight: 80
         });
-
-
+*/
+/*
     var PhotoUploader = {
         init: function() {
             var self = this;
@@ -619,7 +619,7 @@ jQuery(function() {
 
                     var postdata = {
                         'action': 'rotatephoto',
-                        'assignment-id': ASSIGNMENT_ID,
+                        'article-id': e20r_tracker.settings.article_id,
                         'degrees': deg,
                         'view': orientation,
                         'uid': CPUSER.id
@@ -642,7 +642,7 @@ jQuery(function() {
                     var orientation = jQuery(this).attr('data-orientation');
 
                     var data = {
-                        'assignment-id': ASSIGNMENT_ID,
+                        'article-id': e20r_tracker.settings.article_id,
                         'view': orientation,
                         'action': 'removephoto',
                         'uid': CPUSER.id
@@ -754,7 +754,7 @@ jQuery(function() {
     }
 
     PhotoUploader.init();
-
+*/
     /* !jQuery('.change-measurement-unit') */
 
     jQuery('.change-measurement-unit')
@@ -797,7 +797,7 @@ jQuery(function() {
                 LAST_WEEK_MEASUREMENTS[measurementField.type] = newMeasurementValue;
             }
 
-            /* for alaina */
+            /* TODO: Add Ajax support for saving & updating measurements when unit type changes */
 
             var data = {
                 'userid': CPUSER.id,
@@ -824,7 +824,7 @@ jQuery(function() {
         .appendTo(document.body);
 
     // basic photo uploader
-
+/*
     jQuery('.basic-photo-uploader-toggle')
         .click(function() {
             jQuery('#photo-upload-table.advanced thead').toggle();
@@ -838,7 +838,8 @@ jQuery(function() {
 
             return false;
         });
-
+*/
+    /*
     jQuery('form#basic-photo-uploader')
         .submit(function() {
             jQuery('#upload-channel').contents().find('body').html('');
@@ -940,12 +941,12 @@ jQuery(function() {
                 ++pollCount;
             }, 100);
         });
-
+    */
     function checkFormCompletion() {
         var data = {
             'action': 'checkCompletion',
-            'assignment-id': ASSIGNMENT_ID,
-            'uid': CPUSER.id
+            'article-id': e20r_tracker.settings.article_id,
+            'uid': e20r_tracker.user_info.user_id
         };
 
         jQuery.post('cpds-assignments.php', data, function(response) {
@@ -977,7 +978,8 @@ jQuery(function() {
         .removeAttr('disabled');
 
 
-    if (false === bool(DISPLAY_BIRTHDATE)) {
+    // if (false === bool(DISPLAY_BIRTHDATE)) {
+    if ( false === bool( e20r_tracker.user_info.display_birthdate ) ) {
         jQuery('#birth-date-row').hide();
     }
 
