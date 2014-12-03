@@ -13,7 +13,10 @@ class e20rMeasurements {
     private $model = null;
     private $view = null;
 
+    private $when = null;
+
     private $measurementDate = null;
+    private $girths = null;
 
 /*    private $lastMeasurement = null;
     private $measurementDate = null;
@@ -24,9 +27,11 @@ class e20rMeasurements {
 
     private $measured_items;
 
-    public function e20rMeasurements( $user_id = null, $forDate = null ) {
+    public function e20rMeasurements( $user_id = null, $forDate = null, $clientData = null ) {
 
         global $wpdb;
+
+        $this->load_ajax_hooks();
 
         if ( is_null($user_id) ) {
 
@@ -38,7 +43,7 @@ class e20rMeasurements {
             else {
 
                 $user_id = $current_user->ID;
-                dbg("Loading measurements for user {$user_id} - in Mesurements Controller");
+                dbg("Loading measurements for user {$user_id} - in Measurements Controller");
             }
         }
 
@@ -52,13 +57,19 @@ class e20rMeasurements {
             $this->measurementDate = new DateTime( 'NOW', new DateTimeZone( get_option( 'timezone_string' ) ) );
         }
 
-        // $this->unit_type = $this->userInfo( 'unit-type' );
+        if ( empty( $this->model ) ) {
+            $this->model = new stdClass();
+        }
+
+        $this->model->clientInfo = $clientData;
+        $this->setUnitType( $clientData );
 
         // dbg("Last weeks data: " . print_r( $this->getMeasurement('last_week'), true) );
+        $this->girths = array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' );
 
         $this->measured_items = array(
-            'Body Weight',
-            'Girth' => array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' ),
+            // 'Body Weight',
+            // 'Girth' => array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' ),
             'Photos',
             'Other Progress Indicators',
             'Progress Questionnaire'
@@ -67,54 +78,80 @@ class e20rMeasurements {
         return true;
     }
 
+    private function load_ajax_hooks() {
+
+        dbg("e20rMeasurements - Loading callback functions for AJAX operations");
+
+        add_action( 'wp_ajax_saveMeasurement', array( &$this, 'saveProgressForm_callback' ) );
+        add_action( 'wp_ajax_checkCompletion', array( &$this, 'checkProgressFormCompletion_callback' ) );
+        add_action( 'wp_ajax_updateUnitTypes', array( &$this, 'updateUnitTypes') );
+
+        add_action( 'wp_ajax_nopriv_saveMeasurement', 'e20r_ajaxUnprivError' );
+        add_action( 'wp_ajax_nopriv_checkCompletion', 'e20r_ajaxUnprivError' );
+        add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
+
+    }
+
+    public function updateUnitTypes() {
+        dbg( "Attempting to update the Length or weight Units via AJAX");
+
+
+    }
+
     public function loadData( $when = 'all') {
 
         // TODO: Support cached data (using WP Caching mech)
         dbg("Loading measurement data for {$when}");
 
-//        if ( empty( $this->model ) ) {
+        try {
 
-            try {
-
-                if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-                    dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
-                    if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                        wp_die( "Unable to load e20rMeasurementModel class" );
-                    }
-                    dbg("Class loaded");
+            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
+                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
+                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
+                    wp_die( "Unable to load e20rMeasurementModel class" );
                 }
+                dbg("Class loaded");
+            }
 
-                dbg("Init of measurement model");
-                $this->model = new e20rMeasurementModel( $this->id );
+            dbg("Init of measurement model");
+            $this->model = new e20rMeasurementModel( $this->id );
 
-                if ( $when != 'all' ) {
-                    dbg("Loading measurement data by date ({$when}) for {$this->id}");
-                    $this->model->loadForDate( $when );
+            if ( $when != 'all' ) {
+                dbg("Loading measurement data by date ({$when}) for {$this->id}");
+                $this->model->loadForDate( $when );
 
+                return true;
+            }
+            else {
+                dbg("Loading all measurement data for user {$this->id}");
+                $this->model->loadAll();
+
+                if ( ! empty( $this->model->all ) )
                     return true;
-                }
-                else {
-                    dbg("Loading all measurement data for user {$this->id}");
-                    $this->model->loadAll();
-
-                    if ( ! empty( $this->model->all ) )
-                        return true;
-                }
             }
-            catch ( Exception $e ) {
+        }
+        catch ( Exception $e ) {
 
-                dbg("Error loading measurement data: " . $e->getMessage() );
-                return false;
-            }
-//        }
+            dbg("Error loading measurement data: " . $e->getMessage() );
+            return false;
+        }
 
         return true;
-
     }
 
     private function transformForJS( $data ) {
 
+        $retVal = array();
 
+        foreach ($data as $key => $value ) {
+
+            $retVal[$key] = array(
+                'value' => $value,
+                'units' => ( $key != 'weight' ? $this->unit_type['lengthunits'] : $this->unit_type['weightunits'] ),
+            );
+        }
+
+        return $retVal;
     }
 
     public function getMeasurement( $when = 'all', $forJS = false ) {
@@ -127,17 +164,19 @@ class e20rMeasurements {
         switch ( strtolower( $when ) ) {
             case 'current':
 
-                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-7 days', CONST_SATURDAY);
-                return ( $forJS === true ? $this->transformForJS( $this->model->getByDate($date) ) : $this->model->getByDate($date) );
+                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-1 week', CONST_SATURDAY);
+                dbg("Saturday this week: " . print_r( $date[0], true) );
+
+                return ( $forJS === true ? $this->transformForJS( $this->model->getByDate($date[0]) ) : $this->model->getByDate($date[0]) );
 
                 break;
 
             case 'last_week':
 
-                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-7 days', CONST_SATURDAY);
-                dbg("Saturday last week: " . $date[0]);
+                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-2 weeks', CONST_SATURDAY);
+                dbg("Saturday last week: " . print_r( $date[1], true) );
 
-                return $this->model->getByDate( $date[0] );
+                return $this->model->getByDate( $date[1] );
                 break;
 
             case 'all':
@@ -175,28 +214,48 @@ class e20rMeasurements {
 
         $count = 1;
 
-        // TODO: Fix this so it uses the saturday date info for the date specified.
+        // TODO: Fix this so it uses the saturday date info for the date specified - Pull it based on the ArticleID.
+
         $date = ( ! empty( $this->measurementDate ) && ( ! empty( $date ) ) ? $this->measurementDate->format( 'Y-m-d' ) : date( 'Y-m-d', current_time( 'timestamp' ) ) );
 
-        dbg("Date for use with progress tracking form: {$date}");
+        dbg("view_EditProgress() - Date for use with progress tracking form: {$date}");
 
         $items = $this->getItems();
-
-        $this->setUnitType();
 
         $data = $this->model->getByDate( $date );
         $fields = $this->model->getFields();
 
-        dbg( "Items: " . print_r( $items, true ) );
+        dbg( "view_EditProgress() - Items: " . print_r( $items, true ) );
 
         $this->view = new e20rMeasurementViews( $date, $data, $fields, $this->unit_type );
 
-        dbg("Views for measurements are loaded");
+        dbg("view_EditProgress() - Views for measurements are loaded");
 
         ob_start();
 
         echo $this->view->startProgressForm();
+        dbg("Start of measurement form generated.");
 
+        echo $this->view->showChangeBirthDate();
+
+        dbg("Birth date portion of measurement form generated.");
+
+        echo $this->view->showWeightRow( $this->measurementDate );
+        dbg("Weight info for form generated.");
+
+        echo $this->view->showGirthRow( $this->girths, $this->measurementDate );
+        dbg("Girth Row generated");
+
+        echo $this->view->showPhotoRow( $this->measurementDate, $this->requestPhotos() );
+        dbg("Photo Row generated");
+
+        echo $this->view->showOtherIndicatorsRow( $this->measurementDate, $this->requestPhotos() );
+        dbg("Other Indicators row generated");
+
+        echo $this->view->showProgressQuestionRow( $this->measurementDate, $this->requestPhotos() );
+        dbg("Progress Questionnaire row generated");
+
+        /*
         foreach ( $items as $key => $list ) {
 
             if ( is_array( $list ) ) {
@@ -222,7 +281,7 @@ class e20rMeasurements {
             }
 
         } // End of foreach()
-
+        */
         echo $this->view->endProgressForm();
 
         $html = ob_get_clean();
@@ -235,6 +294,37 @@ class e20rMeasurements {
         // Using the startdate for the current user + whether the current delay falls on a Saturday (and it's a "Photo" day - every 4 weeks starting the 2nd week of the program )x
         // Return true.
         return false;
+    }
+
+    /***********************************************************
+     * Any and all ajax callback functions
+     **********************************************************/
+
+    /**
+     * Weekly progress form submission/save
+     */
+    public function saveProgressForm_callback() {
+
+        dbg("saveProgressForm() - Checking access");
+
+        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
+
+        dbg("saveProgressForm() - Access approved");
+
+        echo 'A-OK';
+        exit;
+    }
+
+    public function checkProgressFormCompletion_callback() {
+
+        dbg("checkProgressFormCompletion_callback() - Checking access");
+
+        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
+
+        dbg("checkProgressFormCompletion_callback() - Access approved");
+
+        echo 1;
+        exit;
     }
 
     /*********************************************************
@@ -270,24 +360,29 @@ class e20rMeasurements {
      */
     private function datesForMeasurements( $startDate, $endDate, $weekdayNumber ) {
 
-        $startDate = strtotime($startDate);
-        $endDate = strtotime($endDate);
+        dbg("datesForMeasurements(): {$startDate}, {$endDate}, {$weekdayNumber}");
+
+        $startDate = strtotime($startDate . ' 00:00:00 ' . get_option('timezone_string') );
+        $endDate = strtotime($endDate . ' 00:00:00 ' . get_option('timezone_string') );
+
+        dbg("datesForMeasurements() - timestamps: {$startDate}, {$endDate}, {$weekdayNumber}");
 
         $dateArr = array();
 
         do {
             if( date( "w", $startDate ) != $weekdayNumber ) {
 
-                $startDate = strtotime("+1 day", $startDate); // add 1 day
+                $startDate = strtotime("-1 day", $startDate); // add 1 day
             }
 
         } while( date( "w", $startDate ) != $weekdayNumber );
 
 
-        while ( $startDate <= $endDate ) {
+        while ( $startDate >= $endDate ) {
 
             $dateArr[] = date( 'Y-m-d', $startDate );
-            $startDate = strtotime("+1 week", $startDate); // add 7 days
+            $startDate = strtotime("-1 week", $startDate); // add 7 days
+            dbg('StartDate is now: ' . $startDate );
         }
 
         return($dateArr);
@@ -407,21 +502,71 @@ class e20rMeasurements {
     <?php
     }
 
-    private function setUnitType() {
+    /**
+     * Configure the weight & length unit settings for the current user
+     *
+     * Generates an array:
+     *
+     * array( 'weightunits' => array(
+     *                          'key' => 'lbs',
+     *                          'desc' => 'pounds (lbs)',
+     *                       ),
+     *        'lengthunits' => array(
+     *                          'key' => 'in',
+     *                          'desc' => 'inches (in)',
+     *                       ),
+     *          'default' => 'lbs',
+     *          '
+     *
+     *
+     * @param stdClass $client_data -- The client data from the database (object)
+     */
+    private function setUnitType( $client_data = null ) {
 
-        $unit = new stdClass();
-
-        switch ( $this->userInfo( 'unit-type' ) ) {
-
-            default:
-                $unit->mass = 'lbs (pounds)';
-                $unit->distance = 'inches (in)';
+        if ( empty ( $this->unit_type ) ) {
+            $this->unit_type = array();
         }
 
-        $this->unit_type = $unit;
+        if ( $client_data != null ) {
 
+            $this->unit_type['weightunits'] = $client_data->weightunits;
+            $this->unit_type['lengthunits'] = $client_data->lengthunits;
+
+        }
+        elseif ( ( $this->model->clientInfo != null ) && ( $client_data == null ) ) {
+            $this->unit_type['weightunits'] = $this->model->clientInfo->weightunits;
+            $this->unit_type['lengthunits'] = $this->model->clientInfo->lengthunits;
+        }
+        else {
+
+            global $wpdb;
+
+            if ( $this->id != 0 ){
+                $sql = $wpdb->prepare( "
+                    SELECT weightunits, lengthunits
+                    FROM {$wpdb->prefix}e20r_client_info
+                    WHERE user_id = %d
+                    LIMIT 1
+                    ",
+                    $this->id
+                );
+
+                $res = $wpdb->get_row( $sql );
+
+                if ( ! empty( $res ) ) {
+                    $this->unit_type['weightunits'] = $res->weightunits;
+                    $this->unit_type['lengthunits'] = $res->lengthunits;
+                }
+                else {
+                    $this->unit_type['weightunits'] = null;
+                    $this->unit_type['lengthunits'] = null;
+                }
+            }
+
+        }
     }
 
+    /*
     // private function getUserSetting( $setting, $user_id = null ) {
     private function userInfo( $setting, $user_id = null ) {
         global $wpdb;
@@ -434,58 +579,21 @@ class e20rMeasurements {
 
                 case 'unit-type';
                     $value = new stdClass();
-                    $value->mass = 'lbs (pounds)';
-                    $value->distance = 'inches (in)';
+                    $value->weigth = 'lbs (pounds)';
+                    $value->length = 'inches (in)';
             }
         }
 
         return $value;
 
     }
-
-    /**
-     *                 'last_week_measurements' => array (
-    'weight' => array(
-    'value' =>  157.6,
-    'units' => 'lbs'
-    ),
-    'girth_neck' => array(
-    'value' => 14,
-    'units' => 'in'
-    ),
-    'girth_shoulder' => array(
-    'value' => 43 ,
-    'units' => 'in'
-    ),
-    'girth_chest' => array(
-    'value' => 36.3 ,
-    'units' => 'in'
-    ),
-    'girth_upperarm' => array(
-    'value' => 11.5 ,
-    'units' => 'in'
-    ),
-    'girth_waist' => array(
-    'value' => 30.5 ,
-    'units' => 'in'
-    ),
-    'girth_hip' => array(
-    'value' => 37.5 ,
-    'units' => 'in'
-    ),
-    'girth_thigh' => array(
-    'value' => null,
-    'units' => 'in'
-    ),
-    'girth_calf' => array(
-    'value' => 14.1 ,
-    'units' => 'in'
-    )
-     */
+*/
     /**
      * @param $setting
      */
+    /*
     private function setUserSettings( $setting ) {
 
     }
+    */
 } 

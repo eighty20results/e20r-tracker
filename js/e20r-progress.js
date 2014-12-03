@@ -2,6 +2,24 @@
  * Created by sjolshag on 11/1/14.
  */
 
+var user_data = e20r_progress.user_info.userdata.replace(/&quot;/g, '"');
+var NourishUser = jQuery.parseJSON( user_data );
+
+var last_week_data = e20r_progress.measurements.last_week.replace( /&quot;/g, '"');
+var LAST_WEEK_MEASUREMENTS = jQuery.parseJSON( last_week_data );
+
+jQuery(function($) {
+
+    console.log("WP script for E20R Progress Update (client-side) loaded");
+
+    console.log("Loading user_data...");
+    console.dir( NourishUser );
+    console.log( "Loading Measurement data for last week" );
+    console.dir( LAST_WEEK_MEASUREMENTS );
+
+});
+
+
 window.construct = function(obj) {
     function Constructor_() {
         for (k in obj) {
@@ -163,10 +181,12 @@ jQuery(function() {
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
             this.__overrideDifferenceCheck = 0;
 
-            if (bool(this.$girthImage.length)) {
-                this.$girthImage.addClass(CPUSER['gender']);
+            console.log("Gender: " + NourishUser.gender );
 
-                if (this._isSkinfold && 'F' === CPUSER['gender']) { // ad hoc
+            if (bool(this.$girthImage.length)) {
+                this.$girthImage.addClass(NourishUser.gender);
+
+                if (this._isSkinfold && 'F' === NourishUser.gender) { // ad hoc
                     this.$girthImage.css('background-image', function(url) {
                         return url.replace('-m', '-f');
                     });
@@ -222,6 +242,7 @@ jQuery(function() {
             });
 
             this.stateTransition('default', 'active', function(self) {
+                console.log("Setting container to 'active'");
                 self.$fieldContainer.addClass('active');
 
                 if (self._isSkinfold) { // ad hoc
@@ -233,9 +254,9 @@ jQuery(function() {
 
                 if (bool(self.$girthImage.length)) {
                     self.$girthImage.addClass('active');
-                    self.$girthImage.css('background-image', function(src) {
+/*                    self.$girthImage.css('background-image', function(src) {
                         return 'url(' + src.match(/img=([^&]+)/)[1] + ')';
-                    });
+                    });*/
                 }
                 self.$girthRowContainer.addClass('active');
                 self.$description.parent().addClass('active'); // need to fix the para thing
@@ -375,16 +396,31 @@ jQuery(function() {
         },
 
         save: function(self) {
-            var data = {
+            var $data = {
                 'action': 'saveMeasurement',
-                'article-id': e20r_tracker.settings.article_id,
+                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                'article-id': e20r_progress.settings.article_id,
                 'measurement-type': self.type,
                 'measurement-value': self.value,
-                'uid': CPUSER.id
+                'user-id': NourishUser.id
             };
 
+            /*
             jQuery.post('cpds-assignments.php', data, function(response) {
                 console.log('Response: ' + response);
+            });
+            */
+            jQuery.ajax ({
+                url: e20r_progress.ajaxurl,
+                type: 'POST',
+                timeout: 10000,
+                dataType: 'JSON',
+                async: false,
+                data: $data,
+                error: function($response, $errString, $errType) {
+                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                    return;
+                }
             });
 
             self.changeState('saved');
@@ -432,15 +468,15 @@ jQuery(function() {
 
     var MeasurementField_ = construct(MeasurementField);
 
-    var weightUNIT = {'lbs': 'pounds (lbs)', 'kg': 'kilograms (kg)', 'st': 'stone (st)'}[e20r_tracker.user_info.weightunits];
-    var lengthUNIT = {'in': 'inches (in)', 'cm': 'centimeters (cm)'}[e20r_tracker.user_info.lengthunits];
+    var weightUNIT = {'lbs': 'pounds (lbs)', 'kg': 'kilograms (kg)', 'st': 'stone (st)'}[NourishUser.weightunits];
+    var lengthUNIT = {'in': 'inches (in)', 'cm': 'centimeters (cm)'}[NourishUser.lengthunits];
 
     var GIRTH_FIELDS = [],
         WEIGHT_FIELD = [];
 
     WEIGHT_FIELD.push(new MeasurementField_({ type: 'weight', period: 'week', unit: weightUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_neck', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_upperarm', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_arm', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_shoulder', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_chest', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_waist', period: 'week', unit: lengthUNIT }));
@@ -456,7 +492,7 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
 
-    jQuery('#submit-wpu-button').click(function() {
+    jQuery(document).on('click', '#submit-e20r-tracker-button', function() {
         jQuery('#validation-errors').remove();
 
         // Ensure at least one section of the form is answered
@@ -466,8 +502,7 @@ jQuery(function() {
         var otherMissing = (jQuery('textarea[name=essay1]').val().length == 0) ? true: false;
 
         if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
-            jQuery('.weekly-progress-form tfoot tr td:eq(1)')
-                .prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
           <strong>You must answer at least one of the sections to complete the assignment:</strong>\
           <br/><br/>\
           <ul style="margin-bottom: 0;">\
@@ -479,8 +514,7 @@ jQuery(function() {
         \</div>');
         }
         else if ((jQuery('#photos').length == 0) && (weightMissing && (girthsMissing >= 8) && otherMissing)) {
-            jQuery('.weekly-progress-form tfoot tr td:eq(1)')
-                .prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
           <strong>You must answer at least one of the sections to complete the assignment:</strong>\
           <br/><br/>\
           <ul style="margin-bottom: 0;">\
@@ -491,8 +525,7 @@ jQuery(function() {
         \</div>');
         }
         else if (girthsMissing > 0 && girthsMissing <= 7) {
-            jQuery('.weekly-progress-form tfoot tr td:eq(1)')
-                .prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
           <strong>You have missed some girth measurements. Please check the values and re-submit.</strong>\
           <br/><br/>\
           <ul style="margin-bottom: 0;">\
@@ -502,16 +535,31 @@ jQuery(function() {
         }
         else {
             // passed
-            var data = {
-                'article-id': e20r_tracker.settings.article_id,
-                'action': 'saveMeasurement',
-                'measurement-type': 'completed',
-                'measurement-value': 1
-            };
-
+            jQuery.ajax ({
+                url: e20r_progress.ajaxurl,
+                type: 'POST',
+                timeout: 10000,
+                dataType: 'JSON',
+                data: {
+                    'article-id': e20r_progress.settings.article_id,
+                    'action': 'saveMeasurement',
+                    'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                    'measurement-type': 'completed',
+                    'measurement-value': 1
+                },
+                error: function($response, $errString, $errType) {
+                    console.log($errString + ' error returned from saveMeasurement action: ' + $errType );
+                    return;
+                },
+                success: function($response) {
+                    // location.href = e20r_progress.settings.measurementSaved;
+                    console.log(e20r_progress.settings.measurementSaved);
+                }
+            });
+            /*
             jQuery.post('cpds-assignments.php', data, function(response) {
                 location.href = '/members/cp-home.php?wpucompleted=1';
-            });
+            });*/
         }
     });
 
@@ -520,39 +568,71 @@ jQuery(function() {
             jQuery('#progress-questionnaire')
                 .find('input[name^=pquestion]')
                 .click(function() {
-                    var data = {
+                    var $data = {
                         'action': 'saveMeasurement',
+                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
-                        'assignment-id': e20r-tracker.user_info.article_id
-                    }
+                        'user-id': NourishUser.id,
+                        'article-id': e20r_progress.settings.article_id
+                    };
 
-
+                    jQuery.ajax({
+                        url: e20r_progress.ajaxurl,
+                        type: 'POST',
+                        timeout: 10000,
+                        dataType: 'JSON',
+                        async: false,
+                        data: $data,
+                        error: function($response, $errString, $errType) {
+                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                            return;
+                        }
+                    });
+/*
                     jQuery.post('cpds-assignments.php', data,
                         function(response) {
                             console.log(response);
                         });
+*/
                 });
 
             jQuery('textarea[name=essay1]')
                 .blur(function() {
-                    var data = {
+                    var $data = {
                         'action': 'saveMeasurement',
+                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
-                        'article-id': e20r_tracker.settings.article_id
-                    }
+                        'user-id': NourishUser.id,
+                        'article-id': e20r_progress.settings.article_id
+                    };
 
+                    jQuery.ajax({
+                        url: e20r_progress.ajaxurl,
+                        type: 'POST',
+                        timeout: 10000,
+                        dataType: 'JSON',
+                        async: false,
+                        data: $data,
+                        error: function($response, $errString, $errType) {
+                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                            return;
+                        }
+                    });
 
-                    jQuery.post('cpds-assignments.php', data,
-                        function(response) {
-                            console.log(response);
-                        });
+                    /*
+                                        jQuery.post('cpds-assignments.php', data,
+                                            function(response) {
+                                                console.log(response);
+                                            });
+                    */
                 });
         }
     };
 
     ProgressQuestionnaire.init();
+    console.log("Questionnaire class inited");
 
     /* select units */
     jQuery('#save-units')
@@ -577,9 +657,8 @@ jQuery(function() {
 
             var queryString = jQuery('#measurement-inputs select').serialize();
 
-            jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) {
+            // FixMe - jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) { });
 
-            });
         });
 /*
     jQuery('.help-lightbox-handle')
@@ -619,10 +698,10 @@ jQuery(function() {
 
                     var postdata = {
                         'action': 'rotatephoto',
-                        'article-id': e20r_tracker.settings.article_id,
+                        'article-id': e20r_progress.settings.article_id,
                         'degrees': deg,
                         'view': orientation,
-                        'uid': CPUSER.id
+                        'uid': NourishUser.id
                     };
 
                     jQuery.post('cpds-assignments.php', postdata, function() {
@@ -642,15 +721,15 @@ jQuery(function() {
                     var orientation = jQuery(this).attr('data-orientation');
 
                     var data = {
-                        'article-id': e20r_tracker.settings.article_id,
+                        'article-id': e20r_progress.settings.article_id,
                         'view': orientation,
                         'action': 'removephoto',
-                        'uid': CPUSER.id
+                        'uid': NourishUser.id
                     };
 
                     jQuery.post('cpds-assignments.php', data, function() {
                         jQuery('#photo-' + orientation)
-                            .attr('src', 'cp-showImage.php?w=165&uid=' + CPUSER.id + '&img=')
+                            .attr('src', 'cp-showImage.php?w=165&uid=' + NourishUser.id + '&img=')
                             .addClass('null')
                             .closest('td')
                             .find('.photo-upload-notifier')
@@ -668,7 +747,7 @@ jQuery(function() {
 
             var queryString = 'orientation=' + orientation;
             queryString += '&date=' + PROGDATE;
-            queryString += '&id=' + CPUSER.id;
+            queryString += '&id=' + NourishUser.id;
 
             queryString = encodeURIComponent(queryString);
 
@@ -721,7 +800,7 @@ jQuery(function() {
 
                         // display a loader
 
-                        var filePath = 'cp-showImage.php?uid=' + CPUSER.id + '&w=165&img=' + response;
+                        var filePath = 'cp-showImage.php?uid=' + NourishUser.id + '&w=165&img=' + response;
                         filePath += '&rand=' + Math.random();
 
                         //alert (filePath);
@@ -769,7 +848,12 @@ jQuery(function() {
         .each(function() {
             var dimension = jQuery(this).attr('id').split('-')[1]; // "weight" or "length"
 
-            var currentValue = CPUSER[dimension + 'units'];
+            if ( dimension == 'weight' ) {
+                var currentValue = NourishUser.weightunits;
+            }
+            else if ( dimension == 'length' ) {
+                var currentValue = NourishUser.lengthunits
+            }
 
             jQuery(this).val(currentValue);
 
@@ -797,20 +881,31 @@ jQuery(function() {
                 LAST_WEEK_MEASUREMENTS[measurementField.type] = newMeasurementValue;
             }
 
-            /* TODO: Add Ajax support for saving & updating measurements when unit type changes */
+            /* Done: Add Ajax support for saving & updating measurements & unit type if the user chooses to change it */
 
-            var data = {
-                'userid': CPUSER.id,
+            var $data = {
+                'action': 'updateUnitTypes',
+                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                'user-id': NourishUser.id,
                 'dimension': dimension, // "weight" or "length"
                 'value': newUnitAbbr // "lbs" or "cm"
             };
 
             // persist to database
-            jQuery.post('cp-participantSaveSettings.php', data, function(response) {
-                // nothing needs to go here yet, eventually I will have error handling
+            jQuery.ajax({
+                url: e20r_progress.ajaxurl,
+                type: 'POST',
+                timeout: 10000,
+                dataType: 'JSON',
+                data: $data,
+                error: function($response, $errString, $errType) {
+                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                    return;
+                },
+                success: function($response) {
+                    console.log('Response: ' + $response);
+                }
             });
-
-            /* end alaina */
 
             jQuery('#selected-' + dimension + '-unit').hide();
             jQuery('#preferred-' + dimension + '-unit')
@@ -819,7 +914,7 @@ jQuery(function() {
         });
 
     jQuery(new Image)
-        .attr('src', '/members/resources/myotape.png')
+        .attr('src', 'images/myotape.png')
         .css('display', 'none')
         .appendTo(document.body);
 
@@ -892,7 +987,7 @@ jQuery(function() {
                         }
 
                         var $photo = jQuery('#photo-' + orientation);
-                        var filePath = 'cp-showImage.php?w=165&uid=' + CPUSER.id + '&img=' + photoSrc + '&rand=' + Math.random();
+                        var filePath = 'cp-showImage.php?w=165&uid=' + NourishUser.id + '&img=' + photoSrc + '&rand=' + Math.random();
 
                         // this is duplicate code from PhotoUploader onComplete
                         $photo
@@ -943,19 +1038,46 @@ jQuery(function() {
         });
     */
     function checkFormCompletion() {
-        var data = {
+        var $data = {
             'action': 'checkCompletion',
-            'article-id': e20r_tracker.settings.article_id,
-            'uid': e20r_tracker.user_info.user_id
+            'article-id': e20r_progress.settings.article_id,
+            'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
+            'user-id': NourishUser.id
         };
 
+        console.dir($data);
+
+        jQuery.ajax({
+            url: e20r_progress.ajaxurl,
+            type: 'POST',
+            timeout: 10000,
+            dataType: 'JSON',
+            data: $data,
+            error: function($response, $errString, $errType) {
+                console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                return;
+            },
+            success: function($response) {
+                //var $resp = jQuery.map( $response, function(el){ return el; });
+                console.log('Response: ');
+                console.dir( $response );
+
+                if ( $response.progress_form_completed  == true ) {
+                    console.log("Setting form as saved");
+                    formToSavedState();
+                }
+            }
+        });
+
+        /*
         jQuery.post('cpds-assignments.php', data, function(response) {
             console.log('Response: ' + response);
 
-            if (jQuery.secureEvalJSON(response)['progress-form-completed']) {
+            if (jQuery.secureEvalJSON(response)['progress_form_completed']) {
                 formToSavedState();
             }
         });
+        */
     }
 
     function formToSavedState() {
@@ -979,8 +1101,8 @@ jQuery(function() {
 
 
     // if (false === bool(DISPLAY_BIRTHDATE)) {
-    if ( false === bool( e20r_tracker.user_info.display_birthdate ) ) {
-        jQuery('#birth-date-row').hide();
+    if ( false === bool( getSetting( 'display_birthdate' ) ) ) {
+        jQuery('#birth-date').hide();
     }
 
     checkFormCompletion();

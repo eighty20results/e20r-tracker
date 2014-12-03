@@ -7,6 +7,9 @@ class e20rClientModel {
     private $measurements = null;
     private $articles = null;
     private $programs = null;
+    private $intakeInfo = null;
+
+    private $data_enc_key = null;
 
     private $tables;
 
@@ -66,9 +69,27 @@ class e20rClientModel {
                   ", $this->id
         );
 
-        return $wpdb->get_row( $sql );
+        $data = $wpdb->get_row( $sql );
+
+        $this->data_enc_key = $data->user_enc_key;
+        unset( $data->user_enc_key );
+
+        if ( empty ($data) ) {
+            $data = new stdClass();
+            $data->lengthunits = 'in';
+            $data->weightunits = 'lbs';
+        }
+
+        return $data;
     }
 
+    public function loadSettings() {
+
+    }
+
+    public function getSettings() {
+        return $this->settings;
+    }
     public function load_appointments( $clientId ) {
 
         global $current_user, $wpdb, $appointments;

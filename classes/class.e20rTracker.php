@@ -20,6 +20,8 @@ class e20rTracker {
             'delete_tables' => false,
             'purge_tables' => true,
         );
+
+        add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
     }
 
     public function init() {
@@ -43,15 +45,20 @@ class e20rTracker {
         $this->tables->exercise = $wpdb->prefix . 'e20r_exercises';
 
         /* Load scripts & CSS */
-        add_action( 'admin_enqueue_scripts', array( &$this, 'load_plotSW') );
-        add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
-        add_action( 'wp_enqueue_scripts', array( &$this, 'load_plotSW' ) );
-        add_action( 'wp_enqueue_scripts', array( &$this, 'load_JScript') );
-        add_action( 'wp_enqueue_scripts', array( &$this->client, 'load_scripts') );
+        add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
+        // add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
+
+        add_action( 'wp_enqueue_scripts', array( &$this, 'register_user_scripts') );
+        add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
+
+        //        add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_user_scripts' ) );
+
+//        add_action( 'wp_enqueue_scripts', array( &$this->client, 'load_scripts') );
 
         /* AJAX call-backs */
 
         /* Load various back-end pages/settings */
+        add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
         add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
         add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
         add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
@@ -64,7 +71,13 @@ class e20rTracker {
     public function configure_ajax_hooks() {
 
         /* Load required classes used by the plugin */
-        $this->client = new e20rClient();
+        try {
+            $this->client = new e20rClient();
+        }
+        catch ( Exception $e ) {
+            dbg("Error loading client class: " . $e->getMessage() );
+        }
+
         $this->checkinData = new e20rCheckin();
         $this->programInfo = new e20rPrograms();
         $this->articles = new e20rArticle();
@@ -76,14 +89,15 @@ class e20rTracker {
         add_action( 'wp_ajax_e20r_measurementData', array( &$this->client, 'ajax_measurementData' ) );
         add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->client, 'ajax_getMemberlistForLevel' ) );
 
+        add_action( 'wp_ajax_checkCompletion', array(  &$this->client, 'ajax_checkMeasurementCompletion' ) );
         add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
         add_action( 'wp_ajax_save_item_data', array( &$this->checkinData, 'ajax_save_item_data' ) );
 
         /* AJAX call-backs if user is unprivileged */
-        add_action( 'wp_ajax_nopriv_e20r_clientDetail', array( &$this, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_complianceData', array( &$this, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_assignmentData', array( &$this, 'ajaxUnprivError' ) );
-        add_action( 'wp_ajax_nopriv_e20r_measurementData', array( &$this, 'ajaxUnprivError' ) );
+        add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
+        add_action( 'wp_ajax_nopriv_e20r_complianceData', 'e20r_ajaxUnprivError' );
+        add_action( 'wp_ajax_nopriv_e20r_assignmentData', 'e20r_ajaxUnprivError' );
+        add_action( 'wp_ajax_nopriv_e20r_measurementData', 'e20r_ajaxUnprivError' );
     }
 
     public function register_shortcodes() {
@@ -99,6 +113,21 @@ class e20rTracker {
         catch ( Exception $e ) {
             dbg("Error loading measurement shortcode: " . $e->getMessage() );
         }
+
+    }
+
+    public function enqueue_admin_scripts() {
+
+        dbg("in enqueue_admin_scripts()");
+
+        global $e20r_plot_jscript;
+
+        $this->load_adminJS();
+        $this->register_plotSW();
+
+        $e20r_plot_jscript = true;
+        $this->enqueue_plotSW();
+        $e20r_plot_jscript = false;
 
     }
 
@@ -127,7 +156,6 @@ class e20rTracker {
 
         return ( 1 == intval( $value ) ? 1 : 0);
     }
-
 
     /**
      * @return mixed -- stdClass() list of tables used by the tracker.
@@ -286,6 +314,7 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
+
         $page = add_menu_page( 'S3F Clients', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
 
@@ -308,6 +337,8 @@ class e20rTracker {
      */
     public function load_adminJS()
     {
+        dbg("in load_adminJS()");
+
         wp_register_script('e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery'), '0.1', true);
 
         /* Localize ajax script */
@@ -339,70 +370,101 @@ class e20rTracker {
 
     }
 
-    /*
-     *
+    /**
+     * Load the generic/general plugin javascript and localizations
      */
-    public function load_JScript() {
+    public function register_user_scripts() {
 
-        wp_register_script('e20r_tracker_js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array('jquery'), '0.1', true);
+        dbg("in register_user_scripts()");
+        $this->enqueue_plotSW();
 
-        wp_localize_script('e20r_tracker_js', 'e20r_tracker',
+        wp_register_script('e20r-progress-libs', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', true);
+        wp_register_script('e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array('e20r-progress-libs'), '0.1', true);
+        wp_register_script('e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array('e20r-tracker-js'), '0.1', true);
+
+
+        wp_localize_script('e20r-tracker-js', 'e20r_tracker',
             array(
                 'ajaxurl' => admin_url( 'admin-ajax.php' ),
             )
         );
 
-        wp_deregister_style("e20r_tracker_css");
-        wp_enqueue_style("e20r_tracker_css", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
-        wp_enqueue_script('e20r_tracker_js');
-
+        wp_deregister_style("e20r-tracker");
+        wp_enqueue_style("e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
     }
+
+    public function enqueue_user_scripts() {
+
+        dbg("in enqueue_user_scripts()");
+
+        global $e20r_plot_jscript;
+
+        if ( ! $e20r_plot_jscript ) {
+            return;
+        }
+
+        $this->enqueue_plotSW();
+        wp_print_scripts( 'e20r-progress-libs' );
+        wp_print_scripts( 'e20r-tracker-js' );
+        wp_print_scripts( 'e20r-progress-js' );
+    }
+
     /* Load graphing scripts */
-    public function load_plotSW() {
+    public function register_plotSW() {
+
+        dbg("in register_plotSW()");
 
         wp_deregister_script('jqplot' );
-        wp_enqueue_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', false, '0.1' );
+        wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array('jquery'), '0.1');
 
         wp_deregister_script('jqplot_export' );
-        wp_enqueue_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', false, '0.1' );
+        wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script('jqplot_pie' );
-        wp_enqueue_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', false, '0.1' );
+        wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script('jqplot_text' );
-        wp_enqueue_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', false, '0.1' );
+        wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script('jqplot_mobile' );
-        wp_enqueue_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', false, '0.1' );
+        wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script( 'jqplot_date');
-        wp_enqueue_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', false, '0.1');
+        wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script( 'jqplot_label');
-        wp_enqueue_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', false, '0.1');
+        wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script( 'jqplot_pntlabel');
-        wp_enqueue_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', false, '0.1');
+        wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array('jqplot'), '0.1');
 
         wp_deregister_script( 'jqplot_ticks');
-        wp_enqueue_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', false, '0.1');
+        wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array('jqplot'), '0.1');
 
         wp_deregister_style( 'jqplot' );
         wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
 
     }
 
-    /**
-     * Functions returns error message. Used by nopriv Ajax traps.
-     */
-    function ajaxUnprivError() {
+    private function enqueue_plotSW() {
 
-        dbg('Unprivileged ajax call attempted');
+        dbg("in enqueeu_plotSW()");
 
-        wp_send_json_error( array(
-            'message' => __('You must be logged in to access/view tracker data', 'e20r_tracker')
-        ));
+        global $e20r_plot_jscript;
 
+        if ( ! $e20r_plot_jscript ) {
+            return;
+        }
+
+        wp_print_scripts('jqplot');
+        wp_print_scripts('jqplot_export');
+        wp_print_scripts('jqplot_pie');
+        wp_print_scripts('jqplot_text');
+        wp_print_scripts('jqplot_mobile');
+        wp_print_scripts('jqplot_date');
+        wp_print_scripts('jqplot_label');
+        wp_print_scripts('jqplot_pntlabel');
+        wp_print_scripts('jqplot_ticks');
     }
 
     public function e20r_tracker_activate() {
@@ -664,5 +726,85 @@ class e20rTracker {
 
         // Remove existing options
         delete_option( $this->setting_name );
+    }
+
+    public function e20r_tracker_girthCPT() {
+
+        $labels =  array(
+            'name' => __( 'Girth Type', 'e20rtracker'  ),
+            'singular_name' => __( 'Girth Types', 'e20rtracker' ),
+            'slug' => 'e20r_girth_types',
+            'add_new' => __( 'New Girth Type', 'e20rtracker' ),
+            'add_new_item' => __( 'New Girth Type', 'e20rtracker' ),
+            'edit' => __( 'Edit Girth Type', 'pmprosequence' ),
+            'edit_item' => __( 'Edit Girth Type', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Girth Types', 'e20rtracker' ),
+            'view_item' => __( 'View This Girth Type', 'e20rtracker' ),
+            'search_items' => __( 'Search Girths', 'e20rtracker' ),
+            'not_found' => __( 'No Girth Types Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Girth Types Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_tracker_girth_types',
+            array( 'labels' => apply_filters( 'e20r-tracker-girth-cpt-labels', $labels ),
+                   'public' => true,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title','editor','thumbnail','custom-fields','author'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => true,
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-girth-cpt-archive-slug', 'girths')
+            )
+        );
+    }
+
+    /**
+     * Configure & display the icon for the Sequence Post type (in the Dashboard)
+     */
+    function post_type_icon() {
+        ?>
+        <style>
+            /* Admin Menu - 16px */
+            #menu-posts-e20r_tracker .wp-menu-image {
+                background: url("<?php echo E20R_PLUGINS_URL; ?>/images/icon-sequence16-sprite.png") no-repeat 6px 6px !important;
+            }
+            #menu-posts-e20r_tracker:hover .wp-menu-image, #menu-posts-e20r_tracker.wp-has-current-submenu .wp-menu-image {
+                background-position: 6px -26px !important;
+            }
+            /* Post Screen - 32px */
+            .icon32-posts-pmpro_sequence {
+                background: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence32.png") no-repeat left top !important;
+            }
+            @media
+            only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (   min--moz-device-pixel-ratio: 1.5),
+            only screen and (     -o-min-device-pixel-ratio: 3/2),
+                /* only screen and (        min-device-pixel-ratio: 1.5), */
+            only screen and (                min-resolution: 1.5dppx) {
+
+                /* Admin Menu - 16px @2x */
+                #menu-posts-pmpro_sequence .wp-menu-image {
+                    background-image: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence16-sprite_2x.png") !important;
+                    -webkit-background-size: 16px 48px;
+                    -moz-background-size: 16px 48px;
+                    background-size: 16px 48px;
+                }
+                /* Post Screen - 32px @2x */
+                .icon32-posts-pmpro_sequence {
+                    background-image:url("<?php echo E20R_PLUGINS_URL ?>images/icon-sequence32_2x.png") !important;
+                    -webkit-background-size: 32px 32px;
+                    -moz-background-size: 32px 32px;
+                    background-size: 32px 32px;
+                }
+            }
+        </style>
+    <?php
     }
 }

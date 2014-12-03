@@ -4,12 +4,24 @@ if ( ! class_exists( 'e20rCheckin' ) ):
 
     class e20rCheckin {
 
-        public $_tables;
-        private $_beta = array();
+        public $_tables = array();
+        private $id;
+        private $_fields = array();
 
-        function __construct() {
+        function e20rCheckin( $user_id = null ) {
 
-            global $wpdb, $current_user;
+            if (! $user_id ) {
+                global $current_user;
+
+                if ( isset( $current_user->ID) ) {
+                    $this->id = $current_user->ID;
+                }
+            }
+            else {
+                $this->id = $user_id;
+            }
+
+            global $wpdb;
 
             dbg("Loading E20Rcheckin class");
 
@@ -17,14 +29,29 @@ if ( ! class_exists( 'e20rCheckin' ) ):
                 dbg("in_betagroup function is missing???");
             }
 
-            if ( ! in_betagroup( $current_user->ID ) ) {
+            if ( ! in_betagroup( $this->id ) ) {
+
                 $this->_tables = array(
                     'items' => $wpdb->prefix . 'e20r_checkin_items',
                     'rules' => $wpdb->prefix . 'e20r_checkin_rules',
                     'checkin' => $wpdb->prefix . 'e20r_checkin',
                     'articles' => $wpdb->prefix . 'e20r_articles',
                 );
+
             }
+            else {
+
+                $this->_tables = array(
+                    'items' => $wpdb->prefix . 's3f_nourishHabits',
+                    'rules' => $wpdb->prefix . 'e20r_checkin_rules',
+                    'checkin' => $wpdb->prefix . 's3f_nourishHabits',
+                    'articles' => $wpdb->prefix . 'e20r_articles',
+                );
+
+
+            }
+
+
 
         } // end constructor
 

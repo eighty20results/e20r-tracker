@@ -109,13 +109,30 @@ if ( ! function_exists( 'dbg' ) ):
                 error_log('E20R Track: Unable to open debug log');
         }
     }
+endif;
+
+if ( ! function_exists( 'e20r_ajaxUnprivError' ) ):
+
+    /**
+     * Functions returns error message. Used by nopriv Ajax traps.
+     */
+    function e20r_ajaxUnprivError() {
+
+        dbg('Unprivileged ajax call attempted');
+
+        wp_send_json_error( __('You must be logged in to access/view tracker data', 'e20r_tracker') );
+    }
 
 
 endif;
 
-
-$e20rTracker = new e20rTracker();
-$e20rTracker->init();
+try {
+    $e20rTracker = new e20rTracker();
+    $e20rTracker->init();
+}
+catch ( Exception $e ) {
+    dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
+}
 
 register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
 register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );

@@ -544,64 +544,7 @@ class e20rClientViews {
         return $data_matrix;
     }
 
-    public function load_measurements( $clientId = 0 ) {
 
-        global $wpdb, $current_user;
-
-        $measurements = array();
-
-        $oldNC = array( 12, 20, 21, 27 ); // Members of the beta group...
-
-        if ( $clientId == 0 ) {
-
-            $clientId = $current_user->ID;
-        }
-
-        if ( in_array( $clientId, $oldNC ) ) {
-
-            $sql = $wpdb->prepare("
-                SELECT recordedDate AS recorded_date,
-                     weight AS weight,
-                     neckCM as neck,
-                     shoulderCM as shoulder,
-                     chestCM as chest,
-                     armCM as arm,
-                     waistCM as waist,
-                     hipCM as hip,
-                     thighCM as thigh,
-                     calfCM as calf,
-                     totalGrithCM as girth
-                FROM {$this->old_tables->measurements}
-                WHERE created_by = %d
-                ORDER BY recorded_date ASC
-            ",
-                $clientId
-            );
-        }
-        else {
-
-            $sql = $wpdb->prepare("
-                SELECT recorded_date AS recorded_date,
-                     weight,
-                     neck,
-                     shoulder,
-                     chest,
-                     arm,
-                     wait,
-                     hip,
-                     thigh,
-                     calf,
-                     girth
-                FROM {$this->tables->measurements}
-                WHERE client_id = %d
-                ORDER BY recorded_date ASC
-            ",
-                $clientId
-            );
-        }
-
-        return $wpdb->get_results( $sql, OBJECT );
-    }
 
     public function render_assignments_page() {
 

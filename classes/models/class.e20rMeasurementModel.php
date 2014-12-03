@@ -89,7 +89,7 @@ class e20rMeasurementModel {
         }
 
         $this->measured_items = array(
-            'Body Weight',
+            'Weight',
             'Girth' => array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' ),
             'Photos',
             'Other Progress Indicators',
@@ -131,6 +131,8 @@ class e20rMeasurementModel {
 
         global $wpdb;
 
+        $when = date( 'Y-m-d H:i:s', strtotime( $date ) );
+
         $sql = $wpdb->prepare(
             "
               SELECT
@@ -146,20 +148,17 @@ class e20rMeasurementModel {
                 ORDER BY {$this->tables['fields']['recorded_date']} ASC
             ",
             $this->client_id,
-            $date
+            $when
         );
 
-        dbg("SQL for measurements loaded by Date: " . $sql );
-
         $this->all = $this->remap_fields( $wpdb->get_results( $sql ) );
-
-
     }
 
     public function getFields() {
 
         return $this->tables['fields'];
     }
+
 
     /**
      * Load and return all measurement records for the specific user ID
@@ -251,7 +250,9 @@ class e20rMeasurementModel {
             $tmp->girth = $record->{$this->tables['fields']['girth']};
 
             $retArr[] = $tmp;
-            $this->byDate[$tmp->recorded_date] = $tmp;
+
+            $when = date( 'Y-m-d', strtotime( $tmp->recorded_date ) );
+            $this->byDate[$when] = $tmp;
 
             unset($tmp);
 

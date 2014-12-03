@@ -9,8 +9,9 @@
 class e20rArticle {
 
     public $_tables;
+    public $current = null;
 
-    public function __construct() {
+    public function e20rArticle( $user_id = null, $delay = null, $when = null ) {
 
         dbg("Loading article class");
 
@@ -20,11 +21,11 @@ class e20rArticle {
             'articles' => $wpdb->prefix . 'e20r_articles',
         );
 
-        add_action( 'add_meta_boxes', array( &$this->articles, 'editor_metabox_setup') );
+        add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
 
     }
 
-    public function initArticle() {
+    public function init() {
 
 
     }
