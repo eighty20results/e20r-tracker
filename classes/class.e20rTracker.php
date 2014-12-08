@@ -55,6 +55,8 @@ class e20rTracker {
 
 //        add_action( 'wp_enqueue_scripts', array( &$this->client, 'load_scripts') );
 
+        add_action('admin_menu', array(&$this, "renderGirthTypesMetabox"));
+
         /* AJAX call-backs */
 
         /* Load various back-end pages/settings */
@@ -71,25 +73,13 @@ class e20rTracker {
     public function configure_ajax_hooks() {
 
         /* Load required classes used by the plugin */
-        try {
-            $this->client = new e20rClient();
-        }
-        catch ( Exception $e ) {
-            dbg("Error loading client class: " . $e->getMessage() );
-        }
-
         $this->checkinData = new e20rCheckin();
         $this->programInfo = new e20rPrograms();
         $this->articles = new e20rArticle();
 
-        add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
-        add_action( 'wp_ajax_e20r_clientDetail', array( &$this->client, 'ajax_clientDetail' ) );
-        add_action( 'wp_ajax_e20r_complianceData', array( &$this->client, 'ajax_complianceData' ) );
-        add_action( 'wp_ajax_e20r_assignmentData', array( &$this->client, 'ajax_assignmentData' ) );
-        add_action( 'wp_ajax_e20r_measurementData', array( &$this->client, 'ajax_measurementData' ) );
-        add_action( 'wp_ajax_get_memberlistForLevel', array( &$this->client, 'ajax_getMemberlistForLevel' ) );
+        add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
 
-        add_action( 'wp_ajax_checkCompletion', array(  &$this->client, 'ajax_checkMeasurementCompletion' ) );
+        add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
         add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
         add_action( 'wp_ajax_save_item_data', array( &$this->checkinData, 'ajax_save_item_data' ) );
 
@@ -100,6 +90,41 @@ class e20rTracker {
         add_action( 'wp_ajax_nopriv_e20r_measurementData', 'e20r_ajaxUnprivError' );
     }
 
+    public function save_girthtype_order( $post_id ) {
+
+        global $post;
+
+        dbg("save_gt_order() - Running save functionality");
+
+        if ( $post->post_type != 'e20r_girth_types') {
+            return $post_id;
+        }
+
+        if ( empty( $post_id ) ) {
+            dbg("save_girthtype_order() No post ID supplied");
+            return false;
+        }
+
+        if ( wp_is_post_revision( $post_id ) ) {
+            return $post_id;
+        }
+
+        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+            return $post_id;
+        }
+
+        dbg("save_girthtype_order() - Saving metadata for the post_type(s)");
+        /*        $girth_orders = count( $_POST['e20r_girth_order']) ? $_POST[ 'e20r_girth_order' ] : array();
+                $girth_types = count( $_POST['e20r_girth_type']) ? $_POST[ 'e20r_girth_type' ] : array();
+        */
+        if ( isset( $_POST[ 'e20r-girth-type-sortorder-nonce' ] ) ) {
+
+            $newOrder = isset( $_POST['e20r_girth_order'] ) ? $_POST['e20r_girth_order'] : null;
+            update_post_meta( $post_id, 'e20r_girth_type_sortorder', $newOrder );
+        }
+
+    }
+
     public function register_shortcodes() {
 
         global $current_user;
@@ -107,8 +132,9 @@ class e20rTracker {
         try {
             // Generates the Measurement check-in form for the logged in client/user.
             // $client = new e20rClient( $current_user->ID );
+            $this->client = new e20rClient();
 
-            add_shortcode( 'track_measurements', array( &$this->client, 'shortcode_editProgress' ) );
+
         }
         catch ( Exception $e ) {
             dbg("Error loading measurement shortcode: " . $e->getMessage() );
@@ -184,7 +210,7 @@ class e20rTracker {
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
-        add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
+        // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
         // $this->render_settings_page();
 
@@ -212,10 +238,6 @@ class e20rTracker {
         global $current_user;
 
         $options = get_option( $this->setting_name );
-
-        $mClass = new e20rMeasurements();
-        $measured_items = $mClass->getItems();
-        unset($mClass);
 
         dbg( "Measured Items: " . print_r($measured_items, true ) );
         ?>
@@ -314,7 +336,7 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-
+        // FIXME: clientData object may not be available here..?
         $page = add_menu_page( 'S3F Clients', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
 
@@ -332,6 +354,71 @@ class e20rTracker {
         // add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
     }
 
+    public function renderGirthTypesMetabox() {
+
+        add_meta_box('e20r_tracker_girth_types_meta', __('Sort order for Girth Type', 'e20rtracker'), array(&$this, "build_girthTypesMeta"), 'e20r_girth_types', 'side', 'high');
+    }
+
+    public function build_girthTypesMeta( $object, $box ) {
+
+        global $post;
+
+        $sortOrder = get_post_meta( $post->ID, 'e20r_girth_type_sortorder', true);
+        dbg("post-meta sort Order: {$sortOrder}");
+        ob_start();
+        ?>
+        <div class="submitbox" id="e20r-girth-type-postmeta">
+            <div id="minor-publishing">
+                <div id="e20r-tracker-postmeta">
+                    <?php dbg("Loading metabox for Girth Type postmeta"); ?>
+                    <?php wp_nonce_field('e20r-tracker-post-meta', 'e20r-girth-type-sortorder-nonce'); ?>
+                    <label for="e20r-sort-order"><?php _e("Sort Order", "e20rtracker"); ?></label>
+                    <input type="text" name="e20r_girth_order" id="e20r-sort-order" value="<?php echo $sortOrder; ?>">
+                </div>
+            </div>
+        </div>
+        <?php
+        echo ob_get_clean();
+    }
+
+    public function show_sortOrderSettings( $object, $box ) {
+
+        dbg("Loading metabox to order girth types");
+
+        global $post;
+
+        $measurements = new e20rMeasurements();
+        $girthTypes = $measurements->getGirthTypes();
+        dbg("Have fetched " . count($girthTypes) . " girth types from db");
+        ?>
+        <div class="submitbox" id="e20r-girth_type-postmeta">
+                <div id="minor-publishing">
+                    <div id="e20r-girth_type-order">
+                        <fieldset>
+                            <table id="post-meta-table">
+                                <thead>
+                                    <tr id="post-meta-header">
+                                        <td class="left_col">Order</td>
+                                        <td class="right_col">Girth Measurement</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ( $girthTypes as $gObj ) {
+                                        dbg("Object info: " . print_r( $gObj, true)); ?>
+                                        <tr class="post-meta-row">
+                                            <td class="left_col e20r_order"><input type="text" name="e20r_girth_order[]"id="e20r-<?php echo $gObj->type; ?>-order" value="<?php echo $gObj->sortOrder; ?>"></td>
+                                            <td class="right_col e20r_girthType"><input type="text" name="e20r_girth_type[]" id="e20r-<?php echo $gObj->type; ?>-order" value="<?php echo $gObj->type; ?>"></td>
+                                        </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+
+        <?php
+    }
     /**
      * Load all JS for Admin page
      */
@@ -746,7 +833,7 @@ class e20rTracker {
             'not_found_in_trash' => __( 'No Girth Types Found In Trash', 'e20rtracker' )
         );
 
-        $error = register_post_type('e20r_tracker_girth_types',
+        $error = register_post_type('e20r_girth_types',
             array( 'labels' => apply_filters( 'e20r-tracker-girth-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
@@ -763,6 +850,10 @@ class e20rTracker {
                    'has_archive' => apply_filters('e20r-tracker-girth-cpt-archive-slug', 'girths')
             )
         );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: when registering e20r_girth_types: ' . $error->get_error_message);
+        }
     }
 
     /**

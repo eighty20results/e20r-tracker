@@ -11,7 +11,12 @@ class e20rClient {
     private $id = null;
 
     public $show = null; // Views
-    public $data = null; // Models
+    public $data = null; // Client Model
+
+    private $cur_measurement;
+    private $lw_measurement;
+
+    private $assignments = null;
 
     function e20rClient( $user_id = null ) {
 
@@ -26,10 +31,7 @@ class e20rClient {
             $this->id = $user_id;
         }
 
-        if ( $this->id !== null ) {
-            add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
-            add_action( 'wp_print_scripts', array( &$this, 'load_scripts' ) );
-        }
+        add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
     }
 
     function init() {
@@ -62,6 +64,21 @@ class e20rClient {
         catch ( Exception $e ) {
             dbg("Error loading user data: " . $e->getMessage() );
         }
+
+        if ( $this->id !== null ) {
+
+            add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
+            add_action( 'wp_print_scripts', array( &$this, 'load_scripts' ) );
+            add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
+            add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
+            add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
+            add_action( 'wp_ajax_e20r_measurementData', array( &$this, 'ajax_measurementData' ) );
+            add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
+            add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
+
+        }
+
+
     }
 
     function ajax_checkMeasurementCompletion() {
@@ -82,6 +99,7 @@ class e20rClient {
         exit;
 
     }
+
     function ajax_userInfo_callback() {
 
         dbg("ajax_userInfo_Callback() - Checking access");
@@ -96,11 +114,12 @@ class e20rClient {
         $var = ( isset( $_POST['measurement-type']) ? sanitize_text_field( $_POST['measurement-type']): null );
 
         try {
+
             if ( empty( $this->data ) ) {
                 $this->init();
             }
 
-            $userData = $this->data->getInfo();
+            $userData = $this->data->info->getInfo();
             $retVal = $userData->{$var};
 
             dbg("Requested variable: {$var} = {$retVal}" );
@@ -148,18 +167,14 @@ class e20rClient {
             dbg("shortcode: Loading the e20rClient class()");
             $this->init();
 
-            dbg("shortcode: Loading the Measurements class");
-            $mCtrl = new e20rMeasurements( $this->id, $when, $this->data->getInfo() );
-
             dbg("shortcode: Attempting to load data for {$when}");
-
-            if ( $mCtrl->loadData( $when ) == false ) {
+            if ( $this->data->measurements->loadData( $when ) == false ) {
 
                 dbg("shortcode: No data found for user {$this->id} on {$when}");
             }
             else {
                 dbg("shortcode: Loading progress form for {$when} by {$this->id}");
-                return $mCtrl->view_EditProgress( $when );
+                return $this->data->measurements->view_EditProgress( $when, $this->data->getInfo() );
             }
 
             dbg('Shortcode completed...');
@@ -171,19 +186,30 @@ class e20rClient {
 
     private function getMeasurement( $when, $forJS ) {
 
-        $mCtrl = new e20rMeasurements( $this->id );
-
-        if ( $mCtrl->loadData() == false ) {
-
-            dbg("No data found for user {$this->id} on {$when}");
+        if ( empty( $this->data ) ) {
+            dbg("getMeasurement() - Loading data on behalf of the e20rClient class...");
+            $this->init();
         }
 
-        dbg("Attempting to load data for {$when}");
-        $data =  $mCtrl->getMeasurement( $when, $forJS );
+        if ( $this->{$when} == 'empty' ) {
+            dbg("There are no measurements for {$when}");
+            return null;
+        }
 
-        dbg("Data for client measurements - {$when}: " . print_r( $data, true ));
-        return $data;
+        dbg("getMeasurement() - When value: {$when}");
 
+        if ( empty( $this->{$when}->id ) ) {
+
+            dbg("getMeasurement() - Loading {$when} measurements from DB");
+            $this->{$when} = $this->data->measurements->getMeasurement( $when, $forJS );
+
+            if ( empty( $this->{$when}->id ) ) {
+                $this->{$when} = 'empty';
+            }
+        }
+
+        dbg("getMeasurement() - Data for client measurements - {$when}: " . print_r( $this->{$when}, true ));
+        return $this->{$when};
     }
 
     public function load_scripts() {
@@ -203,7 +229,8 @@ class e20rClient {
             $this->init();
         }
 
-        $userData = $this->data->getInfo();
+        $userData = $this->data->info;
+        dbg("User Data: " . print_r( $userData, true ));
 
         /* Load user specific settings */
         wp_localize_script('e20r-progress-js', 'e20r_progress',
@@ -242,7 +269,7 @@ class e20rClient {
 
     public function getInfo() {
 
-        if ( empty( $this->info ) ) {
+        if ( empty( $this->data->info ) ) {
 
             try {
                 $this->loadInfo();

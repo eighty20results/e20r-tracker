@@ -3,11 +3,13 @@
 class e20rClientModel {
 
     private $id = null;
-    private $info = null;
-    private $measurements = null;
-    private $articles = null;
-    private $programs = null;
-    private $intakeInfo = null;
+    private $program_id = null;
+
+    // Client data
+    public $appointments = null;
+    public $info = null;
+    public $measurements = null;
+    public $intakeInfo = null;
 
     private $data_enc_key = null;
 
@@ -37,21 +39,29 @@ class e20rClientModel {
 
     public function load() {
 
-        if ( empty( $this->info ) ) {
-            try {
-                $this->info = $this->loadInfo();
+        try {
+            dbg("load() - Loading clientInfo for user {$this->id}");
+            $this->info = $this->loadInfo();
 
-                if ( empty( $this->info ) ) {
-                    dbg("No Client information in the database for {$this->id}");
-                }
-
-                dbg("Client info loaded: " . print_r( $this->info, true ) );
-
-            } catch ( Exception $e ) {
-                dbg( "Error loading user information for {$this->id}" );
-
-                return false;
+            if ( empty( $this->info ) ) {
+                dbg("No Client information in the database for {$this->id}");
             }
+
+            dbg("Client info loaded: " . print_r( $this->info, true ) );
+
+        } catch ( Exception $e ) {
+
+            dbg( "Error loading user information for {$this->id}: " . $e->getMessage() );
+        }
+
+        try {
+            dbg("load() - Loading measurements for user {$this->id}");
+            $this->measurements = new e20rMeasurements( $this->id );
+            $this->measurements->loadData();
+        }
+        catch ( Exception $e ) {
+
+            dbg("Error loading measurements for {$this->id}: " . $e->getMessage() );
         }
     }
 
@@ -90,7 +100,8 @@ class e20rClientModel {
     public function getSettings() {
         return $this->settings;
     }
-    public function load_appointments( $clientId ) {
+
+    private function load_appointments() {
 
         global $current_user, $wpdb, $appointments;
 
@@ -102,9 +113,9 @@ class e20rClientModel {
 
         $statuses = array( "completed", "removed" );
 
-        if ( $clientId == 0 ) {
+        if ( $this->id == 0 ) {
 
-            $clientId = $current_user->ID;
+            $this->id = $current_user->ID;
         }
 
         $sql = $wpdb->prepare(
@@ -116,13 +127,12 @@ class e20rClientModel {
                 WHERE user = %d AND status NOT IN ( [IN] )
                 ORDER BY start ASC
             ",
-            $clientId
+            $this->id
         );
 
         $sql = $this->prepare_in( $sql, $statuses, '%s' );
         // dbg("SQL for appointment list: " . print_r( $sql, true ) );
-
-        return $wpdb->get_results( $sql, OBJECT );
+        $this->appointments = $wpdb->get_results( $sql, OBJECT);
     }
 
     private function load_levels( $name = null ) {
@@ -163,11 +173,15 @@ class e20rClientModel {
 
     public function getMeasurements() {
 
-        if ( empty(  $this->measurements ) ) {
+        return $this->measurements;
+    }
 
-            $this->measurments = new e20rMeasurementModel( $this->id );
+    public function getAppointments() {
+
+        if ( empty( $this->appointments ) ) {
+            $this->load_appointments();
         }
 
-        return $this->measurements;
+        return $this->appointments;
     }
 } 

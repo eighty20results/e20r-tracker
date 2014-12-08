@@ -86,7 +86,7 @@ class e20rMeasurementViews {
     }
 
     public function showGirthRow( $girths, $when ) {
-
+        dbg("showGirthRow() - Loading Girth information");
         ob_start();
         ?>
         <tr>
@@ -108,39 +108,40 @@ class e20rMeasurementViews {
                         in PDF format.
                     </div>
                     <?php echo $this->showChangeLengthUnit(); ?>
+                    <?php dbg("showGirthRow() -> Lenght Units changer loaded. Girth Count: " . count($girths) ); ?>
 
-                    <?php foreach( $girths as $girthType ) { ?>
-
+                    <?php foreach( $girths as $order => $girth) { ?>
+                        <?php dbg("showGirthRow() -> type: {$girth->type}"); ?>
                         <h5 class="measurement-header">
-                            <span class="title"><?php echo ucfirst($girthType); ?> Girth</span>
+                            <span class="title"><?php echo ucfirst($girth->type); ?> Girth</span>
                             <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="measurement-descript-toggle">
                         </h5>
 
                         <div class="girth-row-container">
-                            <div class="girth-image" style='<?php echo $this->bgImage( $girthType, "girth" ); ?>'></div>
+                            <div class="girth-image" style='<?php echo $this->bgImage( $girth->type, "girth" ); ?>'></div>
                             <div class="girth-descript-container">
-                                <p style="margin-bottom: 52px;">
-                                    <?php echo $this->showMeasurementDescr( $girthType ); ?>
+                                <p style="margin-bottom: 20px;" class="girth-description">
+                                    <?php echo $girth->descr; ?>
                                 </p>
                                 <div class="measurement-field-container">
                                     <div class="label-container">
-                                        <label>Enter <?php echo ucfirst($girthType)?> Girth</label>
+                                        <label>Enter <?php echo ucfirst($girth->type)?> Girth</label>
                                     </div>
-                                    <input type="text" value class="highlight-handle measurement-input" data-measurement-type="girth_<?php echo strtolower($girthType); ?>" style="width: 70px; font-size: 20px; text-align: center;">
-                                    <span class="unit length"><?php echo $this->prettyUnit( $this->unitInfo['lengthunits'] ); ?></span>
+                                    <input type="text" value class="highlight-handle measurement-input" data-measurement-type="girth_<?php echo strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
+                                    <span class="unit length"><?php echo $this->prettyUnit( $this->unitInfo->lengthunits ); ?></span>
                                 </div>
                                 <div class="measurement-saved-container">
                                     <div class="label-container">
-                                        <label>Entered <?php echo ucfirst( $girthType ); ?> Girth</label>
+                                        <label>Entered <?php echo ucfirst( $girth->type ); ?> Girth</label>
                                     </div>
-                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girthType)]} ) ? $this->data->{$this->fields[strtolower($girthType)]} : '' ); ?></span>
-                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girthType)]} ) ? $this->prettyUnit( $this->unitInfo['lengthunits'] ) : null ); ?></span>
+                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girth->type)]} ) ? $this->data->{$this->fields[strtolower($girth->type)]} : '' ); ?></span>
+                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girth->type)]} ) ? $this->prettyUnit( $this->unitInfo->lengthunits ) : null ); ?></span>
                                     <button class="edit">Change Girth</button>
                                 </div>
                             </div>
                         </div>
-
                     <?php } ?>
+                    <?php dbg("showGirthRow() -> Girth specifics loaded"); ?>
                 </fieldset>
             </td>
         </tr>
@@ -268,7 +269,7 @@ class e20rMeasurementViews {
     }
 
     public function showWeightRow( $date ) {
-
+        dbg("Weight Units: " . print_r($this->unitInfo, true));
         ob_start();
         ?>
         <tr>
@@ -278,7 +279,6 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-
                         <a href="e20r-tracker-help.php?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions">
                         </a>
                         Body Weight Measurement
@@ -295,15 +295,15 @@ class e20rMeasurementViews {
                         <div class="label-container">
                             <label>Enter Current Body Weight</label>
                         </div>
-                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle e20r-measurement-input" data-measurement-type="weight" style="width: 70px; font-size: 20px; text-align: center;">
-                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo['weightunits'] ); ?></span>
+                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 70px; font-size: 20px; text-align: center;">
+                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo->weightunits ); ?></span>
                     </div>
                     <div class="measurement-saved-container">
                         <div class="label-container">
                             <label>Entered Body Weight</label>
                         </div>
                         <span class="value"><?php echo (! empty( $this->data->weight ) ? $this->data->weight : null ); ?></span>
-                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo['weightunits'] ); ?></span>
+                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo->weightunits ); ?></span>
                         <button class="edit">Change Body Weight</button>
                     </div>
                 </fieldset>
@@ -316,7 +316,7 @@ class e20rMeasurementViews {
 
     public function showMeasurementDescr( $key ) {
         dbg("Loading measurement description for {$key}");
-        // TODO: Read Post Type containing measurement descriptions and help text.
+
 
         $desc = "Measured just below the Adam's apple and at the level of the 7th cervical vertebra";
         return $desc;
@@ -328,6 +328,8 @@ class e20rMeasurementViews {
     }
 
     private function prettyUnit( $type ) {
+
+        dbg("Pretty Unit request: {$type}");
 
         switch ( $type ) {
             case 'lbs':
@@ -356,11 +358,11 @@ class e20rMeasurementViews {
         ?>
         <div style="margin-bottom: 24px;">
             Preferred weight units:
-            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($this->unitInfo['weightunits']); ?></span>
+            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($this->unitInfo->weightunits); ?></span>
             <select id="selected-weight-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="lbs"<?php selected( $this->unitInfo['weightunits'], 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
-                <option value="kg"<?php selected( $this->unitInfo['weightunits'], 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
-                <option value="st"<?php selected( $this->unitInfo['weightunits'], 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
+                <option value="lbs"<?php selected( $this->unitInfo->weightunits, 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
+                <option value="kg"<?php selected( $this->unitInfo->weightunits, 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
+                <option value="st"<?php selected( $this->unitInfo->weightunits, 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
             </select>
             (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
         </div>
@@ -374,10 +376,10 @@ class e20rMeasurementViews {
         ?>
         <div style="margin-bottom: 24px;">
             Preferred length units:
-            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $this->unitInfo['lengthunits'] ); ?></span>
+            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $this->unitInfo->lengthunits ); ?></span>
             <select id="selected-length-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="in"<?php selected( $this->unitInfo['lengthunits'], 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
-                <option value="cm"<?php selected( $this->unitInfo['lengthunits'], 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
+                <option value="in"<?php selected( $this->unitInfo->lengthunits, 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
+                <option value="cm"<?php selected( $this->unitInfo->lengthunits, 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
             </select>
             (<a class="change-measurement-unit" data-dimension="length">change this</a>)
         </div>

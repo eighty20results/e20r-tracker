@@ -247,6 +247,10 @@ table.e20r-progress-form td.content {
     padding-left: 16px;
 }
 
+#saturday-progress-container .content legend {
+    float: none;
+}
+
 #saturday-progress-container legend {
     float: left;
     margin-bottom: 12px;
@@ -267,8 +271,8 @@ table.e20r-progress-form td.content {
     zoom: 1;
     font-size: 16px;
     padding: 8px;
-    border-top: 1px solid #004CFF;
-    background: rgba( 0, 76, 255, 0.2 );
+    border-top: 1px solid #9C0000;
+    background: rgba( 156, 0, 0, 0.1 );
     color: #9C0000;
 }
 #saturday-progress-container h5.measurement-header:after {
@@ -378,8 +382,8 @@ table.e20r-progress-form td.content {
 }
 .measurement-field-container.edit { display: block; }
 .measurement-field-container.active {
-    background: rgba(0, 255, 255, 0.4);
-    border: 1px solid #004cff;
+    background: rgba(255, 184, 77, 0.3);
+    border: 1px solid rgba(255, 184, 77, 1);
 }
 
 .measurement-saved-container {
@@ -428,8 +432,8 @@ table.e20r-progress-form td.content {
     background: #f7f7f7;
     cursor: default;
     display: none;
-    background: rgba(0, 255, 255, 0.4);
-    border: 1px solid #004cff;
+    background: rgba(77, 184, 77, 0.4);
+    border: 1px solid rgba(77, 184, 77, 1);
 }
 .measurement-saved-container:after {
     content: ".";
@@ -682,4 +686,20 @@ table.saturday-progress-form tfoot button.submit div { padding: 4px; }
 .browserFirefox20 table.saturday-progress-form legend .help-icon {
     float: left;
     margin-right: 4px;
+}
+
+/** Post Metabox for the Girth Types **/
+#e20r-girth_type-order {
+    width: 100%;
+}
+.left_col {
+    float: left;
+    width: 20%;
+}
+.right_col {
+    float: right;
+    width: 80%;
+}
+#saturday-progress-container p.girth-description {
+    font-size: 0.9em !important;
 }

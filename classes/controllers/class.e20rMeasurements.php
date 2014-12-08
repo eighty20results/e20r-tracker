@@ -16,7 +16,7 @@ class e20rMeasurements {
     private $when = null;
 
     private $measurementDate = null;
-    private $girths = null;
+    private $girths = array();
 
 /*    private $lastMeasurement = null;
     private $measurementDate = null;
@@ -27,7 +27,7 @@ class e20rMeasurements {
 
     private $measured_items;
 
-    public function e20rMeasurements( $user_id = null, $forDate = null, $clientData = null ) {
+    public function e20rMeasurements( $user_id = null, $forDate = null ) {
 
         global $wpdb;
 
@@ -47,8 +47,6 @@ class e20rMeasurements {
             }
         }
 
-        $this->id = $user_id;
-
         if ( $forDate !== null ) {
 
             $this->measurementDate = new DateTime( $forDate, new DateTimeZone( get_option( 'timezone_string' ) ) );
@@ -57,25 +55,49 @@ class e20rMeasurements {
             $this->measurementDate = new DateTime( 'NOW', new DateTimeZone( get_option( 'timezone_string' ) ) );
         }
 
-        if ( empty( $this->model ) ) {
-            $this->model = new stdClass();
-        }
+        $this->id = $user_id;
+    }
 
-        $this->model->clientInfo = $clientData;
-        $this->setUnitType( $clientData );
+    private function load_girthTypes() {
 
-        // dbg("Last weeks data: " . print_r( $this->getMeasurement('last_week'), true) );
-        $this->girths = array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' );
+        dbg("loadGirthInfo() - Running function to grab all girth posts");
+        $this->girths = array();
 
-        $this->measured_items = array(
-            // 'Body Weight',
-            // 'Girth' => array( 'neck', 'shoulder', 'arm', 'chest', 'waist', 'hip', 'thigh', 'calf' ),
-            'Photos',
-            'Other Progress Indicators',
-            'Progress Questionnaire'
+        $girthQuery = new WP_Query(
+            array(
+                'post_type' => 'e20r_girth_types',
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'caller_get_posts' => 1
+            )
         );
 
-        return true;
+        if ( $girthQuery->have_posts()) {
+            dbg("loadGirthInfo() - There are Girth posts listed..");
+
+            while ( $girthQuery->have_posts()) {
+
+                $girthQuery->the_post();
+
+                $obj = new stdClass();
+                $obj->id = get_the_ID();
+                $obj->type = strtolower(get_the_title());
+                $obj->descr = get_the_content();
+                $obj->sortOrder = get_post_meta( $obj->id, 'e20r_girth_type_sortorder', true );
+
+                if ( ! empty( $obj->sortOrder ) ) {
+                    dbg("Sort order is specified: {$obj->sortOrder} for {$obj->type}");
+                    $this->girths[$obj->sortOrder] = $obj;
+                }
+                else {
+                    $this->girths[] = $obj;
+                }
+
+                ksort($this->girths);
+            }
+        }
+        wp_reset_query();
+        dbg("loadGirthInfo() - Girth Info: " . print_r($this->girths, true));
     }
 
     private function load_ajax_hooks() {
@@ -113,8 +135,12 @@ class e20rMeasurements {
                 dbg("Class loaded");
             }
 
-            dbg("Init of measurement model");
-            $this->model = new e20rMeasurementModel( $this->id );
+
+            if ( empty( $this->model ) ) {
+
+                dbg("Init of measurement model");
+                $this->model = new e20rMeasurementModel( $this->id );
+            }
 
             if ( $when != 'all' ) {
                 dbg("Loading measurement data by date ({$when}) for {$this->id}");
@@ -154,8 +180,16 @@ class e20rMeasurements {
         return $retVal;
     }
 
-    public function getMeasurement( $when = 'all', $forJS = false ) {
+    public function getGirthTypes() {
 
+        if (empty( $this->girths ) ) {
+            $this->load_girthTypes();
+        }
+
+        return $this->girths;
+    }
+
+    public function getMeasurement( $when = 'all', $forJS = false ) {
 
         if ( empty( $this->data ) ) {
             $this->data = new e20rMeasurementModel( $this->id );
@@ -198,14 +232,9 @@ class e20rMeasurements {
     }
     */
 
-    public function getItems() {
-
-        return $this->measured_items;
-    }
 
 
-
-    public function view_EditProgress( $date = null ) {
+    public function view_EditProgress( $date = null, $unitInfo ) {
 
         if ( ! class_exists( 'e20rMeasurementViews' ) ) {
             if ( ! include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" ) )
@@ -214,18 +243,22 @@ class e20rMeasurements {
 
         $count = 1;
 
-        // TODO: Fix this so it uses the saturday date info for the date specified - Pull it based on the ArticleID.
+        if ( empty( $this->unit_type ) ) {
+            $this->unit_type = $unitInfo;
+        }
+
+        if ( $this->unit_type->lengthunit != $unitInfo->lengthunit) {
+            $this->unit_type = $unitInfo;
+        }
+
+        // FixMe: Need to use the Saturday date info for the article specified (use global $e20r_articleId)
 
         $date = ( ! empty( $this->measurementDate ) && ( ! empty( $date ) ) ? $this->measurementDate->format( 'Y-m-d' ) : date( 'Y-m-d', current_time( 'timestamp' ) ) );
 
         dbg("view_EditProgress() - Date for use with progress tracking form: {$date}");
 
-        $items = $this->getItems();
-
         $data = $this->model->getByDate( $date );
         $fields = $this->model->getFields();
-
-        dbg( "view_EditProgress() - Items: " . print_r( $items, true ) );
 
         $this->view = new e20rMeasurementViews( $date, $data, $fields, $this->unit_type );
 
@@ -241,7 +274,10 @@ class e20rMeasurements {
         dbg("Birth date portion of measurement form generated.");
 
         echo $this->view->showWeightRow( $this->measurementDate );
+
         dbg("Weight info for form generated.");
+        $this->load_girthTypes();
+        dbg("Girth Count: " . count($this->girths));
 
         echo $this->view->showGirthRow( $this->girths, $this->measurementDate );
         dbg("Girth Row generated");
@@ -532,10 +568,6 @@ class e20rMeasurements {
             $this->unit_type['weightunits'] = $client_data->weightunits;
             $this->unit_type['lengthunits'] = $client_data->lengthunits;
 
-        }
-        elseif ( ( $this->model->clientInfo != null ) && ( $client_data == null ) ) {
-            $this->unit_type['weightunits'] = $this->model->clientInfo->weightunits;
-            $this->unit_type['lengthunits'] = $this->model->clientInfo->lengthunits;
         }
         else {
 
