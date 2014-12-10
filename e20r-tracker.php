@@ -21,9 +21,35 @@ define( 'CONST_SATURDAY', 6 );
 define( 'CONST_SUNDAY', 0 );
 define( 'CONST_MONDAY', 1 );
 
+global $e20r_db_version;
+
+$e20r_db_version = "1.0";
+
 if ( ! class_exists( 'e20rTracker' ) ):
 
-    require_once( E20R_PLUGIN_DIR . "classes/class.e20rTracker.php");
+    try {
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/class.e20rTracker.php");
+
+        global $e20rTracker;
+        $e20rTracker = new e20rTracker();
+
+        register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
+        register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );
+
+    }
+    catch ( Exception $e ) {
+        dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
+    }
+
+    add_action( 'plugins_loaded', 'loadTracker' );
+
+endif;
+
+function loadTracker() {
+
+    dbg("Loading the e20rTracker classes and initing the main class");
 
     require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
     require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
@@ -36,12 +62,14 @@ if ( ! class_exists( 'e20rTracker' ) ):
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rAssignment.php" );
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rArticle.php" );
 
-endif;
-
-
-global $e20r_db_version;
-
-$e20r_db_version = "1.0";
+    try {
+        global $e20rTracker;
+        $e20rTracker->init();
+    }
+    catch ( Exception $e ) {
+        dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
+    }
+}
 
 if ( ! function_exists( 'in_betagroup' ) ) {
 
@@ -126,14 +154,4 @@ if ( ! function_exists( 'e20r_ajaxUnprivError' ) ):
 
 endif;
 
-try {
-    $e20rTracker = new e20rTracker();
-    $e20rTracker->init();
-}
-catch ( Exception $e ) {
-    dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
-}
-
-register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
-register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );
 
