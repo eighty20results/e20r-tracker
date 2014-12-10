@@ -181,13 +181,13 @@ jQuery(function() {
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
             this.__overrideDifferenceCheck = 0;
 
-            console.log("Gender: " + NourishUser.gender );
-
             if (bool(this.$girthImage.length)) {
+
                 this.$girthImage.addClass(NourishUser.gender);
 
                 if (this._isSkinfold && 'F' === NourishUser.gender) { // ad hoc
                     this.$girthImage.css('background-image', function(url) {
+                        console.log("Gender for Image: " + NourishUser.gender );
                         return url.replace('-m', '-f');
                     });
                 }
@@ -396,10 +396,15 @@ jQuery(function() {
         },
 
         save: function(self) {
+
+            console.log("Attempting to save " + self.type );
+            console.log("For user: " + NourishUser.id );
+
             var $data = {
-                'action': 'saveMeasurement',
+                'action': 'saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                 'article-id': e20r_progress.settings.article_id,
+                'date': jQuery( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
                 'user-id': NourishUser.id
@@ -415,11 +420,13 @@ jQuery(function() {
                 type: 'POST',
                 timeout: 10000,
                 dataType: 'JSON',
-                async: false,
                 data: $data,
                 error: function($response, $errString, $errType) {
                     console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
                     return;
+                },
+                success: function( $retVal ) {
+                    console.log($retVal.data);
                 }
             });
 
