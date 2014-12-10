@@ -18,14 +18,20 @@ class e20rTables {
 
     public function e20rTables() {
 
-        global $wpdb, $current_user;
-
-        $inBeta = false;
-
         if ( ! function_exists( 'in_betagroup' ) ) {
-            dbg("Error: in_betagroup function is missing!");
-            wp_die("Critical plugin functionality is missing: in_betagroup()");
+            dbg( "Error: in_betagroup function is missing!" );
+            wp_die( "Critical plugin functionality is missing: in_betagroup()" );
         }
+
+        if ( function_exists( 'get_user_by' ) ) {
+            $this->init();
+        }
+    }
+
+
+    private function init() {
+
+        global $wpdb, $current_user;
 
         $this->inBeta = in_betagroup( $current_user->ID );
 
@@ -62,16 +68,17 @@ class e20rTables {
             $this->fields[ 'measurements' ] = array(
                 'id'            => 'id',
                 'user_id'       => 'user_id',
+                'article_id'    => 'article_id',
                 'recorded_date' => 'recorded_date',
                 'weight'        => 'weight',
-                'neck'          => 'neck',
-                'shoulder'      => 'shoulder',
-                'chest'         => 'chest',
-                'arm'           => 'arm',
-                'waist'         => 'waist',
-                'hip'           => 'hip',
-                'thigh'         => 'thigh',
-                'calf'          => 'calf',
+                'girth_neck'          => 'neck',
+                'girth_shoulder'      => 'shoulder',
+                'girth_chest'         => 'chest',
+                'girth_arm'           => 'arm',
+                'girth_waist'         => 'waist',
+                'girth_hip'           => 'hip',
+                'girth_thigh'         => 'thigh',
+                'girth_calf'          => 'calf',
                 'girth'         => 'girth'
             );
         }
@@ -80,16 +87,17 @@ class e20rTables {
             $this->fields[ 'measurements' ] = array(
                 'id' => 'lead_id',
                 'user_id' => 'created_by',
+                'article_id' => 'article_id',
                 'recorded_date' => 'recordedDate',
                 'weight' => 'weight',
-                'neck' => 'neckCM',
-                'shoulder' => 'shoulderCM',
-                'chest' => 'chestCM',
-                'arm' => 'armCM',
-                'waist' => 'waistCM',
-                'hip' => 'hipCM',
-                'thigh' => 'thighCM',
-                'calf' => 'calfCM',
+                'girth_neck' => 'neckCM',
+                'girth_shoulder' => 'shoulderCM',
+                'girth_chest' => 'chestCM',
+                'girth_arm' => 'armCM',
+                'girth_waist' => 'waistCM',
+                'girth_hip' => 'hipCM',
+                'girth_thigh' => 'thighCM',
+                'girth_calf' => 'calfCM',
                 'girth' => 'totalGrithCM'
             );
         }
@@ -98,6 +106,7 @@ class e20rTables {
     private function loadCheckinFields() {
 
     }
+
     private function loadFields( $name ) {
 
         switch ( $name ) {
@@ -109,13 +118,13 @@ class e20rTables {
 
     public function getTable( $name = null ) {
 
+        if ( ! $name ) {
+            return $this->tables;
+        }
+
         if ( empty ( $this->tables->{$name} ) ) {
             throw new Exception( "No {$name} table exists" );
             return false;
-        }
-
-        if ( ! $name ) {
-            return $this->tables;
         }
 
         return $this->tables->{$name};
@@ -129,6 +138,10 @@ class e20rTables {
         }
 
         return $this->fields[$name];
+    }
+
+    public function createTables() {
+
     }
 }
 endif;
