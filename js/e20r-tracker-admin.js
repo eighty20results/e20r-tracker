@@ -683,7 +683,7 @@ function e20r_LoadClientData( $type ) {
 
     } else if ($type === 'measurements') {
 
-        $action = 'e20r_measurementData';
+        $action = 'e20r_measurementDataForUser';
         $btn = jQuery("#e20r-client-measurements");
 
     } else {
