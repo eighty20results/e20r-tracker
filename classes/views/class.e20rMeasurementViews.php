@@ -53,6 +53,8 @@ class e20rMeasurementViews {
                     <tr>
                         <td></td>
                         <td>
+                            <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
+                            <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $this->data->article_id; ?>">
                             <button class="submit" id="submit-e20r-tracker-button">
                                 <div>Save Your Weekly Progress Update</div>
                             </button>
@@ -127,15 +129,16 @@ class e20rMeasurementViews {
                                     <div class="label-container">
                                         <label>Enter <?php echo ucfirst($girth->type)?> Girth</label>
                                     </div>
-                                    <input type="text" value class="highlight-handle measurement-input" data-measurement-type="girth_<?php echo strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
+                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields['girth_' . strtolower( $girth->type )]} ) ? 'value' : 'value="' . $this->data->{$this->fields['girth_' . strtolower( $girth->type )]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="girth_<?php echo strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
                                     <span class="unit length"><?php echo $this->prettyUnit( $this->unitInfo->lengthunits ); ?></span>
                                 </div>
                                 <div class="measurement-saved-container">
                                     <div class="label-container">
                                         <label>Entered <?php echo ucfirst( $girth->type ); ?> Girth</label>
                                     </div>
-                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girth->type)]} ) ? $this->data->{$this->fields[strtolower($girth->type)]} : '' ); ?></span>
-                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields[strtolower($girth->type)]} ) ? $this->prettyUnit( $this->unitInfo->lengthunits ) : null ); ?></span>
+                                    <?php dbg("measurementViews() - Data for {$this->fields['girth_' . strtolower($girth->type)]} => {$this->data->{$this->fields['girth_' . strtolower($girth->type)]}}"); ?>
+                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields['girth_' . strtolower($girth->type)]} ) ? $this->data->{$this->fields['girth_' . strtolower($girth->type)]} : '' ); ?></span>
+                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields['girth_' . strtolower($girth->type)]} ) ? $this->prettyUnit( $this->unitInfo->lengthunits ) : null ); ?></span>
                                     <button class="edit">Change Girth</button>
                                 </div>
                             </div>
@@ -314,17 +317,8 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function showMeasurementDescr( $key ) {
-        dbg("Loading measurement description for {$key}");
-
-
-        $desc = "Measured just below the Adam's apple and at the level of the 7th cervical vertebra";
-        return $desc;
-    }
-
     private function bgImage( $what, $type ) {
-        $url = 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . '-2.jpg");';
-        return $url;
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'M' ? '-m.png");' : '-f.png");' );
     }
 
     private function prettyUnit( $type ) {
