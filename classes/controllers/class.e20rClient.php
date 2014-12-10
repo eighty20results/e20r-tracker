@@ -72,7 +72,7 @@ class e20rClient {
             add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
             add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
-            add_action( 'wp_ajax_e20r_measurementData', array( &$this, 'ajax_measurementData' ) );
+            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
             add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
             add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
 
@@ -152,17 +152,19 @@ class e20rClient {
         $e20r_plot_jscript = true;
 
         $day = 0;
+        $from_programstart = 1;
 
         extract( shortcode_atts( array(
             'day' => 0,
+            'from_programstart' => 1,
         ), $attributes ) );
 
         // TODO: Does user have permission...?
         try {
 
-            global $current_user;
+            global $current_user, $e20rArticle;
 
-            $when = '2014-11-01'; // DEBUG only
+            $when = $this->getWeeklyUpdateSettings( $e20rArticle->ID, $from_programstart, $day );
 
             dbg("shortcode: Loading the e20rClient class()");
             $this->init();
@@ -183,6 +185,22 @@ class e20rClient {
             dbg("Error displaying measurement form (shortcode): " . $e->getMessage() );
         }
     }
+
+    private function getWeeklyUpdateSettings( $articleId = null, $from_programstart = 1, $day = 0 ) {
+
+        if ( ( $from_programstart === 0 ) && ( $day !== 0 ) ) {
+
+        }
+        elseif ( ( $from_programstart === 0 ) ) {
+
+        }
+        else {
+            $when = '2014-11-22';
+        }
+
+        return $when;
+    }
+
 
     private function getMeasurement( $when, $forJS ) {
 
