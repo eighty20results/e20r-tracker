@@ -26,14 +26,8 @@ class e20rClientModel {
 
         $this->id = $user_id;
 
-        $this->old_tables = new stdClass();
-
-        $this->old_tables->assignments = "{$wpdb->prefix}s3f_nourishAssignments";
-        $this->old_tables->compliance = "{$wpdb->prefix}s3f_nourishHabits";
-        $this->old_tables->surveys = "{$wpdb->prefix}e20r_Surveys";
-        $this->old_tables->measurements = "{$wpdb->prefix}nourish_measurements";
-        $this->old_tables->meals = "{$wpdb->prefix}wp_s3f_nourishMeals";
-
+        $tmp = new e20rTables();
+        $this->tables = $tmp->getTable();
 
     }
 
@@ -57,6 +51,7 @@ class e20rClientModel {
         try {
             dbg("load() - Loading measurements for user {$this->id}");
             $this->measurements = new e20rMeasurements( $this->id );
+            $this->measurements->init();
             $this->measurements->loadData();
         }
         catch ( Exception $e ) {
@@ -72,7 +67,7 @@ class e20rClientModel {
 
         $sql = $wpdb->prepare( "
                     SELECT *
-                    FROM {$wpdb->prefix}e20r_client_info
+                    FROM {$this->tables->client_info}
                     WHERE user_id = %d
                     ORDER BY program_start ASC
                     LIMIT 1
@@ -88,6 +83,7 @@ class e20rClientModel {
             $data = new stdClass();
             $data->lengthunits = 'in';
             $data->weightunits = 'lbs';
+            $data->gender = 'F';
         }
 
         return $data;
