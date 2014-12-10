@@ -30,20 +30,6 @@ class e20rTracker {
 
         // $this->clientData = new S3F_clientData();
 
-        $this->tables = new stdClass();
-
-        /* The database tables used by this plugin */
-        $this->tables->checkin_items = $wpdb->prefix . 'e20r_checkin_items';
-        $this->tables->checkin_rules = $wpdb->prefix . 'e20r_checkin_rules';
-        $this->tables->checkin = $wpdb->prefix . 'e20r_checkin';
-        $this->tables->assignments = $wpdb->prefix . 'e20r_assignments';
-        $this->tables->responses = $wpdb->prefix . 'e20r_answers';
-        $this->tables->measurements = $wpdb->prefix . 'e20r_measurements';
-        $this->tables->client_info = $wpdb->prefix . 'e20r_client_info';
-        $this->tables->programs = $wpdb->prefix . 'e20r_programs';
-        $this->tables->sets = $wpdb->prefix . 'e20r_sets';
-        $this->tables->exercise = $wpdb->prefix . 'e20r_exercises';
-
         /* Load scripts & CSS */
         add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
         // add_action( 'admin_enqueue_scripts', array( &$this, 'load_adminJS') );
@@ -58,6 +44,11 @@ class e20rTracker {
         add_action('admin_menu', array(&$this, "renderGirthTypesMetabox"));
 
         /* AJAX call-backs */
+        dbg("e20rTracker() - Loading hooks for measurements");
+
+        $measurements = new e20rMeasurements();
+        add_action('init', array( &$measurements, 'load_ajax_hooks') );
+        unset($measurements);
 
         /* Load various back-end pages/settings */
         add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
@@ -68,6 +59,8 @@ class e20rTracker {
         add_action( 'wp_loaded', array( &$this, 'configure_ajax_hooks' ) );
         add_action( "wp_loaded", array( &$this, 'register_shortcodes' ) );
 
+        dbg("Loading table definitions for e20rTracker()");
+        $this->tables = new e20rTables();
     }
 
     public function configure_ajax_hooks() {
@@ -535,7 +528,7 @@ class e20rTracker {
 
     private function enqueue_plotSW() {
 
-        dbg("in enqueeu_plotSW()");
+        dbg("in enqueue_plotSW()");
 
         global $e20r_plot_jscript;
 
@@ -576,7 +569,7 @@ class e20rTracker {
 
 
         $programsTableSql = "
-            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_programs (
+            CREATE TABLE {$wpdb->prefix}e20r_programs (
                     id int not null auto_increment,
                     program_name varchar(255) null,
                     description mediumtext null,
@@ -588,7 +581,7 @@ class e20rTracker {
         ";
 
         $setsTableSql = "
-            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_sets (
+            CREATE TABLE {$wpdb->prefix}e20r_sets (
                 id int not null auto_increment,
                 set_name varchar(50) null,
                 rounds int not null default 1,
@@ -602,7 +595,7 @@ class e20rTracker {
         ";
 
         $exercisesTableSql = "
-            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_exercises (
+            CREATE TABLE {$wpdb->prefix}e20r_exercises (
                 id int not null auto_increment,
                 exercise_name varchar(100) not null default '',
                 description mediumtext null,
@@ -614,7 +607,7 @@ class e20rTracker {
         ";
 
         $intakeTableSql =
-            "CREATE TABLE If NOT EXISTS {$wpdb->prefix}e20r_client_info (
+            "CREATE TABLE {$wpdb->prefix}e20r_client_info (
                     id int not null,
                     user_id int not null,
                     birthdate date not null,
@@ -643,9 +636,10 @@ class e20rTracker {
         ";
 
         $measurementTableSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_measurements (
+            "CREATE TABLE {$wpdb->prefix}e20r_measurements (
                     id int not null auto_increment,
                     user_id int not null,
+                    article_id int default null,
                     recorded_date datetime null,
                     weight decimal(18,3) null,
                     neck decimal(18,3) null,
@@ -657,13 +651,13 @@ class e20rTracker {
                     thigh decimal(18,3) null,
                     calf decimal(18,3) null,
                     girth decimal(18,3) null,
-                    primary key  ( id ),
+                    primary key id ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
               ";
         // TODO: Add item_text on admin page.
         $itemsTableSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_checkin_items (
+            "CREATE TABLE {$wpdb->prefix}e20r_checkin_items (
                     id int not null auto_increment,
                     short_name varchar(20) null,
                     program_id int null,
@@ -678,7 +672,7 @@ class e20rTracker {
                 {$charset_collate}";
 
         $businessRulesSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_checkin_rules (
+            "CREATE TABLE {$wpdb->prefix}e20r_checkin_rules (
                     id int not null auto_increment,
                     checkin_id int null,
                     success_rule mediumtext null,
@@ -691,7 +685,7 @@ class e20rTracker {
          */
         // TODO: How do you combine Assignments (flexibility, unlimited # of boxes & questions) and
         $checkinSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_checkin (
+            "CREATE TABLE {$wpdb->prefix}e20r_checkin (
                     id int not null auto_increment,
                     user_id int null,
                     checkin_date datetime null,
@@ -707,7 +701,7 @@ class e20rTracker {
          */
 
         $articlesSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_articles (
+            "CREATE TABLE {$wpdb->prefix}e20r_articles (
                   id bigint not null auto_increment,
                   title varchar(255) null,
                   title_prefix varchar(30) not null default 'Lesson:',
@@ -727,7 +721,7 @@ class e20rTracker {
          * For assignments
          */
         $assignmentQsSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_questions (
+            "CREATE TABLE {$wpdb->prefix}e20r_questions (
                     id int not null auto_increment,
                     article_id int not null,
                     question text null,
@@ -736,7 +730,7 @@ class e20rTracker {
         ";
 
         $assignmentAsSql =
-            "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}e20r_answers (
+            "CREATE TABLE {$wpdb->prefix}e20r_answers (
                     id int not null auto_increment,
                     article_id int not null,
                     question_id int not null,
@@ -751,6 +745,28 @@ class e20rTracker {
                     {$charset_collate}
         ";
 
+        $oldMeasurementTableSql =
+            "CREATE TABLE {$wpdb->prefix}nourish_measurements (
+                    lead_id int(11) not null,
+                    created_by int(11) not null,
+                    date_created date not null,
+                    username varchar(50) not null,
+                    recordedDate date not null,
+                    weight float not null,
+                    neckCM float default null,
+                    shoulderCM float default null,
+                    chestCM float default null,
+                    armCM float default null,
+                    waistCM float default null,
+                    hipCM float default null,
+                    thighCM float default null,
+                    calfCM float default null,
+                    totalGrithCM float default null,
+                    article_id int(11) DEFAULT NULL
+                    )
+                    {$charset_collate}
+            ";
+
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('e20r_tracker_activate() - Creating tables in database');
@@ -764,6 +780,7 @@ class e20rTracker {
         dbDelta( $exercisesTableSql );
         dbDelta( $articlesSql );
         dbDelta( $intakeTableSql );
+        dbDelta( $oldMeasurementTableSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
