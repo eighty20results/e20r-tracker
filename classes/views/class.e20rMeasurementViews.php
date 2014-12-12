@@ -37,29 +37,16 @@ class e20rMeasurementViews {
                 <?php wp_nonce_field( 'e20r-tracker-progress', 'e20r-progress-nonce'); ?>
                 <table class="e20r-progress-form">
                     <tfoot>
-                    <tr class="review startHidden">
-                        <td>&nbsp;</td>
-                        <td>
-                            <h5>Input Completion</h5>
-                            <ol>
-                                <li class="<?php echo ($this->isComplete('weight') === true ? 'completed' : 'incomplete' ); ?>"><a href="#">Body Weight</a>: <span class="percent">100%</span></li>
-                                <li class="<?php echo ($this->isComplete('girth') === true ? 'completed' : 'incomplete' ); ?>"><a href="#">Girth Measurements</a>: <span class="percent">100%</span></li>
-                                <!-- <li class="<?php echo ($this->isComplete('girth') === true ? 'completed' : 'incomplete' ); ?>"><a href="#">Skinfold Measurements</a>: <span class="percent">46%</span></li> -->
-                                <li class="<?php echo ($this->isComplete('photo') === true ? 'completed' : 'incomplete' ); ?>"><a href="#">Photos</a>: <span class="percent">34%</span></li>
-                                <li class="<?php echo ($this->isComplete('progress') === true ? 'completed' : 'incomplete' ); ?>"><a href="#">Progress Questionnaire</a>: <span class="percent">0%</span></li>
-                            </ol>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
-                            <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $this->data->article_id; ?>">
-                            <button class="submit" id="submit-e20r-tracker-button">
-                                <div>Save Your Weekly Progress Update</div>
-                            </button>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
+                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $this->data->article_id; ?>">
+                                <button class="submit" id="submit-weekly-progress-button">
+                                    <div>Save Your Weekly Progress Update</div>
+                                </button>
+                            </td>
+                        </tr>
                     </tfoot>
                     <tbody>
         <?php
@@ -80,7 +67,7 @@ class e20rMeasurementViews {
                     </tbody>
                 </table>
                 </form>
-            </div>
+            </div> <!-- End of progress-canvas -->
         </div>
 
         <?php
@@ -181,10 +168,10 @@ class e20rMeasurementViews {
             <td class="content">
                 <fieldset>
                     <legend>
-                        Other Progress Indicators I'm Tracking
+                        Other Indicators of Progress I'm Tracking
                     </legend>
                     <div>
-                        <textarea name="essay1" id="essay1" rows="5" cols="73" data-measurement-type="essay1"></textarea>
+                        <textarea name="essay1" id="essay1" rows="5" cols="73" data-measurement-type="essay1"><?php echo ( ! empty( $this->data->{$this->fields['essay1']} ) || ($this->data->{$this->fields['essay1']} != 'NULL' ) ? stripslashes($this->data->{$this->fields['essay1']}) : null ); ?></textarea>
                     </div>
                 </fieldset>
             </td>
@@ -204,15 +191,15 @@ class e20rMeasurementViews {
             <td class="content">
                 <fieldset>
                     <legend>Progress Questionnaire</legend>
-                    <h5>Did my behavior this week lead to progress towards my goals?</h5>
+                    <h5>Did my behaviors and actions this week lead to progress towards my goals?</h5>
                     <div>
                         <ul>
                             <li>
-                                <input type="radio" name="pquestion-1" id="pquestion-1-1" value="1" data-measurement-type="behaviorprogress">
+                                <input type="radio" name="pquestion-1" id="pquestion-1-1" value="1" data-measurement-type="behaviorprogress" <?php checked( $this->data->{$this->fields['behaviorprogress']} , 1, true ); ?>>
                                 <label for="pquestion-1-1">Yes</label>
                             </li>
                             <li>
-                                <input type="radio" name="pquestion-1" id="pquestion-1-2" value="2" data-measurement-type="behaviorprogress">
+                                <input type="radio" name="pquestion-1" id="pquestion-1-2" value="2" data-measurement-type="behaviorprogress" <?php checked( $this->data->{$this->fields['behaviorprogress']} , 2, true ); ?>>
                                 <label for="pquestion-1-2">No</label>
                             </li>
                         </ul>

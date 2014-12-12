@@ -16,6 +16,7 @@ class e20rClientViews {
             $this->client_id = $id;
         }
 
+        // BAD! and incorrect.
         $tmp = new e20rTracker();
 
         $this->tables = $tmp->tables;
@@ -357,7 +358,7 @@ class e20rClientViews {
 
     }
 
-    private function viewTableOfMeasurements( $clientId, $measurements = null, $dimensions = null, $tabbed = true ) {
+    private function viewTableOfMeasurements( $clientId, $measurements, $dimensions = null, $tabbed = true ) {
         // TESTING: using $clientId = 12;
 
         // $clientId = 12;
@@ -365,15 +366,6 @@ class e20rClientViews {
         if ( $dimensions === null ) {
 
             $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
-        }
-
-        if ( $measurements === null ) {
-
-            $mClass = new e20rMeasurements( $clientId );
-            $mClass->init();
-
-            $measurements = $mClass->getMeasurements();
-            // $measurements = $this->load_measurements($clientId);
         }
 
         $user = get_user_by( 'id', $clientId );
@@ -470,6 +462,7 @@ class e20rClientViews {
 
                 foreach ( $measurements as $measurement ) {
 
+                    $girth = ($measurement->neck + $measurement->shoulder + $measurement->chest + $measurement->arm + $measurement->waist + $measurement->hip + $measurement->thigh + $measurement->calf );
                     ?>
                     <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
                         <td class="e20r_mData "><?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?></td>
@@ -482,7 +475,7 @@ class e20rClientViews {
                         <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->hip, 2 ), 2 ); ?></td>
                         <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->thigh, 2 ), 2 ); ?></td>
                         <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->calf, 2 ), 2 ); ?></td>
-                        <td class="e20r_mData"><?php echo number_format( (float) round( $measurement->girth, 2 ), 2 ); ?></td>
+                        <td class="e20r_mData"><?php echo number_format( (float) round( $girth, 2 ), 2 ); ?></td>
                     </tr>
                     <?php
 
@@ -646,13 +639,13 @@ class e20rClientViews {
         dbg("Nonce is OK");
     }
 
-    function ajax_measurementData() {
+    function ajax_getMeasurementDataForUser() {
 
-        dbg('Requesting measurement data');
+        dbg('measurementData() - Requesting measurement data');
 
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
-        dbg("Nonce is OK");
+        dbg("measurementData() - Nonce is OK");
 
         $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
 
@@ -660,20 +653,29 @@ class e20rClientViews {
             $this->client_id = $clientId;
         }
          else {
-             dbg( "Logged in user ID does not have access to the data for user ${clientId}" );
+             dbg( "measurementData() - Logged in user ID does not have access to the data for user ${clientId}" );
              wp_send_json_error( 'You do not have permission to access the data you requested.' );
          }
 
+        dbg("measurementData() - Loading client data");
+        $client = new e20rClient( $this->client_id );
+
+        if ( ! isset( $client->data->measurements->id ) ) {
+            $client->init();
+        }
+
         // $measurements = $this->fetchMeasurements( $this->client_id );
-        dbg("Loading measurement data");
+        dbg("measurementData() - Using measurement data & configure dimensions");
+        $measurements = $client->data->measurements;
         $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
 
         // $measurements = $this->load_measurements( $clientId );
+        /*
         $mClass = new e20rMeasurements( $this->client_id );
         $mClass->init();
 
         $measurements = $mClass->getMeasurements();
-
+        */
         $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
 
         $weight = $this->generate_plot_data( $measurements, 'weight' );

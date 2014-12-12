@@ -30,6 +30,14 @@ class e20rPrograms {
         }
     }
 
+    public function getStart( $programId ) {
+
+    }
+
+    public function getProgramId( $shortName ) {
+
+    }
+
     public function load_program_info( $programId = null, $add_new = true ) {
 
         global $wpdb;

@@ -10,6 +10,7 @@ class e20rClientModel {
     public $info = null;
     public $measurements = null;
     public $intakeInfo = null;
+    public $checkinInfo = null;
 
     private $data_enc_key = null;
 
@@ -35,7 +36,15 @@ class e20rClientModel {
 
         try {
             dbg("load() - Loading clientInfo for user {$this->id}");
-            $this->info = $this->loadInfo();
+
+            if ( false === ( $this->info = get_transient( "e20r_client_info_{$this->id}" ) ) ) {
+
+                dbg("Loading client information for {$this->id} from the database");
+
+                // Not stored yet, so grab the data from the DB and store it.
+                $this->info = $this->loadInfo();
+                set_transient( "e20r_client_info_{$this->id}", $this->info, 1 * HOUR_IN_SECONDS );
+            }
 
             if ( empty( $this->info ) ) {
                 dbg("No Client information in the database for {$this->id}");
@@ -48,22 +57,11 @@ class e20rClientModel {
             dbg( "Error loading user information for {$this->id}: " . $e->getMessage() );
         }
 
-        try {
-            dbg("load() - Loading measurements for user {$this->id}");
-            $this->measurements = new e20rMeasurements( $this->id );
-            $this->measurements->init();
-            $this->measurements->loadData();
-        }
-        catch ( Exception $e ) {
-
-            dbg("Error loading measurements for {$this->id}: " . $e->getMessage() );
-        }
     }
 
     private function loadInfo() {
 
-        // TODO: Cache the info using WP's caching mech?
-        global $wpdb;
+        global $wpdb, $current_user;
 
         $sql = $wpdb->prepare( "
                     SELECT *
@@ -76,14 +74,19 @@ class e20rClientModel {
 
         $data = $wpdb->get_row( $sql );
 
-        $this->data_enc_key = $data->user_enc_key;
-        unset( $data->user_enc_key );
-
         if ( empty ($data) ) {
+            dbg("No client data found in DB");
             $data = new stdClass();
             $data->lengthunits = 'in';
             $data->weightunits = 'lbs';
             $data->gender = 'F';
+            $data->incomplete_interview = true;
+            $data->user_id = $current_user->ID;
+        }
+
+        if (isset($data->user_enc_key) ) {
+            $this->data_enc_key = $data->user_enc_key;
+            unset( $data->user_enc_key );
         }
 
         return $data;
@@ -168,6 +171,21 @@ class e20rClientModel {
     }
 
     public function getMeasurements() {
+
+        try {
+            dbg("load() - Loading measurements for user {$this->id}");
+
+            $tmp = new e20rMeasurements( $this->id );
+            $this->measurements = $tmp->getMeasurement('all');
+
+            if ( empty($this->measurements) ) {
+                dbg("No measurements in the database for {$this->id}");
+            }
+        }
+        catch ( Exception $e ) {
+
+            dbg("Error loading measurements for {$this->id}: " . $e->getMessage() );
+        }
 
         return $this->measurements;
     }

@@ -12,8 +12,8 @@ class e20rClient {
 
     public $show = null; // Views
     public $data = null; // Client Model
+    private $measurements = null; // Measurements class
 
-    private $cur_measurement;
     private $lw_measurement;
 
     private $assignments = null;
@@ -30,7 +30,7 @@ class e20rClient {
         else {
             $this->id = $user_id;
         }
-
+        dbg("e20rClient() - Loading shortcode for measurements in constructor");
         add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
     }
 
@@ -43,10 +43,7 @@ class e20rClient {
 
             if ( $current_user->ID != 0 ) {
                 dbg("User ID: " . $current_user->ID );
-                $user_id = $current_user->ID;
-            }
-            elseif ( $current_user->ID == 0 ) {
-                    auth_redirect();
+                $this->id = $current_user->ID;
             }
         }
 
@@ -72,31 +69,11 @@ class e20rClient {
             add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
             add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
-            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
+//            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
             add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
-            add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
+            // add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
 
         }
-
-
-    }
-
-    function ajax_checkMeasurementCompletion() {
-
-        dbg("ajax_checkMeasurementCompletion() - Checking access");
-        dbg("Received data: " . print_r($_POST, true ) );
-
-        // check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
-
-        dbg("ajax_checkMeasurementCompletion() - Access approved");
-
-        //$retVal = '{"progress_form_completed":1}';
-        $retVal = array( 'progress_form_completed' => false );
-        // dbg( "Retval: {$retVal}");
-
-        echo json_encode( $retVal );
-        dbg("ajax_checkMeasurementCompletion() - Ajax sent to calling page");
-        exit;
 
     }
 
@@ -148,7 +125,7 @@ class e20rClient {
 
     public function shortcode_editProgress( $attributes ) {
 
-        global $e20r_plot_jscript;
+        global $e20r_plot_jscript, $current_user;
         $e20r_plot_jscript = true;
 
         $day = 0;
@@ -158,6 +135,11 @@ class e20rClient {
             'day' => 0,
             'from_programstart' => 1,
         ), $attributes ) );
+
+        if ( $current_user->ID == 0 ) {
+            dbg("User Isn't logged in! Redirect immediately");
+            auth_redirect();
+        }
 
         // TODO: Does user have permission...?
         try {
@@ -169,15 +151,24 @@ class e20rClient {
             dbg("shortcode: Loading the e20rClient class()");
             $this->init();
 
-            dbg("shortcode: Attempting to load data for {$when}");
-            if ( $this->data->measurements->loadData( $when ) == false ) {
+            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
+                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
+                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
+                    wp_die( "Unable to load e20rMeasurementModel class" );
+                }
+                dbg("Model Class loaded");
+            }
 
-                dbg("shortcode: No data found for user {$this->id} on {$when}");
+            if ( empty( $this->measurements ) ) {
+                $this->measurements = new e20rMeasurements( $this->id, $when );
             }
-            else {
-                dbg("shortcode: Loading progress form for {$when} by {$this->id}");
-                return $this->data->measurements->view_EditProgress( $when, $this->data->getInfo() );
-            }
+
+            dbg("shortcode: Attempting to load data for {$when}");
+            $this->measurements->getMeasurement( $when );
+
+
+            dbg("shortcode: Loading progress form for {$when} by {$this->id}");
+            return $this->measurements->view_EditProgress( $when, $this->data->getInfo() );
 
             dbg('Shortcode completed...');
         }
@@ -187,6 +178,8 @@ class e20rClient {
     }
 
     private function getWeeklyUpdateSettings( $articleId = null, $from_programstart = 1, $day = 0 ) {
+
+        $programs = new e20rPrograms();
 
         if ( ( $from_programstart === 0 ) && ( $day !== 0 ) ) {
 
@@ -201,7 +194,10 @@ class e20rClient {
         return $when;
     }
 
+    private function getSaturday( $program_day ) {
 
+    }
+    /*
     private function getMeasurement( $when, $forJS ) {
 
         if ( empty( $this->data ) ) {
@@ -229,25 +225,29 @@ class e20rClient {
         dbg("getMeasurement() - Data for client measurements - {$when}: " . print_r( $this->{$when}, true ));
         return $this->{$when};
     }
-
+*/
     public function load_scripts() {
 
         if ( $this->id == null ) {
             return;
         }
 
-        dbg("Loading javascript & localizing for e20rClient controller");
-
-//        wp_register_script('e20r_progress_js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array('jquery'), '0.1', true);
-
-
-        dbg("load_scripts() - user id: {$this->id}");
+        dbg("e20rClient_load_scripts() - user id: {$this->id}");
 
         if ( empty( $this->data ) ) {
             $this->init();
         }
 
+        if ( empty( $lw_measurement ) ) {
+            $lw_measurement = $this->measurements->getMeasurement( 'last_week', true );
+        }
+
         $userData = $this->data->info;
+
+        if ( $userData->incomplete_interview ) {
+            dbg("No USER DATA found in the database. Redirect to User interview page!");
+        }
+
         dbg("User Data: " . print_r( $userData, true ));
 
         /* Load user specific settings */
@@ -258,15 +258,16 @@ class e20rClient {
                     'article_id' => $this->getArticleID(),
                     'lengthunit' => $userData->lengthunittype,
                     'weightunit' => $userData->weightunittype,
+                    'imagepath' => E20R_PLUGINS_URL . '/images/',
+                    'overrideDiff' => (isset( $lw_measurement->id ) ? false : true )
                 ),
                 'measurements' => array(
-                    'current' => json_encode( $this->getMeasurement( 'current', true ), JSON_NUMERIC_CHECK ),
-                    'last_week' => json_encode( $this->getMeasurement( 'last_week', true ), JSON_NUMERIC_CHECK ),
-                    // 'last_week' => json_encode( $this->getMeasurement( 'current', true ), JSON_NUMERIC_CHECK ),
+                    'last_week' => json_encode( $lw_measurement, JSON_NUMERIC_CHECK ),
+                    // 'last_week' => json_encode( $this->measurements->getMeasurement( 'current', true ), JSON_NUMERIC_CHECK ),
                 ),
                 'user_info' => array(
                     'userdata' => json_encode( $userData, JSON_NUMERIC_CHECK ),
-                    'display_birthdate' => ( ! empty( $userData->birthdate ) ? 1 : 0),
+                    'display_birthdate' => ( empty( $userData->birthdate ) ? false : true),
 
                 ),
             )

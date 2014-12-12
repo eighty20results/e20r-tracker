@@ -572,6 +572,7 @@ class e20rTracker {
             CREATE TABLE {$wpdb->prefix}e20r_programs (
                     id int not null auto_increment,
                     program_name varchar(255) null,
+                    program_shortname varchar(50) null,
                     description mediumtext null,
                     starttime timestamp not null default current_timestamp,
                     endtime timestamp null,
@@ -610,6 +611,7 @@ class e20rTracker {
             "CREATE TABLE {$wpdb->prefix}e20r_client_info (
                     id int not null,
                     user_id int not null,
+                    program_id int not null,
                     birthdate date not null,
                     program_start date not null,
                     height decimal(18,3) null,
@@ -651,6 +653,8 @@ class e20rTracker {
                     thigh decimal(18,3) null,
                     calf decimal(18,3) null,
                     girth decimal(18,3) null,
+                    essay1 text null,
+                    behaviorprogress bool null,
                     primary key id ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
@@ -762,11 +766,23 @@ class e20rTracker {
                     thighCM float default null,
                     calfCM float default null,
                     totalGrithCM float default null,
-                    article_id int(11) DEFAULT NULL
+                    article_id int(11) DEFAULT NULL,
+                    essay1 text NULL,
+                    behaviorprogress tinyint NULL,
                     )
                     {$charset_collate}
             ";
 
+        // FixMe: The trigger works but can only be installed if using the mysqli_* function. That causes "Command out of sync" errors.
+        /* $girthTriggerSql =
+            "DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total;
+            CREATE TRIGGER {$wpdb->prefix}e20r_update_girth_total BEFORE UPDATE ON {$wpdb->prefix}e20r_measurements
+            FOR EACH ROW
+              BEGIN
+                SET NEW.girth = COALESCE(NEW.neck,0) + COALESCE(NEW.shoulder,0) + COALESCE(NEW.chest,0) + COALESCE(NEW.arm,0) + COALESCE(NEW.waist,0) + COALESCE(NEW.hip,0) + COALESCE(NEW.thigh,0) + COALESCE(NEW.calf,0);
+              END ;
+            ";
+        */
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('e20r_tracker_activate() - Creating tables in database');
@@ -781,6 +797,9 @@ class e20rTracker {
         dbDelta( $articlesSql );
         dbDelta( $intakeTableSql );
         dbDelta( $oldMeasurementTableSql );
+
+        // dbg("e20r_tracker_activate() - Adding triggers in database");
+        // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
@@ -827,7 +846,7 @@ class e20rTracker {
             }
 
         }
-
+        $wpdb->query("DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total");
         // Remove existing options
         delete_option( $this->setting_name );
     }

@@ -61,25 +61,56 @@ class e20rTables {
         }
     }
 
+    private function loadArticleFields() {
+
+        $this->fields['articles'] = array(
+            'id'                        => 'id',
+            'title'                     => 'title',
+            'title_prefix'              =>'title_prefix',
+            'post_id'                   => 'post_id',
+            'program_id'                => 'program_id',
+            'assignment_question_id'    => 'assignment_question_id',
+            'checkin_item_id'           => 'checkin_item_id',
+            'measurements_id'           => 'measurements_id',
+            'release_date'              => 'release_date',
+            'release_day'               => 'release_day'
+        );
+    }
+
+    private function loadProgramFields() {
+
+        $this->fields['programs'] = array(
+            'id'                => 'id',
+            'program_name'      => 'program_name',
+            'program_shortname' => 'program_shortname',
+            'description'       => 'description',
+            'starttime'         => 'starttime',
+            'endtime'           => 'endtime',
+            'member_id'         => 'member_id'
+        );
+    }
+
     private function loadMeasurementFields() {
 
         if ( ! $this->inBeta ) {
 
             $this->fields[ 'measurements' ] = array(
-                'id'            => 'id',
-                'user_id'       => 'user_id',
-                'article_id'    => 'article_id',
-                'recorded_date' => 'recorded_date',
-                'weight'        => 'weight',
-                'girth_neck'          => 'neck',
-                'girth_shoulder'      => 'shoulder',
-                'girth_chest'         => 'chest',
-                'girth_arm'           => 'arm',
-                'girth_waist'         => 'waist',
-                'girth_hip'           => 'hip',
-                'girth_thigh'         => 'thigh',
-                'girth_calf'          => 'calf',
-                'girth'         => 'girth'
+                'id'                    => 'id',
+                'user_id'               => 'user_id',
+                'article_id'            => 'article_id',
+                'recorded_date'         => 'recorded_date',
+                'weight'                => 'weight',
+                'girth_neck'            => 'neck',
+                'girth_shoulder'        => 'shoulder',
+                'girth_chest'           => 'chest',
+                'girth_arm'             => 'arm',
+                'girth_waist'           => 'waist',
+                'girth_hip'             => 'hip',
+                'girth_thigh'           => 'thigh',
+                'girth_calf'            => 'calf',
+                'girth'                 => 'girth',
+                'behaviorprogress'      => 'behaviorprogress',
+                'essay1'                =>  'essay1'
             );
         }
         else {
@@ -98,7 +129,9 @@ class e20rTables {
                 'girth_hip' => 'hipCM',
                 'girth_thigh' => 'thighCM',
                 'girth_calf' => 'calfCM',
-                'girth' => 'totalGrithCM'
+                'girth' => 'totalGrithCM',
+                'behaviorprogress' => 'behaviorprogress',
+                'essay1' => 'essay1'
             );
         }
     }
@@ -112,6 +145,12 @@ class e20rTables {
         switch ( $name ) {
             case 'measurements':
                 $this->loadMeasurementFields();
+                break;
+            case 'programs':
+                $this->loadProgramFields();
+                break;
+            case 'articles':
+                $this->loadAricleFields();
                 break;
         }
     }
