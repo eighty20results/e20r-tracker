@@ -12,11 +12,15 @@ jQuery(function($) {
 
     console.log("WP script for E20R Progress Update (client-side) loaded");
 
-    console.log("Loading user_data...");
+    console.log("Loading user_info...");
     console.dir( NourishUser );
     console.log( "Loading Measurement data for last week" );
     console.dir( LAST_WEEK_MEASUREMENTS );
 
+    if ( NourishUser.incomplete_interview ) {
+        console.log("Need to redirect this user to the Interview page!");
+        console.log("location.href='/coaching-interview/?user_id=" + NourishUser.user_id + "'");
+    }
 });
 
 
@@ -172,14 +176,18 @@ jQuery(function() {
             this.$value = this.$savedContainer.find('.value');
             this.$editButton = this.$savedContainer.child('button.edit');
             this.$girthRowContainer = this.$fieldContainer.closest('.girth-row-container');
-            this.$girthImage = this.$girthRowContainer.find('.girth-image, .skinfold-image');
-            this.$description = this.$girthRowContainer.find('.girth-descript-container, .skinfold-descript-container').children('p');
+            // this.$girthImage = this.$girthRowContainer.find('.girth-image, .skinfold-image');
+            this.$girthImage = this.$girthRowContainer.find('.girth-image');
+            //this.$description = this.$girthRowContainer.find('.girth-descript-container, .skinfold-descript-container').children('p');
+            this.$description = this.$girthRowContainer.find('.girth-descript-container').children('p');
             this.$infoToggleIcon = this.$girthRowContainer.prev('h5.measurement-header').child('.measurement-descript-toggle');
 
             this._state = 'default';
             this._isSkinfold = this.type.indexOf('skinfold') != -1;
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
-            this.__overrideDifferenceCheck = 0;
+            this.__overrideDifferenceCheck = e20r_progress.settings.overrideDiff;
+
+            console.log("Type: " + self.type );
 
             if (bool(this.$girthImage.length)) {
 
@@ -242,7 +250,7 @@ jQuery(function() {
             });
 
             this.stateTransition('default', 'active', function(self) {
-                console.log("Setting container to 'active'");
+
                 self.$fieldContainer.addClass('active');
 
                 if (self._isSkinfold) { // ad hoc
@@ -398,7 +406,7 @@ jQuery(function() {
         save: function(self) {
 
             console.log("Attempting to save " + self.type );
-            console.log("For user: " + NourishUser.id );
+            console.log("For user: " + NourishUser.user_id );
 
             var $data = {
                 'action': 'saveMeasurementForUser',
@@ -407,7 +415,7 @@ jQuery(function() {
                 'date': jQuery( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
-                'user-id': NourishUser.id
+                'user-id': NourishUser.user_id
             };
 
             /*
@@ -434,7 +442,6 @@ jQuery(function() {
         },
 
         edit: function(self) {
-            //self.changeState('edit');
             self.$field.focus();
         },
 
@@ -499,49 +506,59 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
 
-    jQuery(document).on('click', '#submit-e20r-tracker-button', function() {
+    jQuery(document).on('click', '#submit-weekly-progress-button', function() {
         jQuery('#validation-errors').remove();
 
-        // Ensure at least one section of the form is answered
+        // Make sure at least one of the progress form sections are completed.
         var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
         var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
         var photosMissing = bool(jQuery('.validate-photos').find('img.photo.null').length);
         var otherMissing = (jQuery('textarea[name=essay1]').val().length == 0) ? true: false;
 
         if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
-            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
-          <strong>You must answer at least one of the sections to complete the assignment:</strong>\
-          <br/><br/>\
-          <ul style="margin-bottom: 0;">\
-            <li><a href="' + location.href + '#body-weight">Body Weight</a></li>\
-            <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
-            <li><a href="' + location.href + '#photos">Photos</a></li>\
-            <li><a href="' + location.href + '#other-indicators">Other Progress Indicators</a></li>\
-          </ul>\
-        \</div>');
+
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+                '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+                      <strong>You must answer at least one of the sections to complete the assignment:</strong>\
+                      <br/><br/>\
+                      <ul style="margin-bottom: 0;">\
+                        <li><a href="' + location.href + '#body-weight">Body Weight</a></li>\
+                        <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
+                        <li><a href="' + location.href + '#photos">Photos</a></li>\
+                        <li><a href="' + location.href + '#other-indicators">Other Progress Indicators</a></li>\
+                      </ul>\
+                \</div>'
+            );
         }
         else if ((jQuery('#photos').length == 0) && (weightMissing && (girthsMissing >= 8) && otherMissing)) {
-            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
-          <strong>You must answer at least one of the sections to complete the assignment:</strong>\
-          <br/><br/>\
-          <ul style="margin-bottom: 0;">\
-            <li><a href="' + location.href + '#body-weight">Body Weight</a></li>\
-            <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
-            <li><a href="' + location.href + '#other-indicators">Other Progress Indicators</a></li>\
-          </ul>\
-        \</div>');
+
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+                '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+                      <strong>You must answer at least one of the sections to complete the assignment:</strong>\
+                      <br/><br/>\
+                      <ul style="margin-bottom: 0;">\
+                        <li><a href="' + location.href + '#body-weight">Body Weight</a></li>\
+                        <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
+                        <li><a href="' + location.href + '#other-indicators">Other Progress Indicators</a></li>\
+                      </ul>\
+                \</div>'
+            );
         }
         else if (girthsMissing > 0 && girthsMissing <= 7) {
-            jQuery('.saturday-progress-form tfoot tr td:eq(1)').prepend('<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
-          <strong>You have missed some girth measurements. Please check the values and re-submit.</strong>\
-          <br/><br/>\
-          <ul style="margin-bottom: 0;">\
-            <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
-          </ul>\
-        \</div>');
+
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+                '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
+                      <strong>You have missed some of the girth measurements. Please check the values and re-submit.</strong>\
+                      <br/><br/>\
+                      <ul style="margin-bottom: 0;">\
+                        <li><a href="' + location.href + '#girth-measurements">Girth Measurements</a></li>\
+                      </ul>\
+                \</div>'
+            );
         }
         else {
-            // passed
+
+            // The user has completed enough of the progress form to let them proceed.
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
@@ -549,8 +566,10 @@ jQuery(function() {
                 dataType: 'JSON',
                 data: {
                     'article-id': e20r_progress.settings.article_id,
-                    'action': 'saveMeasurement',
-                    'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                    'action': 'saveMeasurementForUser',
+                    'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                    'date': jQuery('#date').val(),
+                    'user-id': NourishUser.user_id,
                     'measurement-type': 'completed',
                     'measurement-value': 1
                 },
@@ -561,6 +580,7 @@ jQuery(function() {
                 success: function($response) {
                     // location.href = e20r_progress.settings.measurementSaved;
                     console.log(e20r_progress.settings.measurementSaved);
+                    //location.href = "/nutrition-coaching/home/?weekly_update_completed=1";
                 }
             });
             /*
@@ -568,6 +588,7 @@ jQuery(function() {
                 location.href = '/members/cp-home.php?wpucompleted=1';
             });*/
         }
+        console.log('Stop submittal of form...');
     });
 
     var ProgressQuestionnaire = {
@@ -576,11 +597,12 @@ jQuery(function() {
                 .find('input[name^=pquestion]')
                 .click(function() {
                     var $data = {
-                        'action': 'saveMeasurement',
-                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                        'action': 'saveMeasurementForUser',
+                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
-                        'user-id': NourishUser.id,
+                        'user-id': NourishUser.user_id,
                         'article-id': e20r_progress.settings.article_id
                     };
 
@@ -589,7 +611,6 @@ jQuery(function() {
                         type: 'POST',
                         timeout: 10000,
                         dataType: 'JSON',
-                        async: false,
                         data: $data,
                         error: function($response, $errString, $errType) {
                             console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
@@ -607,11 +628,12 @@ jQuery(function() {
             jQuery('textarea[name=essay1]')
                 .blur(function() {
                     var $data = {
-                        'action': 'saveMeasurement',
+                        'action': 'saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
-                        'user-id': NourishUser.id,
+                        'user-id': NourishUser.user_id,
                         'article-id': e20r_progress.settings.article_id
                     };
 
@@ -620,7 +642,6 @@ jQuery(function() {
                         type: 'POST',
                         timeout: 10000,
                         dataType: 'JSON',
-                        async: false,
                         data: $data,
                         error: function($response, $errString, $errType) {
                             console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
@@ -642,7 +663,7 @@ jQuery(function() {
     console.log("Questionnaire class inited");
 
     /* select units */
-    jQuery('#save-units')
+/*    jQuery('#save-units')
         .click(function() {
             jQuery('.unit-item-container')
                 .find('.units')
@@ -663,10 +684,30 @@ jQuery(function() {
                 .blur();
 
             var queryString = jQuery('#measurement-inputs select').serialize();
+            console.log("Query String: " + queryString);
 
+            var $data = {
+                'action': 'updateUnitTypes',
+                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                'querystring': queryString,
+                'user-id': NourishUser.user_id
+            };
+
+            jQuery.ajax({
+                url: e20r_progress.ajaxurl,
+                type: 'POST',
+                timeout: 10000,
+                dataType: 'JSON',
+                data: $data,
+                error: function($response, $errString, $errType) {
+                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                    return;
+                }
+            });
             // FixMe - jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) { });
 
         });
+        */
 /*
     jQuery('.help-lightbox-handle')
         .colorbox({
@@ -708,7 +749,7 @@ jQuery(function() {
                         'article-id': e20r_progress.settings.article_id,
                         'degrees': deg,
                         'view': orientation,
-                        'uid': NourishUser.id
+                        'uid': NourishUser.user_id
                     };
 
                     jQuery.post('cpds-assignments.php', postdata, function() {
@@ -731,12 +772,12 @@ jQuery(function() {
                         'article-id': e20r_progress.settings.article_id,
                         'view': orientation,
                         'action': 'removephoto',
-                        'uid': NourishUser.id
+                        'uid': NourishUser.user_id
                     };
 
                     jQuery.post('cpds-assignments.php', data, function() {
                         jQuery('#photo-' + orientation)
-                            .attr('src', 'cp-showImage.php?w=165&uid=' + NourishUser.id + '&img=')
+                            .attr('src', 'cp-showImage.php?w=165&uid=' + NourishUser.user_id + '&img=')
                             .addClass('null')
                             .closest('td')
                             .find('.photo-upload-notifier')
@@ -754,7 +795,7 @@ jQuery(function() {
 
             var queryString = 'orientation=' + orientation;
             queryString += '&date=' + PROGDATE;
-            queryString += '&id=' + NourishUser.id;
+            queryString += '&id=' + NourishUser.user_id;
 
             queryString = encodeURIComponent(queryString);
 
@@ -807,7 +848,7 @@ jQuery(function() {
 
                         // display a loader
 
-                        var filePath = 'cp-showImage.php?uid=' + NourishUser.id + '&w=165&img=' + response;
+                        var filePath = 'cp-showImage.php?uid=' + NourishUser.user_id + '&w=165&img=' + response;
                         filePath += '&rand=' + Math.random();
 
                         //alert (filePath);
@@ -892,8 +933,8 @@ jQuery(function() {
 
             var $data = {
                 'action': 'updateUnitTypes',
-                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
-                'user-id': NourishUser.id,
+                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                'user-id': NourishUser.user_id,
                 'dimension': dimension, // "weight" or "length"
                 'value': newUnitAbbr // "lbs" or "cm"
             };
@@ -921,7 +962,7 @@ jQuery(function() {
         });
 
     jQuery(new Image)
-        .attr('src', 'images/myotape.png')
+        .attr('src', e20r_progress.settings.imagepath + 'myotape.png')
         .css('display', 'none')
         .appendTo(document.body);
 
@@ -994,7 +1035,7 @@ jQuery(function() {
                         }
 
                         var $photo = jQuery('#photo-' + orientation);
-                        var filePath = 'cp-showImage.php?w=165&uid=' + NourishUser.id + '&img=' + photoSrc + '&rand=' + Math.random();
+                        var filePath = 'cp-showImage.php?w=165&uid=' + NourishUser.user_id + '&img=' + photoSrc + '&rand=' + Math.random();
 
                         // this is duplicate code from PhotoUploader onComplete
                         $photo
@@ -1048,8 +1089,9 @@ jQuery(function() {
         var $data = {
             'action': 'checkCompletion',
             'article-id': e20r_progress.settings.article_id,
+            'date': jQuery('#date').val(),
             'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
-            'user-id': NourishUser.id
+            'user-id': NourishUser.user_id
         };
 
         console.dir($data);
@@ -1059,6 +1101,7 @@ jQuery(function() {
             type: 'POST',
             timeout: 10000,
             dataType: 'JSON',
+            async: false,
             data: $data,
             error: function($response, $errString, $errType) {
                 console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
@@ -1069,7 +1112,7 @@ jQuery(function() {
                 console.log('Response: ');
                 console.dir( $response );
 
-                if ( $response.progress_form_completed  == true ) {
+                if ( $response.data.progress_form_completed  == true ) {
                     console.log("Setting form as saved");
                     formToSavedState();
                 }
@@ -1088,27 +1131,26 @@ jQuery(function() {
     }
 
     function formToSavedState() {
-        var isInSavedState = (Q('#saved-state-message').length >= 1);
+        var isInSavedState = (jQuery('#saved-state-message').length >= 1);
 
         if (isInSavedState) {
             return;
         }
 
         // hide submit button
-        //jQuery('.weekly-progress-form > tfoot').hide();
+        jQuery('.e20r-progress-form > tfoot').hide();
 
         // show saved message
-        jQuery('<div style="background-image: url(http://www.precisionnutrition.com/members/cp-images/tick32.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
-              <strong>You\'ve completed this week\'s Weekly Progress Update.</strong> <a href="/coaching/home?wpucompleted=1">Return Home</a>.\
-            </div>').appendTo('#weekly-progress-container .progress-canvas');
+        jQuery('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
+              <strong>You have completed this Progress Update.</strong> <a href="/nutrition-coaching/home/?update_completed=1">Return to Dashboard</a>.\
+            </div>').appendTo('#e20r-progress-canvas');
     }
 
     jQuery('#basic-photo-uploader-submit')
         .removeAttr('disabled');
 
 
-    // if (false === bool(DISPLAY_BIRTHDATE)) {
-    if ( false === bool( getSetting( 'display_birthdate' ) ) ) {
+    if ( false === bool( e20r_progress.user_info.display_birthdate ) ) {
         jQuery('#birth-date').hide();
     }
 

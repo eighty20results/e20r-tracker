@@ -32,6 +32,12 @@ if ( ! class_exists( 'e20rTracker' ) ):
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
         require_once( E20R_PLUGIN_DIR . "classes/class.e20rTracker.php");
 
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
+
         global $e20rTracker;
         $e20rTracker = new e20rTracker();
 
@@ -49,18 +55,15 @@ endif;
 
 function loadTracker() {
 
-    dbg("Loading the e20rTracker classes and initing the main class");
+    dbg("Loading the e20rTracker classes and running init of the e20rTracker() class");
 
-    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
-    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
-
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rPrograms.php" );
+    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rPrograms.php" );
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rCheckin.php" );
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rWorkouts.php" );
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rAssignment.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rArticle.php" );
+    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php" );
 
     try {
         global $e20rTracker;

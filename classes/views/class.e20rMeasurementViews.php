@@ -80,7 +80,7 @@ class e20rMeasurementViews {
         ?>
         <tr>
             <td>
-                <div class="e20r-number-col">2</div>
+                <div class="e20r-number-col">2:</div>
             </td>
             <td class="content validate-girth-measurements" id="girth-measurements">
                 <fieldset>
@@ -163,7 +163,7 @@ class e20rMeasurementViews {
         ?>
         <tr>
             <td id="other-indicators">
-                <div class="e20r-number-col"><?php echo ( $showPhotos ? '4' : '3' ); ?></div>
+                <div class="e20r-number-col"><?php echo ( $showPhotos ? '4' : '3' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -171,7 +171,7 @@ class e20rMeasurementViews {
                         Other Indicators of Progress I'm Tracking
                     </legend>
                     <div>
-                        <textarea name="essay1" id="essay1" rows="5" cols="73" data-measurement-type="essay1"><?php echo ( ! empty( $this->data->{$this->fields['essay1']} ) || ($this->data->{$this->fields['essay1']} != 'NULL' ) ? stripslashes($this->data->{$this->fields['essay1']}) : null ); ?></textarea>
+                        <textarea name="essay1" id="essay1" rows="5" cols="73" data-measurement-type="essay1"><?php echo ( ( ! empty( $this->data->{$this->fields['essay1']} ) ) || ($this->data->{$this->fields['essay1']} != 'NULL' ) ? stripslashes($this->data->{$this->fields['essay1']}) : '' ); ?></textarea>
                     </div>
                 </fieldset>
             </td>
@@ -186,7 +186,7 @@ class e20rMeasurementViews {
         ?>
         <tr id="progress-questionnaire">
             <td >
-                <div class="e20r-number-col"><?php echo ( $showPhotos ? '5' : '4' ); ?></div>
+                <div class="e20r-number-col"><?php echo ( $showPhotos ? '5' : '4' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -224,7 +224,7 @@ class e20rMeasurementViews {
         ob_start();
         ?>
         <tr>
-            <td><div class="e20r-number-col">3</div></td>
+            <td><div class="e20r-number-col">3:</div></td>
             <td class="content validate-photos" id="photos">
                 <fieldset>
                     <legend>
@@ -264,7 +264,7 @@ class e20rMeasurementViews {
         ?>
         <tr>
             <td>
-                <div class="e20r-number-col">1</div>
+                <div class="e20r-number-col">1:</div>
             </td>
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>

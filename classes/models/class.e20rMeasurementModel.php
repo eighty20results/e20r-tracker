@@ -188,7 +188,32 @@ class e20rMeasurementModel {
         return $this->fields;
     }
 
+    private function loadNullMeasurement( $when ) {
 
+        dbg("MeasurementsModel_loadNullMeasurement() - Loading empty measurement info");
+
+        global $e20rTracker;
+
+        $fields = $e20rTracker->tables->getFields('measurements');
+
+        dbg("MeasurementsModel_loadNullMeasurement() - Fields: " . print_r($fields, true));
+
+        $nullMeasurement = new stdClass();
+
+        foreach( $fields as $field => $val ) {
+            $nullMeasurement->{$field} = null;
+        }
+
+        dbg("MeasurementsModel_loadNullMeasurement() - Returning empty record for {$when}" );
+
+        if ( $when != 'all' ) {
+
+            return array( $when => $nullMeasurement );
+        }
+        else {
+            return array( $nullMeasurement );
+        }
+    }
     /**
      * Load and return all measurement records for the specific user ID
      *
@@ -228,10 +253,10 @@ class e20rMeasurementModel {
         if ( $date != 'all' ) {
 
             dbg("MeasurementModel_getByDate() - Returning data for {$date} only");
-            return ( array_key_exists( $date, $this->byDate ) ? $this->byDate[ $date ] : false );
+            return ( array_key_exists( $date, $this->byDate ) ? $this->byDate[ $date ] : $this->loadNullMeasurement( $date ) );
         }
         else {
-            return (empty( $this->byDate ) ? false : $this->byDate );
+            return (empty( $this->byDate ) ? $this->loadNullMeasurement( $date ) : $this->byDate );
         }
 
     }
@@ -311,12 +336,12 @@ class e20rMeasurementModel {
                     }
 
                     dbg("Existing data from the table");
-                    $data = array_merge( $data, array( $key => ( empty( $val ) ? 'NULL' : $val ) ) );
+                    $data = array_merge( $data, array( $key => ( empty( $val ) ? '' : $val ) ) );
                 }
                 else {
 
                     dbg("Updating {$form_key} data in Database: " . $value );
-                    $data = array_merge( $data, array( $form_key => ( empty($value) ? 'NULL' : $value ) ) );
+                    $data = array_merge( $data, array( $form_key => ( empty($value) ? '' : $value ) ) );
 
                 }
 
@@ -386,6 +411,11 @@ class e20rMeasurementModel {
 
             if ( is_string( $value ) ) {
                 dbg( "setFormat() - {$value} is a string" );
+                return '%s';
+            }
+
+            if (is_null( $value )) {
+                dbg( "setFormat() - it's a NULL value");
                 return '%s';
             }
         }

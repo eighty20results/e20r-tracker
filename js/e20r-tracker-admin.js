@@ -25,8 +25,10 @@ jQuery(document).ready( function($) {
     var $measureBtn = $("#e20r-client-measurements");
     var $loadBtn = $("#e20r-load-users");
 
-
     var $loadItem = $("#e20r-load-checkin-items");
+    var $spinner = $('#e20r-postmeta-setprogram').find('e20r_spinner');
+
+    e20rPgm_showMetaControls();
 
     $(document).on("change", "#e20r_levels", function() {
 
@@ -383,6 +385,89 @@ jQuery(document).ready( function($) {
         $('.add-new').hide();
         $('#add-new-checkin-item').show();
 
+    });
+
+    $(document).on( 'change', '.new-e20rprogram-select', function () {
+
+        e20rPgm_postMetaSelectChanged( this );
+    });
+
+/*    $(document).on( 'change', '.e20r-tracker-memberof-programs', function () {
+
+        e20rPgm_postMetaSelectChanged( this );
+
+    });
+*/
+ /*   $(document).on( "click", '.delay-row-input input:checkbox', function() {
+
+        console.log("The 'remove' checkbox was clicked...");
+        e20rPgm_lockMetaRows();
+
+        $spinner.show();
+
+        jQuery.ajax({
+            url: e20r_tracker.ajaxurl,
+            type:'POST',
+            timeout:10000,
+            dataType: 'JSON',
+            data: {
+                'action': 'e20r_rm_program',
+                'e20r-program-id': $(this).val(),
+                'e20r-program-post_id': $('#post_ID').val(),
+                'e20r-tracker-program-nonce': $('#e20r-tracker-program-nonce').val()
+            },
+            error: function($data){
+
+                console.dir($data);
+
+                if ($data.data != '') {
+                    alert($data.data);
+                }
+
+            },
+            success: function($data){
+
+                console.dir($data);
+
+                if ($data.data) {
+                    jQuery('#e20r-postmeta-setprogram').html( $data.data );
+                    //showMetaControls();
+                }
+
+            },
+            complete: function() {
+
+                e20rPgm_showMetaControls();
+                e20rPgm_unlockMetaRows();
+                $spinner.hide();
+            }
+        });
+    });
+*/
+    $(document).on( "click", "#e20r-tracker-new-meta", function() {
+
+        e20rPgm_lockMetaRows();
+        $spinner.show();
+
+        e20rPgm_rowVisibility( jQuery( '.new-e20rprogram-select' ), 'select' );
+
+        $spinner.hide();
+        // $(this).hide();
+        // $('#pmpro-seq-new-meta-reset').show();
+        e20rPgm_unlockMetaRows();
+    });
+
+    $(document).on( "click", "#e20r-tracker-new-meta-reset", function() {
+
+        e20rPgm_lockMetaRows();
+
+        $spinner.show();
+
+        e20rPgm_showMetaControls();
+
+        $spinner.hide();
+
+        e20rPgm_unlockMetaRows();
     });
 
 });
@@ -894,4 +979,204 @@ function loadCheckinItem( $itemId ) {
             }
         }
     });
+}
+
+/****** Manage the meta boxes for the Post(s) ******/
+function e20rPgm_rowVisibility ($element, $show ) {
+
+    var $selectLabelRow = jQuery($element).parent().parent().prev();
+    var $selectRow = jQuery($element).parent().parent();
+
+    //var $delayLabelRow = jQuery($element).parent().parent().next();
+    // var $delayRow = jQuery($selectRow).nextAll('.delay-row-input.new-e20rprogram:first');
+
+    if ( $show == 'all') {
+
+        jQuery($selectLabelRow).show();
+        jQuery($selectRow).show();
+        // jQuery($delayRow).show();
+    }
+    else if (  $show == 'none') {
+
+        jQuery($selectLabelRow).hide();
+        jQuery($selectRow).hide();
+        // jQuery($delayRow).hide();
+    }
+    else if ( $show == 'select' ) {
+
+        jQuery($selectLabelRow).show();
+        jQuery($selectRow).show();
+        // jQuery($delayRow).hide();
+    }
+}
+
+function e20rPgm_showMetaControls() {
+
+    var $count = 0;
+
+    jQuery( 'select.e20r-tracker-memberof-programs').each( function() {
+
+        e20rPgm_rowVisibility( this, 'all' );
+        $count++;
+    });
+
+    console.log('Number of selects with defined entries: ' + $count);
+
+    // Check if there's more than one select box in metabox. If so, the post already belongs to sequences
+    if ( $count >= 1 ) {
+
+        // Hide the 'new sequence' select and show the 'new' button.
+        e20rPgm_rowVisibility( jQuery( 'select.new-e20rprogram-select') , 'none' );
+
+        jQuery('#e20r-tracker-new').show();
+        jQuery('#e20r-tracker-new-meta').show();
+        jQuery('#e20r-tracker-new-meta-reset').hide();
+    }
+    else {
+
+        // Show the row for the 'Not defined' in the New sequence drop-down
+        e20rPgm_rowVisibility( jQuery( 'select.new-e20rprogram-select' ), 'select' );
+
+        // Hide all buttons
+        jQuery('#e20r-tracker-new').hide();
+    }
+
+}
+function e20rPgm_lockMetaRows() {
+
+    jQuery( '.e20r-tracker-memberof-programs' ).each( function() {
+
+        jQuery( this ).attr( 'disabled', true );
+    });
+
+    jQuery( '.new-e20rprogram-select' ).each( function() {
+        jQuery( this).attr( 'disabled', true);
+    });
+
+    jQuery( '.e20r-remove-program').each( function() {
+
+        jQuery( this).attr( 'disabled', true );
+    });
+
+    jQuery( '#e20r-tracker-new-meta' ).attr( 'disabled', true );
+    jQuery( '#e20r-tracker-new-meta-reset' ).attr( 'disabled', true );
+}
+
+function e20rPgm_unlockMetaRows() {
+
+    jQuery( '.e20r-tracker-memberof-programs' ).each( function() {
+
+        jQuery( this ).attr( 'disabled', false );
+    });
+
+    jQuery( '.new-e20rprogram-select' ).each( function() {
+        jQuery( this ).attr( 'disabled', false );
+    });
+
+    jQuery( '.e20r-remove-program').each( function() {
+
+        jQuery( this ).attr( 'disabled', false );
+    });
+
+    jQuery( '#e20r-tracker-new-meta' ).attr( 'disabled', false );
+    jQuery( '#e20r-tracker-new-meta-reset' ).attr( 'disabled', false );
+
+};
+function e20rPgm_showAddNew() {
+
+    jQuery('.new-program-select-label').show();
+    jQuery('.new-e20rprogram-select').show();
+
+    jQuery('#e20r-tracker-new').hide();
+
+}
+
+function e20rPgm_hideAddNew() {
+
+    jQuery('.new-program-select-label').hide();
+    jQuery('.new-e20rprogram-select').hide();
+
+    // var $selectInp = jQuery('#pmpro-seq-metatable tbody>tr:last').prev('tr').prev('tr');
+    // var $selectLabel = jQuery($selectInp).prev('tr');
+
+    // $selectInp.slideToggle();
+    // $selectLabel.slideToggle();
+    var $addNew = jQuery(".e20r-select-row-input").length;
+
+    console.log('defined programs (number): ' + $addNew );
+
+    if ( $addNew > 1 ) {
+        jQuery('#e20r-tracker-new').show();
+        jQuery('#e20r-tracker-new-meta-reset').hide();
+    }
+}
+function e20rPgm_postMetaSelectChanged( $self ) {
+
+    var $spinner = jQuery('#e20r-postmeta-setprogram').find('e20r_spinner');
+
+    e20rPgm_lockMetaRows();
+
+    console.log("Changed the Program that this post is a member of");
+    $spinner.show();
+
+    var $program_id = jQuery( $self ).val();
+    var $oldId = jQuery($self).next('.e20r-program-oldval');
+
+    if (( ! $program_id ) && (! $oldId.val()) ) {
+        console.log("The empty program row");
+        // return;
+    }
+
+    console.log("Program ID: " + $program_id );
+    console.log("Old program ID: " + $oldId.val() );
+    // Disable delay and sequence input.
+/*
+    jQuery.ajax({
+        url: e20r_tracker.ajaxurl,
+        type:'POST',
+        timeout:10000,
+        dataType: 'JSON',
+        data: {
+            action: 'e20r_add_program',
+            'e20r-program-id': $program_id,
+            'e20r-old-program-id': $oldId.val();
+            'e20r-tracker-program-nonce': jQuery('#e20r-tracker-program-nonce').val(),
+            'post-id': jQuery('#post_ID').val()
+        },
+        error: function($data){
+            console.log("error() - Returned data: " + $data.success + " and " + $data.data);
+            console.dir($data);
+
+            if ( $data.data ) {
+                alert($data.data);
+            }
+        },
+        success: function($data){
+            console.log("success() - Returned data: " + $data.success);
+
+            if ($data.data) {
+
+                console.log('Program ID added to post & refreshing metabox content');
+                jQuery('#e20r-postmeta-setprogram').html($data.data);
+                console.log("Loaded program meta info.");
+            } else {
+                console.log('No HTML returned???');
+            }
+
+        },
+        complete: function($data) {
+            $spinner.hide();
+            console.log("Ajax function complete...");
+            e20rPgm_showMetaControls();
+            e20rPgm_unlockMetaRows();
+            jQuery( '#e20r-tracker-new').hide();
+        }
+    });
+    */
+    $spinner.hide();
+    console.log("Ajax function complete...");
+    e20rPgm_showMetaControls();
+    e20rPgm_unlockMetaRows();
+    jQuery( '#e20r-tracker-new').hide();
+
 }

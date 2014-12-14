@@ -30,7 +30,7 @@ class e20rClient {
         else {
             $this->id = $user_id;
         }
-        dbg("e20rClient() - Loading shortcode for measurements in constructor");
+        dbg("e20rClient() - Loading shortcode for measurements");
         add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
     }
 
@@ -64,17 +64,40 @@ class e20rClient {
 
         if ( $this->id !== null ) {
 
-            add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
             add_action( 'wp_print_scripts', array( &$this, 'load_scripts' ) );
-            add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
-            add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
-            add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
+            // add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
 //            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
-            add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
             // add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
 
         }
 
+
+    }
+
+    function load_hooks() {
+
+        dbg("e20rClient() - Loading hooks for Client data");
+        add_action( 'wp_ajax_updateUnitTypes', array( &$this, 'updateUnitTypes') );
+
+        add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
+        add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
+        add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
+
+        // Used by the wp-admin backend for the Coaches
+        add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
+
+        add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
+
+    }
+
+    public function updateUnitTypes() {
+
+        dbg( "updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
+        dbg("POST content: " . print_r($_POST, true));
+
+        // Save the actual setting for the current user
+
+        // Update the data for this user in the measurements table.
     }
 
     function ajax_userInfo_callback() {
@@ -152,25 +175,28 @@ class e20rClient {
             $this->init();
 
             if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
+
+                dbg("shortcode: Loading model class for measurements: " . E20R_PLUGIN_DIR );
+
                 if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
                     wp_die( "Unable to load e20rMeasurementModel class" );
                 }
-                dbg("Model Class loaded");
+                dbg("shortcode: Model Class loaded");
             }
 
             if ( empty( $this->measurements ) ) {
+                dbg("shortcode: Loading measurement class");
                 $this->measurements = new e20rMeasurements( $this->id, $when );
             }
 
-            dbg("shortcode: Attempting to load data for {$when}");
-            $this->measurements->getMeasurement( $when );
+//            dbg("shortcode: Attempting to load data for {$when}");
+//            $this->measurements->getMeasurement( $when );
 
 
             dbg("shortcode: Loading progress form for {$when} by {$this->id}");
             return $this->measurements->view_EditProgress( $when, $this->data->getInfo() );
 
-            dbg('Shortcode completed...');
+            dbg('Shortcode: Form load completed...');
         }
         catch ( Exception $e ) {
             dbg("Error displaying measurement form (shortcode): " . $e->getMessage() );
@@ -301,55 +327,5 @@ class e20rClient {
         return $this->info;
     }
 
-    public function addArticle( $obj ) {
-
-        $key = $this->findArticle( $obj->id );
-
-        if ($key !== false ) {
-
-            $this->article_list[ $key ] = $obj;
-        }
-        else {
-
-            $this->article_list[] = $obj;
-        }
-    }
-
-    public function getArticles() {
-
-        return $this->article_list;
-    }
-
-    public function getArticle( $id ) {
-
-        if ( $key = $this->findArticle( $id ) !== false ) {
-            return $this->article_list[$key];
-        }
-
-        return false;
-    }
-
-    public function setID( $id ) {
-
-        $this->id = $id;
-    }
-
-    public function getID() {
-
-        return $this->id;
-    }
-
-    private function findArticle( $id ) {
-
-        foreach ( $this->article_list as $key => $article ) {
-
-            if ( $article->id == $id ) {
-
-                return $key;
-            }
-        }
-
-        return false;
-    }
 
 }

@@ -96,17 +96,10 @@ class e20rMeasurements {
 
         add_action( 'wp_ajax_saveMeasurementForUser', array( &$this, 'saveMeasurement_callback' ) );
         add_action( 'wp_ajax_checkCompletion', array( &$this, 'checkProgressFormCompletion_callback' ) );
-        add_action( 'wp_ajax_updateUnitTypes', array( &$this, 'updateUnitTypes') );
 
         add_action( 'wp_ajax_nopriv_saveMeasurementForUser', 'e20r_ajaxUnprivError' );
         add_action( 'wp_ajax_nopriv_checkCompletion', 'e20r_ajaxUnprivError' );
-        add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
 
-    }
-
-    public function updateUnitTypes() {
-        dbg( "updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
-        dbg("POST content: " . print_r($_POST, true));
 
     }
 
@@ -155,8 +148,10 @@ class e20rMeasurements {
             );
         }
 
-        return $retVal;
+        return ( empty( $retVal ) ? $data : $retVal );
     }
+
+
 
     public function getGirthTypes() {
 
@@ -167,22 +162,12 @@ class e20rMeasurements {
         return $this->girths;
     }
 
-    private function whoCalledMe() {
-
-        $trace=debug_backtrace();
-        $caller=$trace[2];
-
-        $trace =  "Called by {$caller['function']}()";
-        if (isset($caller['class']))
-            $trace .= " in {$caller['class']}()";
-
-        return $trace;
-    }
-
     public function getMeasurement( $when = 'all', $forJS = false ) {
 
-        if ( empty( $this->model ) ) {
+        global $e20rTracker;
 
+        if ( empty( $this->model ) ) {
+            dbg("getMeasurement() - For some reason, the model isn't loaded yet!");
             $this->model = new e20rMeasurementModel( $this->id );
             $this->model->getMeasurements();
         }
@@ -190,29 +175,37 @@ class e20rMeasurements {
         $byDateArr = (array)$this->model->byDate;
 
         if ( empty($byDateArr) ) {
-
+            dbgOut("getMeasurement() - No data loaded");
         }
-        dbg("getMeasurement({$when}, {$forJS}) was called by: " . $this->whoCalledMe());
+
+        dbg("getMeasurement({$when}, {$forJS}) was called by: " . $e20rTracker->whoCalledMe());
 
         switch ( strtolower( $when ) ) {
             case 'current':
 
                 $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-1 week', CONST_SATURDAY);
-                dbg("Saturday this week: " . print_r( $date[0], true) );
+                dbg("getMeasurement() - Saturday this week: " . print_r( $date[0], true) );
 
-                return ( $forJS === true ? $this->transformForJS( $this->model->getByDate($date[0]) ) : $this->model->getByDate($date[0]) );
+                $data = $this->model->getByDate($date[0]);
+                return ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
 
                 break;
 
             case 'last_week':
 
                 $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-2 weeks', CONST_SATURDAY);
-                dbg("Saturday last week: " . print_r( $date[1], true) );
+                dbg("getMeasurement() - Saturday last week: " . print_r( $date[1], true) );
 
-                return $forJS === true ? $this->transformForJS( $this->model->getByDate($date[1]) ) : $this->model->getByDate($date[1]);
+                $data = $this->model->getByDate($date[1]);
+                dbg( "getMeasurement() - Data for previous week ({$date}): " . print_r( $data, true ) );
+
+                $data = ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
+
+                return $data;
                 break;
 
             default:
+                dbg("getMeasurement() - Load by date {$when}");
                 if ( $when !== 'all' ) {
 
                     return $this->model->getByDate( $when );
@@ -235,6 +228,8 @@ class e20rMeasurements {
 
 
     public function view_EditProgress( $date = null, $unitInfo ) {
+
+        global $e20rTracker;
 
         if ( ! class_exists( 'e20rMeasurementViews' ) ) {
             if ( ! include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" ) )
@@ -294,33 +289,6 @@ class e20rMeasurements {
         echo $this->view->showProgressQuestionRow( $this->measurementDate, $this->requestPhotos() );
         dbg("Progress Questionnaire row generated");
 
-        /*
-        foreach ( $items as $key => $list ) {
-
-            if ( is_array( $list ) ) {
-
-                echo $this->view->generateMeasurementHelp( $count, $key );
-                echo $this->view->createBlockTable( $list, $key, $count );
-                echo $this->view->generateMeasurementEnd();
-            }
-            elseif ( ( ! is_array( $list ) ) && ( strtolower($list) != 'photos' ) ) {
-
-                echo $this->view->generateMeasurementHelp( $count, $list );
-                echo $this->view->createInputBlock( $list, $count );
-                echo $this->view->generateMeasurementEnd();
-            }
-            elseif ( ( strtolower( $list ) == 'photos' ) && ( $this->requestPhotos() ) ) {
-
-                echo $this->view->createPhotoBlock( $list, $count );
-                echo $this->view->generateMeasurementEnd();
-            }
-
-            if ( ( strtolower( $list ) != 'photos' ) && ! $this->requestPhotos() )  {
-                $count++;
-            }
-
-        } // End of foreach()
-        */
         echo $this->view->endProgressForm();
 
         $html = ob_get_clean();
@@ -667,7 +635,7 @@ class e20rMeasurements {
 
         }
         else {
-
+            // TODO: Load from e20rClient model.
             global $wpdb;
 
             if ( $this->id != 0 ){

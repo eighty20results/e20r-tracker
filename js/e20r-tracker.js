@@ -749,3 +749,93 @@ jQuery(function() {
 jQuery(function() {
     jQuery('button p').remove();
 });
+
+/* TODO -- Progress animation or Badge??*/
+/*
+jQuery(function() {
+
+    // >= 1 means the user has already earned a tick for the current workout/lesson combo
+    var hasGottenTick = 0;
+
+    hasGottenTick = !!(jQuery('#did-workout-today-radio-1, #did-habit-today-radio-1, #did-workout-today-radio-4')
+        .filter(':checked').length == 2)
+
+    jQuery('fieldset.did-you input:radio', '#daily-progress-canvas')
+        .click(function(e) {
+            var bothYes = (2 == jQuery('#did-workout-today-radio-1, #did-habit-today-radio-1, #did-workout-today-radio-4').filter(':checked').length);
+
+            if (bothYes && !hasGottenTick) {
+                hasGottenTick = 1;
+                myProgressTickAnimation(e);
+            }
+            else if (!bothYes && hasGottenTick) {
+                hasGottenTick = 0;
+
+                jQuery('#tickmarks-partial-row')
+                    .width(function(width) {
+                        return width - 22;
+                    });
+
+                jQuery('#my-progress-score')
+                    .text(function(n) {
+                        return parseInt(n) - 1;
+                    });
+            }
+        });
+
+    function myProgressTickAnimation(e) {
+
+        var animateTime = 800;
+
+        var tickPartialRow = jQuery('#tickmarks-partial-row')[0];
+
+        var tickStartPos = jQuery(e.target).offset();
+        var tickEndPos = jQuery(tickPartialRow).offset();
+
+        tickEndPos.left += jQuery(tickPartialRow).width();
+
+        jQuery('#progress-tick-32')
+            .css('left', ( tickStartPos.left - 9 ) + 'px')
+            .css('top', ( tickStartPos.top - 9 ) + 'px')
+            .fadeIn();
+
+        jQuery('#progress-tick-32')
+            .animate({
+                left: ( tickEndPos.left - 9 ) + 'px',
+                top: ( tickEndPos.top - 9 ) + 'px'
+            }, animateTime, function() {
+                jQuery(this)
+                    .animate({
+                        width: '16px',
+                        height: '16px',
+                        left: tickEndPos.left + 'px',
+                        top: tickEndPos.top + 'px',
+                        alpha: 0,
+                        filter: 'alpha(opacity=0)'
+                    }, 200, function() {
+                        jQuery(this)
+                            .css('display', 'none')
+                            .css('width', '32px')
+                            .css('height', '32px');
+                    });
+            });
+
+        setTimeout(function() {
+            jQuery('#tickmarks-partial-row')
+                .width(function(width) {
+                    return width + 22; // 22 is a literal that should be a variable
+                });
+
+            jQuery('#my-progress-score')
+                .fadeOut('medium', function() {
+                    jQuery(this)
+                        .text(function(n) {
+                            return parseInt(n) + 1;
+                        })
+                        .fadeIn();
+                });
+
+        }, animateTime + 500);
+    }
+});
+    */

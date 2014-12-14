@@ -8,10 +8,12 @@ class e20rTracker {
     private $programInfo;
     private $articles = null;
 
+
     protected $settings = array();
     protected $setting_name = 'e20r-tracker';
 
     public $tables;
+    public $managed_types = array();
 
     public function __construct() {
 
@@ -27,6 +29,11 @@ class e20rTracker {
     public function init() {
 
         global $wpdb, $current_user;
+        dbg("Loading e20rTables class");
+        $this->tables = new e20rTables();
+
+        dbg("Loading the types of posts we'll be allowed to manage");
+        $this->managed_types = apply_filters("e20r-tracker-post-types", array("post", "page") );
 
         // $this->clientData = new S3F_clientData();
 
@@ -44,11 +51,20 @@ class e20rTracker {
         add_action('admin_menu', array(&$this, "renderGirthTypesMetabox"));
 
         /* AJAX call-backs */
-        dbg("e20rTracker() - Loading hooks for measurements");
+        dbg("e20rTracker() - Loading hooks for Client info");
+        $client = new e20rClient();
+        add_action('init', array( &$client, 'load_hooks') );
+        unset($client);
 
+        dbg("e20rTracker() - Loading hooks for Measurements");
         $measurements = new e20rMeasurements();
         add_action('init', array( &$measurements, 'load_ajax_hooks') );
         unset($measurements);
+
+        dbg("e20rTracker() - Loading hooks for Programs");
+        $programs = new e20rPrograms();
+        $programs->load_hooks();
+        unset($programs);
 
         /* Load various back-end pages/settings */
         add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
@@ -60,20 +76,18 @@ class e20rTracker {
         add_action( "wp_loaded", array( &$this, 'register_shortcodes' ) );
 
         dbg("Loading table definitions for e20rTracker()");
-        $this->tables = new e20rTables();
     }
 
     public function configure_ajax_hooks() {
 
         /* Load required classes used by the plugin */
         $this->checkinData = new e20rCheckin();
-        $this->programInfo = new e20rPrograms();
+        // $this->programInfo = new e20rPrograms();
         $this->articles = new e20rArticle();
 
         add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
 
         add_action( 'wp_ajax_get_checkinItem', array( &$this->checkinData, 'ajax_getCheckin_item' ) );
-        add_action( 'wp_ajax_save_program_info', array( &$this->programInfo, 'ajax_save_program_info' ) );
         add_action( 'wp_ajax_save_item_data', array( &$this->checkinData, 'ajax_save_item_data' ) );
 
         /* AJAX call-backs if user is unprivileged */
@@ -115,6 +129,12 @@ class e20rTracker {
             $newOrder = isset( $_POST['e20r_girth_order'] ) ? $_POST['e20r_girth_order'] : null;
             update_post_meta( $post_id, 'e20r_girth_type_sortorder', $newOrder );
         }
+
+    }
+
+    public function getSaturdayOfWeek() {
+
+        $program = new e20rPrograms();
 
     }
 
@@ -231,7 +251,7 @@ class e20rTracker {
         global $current_user;
 
         $options = get_option( $this->setting_name );
-
+/*
         dbg( "Measured Items: " . print_r($measured_items, true ) );
         ?>
         <table class="e20r-settings-table">
@@ -293,6 +313,7 @@ class e20rTracker {
             </tbody>
         </table>
         <?php
+*/
     }
 
     public function make_MeasurementCheckboxRow( $item ) {
@@ -547,6 +568,42 @@ class e20rTracker {
         wp_print_scripts('jqplot_ticks');
     }
 
+    /**
+     * Default permission check function.
+     * Checks whether the provided user_id is allowed to publish_pages & publish_posts.
+     *
+     * @param $user_id - ID of user to check permissions for.
+     * @return bool -- True if the user is allowed to edi/update
+     *
+     */
+    public function userCanEdit( $user_id ) {
+
+        $privArr = apply_filters('e20r-tracker-edit-rights', array( 'publish_pages', 'publish_posts') );
+
+        $permitted = false;
+
+        foreach( $privArr as $privilege ) {
+
+            if ( user_can( $user_id, $privilege ) ) {
+
+                $perm = true;
+            } else {
+
+                $perm = false;
+            }
+
+            $permitted = ( $permitted || $perm ) ? true : false;
+        }
+
+        if ( $permitted ) {
+            dbg( "e20rTracker::userCanEdit() - User id ({$user_id}) has permission" );
+        }
+        else {
+            dbg( "e20rTracker::userCanEdit() - User id ({$user_id}) does NOT have permission" );
+        }
+        return $permitted;
+    }
+
     public function e20r_tracker_activate() {
 
         global $wpdb;
@@ -701,27 +758,6 @@ class e20rTracker {
 
 
         /**
-         * For lessons
-         */
-
-        $articlesSql =
-            "CREATE TABLE {$wpdb->prefix}e20r_articles (
-                  id bigint not null auto_increment,
-                  title varchar(255) null,
-                  title_prefix varchar(30) not null default 'Lesson:',
-                  post_id int not null,
-                  program_id int not null,
-                  assignment_question_id int null,
-                  checkin_item_id int not null,
-                  measurements_id int null,
-                  release_date date null,
-                  release_day int null,
-                  primary key (id),
-                    key assignment ( assignment_question_id asc ),
-                    key checkin_items ( checkin_item_id asc ) )
-                {$charset_collate}
-            ";
-        /**
          * For assignments
          */
         $assignmentQsSql =
@@ -794,7 +830,6 @@ class e20rTracker {
         dbDelta( $programsTableSql );
         dbDelta( $setsTableSql );
         dbDelta( $exercisesTableSql );
-        dbDelta( $articlesSql );
         dbDelta( $intakeTableSql );
         dbDelta( $oldMeasurementTableSql );
 
@@ -934,4 +969,17 @@ class e20rTracker {
         </style>
     <?php
     }
+
+    public function whoCalledMe() {
+
+        $trace=debug_backtrace();
+        $caller=$trace[2];
+
+        $trace =  "Called by {$caller['function']}()";
+        if (isset($caller['class']))
+            $trace .= " in {$caller['class']}()";
+
+        return $trace;
+    }
+
 }

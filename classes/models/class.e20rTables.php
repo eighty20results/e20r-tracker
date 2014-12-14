@@ -24,6 +24,7 @@ class e20rTables {
         }
 
         if ( function_exists( 'get_user_by' ) ) {
+            dbg("Initializing the e20rTables() class");
             $this->init();
         }
     }
@@ -48,6 +49,7 @@ class e20rTables {
         $this->tables->programs      = $wpdb->prefix . 'e20r_programs';
         $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
         $this->tables->exercise      = $wpdb->prefix . 'e20r_exercises';
+        $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
 
         if ( ( $this->inBeta ) ) {
 
@@ -59,22 +61,6 @@ class e20rTables {
             $this->tables->meals        = "{$wpdb->prefix}wp_s3f_nourishMeals";
 
         }
-    }
-
-    private function loadArticleFields() {
-
-        $this->fields['articles'] = array(
-            'id'                        => 'id',
-            'title'                     => 'title',
-            'title_prefix'              =>'title_prefix',
-            'post_id'                   => 'post_id',
-            'program_id'                => 'program_id',
-            'assignment_question_id'    => 'assignment_question_id',
-            'checkin_item_id'           => 'checkin_item_id',
-            'measurements_id'           => 'measurements_id',
-            'release_date'              => 'release_date',
-            'release_day'               => 'release_day'
-        );
     }
 
     private function loadProgramFields() {
@@ -148,9 +134,6 @@ class e20rTables {
                 break;
             case 'programs':
                 $this->loadProgramFields();
-                break;
-            case 'articles':
-                $this->loadAricleFields();
                 break;
         }
     }

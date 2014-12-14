@@ -14,11 +14,11 @@ class e20rClientModel {
 
     private $data_enc_key = null;
 
-    private $tables;
+    private $table;
 
     public function e20rClientModel( $user_id = null ) {
 
-        global $current_user, $wpdb;
+        global $current_user, $wpdb, $e20rTracker;
 
         if ( ( $user_id == 0 ) && ( $current_user->ID !== 0 ) ) {
 
@@ -27,9 +27,12 @@ class e20rClientModel {
 
         $this->id = $user_id;
 
-        $tmp = new e20rTables();
-        $this->tables = $tmp->getTable();
-
+        try {
+            $this->table = $e20rTracker->tables->getTable( 'client_info' );
+        }
+        catch ( Exception $e ) {
+            dbg("Error loading client_info table: " . $e->getMessage() );
+        }
     }
 
     public function load() {
@@ -65,7 +68,7 @@ class e20rClientModel {
 
         $sql = $wpdb->prepare( "
                     SELECT *
-                    FROM {$this->tables->client_info}
+                    FROM {$this->table}
                     WHERE user_id = %d
                     ORDER BY program_start ASC
                     LIMIT 1
@@ -102,7 +105,9 @@ class e20rClientModel {
 
     private function load_appointments() {
 
-        global $current_user, $wpdb, $appointments;
+        global $current_user, $wpdb, $appointments, $e20rTracker;
+
+        $appTable = $e20rTracker->tables->getTable('appointments');
 
         if ( empty( $appointments ) ) {
 
@@ -120,7 +125,7 @@ class e20rClientModel {
         $sql = $wpdb->prepare(
             "
                 SELECT ID, user, start, status, created
-                FROM {$appointments->app_table} AS app
+                FROM {$appTable} AS app
                 INNER JOIN {$wpdb->users} AS usr
                   ON ( app.user = usr.ID )
                 WHERE user = %d AND status NOT IN ( [IN] )

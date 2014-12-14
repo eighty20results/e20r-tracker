@@ -8,24 +8,70 @@
 
 class e20rArticle {
 
-    public $_tables;
-    public $current = null;
+    private $id;
+    private $program_ids = array();
+    private $article;
 
-    public function e20rArticle( $user_id = null, $delay = null, $when = null ) {
+    public function e20rArticle( $program_ids = null, $post_id = null ) {
 
         dbg("Loading article class");
+        global $e20rTracker, $post;
 
-        global $wpdb;
+        if ( empty($program_ids ) ) {
+            $this->program_ids = get_post_meta( $post->ID, 'e20r_program_ids');
+        }
 
-        $this->_tables = array(
-            'articles' => $wpdb->prefix . 'e20r_articles',
-        );
+        if ( $post_id == null ) {
+
+            global $post;
+
+            if ( $post->ID ) {
+                $post_id = $post->ID;
+            }
+        }
+
+        $this->id = $post_id;
+
+        $this->init();
 
         add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
+    }
+
+    private function defaults( $program_id ) {
+
+        $this->article[$program_id] = new stdClass();
+        $this->article[$program_id]->title_prefix = 'Lesson';
+        $this->article[$program_id]->assignment_question_id = null;
+        $this->article[$program_id]->checkin_item_id = null;
+        $this->article[$program_id]->is_measurement_day = false;
+        $this->article[$program_id]->release_date = null; // Calculate based on program_id's startdate and $this->release_day;
+        $this->article[$program_id]->release_day = null;
 
     }
 
-    public function init() {
+    /**
+     * An article can have multiple program IDs associated with it.
+     *
+     * A program can have one article per postID but many postIDs - also known as A program can have multiple article IDs.
+     */
+
+    /**
+     * @param $programId
+     */
+    public function init( $programId ) {
+
+        if ( ! empty( $this->program_ids ) ) {
+            $tmp = get_post_meta( $this->id, 'e20r_article_data', true );
+            $this->article = ( empty($tmp) ? null : $tmp );
+        }
+        else {
+            $this->article = array();
+
+        }
+
+    }
+
+    private function saveArticleData() {
 
 
     }
@@ -36,14 +82,17 @@ class e20rArticle {
 
         global $post;
 
-        dbg("Post loaded");
+        $this->program_ids =  ( $metabox['args']['program_ids'] != false ? $metabox['args']['program_ids'] : null );
+        $this->init(); // Self-init.
+
+        dbg("e20rArticle() - Article data for Post {$post->ID} loaded. " . print_r( $this->program_ids, true) );
 
         ob_start();
         ?>
         <div class="submitbox" id="e20r-tracker-article-postmeta">
             <div id="minor-publishing">
-                <div id="e20r-article-metabox">
-                    <?php echo $this->view_articleMetabox( $post->ID ) ?>
+                <div id="e20r-article-postmetabox">
+                    <?php echo $this->view_articleMetabox( $post->ID, $this->program_id ) ?>
                 </div>
             </div>
         </div>
@@ -54,7 +103,7 @@ class e20rArticle {
         echo $metabox;
     }
 
-    public function view_articleMetabox( $post_id ) {
+    public function view_articleMetabox( $post_id, $program_id ) {
 
         /**
          * Tie $article_id to $post_id, checkin_id, assignment Question ID (and answers)
@@ -63,18 +112,37 @@ class e20rArticle {
 
     }
 
+    private function hasProgramId() {
+
+        global $post;
+
+        if ( $post->ID ) {
+            dbg("hasProgramId() -  Post ID defined.. Looking up the program Ids.");
+            get_post_meta( $post->ID, 'e20r_program_ids', true);
+            return ( empty( $this->program_ids ) ? false : true );
+        }
+
+        return false;
+    }
+
     public function editor_metabox_setup( $object, $box ) {
 
-        dbg("Metabox for Post/Page editor being loaded");
+        if ( false === ( $program_ids = $this->hasProgramId() ) ) {
 
-        $post_types = apply_filters("e20r_article_edit_types", array("post", "page") );
+            dbg("e20rArticle() -  Not loading the metabox since there are no program(s) defined for the post");
+            return;
+        }
+
+        dbg("e20rArticle() - Metabox for Post/Page editor being loaded");
+
+        $post_types = apply_filters("e20r_allowed_article_types", array("post", "page") );
 
         foreach( $post_types as $type ) {
 
-            add_meta_box( 'e20r-editor-meta', __( 'Article configuration', 'e20r_tracker' ), array(
-                "e20rArticles",
+            add_meta_box( 'e20r-article-meta', __( 'Article Configuration', 'e20r_tracker' ), array(
+                &$this,
                 'view_articlePostMetabox'
-            ), $type, 'advanced', 'high' );
+            ), $type, 'advanced', 'high', array( 'program_ids' => $program_ids ) );
         }
     }
 
@@ -97,11 +165,11 @@ class e20rArticle {
                 <table id="e20r-manage-checkin-items">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="checkin-item-edit">Edit</label></th>
-                        <th class="e20r-label header"><label for="e20r-checkin-item-id">Id</label></th>
-                        <th class="e20r-label header"><label for="e20r-checkin-item-order">Order #</label></th>
+                        <th class="e20r-label header"><label for="e20r-article-edit">Edit</label></th>
+                        <th class="e20r-label header"><label for="e20r-article-id">Id</label></th>
+                        <th class="e20r-label header"><label for="e20r-article-order">Order #</label></th>
                         <th class="e20r-label header"><label for="e20r-program">Program</label></th>
-                        <th class="e20r-label header"><label for="e20r-checkin-short-name">Short name</label></th>
+                        <th class="e20r-label header"><label for="e20r-article-short-name">Short name</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-item-name">Summary</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-startdate">Starts on</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-enddate">Ends on</label></th>
@@ -283,9 +351,9 @@ class e20rArticle {
 
         $sql = "
                 SELECT *
-                FROM {$this->_tables['articles']},
-                GROUP BY program_id,
-                ORDER BY release_date DESC
+                FROM {$this->table},
+                GROUP BY {$this->fields['program_id']},
+                ORDER BY {$this->fields['release_date']} DESC
             ";
 
         $articles = $wpdb->get_results( $sql, OBJECT );
@@ -305,5 +373,56 @@ class e20rArticle {
         </div>
     <?php
 
+    }
+
+    public function addArticle( $obj ) {
+
+        $key = $this->findArticle( $obj->id );
+
+        if ($key !== false ) {
+
+            $this->article_list[ $key ] = $obj;
+        }
+        else {
+
+            $this->article_list[] = $obj;
+        }
+    }
+
+    public function getArticles() {
+
+        return $this->article_list;
+    }
+
+    public function getArticle( $id ) {
+
+        if ( $key = $this->findArticle( $id ) !== false ) {
+            return $this->article_list[$key];
+        }
+
+        return false;
+    }
+
+    public function setID( $id ) {
+
+        $this->id = $id;
+    }
+
+    public function getID() {
+
+        return $this->id;
+    }
+
+    private function findArticle( $id ) {
+
+        foreach ( $this->article_list as $key => $article ) {
+
+            if ( $article->id == $id ) {
+
+                return $key;
+            }
+        }
+
+        return false;
     }
 } 
