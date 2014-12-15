@@ -8,18 +8,16 @@
 
 class e20rArticle {
 
-    private $id;
-    private $program_ids = array();
-    private $article;
+    private $post_id;
+    private $program_id = false;
+    private $post_article = array();
 
     public function e20rArticle( $program_ids = null, $post_id = null ) {
 
         dbg("Loading article class");
-        global $e20rTracker, $post;
+        global $e20rTracker, $post, $e20rArticle;
 
-        if ( empty($program_ids ) ) {
-            $this->program_ids = get_post_meta( $post->ID, 'e20r_program_ids');
-        }
+        $e20rTracker = $this;
 
         if ( $post_id == null ) {
 
@@ -30,7 +28,28 @@ class e20rArticle {
             }
         }
 
-        $this->id = $post_id;
+        $this->post_id = $post_id;
+
+        if ( empty( $program_ids ) && ( $this->program_ids === false ) ) {
+
+            dbg("e20rArticle() - Loading array of program IDs from DB");
+            $this->program_ids = get_post_meta( $this->post_id, 'e20r_tracker_program_ids', true);
+        }
+
+        if ( is_array( $program_ids ) && ( $this->program_ids === false ) ) {
+            $this->program_ids = $program_ids;
+        }
+        elseif ( is_array( $program_ids ) && ( ! empty( $this->program_ids ) ) ) {
+
+            dbg("e20rArticle() - Received array of program IDs and existing array is present");
+            $this->program_ids = array_merge( $this->program_ids, $program_ids );
+            $this->program_ids = array_unique( $this->program_ids );
+        }
+
+        if ( (! is_array( $program_ids ) ) && ( $program_ids !== null ) ) {
+            dbg("e20rArticle() - Program ID specified, not an array of IDs");
+            $this->program_ids = array( $program_ids );
+        }
 
         $this->init();
 
@@ -39,13 +58,13 @@ class e20rArticle {
 
     private function defaults( $program_id ) {
 
-        $this->article[$program_id] = new stdClass();
-        $this->article[$program_id]->title_prefix = 'Lesson';
-        $this->article[$program_id]->assignment_question_id = null;
-        $this->article[$program_id]->checkin_item_id = null;
-        $this->article[$program_id]->is_measurement_day = false;
-        $this->article[$program_id]->release_date = null; // Calculate based on program_id's startdate and $this->release_day;
-        $this->article[$program_id]->release_day = null;
+        $this->post_articles[$program_id] = new stdClass();
+        $this->post_articles[$program_id]->title_prefix = 'Lesson';
+        $this->post_articles[$program_id]->assignment_question_id = 0;
+        $this->post_articles[$program_id]->checkin_item_id = 0;
+        $this->post_articles[$program_id]->is_measurement_day = 0;
+        $this->post_articles[$program_id]->release_date = 0; // Calculate based on program_id's startdate and $this->release_day;
+        $this->post_articles[$program_id]->release_day = 0;
 
     }
 
@@ -58,17 +77,15 @@ class e20rArticle {
     /**
      * @param $programId
      */
-    public function init( $programId ) {
+    public function init() {
 
         if ( ! empty( $this->program_ids ) ) {
-            $tmp = get_post_meta( $this->id, 'e20r_article_data', true );
-            $this->article = ( empty($tmp) ? null : $tmp );
+            $this->load_articles();
+
         }
         else {
-            $this->article = array();
-
+            $this->post_articles = array();
         }
-
     }
 
     private function saveArticleData() {
@@ -76,6 +93,13 @@ class e20rArticle {
 
     }
 
+    public function isMeaurementDay( $post_id ) {
+
+        $articleData = $this->findArticle( $post_id );
+
+
+
+    }
     public function view_articlePostMetabox() {
 
         $metabox = '';
@@ -118,7 +142,7 @@ class e20rArticle {
 
         if ( $post->ID ) {
             dbg("hasProgramId() -  Post ID defined.. Looking up the program Ids.");
-            get_post_meta( $post->ID, 'e20r_program_ids', true);
+            get_post_meta( $post->ID, 'e20r_tracker_program_ids', true);
             return ( empty( $this->program_ids ) ? false : true );
         }
 
@@ -129,15 +153,15 @@ class e20rArticle {
 
         if ( false === ( $program_ids = $this->hasProgramId() ) ) {
 
-            dbg("e20rArticle() -  Not loading the metabox since there are no program(s) defined for the post");
+            dbg("e20rArticle::editor_metabox_setup() -  Warning: Not loading the metabox since there are no program(s) defined for the post");
             return;
         }
 
+        $program_ids =
         dbg("e20rArticle() - Metabox for Post/Page editor being loaded");
+        global $e20rTracker;
 
-        $post_types = apply_filters("e20r_allowed_article_types", array("post", "page") );
-
-        foreach( $post_types as $type ) {
+        foreach( $e20rTracker->managed_types as $type ) {
 
             add_meta_box( 'e20r-article-meta', __( 'Article Configuration', 'e20r_tracker' ), array(
                 &$this,
@@ -345,20 +369,15 @@ class e20rArticle {
         return $html;
     }
 
-    private function load_articles( $cached = true ) {
+    private function load_articles() {
 
-        global $wpdb;
+        if ( ! empty( $this->program_ids ) ) {
 
-        $sql = "
-                SELECT *
-                FROM {$this->table},
-                GROUP BY {$this->fields['program_id']},
-                ORDER BY {$this->fields['release_date']} DESC
-            ";
+            foreach ( $this->program_ids as $pid ) {
 
-        $articles = $wpdb->get_results( $sql, OBJECT );
-
-        return $articles;
+                $this->postArticles[ $pid ] = get_user_meta( $this->post_id, "e20r_articles_{$pid}", true );
+            }
+        }
     }
 
     public function render_submenu_page() {

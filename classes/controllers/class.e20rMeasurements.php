@@ -229,7 +229,7 @@ class e20rMeasurements {
 
     public function view_EditProgress( $date = null, $unitInfo ) {
 
-        global $e20rTracker;
+        global $e20rTracker, $e20rArticle;
 
         if ( ! class_exists( 'e20rMeasurementViews' ) ) {
             if ( ! include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" ) )
@@ -280,7 +280,7 @@ class e20rMeasurements {
         echo $this->view->showGirthRow( $this->girths, $this->measurementDate );
         dbg("Girth Row generated");
 
-        echo $this->view->showPhotoRow( $this->measurementDate, $this->requestPhotos() );
+        echo $this->view->showPhotoRow( $this->measurementDate, $e20rArticle->isMeasurementDay() );
         dbg("Photo Row generated");
 
         echo $this->view->showOtherIndicatorsRow( $this->measurementDate, $this->requestPhotos() );
@@ -298,6 +298,9 @@ class e20rMeasurements {
 
     private function requestPhotos() {
 
+
+
+        if ( $e20rArticle->is_measurement_day === true )
         // Using the startdate for the current user + whether the current delay falls on a Saturday (and it's a "Photo" day - every 4 weeks starting the 2nd week of the program )x
         // Return true.
         return false;

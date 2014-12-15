@@ -23,9 +23,34 @@ class e20rTracker {
             'purge_tables' => true,
         );
 
+        add_action('init', array( &$this, "dependency_warnings" ), 10 );
         add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
     }
 
+    public function dependency_warnings() {
+
+        if ( ! class_exists( 'PrsoGformsAdvUploader' ) ) {
+
+            dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed");
+            ?>
+            <div class="error">
+                <p><?php _e( "Eighty / 20 Tracker Plugin - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
+            </div><?php
+        }
+    }
+    public function updateSetting( $name, $value ) {
+
+        if ( array_key_exists( $name, $this->settings ) ) {
+            $this->settings[ $name ] = $value;
+            update_option( $this->setting_name, $this->settings);
+            return true;
+        }
+        else {
+            dbg("Error: The {$name} setting does not exist!");
+        }
+
+        return false;
+    }
     public function init() {
 
         global $wpdb, $current_user;

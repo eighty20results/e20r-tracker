@@ -13,12 +13,13 @@ class e20rClient {
     public $show = null; // Views
     public $data = null; // Client Model
     private $measurements = null; // Measurements class
+    private $current_programs = array();
 
     private $lw_measurement;
 
     private $assignments = null;
 
-    function e20rClient( $user_id = null ) {
+    public function e20rClient( $user_id = null ) {
 
         if (! $user_id ) {
             global $current_user;
@@ -34,7 +35,7 @@ class e20rClient {
         add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
     }
 
-    function init() {
+    public function init() {
 
         dbg('Running INIT for Client Controller');
 
@@ -70,11 +71,9 @@ class e20rClient {
             // add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
 
         }
-
-
     }
 
-    function load_hooks() {
+    public function load_hooks() {
 
         dbg("e20rClient() - Loading hooks for Client data");
         add_action( 'wp_ajax_updateUnitTypes', array( &$this, 'updateUnitTypes') );
@@ -100,7 +99,7 @@ class e20rClient {
         // Update the data for this user in the measurements table.
     }
 
-    function ajax_userInfo_callback() {
+    public function ajax_userInfo_callback() {
 
         dbg("ajax_userInfo_Callback() - Checking access");
         dbg("Received data: " . print_r($_POST, true ) );
@@ -129,7 +128,6 @@ class e20rClient {
         catch ( Exception $e ) {
             dbg("Error loading and returning user data: " . $e->getMessage() );
         }
-
     }
 
     public function initClientViews() {
@@ -169,7 +167,7 @@ class e20rClient {
 
             global $current_user, $e20rArticle;
 
-            $when = $this->getWeeklyUpdateSettings( $e20rArticle->ID, $from_programstart, $day );
+            $when = $this->getWeeklyUpdateSettings( $e20rArticle->$post_id, $from_programstart, $day );
 
             dbg("shortcode: Loading the e20rClient class()");
             $this->init();
@@ -223,6 +221,7 @@ class e20rClient {
     private function getSaturday( $program_day ) {
 
     }
+
     /*
     private function getMeasurement( $when, $forJS ) {
 

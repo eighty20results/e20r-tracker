@@ -13,7 +13,8 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
     function setUp() {
 
         parent::setUp();
-        $this->plugin = $GLOBALS['e20rTracker'];
+        global $e20rTracker;
+        $this->plugin = $e20rTracker;
 
     } // end setUp()
 
@@ -21,17 +22,32 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         $this->assertFalse( null == $this->plugin );
     } // End testPluginInit
 
+    function configureDB() {
+
+        global $e20rTracker;
+        $e20rTracker->e20r_tracker_activate();
+    }
+
+    function teardownDB() {
+
+        global $e20rTracker;
+
+        if ( $e20rTracker->updateSetting( 'delete_tables', true ) && $e20rTracker->updateSetting( 'purge_tables', false )) {
+            $e20rTracker->e20r_tracker_deactivate();
+        }
+        else throwException("Unable to set the delete_tables setting to true");
+    }
+
     function testCreateTables() {
 
-        global $wpdb;
+        global $wpdb, $e20rTracker;
 
         // Create database tables
-        $tracker = new e20rTracker();
-        $tracker->e20r_tracker_activate();
+        $e20rTracker->e20r_tracker_activate();
 
 
         // Iterate through and check that DB was correctly created
-        foreach ( $this->plugin->_tables as $tblName ) {
+        foreach ( $e20rTracker->tables as $tblName ) {
 
             $sql = $wpdb->prepare("SHOW TABLES LIKE %s", $tblName);
             $db_res = $wpdb->get_var( $sql );
@@ -42,7 +58,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         } // End foreach
 
         // Do whatever uninstall magic we need to do
-        $tracker->e20r_tracker_deactivate();
+        $this->teardownDB();
 
         // Validate that the tables are now gone.
         foreach ( $this->plugin->_tables as $tblName ) {
@@ -60,8 +76,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         global $wpdb;
 
         // Create database tables
-        $tracker = new e20rTracker();
-        $tracker->e20r_tracker_activate();
+        $this->configureDB();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         $ID2 = $this->plugin->addItem('nourish_test2', 'Test Habit for Nourish', '07/22/2014', '07/24/2014', 1, 1, 12);
@@ -75,7 +90,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         $this->plugin->delItem( $ID );
 
         // Do whatever uninstall magic we need to do
-        $tracker->e20r_tracker_deactivate();
+        $this->teardownDB();
 
     }
 
@@ -84,8 +99,7 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
         global $wpdb;
 
         // Create database tables
-        $tracker = new e20rTracker();
-        $tracker->e20r_tracker_activate();
+        $this->configureDB();
 
         $ID = $this->plugin->addItem('nourish_test', 'Test Habit for Nourish', '08/22/2014', null, 1, 1, 14);
         dbgOut("Updated data from DB:" . print_r( $wpdb->get_row( "SELECT * FROM {$this->plugin->_tables['items']} WHERE id = {$ID}" ), true));
@@ -106,8 +120,8 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
         }
 
-        // Do whatever uninstall magic we need to do
-        $tracker->e20r_tracker_deactivate();
+        // Do whatever uninstall magic we php -need to do
+        $this->teardownDB();
 
     }
 
@@ -115,10 +129,9 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
         global $wpdb;
 
-        $tracker = new e20rTracker();
-        $tracker->e20r_tracker_activate();
+        $this->configureDB();
 
-        $tracker->e20r_tracker_deactivate();
+        $this->teardownDB();
     }
 }// The end (end class)
  
