@@ -8,9 +8,10 @@
 
 class e20rArticle {
 
+    /* Articles contain list of programs it belongs to along with the PostID and all metadata.*/
     private $post_id;
-    private $program_id = false;
-    private $post_article = array();
+    private $program_ids = array();
+    private $meta = array();
 
     public function e20rArticle( $program_ids = null, $post_id = null ) {
 
@@ -58,13 +59,13 @@ class e20rArticle {
 
     private function defaults( $program_id ) {
 
-        $this->post_articles[$program_id] = new stdClass();
-        $this->post_articles[$program_id]->title_prefix = 'Lesson';
-        $this->post_articles[$program_id]->assignment_question_id = 0;
-        $this->post_articles[$program_id]->checkin_item_id = 0;
-        $this->post_articles[$program_id]->is_measurement_day = 0;
-        $this->post_articles[$program_id]->release_date = 0; // Calculate based on program_id's startdate and $this->release_day;
-        $this->post_articles[$program_id]->release_day = 0;
+        $this->meta[$program_id] = new stdClass();
+        $this->meta[$program_id]->category = 'Lesson';
+        $this->meta[$program_id]->assignment_question_ids = array();
+        $this->meta[$program_id]->checkin_item_id = 0;
+        $this->meta[$program_id]->is_measurement_day = 0;
+        $this->meta[$program_id]->release_date = 0; // Calculate based on program_id's startdate and $this->release_day;
+        $this->meta[$program_id]->release_day = 0;
 
     }
 
@@ -84,7 +85,7 @@ class e20rArticle {
 
         }
         else {
-            $this->post_articles = array();
+            $this->meta = array();
         }
     }
 
