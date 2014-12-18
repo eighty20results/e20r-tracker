@@ -66,8 +66,7 @@ class e20rClient {
         if ( $this->id !== null ) {
 
             add_action( 'wp_print_scripts', array( &$this, 'load_scripts' ) );
-            // add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
-//            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
+
             // add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
 
         }
@@ -84,6 +83,10 @@ class e20rClient {
 
         // Used by the wp-admin backend for the Coaches
         add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
+
+        dbg("e20rClient::load_hooks() - Loading client view hooks");
+        add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
+        add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
 
         add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
 
@@ -359,4 +362,139 @@ class e20rClient {
     }
 
 
+    // TODO: Return data that can be viewed both by Shortcode and by back-end. I.e. only fetch data for user specified in request.
+
+    function ajax_getMemberlistForLevel() {
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_levels_nonce');
+
+        $level = ( isset($_POST['hidden_e20r_level']) ? intval( $_POST['hidden_e20r_level']) : 0 );
+
+        dbg("Level returned: {$level}");
+
+        if ( $level != 0 ) {
+
+            $levelObj = pmpro_getLevel( $level );
+            // $this->load_levels( $levelObj->name );
+            dbg(" Loading members for {$levelObj->name}");
+            $data = $this->viewMemberSelect( $levelObj->name );
+        }
+        else {
+
+            $this->load_levels();
+            $data = $this->viewMemberSelect();
+        }
+
+        wp_send_json_success( $data );
+
+    }
+
+    function ajax_clientDetail() {
+        dbg('Requesting client detail');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+
+        dbg("Nonce is OK");
+
+        dbg("Request: " . print_r($_REQUEST, true));
+
+    }
+
+    function ajax_complianceData() {
+
+        dbg('Requesting Check-In details');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+
+        dbg("Nonce is OK");
+
+        $checkins = new E20Rcheckin();
+
+        // TODO: 10/02/2014 - Multiple steps: For different habits, get & generate different graphs.
+        // NOTE: Special care for existing Nourish group... :(
+        // Get the list of check-ins so far - SQL.
+        // Calculate the max # of check-ins per check-in type (day/calendar based)
+        //
+
+
+    }
+
+    function ajax_assignmentData() {
+        dbg('Requesting Assignment details');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+
+        dbg("Nonce is OK");
+    }
+
+    function ajax_getMeasurementDataForUser() {
+
+        dbg('measurementData() - Requesting measurement data');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+
+        dbg("measurementData() - Nonce is OK");
+
+        $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
+
+        if ( $this->validateClientAccess( $clientId ) ) {
+            $this->client_id = $clientId;
+        }
+        else {
+            dbg( "measurementData() - Logged in user ID does not have access to the data for user ${clientId}" );
+            wp_send_json_error( 'You do not have permission to access the data you requested.' );
+        }
+
+        dbg("measurementData() - Loading client data");
+        $client = new e20rClient( $this->client_id );
+
+        if ( ! isset( $client->data->measurements->id ) ) {
+            $client->init();
+        }
+
+        // $measurements = $this->fetchMeasurements( $this->client_id );
+        dbg("measurementData() - Using measurement data & configure dimensions");
+        $measurements = $client->data->measurements;
+        $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
+
+        // $measurements = $this->load_measurements( $clientId );
+        /*
+        $mClass = new e20rMeasurements( $this->client_id );
+        $mClass->init();
+
+        $measurements = $mClass->getMeasurements();
+        */
+        $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
+
+        $weight = $this->generate_plot_data( $measurements, 'weight' );
+        $girth = $this->generate_plot_data( $measurements, 'girth' );
+
+        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
+        echo $data;
+        exit;
+    }
+
+    private function validateClientAccess( $clientId ) {
+
+        global $current_user;
+
+        dbg("Client to validate: " . $clientId );
+
+        if ( $clientId ) {
+
+            dbg("Real user Id provided ");
+            $client = get_user_by("id", $clientId );
+
+            if ( ($current_user->ID != $clientId ) &&  ( $current_user->membership_level->id == 18 ) ) {
+                return true;
+            }
+            elseif ( $current_user->ID == $clientId ) {
+                return true;
+            }
+            // Make sure the $current_user has the right to view the data for $clientId
+
+        }
+
+        return false;
+    }
 }
