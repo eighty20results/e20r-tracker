@@ -29,12 +29,18 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ! class_exists( 'PrsoGformsAdvUploader' ) ) {
+        if ( ( ! class_exists( 'PrsoGformsAdvUploader' ) ) || ( ! class_exists('PMProSequence')) ) {
 
-            dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed");
             ?>
             <div class="error">
-                <p><?php _e( "Eighty / 20 Tracker Plugin - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
+            <?php if ( ! class_exists('PrsoGformsAdvUploader') ): ?>
+                <?php dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed"); ?>
+                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
+            <?php endif; ?>
+            <?php if ( ! class_exists('PMProSequence') ): ?>
+                <?php dbg("e20rTracker::Error -  The PMPro Sequence plugin is not installed"); ?>
+                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: PMPro Sequence plugin", 'e20rtracker' ); ?></p>
+            <?php endif; ?>
             </div><?php
         }
     }
@@ -420,6 +426,43 @@ class e20rTracker {
         echo ob_get_clean();
     }
 
+    /**
+     * @param $startDate -- First date
+     * @param $endDate -- End date
+     * @param $weekdayNumber -- Day of the week (0 = Sun, 6 = Sat)
+     *
+     * @return array -- Array of days for the measurement(s).
+     */
+    public function datesForMeasurements( $startDate, $endDate, $weekdayNumber ) {
+
+        dbg("datesForMeasurements(): {$startDate}, {$endDate}, {$weekdayNumber}");
+
+        $startDate = strtotime($startDate . ' 00:00:00 ' . get_option('timezone_string') );
+        $endDate = strtotime($endDate . ' 00:00:00 ' . get_option('timezone_string') );
+
+        dbg("datesForMeasurements() - timestamps: {$startDate}, {$endDate}, {$weekdayNumber}");
+
+        $dateArr = array();
+
+        do {
+            if( date( "w", $startDate ) != $weekdayNumber ) {
+
+                $startDate = strtotime("-1 day", $startDate); // add 1 day
+            }
+
+        } while( date( "w", $startDate ) != $weekdayNumber );
+
+
+        while ( $startDate >= $endDate ) {
+
+            $dateArr[] = date( 'Y-m-d', $startDate );
+            $startDate = strtotime("-1 week", $startDate); // add 7 days
+            dbg('StartDate is now: ' . $startDate );
+        }
+
+        return $dateArr;
+    }
+
     public function show_sortOrderSettings( $object, $box ) {
 
         dbg("Loading metabox to order girth types");
@@ -659,6 +702,7 @@ class e20rTracker {
                     starttime timestamp not null default current_timestamp,
                     endtime timestamp null,
                     member_id int null,
+                    sequences varchar(512) null,
                     primary key (id) )
                   {$charset_collate}
         ";

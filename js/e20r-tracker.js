@@ -76,24 +76,6 @@ function getBirthdate() {
     }
 }
 
-jQuery(function() {
-
-    if ( typeof NourishUser.birthdate === "undefined" ) {
-        return;
-    }
-
-    var $bd = NourishUser.birthdate;
-
-    console.log("Birthday: " + $bd );
-
-    var curbd = $bd.split('-');
-
-    jQuery('#bdyear').val(curbd[0]);
-    jQuery('#bdmonth').val(curbd[1]);
-    jQuery('#bdday').val(curbd[2]);
-});
-
-
 (function() {
 
     // prevent double loading
@@ -457,6 +439,160 @@ jQuery(function() {
 
 })();
 
+(function() {
+    if (typeof JSON != 'undefined') {
+        return;
+    }
+
+    window.JSON = {};
+
+    window.JSON.toJSON = function(o)
+    {
+        var type = typeof(o);
+
+        if (o === null)
+            return "null";
+
+        if (type == "undefined")
+            return undefined;
+
+        if (type == "number" || type == "boolean")
+            return o + "";
+
+        if (type == "string")
+            return window.JSON.quoteString(o);
+
+        if (type == 'object')
+        {
+            if (typeof o.toJSON == "function")
+                return window.JSON.toJSON( o.toJSON() );
+
+            if (o.constructor === Date)
+            {
+                var month = o.getUTCMonth() + 1;
+                if (month < 10) month = '0' + month;
+
+                var day = o.getUTCDate();
+                if (day < 10) day = '0' + day;
+
+                var year = o.getUTCFullYear();
+
+                var hours = o.getUTCHours();
+                if (hours < 10) hours = '0' + hours;
+
+                var minutes = o.getUTCMinutes();
+                if (minutes < 10) minutes = '0' + minutes;
+
+                var seconds = o.getUTCSeconds();
+                if (seconds < 10) seconds = '0' + seconds;
+
+                var milli = o.getUTCMilliseconds();
+                if (milli < 100) milli = '0' + milli;
+                if (milli < 10) milli = '0' + milli;
+
+                return '"' + year + '-' + month + '-' + day + 'T' +
+                    hours + ':' + minutes + ':' + seconds +
+                    '.' + milli + 'Z"';
+            }
+
+            if (o.constructor === Array)
+            {
+                var ret = [];
+                for (var i = 0; i < o.length; i++)
+                    ret.push( window.JSON.toJSON(o[i]) || "null" );
+
+                return "[" + ret.join(",") + "]";
+            }
+
+            var pairs = [];
+            for (var k in o) {
+                var name;
+                var type = typeof k;
+
+                if (type == "number")
+                    name = '"' + k + '"';
+                else if (type == "string")
+                    name = window.JSON.quoteString(k);
+                else
+                    continue;  //skip non-string or number keys
+
+                if (typeof o[k] == "function")
+                    continue;  //skip pairs where the value is a function.
+
+                var val = window.JSON.toJSON(o[k]);
+
+                pairs.push(name + ":" + val);
+            }
+
+            return "{" + pairs.join(", ") + "}";
+        }
+    };
+
+    window.JSON.stringify = window.JSON.toJSON;
+
+    /** jQuery.evalJSON(src)
+     Evaluates a given piece of json source.
+     **/
+    window.JSON.evalJSON = function(src)
+    {
+        return eval("(" + src + ")");
+    };
+
+    /** jQuery.secureEvalJSON(src)
+     Evals JSON in a way that is *more* secure.
+     **/
+    window.JSON.secureEvalJSON = function(src)
+    {
+        var filtered = src;
+        filtered = filtered.replace(/\\["\\\/bfnrtu]/g, '@');
+        filtered = filtered.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']');
+        filtered = filtered.replace(/(?:^|:|,)(?:\s*\[)+/g, '');
+
+        if (/^[\],:{}\s]*$/.test(filtered))
+            return eval("(" + src + ")");
+        else
+            throw new SyntaxError("Error parsing JSON, source is not valid.");
+    };
+
+    /** jQuery.quoteString(string)
+     Returns a string-repr of a string, escaping quotes intelligently.
+     Mostly a support function for toJSON.
+
+     Examples:
+     >>> jQuery.quoteString("apple")
+     "apple"
+
+     >>> jQuery.quoteString('"Where are we going?", she asked.')
+     "\"Where are we going?\", she asked."
+     **/
+    window.JSON.quoteString = function(string)
+    {
+        if (string.match(_escapeable))
+        {
+            return '"' + string.replace(_escapeable, function (a)
+                {
+                    var c = _meta[a];
+                    if (typeof c === 'string') return c;
+                    c = a.charCodeAt();
+                    return '\\u00' + Math.floor(c / 16).toString(16) + (c % 16).toString(16);
+                }) + '"';
+        }
+        return '"' + string + '"';
+    };
+
+    var _escapeable = /["\\\x00-\x1f\x7f-\x9f]/g;
+
+    var _meta = {
+        '\b': '\\b',
+        '\t': '\\t',
+        '\n': '\\n',
+        '\f': '\\f',
+        '\r': '\\r',
+        '"' : '\\"',
+        '\\': '\\\\'
+    };
+})();
+
 /*
 (function() {
     var match = document.URL.match(/scrollTo\(([0-9]+)\)/);
@@ -473,7 +609,7 @@ jQuery(function() {
         }, 500);
     });
 })();
-*/
+
 var Tooltip = {
     init: function() {
         if (!jQuery.fn.livequery) {
@@ -491,15 +627,15 @@ var Tooltip = {
             .livequery('mouseover', Tooltip.event.mouseover)
             .livequery('mouseout', Tooltip.event.mouseout);
 
-        /* TODO: Do we want to support base64? If so upload
-        var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
+        // TODO: Do we want to support base64? If so upload
+        // var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
 
-        if (usesBase64) {
-            if (!base64) {
-                jQuery.getScript(e20r_tracker.settings.base64_script_url);
-            }
-        }
-         */
+        // if (usesBase64) {
+        //    if (!base64) {
+        //        jQuery.getScript(e20r_tracker.settings.base64_script_url);
+        //    }
+        //}
+
         this._initiated = true;
     },
 
@@ -586,170 +722,69 @@ var Tooltip = {
             });
     }
 };
+*/
 
-(function() {
-    if (typeof JSON != 'undefined') {
-        return;
-    }
-
-    window.JSON = {};
-
-    window.JSON.toJSON = function(o)
-    {
-        var type = typeof(o);
-
-        if (o === null)
-            return "null";
-
-        if (type == "undefined")
-            return undefined;
-
-        if (type == "number" || type == "boolean")
-            return o + "";
-
-        if (type == "string")
-            return window.JSON.quoteString(o);
-
-        if (type == 'object')
-        {
-            if (typeof o.toJSON == "function")
-                return window.JSON.toJSON( o.toJSON() );
-
-            if (o.constructor === Date)
-            {
-                var month = o.getUTCMonth() + 1;
-                if (month < 10) month = '0' + month;
-
-                var day = o.getUTCDate();
-                if (day < 10) day = '0' + day;
-
-                var year = o.getUTCFullYear();
-
-                var hours = o.getUTCHours();
-                if (hours < 10) hours = '0' + hours;
-
-                var minutes = o.getUTCMinutes();
-                if (minutes < 10) minutes = '0' + minutes;
-
-                var seconds = o.getUTCSeconds();
-                if (seconds < 10) seconds = '0' + seconds;
-
-                var milli = o.getUTCMilliseconds();
-                if (milli < 100) milli = '0' + milli;
-                if (milli < 10) milli = '0' + milli;
-
-                return '"' + year + '-' + month + '-' + day + 'T' +
-                hours + ':' + minutes + ':' + seconds +
-                '.' + milli + 'Z"';
-            }
-
-            if (o.constructor === Array)
-            {
-                var ret = [];
-                for (var i = 0; i < o.length; i++)
-                    ret.push( window.JSON.toJSON(o[i]) || "null" );
-
-                return "[" + ret.join(",") + "]";
-            }
-
-            var pairs = [];
-            for (var k in o) {
-                var name;
-                var type = typeof k;
-
-                if (type == "number")
-                    name = '"' + k + '"';
-                else if (type == "string")
-                    name = window.JSON.quoteString(k);
-                else
-                    continue;  //skip non-string or number keys
-
-                if (typeof o[k] == "function")
-                    continue;  //skip pairs where the value is a function.
-
-                var val = window.JSON.toJSON(o[k]);
-
-                pairs.push(name + ":" + val);
-            }
-
-            return "{" + pairs.join(", ") + "}";
-        }
-    };
-
-    window.JSON.stringify = window.JSON.toJSON;
-
-    /** jQuery.evalJSON(src)
-     Evaluates a given piece of json source.
-     **/
-    window.JSON.evalJSON = function(src)
-    {
-        return eval("(" + src + ")");
-    };
-
-    /** jQuery.secureEvalJSON(src)
-     Evals JSON in a way that is *more* secure.
-     **/
-    window.JSON.secureEvalJSON = function(src)
-    {
-        var filtered = src;
-        filtered = filtered.replace(/\\["\\\/bfnrtu]/g, '@');
-        filtered = filtered.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']');
-        filtered = filtered.replace(/(?:^|:|,)(?:\s*\[)+/g, '');
-
-        if (/^[\],:{}\s]*$/.test(filtered))
-            return eval("(" + src + ")");
-        else
-            throw new SyntaxError("Error parsing JSON, source is not valid.");
-    };
-
-    /** jQuery.quoteString(string)
-     Returns a string-repr of a string, escaping quotes intelligently.
-     Mostly a support function for toJSON.
-
-     Examples:
-     >>> jQuery.quoteString("apple")
-     "apple"
-
-     >>> jQuery.quoteString('"Where are we going?", she asked.')
-     "\"Where are we going?\", she asked."
-     **/
-    window.JSON.quoteString = function(string)
-    {
-        if (string.match(_escapeable))
-        {
-            return '"' + string.replace(_escapeable, function (a)
-            {
-                var c = _meta[a];
-                if (typeof c === 'string') return c;
-                c = a.charCodeAt();
-                return '\\u00' + Math.floor(c / 16).toString(16) + (c % 16).toString(16);
-            }) + '"';
-        }
-        return '"' + string + '"';
-    };
-
-    var _escapeable = /["\\\x00-\x1f\x7f-\x9f]/g;
-
-    var _meta = {
-        '\b': '\\b',
-        '\t': '\\t',
-        '\n': '\\n',
-        '\f': '\\f',
-        '\r': '\\r',
-        '"' : '\\"',
-        '\\': '\\\\'
-    };
-})();
-
-
-jQuery(function() {
-    Tooltip.init();
-});
+//jQuery(function() {
+//    Tooltip.init();
+//});
 
 jQuery(function() {
     jQuery('button p').remove();
 });
 
+;(function($) {
+    function isIE8() {
+        var rv = -1;
+        var re = new RegExp("Trident\/([0-9]{1,}[\.0-9]{0,})");
+        if (re.exec(navigator.userAgent) != null) {
+            rv = parseFloat(RegExp.$1);
+        }
+        return (rv == 4); // is Trident 4.0?
+    }
+
+    var isIE6 = ($.browser.msie && $.browser.version == '6.0');
+
+    if (!isIE6 || jQuery.cookie('ie6continue') || isIE8()) {
+        return;
+    }
+
+    $.getScript('js/jquery.blockUI.js', function() {
+        setTimeout(function() {
+            var message = []
+            message.push('<h3 style="font-size: 32px; margin-bottom: 12px; color: #0054bb;">Your Web Browser is Too Old</h3>');
+            message.push('<div style="width: 440px; margin: 0 auto; font-size: 16px; line-height: 18px;">Wow, your web browser is more than a decade old. Just like you probably won\'t use something you wear every day for that long, you shouldn\'t use a geriatric web browser. Unfortunately we use new web technology in the Eighty / 20 Nutrition Coaching application which your browser won\'t be able to display.   Because we only want you to have the best possible browsing experience, you\'ll need to upgrade to use this application.</div>');
+            message.push('<h4 style="margin-top: 40px; margin-bottom: 10px; font-size: 20px;">Upgrade Now (it\'s free)</h4>');
+            message.push('<a href="http://www.google.com/chrome"><img src="https://www.google.com/chrome/assets/common/images/chrome_logo_2x.png" /></a>');
+            message.push('<a href="http://www.firefox.com"><img src="https://mozorg.cdn.mozilla.net/media/img/firefox/new/header-firefox.png?2013-06" /></a>');
+            message.push('<a href="http://support.apple.com/downloads/#safari"><img src="http://km.support.apple.com/kb/image.jsp?productid=PL165" /></a>');
+            message.push('<a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie"><img src="https://enterprisegrantapps.state.nj.us/NJSAGE/Images/imgIconIE_small.jpg" /></a>');
+            message.push('<div style="height: 1px; background: #ccc; margin-bottom: 16px;"></div>');
+            message.push('<div>If there is no possible way you can upgrade right now, you can continue, but keep in mind pages may display a little weird and some of the more advanced functions may not be available.</div>');
+            message.push('<button onclick="jQuery.unblockUI(); jQuery.cookie(\'ie6continue\', \'true\', { expires: 1 });" style="margin-top: 16px;">Continue</button>');
+
+
+            $.blockUI({
+                message: message.join(''),
+
+                centerY: false,
+
+                css: {
+                    cursor: 'default',
+                    width: '600px',
+                    top: '15%',
+                    left: '23%',
+                    padding: '16px'
+                },
+
+                overlayCSS: {
+                    cursor: 'default',
+                    opacity: .8
+                }
+            });
+        }, 500);
+    });
+
+})(jQuery);
 /* TODO -- Progress animation or Badge??*/
 /*
 jQuery(function() {

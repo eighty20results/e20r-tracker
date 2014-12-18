@@ -503,6 +503,21 @@
     margin-top: 12px;
 }
 .measurement-saved-container button.edit {
+    align-items: flex-start;
+    text-align: center;
+    cursor: default;
+    color: buttontext;
+    padding: 2px 6px 3px;
+    border: 2px outset buttonface;
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    background-color: buttonface;
+    box-sizing: border-box;
+    font: -webkit-small-control;
+    line-height: normal;
     font-size: 14px;
     float: right;
     margin-right: 12px;
@@ -646,4 +661,45 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     line-height: 30px;
     min-font-size: 10px;
     max-font-size: 14px;
+}
+#homeLesson .content-container blockquote.inspirational {
+    margin: 1.2em auto;
+    text-align: center;
+    color: #666666;
+    border-top: 1px solid #aec9b2;
+    border-bottom: 1px solid #aec9b2;
+    background: #f0fcf2;
+    padding: 10px 0;
+}
+#homeLesson .content-container blockquote.inspirational p { font-size: 18px; }
+#homeLesson .content-container blockquote.inspirational .author {
+    font-size: 14px;
+    font-style: italic;
+}
+#homeLesson .content-container blockquote.inspirational:first-child { margin-top: 0; }
+#homeLesson .content-container div.blockquote-inspirational {
+    margin: 1.2em auto;
+    text-align: center;
+    color: #666666;
+    border-top: 1px solid #aec9b2;
+    border-bottom: 1px solid #aec9b2;
+    background: #f0fcf2;
+    padding: 10px 0;
+}
+#homeLesson .content-container div.blockquote-inspirational p { font-size: 18px; }
+#homeLesson .content-container div.blockquote-inspirational .author {
+    font-size: 14px;
+    font-style: italic;
+}
+#homeLesson .content-container div.blockquote-inspirational:first-child { margin-top: 0; }
+#homeLesson .content-container blockquote {
+    margin-top: 0;
+    font-size: 16px;
+    margin-bottom: 22px;
+    padding: 0;
+    padding-left: 33px;
+    margin-left: 33px;
+    padding-top: 4px;
+    background: url(../cp-images/blockquote-bg.png) no-repeat;
+    color: #666666;
 }

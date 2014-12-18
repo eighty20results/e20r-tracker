@@ -11,14 +11,15 @@ class e20rArticle {
     /* Articles contain list of programs it belongs to along with the PostID and all metadata.*/
     private $post_id;
     private $program_ids = array();
-    private $meta = array();
+    private $user_programId = 0;
+    private $meta;
+    private $sequence_list = array();
 
     public function e20rArticle( $program_ids = null, $post_id = null ) {
 
         dbg("Loading article class");
-        global $e20rTracker, $post, $e20rArticle;
 
-        $e20rTracker = $this;
+        global $e20rTracker, $post;
 
         if ( $post_id == null ) {
 
@@ -57,15 +58,17 @@ class e20rArticle {
         add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
     }
 
-    private function defaults( $program_id ) {
+    private function defaults( ) {
 
-        $this->meta[$program_id] = new stdClass();
-        $this->meta[$program_id]->category = 'Lesson';
-        $this->meta[$program_id]->assignment_question_ids = array();
-        $this->meta[$program_id]->checkin_item_id = 0;
-        $this->meta[$program_id]->is_measurement_day = 0;
-        $this->meta[$program_id]->release_date = 0; // Calculate based on program_id's startdate and $this->release_day;
-        $this->meta[$program_id]->release_day = 0;
+        $this->meta = new stdClass();
+        $this->meta->category = 'Lesson';
+        $this->meta->assignment_question_ids = array();
+        $this->meta->checkin_item_id = 0;
+        $this->meta->is_measurement_day = 1;
+        $this->meta->is_photo_day = 0;
+        // $this->meta->release_date = date_i18n( 'Y-m-d', current_time( 'timestamp' ) ); // Calculate based on program_id's startdate and $this->release_day;
+        $this->meta->release_date = '2014-12-13';
+        $this->meta->release_day = 1; // Get from post_id's postmeta ('get sequence ID and delay value for sequence')
 
     }
 
@@ -78,29 +81,52 @@ class e20rArticle {
     /**
      * @param $programId
      */
-    public function init() {
+    public function init( $userId = null ) {
 
-        if ( ! empty( $this->program_ids ) ) {
-            $this->load_articles();
+        global $current_user, $e20rArticle;
 
+        if ( $userId === null ) {
+            $userId = $current_user->ID;
         }
-        else {
-            $this->meta = array();
+
+        $this->meta = get_post_meta( $this->post_id, 'e20r_article_meta', true);
+
+        if ( $this->meta === false ) {
+            $this->defaults();
         }
+
+        $this->user_programId = get_user_meta( $userId, 'e20r_programs', true);
+
+        $sequenceMeta = get_post_meta( $this->post_id, '', true);
+
+        $e20rArticle = $this;
     }
 
     private function saveArticleData() {
 
 
     }
+    public function releaseDate() {
 
-    public function isMeaurementDay( $post_id ) {
+        return $this->meta->release_date;
+    }
 
-        $articleData = $this->findArticle( $post_id );
+    public function isMeasurementDay( $post_id ) {
 
-
+        return ( $this->meta->is_measurement_day == 0 ? false : true );
 
     }
+
+    public function isPhotoDay( $post_id ) {
+
+        return ( $this->meta->is_photo_day == 0 ? false : true );
+    }
+
+    public function getMeta() {
+
+        return $this->meta;
+    }
+
     public function view_articlePostMetabox() {
 
         $metabox = '';
@@ -117,7 +143,7 @@ class e20rArticle {
         <div class="submitbox" id="e20r-tracker-article-postmeta">
             <div id="minor-publishing">
                 <div id="e20r-article-postmetabox">
-                    <?php echo $this->view_articleMetabox( $post->ID, $this->program_id ) ?>
+                    <?php echo $this->view_articleMetabox( $post->ID, $this->program_ids ) ?>
                 </div>
             </div>
         </div>
@@ -128,7 +154,7 @@ class e20rArticle {
         echo $metabox;
     }
 
-    public function view_articleMetabox( $post_id, $program_id ) {
+    public function view_articleMetabox( $post_id, $program_ids ) {
 
         /**
          * Tie $article_id to $post_id, checkin_id, assignment Question ID (and answers)
@@ -430,7 +456,7 @@ class e20rArticle {
 
     public function getID() {
 
-        return $this->id;
+        return $this->post_id;
     }
 
     private function findArticle( $id ) {

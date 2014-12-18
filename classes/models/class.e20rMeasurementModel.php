@@ -196,7 +196,7 @@ class e20rMeasurementModel {
 
         $fields = $e20rTracker->tables->getFields('measurements');
 
-        dbg("MeasurementsModel_loadNullMeasurement() - Fields: " . print_r($fields, true));
+        // dbg("MeasurementsModel_loadNullMeasurement() - Fields: " . print_r($fields, true));
 
         $nullMeasurement = new stdClass();
 
@@ -211,6 +211,7 @@ class e20rMeasurementModel {
             return array( $when => $nullMeasurement );
         }
         else {
+            dbg("MeasurementsModel_loadNullMeasurement() - Returning empty record for ALL!" );
             return array( $nullMeasurement );
         }
     }
@@ -247,8 +248,8 @@ class e20rMeasurementModel {
             $this->loadAll( $date );
         }
 
-        dbg("MeasurementModel_getByDate() - Loaded data: " . print_r( $this->byDate, true ) );
-        dbg("MeasurementModel_getByDate() - Getting data for {$date}");
+        // dbg("MeasurementModel_getByDate() - Loaded data: " . print_r( $this->byDate, true ) );
+        dbg("MeasurementModel_getByDate() - Fetching data for {$date}");
 
         if ( $date != 'all' ) {
 

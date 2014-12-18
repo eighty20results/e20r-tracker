@@ -31,7 +31,7 @@ class e20rClient {
         else {
             $this->id = $user_id;
         }
-        dbg("e20rClient() - Loading shortcode for measurements");
+        dbg("e20rClient::constructor() - Loading shortcode hook for measurements");
         add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
     }
 
@@ -146,7 +146,7 @@ class e20rClient {
 
     public function shortcode_editProgress( $attributes ) {
 
-        global $e20r_plot_jscript, $current_user;
+        global $e20r_plot_jscript, $current_user, $post;
         $e20r_plot_jscript = true;
 
         $day = 0;
@@ -167,7 +167,11 @@ class e20rClient {
 
             global $current_user, $e20rArticle;
 
-            $when = $this->getWeeklyUpdateSettings( $e20rArticle->$post_id, $from_programstart, $day );
+            if ( $e20rArticle === null ) {
+                $e20rArticle = new e20rArticle( $post->ID );
+            }
+
+            $when = $this->getWeeklyUpdateSettings( $e20rArticle->getID(), $from_programstart, $day );
 
             dbg("shortcode: Loading the e20rClient class()");
             $this->init();
@@ -185,6 +189,7 @@ class e20rClient {
             if ( empty( $this->measurements ) ) {
                 dbg("shortcode: Loading measurement class");
                 $this->measurements = new e20rMeasurements( $this->id, $when );
+                $this->measurements->init();
             }
 
 //            dbg("shortcode: Attempting to load data for {$when}");
@@ -203,8 +208,34 @@ class e20rClient {
 
     private function getWeeklyUpdateSettings( $articleId = null, $from_programstart = 1, $day = 0 ) {
 
-        $programs = new e20rPrograms();
+        global $post, $e20rTracker, $e20rArticle;
 
+        if ($articleId === null ) {
+
+            global $post;
+            $articleId = $post->ID;
+        }
+
+        if ( $e20rArticle == null ) {
+            dbg("e20rClient::getWeeklyUpdateSettings() - WARNING: Loading e20rArticle global here. Should have done that on plugin load!");
+            $e20rArticle = new e20rArticle( null, $post->ID );
+            $e20rArticle->init();
+        }
+        // $article = new e20rArticle( $articleId );
+        $meta = $e20rArticle->getMeta();
+
+        if ( $meta->is_measurement_day == 1 ) {
+            dbg("e20rClient::getWeeklyUpdateSettings() -- Measurement date!");
+            $dates = $e20rTracker->datesForMeasurements( $meta->release_date, '-1 week', CONST_MEASUREMENTDAY );
+
+            if ( is_array($dates ) ) {
+                $date = $dates[0];
+            }
+
+            $when = $date;
+        }
+
+        /*
         if ( ( $from_programstart === 0 ) && ( $day !== 0 ) ) {
 
         }
@@ -212,9 +243,9 @@ class e20rClient {
 
         }
         else {
-            $when = '2014-11-22';
+            $when = null;
         }
-
+    */
         return $when;
     }
 
@@ -263,8 +294,8 @@ class e20rClient {
             $this->init();
         }
 
-        if ( empty( $lw_measurement ) ) {
-            $lw_measurement = $this->measurements->getMeasurement( 'last_week', true );
+        if ( empty( $this->lw_measurement ) ) {
+            $this->lw_measurement = $this->measurements->getMeasurement( 'last_week', true );
         }
 
         $userData = $this->data->info;
@@ -284,14 +315,15 @@ class e20rClient {
                     'lengthunit' => $userData->lengthunittype,
                     'weightunit' => $userData->weightunittype,
                     'imagepath' => E20R_PLUGINS_URL . '/images/',
-                    'overrideDiff' => (isset( $lw_measurement->id ) ? false : true )
+                    'overrideDiff' => (isset( $this->lw_measurement->id ) ? false : true )
                 ),
                 'measurements' => array(
-                    'last_week' => json_encode( $lw_measurement, JSON_NUMERIC_CHECK ),
+                    'last_week' => json_encode( $this->lw_measurement, JSON_NUMERIC_CHECK ),
                     // 'last_week' => json_encode( $this->measurements->getMeasurement( 'current', true ), JSON_NUMERIC_CHECK ),
                 ),
                 'user_info' => array(
                     'userdata' => json_encode( $userData, JSON_NUMERIC_CHECK ),
+                    'progress_pictures' => '',
                     'display_birthdate' => ( empty( $userData->birthdate ) ? false : true),
 
                 ),

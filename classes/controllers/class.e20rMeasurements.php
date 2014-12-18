@@ -19,14 +19,20 @@ class e20rMeasurements {
 
     public function e20rMeasurements( $user_id = null, $forDate = null ) {
 
-        if ( $forDate !== null ) {
+        global $e20rTracker;
 
-            $this->measurementDate = new DateTime( $forDate, new DateTimeZone( get_option( 'timezone_string' ) ) );
+        if ( $forDate !== null ) {
+            dbg("e20rMeasurements()::construct Argument for date: " . print_r( $forDate, true));
+            $date = $e20rTracker->datesForMeasurements( $forDate, '-1 week', CONST_MEASUREMENTDAY );
         }
         else {
-            $this->measurementDate = new DateTime( 'NOW', new DateTimeZone( get_option( 'timezone_string' ) ) );
+
+            $date = $e20rTracker->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-1 week', CONST_MEASUREMENTDAY);
+            dbg("e20rMeasurements()::construct Argument for date: " . print_r( $date[0], true));
         }
 
+        $this->when = $date[0];
+        $this->measurementDate = $this->when;
         $this->id = $user_id;
 
     }
@@ -46,6 +52,8 @@ class e20rMeasurements {
                 dbg("Loading measurements for user {$this->id} - in Measurements Controller");
             }
         }
+
+        $this->loadData( $this->when );
     }
 
     private function load_girthTypes() {
@@ -107,7 +115,6 @@ class e20rMeasurements {
 
         dbg("Loading measurement data for {$when}");
 
-
         try {
 
             if ( ! class_exists( ' e20rMeasurementModel' ) ) {
@@ -139,19 +146,17 @@ class e20rMeasurements {
     private function transformForJS( $data ) {
 
         $retVal = array();
-
+        dbg("Unit_types: " . print_r($this->unit_type, true) );
         foreach ($data as $key => $value ) {
 
             $retVal[$key] = array(
                 'value' => $value,
-                'units' => ( $key != 'weight' ? $this->unit_type['lengthunits'] : $this->unit_type['weightunits'] ),
+                'units' => ( $key != 'weight' ? $this->unit_type->lengthunits : $this->unit_type->weightunits ),
             );
         }
 
         return ( empty( $retVal ) ? $data : $retVal );
     }
-
-
 
     public function getGirthTypes() {
 
@@ -183,20 +188,32 @@ class e20rMeasurements {
         switch ( strtolower( $when ) ) {
             case 'current':
 
-                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-1 week', CONST_SATURDAY);
-                dbg("getMeasurement() - Saturday this week: " . print_r( $date[0], true) );
+                $date = $e20rTracker->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-1 week', CONST_MEASUREMENTDAY);
 
-                $data = $this->model->getByDate($date[0]);
+                if ( is_array( $date ) ) {
+                    $date = $date[0];
+                }
+
+                dbg("getMeasurement() - Saturday this week: " . print_r( $date, true) );
+
+                $data = $this->model->getByDate($date);
+                dbg( "getMeasurement() - Data for this week ({$date}): " . print_r( $data, true ) );
+
                 return ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
 
                 break;
 
             case 'last_week':
 
-                $date = $this->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-2 weeks', CONST_SATURDAY);
-                dbg("getMeasurement() - Saturday last week: " . print_r( $date[1], true) );
+                $date = $e20rTracker->datesForMeasurements( date('Y-m-d', current_time('timestamp') ), '-2 weeks', CONST_MEASUREMENTDAY);
 
-                $data = $this->model->getByDate($date[1]);
+                if ( is_array( $date ) ) {
+                    $date = $date[1];
+                }
+
+                dbg("getMeasurement() - Saturday last week: " . print_r( $date, true) );
+
+                $data = $this->model->getByDate($date);
                 dbg( "getMeasurement() - Data for previous week ({$date}): " . print_r( $data, true ) );
 
                 $data = ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
@@ -236,6 +253,7 @@ class e20rMeasurements {
                 wp_die( "Unable to load the e20rMeasurementViews() class" );
         }
 
+        dbg("view_EditProgress() - Date supplied is: " . print_r($date, true) . " " . $e20rTracker->whoCalledMe() );
         $count = 1;
 
         if ( empty( $this->unit_type ) ) {
@@ -248,13 +266,13 @@ class e20rMeasurements {
 
         // FixMe: Need to use the Saturday date info for the article specified (use global $e20r_articleId)
 
-        $date = ( ! empty( $this->measurementDate ) && ( ! empty( $date ) ) ? $this->measurementDate->format( 'Y-m-d' ) : date( 'Y-m-d', current_time( 'timestamp' ) ) );
+        // $date = ( (! empty( $this->measurementDate )) && ( ! empty( $date ) ) ? $this->measurementDate : date( 'Y-m-d', current_time( 'timestamp' ) ) );
 
-        dbg("view_EditProgress() - Date for use with progress tracking form: {$date}");
+        dbg("view_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
 
         if ( ! empty( $this->model ) ) {
-            dbg("Measurement model is present. Loading data for {$date}...");
-            $data   = $this->model->getByDate( $date );
+            dbg("Measurement model is present. Loading data for {$this->measurementDate}...");
+            $data   = $this->model->getByDate( $this->measurementDate );
             $fields = $this->model->getFields();
         }
 
@@ -271,22 +289,22 @@ class e20rMeasurements {
 
         dbg("Birth date portion of measurement form generated.");
 
-        echo $this->view->showWeightRow( $this->measurementDate );
+        echo $this->view->showWeightRow( );
 
         dbg("Weight info for form generated.");
         $this->load_girthTypes();
         dbg("Girth Count: " . count($this->girths));
 
-        echo $this->view->showGirthRow( $this->girths, $this->measurementDate );
+        echo $this->view->showGirthRow( $this->girths);
         dbg("Girth Row generated");
 
-        echo $this->view->showPhotoRow( $this->measurementDate, $e20rArticle->isMeasurementDay() );
+        echo $this->view->showPhotoRow( $this->requestPhotos() );
         dbg("Photo Row generated");
 
-        echo $this->view->showOtherIndicatorsRow( $this->measurementDate, $this->requestPhotos() );
+        echo $this->view->showOtherIndicatorsRow( $this->requestPhotos() );
         dbg("Other Indicators row generated");
 
-        echo $this->view->showProgressQuestionRow( $this->measurementDate, $this->requestPhotos() );
+        echo $this->view->showProgressQuestionRow( $this->requestPhotos() );
         dbg("Progress Questionnaire row generated");
 
         echo $this->view->endProgressForm();
@@ -298,7 +316,7 @@ class e20rMeasurements {
 
     private function requestPhotos() {
 
-
+        global $e20rArticle;
 
         if ( $e20rArticle->is_measurement_day === true )
         // Using the startdate for the current user + whether the current delay falls on a Saturday (and it's a "Photo" day - every 4 weeks starting the 2nd week of the program )x
@@ -453,43 +471,6 @@ class e20rMeasurements {
                 break;
 
         }
-    }
-
-    /**
-     * @param $startDate -- First date
-     * @param $endDate -- End date
-     * @param $weekdayNumber -- Day of the week (0 = Sun, 6 = Sat)
-     *
-     * @return array -- Array of days for the measurement(s).
-     */
-    private function datesForMeasurements( $startDate, $endDate, $weekdayNumber ) {
-
-        dbg("datesForMeasurements(): {$startDate}, {$endDate}, {$weekdayNumber}");
-
-        $startDate = strtotime($startDate . ' 00:00:00 ' . get_option('timezone_string') );
-        $endDate = strtotime($endDate . ' 00:00:00 ' . get_option('timezone_string') );
-
-        dbg("datesForMeasurements() - timestamps: {$startDate}, {$endDate}, {$weekdayNumber}");
-
-        $dateArr = array();
-
-        do {
-            if( date( "w", $startDate ) != $weekdayNumber ) {
-
-                $startDate = strtotime("-1 day", $startDate); // add 1 day
-            }
-
-        } while( date( "w", $startDate ) != $weekdayNumber );
-
-
-        while ( $startDate >= $endDate ) {
-
-            $dateArr[] = date( 'Y-m-d', $startDate );
-            $startDate = strtotime("-1 week", $startDate); // add 7 days
-            dbg('StartDate is now: ' . $startDate );
-        }
-
-        return($dateArr);
     }
 
     /**

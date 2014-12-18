@@ -8,21 +8,34 @@ var NourishUser = jQuery.parseJSON( user_data );
 var last_week_data = e20r_progress.measurements.last_week.replace( /&quot;/g, '"');
 var LAST_WEEK_MEASUREMENTS = jQuery.parseJSON( last_week_data );
 
-jQuery(function($) {
+console.log("WP script for E20R Progress Update (client-side) loaded");
 
-    console.log("WP script for E20R Progress Update (client-side) loaded");
+console.log("Loading user_info...");
+console.dir( NourishUser );
+console.log( "Loading Measurement data for last week" );
+console.dir( LAST_WEEK_MEASUREMENTS );
 
-    console.log("Loading user_info...");
-    console.dir( NourishUser );
-    console.log( "Loading Measurement data for last week" );
-    console.dir( LAST_WEEK_MEASUREMENTS );
+if ( NourishUser.incomplete_interview ) {
+    console.log("Need to redirect this user to the Interview page!");
+    console.log("location.href='/coaching-interview/?user_id=" + NourishUser.user_id + "'");
+}
 
-    if ( NourishUser.incomplete_interview ) {
-        console.log("Need to redirect this user to the Interview page!");
-        console.log("location.href='/coaching-interview/?user_id=" + NourishUser.user_id + "'");
+jQuery(function() {
+
+    if ( typeof NourishUser.birthdate === "undefined" ) {
+        return;
     }
-});
 
+    var $bd = NourishUser.birthdate;
+
+    console.log("Birthday: " + $bd );
+
+    var curbd = $bd.split('-');
+
+    jQuery('#bdyear').val(curbd[0]);
+    jQuery('#bdmonth').val(curbd[1]);
+    jQuery('#bdday').val(curbd[2]);
+});
 
 window.construct = function(obj) {
     function Constructor_() {
@@ -142,6 +155,7 @@ var UNIT = {
 };
 
 jQuery(function() {
+
     var MAX_ALLOWED_MEASUREMENT_CHANGE_PER_PERIOD = {
         'weight': 10, // lbs
 
@@ -176,10 +190,8 @@ jQuery(function() {
             this.$value = this.$savedContainer.find('.value');
             this.$editButton = this.$savedContainer.child('button.edit');
             this.$girthRowContainer = this.$fieldContainer.closest('.girth-row-container');
-            // this.$girthImage = this.$girthRowContainer.find('.girth-image, .skinfold-image');
-            this.$girthImage = this.$girthRowContainer.find('.girth-image');
-            //this.$description = this.$girthRowContainer.find('.girth-descript-container, .skinfold-descript-container').children('p');
-            this.$description = this.$girthRowContainer.find('.girth-descript-container').children('p');
+            this.$girthImage = this.$girthRowContainer.find('.girth-image, .skinfold-image');
+            this.$description = this.$girthRowContainer.find('.girth-descript-container, .skinfold-descript-container').children('p');
             this.$infoToggleIcon = this.$girthRowContainer.prev('h5.measurement-header').child('.measurement-descript-toggle');
 
             this._state = 'default';
@@ -442,6 +454,7 @@ jQuery(function() {
         },
 
         edit: function(self) {
+            console.dir(self.$field);
             self.$field.focus();
         },
 
@@ -506,7 +519,7 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
 
-    jQuery(document).on('click', '#submit-weekly-progress-button', function() {
+    jQuery('#submit-weekly-progress-button').click(function() {
         jQuery('#validation-errors').remove();
 
         // Make sure at least one of the progress form sections are completed.
@@ -580,6 +593,7 @@ jQuery(function() {
                 success: function($response) {
                     // location.href = e20r_progress.settings.measurementSaved;
                     console.log(e20r_progress.settings.measurementSaved);
+                    return false; // WORKAROUND: TODO.
                     //location.href = "/nutrition-coaching/home/?weekly_update_completed=1";
                 }
             });
@@ -646,6 +660,9 @@ jQuery(function() {
                         error: function($response, $errString, $errType) {
                             console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
                             return;
+                        },
+                        success: function($response) {
+                            console.dir($response);
                         }
                     });
 
@@ -660,10 +677,10 @@ jQuery(function() {
     };
 
     ProgressQuestionnaire.init();
-    console.log("Questionnaire class inited");
+    console.log("Questionnaire class init'ed");
 
     /* select units */
-/*    jQuery('#save-units')
+    jQuery('#save-units')
         .click(function() {
             jQuery('.unit-item-container')
                 .find('.units')
@@ -707,8 +724,8 @@ jQuery(function() {
             // FixMe - jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) { });
 
         });
-        */
-/*
+
+
     jQuery('.help-lightbox-handle')
         .colorbox({
             opacity: .5,
@@ -716,7 +733,7 @@ jQuery(function() {
             initialWidth: 100,
             initialHeight: 80
         });
-*/
+
 /*
     var PhotoUploader = {
         init: function() {
@@ -981,8 +998,7 @@ jQuery(function() {
 
             return false;
         });
-*/
-    /*
+
     jQuery('form#basic-photo-uploader')
         .submit(function() {
             jQuery('#upload-channel').contents().find('body').html('');
@@ -1146,9 +1162,8 @@ jQuery(function() {
             </div>').appendTo('#e20r-progress-canvas');
     }
 
-    jQuery('#basic-photo-uploader-submit')
-        .removeAttr('disabled');
-
+//    jQuery('#basic-photo-uploader-submit')
+//        .removeAttr('disabled');
 
     if ( false === bool( e20r_progress.user_info.display_birthdate ) ) {
         jQuery('#birth-date').hide();

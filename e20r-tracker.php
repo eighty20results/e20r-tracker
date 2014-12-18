@@ -21,6 +21,8 @@ define( 'CONST_SATURDAY', 6 );
 define( 'CONST_SUNDAY', 0 );
 define( 'CONST_MONDAY', 1 );
 
+define ('CONST_MEASUREMENTDAY', 6 );
+
 global $e20r_db_version;
 
 $e20r_db_version = "1.0";

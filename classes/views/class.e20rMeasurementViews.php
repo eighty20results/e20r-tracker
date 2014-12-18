@@ -25,7 +25,7 @@ class e20rMeasurementViews {
     }
 
     public function startProgressForm() {
-
+        global $e20rArticle;
         ob_start();
         ?>
         <div id="saturday-progress-container" class="progress-container">
@@ -40,7 +40,7 @@ class e20rMeasurementViews {
                         <tr>
                             <td></td>
                             <td>
-                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
+                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $e20rArticle->releaseDate(); ?>">
                                 <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $this->data->article_id; ?>">
                                 <button class="submit" id="submit-weekly-progress-button">
                                     <div>Save Your Weekly Progress Update</div>
@@ -74,7 +74,7 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function showGirthRow( $girths, $when ) {
+    public function showGirthRow( $girths ) {
         dbg("showGirthRow() - Loading Girth information");
         ob_start();
         ?>
@@ -157,7 +157,7 @@ class e20rMeasurementViews {
 
     }
 
-    public function showOtherIndicatorsRow( $when, $showPhotos ) {
+    public function showOtherIndicatorsRow( $showPhotos ) {
 
         ob_start();
         ?>
@@ -180,7 +180,7 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function showProgressQuestionRow( $when, $showPhotos ) {
+    public function showProgressQuestionRow( $showPhotos ) {
 
         ob_start();
         ?>
@@ -212,7 +212,7 @@ class e20rMeasurementViews {
 
     }
 
-    public function showPhotoRow( $when, $showPhotos ) {
+    public function showPhotoRow( $showPhotos ) {
 
         dbg("In createPhotoBlock()");
 
@@ -258,7 +258,7 @@ class e20rMeasurementViews {
 
     }
 
-    public function showWeightRow( $date ) {
+    public function showWeightRow() {
         dbg("Weight Units: " . print_r($this->unitInfo, true));
         ob_start();
         ?>
