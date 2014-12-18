@@ -93,7 +93,7 @@ class e20rTracker {
         unset($measurements);
 
         dbg("e20rTracker() - Loading hooks for Programs");
-        $programs = new e20rPrograms();
+        $programs = new e20rProgram();
         $programs->load_hooks();
         unset($programs);
 
@@ -113,7 +113,7 @@ class e20rTracker {
 
         /* Load required classes used by the plugin */
         $this->checkinData = new e20rCheckin();
-        // $this->programInfo = new e20rPrograms();
+        // $this->programInfo = new e20rProgram();
         $this->articles = new e20rArticle();
 
         add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
@@ -165,7 +165,7 @@ class e20rTracker {
 
     public function getSaturdayOfWeek() {
 
-        $program = new e20rPrograms();
+        $program = new e20rProgram();
 
     }
 

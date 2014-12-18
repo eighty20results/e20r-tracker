@@ -59,7 +59,7 @@ function loadTracker() {
 
     dbg("Loading the e20rTracker classes and running init of the e20rTracker() class");
 
-    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rPrograms.php" );
+    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rProgram.php" );
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rCheckin.php" );
 
     require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rWorkouts.php" );

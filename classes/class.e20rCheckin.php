@@ -105,7 +105,7 @@ if ( ! class_exists( 'e20rCheckin' ) ):
                 $item = $this->getItem( $itemId );
             }
 
-            $programs = new e20rPrograms();
+            $programs = new e20rProgram();
 
             if ( ! empty($item) ) {
 
@@ -181,7 +181,7 @@ if ( ! class_exists( 'e20rCheckin' ) ):
             // Fetch the Checkin Item we're looking to manage
             $item_list = $this->load_checkin_itemList( null, false );
 
-            $programs = new e20rPrograms();
+            $programs = new e20rProgram();
 
             ob_start();
             ?>
@@ -570,7 +570,7 @@ if ( ! class_exists( 'e20rCheckin' ) ):
             dbg("Item Object: " . print_r( $item, true  ) );
             // Build HTML for the item...
 
-            $program = new e20rPrograms( $item->program_id );
+            $program = new e20rProgram( $item->program_id );
 
             ob_start();
             ?>

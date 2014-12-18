@@ -7,17 +7,22 @@
  *  the GPL v2 license(?)
  */
 
-class e20rPrograms {
+class e20rProgram {
 
     private $table;
+    private $fields;
 
-    private $programIds = array();
+    private $programs = array();
 
-    public $programId;
-    public $articles;
+    /**** Columns in the DB ******/
+    public $id;
+    private $program_name;
+    private $starttime;
+    private $endtime;
+    private $member_id;
+    /**** End columns in the DB ******/
 
     private $type;
-    private $programs = array();
 
     private $loadedTS;
     private $post_types = array();
@@ -27,25 +32,27 @@ class e20rPrograms {
         global $e20rTracker, $post;
 
         if ( $programId !== null ) {
-            $this->programIds = ( is_array( $programId ) ? $programId : array( $programId ) );
+            $this->programs = ( is_array( $programId ) ? $programId : array( $programId ) );
         }
         else {
-            $this->programIds = get_post_meta( $post->ID, 'e20r_tracker_program_ids', true );
-            $this->programIds = array_unique( $this->programIds );
+            $this->programs = get_post_meta( $post->ID, 'e20r_tracker_program_ids', true );
+            $this->programs = array_unique( $this->programs );
         }
 
         $this->table = $e20rTracker->tables->getTable('programs');
+        $this->fields = $e20rTracker->tables->getFields('programs');
 
         $this->loadedTS = current_time('timestamp');
     }
 
     public function init() {
 
-        $this->programs = $this->load_program_info( $this->programIds, true );
+        $this->programs = $this->load_program_info( $this->programs, true );
+
     }
 
     public function load_hooks() {
-        dbg("e20rPrograms::load_hooks() - Loading action hooks");
+        dbg("e20rProgram::load_hooks() - Loading action hooks");
 
         add_action( 'post_updated', array( &$this, 'postSave' ) );
         add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
@@ -61,14 +68,14 @@ class e20rPrograms {
 
     }
 
-    public function load_program_info( $programIds = null, $add_new = true ) {
+    public function load_program_info( $programs = null, $add_new = true ) {
 
         global $wpdb;
 
-        dbg("e20rPrograms::load_program_info() - Loading programs from the DB");
-        dbg("e20rPrograms::load_program_info() - Content of programIds: " . print_r($programIds, true));
+        dbg("e20rProgram::load_program_info() - Loading programs from the DB");
+        dbg("e20rProgram::load_program_info() - Content of programs: " . print_r($programs, true));
 
-        if ( $programIds == null ) {
+        if ( $programs == null ) {
 
             $sql = "
                     SELECT *
@@ -78,20 +85,20 @@ class e20rPrograms {
         }
         else {
 
-            if ( ( ! is_array( $programIds )) && ( $programIds != null ) ) {
-                dbg("e20rPrograms::load_program_info() - programIds is a single value: {$programIds}");
-                $programIds = array( $programIds );
+            if ( ( ! is_array( $programs )) && ( $programs != null ) ) {
+                dbg("e20rProgram::load_program_info() - programs is a single value: {$programs}");
+                $programs = array( $programs );
             }
 
             $sql = "
                     SELECT *
                     FROM {$this->table}
-                    WHERE id IN ( " . implode(',', $programIds ) . " )
+                    WHERE id IN ( " . implode(',', $programs ) . " )
                     ORDER BY program_name ASC
               ";
         }
 
-        dbg("e20rPrograms::load_program_info() - SQL: " . print_r($sql, true) );
+        dbg("e20rProgram::load_program_info() - SQL: " . print_r($sql, true) );
         $res = $wpdb->get_results( $sql , OBJECT );
 
         if ( ! empty( $res ) ) {
@@ -136,7 +143,7 @@ class e20rPrograms {
 
         $view = new e20rProgramView( $this->load_program_info() );
 
-        dbg("e20rPrograms() - Metabox for Post/Page editor being loaded");
+        dbg("e20rProgram() - Metabox for Post/Page editor being loaded");
 
         foreach( $e20rTracker->managed_types as $type ) {
 
@@ -235,21 +242,21 @@ class e20rPrograms {
         global $current_user, $post, $e20rTracker;
 
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-            dbg("e20rPrograms::postSave() - Not saving during autosave");
+            dbg("e20rProgram::postSave() - Not saving during autosave");
             return;
         }
 
         if ( wp_is_post_revision( $post_id ) !== false ) {
-            dbg("e20rPrograms::postSave() - Not saving for revisions ({$post_id})");
+            dbg("e20rProgram::postSave() - Not saving for revisions ({$post_id})");
             return;
         }
 
         if ( ! in_array( $post->post_type, $e20rTracker->managed_types ) ) {
-            dbg("e20rPrograms::postSave() - Not saving for {$post->post_type}");
+            dbg("e20rProgram::postSave() - Not saving for {$post->post_type}");
             return;
         }
 
-        dbg("e20rPrograms::postSave() - " . $e20rTracker->whoCalledMe());
+        dbg("e20rProgram::postSave() - " . $e20rTracker->whoCalledMe());
 
         $program_ids = is_array( $_POST['e20r-tracker-programs'] ) ? $_POST['e20r-tracker-programs'] : null;
         $old_ids = is_array( $_POST['e20r-program-oldid'] ) ? $_POST['e20r-program-oldid'] : null;
@@ -257,30 +264,30 @@ class e20rPrograms {
         $zeroKey = array_search( 0, $program_ids );
 
         if ($zeroKey) {
-            dbg("e20rPrograms::postSave() - Removing 0 value...");
+            dbg("e20rProgram::postSave() - Removing 0 value...");
             unset( $program_ids[ $zeroKey ] );
         }
 
         $zeroKey = array_search( 0, $old_ids );
         if ($zeroKey) {
-            dbg("e20rPrograms::postSave() - Removing 0 value...");
+            dbg("e20rProgram::postSave() - Removing 0 value...");
             unset( $old_ids[$zeroKey] );
         }
 
-        dbg("e20rPrograms::postSave() - OldIdArray: " . print_r( $old_ids, true ) );
-        dbg("e20rPrograms::postSave() - ProgramIdArray: " . print_r( $program_ids, true ) );
+        dbg("e20rProgram::postSave() - OldIdArray: " . print_r( $old_ids, true ) );
+        dbg("e20rProgram::postSave() - ProgramIdArray: " . print_r( $program_ids, true ) );
 
         $already_in = get_post_meta( $post_id, "e20r_tracker_program_ids", true );
 
         if ( empty( $already_in ) ) {
-            dbg( "e20rPrograms::postSave() - No pre-existing program associations for post #{$post_id}" );
+            dbg( "e20rProgram::postSave() - No pre-existing program associations for post #{$post_id}" );
             $already_in = array();
         }
 
         $already_in = array_unique( $already_in );
 
         if ( empty( $program_ids ) ) {
-            dbg( "e20rPrograms::postSave() - No IDs in the program_ids array!");
+            dbg( "e20rProgram::postSave() - No IDs in the program_ids array!");
             $program_ids = array();
         }
 
@@ -291,41 +298,41 @@ class e20rPrograms {
 
             $pid = intval($pid);
 
-            dbg("e20rPrograms::postSave() - Processing for program #{$pid}.");
+            dbg("e20rProgram::postSave() - Processing for program #{$pid}.");
 
             $user_can = $e20rTracker->userCanEdit( $current_user->ID );
 
             if (! $user_can ) {
 
-                dbg("e20rPrograms::postSave() - User lacks privileges to update");
+                dbg("e20rProgram::postSave() - User lacks privileges to update");
                 return;
             }
 
             if (( $pid === 0 ) && ( $old_ids[$key] !== 0 )) {
 
-                dbg("e20rPrograms::postSave() - The program was 'unassigned'");
+                dbg("e20rProgram::postSave() - The program was 'unassigned'");
                 $oldKey = array_search( $old_ids[$key], $program_ids );
 
                 if ( $oldKey ) {
                     unset($program_ids[$oldKey]);
                 }
 
-                dbg("e20rPrograms::postSave() - New array for program_ids: " . print_r($program_ids, true));
+                dbg("e20rProgram::postSave() - New array for program_ids: " . print_r($program_ids, true));
                 if ( ( count( $program_ids ) > 1) && ( !in_array( 0, $program_ids ) ) ) {
-                    dbg("e20rPrograms::postSave() - Updating program id meta after delete");
+                    dbg("e20rProgram::postSave() - Updating program id meta after delete");
                     update_post_meta( $post_id, 'e20r_tracker_program_ids', $program_ids );
                 }
                 else {
-                    dbg("e20rPrograms::postSave() - Deleting program meta");
+                    dbg("e20rProgram::postSave() - Deleting program meta");
                     delete_post_meta( $post_id, 'e20r_tracker_program_ids' );
                 }
             }
             else {
 
-                dbg( "e20rPrograms::postSave() - Processing program {$pid} for post {$post_id}." );
+                dbg( "e20rProgram::postSave() - Processing program {$pid} for post {$post_id}." );
 
                 if ( ( ! in_array( $pid, $already_in ) ) && ($pid !== 0 ) ) {
-                    dbg( "e20rPrograms::postSave() - Adding program ID {$pid}" );
+                    dbg( "e20rProgram::postSave() - Adding program ID {$pid}" );
                     $program_ids[] = $pid;
                     update_post_meta( $post_id, 'e20r_tracker_program_ids', $program_ids );
                 }

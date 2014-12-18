@@ -202,7 +202,7 @@ class e20rArticle {
         // Fetch the Checkin Item we're looking to manage
         $article_list = $this->load_articles( false );
 
-        $programs = new e20rPrograms();
+        $programs = new e20rProgram();
         $items = new e20rCheckin();
 
 

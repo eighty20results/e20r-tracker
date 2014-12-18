@@ -309,7 +309,7 @@ class e20rClientViews {
         // TODO: Pull data from appointments table and use Checkin tables for status(es)..?
 
         $billingInfo = $this->load_billing_data( $clientId );
-        $program_list = new e20rPrograms();
+        $program_list = new e20rProgram();
         // $programData = $program_list->load_client_programs( $clientId );
         try {
             $appointments = $this->client->load_appointments();
@@ -561,7 +561,7 @@ class e20rClientViews {
 /*
     public function render_new_program_page() {
 
-        $programs = new e20rPrograms();
+        $programs = new e20rProgram();
 
         echo $programs->viewProgramEditSelect();
 
