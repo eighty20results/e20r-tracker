@@ -199,7 +199,7 @@ class e20rMeasurements {
                 $data = $this->model->getByDate($date);
                 dbg( "getMeasurement() - Data for this week ({$date}): " . print_r( $data, true ) );
 
-                return ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
+                return ( $forJS === true ? $this->transformForJS( $data ) : $data );
 
                 break;
 
@@ -216,7 +216,7 @@ class e20rMeasurements {
                 $data = $this->model->getByDate($date);
                 dbg( "getMeasurement() - Data for previous week ({$date}): " . print_r( $data, true ) );
 
-                $data = ( $forJS === true ? $this->transformForJS( $data[$date] ) : $data[$date] );
+                $data = ( $forJS === true ? $this->transformForJS( $data ) : $data );
 
                 return $data;
                 break;
