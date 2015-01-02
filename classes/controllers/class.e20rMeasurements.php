@@ -645,6 +645,7 @@ class e20rMeasurements {
 */
         if ( ( $measurementType == 'completed') && ( $measurementValue == 1) ){
             dbg("Measurement form is being saved by the user. TODO: Display with correct header to show completion");
+            // TODO: Add functionality to set the assignment for this article_id as "complete"
             wp_send_json_success("Progress saved for {$post_date}");
             exit;
         }
