@@ -1294,7 +1294,7 @@ class e20rTracker {
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title','editor','thumbnail','custom-fields','author'),
+                   'supports' => array('title','editor','excerpt','thumbnail','custom-fields','author'),
                    'can_export' => true,
                    'show_in_nav_menus' => true,
                    'rewrite' => array(
