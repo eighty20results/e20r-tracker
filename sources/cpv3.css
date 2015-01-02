@@ -1,0 +1,208 @@
+#subnav {
+    float: right;
+    margin-right: 23px;
+    margin-top: 23px;
+    border-bottom: 1px solid #eef4f6;
+}
+
+#page-common #subnav a.first {
+    padding-left: 14px;
+}
+
+#page-common #subnav a.name {
+    text-decoration: none;
+    font-weight: bold;
+    cursor: default;
+    color: black;
+}
+
+#page-common #subnav a.name:hover {
+    color: black;
+}
+
+#page-common #subnav a.last {
+    padding-right: 14px;
+    border-right: none;
+}
+
+#page-common #subnav a {
+    font-size: 13px;
+    padding: 7px;
+    border-right: none solid #eef4f6;
+    float: left;
+}
+
+#page-common #subnav a:hover {
+    color: blue;
+}
+
+/* end subnav */
+
+.ui-datepicker {
+    border: 1px solid #999;
+    font-family: sans-serif !important;
+    margin-bottom: 14px;
+}
+
+.ui-datepicker * {
+    font-family: sans-serif !important;
+}
+
+#navbar a.ui-state-default,
+#navbar a.ui-widget-content,
+#navbar a.ui-state-default {
+    color: #1C94C4;
+    font-weight: normal;
+}
+
+.sidebar {
+    width: 266px;
+}
+
+#userarea-container {
+    background-color: #F8FEFF;
+    border: 1px solid #60B5C9;
+    margin: 5px;
+    padding: 12px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    margin-top: 9px;
+}
+
+#page-common #prev-day {
+    float: right;
+    font-size: 15px;
+    text-decoration: underline;
+    color: #1c94c4;
+    text-transform: uppercase;
+}
+
+#page-common #next-day {
+    float: right;
+    font-size: 15px;
+    margin-left: 24px;
+    text-decoration: underline;
+    color: #1c94c4;
+    text-transform: uppercase;
+}
+
+#page-common #technical-support  {
+    color: #1c94c4;
+}
+
+#datepicker {
+    float: right;
+    clear: both;
+    height: 1px;
+    width: 1px;
+    border: none;
+    padding: none;
+    margin: none;
+    visibility: visible;
+    margin-top: -1px;
+    margin-right: 266px;
+    background: transparent;
+}
+
+.browserFirefox #datepicker {
+    margin-right: 267px;
+}
+
+.browserFirefox30 #weekly-progress-container h4 {
+    font-size: 20px !important;
+}
+
+.ui-datepicker {
+    display: block;
+}
+
+#cp-menu {
+    height: 40px;
+    background: #f7fafa url(http://www.precisionnutrition.com/members/images/cp/cp-menu-bg.png) repeat-x;
+    border-bottom: 1px solid #c4cccc;
+    border-top: 1px solid #77b5ba;
+    margin-top: 8px;
+}
+
+#cp-menu-bottom {
+    height: 1px;
+    background: #f0f5f5;
+    margin-bottom: 12px;
+}
+
+#cp-menu ul {
+    margin-left: 17px;
+}
+
+#cp-menu ul li {
+    float: left;
+}
+
+#cp-menu ul li a {
+    display: block;
+    height: 39px;
+    line-height: 40px;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 0 20px;
+    padding-left: 49px;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #304545;
+    /*border-right: 1px solid #edf1f1;
+    border-left: 1px solid #f9fbfb;*/
+    background: no-repeat 16px -49px;
+}
+
+#cp-menu ul li a:hover {
+    text-decoration: none;
+    background: #ebf5f5 no-repeat 16px 7px;
+    border-bottom: 1px solid #86b3b9;
+}
+#cp-menu ul li a.active {
+    /*border-left: 1px solid #b7d7da;
+    border-right: 1px solid #b7d7da;*/
+    color: #1ea0c9;
+    background: white no-repeat 16px 7px;
+    border: 1px solid #eee;
+    border-top: none;
+    border-bottom: 1px solid #86b3b9;
+    height: 39px;
+}
+
+#cp-menu ul li a.active:hover {
+    background-color: white;
+}
+
+#note-display {
+    background: white;
+}
+
+#navbar .pane {
+    display: none;
+    background: #f9f9f9;
+}
+
+.date-past-future {
+    margin-bottom: 16px;
+}
+
+#page-title {
+    color: #666;
+    border-bottom: 1px solid #eee;
+    background-image: none;
+    padding-left: 0;
+}
+
+#app-tabs {
+    margin-top: 0;
+}
+
+#daily-progress-container #daily-progress-canvas fieldset.notes #note-display {
+    margin-top: 0;
+}
+
+button.submit div {
+    font-size: 18px;
+    padding: 4px 8px;
+}

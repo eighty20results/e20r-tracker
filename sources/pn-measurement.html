@@ -777,7 +777,160 @@ var vb_disable_ajax = parseInt("0", 10);
 						</fieldset>
 					</td>
 				</tr>
+				<tr>
 
+					<td>
+						<div class="item-n">
+							3
+						</div>
+					</td>
+					<td class="content validate-photos" id="photos">
+						<fieldset>
+
+							<legend>
+								<a href="cp-progressHelp.php?tpl=photos" class="help-lightbox-handle cboxElement"><img src="cp-images/help16.png" class="help-icon tooltip-handle" data-tooltip="Display the Photo Instructions"></a>
+								Photos
+							</legend>
+
+							<div class="need-help">Need some direction for taking your photos? Check out the <a href="cp-progressHelp.php?tpl=photos" class="help-lightbox-handle cboxElement">instructions</a> or download our comprehensive <a href="/members/resources/Measurement_Guide_MF_2014.pdf">Measurement Guide</a> in PDF format.</div>
+
+
+
+							<div class="orange-notice" style="margin-bottom: 16px;" id="notice-basic-photo-uploader">
+								Having trouble uploading photos? Try using our <a href="http://www.precisionnutrition.com/coaching/weekly_update/2014-12-20#" class="basic-photo-uploader-toggle">Basic Photo Uploader</a>.
+							</div>
+
+							<div style="clear: both;"></div>
+
+							<div class="orange-notice" style="margin-bottom: 16px; display: none;" id="notice-standard-photo-uploader">
+								<a href="http://www.precisionnutrition.com/coaching/weekly_update/2014-12-20#" class="basic-photo-uploader-toggle">Standard Photo Uploader</a>.
+							</div>
+
+							<form enctype="multipart/form-data" target="upload-channel" action="cp-basic-photo-uploader.php?date=2014-12-20&amp;id=12798&amp;program_initials=LE" method="POST" id="basic-photo-uploader">
+								<div id="basic-photo-uploader-innerdiv" style="display: none;">
+									<div id="basic-photo-input-fields"><table>
+										<tbody>
+										<tr>
+											<td>Choose your Front Photo
+
+												:</td>
+											<td><input name="photo_front" type="file"></td>
+										</tr>
+										<tr>
+											<td>Choose your Side Photo
+
+												:</td>
+											<td><input name="photo_side" type="file"></td>
+										</tr>
+										<tr>
+											<td>Choose your Back Photo
+
+												:</td>
+											<td><input name="photo_back" type="file"></td>
+										</tr>
+										</tbody>
+
+									</table></div>
+
+									<div style="margin-bottom: 16px; margin-top: 16px;">
+										<input id="basic-photo-uploader-submit" type="submit" value="Upload Photos">
+										<img src="cp-images/ajax-loader.gif" style="margin-left: 8px; display: none;" id="basic-photo-uploader-ajax-loading">
+									</div>
+								</div>
+							</form>
+							<iframe width="1" height="1" name="upload-channel" id="upload-channel" style="display: none;">No</iframe>
+							<!-- end basic uploader -->
+
+
+
+							<table id="photo-upload-table" class="advanced">
+								<thead>
+								<tr>
+									<th>
+										<div class="photo-upload-container">
+											<div class="title">Front  Photo</div>
+											<button id="photo-upload-front" style="display: none;">Choose Front Photo ...</button><div id="photo-upload-frontUploader" style="visibility: visible;"></div><div id="photo-upload-frontQueue" class="uploadifyQueue"></div>
+										</div>
+									</th>
+									<th>
+										<div class="photo-upload-container">
+											<div class="title">Side  Photo</div>
+											<button id="photo-upload-side" style="display: none;">Choose Side Photo ...</button><div id="photo-upload-sideUploader" style="visibility: visible;"></div><div id="photo-upload-sideQueue" class="uploadifyQueue"></div>
+										</div>
+									</th>
+									<th>
+										<div class="photo-upload-container">
+											<div class="title">Back  Photo</div>
+											<button id="photo-upload-back" style="display: none;">Choose Back Photo ...</button><div id="photo-upload-backUploader" style="visibility: visible;"></div><div id="photo-upload-backQueue" class="uploadifyQueue"></div>
+										</div>
+									</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr>
+									<td>
+										<div class="photo-upload-notifier">
+											Photo Saved
+										</div>
+										<div class="photo-container">
+											<div class="descript-overlay">Front</div>
+											<img id="photo-front" src="cp-showImage.php?uid=12798&amp;w=165&amp;img=" class="photo null">
+										</div>
+									</td>
+									<td>
+										<div class="photo-upload-notifier">
+											Photo Saved
+										</div>
+										<div class="photo-container">
+											<div class="descript-overlay">Side</div>
+											<img id="photo-side" src="cp-showImage.php?uid=12798&amp;w=165&amp;img=" class="photo null">
+										</div>
+									</td>
+									<td>
+										<div class="photo-upload-notifier">
+											Photo Saved
+										</div>
+										<div class="photo-container">
+											<div class="descript-overlay">Back</div>
+											<img id="photo-back" src="cp-showImage.php?uid=12798&amp;w=165&amp;img=" class="photo null">
+										</div>
+									</td>
+								</tr>
+								</tbody>
+								<tfoot>
+								<tr>
+									<td>
+										<div class="manip-container front" data-orientation="front" style="display: none;">
+											<img src="cp-images/rotate-counter-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo counter-clockwise">
+											<img src="cp-images/rotate-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo clockwise">
+										</div>
+									</td>
+									<td>
+										<div class="manip-container side" data-orientation="side" style="display: none;">
+											<img src="cp-images/rotate-counter-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo counter-clockwise">
+											<img src="cp-images/rotate-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo clockwise">
+										</div>
+									</td>
+									<td>
+										<div class="manip-container back" data-orientation="back" style="display: none;">
+											<img src="cp-images/rotate-counter-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo counter-clockwise">
+											<img src="cp-images/rotate-clockwise32.png" class="tooltip-handle" data-tooltip="Rotate this photo clockwise">
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td><a style="display: none;" href="http://www.precisionnutrition.com/coaching/weekly_update/2014-12-20#" class="delete-photo front" data-orientation="front">Delete Front Photo</a></td>
+									<td><a style="display: none;" href="http://www.precisionnutrition.com/coaching/weekly_update/2014-12-20#" class="delete-photo side" data-orientation="side">Delete Side Photo</a></td>
+									<td><a style="display: none;" href="http://www.precisionnutrition.com/coaching/weekly_update/2014-12-20#" class="delete-photo back" data-orientation="back">Delete Back Photo</a></td>
+								</tr>
+								</tfoot>
+							</table>
+
+							<!-- program_initials == S2B -->
+
+						</fieldset>
+					</td>
+				</tr>
 
         <tr>
 					<td id="other-indicators">

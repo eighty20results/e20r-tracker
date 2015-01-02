@@ -27,49 +27,60 @@ global $e20r_db_version;
 
 $e20r_db_version = "1.0";
 
-if ( ! class_exists( 'e20rTracker' ) ):
+if ( ! function_exists( 'dbg' ) ):
 
-    try {
+    /**
+     * Debug function (if executes if DEBUG is defined)
+     *
+     * @param $msg -- Debug message to print to debug log.
+     */
+    function dbg($msg)
+    {
+        $dbgPath = E20R_PLUGIN_DIR . 'debug';
 
-        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
-        require_once( E20R_PLUGIN_DIR . "classes/class.e20rTracker.php");
+        if (E20R_T_DEBUG)
+        {
 
-        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
-        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
+            if (!  file_exists( $dbgPath )) {
+                // Create the debug logging directory
+                mkdir( $dbgPath, 0750 );
 
-        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
-        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
+                if (! is_writable( $dbgPath )) {
+                    error_log('E20R Track: Debug log directory is not writable. exiting.');
+                    return;
+                }
+            }
 
-        global $e20rTracker;
-        $e20rTracker = new e20rTracker();
+            $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log-' . date('Y-m-d', current_time('timestamp') ) . '.txt';
 
-        register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
-        register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );
+            if ( ($fh = fopen($dbgFile, 'a')) !== false ) {
 
+                // Format the debug log message
+                $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
+                $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp' ) ) . "-{$tid}) -- ". $msg;
+
+                // Write it to the debug log file
+                fwrite( $fh, $dbgMsg . "\r\n" );
+                fclose( $fh );
+            }
+            else
+                error_log('E20R Track: Unable to open debug log');
+        }
     }
-    catch ( Exception $e ) {
-        dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
-    }
-
-    add_action( 'plugins_loaded', 'loadTracker' );
-
 endif;
 
 function loadTracker() {
 
     dbg("Loading the e20rTracker classes and running init of the e20rTracker() class");
 
-    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rProgram.php" );
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rCheckin.php" );
-
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rWorkouts.php" );
-
-    require_once( E20R_PLUGIN_DIR . "classes" . DIRECTORY_SEPARATOR . "class.e20rAssignment.php" );
-    require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php" );
-
     try {
-        global $e20rTracker;
+
+        global $e20rTables, $e20rTracker, $e20rClient, $e20rMeasurements;
+
+        $e20rTables->init();
         $e20rTracker->init();
+        $e20rTracker->loadAllHooks();
+
     }
     catch ( Exception $e ) {
         dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
@@ -103,47 +114,6 @@ if ( ! function_exists( 'in_betagroup' ) ) {
     }
 }
 
-if ( ! function_exists( 'dbg' ) ):
-
-    /**
-     * Debug function (if executes if DEBUG is defined)
-     *
-     * @param $msg -- Debug message to print to debug log.
-     */
-    function dbg($msg)
-    {
-        $dbgPath = E20R_PLUGIN_DIR . 'debug';
-
-        if (E20R_T_DEBUG)
-        {
-
-            if (!  file_exists( $dbgPath )) {
-                // Create the debug logging directory
-                mkdir( $dbgPath, 0750 );
-
-                if (! is_writable( $dbgPath )) {
-                    error_log('E20R Track: Debug log directory is not writable. exiting.');
-                    return;
-                }
-            }
-
-            $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log-' . date('Y-m-d', current_time('timestamp') ) . '.txt';
-
-            if ( ($fh = fopen($dbgFile, 'a')) !== false ) {
-
-                // Format the debug log message
-                $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp' ) ) . ') -- '. $msg;
-
-                // Write it to the debug log file
-                fwrite( $fh, $dbgMsg . "\r\n" );
-                fclose( $fh );
-            }
-            else
-                error_log('E20R Track: Unable to open debug log');
-        }
-    }
-endif;
-
 if ( ! function_exists( 'e20r_ajaxUnprivError' ) ):
 
     /**
@@ -159,4 +129,81 @@ if ( ! function_exists( 'e20r_ajaxUnprivError' ) ):
 
 endif;
 
+if ( ! class_exists( 'e20rTracker' ) ):
 
+    try {
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rTracker.php");
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rProgramModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rProgram.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/class.e20rCheckin.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/class.e20rWorkouts.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/class.e20rAssignment.php" );
+
+
+        global $e20rTracker, $e20rClient, $e20rMeasurements, $e20rArticle, $e20rProgram, $e20rTables, $e20rMeasurementDate;
+
+        /*
+         * $GLOBALS['e20rTracker']
+         * $GLOBALS['e20rClient']
+         * $GLOBALS['e20rMeasurements']
+         *
+         */
+//        dbg("Request: " . print_r($_REQUEST, true));
+
+        if ( ! isset( $e20rTables ) ) {
+
+            dbg("E20R Tracker Init: Loading e20rTables class");
+            $e20rTables = new e20rTables();
+        }
+
+        if ( ! isset( $e20rTracker ) ) {
+
+            dbg("E20R Tracker Init: Loading e20rTracker class");
+            $e20rTracker = new e20rTracker();
+        }
+
+        if ( ! isset( $e20rClient ) ) {
+            dbg("E20R Tracker Init: Loading e20rClient class");
+            $e20rClient = new e20rClient();
+        }
+
+        if ( ! isset( $e20rMeasurements ) ) {
+            dbg("E20R Tracker Init: Loading e20rMeasurements class");
+            $e20rMeasurements = new e20rMeasurements();
+        }
+
+        if ( ! isset( $e20rArticle ) ) {
+            $e20rArticle = new e20rArticle();
+        }
+
+        if ( ! isset( $e20rProgram ) ) {
+            $e20rPrograms = new e20rProgram();
+        }
+
+        $e20rMeasurementDate = '2014-9';
+
+        add_action( 'init' , 'loadTracker', 9 );
+
+        register_activation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_activate' ) );
+        register_deactivation_hook( __FILE__, array( &$e20rTracker, 'e20r_tracker_deactivate' ) );
+
+    }
+    catch ( Exception $e ) {
+        dbg("Error initializing the Tracker plugin: " . $e->getMessage() );
+    }
+
+endif;

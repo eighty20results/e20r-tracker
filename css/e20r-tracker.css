@@ -255,7 +255,7 @@
 
 }
 /** The actual weekly progress measurement page container **/
-#saturday-progress-container .e20r-progress-canvas {
+#saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
 }
 #saturday-progress-container.progress-container {
@@ -382,6 +382,7 @@
 }
 #saturday-progress-container .girth-row-container.active { padding-top: 6px; }
 #saturday-progress-container .girth-image {
+    background-size: 61px 57px;
     width: 60px;
     height: 57px;
     display: block;
@@ -390,11 +391,12 @@
     margin-right: 8px;
 }
 #saturday-progress-container .girth-image.active {
+    background-size: 145px 138px;
     width: 144px;
     height: 137px;
 }
-#saturday-progress-container .girth-image.F { background-position: 60px 0; }
-#saturday-progress-container .girth-image.active.F { background-position: 144px 0; }
+/*#saturday-progress-container .girth-image.F { background-position: 60px 0; }
+#saturday-progress-container .girth-image.active.F { background-position: 144px 0; } */
 .measurement-field-container {
     -moz-border-radius: 3px;
     -webkit-border-right: 3px;
@@ -443,7 +445,11 @@
 .measurement-field-container.saved {
     display: none;
 }
-.measurement-field-container.edit { display: block; }
+.measurement-field-container.edit {
+    background: rgba(255, 184, 77, 0.3);
+    border: 1px solid rgba(255, 184, 77, 1);
+    display: block;
+}
 .measurement-saved-container {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -632,12 +638,32 @@ table.e20r-progress-form tfoot td {
     padding-bottom: 0;
     padding-top: 16px;
 }
-/** TODO: Decide whether we need the 'review' section **/
 table.e20r-progress-form tfoot button.submit {
-    max-font-size: 22px;
+     max-font-size: 22px;
     min-font-size: 14px;
     margin-bottom: 8px;
 }
+#submit-weekly-progress-button {
+    align-items: flex-start;
+    text-align: center;
+    cursor: default;
+    color: buttontext;
+    padding: 2px 6px 3px;
+    border: 2px outset buttonface;
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    background-color: buttonface;
+    box-sizing: border-box;
+    font: -webkit-small-control;
+    line-height: normal;
+    font-size: 14px;
+    margin-right: 12px;
+    margin-top: 9px;
+}
+
 table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 .browserFirefox20 table.e20r-progress-form legend { display: block; }
 .browserFirefox20 table.e20r-progress-form legend .help-icon {
@@ -700,6 +726,103 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     padding-left: 33px;
     margin-left: 33px;
     padding-top: 4px;
-    background: url(../cp-images/blockquote-bg.png) no-repeat;
+    /* background: url(../images/blockquote-bg.png) no-repeat; TODO: Fix with a blockquote character (See CSS for pmpro-customization ) */
     color: #666666;
+}
+#photo-upload-table th {
+    background: none;
+    text-align: center;
+    font-size: 14px;
+}
+#photo-upload-table th .photo-upload-container {
+    background: #fcffe0;
+    border: 1px solid #c3ca80;
+    margin: 0 4px;
+    padding: 6px;
+}
+#photo-upload-table th .photo-upload-container .title {
+    float: left;
+    margin-bottom: 6px;
+    background: white;
+    margin-top: -15px;
+    padding: 1px;
+    height: 13px;
+    font-weight: bold;
+}
+#photo-upload-table th .photo-upload-container button { clear: left; }
+#photo-upload-table tbody td {
+    vertical-align: top;
+    padding: 4px;
+    padding-bottom: 12px;
+    border-bottom: none;
+}
+#photo-upload-table .photo-upload-notifier {
+    height: 30px;
+    line-height: 32px;
+    padding-left: 32px;
+    background: #deffdb url(../images/checkmark.png) no-repeat 8px center;
+    color: #242a24;
+    margin-bottom: 4px;
+    border: 1px solid #84c37e;
+    display: none;
+}
+#photo-upload-table .delete-photo {
+    font-size: 0.9em;
+    color: rgba( 156, 0, 0, 0.65);
+}
+#photo-upload-table .photo-container {
+    position: relative;
+    float: left;
+    font-size: 14px;
+    text-align: center;
+}
+#photo-upload-table .photo-container .descript-overlay {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    position: absolute;
+    bottom: 11px;
+    right: 10px;
+    background: white;
+    opacity: 0.7;
+    filter: alpha(opacity=70);
+    padding: 0 8px;
+    height: 26px;
+    line-height: 28px;
+    border: 1px solid #666666;
+    font-weight: bold;
+}
+#photo-upload-table img.photo {
+    border: 1px solid #cccccc;
+    padding: 2px;
+    display: block;
+    width: 165px;
+}
+#photo-upload-table tfoot td {
+    padding: 0;
+    border-bottom: none;
+    text-align: center;
+}
+#photo-upload-table tfoot td div.manip-container {
+    text-align: center;
+    background: #f7f7f7;
+    border: 1px solid #dddddd;
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+#photo-upload-table tfoot td img { cursor: pointer; }
+.browserIE #photo-upload-table .photo-upload-container .title {
+    height: 12px;
+    margin-top: -11px;
+}
+.browserIE #photo-upload-table th { padding-top: 16px; }
+.browserIE #photo-upload-table th .photo-upload-container .title {
+    height: 14px;
+    line-height: 12px;
+    margin-top: -13px;
+}
+.e20r-noline {
+    border: none;
 }

@@ -2,88 +2,16 @@
 /**********************************************************/
 jQuery.noConflict();
 
-jQuery(document).ready( function($) {
-
-    console.log("Base Javascript for E20R Tracker (client-side) loaded");
-
-
-});
-
 // TODO: How do I implement the jqplot for a shortcode...?
-
-function getSetting( $varname ) {
-
-    var $retVal;
-
-    jQuery.ajax({
-        url: e20r_progress.ajaxurl,
-        type: 'POST',
-        timeout: 5000,
-        async: false,
-        dataType: 'JSON',
-        data: {
-            'action': 'e20r_userinfo',
-            'e20r-progress-nonce': jQuery( "#e20r-progress-nonce" ).val(),
-            'article-id': e20r_progress.settings.article_id,
-            'measurement-type': $varname,
-            'measurement-value': null
-        },
-        error: function($response, $errString, $errType) {
-            console.log($errString + ' returned from e20r_userinfo action: ' + $errType )
-            console.dir( $response );
-
-            return null;
-        },
-        success: function( $response ) {
-            $retVal = $response;
-        }
-    });
-
-    return $retVal;
-}
-
-function getBirthdate() {
-
-    var $birthdate = jQuery('#bdyear').val() + '-' + jQuery('#bdmonth').val() + '-' + jQuery('#bdday').val();
-
-    var isCompleteDate = ( $birthdate.length === 10 );
-
-    if ( ! isCompleteDate ) {
-        return;
-    }
-    else {
-        var $data = {
-            'action': 'saveMeasurement',
-            'article-id': e20r_tracker.settings.article_id,
-            'measurement-type': 'birthdate',
-            'measurement-value': $birthdate
-        };
-
-        jQuery.ajax({
-            url: e20r_tracker.ajaxurl,
-            type: 'POST',
-            timeout: 10000,
-            dataType: JSON,
-            data: $data,
-            error: function($response, $errString, $errType) {
-                console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                return;
-            },
-            success: function( $response ) {
-                console.log( $response );
-            }
-        });
-    }
-}
 
 (function() {
 
     // prevent double loading
-    if (window.__hasLoadedCommonJS) {
+    if (window.__loadedSharedJS) {
         return;
     }
 
-    window.__hasLoadedCommonJS = true;
+    window.__loadedSharedJS = true;
 
     if (jQuery) {
         window.Q = jQuery.noConflict();
@@ -134,6 +62,10 @@ function getBirthdate() {
 
     window.isArray = function(a) {
         return jQuery.isArray(a);
+    }
+
+    window.titleCase = function(a) {
+        return String(a).replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     }
 
     window.round = function(n, precision) {
@@ -203,9 +135,9 @@ function getBirthdate() {
         };
     })(jQuery);
 
-    /* Event System */
+    // Event System
     ;(function($) {
-        $.bindEvents = function(events, self, elem) {
+        jQuery.bindEvents = function(events, self, elem) {
             if (undefined === self) { // using verbose call method $.bindEvents({ /* opts */ })
                 var opts = events;
 

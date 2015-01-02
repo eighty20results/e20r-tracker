@@ -1,63 +1,3 @@
-/**
- * Created by sjolshag on 11/1/14.
- */
-
-var user_data = e20r_progress.user_info.userdata.replace(/&quot;/g, '"');
-var NourishUser = jQuery.parseJSON( user_data );
-
-var last_week_data = e20r_progress.measurements.last_week.replace( /&quot;/g, '"');
-var LAST_WEEK_MEASUREMENTS = jQuery.parseJSON( last_week_data );
-
-console.log("WP script for E20R Progress Update (client-side) loaded");
-
-console.log("Loading user_info...");
-console.dir( NourishUser );
-console.log( "Loading Measurement data for last week" );
-console.dir( LAST_WEEK_MEASUREMENTS );
-
-if ( NourishUser.incomplete_interview ) {
-    console.log("Need to redirect this user to the Interview page!");
-    console.log("location.href='/coaching-interview/?user_id=" + NourishUser.user_id + "'");
-}
-
-jQuery(function() {
-
-    if ( typeof NourishUser.birthdate === "undefined" ) {
-        return;
-    }
-
-    var $bd = NourishUser.birthdate;
-
-    console.log("Birthday: " + $bd );
-
-    var curbd = $bd.split('-');
-
-    jQuery('#bdyear').val(curbd[0]);
-    jQuery('#bdmonth').val(curbd[1]);
-    jQuery('#bdday').val(curbd[2]);
-});
-
-window.construct = function(obj) {
-    function Constructor_() {
-        for (k in obj) {
-            this[k] = obj[k];
-        }
-
-        if ('function' === typeof(obj.init)) {
-            var args = [];
-
-            args.push(this); // self as first argument
-
-            for(var i = 0; i < arguments.length; i++) {
-                args.push(arguments[i]);
-            }
-
-            obj.init.apply(this, args);
-        }
-    }
-
-    return Constructor_;
-}
 
 var UNIT = {
     _weight: ['kg', 'lbs', 'st'],
@@ -158,16 +98,14 @@ jQuery(function() {
 
     var MAX_ALLOWED_MEASUREMENT_CHANGE_PER_PERIOD = {
         'weight': 10, // lbs
-
         'girth_neck': 3, // in
         'girth_shoulder': 4,
         'girth_chest': 4,
-        'girth_upperarm': 3,
+        'girth_arm': 3,
         'girth_waist': 4,
         'girth_hip': 4,
         'girth_thigh': 3,
         'girth_calf': 3,
-
         'skinfold_triceps': 15, // mm
         'skinfold_chest': 15,
         'skinfold_midaxillary': 15,
@@ -199,15 +137,12 @@ jQuery(function() {
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
             this.__overrideDifferenceCheck = e20r_progress.settings.overrideDiff;
 
-            console.log("Type: " + self.type );
-
             if (bool(this.$girthImage.length)) {
 
                 this.$girthImage.addClass(NourishUser.gender);
 
-                if (this._isSkinfold && 'F' === NourishUser.gender) { // ad hoc
+                if ('F' === NourishUser.gender) { // ad hoc
                     this.$girthImage.css('background-image', function(url) {
-                        console.log("Gender for Image: " + NourishUser.gender );
                         return url.replace('-m', '-f');
                     });
                 }
@@ -226,6 +161,7 @@ jQuery(function() {
                     }
                 }
             });
+
 
             jQuery.bindEvents({
                 self: this,
@@ -264,20 +200,18 @@ jQuery(function() {
             this.stateTransition('default', 'active', function(self) {
 
                 self.$fieldContainer.addClass('active');
-
+                /*
                 if (self._isSkinfold) { // ad hoc
                     self.$girthImage.insertBefore(self.$description);
                     self.$description.filter('p:first').css('margin-top', '8px');
                     self.$fieldContainer.css('float', 'left').css('margin-top', '12px').css('width', '520px');
                     self.$savedContainer.css('float', 'left').css('margin-top', '12px').css('width', '520px');
                 }
-
+                */
                 if (bool(self.$girthImage.length)) {
                     self.$girthImage.addClass('active');
-/*                    self.$girthImage.css('background-image', function(src) {
-                        return 'url(' + src.match(/img=([^&]+)/)[1] + ')';
-                    });*/
                 }
+
                 self.$girthRowContainer.addClass('active');
                 self.$description.parent().addClass('active'); // need to fix the para thing
 
@@ -291,9 +225,6 @@ jQuery(function() {
                 self.$fieldContainer
                     .addClass('edit');
             });
-
-
-            /* */
 
             if (this.value > 0) {
                 self.changeState('active'); // a little dirty
@@ -337,11 +268,12 @@ jQuery(function() {
             this._state = toState;
         },
 
-        activate: function(self) {
+        activate: function( self ) {
+
             self.changeState('active');
         },
 
-        attemptSave: function(self) {
+        attemptSave: function( self ) {
 
             // validate
 
@@ -417,24 +349,16 @@ jQuery(function() {
 
         save: function(self) {
 
-            console.log("Attempting to save " + self.type );
-            console.log("For user: " + NourishUser.user_id );
-
             var $data = {
                 'action': 'saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
-                'article-id': e20r_progress.settings.article_id,
+                'article-id': jQuery('#article_id').val(),
                 'date': jQuery( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
                 'user-id': NourishUser.user_id
             };
 
-            /*
-            jQuery.post('cpds-assignments.php', data, function(response) {
-                console.log('Response: ' + response);
-            });
-            */
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
@@ -453,8 +377,10 @@ jQuery(function() {
             self.changeState('saved');
         },
 
-        edit: function(self) {
-            console.dir(self.$field);
+        edit: function( self ) {
+
+            event.preventDefault();
+            self.changeState('active');
             self.$field.focus();
         },
 
@@ -503,8 +429,8 @@ jQuery(function() {
 
     WEIGHT_FIELD.push(new MeasurementField_({ type: 'weight', period: 'week', unit: weightUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_neck', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_arm', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_shoulder', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_arm', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_chest', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_waist', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_hip', period: 'week', unit: lengthUNIT }));
@@ -520,13 +446,16 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
 
     jQuery('#submit-weekly-progress-button').click(function() {
+
+        event.preventDefault(); // Disable POST action - handle it in AJAX instead
+
         jQuery('#validation-errors').remove();
 
         // Make sure at least one of the progress form sections are completed.
         var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
         var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
-        var photosMissing = bool(jQuery('.validate-photos').find('img.photo.null').length);
-        var otherMissing = (jQuery('textarea[name=essay1]').val().length == 0) ? true: false;
+        var photosMissing = bool( jQuery('.validate-photos').find('img.photo.null').length );
+        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 ) ? true: false;
 
         if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
 
@@ -578,7 +507,7 @@ jQuery(function() {
                 timeout: 10000,
                 dataType: 'JSON',
                 data: {
-                    'article-id': e20r_progress.settings.article_id,
+                    'article-id': jQuery('#article_id').val(),
                     'action': 'saveMeasurementForUser',
                     'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                     'date': jQuery('#date').val(),
@@ -587,22 +516,16 @@ jQuery(function() {
                     'measurement-value': 1
                 },
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from saveMeasurement action: ' + $errType );
+                    console.log($errString + ' error returned from saveMeasurementForUser action: ' + $errType );
                     return;
                 },
                 success: function($response) {
                     // location.href = e20r_progress.settings.measurementSaved;
-                    console.log(e20r_progress.settings.measurementSaved);
-                    return false; // WORKAROUND: TODO.
-                    //location.href = "/nutrition-coaching/home/?weekly_update_completed=1";
+                    console.log('Redirect to: ' + e20r_progress.settings.measurementSaved);
+                    location.href = e20r_progress.settings.measurementSaved;
                 }
             });
-            /*
-            jQuery.post('cpds-assignments.php', data, function(response) {
-                location.href = '/members/cp-home.php?wpucompleted=1';
-            });*/
         }
-        console.log('Stop submittal of form...');
     });
 
     var ProgressQuestionnaire = {
@@ -617,7 +540,7 @@ jQuery(function() {
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': e20r_progress.settings.article_id
+                        'article-id': jQuery('#article_id').val()
                     };
 
                     jQuery.ajax({
@@ -631,12 +554,12 @@ jQuery(function() {
                             return;
                         }
                     });
-/*
-                    jQuery.post('cpds-assignments.php', data,
-                        function(response) {
-                            console.log(response);
-                        });
-*/
+                    /*
+                     jQuery.post('cpds-assignments.php', data,
+                     function(response) {
+                     console.log(response);
+                     });
+                     */
                 });
 
             jQuery('textarea[name=essay1]')
@@ -648,7 +571,7 @@ jQuery(function() {
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': e20r_progress.settings.article_id
+                        'article-id': jQuery('#article_id').val()
                     };
 
                     jQuery.ajax({
@@ -665,19 +588,11 @@ jQuery(function() {
                             console.dir($response);
                         }
                     });
-
-                    /*
-                                        jQuery.post('cpds-assignments.php', data,
-                                            function(response) {
-                                                console.log(response);
-                                            });
-                    */
                 });
         }
     };
 
     ProgressQuestionnaire.init();
-    console.log("Questionnaire class init'ed");
 
     /* select units */
     jQuery('#save-units')
@@ -705,7 +620,7 @@ jQuery(function() {
 
             var $data = {
                 'action': 'updateUnitTypes',
-                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'querystring': queryString,
                 'user-id': NourishUser.user_id
             };
@@ -718,8 +633,11 @@ jQuery(function() {
                 data: $data,
                 error: function($response, $errString, $errType) {
                     console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                    return;
+                },
+                success: function() {
+                    console.log("Updated all old values in DB")
                 }
+
             });
             // FixMe - jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) { });
 
@@ -734,41 +652,46 @@ jQuery(function() {
             initialHeight: 80
         });
 
-/*
     var PhotoUploader = {
         init: function() {
             var self = this;
 
-            jQuery.each(['front', 'side', 'back', 'flexedfront', 'flexedside', 'flexedback'], function() {
+            jQuery.each(['front', 'side', 'back'], function() {
+
                 self.bindUploadify(this);
+
                 if (jQuery('#photo-' + this).hasClass('null')) {
+
                     jQuery('.delete-photo.' + this).hide();
                     jQuery('.manip-container.' + this).hide();
                 }
                 else {
+
                     jQuery('.delete-photo.' + this).closest('tfoot').show();
                     jQuery('.manip-container.' + this).closest('tfoot').show();
                 }
             });
 
-            jQuery('.manip-container img')
+/*            jQuery('.manip-container img')
                 .click(function() {
+
                     var isCounterClockwise = jQuery(this).is(':first-child');
 
                     var deg = (isCounterClockwise) ? 270 : 90;
 
                     var orientation = jQuery(this).parent('.manip-container').attr('data-orientation');
 
-                    var $loading = jQuery('<img src="cp-images/ajax-loader.gif" style="display: block; margin: 0 auto; margin-bottom: 8px;" class="loading" />').prependTo(jQuery(this).closest('td'));
+                    var $loading = jQuery('<img src="../../images/spinner.gif" style="display: block; margin: 0 auto; margin-bottom: 8px;" class="loading" />').prependTo(jQuery(this).closest('td'));
 
                     var postdata = {
                         'action': 'rotatephoto',
-                        'article-id': e20r_progress.settings.article_id,
+                        'article-id': jQuery('#article_id').val(),
                         'degrees': deg,
                         'view': orientation,
-                        'uid': NourishUser.user_id
+                        'user_id': NourishUser.user_id
                     };
 
+                    // TODO: Photo rotation, is it even needed?
                     jQuery.post('cpds-assignments.php', postdata, function() {
                         jQuery('#photo-' + orientation)
                             .attr('src', function(src) {
@@ -780,110 +703,155 @@ jQuery(function() {
                     })
                     //?action=rotatephoto&assignment-id=[assignmentid]&degrees=90&view=[front|side|back]
                 });
-
+*/
             jQuery('.delete-photo')
                 .click(function() {
                     var orientation = jQuery(this).attr('data-orientation');
 
-                    var data = {
-                        'article-id': e20r_progress.settings.article_id,
-                        'view': orientation,
-                        'action': 'removephoto',
-                        'uid': NourishUser.user_id
+                    var $data = {
+                        'article-id': jQuery('#article_id').val(),
+                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                        'image-url': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'view': orientation, // Don't think I need this...?
+                        'action': 'deletePhoto',
+                        'user-id': NourishUser.user_id
                     };
 
-                    jQuery.post('cpds-assignments.php', data, function() {
-                        jQuery('#photo-' + orientation)
-                            .attr('src', 'cp-showImage.php?w=165&uid=' + NourishUser.user_id + '&img=')
-                            .addClass('null')
-                            .closest('td')
-                            .find('.photo-upload-notifier')
-                            .hide();
+                    // TODO: Implement back-end photo deletion (remove the attachment as well as
 
-                        jQuery('.delete-photo.' + orientation).hide();
+                    jQuery.ajax({
+                        url: e20r_progress.ajaxurl,
+                        type: 'POST',
+                        timeout: 10000,
+                        dataType: 'JSON',
+                        data: $data,
+                        error: function($response, $errString, $errType) {
+                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                        },
+                        success: function( $response ) {
+
+                            jQuery('#photo-' + orientation)
+                                .attr('src', $response.data.imageLink )
+                                .addClass('null')
+                                .closest('td')
+                                .find('.photo-upload-notifier')
+                                .hide();
+
+                            jQuery('.delete-photo.' + orientation).hide();
+                        }
                     });
 
-                    return false;
+                    // return false;
                 });
         },
 
         bindUploadify: function(orientation) {
+
+            var progress_uploader;
             var self = this;
-
-            var queryString = 'orientation=' + orientation;
-            queryString += '&date=' + PROGDATE;
-            queryString += '&id=' + NourishUser.user_id;
-
-            queryString = encodeURIComponent(queryString);
 
             var $uploadButton = jQuery('#photo-upload-' + orientation);
 
             if ($uploadButton.length == 0) {
-                // S2B asks for relaxed/flexing images. The upload button doesn't
-                // exist for the flexing images in LE
                 return;
             }
 
-            $uploadButton
-                .uploadify({
-                    buttonImg: '/members/cp-images/button-choose-photo.png',
-                    width: 142,
-                    uploader: '/members/js/uploadify/uploadify.swf',
-                    script: '/members/cp-uploadify.php?' + queryString,
-                    method: 'POST',
-                    //script: '/members/js/uploadify/uploadify.php',
-                    cancelImg: '/members/js/uploadify/cancel.png',
-                    folder: PROGRESS_PHOTO_DIRECTORY,
-                    auto: true,
-                    fileDesc: 'Please select a standard photo file type (jpg, gif, png)',
-                    fileExt: '*.jpg;*.jpeg;*.gif;*.png;',
-                    sizeLimit: 10485760,
-                    scriptAccess: 'always',
-                    onError: function() {
-                        console.log('Upload Error: %o', arguments);
+            $uploadButton.live( 'click', function(e) {
+
+                e.preventDefault();
+
+                if ( progress_uploader ) {
+
+                    progress_uploader.open();
+                    jQuery("#media-attachment-date-filters option[value='all']").each( function() {
+                        this.remove();
+                    });
+                    /*
+                    jQuery("#media-attachment-date-filters").each( function() {
+                        this.trigger('click');
+                    });
+                    */
+                    return;
+                }
+
+                progress_uploader = wp.media.frames.file_frame = wp.media({
+                    title: "Upload & Select " + titleCase(orientation) + " Image",
+                    button: {
+                        text: 'Use as the ' + titleCase(orientation) + ' Image'
                     },
-
-                    onProgress: function() {
-                        //console.log('Photo Progress: %o', arguments);
+                    library: {
+                        type: 'image'
                     },
-
-                    onSelect: function() {
-                        self._getPhotoSaveNotifier$(self._getPhoto$(orientation)).hide();
-
-                        console.log('Photo Selected: %o', arguments);
-                    },
-
-                    onClearQueue: function() {
-                        //console.log('Photo Queue Cleared: %o', arguments);
-                    },
-
-                    onComplete: function(event, queueID, file, response, data) {
-                        //console.log('Upload Complete: %o', arguments);
-//						alert('Upload Complete: ' +  response);
-
-                        var $photo =  self._getPhoto$(orientation);
-
-                        // display a loader
-
-                        var filePath = 'cp-showImage.php?uid=' + NourishUser.user_id + '&w=165&img=' + response;
-                        filePath += '&rand=' + Math.random();
-
-                        //alert (filePath);
-                        $photo
-                            .attr('src', filePath) // should be cropped copy file
-                            .removeClass('null')
-                            .load(function() {
-                                setTimeout(function() {
-                                    self._getPhotoSaveNotifier$($photo).fadeIn('slow');
-                                }, 800);
-
-                            });
-
-                        jQuery('.delete-photo.' + orientation).show();
-                        jQuery('.manip-container.' + orientation).show();
-
-                    }
+                    multiple: false
                 });
+
+                // When the file is selected, get the URL and set it as the text field value
+                progress_uploader.on("select", function() {
+
+                    var selection = progress_uploader.state().get('selection');
+                    var attachment = selection.first().toJSON();
+
+                    var attachment_thumbs = selection.map( function( attachment ) {
+                        attachment = attachment.toJSON();
+                        if( attachment.id != '' ) { return '<img src="' + attachment.sizes.thumbnail.url + '" id="id-' + attachment.id + '" />'; }
+                    }).join(' ');
+
+                    jQuery("#photo-" + orientation + "-url-hidden").val( attachment.url );
+
+                    var $data = {
+                        'article-id': jQuery('#article_id').val(),
+                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                        'image-url': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'view': orientation, // Don't think I need this...?
+                        'action': 'addPhoto',
+                        'user-id': NourishUser.user_id
+                    };
+
+                    // TODO: Implement back-end photo addition
+                    jQuery.ajax({
+                        url: e20r_progress.ajaxurl,
+                        type: 'POST',
+                        timeout: 10000,
+                        dataType: 'JSON',
+                        data: $data,
+                        error: function($response, $errString, $errType) {
+                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+                        },
+                        success: function( $repsponse ) {
+
+                            var $photo =  self._getPhoto$(orientation);
+                            $photo
+                                .removeClass('null')
+                                .load(function() {
+                                    setTimeout(function() {
+                                        self._getPhotoSaveNotifier$($photo).fadeIn('slow');
+                                    }, 800);
+
+                                });
+
+                            setTimeout(function() {
+                                jQuery("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
+                            }, 700);
+
+                            jQuery('.delete-photo.' + orientation).show();
+                        }
+                    });
+                    return false;
+                });
+
+                progress_uploader.open();
+                jQuery("#media-attachment-date-filters option[value='all']").each( function() {
+                    this.remove();
+                });
+
+                /*
+                 jQuery("#media-attachment-date-filters").each( function() {
+                 this.trigger('click');
+                 });
+                 */
+
+            });
+
         },
 
         _getPhoto$: function(orientation) {
@@ -898,8 +866,6 @@ jQuery(function() {
     }
 
     PhotoUploader.init();
-*/
-    /* !jQuery('.change-measurement-unit') */
 
     jQuery('.change-measurement-unit')
         .click(function() {
@@ -953,7 +919,7 @@ jQuery(function() {
                 'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'user-id': NourishUser.user_id,
                 'dimension': dimension, // "weight" or "length"
-                'value': newUnitAbbr // "lbs" or "cm"
+                'value': newUnitAbbr // i.e. "lbs" or "cm", etc
             };
 
             // persist to database
@@ -983,134 +949,16 @@ jQuery(function() {
         .css('display', 'none')
         .appendTo(document.body);
 
-    // basic photo uploader
-/*
-    jQuery('.basic-photo-uploader-toggle')
-        .click(function() {
-            jQuery('#photo-upload-table.advanced thead').toggle();
-
-            // CHERYL: Added an inner div to the WP template (cp_weekly_update)
-            // and toggled on it since toggling on the form was buggy
-            jQuery('#basic-photo-uploader-innerdiv').toggle();
-
-            jQuery('#notice-standard-photo-uploader').toggle();
-            jQuery('#notice-basic-photo-uploader').toggle();
-
-            return false;
-        });
-
-    jQuery('form#basic-photo-uploader')
-        .submit(function() {
-            jQuery('#upload-channel').contents().find('body').html('');
-
-            var self = this;
-
-            jQuery(this).after('<div class="yellow-notice" id="notice-photos-are-being-uploaded">Your photos are being uploaded. This can take up to 5 minutes to complete.</div>');
-
-            jQuery('#basic-photo-uploader-submit')
-                .trigger('blur')
-                .attr('disabled', true);
-
-            jQuery('#basic-photo-uploader-ajax-loading').show();
-
-            // poll for return code
-            var pollCount = 0;
-            var interval = setInterval(function() {
-                if (pollCount === 20000) {
-                    clearInterval(interval);
-
-                    jQuery('#basic-photo-uploader')
-                        .append('<div class="red-notice">Upload failed, max time exceeded.</div>');
-                }
-
-                var response = jQuery('#upload-channel').contents().find('body').html();
-
-                if (response != '') {
-                    clearInterval(interval);
-
-                    //checkFormCompletion();
-
-                    // success
-                    jQuery('#basic-photo-uploader-submit')
-                        .removeAttr('disabled');
-
-                    jQuery('#basic-photo-uploader-ajax-loading').hide();
-                    jQuery('#basic-photo-uploader input:file')
-                        .each(function() {
-                            jQuery(this).val('');
-                        });
-                    jQuery('#notice-photos-are-being-uploaded').remove();
-
-                    response = jQuery.evalJSON(response);
-
-                    for(var orientation in response.pics) {
-                        var photoSrc = response.pics[orientation];
-
-                        if (photoSrc == '') {
-                            continue;
-                        }
-
-                        var $photo = jQuery('#photo-' + orientation);
-                        var filePath = 'cp-showImage.php?w=165&uid=' + NourishUser.user_id + '&img=' + photoSrc + '&rand=' + Math.random();
-
-                        // this is duplicate code from PhotoUploader onComplete
-                        $photo
-                            .attr('src', filePath)
-                            .removeClass('null')
-                            .each(function() {
-                                (function($photo) {
-                                    $photo.load(function() {
-                                        setTimeout(function() {
-                                            PhotoUploader._getPhotoSaveNotifier$($photo).fadeIn('slow');
-                                        }, 800);
-                                    });
-                                })($photo);
-                            });
-
-
-                        jQuery('.delete-photo.' + orientation).show();
-                        jQuery('.manip-container.' + orientation).show();
-                    }
-
-                    // **************************************************************************************************************
-                    // CHERYL: Added this to properly handle iPads using iCab. Since iCab wraps the existing file inputs with its own
-                    // functionality, we need to remove them and then re-add them so that the fields get reset.
-                    // **************************************************************************************************************
-                    var new_string;
-
-                    if (response.program_initials == "S2B") {
-                        new_string = 	'<table><tbody><tr><td>Choose your Front Photo (<strong>relaxed</strong>)</td><td><input name="photo_front" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Side Photo (<strong>relaxed</strong>)</td><td><input name="photo_side" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Back Photo (<strong>relaxed</strong>)</td><td><input name="photo_back" type="file" /></td></tr></tbody>' +
-                        '<tr><td>Choose your Front Photo (<strong>flexing</strong>):</td><td><input name="photo_flexedfront" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Side Photo (<strong>flexing</strong>):</td><td><input name="photo_flexedside" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Back Photo (<strong>flexing</strong>):</td><td><input name="photo_flexedback" type="file" /></td></tr></table>';
-                    }
-                    else {
-                        new_string = 	'<table><tbody><tr><td>Choose your Front Photo:</td><td><input name="photo_front" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Side Photo:</td><td><input name="photo_side" type="file" /></td></tr>' +
-                        '<tr><td>Choose your Back Photo:</td><td><input name="photo_back" type="file" /></td></tr></tbody></table>';
-                    }
-                    jQuery('#basic-photo-input-fields').html(new_string);
-                    // **************************************************************************************************************
-                    // End of block
-                    // **************************************************************************************************************
-                }
-
-                ++pollCount;
-            }, 100);
-        });
-    */
     function checkFormCompletion() {
         var $data = {
             'action': 'checkCompletion',
-            'article-id': e20r_progress.settings.article_id,
+            'article-id': jQuery('#article_id').val(),
             'date': jQuery('#date').val(),
             'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
             'user-id': NourishUser.user_id
         };
 
-        console.dir($data);
+        // console.dir($data);
 
         jQuery.ajax({
             url: e20r_progress.ajaxurl,
@@ -1136,14 +984,14 @@ jQuery(function() {
         });
 
         /*
-        jQuery.post('cpds-assignments.php', data, function(response) {
-            console.log('Response: ' + response);
+         jQuery.post('cpds-assignments.php', data, function(response) {
+         console.log('Response: ' + response);
 
-            if (jQuery.secureEvalJSON(response)['progress_form_completed']) {
-                formToSavedState();
-            }
-        });
-        */
+         if (jQuery.secureEvalJSON(response)['progress_form_completed']) {
+         formToSavedState();
+         }
+         });
+         */
     }
 
     function formToSavedState() {
@@ -1171,3 +1019,4 @@ jQuery(function() {
 
     checkFormCompletion();
 });
+
