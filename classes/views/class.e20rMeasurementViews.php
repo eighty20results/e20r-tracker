@@ -56,66 +56,6 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-/*
-    private function load_scripts() {
-
-        global $e20rTracker, $e20rClient, $e20rMeasurements;
-
-        if ( $e20rClient->clientId() == null ) {
-            return;
-        }
-
-        dbg("e20rClient::load_scripts() - user id: {$e20rClient->clientId()} " . $e20rTracker->whoCalledMe() );
-
-        if ( $e20rClient->scriptsLoaded == false ) {
-
-            if ( empty( $e20rClient->data ) ) {
-                $e20rClient->init();
-            }
-
-            if ( empty( $e20rClient->lw_measurement ) ) {
-                $e20rClient->lw_measurement = $e20rMeasurements->getMeasurement( 'last_week', true );
-            }
-
-            $userData = $e20rClient->data->info;
-
-            if ( $userData->incomplete_interview ) {
-                dbg("e20rClient::load_scripts() - No USER DATA found in the database. Redirect to User interview page!");
-            }
-
-            dbg("e20rMeasurementViews::load_scripts() - User Data: " . print_r( $userData, true ));
-
-            dbg("e20rMeasurementViews::load_scripts() - Localizing progress script for use on measurement page");
-
-            // Load user specific settings
-            wp_localize_script( 'e20r-progress-js', 'e20r_progress',
-                array(
-                    'ajaxurl'      => admin_url( 'admin-ajax.php' ),
-                    'settings'     => array(
-                        'article_id'   => $e20rClient->getArticleID(),
-                        'lengthunit'   => $userData->lengthunittype,
-                        'weightunit'   => $userData->weightunittype,
-                        'imagepath'    => E20R_PLUGINS_URL . '/images/',
-                        'overrideDiff' => ( isset( $e20rClient->lw_measurement->id ) ? false : true )
-                    ),
-                    'measurements' => array(
-                        'last_week' => json_encode( $e20rClient->lw_measurement, JSON_NUMERIC_CHECK ),
-                    ),
-                    'user_info'    => array(
-                        'userdata'          => json_encode( $userData, JSON_NUMERIC_CHECK ),
-                        'progress_pictures' => '',
-                        'display_birthdate' => ( empty( $userData->birthdate ) ? false : true ),
-
-                    ),
-                )
-            );
-        }
-
-        $this->scriptsLoaded = true;
-
-        dbg("e20rMeasurementViews::load_scripts() - Javascript for Progress Report loaded");
-    }
-*/
     /**
      * @param string $type - The type of measurement to check ('weight', 'girth', 'photo', 'progress')
      *
@@ -339,9 +279,9 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-front-url-hidden" id="photo-front-url-hidden" value="" />
+                                        <input type="hidden" name="photo-front-url-hidden" id="photo-front-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["front_image"]} ) ? null : $this->data->{$this->fields["front_image"]} ); ?>" />
                                         <div class="descript-overlay">Front</div>
-                                        <img id="photo-front" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo null">
+                                        <img id="photo-front" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["front_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                                 <td>
@@ -349,9 +289,9 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-side-url-hidden" id="photo-side-url-hidden" value="" />
+                                        <input type="hidden" name="photo-side-url-hidden" id="photo-side-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["side_image"]} ) ? null : $this->data->{$this->fields["side_image"]} ); ?>" />
                                         <div class="descript-overlay">Side</div>
-                                        <img id="photo-side" src="<?php echo $this->loadImage( 'side' ); ?>" class="photo null">
+                                        <img id="photo-side" src="<?php echo $this->loadImage( 'side' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["side_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                                 <td>
@@ -359,9 +299,9 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-back-url-hidden" id="photo-back-url-hidden" value="" />
+                                        <input type="hidden" name="photo-back-url-hidden" id="photo-back-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["back_image"]} ) ? null : $this->data->{$this->fields["back_image"]} ); ?>" />
                                         <div class="descript-overlay">Back</div>
-                                        <img id="photo-back" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo null">
+                                        <img id="photo-back" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["back_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                             </tr class="e20r-noline">
@@ -387,7 +327,13 @@ class e20rMeasurementViews {
 
     private function loadImage( $side ) {
 
-        $url = ( ( ! isset( $this->data->{$this->fields[$side . "-image"]} ) ) ? E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" : $this->data->{$this->fields[$side . "-image"]} );
+        $id = ( isset( $this->data->{$this->fields[$side . "_image"]} ) ?  $this->data->{$this->fields[$side . "_image"]} : null );
+
+        if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
+
+            dbg( "e20rMeasurementViews::loadImage() - No image ID saved. Loading placeholder" );
+            $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
+        }
 
         dbg("e20rMeasurementviews::loadImage() - Loading: {$url}");
         return $url;
