@@ -796,15 +796,16 @@ jQuery(function() {
                         if( attachment.id != '' ) { return '<img src="' + attachment.sizes.thumbnail.url + '" id="id-' + attachment.id + '" />'; }
                     }).join(' ');
 
-                    jQuery("#photo-" + orientation + "-url-hidden").val( attachment.url );
+                    jQuery("#photo-" + orientation + "-url-hidden").val( attachment.id );
 
                     var $data = {
-                        'article-id': jQuery('#article_id').val(),
-                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
-                        'image-url': jQuery("#photo-" + orientation + "-url-hidden").val(),
-                        'view': orientation, // Don't think I need this...?
-                        'action': 'addPhoto',
-                        'user-id': NourishUser.user_id
+                        'action': 'saveMeasurementForUser',
+                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
+                        'measurement-type': orientation + '_image',
+                        'measurement-value': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'user-id': NourishUser.user_id,
+                        'article-id': jQuery('#article_id').val()
                     };
 
                     // TODO: Implement back-end photo addition
