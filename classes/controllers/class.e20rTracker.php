@@ -1043,9 +1043,9 @@ class e20rTracker {
                     girth decimal(18,3) null,
                     essay1 text null,
                     behaviorprogress bool null,
-                    front_image varchar null,
-                    side_image varchar null,
-                    back_image varchar null,
+                    front_image varchar(512) null,
+                    side_image varchar(512) null,
+                    back_image varchar(512) null,
                     primary key id ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
@@ -1140,9 +1140,9 @@ class e20rTracker {
                     article_id int(11) DEFAULT NULL,
                     essay1 text NULL,
                     behaviorprogress tinyint NULL,
-                    front_image varchar null,
-                    side_image varchar null,
-                    back_image varchar null
+                    front_image varchar(512) null,
+                    side_image varchar(512) null,
+                    back_image varchar(512) null
                     )
                     {$charset_collate}
             ";
