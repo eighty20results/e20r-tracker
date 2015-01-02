@@ -831,7 +831,7 @@ jQuery(function() {
 
                             setTimeout(function() {
                                 jQuery("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
-                            }, 700);
+                            }, 800);
 
                             jQuery('.delete-photo.' + orientation).show();
                         }
