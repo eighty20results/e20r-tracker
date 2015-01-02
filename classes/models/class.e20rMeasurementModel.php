@@ -145,6 +145,7 @@ class e20rMeasurementModel {
         dbg("e20rMeasurementModel::record2Array() - Converting from stdClass: " . print_r( $record, true ) );
         return json_decode(json_encode($record), true);
     }
+
     public function saveRecord( $rec, $user_id, $date ) {
 
         global $wpdb, $e20rClient;
@@ -473,22 +474,30 @@ class e20rMeasurementModel {
             "
               SELECT
                 {$this->fields['id']}, {$this->fields['user_id']},
-                {$this->fields['assignment_id']}, {$this->fields['recorded_date']},
+                {$this->fields['article_id']}, {$this->fields['recorded_date']},
                 {$this->fields['weight']}, {$this->fields['girth_neck']},
                 {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
                 {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
                 {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
                 {$this->fields['girth_calf']}, {$this->fields['girth']},
-                {$this->fields['essay1']}, {$this->fields['behaviorprogress']}
+                {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
+                {$this->fields['front_image']}, {$this->fields['side_image']},
+                {$this->fields['back_image']}
                 FROM {$this->table}
                 WHERE {$this->fields['user_id']} = %d AND {$this->fields['recorded_date']} LIKE %s
                 ORDER BY {$this->fields['recorded_date']} ASC
             ",
             $this->client_id,
-            $date . '%');
+            $date . ' 00:00:00');
 
+
+        dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
 
         $results = $wpdb->get_results( $sql );
+
+        if ( is_wp_error( $results ) ) {
+            dbg("MeasurementModel::loadByDate() - Error loading from database: " . $wpdb->print_error() );
+        }
 
         dbg("MeasurementModel::loadByDate() - loaded " . count($results) . " records");
 
@@ -514,13 +523,15 @@ class e20rMeasurementModel {
                 "
                   SELECT
                     {$this->fields['id']}, {$this->fields['user_id']},
-                    {$this->fields['assignment_id']}, {$this->fields['recorded_date']},
+                    {$this->fields['article_id']}, {$this->fields['recorded_date']},
                     {$this->fields['weight']}, {$this->fields['girth_neck']},
                     {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
                     {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
                     {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
                     {$this->fields['girth_calf']}, {$this->fields['girth']},
-                    {$this->fields['essay1']}, {$this->fields['behaviorprogress']}
+                    {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
+                    {$this->fields['front_image']}, {$this->fields['side_image']},
+                    {$this->fields['back_image']}
                     FROM {$this->table}
                     WHERE {$this->fields['user_id']} = %d
                     ORDER BY {$this->fields['recorded_date']} ASC
