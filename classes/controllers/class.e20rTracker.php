@@ -1018,6 +1018,7 @@ class e20rTracker {
                     for_research tinyint default 0,
                     chronic_pain tinyint default 0,
                     injuries tinyint default 0,
+
                     primary key (id),
                     key user_id (user_id asc),
                     key programstart (program_start asc)
@@ -1043,9 +1044,9 @@ class e20rTracker {
                     girth decimal(18,3) null,
                     essay1 text null,
                     behaviorprogress bool null,
-                    front_image varchar(512) null,
-                    side_image varchar(512) null,
-                    back_image varchar(512) null,
+                    front_image int default null,
+                    side_image int default null,
+                    back_image int default null,
                     primary key id ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
@@ -1140,9 +1141,9 @@ class e20rTracker {
                     article_id int(11) DEFAULT NULL,
                     essay1 text NULL,
                     behaviorprogress tinyint NULL,
-                    front_image varchar(512) null,
-                    side_image varchar(512) null,
-                    back_image varchar(512) null
+                    front_image int default null,
+                    side_image int default null,
+                    back_image int default null
                     )
                     {$charset_collate}
             ";
