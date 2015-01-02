@@ -9,23 +9,26 @@ class e20rMeasurementViews {
     private $data;
     private $fields;
 
-    private $unitInfo;
 
-    public function e20rMeasurementViews( $when, $data, $fields, $unit ) {
+    public function e20rMeasurementViews( $when, $data ) {
 
-        dbg("When: {$when}");
-        dbg("Data: " . print_r( $data, true ) );
-        dbg("Fields: " . print_r( $fields, true ) );
+        global $e20rTables;
 
         $this->when = $when;
         $this->data = $data;
-        $this->fields = $fields;
-        $this->unitInfo = $unit;
+        $this->fields = $e20rTables->getFields( 'measurements' );
+
+        dbg("When: {$this->when}");
+        dbg("Data: " . print_r( $this->data, true ) );
+        dbg("Fields: " . print_r( $this->fields, true ) );
 
     }
 
     public function startProgressForm() {
+
+        // $this->load_scripts();
         global $e20rArticle;
+
         ob_start();
         ?>
         <div id="saturday-progress-container" class="progress-container">
@@ -41,7 +44,7 @@ class e20rMeasurementViews {
                             <td></td>
                             <td>
                                 <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $e20rArticle->releaseDate(); ?>">
-                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $this->data->article_id; ?>">
+                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $e20rArticle->getID(); ?>">
                                 <button class="submit" id="submit-weekly-progress-button">
                                     <div>Save Your Weekly Progress Update</div>
                                 </button>
@@ -53,6 +56,66 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
+/*
+    private function load_scripts() {
+
+        global $e20rTracker, $e20rClient, $e20rMeasurements;
+
+        if ( $e20rClient->clientId() == null ) {
+            return;
+        }
+
+        dbg("e20rClient::load_scripts() - user id: {$e20rClient->clientId()} " . $e20rTracker->whoCalledMe() );
+
+        if ( $e20rClient->scriptsLoaded == false ) {
+
+            if ( empty( $e20rClient->data ) ) {
+                $e20rClient->init();
+            }
+
+            if ( empty( $e20rClient->lw_measurement ) ) {
+                $e20rClient->lw_measurement = $e20rMeasurements->getMeasurement( 'last_week', true );
+            }
+
+            $userData = $e20rClient->data->info;
+
+            if ( $userData->incomplete_interview ) {
+                dbg("e20rClient::load_scripts() - No USER DATA found in the database. Redirect to User interview page!");
+            }
+
+            dbg("e20rMeasurementViews::load_scripts() - User Data: " . print_r( $userData, true ));
+
+            dbg("e20rMeasurementViews::load_scripts() - Localizing progress script for use on measurement page");
+
+            // Load user specific settings
+            wp_localize_script( 'e20r-progress-js', 'e20r_progress',
+                array(
+                    'ajaxurl'      => admin_url( 'admin-ajax.php' ),
+                    'settings'     => array(
+                        'article_id'   => $e20rClient->getArticleID(),
+                        'lengthunit'   => $userData->lengthunittype,
+                        'weightunit'   => $userData->weightunittype,
+                        'imagepath'    => E20R_PLUGINS_URL . '/images/',
+                        'overrideDiff' => ( isset( $e20rClient->lw_measurement->id ) ? false : true )
+                    ),
+                    'measurements' => array(
+                        'last_week' => json_encode( $e20rClient->lw_measurement, JSON_NUMERIC_CHECK ),
+                    ),
+                    'user_info'    => array(
+                        'userdata'          => json_encode( $userData, JSON_NUMERIC_CHECK ),
+                        'progress_pictures' => '',
+                        'display_birthdate' => ( empty( $userData->birthdate ) ? false : true ),
+
+                    ),
+                )
+            );
+        }
+
+        $this->scriptsLoaded = true;
+
+        dbg("e20rMeasurementViews::load_scripts() - Javascript for Progress Report loaded");
+    }
+*/
     /**
      * @param string $type - The type of measurement to check ('weight', 'girth', 'photo', 'progress')
      *
@@ -75,6 +138,9 @@ class e20rMeasurementViews {
     }
 
     public function showGirthRow( $girths ) {
+
+        global $e20rClient;
+
         dbg("showGirthRow() - Loading Girth information");
         ob_start();
         ?>
@@ -97,7 +163,7 @@ class e20rMeasurementViews {
                         in PDF format.
                     </div>
                     <?php echo $this->showChangeLengthUnit(); ?>
-                    <?php dbg("showGirthRow() -> Lenght Units changer loaded. Girth Count: " . count($girths) ); ?>
+                    <?php dbg("showGirthRow() -> Length Units changer loaded. Girth Count: " . count($girths) ); ?>
 
                     <?php foreach( $girths as $order => $girth) { ?>
                         <?php dbg("showGirthRow() -> type: {$girth->type}"); ?>
@@ -116,16 +182,16 @@ class e20rMeasurementViews {
                                     <div class="label-container">
                                         <label>Enter <?php echo ucfirst($girth->type)?> Girth</label>
                                     </div>
-                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields['girth_' . strtolower( $girth->type )]} ) ? 'value' : 'value="' . $this->data->{$this->fields['girth_' . strtolower( $girth->type )]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="girth_<?php echo strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
-                                    <span class="unit length"><?php echo $this->prettyUnit( $this->unitInfo->lengthunits ); ?></span>
+                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} ) ? 'value=""' : 'value="' . $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="<?php echo 'girth_' . strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
+                                    <span class="unit length"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
                                 </div>
                                 <div class="measurement-saved-container">
                                     <div class="label-container">
                                         <label>Entered <?php echo ucfirst( $girth->type ); ?> Girth</label>
                                     </div>
-                                    <?php dbg("measurementViews() - Data for {$this->fields['girth_' . strtolower($girth->type)]} => {$this->data->{$this->fields['girth_' . strtolower($girth->type)]}}"); ?>
-                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields['girth_' . strtolower($girth->type)]} ) ? $this->data->{$this->fields['girth_' . strtolower($girth->type)]} : '' ); ?></span>
-                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields['girth_' . strtolower($girth->type)]} ) ? $this->prettyUnit( $this->unitInfo->lengthunits ) : null ); ?></span>
+                                    <?php dbg("measurementViews() - Data for {$this->fields[ 'girth_' . strtolower($girth->type) ]} => {$this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]}}"); ?>
+                                    <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} ) ? $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} : '' ); ?></span>
+                                    <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} ) ? $this->prettyUnit( $e20rClient->getLengthUnit() ) : null ); ?></span>
                                     <button class="edit">Change Girth</button>
                                 </div>
                             </div>
@@ -240,15 +306,76 @@ class e20rMeasurementViews {
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
                     </div>
-                    <!-- Consider how to integrate the standard WP media uploader and place files somewhere secure (per user). OR use a plugin perhaps? -->
-                    <div class="orange-notice" style="margin-bottom: 16px;" id="notice-basic-photo-uploader">
-                        Having problems when uploading photos? Try using our <a href="#" class="basic-photo-uploader-toggle">Basic Photo Uploader</a>.
-                    </div>
                     <div style="clear: both;"></div>
-                    <div class="orange-notice" style="margin-bottom: 16px; display: none;" id="notice-standard-photo-uploader">
-                        <a href="#" class="basic-photo-uploader-toggle">Standard Photo Uploader</a>.
-                    </div>
-                    <!-- TODO: photo uploader table (stuff) will follow here -->
+                    <p class="hide-if-no-js">
+                        <div class="uploader">
+                        <table id="photo-upload-table" class="advanced">
+                            <thead>
+                            <tr class="e20r-noline">
+                                <th>
+                                    <div class="photo-upload-container">
+                                        <div class="title">Front Photo</div>
+                                        <button id="photo-upload-front">Select Image: Front</button>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="photo-upload-container">
+                                        <div class="title">Side Photo</div>
+                                        <button id="photo-upload-side">Select Image: Side</button>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="photo-upload-container">
+                                        <div class="title">Back Photo</div>
+                                        <button id="photo-upload-back">Select Image: Back</button>
+                                    </div>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="e20r-noline">
+                                <td>
+                                    <div class="photo-upload-notifier">
+                                        Photo Saved
+                                    </div>
+                                    <div class="photo-container">
+                                        <input type="hidden" name="photo-front-url-hidden" id="photo-front-url-hidden" value="" />
+                                        <div class="descript-overlay">Front</div>
+                                        <img id="photo-front" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo null">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="photo-upload-notifier">
+                                        Photo Saved
+                                    </div>
+                                    <div class="photo-container">
+                                        <input type="hidden" name="photo-side-url-hidden" id="photo-side-url-hidden" value="" />
+                                        <div class="descript-overlay">Side</div>
+                                        <img id="photo-side" src="<?php echo $this->loadImage( 'side' ); ?>" class="photo null">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="photo-upload-notifier">
+                                        Photo Saved
+                                    </div>
+                                    <div class="photo-container">
+                                        <input type="hidden" name="photo-back-url-hidden" id="photo-back-url-hidden" value="" />
+                                        <div class="descript-overlay">Back</div>
+                                        <img id="photo-back" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo null">
+                                    </div>
+                                </td>
+                            </tr class="e20r-noline">
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td><a style="display: none;" href="javascript:" class="delete-photo front" data-orientation="front">Delete Front Image</a></td>
+                                <td><a style="display: none;" href="javascript:" class="delete-photo side" data-orientation="side">Delete Side Image</a></td>
+                                <td><a style="display: none;" href="javascript:" class="delete-photo back" data-orientation="back">Delete Back Image</a></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                        </div>
+                    </p>
                     <!-- End of photo uploader table -->
                 </fieldset>
             </td>
@@ -258,8 +385,19 @@ class e20rMeasurementViews {
 
     }
 
+    private function loadImage( $side ) {
+
+        $url = ( ( ! isset( $this->data->{$this->fields[$side . "-image"]} ) ) ? E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" : $this->data->{$this->fields[$side . "-image"]} );
+
+        dbg("e20rMeasurementviews::loadImage() - Loading: {$url}");
+        return $url;
+
+    }
     public function showWeightRow() {
-        dbg("Weight Units: " . print_r($this->unitInfo, true));
+
+        global $e20rClient;
+
+        dbg("Weight Units: " . print_r($e20rClient->getWeightUnit(), true));
         ob_start();
         ?>
         <tr>
@@ -269,8 +407,7 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-                        <a href="e20r-tracker-help.php?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions">
-                        </a>
+                        <a href="e20r-tracker-help.php?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
                         Body Weight Measurement
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
@@ -285,15 +422,15 @@ class e20rMeasurementViews {
                         <div class="label-container">
                             <label>Enter Current Body Weight</label>
                         </div>
-                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 70px; font-size: 20px; text-align: center;">
-                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo->weightunits ); ?></span>
+                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value=""' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 70px; font-size: 20px; text-align: center;">
+                        <span class="unit weight"><?php echo $this->prettyUnit( $e20rClient->getWeightUnit() ); ?></span>
                     </div>
                     <div class="measurement-saved-container">
                         <div class="label-container">
                             <label>Entered Body Weight</label>
                         </div>
                         <span class="value"><?php echo (! empty( $this->data->weight ) ? $this->data->weight : null ); ?></span>
-                        <span class="unit weight"><?php echo $this->prettyUnit( $this->unitInfo->weightunits ); ?></span>
+                        <span class="unit weight"><?php echo (! empty( $this->data->weight ) ? $this->prettyUnit( $e20rClient->getWeightUnit() ) : null ); ?></span>
                         <button class="edit">Change Body Weight</button>
                     </div>
                 </fieldset>
@@ -305,12 +442,12 @@ class e20rMeasurementViews {
     }
 
     private function bgImage( $what, $type ) {
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'M' ? '-m.png");' : '-f.png");' );
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'F' ? '-f.png");' : '-m.png");' );
     }
 
     private function prettyUnit( $type ) {
 
-        dbg("Pretty Unit request: {$type}");
+       // dbg("Pretty Unit request: {$type}");
 
         switch ( $type ) {
             case 'lbs':
@@ -322,12 +459,17 @@ class e20rMeasurementViews {
             case 'st':
                 $descr = 'stone (st)';
                 break;
+            case 'st_uk':
+                $descr = 'stone (st) - (UK)';
+                break;
             case 'in':
                 $descr = 'inches (in)';
                 break;
             case 'cm':
                 $descr = 'centimeters (cm)';
                 break;
+            default:
+                $descr = '';
         }
 
         return $descr;
@@ -335,15 +477,18 @@ class e20rMeasurementViews {
 
     private function showChangeWeightUnit() {
 
+        global $e20rClient;
+
         ob_start();
         ?>
         <div style="margin-bottom: 24px;">
             Preferred weight units:
-            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($this->unitInfo->weightunits); ?></span>
+            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
             <select id="selected-weight-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="lbs"<?php selected( $this->unitInfo->weightunits, 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
-                <option value="kg"<?php selected( $this->unitInfo->weightunits, 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
-                <option value="st"<?php selected( $this->unitInfo->weightunits, 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
+                <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
+                <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
+                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
+                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
             </select>
             (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
         </div>
@@ -353,14 +498,15 @@ class e20rMeasurementViews {
 
     private function showChangeLengthUnit() {
 
+        global $e20rClient;
         ob_start();
         ?>
         <div style="margin-bottom: 24px;">
             Preferred length units:
-            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $this->unitInfo->lengthunits ); ?></span>
+            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
             <select id="selected-length-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="in"<?php selected( $this->unitInfo->lengthunits, 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
-                <option value="cm"<?php selected( $this->unitInfo->lengthunits, 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
+                <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
+                <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
             </select>
             (<a class="change-measurement-unit" data-dimension="length">change this</a>)
         </div>
@@ -416,4 +562,5 @@ class e20rMeasurementViews {
 
         return ob_get_clean();
     }
+
 } 

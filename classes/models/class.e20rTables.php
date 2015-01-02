@@ -23,15 +23,17 @@ class e20rTables {
             wp_die( "Critical plugin functionality is missing: in_betagroup()" );
         }
 
-        if ( function_exists( 'get_user_by' ) ) {
-            dbg("Initializing the e20rTables() class");
-            $this->init();
-        }
     }
 
 
-    private function init() {
+    public function init() {
 
+        if ( ! function_exists( 'get_user_by' ) ) {
+            dbg("e20rTables::init() - Wordpress not fully loaded yet...");
+            return;
+        }
+
+        dbg("e20rTables::constructor() - Initializing the e20rTables() class");
         global $wpdb, $current_user;
 
         $this->inBeta = in_betagroup( $current_user->ID );
@@ -50,6 +52,9 @@ class e20rTables {
         $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
         $this->tables->exercise      = $wpdb->prefix . 'e20r_exercises';
         $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
+        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignment';
+        $this->tables->questions     = $wpdb->prefix . 'e20r_question';
+
 
         if ( ( $this->inBeta ) ) {
 
@@ -63,6 +68,16 @@ class e20rTables {
         }
     }
 
+    // TODO: Implement this as a custome post type.
+    private function loadAssignmentFields() {
+
+    }
+
+    // TODO: Implement this as a custom post type.
+    private function loadQuestionFields() {
+
+    }
+
     private function loadProgramFields() {
 
         $this->fields['programs'] = array(
@@ -72,7 +87,8 @@ class e20rTables {
             'description'       => 'description',
             'starttime'         => 'starttime',
             'endtime'           => 'endtime',
-            'member_id'         => 'member_id'
+            'member_id'         => 'member_id',
+            'belongs_to'        => 'belongs_to'
         );
     }
 
@@ -96,7 +112,10 @@ class e20rTables {
                 'girth_calf'            => 'calf',
                 'girth'                 => 'girth',
                 'behaviorprogress'      => 'behaviorprogress',
-                'essay1'                =>  'essay1'
+                'essay1'                => 'essay1',
+                'front_image'           => 'front_image',
+                'side_image'            => 'side_image',
+                'back_image'            => 'back_image',
             );
         }
         else {
@@ -117,7 +136,10 @@ class e20rTables {
                 'girth_calf' => 'calfCM',
                 'girth' => 'totalGrithCM',
                 'behaviorprogress' => 'behaviorprogress',
-                'essay1' => 'essay1'
+                'essay1' => 'essay1',
+                'front_image'           => 'front_image',
+                'side_image'            => 'side_image',
+                'back_image'            => 'back_image',
             );
         }
     }

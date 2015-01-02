@@ -18,7 +18,7 @@ class e20rClientModel {
 
     public function e20rClientModel( $user_id = null ) {
 
-        global $current_user, $wpdb, $e20rTracker;
+        global $current_user, $wpdb, $e20rTables;
 
         if ( ( $user_id == 0 ) && ( $current_user->ID !== 0 ) ) {
 
@@ -28,21 +28,26 @@ class e20rClientModel {
         $this->id = $user_id;
 
         try {
-            $this->table = $e20rTracker->tables->getTable( 'client_info' );
+            $this->table = $e20rTables->getTable( 'client_info' );
         }
         catch ( Exception $e ) {
-            dbg("Error loading client_info table: " . $e->getMessage() );
+            dbg("e20rClientModel::load() - Error loading client_info table: " . $e->getMessage() );
         }
+    }
+
+    public function setUser( $id ) {
+
+        $this->id = $id;
     }
 
     public function load() {
 
         try {
-            dbg("load() - Loading clientInfo for user {$this->id}");
+            dbg("e20rClientModel::load() - Loading clientInfo for user {$this->id}");
 
             if ( false === ( $this->info = get_transient( "e20r_client_info_{$this->id}" ) ) ) {
 
-                dbg("Loading client information for {$this->id} from the database");
+                dbg("e20rClientModel::load() - Loading client information for {$this->id} from the database");
 
                 // Not stored yet, so grab the data from the DB and store it.
                 $this->info = $this->loadInfo();
@@ -50,21 +55,23 @@ class e20rClientModel {
             }
 
             if ( empty( $this->info ) ) {
-                dbg("No Client information in the database for {$this->id}");
+                dbg("e20rClientModel::load() - No Client information in the database for {$this->id}");
             }
 
-            dbg("Client info loaded: " . print_r( $this->info, true ) );
+            dbg("e20rClientModel::load() - Client info loaded: " . print_r( $this->info, true ) );
 
         } catch ( Exception $e ) {
 
-            dbg( "Error loading user information for {$this->id}: " . $e->getMessage() );
+            dbg( "e20rClientModel::load() - Error loading user information for {$this->id}: " . $e->getMessage() );
         }
 
     }
 
     private function loadInfo() {
 
-        global $wpdb, $current_user;
+        global $wpdb;
+
+        dbg("e20rClientModel::loadInfo() - Client ID is: {$this->id}");
 
         $sql = $wpdb->prepare( "
                     SELECT *
@@ -78,13 +85,16 @@ class e20rClientModel {
         $data = $wpdb->get_row( $sql );
 
         if ( empty ($data) ) {
-            dbg("No client data found in DB");
+
+            dbg("e20rClientmodel::loadInfo() - No client data found in DB");
+
             $data = new stdClass();
             $data->lengthunits = 'in';
             $data->weightunits = 'lbs';
-            $data->gender = 'F';
-            $data->incomplete_interview = true;
-            $data->user_id = $current_user->ID;
+            $data->gender = 'M';
+            $data->incomplete_interview = true; // Will redirect the user to the interview page.
+            $data->progress_photo_dir = "e20r_pics/client_{$this->id}";
+            $data->user_id = $this->id;
         }
 
         if (isset($data->user_enc_key) ) {
@@ -105,9 +115,9 @@ class e20rClientModel {
 
     private function load_appointments() {
 
-        global $current_user, $wpdb, $appointments, $e20rTracker;
+        global $current_user, $wpdb, $appointments, $e20rTracker, $e20rTables;
 
-        $appTable = $e20rTracker->tables->getTable('appointments');
+        $appTable = $e20rTables->getTable('appointments');
 
         if ( empty( $appointments ) ) {
 
@@ -134,7 +144,7 @@ class e20rClientModel {
             $this->id
         );
 
-        $sql = $this->prepare_in( $sql, $statuses, '%s' );
+        $sql = $e20rTracker->prepare_in( $sql, $statuses, '%s' );
         // dbg("SQL for appointment list: " . print_r( $sql, true ) );
         $this->appointments = $wpdb->get_results( $sql, OBJECT);
     }
@@ -175,24 +185,105 @@ class e20rClientModel {
         return $this->info;
     }
 
+    public function saveUnitInfo( $lengthunit, $weightunit ) {
+
+        global $wpdb;
+
+        if ( $wpdb->update( $this->table,
+            array( 'lengthunits' => $lengthunit, 'weightunits' => $weightunit ),
+            array( 'user_id' => $this->id ), array( '%d' ) ) === false ) {
+
+            dbg("e20rClientModel::saveUnitInfo() - Error updating unit info");
+            throw new Exception("Error updating weight/length units: " . $wpdb->print_error() );
+        }
+
+        delete_transient("e20r_client_info_{$this->id}");
+
+        return true;
+    }
+
+    /**
+     * Configure the weight & length unit settings for the current user
+     *
+     * Generates an array:
+     *
+     * array( 'weightunits' => array(
+     *                          'key' => 'lbs',
+     *                          'desc' => 'pounds (lbs)',
+     *                       ),
+     *        'lengthunits' => array(
+     *                          'key' => 'in',
+     *                          'desc' => 'inches (in)',
+     *                       ),
+     *          'default' => 'lbs',
+     *          '
+     *
+     *
+     * @param stdClass $client_data -- The client data from the database (object)
+     */
+    private function setUnitType( $client_data = null ) {
+
+        if ( empty ( $this->unit_type ) ) {
+            $this->unit_type = array();
+        }
+
+        if ( $client_data != null ) {
+
+            $this->unit_type['weightunits'] = $client_data->weightunits;
+            $this->unit_type['lengthunits'] = $client_data->lengthunits;
+
+        }
+        else {
+
+            global $wpdb;
+
+            if ( $this->id != 0 ){
+                $sql = $wpdb->prepare( "
+                    SELECT weightunits, lengthunits
+                    FROM {$wpdb->prefix}e20r_client_info
+                    WHERE user_id = %d
+                    LIMIT 1
+                    ",
+                    $this->id
+                );
+
+                $res = $wpdb->get_row( $sql );
+
+                if ( ! empty( $res ) ) {
+                    $this->unit_type['weightunits'] = $res->weightunits;
+                    $this->unit_type['lengthunits'] = $res->lengthunits;
+                }
+                else {
+                    $this->unit_type['weightunits'] = null;
+                    $this->unit_type['lengthunits'] = null;
+                }
+            }
+
+        }
+    }
+
     public function getMeasurements() {
 
-        try {
-            dbg("load() - Loading measurements for user {$this->id}");
+        if ( $this->measurements == null ) {
 
-            $tmp = new e20rMeasurements( $this->id );
-            $this->measurements = $tmp->getMeasurement('all');
+            try {
+                dbg( "load() - Loading measurements for user {$this->id}" );
 
-            if ( empty($this->measurements) ) {
-                dbg("No measurements in the database for {$this->id}");
+                $tmp                = new e20rMeasurements( $this->id );
+                $this->measurements = $tmp->getMeasurement( 'all' );
+
+                if ( empty( $this->measurements ) ) {
+                    dbg( "No measurements in the database for {$this->id}" );
+                }
+            } catch ( Exception $e ) {
+
+                dbg( "Error loading measurements for {$this->id}: " . $e->getMessage() );
             }
         }
-        catch ( Exception $e ) {
 
-            dbg("Error loading measurements for {$this->id}: " . $e->getMessage() );
-        }
 
         return $this->measurements;
+
     }
 
     public function getAppointments() {
@@ -202,5 +293,80 @@ class e20rClientModel {
         }
 
         return $this->appointments;
+    }
+
+    public function getUserList( $level = '' ) {
+
+        global $wpdb, $e20rTracker;
+
+        if ( ! empty($level) ) {
+            $this->load_levels( $level );
+        }
+
+        $levels = $this->get_level_ids();
+
+        dbg("Levels being loaded: " . print_r( $levels, true ) );
+
+        if ( ! empty($levels) ) {
+            $sql = "
+                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
+                    FROM {$wpdb->users} AS u
+                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
+                        ON ( u.ID = m.user_id )
+                        INNER JOIN {$wpdb->usermeta} AS um
+                        ON ( u.ID = um.user_id )
+                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
+                    ORDER BY last_name ASC
+            ";
+        }
+        else {
+            $sql = "
+                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
+                    FROM {$wpdb->users} AS u
+                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
+                        ON ( u.ID = m.user_id )
+                        INNER JOIN {$wpdb->usermeta} AS um
+                        ON ( u.ID = um.user_id )
+                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' )
+                    ORDER BY last_name ASC
+            ";
+        }
+        $sql = $e20rTracker->prepare_in( $sql, $levels );
+
+        dbg("SQL for user list: " . print_r( $sql, true));
+
+        $user_list = $wpdb->get_results( $sql, OBJECT );
+
+        if (! empty( $user_list ) ) {
+            return $user_list;
+        }
+        else {
+            $data = new stdClass();
+            $data->id = 0;
+            $data->name = 'No users found';
+
+            return array( $data );
+        }
+    }
+
+    public function getLevelList( $onlyVisible = false ) {
+
+        $allLevels = pmpro_getAllLevels();
+        $levels = array();
+
+        foreach ($allLevels as $level ) {
+
+            $visible = ( $level->allow_signups == 1 ? true : false );
+
+            if ( ( ! $onlyVisible) || ( $visible && $onlyVisible )) {
+                $levels[ $level->id ] = $level->name;
+            }
+        }
+
+        asort( $levels );
+
+        // dbg("Levels fetched: " . print_r( $levels, true ) );
+
+        return $levels;
     }
 } 

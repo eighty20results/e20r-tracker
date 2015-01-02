@@ -2,10 +2,6 @@
 
 class e20rClientViews {
 
-    public $old_tables;
-    public $tables;
-
-    private $levels = array(); // Empty array
     protected $client_id;
 
     function e20rClientViews( $id = null ) {
@@ -16,19 +12,8 @@ class e20rClientViews {
             $this->client_id = $id;
         }
 
-        // BAD! and incorrect.
-        $tmp = new e20rTracker();
-
-        $this->tables = $tmp->tables;
-
 
     }
-
-    public function init() {
-
-        $this->load_levels();
-    }
-
 
     public function raise_error( $type ) {
 
@@ -76,31 +61,6 @@ class e20rClientViews {
 
     }
 
-    private function prepare_in( $sql, $values, $type = '%d' ) {
-
-        global $wpdb;
-
-        $not_in_count = substr_count( $sql, '[IN]' );
-
-        if ( $not_in_count > 0 ) {
-
-            $args = array( str_replace( '[IN]',
-                        implode( ', ', array_fill( 0, count( $values ), ( $type == '%d' ? '%d' : '%s' ) ) ),
-                        str_replace( '%', '%%', $sql ) ) );
-
-            for ( $i = 0; $i < substr_count( $sql, '[IN]' ); $i++ ) {
-                $args = array_merge( $args, $values );
-            }
-
-            $sql = call_user_func_array(
-                    array( $wpdb, 'prepare' ),
-                    array_merge( $args ) );
-
-        }
-
-        return $sql;
-    }
-
     public function viewLevelSelect() {
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
@@ -121,7 +81,7 @@ class e20rClientViews {
                             <option value="0" selected="selected">All levels</option>
                         <?php
 
-                        $level_list = $this->fetch_levelList( false );
+                        $level_list = $GLOBALS['e20rClient']->data->getLevelList( false );
 
                         foreach( $level_list as $key => $name ) {
                             ?><option value="<?php echo esc_attr( $key ); ?>"  ><?php echo esc_attr( $name ); ?></option><?php
@@ -141,7 +101,7 @@ class e20rClientViews {
         return $html;
     }
 
-    public function viewMemberSelect( $levelId = '' ) {
+    public function viewMemberSelect( $model, $levelId = '' ) {
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
@@ -157,7 +117,8 @@ class e20rClientViews {
                         <label for="e20r_tracker_client">Select client to view data for:</label>
                         <select name="e20r_tracker_client" id="e20r_tracker_client">
                         <?php
-                        $user_list = $this->fetch_userList( $levelId );
+
+                        $user_list = $model->getUserList( $levelId );
 
                         foreach ( $user_list as $user ) {
 
@@ -175,82 +136,6 @@ class e20rClientViews {
         $html = ob_get_clean();
 
         return $html;
-    }
-
-    public function fetch_levelList( $onlyVisible = false ) {
-
-        $allLevels = pmpro_getAllLevels();
-        $levels = array();
-
-        foreach ($allLevels as $level ) {
-
-            $visible = ( $level->allow_signups == 1 ? true : false );
-
-            if ( ( ! $onlyVisible) || ( $visible && $onlyVisible )) {
-                $levels[ $level->id ] = $level->name;
-            }
-        }
-
-        asort( $levels );
-
-        // dbg("Levels fetched: " . print_r( $levels, true ) );
-
-        return $levels;
-    }
-
-    public function fetch_userList( $level = '' ) {
-
-        global $wpdb;
-
-        if ( ! empty($level) ) {
-            $this->load_levels( $level );
-        }
-
-        $levels = $this->get_level_ids();
-
-        dbg("Levels being loaded: " . print_r( $levels, true ) );
-
-        if ( ! empty($levels) ) {
-            $sql = "
-                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
-                    FROM {$wpdb->users} AS u
-                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
-                        ON ( u.ID = m.user_id )
-                        INNER JOIN {$wpdb->usermeta} AS um
-                        ON ( u.ID = um.user_id )
-                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' AND m.membership_id IN ( [IN] ) )
-                    ORDER BY last_name ASC
-            ";
-        }
-        else {
-            $sql = "
-                    SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name
-                    FROM {$wpdb->users} AS u
-                      INNER JOIN {$wpdb->pmpro_memberships_users} AS m
-                        ON ( u.ID = m.user_id )
-                        INNER JOIN {$wpdb->usermeta} AS um
-                        ON ( u.ID = um.user_id )
-                    WHERE ( um.meta_key = 'last_name' ) AND ( m.status = 'active' )
-                    ORDER BY last_name ASC
-            ";
-        }
-        $sql = $this->prepare_in( $sql, $levels );
-
-        dbg("SQL for user list: " . print_r( $sql, true));
-
-        $user_list = $wpdb->get_results( $sql, OBJECT );
-
-        if (! empty( $user_list ) ) {
-            return $user_list;
-        }
-        else {
-            $data = new stdClass();
-            $data->id = 0;
-            $data->name = 'No users found';
-
-            return array( $data );
-        }
-
     }
 
     /* TODO: Create the client pages for the menu */

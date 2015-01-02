@@ -8,53 +8,127 @@
 
 class e20rClient {
 
-    private $id = null;
+    private $id;
+    public $client_loaded = false;
 
     public $show = null; // Views
-    public $data = null; // Client Model
-    private $measurements = null; // Measurements class
-    private $current_programs = array();
+    public $actionsLoaded = false;
+    public $scriptsLoaded = false;
 
-    private $lw_measurement;
+    public $data = null; // Client Model
+
+    private $program = null; // The Program class for the user
+
+    private $current_programs = array();
+    private $current_article = null;
 
     private $assignments = null;
+    public $checkin;
+
+    private $lengthunit = "in";
+    private $weightunit = "lbs";
 
     public function e20rClient( $user_id = null ) {
 
-        if (! $user_id ) {
+        if ( ! isset( $user_id ) ) {
+            dbg('e20rClient::constructor() - No user ID specified');
+
             global $current_user;
 
-            if ( isset( $current_user->ID) ) {
-                $this->id = $current_user->ID;
+            if ( isset( $current_user->ID ) ) {
+                dbg("e20rClient::constructor() - Using ID {$current_user->id}");
+                $user_id = $current_user->ID;
             }
         }
-        else {
-            $this->id = $user_id;
-        }
-        dbg("e20rClient::constructor() - Loading shortcode hook for measurements");
-        add_shortcode( 'track_measurements', array( &$this, 'shortcode_editProgress' ) );
+
+        $this->id = $user_id;
     }
 
     public function init() {
 
-        dbg('Running INIT for Client Controller');
+        global $e20rTracker, $e20rMeasurements, $e20rArticle, $e20rProgram;
 
-        if ( $this->id  == null ) {
-            global $current_user;
+        dbg('e20rClient::init() - Running INIT for Client Controller');
+        dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
-            if ( $current_user->ID != 0 ) {
-                dbg("User ID: " . $current_user->ID );
-                $this->id = $current_user->ID;
+        if ( $this->id != null ) {
+
+            $this->loadClient( $this->id );
+
+            if ( ! isset( $e20rMeasurements ) ) {
+                $e20rMeasurements = new e20rMeasurements( $this->id );
             }
+
+            if ( ! isset( $e20rArticle ) ) {
+                $e20rArticle = new e20rArticle();
+            }
+
+            if ( ! isset( $this->checkin ) ) {
+                $this->checkin = new e20rCheckin( $this->id );
+            }
+        }
+
+        $this->loadClient();
+        $this->client_loaded = true;
+    }
+
+    public function isNourishClient( $user_id = 0 ) {
+
+        if ( ( ! $this->id ) && ( $user_id != 0 ) ) {
+            $this->id = $user_id;
+        }
+
+        dbg("e20rClient::isNourishClient() - is user with id {$this->id} a nourish client?");
+
+        $nourish_levels = array( 16, 21, 22, 23, 18 );
+
+        if ( pmpro_hasMembershipLevel( $nourish_levels, $this->id ) ) {
+            dbg("e20rClient::isNourishClient() - user with id {$this->id} is a nourish client");
+            return true;
+        }
+
+        return false;
+    }
+
+    public function clientId() {
+        return $this->id;
+    }
+
+    public function getLengthUnit() {
+        dbg("e20rClient::getLengthUnit() - Returning the current setting for the length unit: {$this->data->info->lengthunits}");
+        return $this->data->info->lengthunits;
+    }
+
+    public function getWeightUnit() {
+        dbg("e20rClient::getWeightUnit() - Returning the current setting for the weight unit: {$this->data->info->weightunits}");
+        return $this->data->info->weightunits;
+    }
+
+    public function loadClient( $id = null ) {
+
+        if ( $id ) {
+            $this->id = $id;
         }
 
         if ( ! class_exists( 'e20rClientModel' ) ) {
             include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
         }
 
-        try {
-
+        if ( ! isset( $this->data->info->id ) ) {
+            dbg("e20rClient::loadClient() - Instantiate the client model");
             $this->data = new e20rClientModel( $this->id );
+        }
+
+        $this->loadClientInfo( $this->id );
+
+    }
+
+    public function loadClientInfo( $user_id ) {
+
+        $this->id = $user_id;
+        $this->program = get_user_meta( $this->id, 'e20r_tracker_programId', true );
+
+        try {
 
             dbg("Loading data for client model");
             $this->data->load();
@@ -63,45 +137,83 @@ class e20rClient {
             dbg("Error loading user data: " . $e->getMessage() );
         }
 
-        if ( $this->id !== null ) {
-
-            add_action( 'wp_print_scripts', array( &$this, 'load_scripts' ) );
-
-            // add_action( 'wp_ajax_checkCompletion', array(  &$this, 'ajax_checkMeasurementCompletion' ) );
-
-        }
-    }
-
-    public function load_hooks() {
-
-        dbg("e20rClient() - Loading hooks for Client data");
-        add_action( 'wp_ajax_updateUnitTypes', array( &$this, 'updateUnitTypes') );
-
-        add_action( 'wp_ajax_e20r_clientDetail', array( &$this, 'ajax_clientDetail' ) );
-        add_action( 'wp_ajax_e20r_complianceData', array( &$this, 'ajax_complianceData' ) );
-        add_action( 'wp_ajax_e20r_assignmentData', array( &$this, 'ajax_assignmentData' ) );
-
-        // Used by the wp-admin backend for the Coaches
-        add_action( 'wp_ajax_get_memberlistForLevel', array( &$this, 'ajax_getMemberlistForLevel' ) );
-
-        dbg("e20rClient::load_hooks() - Loading client view hooks");
-        add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$this, 'ajax_getMeasurementDataForUser' ) );
-        add_action( 'wp_ajax_e20r_userinfo', array( &$this, 'ajax_userInfo_callback' ) );
-
-        add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
-
     }
 
     public function updateUnitTypes() {
 
-        dbg( "updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
-        dbg("POST content: " . print_r($_POST, true));
+
+        dbg( "e20rClient::updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
+
+        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
+
+        dbg("e20rClient::updateUnitTypes() - POST content: " . print_r($_POST, true));
+
+        global $current_user, $e20rMeasurements;
+
+        $user_id = isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID;
+        $dimension = isset( $_POST['dimension'] ) ? sanitize_text_field( $_POST['dimension'] ) : null;
+        $value = isset( $_POST['value'] ) ? sanitize_text_field( $_POST['value'] ) : null;
+
+        $userObj = new WP_User( $user_id );
+
+        $e20rMeasurements->setClient( $user_id );
+
+        $this->id = $user_id;
+
+        try {
+            if ( ! isset( $this->data ) ) {
+                $this->loadClientInfo( $userObj->get( 'user_login' ), $user_id );
+            };
+        }
+        catch ( Exception $e ) {
+
+            dbg("e20rClient::updateUnitTypes() - Error loading client info");
+            wp_send_json_error( "Error loading data: " . $e->getMessage() );
+            wp_die();
+        }
+
+        // Update the data for this user in the measurements table.
+        try {
+
+            $e20rMeasurements->updateMeasurementsForType( $dimension, $value );
+        }
+        catch ( Exception $e ) {
+            dbg("e20rClient::updateUnitTypes() - Error updating measurements for new measurement type(s)");
+            wp_send_json_error( "Error updating existing data: " . $e->getMessage() );
+            wp_die();
+        }
 
         // Save the actual setting for the current user
 
-        // Update the data for this user in the measurements table.
+        if ( $dimension == 'weight' ) {
+            $this->weightunit = $value;
+        }
+
+        if ( $dimension == 'length' ) {
+            $this->lengthunit = $value;
+        }
+
+        // Update the settings for the user
+        try {
+            $this->data->saveUnitInfo( $this->lengthunit, $this->weightunit );
+        }
+        catch ( Exception $e ) {
+            dbg("e20rClient::updateUnitTypes() - Error updating measurement unit for {$dimension}");
+            wp_send_json_error( "Unable to save new {$dimension} type " );
+            wp_die();
+        }
+
+        dbg("e20rClient::updateUnitTypes() - Unit type updated");
+        wp_send_json_success( "All data updated ");
+        wp_die();
     }
 
+    public function after_gf_submission( $entry, $form ) {
+
+        dbg("gf_after_submission - entry: ". print_r( $entry, true));
+        dbg("gf_after_submission - form: ". print_r( $form, true));
+    }
+/*
     public function ajax_userInfo_callback() {
 
         dbg("ajax_userInfo_Callback() - Checking access");
@@ -132,7 +244,7 @@ class e20rClient {
             dbg("Error loading and returning user data: " . $e->getMessage() );
         }
     }
-
+*/
     public function initClientViews() {
 
         if ( ! class_exists( 'e20rClientViews' ) ) {
@@ -147,198 +259,7 @@ class e20rClient {
 
     }
 
-    public function shortcode_editProgress( $attributes ) {
-
-        global $e20r_plot_jscript, $current_user, $post;
-        $e20r_plot_jscript = true;
-
-        $day = 0;
-        $from_programstart = 1;
-
-        extract( shortcode_atts( array(
-            'day' => 0,
-            'from_programstart' => 1,
-        ), $attributes ) );
-
-        if ( $current_user->ID == 0 ) {
-            dbg("User Isn't logged in! Redirect immediately");
-            auth_redirect();
-        }
-
-        // TODO: Does user have permission...?
-        try {
-
-            global $current_user, $e20rArticle;
-
-            if ( $e20rArticle === null ) {
-                $e20rArticle = new e20rArticle( $post->ID );
-            }
-
-            $when = $this->getWeeklyUpdateSettings( $e20rArticle->getID(), $from_programstart, $day );
-
-            dbg("shortcode: Loading the e20rClient class()");
-            $this->init();
-
-            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-
-                dbg("shortcode: Loading model class for measurements: " . E20R_PLUGIN_DIR );
-
-                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                    wp_die( "Unable to load e20rMeasurementModel class" );
-                }
-                dbg("shortcode: Model Class loaded");
-            }
-
-            if ( empty( $this->measurements ) ) {
-                dbg("shortcode: Loading measurement class");
-                $this->measurements = new e20rMeasurements( $this->id, $when );
-                $this->measurements->init();
-            }
-
-//            dbg("shortcode: Attempting to load data for {$when}");
-//            $this->measurements->getMeasurement( $when );
-
-
-            dbg("shortcode: Loading progress form for {$when} by {$this->id}");
-            return $this->measurements->view_EditProgress( $when, $this->data->getInfo() );
-
-            dbg('Shortcode: Form load completed...');
-        }
-        catch ( Exception $e ) {
-            dbg("Error displaying measurement form (shortcode): " . $e->getMessage() );
-        }
-    }
-
-    private function getWeeklyUpdateSettings( $articleId = null, $from_programstart = 1, $day = 0 ) {
-
-        global $post, $e20rTracker, $e20rArticle;
-
-        if ($articleId === null ) {
-
-            global $post;
-            $articleId = $post->ID;
-        }
-
-        if ( $e20rArticle == null ) {
-            dbg("e20rClient::getWeeklyUpdateSettings() - WARNING: Loading e20rArticle global here. Should have done that on plugin load!");
-            $e20rArticle = new e20rArticle( null, $post->ID );
-            $e20rArticle->init();
-        }
-        // $article = new e20rArticle( $articleId );
-        $meta = $e20rArticle->getMeta();
-
-        if ( $meta->is_measurement_day == 1 ) {
-            dbg("e20rClient::getWeeklyUpdateSettings() -- Measurement date!");
-            $dates = $e20rTracker->datesForMeasurements( $meta->release_date, '-1 week', CONST_MEASUREMENTDAY );
-
-            if ( is_array($dates ) ) {
-                $date = $dates[0];
-            }
-
-            $when = $date;
-        }
-
-        /*
-        if ( ( $from_programstart === 0 ) && ( $day !== 0 ) ) {
-
-        }
-        elseif ( ( $from_programstart === 0 ) ) {
-
-        }
-        else {
-            $when = null;
-        }
-    */
-        return $when;
-    }
-
-    private function getSaturday( $program_day ) {
-
-    }
-
-    /*
-    private function getMeasurement( $when, $forJS ) {
-
-        if ( empty( $this->data ) ) {
-            dbg("getMeasurement() - Loading data on behalf of the e20rClient class...");
-            $this->init();
-        }
-
-        if ( $this->{$when} == 'empty' ) {
-            dbg("There are no measurements for {$when}");
-            return null;
-        }
-
-        dbg("getMeasurement() - When value: {$when}");
-
-        if ( empty( $this->{$when}->id ) ) {
-
-            dbg("getMeasurement() - Loading {$when} measurements from DB");
-            $this->{$when} = $this->data->measurements->getMeasurement( $when, $forJS );
-
-            if ( empty( $this->{$when}->id ) ) {
-                $this->{$when} = 'empty';
-            }
-        }
-
-        dbg("getMeasurement() - Data for client measurements - {$when}: " . print_r( $this->{$when}, true ));
-        return $this->{$when};
-    }
-*/
-    public function load_scripts() {
-
-        if ( $this->id == null ) {
-            return;
-        }
-
-        dbg("e20rClient_load_scripts() - user id: {$this->id}");
-
-        if ( empty( $this->data ) ) {
-            $this->init();
-        }
-
-        if ( empty( $this->lw_measurement ) ) {
-            $this->lw_measurement = $this->measurements->getMeasurement( 'last_week', true );
-        }
-
-        $userData = $this->data->info;
-
-        if ( $userData->incomplete_interview ) {
-            dbg("No USER DATA found in the database. Redirect to User interview page!");
-        }
-
-        dbg("User Data: " . print_r( $userData, true ));
-
-        /* Load user specific settings */
-        wp_localize_script('e20r-progress-js', 'e20r_progress',
-            array(
-                'ajaxurl' => admin_url('admin-ajax.php'),
-                'settings' => array(
-                    'article_id' => $this->getArticleID(),
-                    'lengthunit' => $userData->lengthunittype,
-                    'weightunit' => $userData->weightunittype,
-                    'imagepath' => E20R_PLUGINS_URL . '/images/',
-                    'overrideDiff' => (isset( $this->lw_measurement->id ) ? false : true )
-                ),
-                'measurements' => array(
-                    'last_week' => json_encode( $this->lw_measurement, JSON_NUMERIC_CHECK ),
-                    // 'last_week' => json_encode( $this->measurements->getMeasurement( 'current', true ), JSON_NUMERIC_CHECK ),
-                ),
-                'user_info' => array(
-                    'userdata' => json_encode( $userData, JSON_NUMERIC_CHECK ),
-                    'progress_pictures' => '',
-                    'display_birthdate' => ( empty( $userData->birthdate ) ? false : true),
-
-                ),
-            )
-        );
-
-//        wp_enqueue_script('e20r_progress_js');
-//        wp_enqueue_script('e20r_progress_libs');
-        dbg("load_scripts() - Javascript for Progress Report loaded");
-    }
-
-    private function getArticleID() {
+    public function getArticleID() {
 
         global $post;
 
@@ -425,53 +346,6 @@ class e20rClient {
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
-    }
-
-    function ajax_getMeasurementDataForUser() {
-
-        dbg('measurementData() - Requesting measurement data');
-
-        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
-
-        dbg("measurementData() - Nonce is OK");
-
-        $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
-
-        if ( $this->validateClientAccess( $clientId ) ) {
-            $this->client_id = $clientId;
-        }
-        else {
-            dbg( "measurementData() - Logged in user ID does not have access to the data for user ${clientId}" );
-            wp_send_json_error( 'You do not have permission to access the data you requested.' );
-        }
-
-        dbg("measurementData() - Loading client data");
-        $client = new e20rClient( $this->client_id );
-
-        if ( ! isset( $client->data->measurements->id ) ) {
-            $client->init();
-        }
-
-        // $measurements = $this->fetchMeasurements( $this->client_id );
-        dbg("measurementData() - Using measurement data & configure dimensions");
-        $measurements = $client->data->measurements;
-        $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
-
-        // $measurements = $this->load_measurements( $clientId );
-        /*
-        $mClass = new e20rMeasurements( $this->client_id );
-        $mClass->init();
-
-        $measurements = $mClass->getMeasurements();
-        */
-        $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
-
-        $weight = $this->generate_plot_data( $measurements, 'weight' );
-        $girth = $this->generate_plot_data( $measurements, 'girth' );
-
-        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
-        echo $data;
-        exit;
     }
 
     private function validateClientAccess( $clientId ) {
