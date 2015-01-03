@@ -134,13 +134,16 @@ if ( ! class_exists( 'e20rTracker' ) ):
     try {
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTrackerModel.php");
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rTracker.php");
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rClient.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rProgramModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rProgram.php" );
