@@ -26,7 +26,7 @@ class e20rTables {
     }
 
 
-    public function init() {
+    public function init( $user_id = null ) {
 
         if ( ! function_exists( 'get_user_by' ) ) {
             dbg("e20rTables::init() - Wordpress not fully loaded yet...");
@@ -36,7 +36,7 @@ class e20rTables {
         dbg("e20rTables::constructor() - Initializing the e20rTables() class");
         global $wpdb, $current_user;
 
-        $this->inBeta = in_betagroup( $current_user->ID );
+        $this->inBeta = in_betagroup( $user_id );
 
         $this->tables = new stdClass();
 
@@ -76,6 +76,16 @@ class e20rTables {
     // TODO: Implement this as a custom post type.
     private function loadQuestionFields() {
 
+    }
+
+    /**
+     * Returns status for membership in the Nourish Beta group.
+     *
+     * @return bool -- True if the user is a member of the Nourish Beta group
+     */
+    public function isBetaClient() {
+
+        return $this->inBeta;
     }
 
     private function loadProgramFields() {
