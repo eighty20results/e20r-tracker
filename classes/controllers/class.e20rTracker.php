@@ -1424,7 +1424,8 @@ class e20rTracker {
 
                 dbg("e20rTracker::getLevelList() - Requested ID: {$level}");
                 $tmp = pmpro_getLevel( $level );
-                $level = $tmp->name;
+                $name = $tmp->name;
+                dbg("e20rTracker::getLevelList() - Level Name: {$name}");
             }
 
             $allLevels = pmpro_getAllLevels();
