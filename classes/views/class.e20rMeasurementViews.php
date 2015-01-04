@@ -513,7 +513,7 @@ class e20rMeasurementViews {
     public function viewTableOfMeasurements( $clientId, $measurements, $dimensions = null, $tabbed = true ) {
         // TESTING: using $clientId = 12;
         // $clientId = 12;
-        global $e20rClient, $current_user;
+        global $e20rTables, $e20rClient, $current_user;
 
         if ( $dimensions === null ) {
 
@@ -544,9 +544,6 @@ class e20rMeasurementViews {
             // echo $reloadBtn;
 
             ?>
-            <div id="lbp-inline-href-1" style="padding: 10px; background: #fff">
-
-            </div>
             <!--[if IE]>
             <style type="text/css">
                 .box { display: block; }
@@ -597,7 +594,7 @@ class e20rMeasurementViews {
                 <h4>Measurements for <?php echo $user->first_name; ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav">
-                    <table id="e20r-measurement-table">
+                    <table class="e20r-measurement-table">
                         <thead>
                             <tr>
                                 <th></th>
@@ -663,16 +660,64 @@ class e20rMeasurementViews {
                                 <td class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
                             </tr>
                             <?php
-
-                            $counter ++;
-                        }
-
-                        ?>
+                                $counter ++;
+                            } ?>
                         </tbody>
                     </table>
                 </div>
             </div>
             <?php
+                if ( ! $e20rTables->isBetaClient() ) {
+                    ?>
+                    <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
+                    <div class="e20r-measurements-container">
+                        <h4>Other Progress Indicators</h4>
+                        <a class="close" href="#">X</a>
+                        <div class="quick-nav">
+                            <table class="e20r-measurement-table">
+                                <tbody>
+                                <?php
+                                    $counter = 0;
+
+                                    foreach ( $measurements as $key => $measurement ) { ?>
+
+                                    <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+                                        <td class="measurement-date">
+                                            <div class="date">
+                                                <!-- <span> -->
+                                                <?php
+                                                $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
+                                                $showLink = ( $clientId == $current_user->ID ? true : false);
+                                                if ( $showLink ) {
+                                                    ?>
+                                                    <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
+                                                        <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
+                                                    </a>
+                                                <?php
+                                                }
+                                                else {
+                                                    ?>
+                                                    <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
+                                                <?php
+                                                }
+                                                ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="other-progress-info">
+                                                <?php echo $measurement->essay1; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php
+                                    $counter ++;
+                                } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php
+            }
 
             $html = ob_get_clean();
         }
