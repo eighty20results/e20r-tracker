@@ -216,7 +216,6 @@ jQuery.noConflict();
                 $('body').addClass('browserIE' + $.browser.version.substring(0,1));
             }
 
-
             // Is this a version of Chrome?
             if($.browser.chrome){
 
@@ -267,8 +266,6 @@ jQuery.noConflict();
             if (navigator.platform.substr(0,3) == 'Win') {
                 $('body').addClass('platformWindows');
             }
-
-
         });
     })(jQuery);
 
@@ -717,6 +714,8 @@ jQuery(function() {
     });
 
 })(jQuery);
+
+
 /* TODO -- Progress animation or Badge??*/
 /*
 jQuery(function() {

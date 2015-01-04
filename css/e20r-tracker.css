@@ -860,6 +860,12 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     width: 0;
     z-index: 1;
 }
+.e20r-measurements-container span.photo {
+    display: block;
+    margin: 0 auto;
+    width: 38px;
+    height: 38px;
+}
 .e20r-measurements-container a.close {
     position: absolute;
     top: 5px;
@@ -876,6 +882,39 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     text-align: center;
     font-weight: bold;
     font-size: 14px;
+}
+div.photo-overlay {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    position: absolute;
+    bottom: 9px;
+    right: 10px;
+    background: white;
+    opacity: 0.8;
+    filter: alpha(opacity=70);
+    padding: 0 8px;
+    height: auto;
+    border: 1px solid #666666;
+    font-weight: bold;
+}
+div.photo-overlay > h3 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgba( 0, 76, 155, 0.8);
+}
+div.photo-overlay > h3 > .timeagosize {
+    font-size: 12px;
+    padding: 0 !important;
+    margin: 0px 0px 3px 0px;
+    /* line-height: 50%; */
+    color: rgba( 0, 76, 255, 0.6);
+}
+div.photo-overlay span.value {
+    font-weight: normal;
+}
+#TB_ajaxContent {
+    text-align: center;
 }
 .quick-nav {
     position: relative;

@@ -243,12 +243,22 @@ class e20rMeasurements {
                 $allData[$key]->{$fields['girth_calf']} =  ( is_null( $record->{$fields['girth_calf']} ) ? null : round( ( $record->{$fields['girth_calf']} * $convFactor ), 3 ) );
                 $allData[$key]->{$fields['girth']} =  ( is_null( $record->{$fields['girth']} ) ? null : round( ( $record->{$fields['girth']} * $convFactor ), 3 ) );
             }
+
+            // Save the updated record(s)
+            $this->model->saveRecord( $allData[$key], $allData[$key]->{$fields['user_id']}, $allData[$key]->{$fields['recorded_date']});
+
         }
 
         dbg("e20rMeasurements::updateMeasurementsForType() - Converted {$unitType}: " . print_r( $allData, true ) );
 
-        // TODO: Save the updated record(s)
-        $this->model->saveRecord( $allData[$key], $allData[$key]->{$fields['user_id']}, $allData[$key]->{$fields['recorded_date']});
+        try {
+            // Save the updated unit type.
+            $e20rClient->saveNewUnit( $unitType, $newUnit );
+        }
+        catch ( Exception $e ) {
+            dbg("e20rMeasurements::updateMeasurementsForType() - Unable to save {$unitType} unit designation: " . $e->getMessage() );
+            return false;
+        }
 
         dbg("e20rMeasurements::updateMeasurementsForType() - Done with conversion for {$unitType} units" );
         return true;
@@ -278,7 +288,7 @@ class e20rMeasurements {
 
     public function ajax_getPlotDataForUser() {
 
-        global $e20rClient, $e20rMeasurements;
+        global $e20rTables, $e20rClient, $e20rMeasurements;
 
         dbg('e20rMeasurements::ajax_getPlotDataForUser() - Requesting measurement data');
 
@@ -288,40 +298,86 @@ class e20rMeasurements {
 
         $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
 
-        if ( $this->validateClientAccess( $clientId ) ) {
-            $this->client_id = $clientId;
+        if ( $e20rClient->validateAccess( $clientId ) ) {
+            $this->id = $clientId;
         }
         else {
             dbg( "e20rMeasurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user ${clientId}" );
             wp_send_json_error( 'You do not have permission to access the data you requested.' );
+            wp_die();
         }
 
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data");
-        $e20rClient->loadClient( $this->client_id );
-        // $this->getMeasurement( 'all' );
+        $e20rTables->init( $this->id );
 
-        if ( ! isset( $this->model ) ) {
-            $e20rClient->init();
-        }
-
-        // $measurements = $this->fetchMeasurements( $this->client_id );
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
 
         $measurements = $this->getMeasurement('all');
 
+        if ( $this->view == null ) {
+            dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading Views() class");
+            $this->view = new e20rMeasurementViews();
+        }
+
         $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
 
-        // $measurements = $this->load_measurements( $clientId );
-        /*
-        $mClass = new e20rMeasurements( $this->client_id );
-        $mClass->init();
+        $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
 
-        $measurements = $mClass->getMeasurements();
-        */
-        $data = $this->viewTableOfMeasurements( $this->client_id, $measurements, $dimensions );
+        $weight = $this->generatePlotData( $measurements, 'weight' );
+        $girth = $this->generatePlotData( $measurements, 'girth' );
 
-        $weight = $this->generate_plot_data( $measurements, 'weight' );
-        $girth = $this->generate_plot_data( $measurements, 'girth' );
+        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
+        echo $data;
+        exit;
+    }
+
+    public function shortcode_progressOverview( $attributes ) {
+
+        global $e20r_plot_jscript, $current_user, $post, $e20rArticle, $e20rTracker, $e20rClient, $e20rTables;
+
+        dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
+
+        if ( $current_user->ID == 0 ) {
+            dbg("e20rMeasurements::shortcode_progressOverview() - User Isn't logged in! Redirect immediately");
+            auth_redirect();
+        }
+
+        $e20r_plot_jscript = true;
+
+        extract( shortcode_atts( array(
+            'day' => 0,
+            'from_programstart' => 1,
+            'use_article_id' => 1,
+        ), $attributes ) );
+
+        if ( $e20rClient->validateAccess( $current_user->ID ) ) {
+            $this->id = $current_user->ID;
+        }
+        else {
+            dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
+            return;
+        }
+
+        dbg("e20rMeasurements::shortcode_progressOverview() - Loading client data");
+        $e20rTables->init( $this->id );
+
+        dbg("e20rMeasurements::shortcode_progressOverview() - Using measurement data & configure dimensions");
+
+        $measurements = $this->getMeasurement('all');
+
+        if ( $this->view == null ) {
+            dbg("e20rMeasurements::shortcode_progressOverview() - Loading e20rMeasurementViews() class");
+            $this->view = new e20rMeasurementViews();
+        }
+
+        $dimensions = array( 'width' => '650', 'height' => '350', 'type' => 'px' );
+
+        $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
+        //
+        // TODO: Load $weight and $girth data for graph.
+        //
+        $weight = $this->generatePlotData( $measurements, 'weight' );
+        $girth = $this->generatePlotData( $measurements, 'girth' );
 
         $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
         echo $data;
@@ -336,17 +392,23 @@ class e20rMeasurements {
 
         $e20r_plot_jscript = true;
 
+        $dated = ( isset( $_GET['for'] ) ? sanitize_text_field( $_GET['for'] ) : null );
+
+        dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_GET, true ) );
+
         $day = 0;
         $from_programstart = 1;
         $use_article_id = 1;
-        $date = '';
 
         extract( shortcode_atts( array(
             'day' => 0,
             'from_programstart' => 1,
             'use_article_id' => 1,
-            'date' => ''
         ), $attributes ) );
+
+        if ( strtotime( $dated ) ) {
+            $date = $dated;
+        }
 
         if ( $current_user->ID == 0 ) {
             dbg("e20rMeasurements::shortcode_weeklyProgress() - User Isn't logged in! Redirect immediately");
@@ -388,7 +450,7 @@ class e20rMeasurements {
 */
 
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading measurement class");
-            $this->setMeasurementDate( $when );
+            // $this->setMeasurementDate( $when ); // TODO: Is this really necessary?
 
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$when}");
             $this->init( $this->id, $this->measurementDate );
@@ -595,6 +657,33 @@ class e20rMeasurements {
         // Using the startdate for the current user + whether the current delay falls on a Saturday (and it's a "Photo" day - every 4 weeks starting the 2nd week of the program )x
         // Return true.
         return false;
+    }
+
+    public function generatePlotData( $data, $variable ) {
+
+        global $e20rTables;
+
+        $fields = $e20rTables->getFields( 'measurements' );
+        $data_matrix = array();
+
+        foreach ( $data as $measurement ) {
+
+            if ( is_object( $measurement ) ) {
+
+                switch ( $variable ) {
+                    case 'weight':
+
+                        $data_matrix[] = array( ( strtotime( $measurement->recorded_date ) * 1000 ), number_format( (float) $measurement->weight, 2) );
+                        break;
+
+                    case 'girth':
+
+                        $data_matrix[] = array( ( strtotime( $measurement->recorded_date ) * 1000 ), number_format( (float) $measurement->girth, 2 ) );
+                        break;
+                }
+            }
+        }
+        return $data_matrix;
     }
 
     /***********************************************************

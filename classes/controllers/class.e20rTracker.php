@@ -8,11 +8,15 @@ class e20rTracker {
     protected $setting_name = 'e20r-tracker';
 
     public $tables;
+    private $model;
+
     public $managed_types = array( 'post', 'page');
 
     private $hooksLoaded = false;
 
     public function e20rTracker() {
+
+        $this->model = new e20rTrackerModel();
 
         // Set defaults (in case there are none saved already
         $this->settings = get_option( $this->setting_name, array(
@@ -52,7 +56,7 @@ class e20rTracker {
                 add_filter('upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir') );
             }
 
-            // add_action("gform_after_submission", array( &$e20rClient, "after_gf_submission" ), 10, 2);
+            // add_action("gform_after_submission", array( &$e20rClient, "afterGFSubmission" ), 10, 2);
             /* Control access to the media uploader for Nourish users */
             // add_action( 'parse_query', array( &$this, 'current_user_only' ) );
             add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
@@ -115,6 +119,7 @@ class e20rTracker {
             add_action( 'gform_after_submission', array( &$this, 'gravityform_submission' ), 10, 2);
 
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
+            add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
 
             unset($e20rProgram);
             dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
@@ -248,6 +253,7 @@ class e20rTracker {
 
         return $tabName;
     }
+
     public function gravityform_submission( $entries, $form ) {
 
         dbg("e20rTracker::gravityform_submission() - Entry: " . print_r( $entries, true));
@@ -317,7 +323,7 @@ class e20rTracker {
 
     public static function enqueue_admin_scripts() {
 
-        dbg("in enqueue_admin_scripts()");
+        dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
 
         if ( ! is_admin() ) {
             return;
@@ -325,11 +331,12 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $e20rTracker;
 
-        $e20rTracker->load_adminJS();
-        $e20rTracker->register_plotSW();
+
+        self::load_adminJS();
 
         $e20r_plot_jscript = true;
-        $e20rTracker->enqueue_plotSW();
+        self::register_plotSW();
+        self::enqueue_plotSW();
         $e20r_plot_jscript = false;
 
     }
@@ -378,7 +385,7 @@ class e20rTracker {
         /* Add fields for the settings */
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_measurement_day', __("When to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
+        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
         // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
@@ -488,10 +495,6 @@ class e20rTracker {
 */
     }
 
-    public function make_MeasurementCheckboxRow( $item ) {
-
-    }
-
     public function render_section_text() {
 
         $html = "<p>These settings will determine the behavior of the plugin during deactivation.</p>";
@@ -523,22 +526,20 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        // FIXME: clientData object may not be available here..?
-        $page = add_menu_page( 'S3F Clients', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$this->clientData, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        global $e20rClient, $e20rProgram, $e20rCheckin;
+
+        dbg("e20rTracker::registerAdminPages() - Loading client rendering page");
+        $page = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        add_submenu_page( 'e20r-tracker', __( 'Program','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$e20rProgram, 'render_submenu_page'));
+        add_submenu_page( 'e20r-tracker', __( 'Check-in Item','e20r_tracker'), __('Check-in Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$e20rCheckin, 'render_submenu_page'));
+        add_submenu_page( 'e20r-tracker', __( 'Client Data','e20r_tracker'), __( 'Client Data','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
+//        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$e20rArticle,'render_submenu_page') );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-
-//      add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
-        add_submenu_page( 'e20r-tracker', __( 'Programs','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$this->programInfo, 'render_submenu_page'));
-
-        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$this->articles,'render_submenu_page') );
-        add_submenu_page( 'e20r-tracker', __( 'Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$this->checkinData, 'render_submenu_page'));
+//        add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
 //        add_submenu_page( 'e20r-tracker', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), 'manage_options', "e20r-tracker-settings", array( &$this, 'registerSettingsPage'));
-
-        //add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
-
+//        add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
 //        add_submenu_page( 'e20r-tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
-
-        // add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
+//        add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
     }
 
     public function renderGirthTypesMetabox() {
@@ -686,19 +687,29 @@ class e20rTracker {
 
         if ( is_admin() && ( ! wp_script_is( 'e20r_tracker_admin', 'enqueued' ) ) ) {
 
+            global $e20r_plot_jscript;
+
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
 
-            wp_register_script('e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery'), '0.1', true);
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
+            wp_register_script('e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery'), '0.1', false); // true == in footer of body.
 
             /* Localize ajax script */
-            wp_localize_script('e20r_tracker_admin', 'e20r_tracker',
+            /*wp_localize_script('e20r_tracker_admin', 'e20r_tracker',
                 array(
                     'ajaxurl' => admin_url('admin-ajax.php'),
                 )
-            );
+            );*/
 
-            wp_enqueue_style("e20r_tracker_admin_css", E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
-            wp_enqueue_script('e20r_tracker_admin');
+            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
+
+            $e20r_plot_jscript = true;
+            self::enqueue_plotSW();
+            $e20r_plot_jscript = false;
+
+            wp_print_scripts( 'e20r-tracker-js' );
+            wp_print_scripts( 'e20r_tracker_admin' );
         }
     }
 
@@ -727,8 +738,9 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
 
-            wp_register_script( 'e20r-progress-libs', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', true );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', null, '0.1', true );
+            wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
             wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', true );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find client info");
@@ -768,7 +780,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading scripts in footer of page");
             wp_enqueue_media();
-            wp_print_scripts( 'e20r-progress-libs' );
+            wp_print_scripts( 'e20r-jquery-json' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-js' );
 
@@ -824,7 +836,7 @@ class e20rTracker {
 
             dbg("e20rTracker::enqueue_frontend_css() - Need to load CSS for e20rTracker.");
             wp_deregister_style("e20r-tracker");
-            wp_enqueue_style("e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
         }
 
     }
@@ -838,7 +850,7 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $post;
 
-        if ( has_shortcode( $post->post_content, 'user_progress_info' ) || $e20r_plot_jscript ) {
+        if ( $e20r_plot_jscript || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
@@ -881,7 +893,7 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $post;
 
-        if ( has_shortcode( $post->post_content, 'user_progress_info' ) || $e20r_plot_jscript ) {
+        if ( $e20r_plot_jscript || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 
             dbg("e20rTracker::enqueue_plotSW() -- Loading javascript for graph generation");
             wp_print_scripts('jqplot');
@@ -1257,6 +1269,7 @@ class e20rTracker {
                    'supports' => array('title', 'excerpt', 'custom-fields','author'),
                    'can_export' => true,
                    'show_in_nav_menus' => true,
+                   'show_in_menu' => 'e20r-tracker',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-article-cpt-slug', 'tracker-articles'),
                        'with_front' => false
@@ -1298,6 +1311,7 @@ class e20rTracker {
                    'supports' => array('title','editor','excerpt','thumbnail','custom-fields','author'),
                    'can_export' => true,
                    'show_in_nav_menus' => true,
+                   'show_in_menu' => 'e20r-tracker',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
                        'with_front' => false
@@ -1389,5 +1403,59 @@ class e20rTracker {
         }
 
         return $sql;
+    }
+
+    public function getUserList( $level = null ) {
+
+        $levels = array_keys( $this->getMembershipLevels( $level, false ) );
+
+        dbg("e20rTracker::getUserList() - Users being loaded for the following level(s): " . print_r( $levels, true ) );
+
+        return $this->model->loadUsers( $levels );
+    }
+
+    public function getMembershipLevels( $level = null, $onlyVisible = false ) {
+
+        if ( ! function_exists( 'pmpro_getAllLevels' ) ) {
+            $this->dependency_warnings();
+        } else {
+
+            if ( is_numeric( $level ) ) {
+
+                dbg("e20rTracker::getLevelList() - Requested ID: {$level}");
+                $tmp = pmpro_getLevel( $level );
+                $level = $tmp->name;
+            }
+
+            $allLevels = pmpro_getAllLevels();
+            $levels    = array();
+
+            if ( ! empty( $name ) ) {
+                dbg("e20rTracker::getLevelList() - Supplied name for level: {$name}");
+                $name = str_replace( '+', '\+', $name);
+                $pattern = "/{$name}/i";
+                dbg("e20rTracker::getLevelList() - Pattern for level: {$pattern}");
+            }
+
+            foreach ( $allLevels as $level ) {
+
+                $visible = ( $level->allow_signups == 1 ? true : false );
+                $inclLevel =  ( is_null( $name ) || ( preg_match( $pattern, $level->name ) == 1 ) ) ? true : false;
+
+                if ( ( ! $onlyVisible ) || ( $visible && $onlyVisible ) ) {
+
+                    if ( $inclLevel ) {
+
+                        $levels[ $level->id ] = $level->name;
+                    }
+                }
+            }
+
+            asort( $levels );
+
+            // dbg("Levels fetched: " . print_r( $levels, true ) );
+
+            return $levels;
+        }
     }
 }

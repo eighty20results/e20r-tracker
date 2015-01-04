@@ -10,7 +10,7 @@ class e20rMeasurementViews {
     private $fields;
 
 
-    public function e20rMeasurementViews( $when, $data ) {
+    public function e20rMeasurementViews( $when = null, $data = null ) {
 
         global $e20rTables;
 
@@ -339,6 +339,7 @@ class e20rMeasurementViews {
         return $url;
 
     }
+
     public function showWeightRow() {
 
         global $e20rClient;
@@ -509,4 +510,250 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
+    public function viewTableOfMeasurements( $clientId, $measurements, $dimensions = null, $tabbed = true ) {
+        // TESTING: using $clientId = 12;
+        // $clientId = 12;
+        global $e20rClient, $current_user;
+
+        if ( $dimensions === null ) {
+
+            $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
+        }
+
+        $user = get_user_by( 'id', $clientId );
+
+        $reloadBtn = '
+            <div id="e20r_reload_btn">
+                <a href="#e20r_tracker_data" id="e20r-reload-measurements" class="e20r-choice-button button" > ' . __("Reload Measurements", "e20r-tracker") . '</a>
+            </div>
+        ';
+
+        if ( count( $measurements ) < 1 ) {
+
+            ob_start();
+            // echo $reloadBtn;
+            ?>
+            <div id="e20r_errorMsg"><em>No measurements found for <?php echo $user->first_name . " " . $user->last_name; ?></em></div>
+            <?php
+            $html = ob_get_clean();
+        }
+        else {
+            // dbg( "Tabbed measurements for $clientId: " . print_r( $measurements, true ) );
+
+            ob_start();
+            // echo $reloadBtn;
+
+            ?>
+            <div id="lbp-inline-href-1" style="padding: 10px; background: #fff">
+
+            </div>
+            <!--[if IE]>
+            <style type="text/css">
+                .box { display: block; }
+                #box { overflow: hidden;position: relative; }
+                b { position: absolute; top: 0px; right: 0px; width:1px; height: 251px; overflow: hidden; text-indent: -9999px; }
+            </style>
+            <![endif]-->
+            <style type="text/css">
+                .tabs {
+                    position: relative;
+                    min-height: 200px;
+                    max-height: <?php echo ( ((int) $dimensions['height']) + 95) . $dimensions['type']; ?>;
+                    height: <?php echo ( ((int) $dimensions['height']) + 75) . $dimensions['type']; ?>;
+                    min-width: <?php echo ( ((int) $dimensions['width']) + 95) . $dimensions['type']; ?>;
+                    width: <?php echo ( ((int) $dimensions['height']) + 95) . $dimensions['type']; ?>;
+                    clear: both;
+                    margin: 25px 0;
+                }
+            </style>
+            <?php if ( $tabbed ): ?>
+                <div class="tabs">
+
+                    <div class="tab">
+                        <input type="radio" id="girth-tab" name="tab-group-1" checked>
+                        <label for="girth-tab">Total Girth</label>
+
+                        <div class="tab-content">
+                            <div id="girth_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>;width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab">
+                        <input type="radio" id="weight-tab" name="tab-group-1" checked>
+                        <label for="weight-tab">Weight History</label>
+
+                        <div class="tab-content">
+                            <div id="weight_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>; width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
+                        </div>
+                    </div>
+                </div> <!-- tabs div -->
+            <?php else: ?>
+                <div id="weight_chart" style="height: <?php echo $dimensions['height']. $dimensions['type']; ?>; width: <?php echo $dimensions['width']. $dimensions['type']; ?>;"></div>
+                <div id="girth_chart" style="height: <?php echo $dimensions['height']. $dimensions['type']; ?>;width: <?php echo $dimensions['width']. $dimensions['type']; ?>;"></div>
+            <?php endif; ?>
+
+            <hr class="e20r-big-hr" />
+            <div class="e20r-measurements-container">
+                <h4>Measurements for <?php echo $user->first_name; ?></h4>
+                <a class="close" href="#">X</a>
+                <div class="quick-nav">
+                    <table id="e20r-measurement-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="e20r_mHead rotate"><div><span>Weight (<?php echo $e20rClient->getWeightUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Neck (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Shoulder (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Chest (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Arm (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Waist (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Hip (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Thigh (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Calf (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Total Girth (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span>Photo</span></div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+
+                            $counter = 0;
+
+                            foreach ( $measurements as $key => $measurement ) {
+
+                                $measurement->girth = (
+                                    $measurement->neck + $measurement->shoulder + $measurement->chest + $measurement->arm +
+                                    $measurement->waist + $measurement->hip + $measurement->thigh + $measurement->calf
+                                );
+
+                                ?>
+                            <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+                                <td class="e20r_mData">
+                                    <div>
+                                    <!-- <span> -->
+                                        <?php
+                                            $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
+                                            $showLink = ( $clientId == $current_user->ID ? true : false);
+                                        if ( $showLink ) {
+                                            ?>
+                                            <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20rtracker' ); ?>">
+                                                <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
+                                            </a>
+                                        <?php
+                                        }
+                                        else {
+                                            ?>
+                                                <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
+                                        <?php
+                                        }
+                                        ?>
+                                    </div>
+                                    <div class="timeago"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
+                                </td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->waist ) || ( $measurement->waist == 0 )? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->hip ) || ( $measurement->hip == 0 )? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 )? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
+                                <td class="e20r_mData"><?php echo ( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
+                                <td class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
+                            </tr>
+                            <?php
+
+                            $counter ++;
+                        }
+
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php
+
+            $html = ob_get_clean();
+        }
+        return $html;
+    }
+
+    private function resizeImage( $size ) {
+        global $e20rTables;
+
+        $style = '';
+        switch ( $size ) {
+            case 'thumbnail':
+                break;
+            case 'small':
+                break;
+            case 'medium':
+                break;
+            case 'large':
+                break;
+            case 'full':
+                break;
+        }
+            return 'width: 38px; height: 38px;';
+
+    }
+
+    public function getProgressPhoto( $data, $userId, $key = null ) {
+
+        global $e20rClient;
+
+        $isBeta = true; // I know... This is a bit backwards
+        $imageUrl = $e20rClient->data->getBetaUserUrl( $userId, $data->recorded_date, 'front' );
+
+        if ( $imageUrl === false ) {
+            $imageUrl = $this->loadImage( 'front' );
+            $isBeta = false;
+        }
+
+        list($width, $height, $type, $attr) = getimagesize( $imageUrl );
+
+        if ( ! is_admin() ) { ?>
+        <div style="display: none;" id="e20r-progress-pop-up">
+        <!-- <div id="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" style="padding: 10px; background: #fff"> -->
+            <div id="lbp-inline-href-1" style="padding: 10px; background: #fff; max-width: 400px; max-height: 600px; width: auto; height: auto;"> <?php
+        }
+        else {
+        ?>
+        <!-- <div id="e20r-progress-pic-<?php echo ( $key ? $key : 1 ); ?>" style="padding: 10px; background: #fff"> -->
+            <div id="e20r-progress-pic-<?php echo ( $key ? $key : 1 ); ?>" style="display: none;"><?php
+        }
+        ?>
+                <!-- max-width: 380px; max-height: 580px; width: 100%; height: auto; -->
+                <div style="width: 100%; height: auto; margin-left: auto; margin-right: auto;">
+                    <img class="photo" src="<?php echo $imageUrl; ?>" style="text-align: center; max-width: 580px; max-height: 730px; width: 100%; height: auto;" />
+                    <div class="photo-overlay">
+                        <h3>
+                            <span class="orientation">Front Photo:</span>
+                            <span class="date"><?php echo date( 'D M\. jS, Y', strtotime( $data->recorded_date ) ); ?></span>
+                            <p class="timeago timeagosize"><?php echo date( 'Y/m/d', strtotime( $data->recorded_date ) ); ?></p>
+                        </h3>
+                        <div class="info">
+                            <span class="key">Weight:</span>
+                            <span class="value"><?php echo number_format( (float) round( $data->weight, 1 ), 1 ) . " " . $e20rClient->getWeightUnit();?> </span>
+
+                            <span class="key">Total Girth:</span>
+                            <span class="value"><?php echo number_format( (float) round( $data->girth, 2 ), 2 ) . " " . $e20rClient->getLengthUnit(); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <?php
+        if ( ! is_admin() ) { ?>
+        </div>
+            <a class="lbp-inline-link-<?php echo ( $key ? $key : 1 ); ?> cboxElement" data-link="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" href="#"> <?php
+        }
+        else { ?>
+            <a href="#TB_inline?width=<?php echo ( ( $width + 20 ) > 600 ? 600 : $width ); ?>&height=<?php echo ( ( $height + 20 ) > 730 ? 730 :  $height ); ?>&inlineId=e20r-progress-pic-<?php echo ( $key ? $key : 1 ); ?>" class="thickbox"><?php
+        } ?>
+                <img src="<?php echo $imageUrl; ?>" style="max-width: 38px; max-height: 38px; height: auto; width: auto;"/>
+            </a>
+        <?php
+    }
 } 

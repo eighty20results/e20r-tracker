@@ -42,16 +42,19 @@ class e20rClient {
         }
 
         $this->id = $user_id;
+
     }
 
     public function init() {
 
-        global $e20rTracker, $e20rMeasurements, $e20rArticle, $e20rProgram;
+        global $e20rTables, $e20rTracker, $e20rMeasurements, $e20rArticle, $e20rProgram;
 
         dbg('e20rClient::init() - Running INIT for Client Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
         if ( $this->id != null ) {
+
+            $e20rTables->init( $this->id );
 
             $this->loadClient( $this->id );
 
@@ -95,6 +98,7 @@ class e20rClient {
     }
 
     public function getLengthUnit() {
+
         dbg("e20rClient::getLengthUnit() - Returning the current setting for the length unit: {$this->data->info->lengthunits}");
         return $this->data->info->lengthunits;
     }
@@ -102,6 +106,21 @@ class e20rClient {
     public function getWeightUnit() {
         dbg("e20rClient::getWeightUnit() - Returning the current setting for the weight unit: {$this->data->info->weightunits}");
         return $this->data->info->weightunits;
+    }
+
+    public function saveNewUnit( $type, $unit ) {
+
+        switch ($type) {
+            case 'length':
+                dbg("e20rClient::saveNewUnit() - Saving new length unit: {$unit}");
+                $this->data->info->saveUnitInfo( $unit, $this->data->info->weightunits );
+                break;
+            case 'weight':
+                dbg("e20rClient::saveNewUnit() - Saving new weight unit: {$unit}");
+                $this->data->info->saveUnitInfo( $this->data->info->lengthunits, $unit );
+                break;
+        }
+        return true;
     }
 
     public function loadClient( $id = null ) {
@@ -208,7 +227,7 @@ class e20rClient {
         wp_die();
     }
 
-    public function after_gf_submission( $entry, $form ) {
+    public function afterGFSubmission( $entry, $form ) {
 
         dbg("gf_after_submission - entry: ". print_r( $entry, true));
         dbg("gf_after_submission - form: ". print_r( $form, true));
@@ -259,6 +278,26 @@ class e20rClient {
 
     }
 
+    /**
+     * Render page on back-end for client data (admin selectable).
+     */
+    public function render_client_page( $lvlName = '', $client_id = 0 ) {
+
+        global $current_user;
+
+        if ( $client_id == 0 ) {
+
+            $client_id = $this->clientId();
+        }
+
+        if ( is_null( $this->show ) ) {
+            dbg("e20rClient::render_client_page() - Init the ClientViews class");
+            $this->initClientViews();
+        }
+
+        echo $this->show->viewClientAdminPage( $lvlName );
+    }
+
     public function getArticleID() {
 
         global $post;
@@ -282,28 +321,30 @@ class e20rClient {
         return $this->info;
     }
 
-
-    // TODO: Return data that can be viewed both by Shortcode and by back-end. I.e. only fetch data for user specified in request.
-
     function ajax_getMemberlistForLevel() {
 
         check_ajax_referer('e20r-tracker-data', 'e20r_tracker_levels_nonce');
 
-        $level = ( isset($_POST['hidden_e20r_level']) ? intval( $_POST['hidden_e20r_level']) : 0 );
+        global $e20rTracker;
 
-        dbg("Level returned: {$level}");
+        $levelId = ( isset($_POST['hidden_e20r_level']) ? intval( $_POST['hidden_e20r_level']) : 0 );
 
-        if ( $level != 0 ) {
+        $this->init();
+        $this->initClientViews();
 
-            $levelObj = pmpro_getLevel( $level );
+        dbg("e20rClient::getMemberListForLevel() - Level requested: {$levelId}");
+
+        if ( $levelId != 0 ) {
+
+            $levels = $e20rTracker->getMembershipLevels( $levelId );
             // $this->load_levels( $levelObj->name );
-            dbg(" Loading members for {$levelObj->name}");
-            $data = $this->viewMemberSelect( $levelObj->name );
+            dbg("e20rClient::getMemberListForLevel() - Loading members for {$levels->name}");
+            $data = $this->show->viewMemberSelect(  $levelId );
         }
         else {
 
-            $this->load_levels();
-            $data = $this->viewMemberSelect();
+            $this->show->load_levels();
+            $data = $this->show->viewMemberSelect();
         }
 
         wp_send_json_success( $data );
@@ -348,11 +389,11 @@ class e20rClient {
         dbg("Nonce is OK");
     }
 
-    private function validateClientAccess( $clientId ) {
+    public function validateAccess( $clientId ) {
 
         global $current_user;
 
-        dbg("Client to validate: " . $clientId );
+        dbg("e20rClient::validateAccess() - Client being validated: " . $clientId );
 
         if ( $clientId ) {
 

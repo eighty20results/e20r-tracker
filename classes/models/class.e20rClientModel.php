@@ -149,6 +149,7 @@ class e20rClientModel {
         $this->appointments = $wpdb->get_results( $sql, OBJECT);
     }
 
+    /*
     private function load_levels( $name = null ) {
 
         global $wpdb;
@@ -162,10 +163,10 @@ class e20rClientModel {
             $allLevels = pmpro_getAllLevels( true );
 
             if ( ! empty( $name ) ) {
-
+                dbg("e20rClientModel::load_levels() -- Name for pattern: {$name}");
                 $name = str_replace( '+', '\+', $name);
                 $pattern = "/{$name}/i";
-                dbg("Pattern: {$pattern}");
+                dbg("e20rClientModel::load_levels() -- Membership level pattern: {$pattern}");
             }
 
             foreach( $allLevels as $level ) {
@@ -179,7 +180,7 @@ class e20rClientModel {
             }
         }
     }
-
+    */
     public function getInfo() {
 
         return $this->info;
@@ -200,6 +201,75 @@ class e20rClientModel {
         delete_transient("e20r_client_info_{$this->id}");
 
         return true;
+    }
+
+    /**
+     * @param $who - User ID
+     * @param $when - Date of captured measurement
+     * @param $imageSide -- Front/Side/Back
+     * @param $imageSize -- 'thumbnail', 'large', 'medium', etc.
+     *
+     * @return mixed - URL to image
+     */
+    public function getBetaUserUrl( $who, $when, $imageSide ) {
+
+        global $e20rTables, $wpdb;
+
+        if ( $e20rTables->isBetaClient() ) {
+
+            dbg("e20rClientModel::getBetaUserUrl() - User with ID {$who} IS a member of the Nourish BETA group");
+
+            switch ( $imageSide ) {
+
+                case 'front':
+                    $fid = 2;
+                    break;
+
+                case 'side':
+                    $fid = 3;
+                    break;
+
+                case 'back':
+                    $fid = 4;
+                    break;
+            }
+
+            $sql = $wpdb->prepare("SELECT gf_detail.value as URL
+                                    FROM {$wpdb->prefix}rg_lead AS gf_lead
+                                      INNER JOIN {$wpdb->prefix}rg_lead_detail AS gf_detail
+                                      ON ( gf_lead.id = gf_detail.lead_id
+                                          AND ( gf_lead.created_by = %d )
+                                          AND ( gf_lead.form_id = %d )
+                                          AND ( gf_lead.date_created < %s )
+                                          AND ( gf_detail.field_number = %d )
+                                  )
+                                  ORDER BY gf_lead.date_created DESC
+                                  LIMIT 1",
+                    $who,
+                    GF_PHOTOFORM_ID,
+                    date('Y-m-d', strtotime($when) + (24 * 60 * 60) ),
+                    $fid
+            );
+
+            // dbg("e20rClientModel::getBetaUserUrl() - SQL: {$sql}");
+
+            $imageLink = $wpdb->get_row( $sql );
+
+            if ( empty( $imageLink ) ) {
+                $imageUrl = E20R_PLUGINS_URL . '/images/no-image-uploaded.jpg';
+            }
+            else {
+                $imageUrl = $imageLink->URL;
+            }
+        }
+        else {
+
+            dbg("e20rClientModel::getBetaUserUrl() - User with ID {$who} is NOT a member of the Nourish BETA group");
+            $imageUrl = false;
+
+        }
+
+        return $imageUrl;
     }
 
     /**
@@ -294,7 +364,7 @@ class e20rClientModel {
 
         return $this->appointments;
     }
-
+    /*
     public function getUserList( $level = '' ) {
 
         global $wpdb, $e20rTracker;
@@ -369,4 +439,5 @@ class e20rClientModel {
 
         return $levels;
     }
+    */
 } 

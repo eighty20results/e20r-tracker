@@ -23,7 +23,7 @@ jQuery(document).ready( function($) {
     var $complianceBtn = $("#e20r-client-compliance");
     var $assignBtn = $("#e20r-client-assignments");
     var $measureBtn = $("#e20r-client-measurements");
-    var $loadBtn = $("#e20r-load-users");
+    var $loadBtn = $("#e20r-load-data");
 
     var $loadItem = $("#e20r-load-checkin-items");
     var $spinner = $('#e20r-postmeta-setprogram').find('e20r_spinner');
@@ -52,7 +52,7 @@ jQuery(document).ready( function($) {
     });
 
     // Load the list of users selected by the Level ID currently active.
-    $(document).on("click", "#e20r-load-users", function() {
+    $(document).on("click", "#e20r-load-data", function() {
 
         $("#e20r_tracker_client").prop('disabled', true);
 
@@ -60,9 +60,12 @@ jQuery(document).ready( function($) {
 
         var $levelId = $levelIdSelect.find('option:selected').val();
 
-        loadMemberList( $levelId );
+        e20r_LoadClientData('measurements');
+        saveClientId( $oldClientId );
+
 
         $("#e20r_tracker_client").prop('disabled', false);
+
     });
 
 
@@ -406,7 +409,7 @@ jQuery(document).ready( function($) {
         $spinner.show();
 
         jQuery.ajax({
-            url: e20r_tracker.ajaxurl,
+            url: ajaxurl,
             type:'POST',
             timeout:10000,
             dataType: 'JSON',
@@ -593,7 +596,7 @@ function loadMemberList( $levelId ) {
     jQuery('#e20r_tracker_client').prop('disabled', true);
 
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type: 'POST',
         timeout: 5000,
         dataType: 'JSON',
@@ -645,7 +648,7 @@ function saveItem( $valueArray ) {
     }
 
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type: 'POST',
         timeout: 5000,
         dataType: 'JSON',
@@ -701,7 +704,7 @@ function saveProgram( $programArray ) {
     }
 
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type: 'POST',
         timeout: 5000,
         dataType: 'JSON',
@@ -768,7 +771,7 @@ function e20r_LoadClientData( $type ) {
 
     } else if ($type === 'measurements') {
 
-        $action = 'e20r_measurementData';
+        $action = 'e20r_measurementDataForUser';
         $btn = jQuery("#e20r-client-measurements");
 
     } else {
@@ -783,10 +786,11 @@ function e20r_LoadClientData( $type ) {
     // saveBtn.html(e20r-tracker-admin.lang.saving);
 
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type: 'POST',
         timeout: 5000,
         dataType: 'JSON',
+        async: false,
         data: {
             action: $action,
             e20r_client_detail_nonce: jQuery('#e20r_tracker_client_detail_nonce').val(),
@@ -801,7 +805,7 @@ function e20r_LoadClientData( $type ) {
 
             // Refresh the sequence post list (include the new post.
             if ( ( data.data !== '' ) && ( $type == 'info') ) {
-                jQuery('#e20r-info').html(data.data);
+                jQuery('#e20r-info').html( data.data );
             }
 
             if ( ( data.data !== '' ) && ( $type == 'measurements') ) {
@@ -934,7 +938,7 @@ function e20r_LoadClientData( $type ) {
 
                 }
                 else {
-                    alert("This user has no available data at this time");
+                    alert("This user doesn't have any data to graph yet");
                 }
             }
 
@@ -947,6 +951,25 @@ function e20r_LoadClientData( $type ) {
             // Reset the text for the 'Save Settings" button
             // saveBtn.html(e20r-tracker-admin.lang.saveSettings);
 
+            jQuery('.timeago')
+                .each(function() {
+                    jQuery(this)
+                        .text(function(text) {
+                            return jQuery.timeago(text);
+                        });
+                });
+
+            jQuery("#e20r-measurement-table").delegate('td','mouseover mouseleave', function(e) {
+                if (e.type == 'mouseover') {
+                    jQuery(this).parent().addClass("hover");
+                    jQuery("colgroup").eq(jQuery(this).index()).addClass("hover");
+                }
+                else {
+                    jQuery(this).parent().removeClass("hover");
+                    jQuery("colgroup").eq(jQuery(this).index()).removeClass("hover");
+                }
+            });
+
             // Disable the spinner again
             jQuery('#load-client-data').hide();
             $btn.removeAttr('disabled');
@@ -957,7 +980,7 @@ function e20r_LoadClientData( $type ) {
 function loadCheckinItem( $itemId ) {
 
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type: 'POST',
         timeout: 5000,
         dataType: 'JSON',
@@ -1132,7 +1155,7 @@ function e20rPgm_postMetaSelectChanged( $self ) {
     // Disable delay and sequence input.
 /*
     jQuery.ajax({
-        url: e20r_tracker.ajaxurl,
+        url: ajaxurl,
         type:'POST',
         timeout:10000,
         dataType: 'JSON',

@@ -20,6 +20,7 @@ define( 'E20R_ANSWERS', 1 );
 define( 'CONST_SATURDAY', 6 );
 define( 'CONST_SUNDAY', 0 );
 define( 'CONST_MONDAY', 1 );
+define( 'GF_PHOTOFORM_ID', 45 );
 
 define ('CONST_MEASUREMENTDAY', 6 );
 
