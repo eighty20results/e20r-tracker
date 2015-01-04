@@ -826,15 +826,19 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 .e20r-noline {
     border: none;
 }
-#e20r-measurement-table td {
+.e20r-measurement-table td {
     font-size: 11px;
 }
 .e20r-measurements-container {
+    margin-top: 20px;
     background-color: #004CFF;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
-    position: absolute;
+    position: relative;
+    min-width: 700px;
+    width: 80%;
+    max-width: 800px;
     z-index: 100;
     padding: 30px 14px 14px 14px;
     /* display: none; */
@@ -868,6 +872,16 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     margin: 0 auto;
     width: 38px;
     height: 38px;
+}
+.e20r-measurements-container div.other-progress-info {
+    min-width: 250px;
+    max-width: 80%;
+    width: 80%;
+}
+.e20r-measurements-container td.measurement-date {
+    min-width: 80px;
+    max-width: 30%;
+    width: 30%;
 }
 .e20r-measurements-container a.close {
     position: absolute;
@@ -933,7 +947,6 @@ div.photo-overlay span.value {
     text-decoration: none;
     font-size: 12px;
 }
-
 .quick-nav table th.rotate {
     /* Something you can count on */
     height: 60px;
