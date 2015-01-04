@@ -629,14 +629,14 @@ class e20rMeasurementViews {
                                 ?>
                             <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
                                 <td class="e20r_mData">
-                                    <div>
+                                    <div class="date">
                                     <!-- <span> -->
                                         <?php
                                             $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
                                             $showLink = ( $clientId == $current_user->ID ? true : false);
                                         if ( $showLink ) {
                                             ?>
-                                            <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20rtracker' ); ?>">
+                                            <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
                                                 <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
                                             </a>
                                         <?php
@@ -648,7 +648,7 @@ class e20rMeasurementViews {
                                         }
                                         ?>
                                     </div>
-                                    <div class="timeago"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
+                                    <div class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
                                 </td>
                                 <td class="e20r_mData"><?php echo ( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
                                 <td class="e20r_mData"><?php echo ( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
@@ -735,10 +735,10 @@ class e20rMeasurementViews {
                         </h3>
                         <div class="info">
                             <span class="key">Weight:</span>
-                            <span class="value"><?php echo number_format( (float) round( $data->weight, 1 ), 1 ) . " " . $e20rClient->getWeightUnit();?> </span>
+                            <span class="value"><?php echo number_format( (float) round( $data->weight, 1 ), 1 ) . " " . $this->prettyUnit( $e20rClient->getWeightUnit() );?> </span>
 
                             <span class="key">Total Girth:</span>
-                            <span class="value"><?php echo number_format( (float) round( $data->girth, 2 ), 2 ) . " " . $e20rClient->getLengthUnit(); ?></span>
+                            <span class="value"><?php echo number_format( (float) round( $data->girth, 2 ), 2 ) . " " . $this->prettyUnit($e20rClient->getLengthUnit()); ?></span>
                         </div>
                     </div>
                 </div>
