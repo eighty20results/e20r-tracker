@@ -32,8 +32,8 @@
     max-width: 300px;
 }
 .e20r-select a {
-    min-width: 100px;
-    max-width: 100px;
+    min-width: 150px;
+    max-width: 150px;
     text-align: center;
 }
 .e20r-client-select {
@@ -826,6 +826,9 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 .e20r-noline {
     border: none;
 }
+#e20r-measurement-table td {
+    font-size: 11px;
+}
 .e20r-measurements-container {
     background-color: #004CFF;
     -moz-border-radius: 4px;
@@ -975,4 +978,16 @@ div.photo-overlay span.value {
 }
 .hover {
     background-color: #84c37e;
+}
+td.smallPhoto {
+    text-align: center;
+    vertical-align: middle;
+}
+div.date {
+    font-size: 120%;
+    font-weight: bold;
+    color: rgba( 0, 76, 255, 0.6);
+}
+div.timeagosize {
+    color: #888888;
 }
