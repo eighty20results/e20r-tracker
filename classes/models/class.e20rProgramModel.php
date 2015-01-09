@@ -21,33 +21,37 @@ class e20rProgramModel {
     private $table;
     private $fields;
 
-    public function e20rProgramModel( $program_id = null, $user_id = null ) {
-
-        if ( ( $user_id === null ) && ( $program_id === null ) ){
-            global $current_user;
-
-            $user_id = $current_user->ID;
-
-        }
+    public function e20rProgramModel( $program_id = null ) {
 
         if ( $program_id === null ) {
 
-            $program_id = get_user_meta($user_id, 'e20r_tracker_programId', true );
+            global $post;
+
+            if ( $post->post_type == 'e20r_programs' ) {
+
+                $program_id = $post->ID;
+            }
         }
 
-        $this->id = $program_id;
-        $this->program_name = '';
-        $this->description = 'Program description';
-        $this->startime = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
-        $this->endtime = '';
-        $this->member_id = null;
-        $this->belongs_to = null;
+
+        $this->settings = $this->loadSettings( $program_id );
 
         global $e20rTables;
 
-        $this->table = $e20rTables->getTable('programs');
-        $this->fields = $e20rTables->getFields('programs');
+        $this->table = $e20rTables->getTable('program');
+        $this->fields = $e20rTables->getFields('program');
 
+    }
+
+    private function defaultSettings() {
+
+        $settings = new stdClass();
+        $settings->starttime = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
+        $settings->program_shortname = null;
+        $settings->endtime = null;
+        $settings->sequences = null;
+
+        return $settings;
     }
 
     public function getFieldValue( $name = 'id' ) {
@@ -55,12 +59,244 @@ class e20rProgramModel {
         return $this->{$name};
     }
 
-    public function load_program_info( $programs = null, $add_new = true ) {
+    /**
+     * Returns an array of all programs merged with their associated settings.
+     *
+     * @param $statuses string|array - Statuses to return program data for.
+     * @return mixed - Array of program objects
+     */
+    public function loadAllProgramData( $statuses = 'any' ) {
+
+        $query = array(
+            'post_type' => 'e20r_programs',
+            'post_status' => $statuses,
+        );
+
+        wp_reset_query();
+
+        /* Fetch all Sequence posts */
+        $program_list = get_posts( $query );
+
+        if ( empty( $program_list ) ) {
+
+            return false;
+        }
+
+        dbg("e20rProgramModel::loadAllProgramData() - Loading program settings for " . count( $program_list ) . ' settings');
+
+        foreach( $program_list as $key => $data ) {
+
+            $settings = $this->loadSettings( $data->ID );
+
+            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
+
+            $program_list[$key] = $loaded_settings;
+        }
+
+        return $program_list;
+    }
+
+    public function loadProgramData( $id, $statuses = 'any' ) {
+
+        if ( $id == null ) {
+            dbg("Error: Unable to load program data. No ID specified!");
+            return false;
+        }
+
+        $query = array(
+            'post_type' => 'e20r_programs',
+            'post_status' => $statuses,
+            'p' => $id,
+        );
+
+        wp_reset_query();
+
+        /* Fetch Programs */
+        $program_list = get_posts( $query );
+
+        if ( empty( $program_list ) ) {
+            dbg("e20rProgramModel::loadProgramData() - No programs found!");
+            return false;
+        }
+
+        foreach( $program_list as $key => $data ) {
+
+            $settings = $this->loadSettings( $data->ID );
+
+            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
+
+            $program_list[$key] = $loaded_settings;
+        }
+
+
+        return $program_list[0];
+    }
+
+    /**
+     * Save the Program Settings to the metadata table.
+     *
+     * @param $settings - Array of settings for the specific program.
+     *
+     * @return bool - True if successful at updating program settings
+     */
+    public function saveSettings( $settings ) {
+
+        $programId = $settings->id;
+        unset($settings->id);
+
+        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
+
+        dbg("e20rProgramModel::saveSettings() - Saving program Metadata: " . print_r( $settings, true ) );
+
+        if ( false === update_post_meta( $programId, 'e20r-program-settings', $settings ) ) {
+
+            dbg("e20rProgram::saveSettings() - ERROR saving settings for program with ID: {$programId}");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Load the Program Settings from the metadata table.
+     *
+     * @param $id (int) - The ID of the program to load settings for
+     *
+     * @return mixed - Array of settings if successful at loading the settings, otherwise returns false.
+     */
+    public function loadSettings( $id ) {
+
+        if ( false === ( $settings = get_post_meta( $id, 'e20r-program-settings', true ) ) ) {
+
+            dbg("e20rProgramModel::loadSettings() - ERROR loading settings for program with ID: {$id}");
+        }
+
+        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
+
+        return $settings;
+    }
+
+    /**
+     * Save program settings to the post_meta table.
+     *
+     * @param $data - Array of data to insert/update/delete.
+     */
+    public function saveProgram( $data ) {
 
         global $wpdb;
 
-        dbg("e20rProgramModel::load_program_info() - Loading programs from the DB");
-        dbg("e20rProgramModel::load_program_info() - Content of programs: " . print_r($programs, true));
+        if ( ( ! isset( $data['id'] ) ) || ( $data['id'] === null ) ) {
+
+            // New program being added.
+            dbg( "e20rProgramModel::saveProgram() - ADDING: " . print_r( $data, true ) );
+
+            if ( false === $wpdb->insert( $this->table, $data ) ) {
+
+                dbg("e20rProgramModel::saveProgram() - ERROR on ADD: {$wpdb->last_error}" );
+            }
+
+        } elseif ( $this->recordExists( $data['id'] )
+                   && ( isset( $data['program_shortname'] ) ) ) {
+
+            dbg( "e20rProgramModel::saveProgram() - UPDATING: " . print_r( $data, true ) );
+            $where = array( 'id' => $data['id'] );
+
+            if ( false === $wpdb->update( $this->table, $data, $where, array( '%d' ) ) ) {
+
+                dbg("e20rProgramModel::saveProgram() - ERROR on UPDATE: {$wpdb->last_error}" );
+            }
+        } elseif ( ( $this->recordExists( $data['id'] ) ) && ( ! isset($data['program_shortname'])) ) {
+
+            dbg( "e20rProgramModel::saveProgram() - Deleting record ({$data['id']})" );
+
+            if ( false === $wpdb->delete( $this->table, array( 'id' => $data['id'] ) ) ) {
+
+                dbg("e20rProgramModel::saveProgram() - ERROR on DELETE: {$wpdb->last_error}" );
+            }
+        }
+    }
+
+    /********************** OBSOLETE ***************************/
+
+    public function ajax_save_program_info() {
+
+        dbg("Save new or updated information for a program");
+
+        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_edit_programs_nonce');
+
+        dbg("Nonce ok, processing & saving data");
+
+        global $wpdb, $current_user;
+
+        if ( current_user_can( 'manage_options' ) ) {
+
+            dbg("Has permission to update data");
+
+            $tmp        = ( isset( $_POST['e20r_program_id'] ) ? $_POST['e20r_program_id'] : null );
+            $program_id = is_numeric( $tmp ) ? intval( $tmp ) : sanitize_text_field( $_POST['e20r_program_id'] );
+
+            dbg( "Delete: " . $_POST['e20r_program_delete'] );
+
+            $delete_only = ( ( isset( $_POST['e20r_program_delete'] ) && ( esc_attr( $_POST['e20r_program_delete'] ) == 'true' ) ) ? true : false );
+
+            if ( ! $delete_only ) {
+
+                $data = array(
+                    'program_name' => ( isset( $_POST['e20r_program_name'] ) ? sanitize_text_field( $_POST['e20r_program_name'] ) : null ),
+                    'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ) . " 00:00:00",
+                    'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ) . " 00:00:00",
+                    'description'  => ( isset( $_POST['e20r_program_descr'] ) ? sanitize_text_field( $_POST['e20r_program_descr'] ) : null ),
+                    'member_id'    => ( isset( $_POST['e20r_program_memberships'] ) ? sanitize_text_field( $_POST['e20r_program_memberships'] ) : null ),
+                    'belongs_to'    => ( isset( $_POST['e20r_program_belongsto'] ) ? sanitize_text_field( $_POST['e20r_program_belongsto'] ) : null ),
+                );
+
+                if ( $program_id == 'auto' ) {
+                    // We'll add this data as a new program
+                    dbg( "We're adding: " . print_r( $data, true ) );
+                    if ( false === $wpdb->insert( $this->table, $data ) ) {
+
+                        wp_send_json_error( $wpdb->last_error );
+                    }
+
+                } elseif ( is_numeric( $program_id ) ) {
+
+                    dbg( "We're updating: " . print_r( $data, true ) );
+                    $where = array( 'id' => $program_id );
+
+                    if ( false === $wpdb->update( $this->table, $data, $where ) ) {
+
+                        wp_send_json_error( $wpdb->last_error );
+                    }
+                }
+            }
+            else {
+
+                dbg("Deleting record # {$program_id}");
+
+                if ( false === $wpdb->delete( $this->table, array( 'id' => $program_id ) ) ) {
+
+                    wp_send_json_error( $wpdb->last_error );
+                }
+            }
+
+            wp_send_json_success( $this->view_listPrograms() );
+        }
+        else {
+
+            wp_send_json_error( 'You do not have permission to add/edit programs' );
+        }
+    }
+
+    private function getProgram() {
+
+    }
+
+    public function loadPrograminfo( $programs = null, $add_new = true ) {
+
+        global $wpdb;
+
+        dbg("e20rProgramModel::loadProgramInfo() - Loading programs from the DB");
+        dbg("e20rProgramModel::loadProgramInfo() - Content of programs: " . print_r($programs, true));
 
         if ( $programs == null ) {
 
@@ -73,7 +309,7 @@ class e20rProgramModel {
         else {
 
             if ( ( ! is_array( $programs )) && ( $programs != null ) ) {
-                dbg("e20rProgram::load_program_info() - programs is a single value: {$programs}");
+                dbg("e20rProgram::loadProgramInfo() - programs is a single value: {$programs}");
                 $programs = array( $programs );
             }
 
@@ -85,7 +321,7 @@ class e20rProgramModel {
               ";
         }
 
-        dbg("e20rProgram::load_program_info() - SQL: " . print_r($sql, true) );
+        dbg("e20rProgram::loadProgramInfo() - SQL: " . print_r($sql, true) );
         $res = $wpdb->get_results( $sql , OBJECT );
 
         if ( ! empty( $res ) ) {
@@ -218,72 +454,20 @@ class e20rProgramModel {
         }
     }
 
-    public function ajax_save_program_info() {
+    private function recordExists( $id ) {
 
-        dbg("Save new or updated information for a program");
+        global $wpdb;
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_edit_programs_nonce');
+        $exists = $wpdb->get_var( $wpdb->prepare(
+            "
+                        SELECT COUNT(id)
+                        FROM {$this->table}
+                        WHERE id = %d"
+        ),
+            $id
+        );
 
-        dbg("Nonce ok, processing & saving data");
-
-        global $wpdb, $current_user;
-
-        if ( current_user_can( 'manage_options' ) ) {
-
-            dbg("Has permission to update data");
-
-            $tmp        = ( isset( $_POST['e20r_program_id'] ) ? $_POST['e20r_program_id'] : null );
-            $program_id = is_numeric( $tmp ) ? intval( $tmp ) : sanitize_text_field( $_POST['e20r_program_id'] );
-
-            dbg( "Delete: " . $_POST['e20r_program_delete'] );
-
-            $delete_only = ( ( isset( $_POST['e20r_program_delete'] ) && ( esc_attr( $_POST['e20r_program_delete'] ) == 'true' ) ) ? true : false );
-
-            if ( ! $delete_only ) {
-
-                $data = array(
-                    'program_name' => ( isset( $_POST['e20r_program_name'] ) ? sanitize_text_field( $_POST['e20r_program_name'] ) : null ),
-                    'starttime'    => ( isset( $_POST['e20r_program_start'] ) ? sanitize_text_field( $_POST['e20r_program_start'] ) : null ) . " 00:00:00",
-                    'endtime'      => ( isset( $_POST['e20r_program_end'] ) ? sanitize_text_field( $_POST['e20r_program_end'] ) : null ) . " 00:00:00",
-                    'description'  => ( isset( $_POST['e20r_program_descr'] ) ? sanitize_text_field( $_POST['e20r_program_descr'] ) : null ),
-                    'member_id'    => ( isset( $_POST['e20r_program_memberships'] ) ? sanitize_text_field( $_POST['e20r_program_memberships'] ) : null ),
-                    'belongs_to'    => ( isset( $_POST['e20r_program_belongsto'] ) ? sanitize_text_field( $_POST['e20r_program_belongsto'] ) : null ),
-                );
-
-                if ( $program_id == 'auto' ) {
-                    // We'll add this data as a new program
-                    dbg( "We're adding: " . print_r( $data, true ) );
-                    if ( false === $wpdb->insert( $this->table, $data ) ) {
-
-                        wp_send_json_error( $wpdb->last_error );
-                    }
-
-                } elseif ( is_numeric( $program_id ) ) {
-
-                    dbg( "We're updating: " . print_r( $data, true ) );
-                    $where = array( 'id' => $program_id );
-
-                    if ( false === $wpdb->update( $this->table, $data, $where ) ) {
-
-                        wp_send_json_error( $wpdb->last_error );
-                    }
-                }
-            }
-            else {
-
-                dbg("Deleting record # {$program_id}");
-
-                if ( false === $wpdb->delete( $this->table, array( 'id' => $program_id ) ) ) {
-
-                    wp_send_json_error( $wpdb->last_error );
-                }
-            }
-
-            wp_send_json_success( $this->view_listPrograms() );
-        }
-        else {
-
-            wp_send_json_error( 'You do not have permission to add/edit programs' );
-        }
+        return ( $id === false ? false : true );
     }
+
 }

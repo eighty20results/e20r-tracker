@@ -135,6 +135,49 @@ class e20rMeasurements {
         return $upload;
     }
 
+    public function setFilenameForClientUpload( $file ) {
+
+        if ( ( $this->id == 0 ) || ( $this->id === null ) ) {
+
+            dbg("e20rMeasurements::setFilenameForClientUpload() - No Client ID available...");
+            $this->id == get_current_user_id();
+        }
+
+        dbg("e20rMeasurements::setFilenameForClientUpload() - Filename was: {$file['name']}");
+        $timestamp = date( "Ymd", current_time( 'timestamp' ) );
+        $side = '';
+
+        // $fileName[0] = name, $fileName[(count($fileName)] = Extension
+        $fileName = explode( '.', $file['name'] );
+        $ext = $fileName[ (count($fileName) - 1)];
+
+        dbg("e20rMeasurements::setFilenameForClientUpload() - " . print_r( $_FILES, true ) );
+
+        $file['name'] = "{$this->id}-{$timestamp}-{$side}.{$ext}";
+        dbg("e20rMeasurements::setFilenameForClientUpload() - New filename: {$file['name']}");
+
+        return $file;
+    }
+
+    function clientMediaUploader( $strings ) {
+
+        global $current_user;
+
+        if ( in_array( 'admin', $current_user->roles ) ) {
+
+            dbg("e20rMeasurements::clientMediaUploader() -- User is an administrator so don't remove anything.");
+            return $strings;
+        }
+
+        dbg("e20rMeasurements::clientMediaUploader() -- Regular user.");
+        unset( $strings['mediaLibraryTitle'] ); //Media Library
+        unset( $strings['createGalleryTitle'] ); //Create Gallery
+        unset( $strings['setFeaturedImageTitle'] ); //Set Featured Image
+
+        unset( $strings['insertFromUrlTitle'] ); //Insert from URL
+        return $strings;
+    }
+
     private function load_girthTypes() {
 
         dbg("loadGirthInfo() - Running function to grab all girth posts");
@@ -272,18 +315,29 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::ajax_deletePhoto_callback() - Nonce is OK");
 
-        wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" ) );
-    }
+        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Request: " . print_r( $_REQUEST, true ) );
+        $imgId = isset( $_POST['image-id'] ) ? intval( $_POST['image-id'] ) : null;
 
-    public function ajax_addPhoto_callback() {
+        if ( ! $imgId ) {
 
-        dbg('e20rMeasurements::ajax_addPhoto_callback() - Saving new photo');
+            dbg("e20rMeasurements::ajax_deletePhoto_callback() - No attachment ID provided!");
 
-        check_ajax_referer('e20r-tracker-progress', 'e20r-progress-nonce');
+            wp_send_json_error( "Error: Image not found!");
+            wp_die();
+        }
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Nonce is OK");
+        // TODO: Remove image from e20r_measurements for this user, on this date, by setting the field to null.
+        if ( wp_delete_attachment( $imgId , true ) ) {
 
-        wp_send_json_success( 'Photo deleted successfully' );
+            dbg("e20rMeasurements::ajax_deletePhoto_callback() - Attachment with ID {$imgId} successfully deleted");
+
+            wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" ) );
+            wp_die();
+        }
+
+        wp_send_json_error( "Error: Unable to delete image.");
+        wp_die();
+
     }
 
     public function ajax_getPlotDataForUser() {
@@ -399,14 +453,23 @@ class e20rMeasurements {
         $day = 0;
         $from_programstart = 1;
         $use_article_id = 1;
+        $demo_form = 0;
 
         extract( shortcode_atts( array(
             'day' => 0,
             'from_programstart' => 1,
             'use_article_id' => 1,
+            'demo_form' => 0,
         ), $attributes ) );
 
+        if ( $demo_form == 1 ) {
+
+            global $e20rExampleProgress;
+            $e20rExampleProgress = true;
+        }
+
         if ( strtotime( $dated ) ) {
+
             $date = $dated;
         }
 

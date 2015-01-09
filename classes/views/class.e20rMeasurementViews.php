@@ -327,7 +327,11 @@ class e20rMeasurementViews {
 
     private function loadImage( $side ) {
 
+        dbg( "e20rMeasurementViews::loadImage() - Looking for {$side} image..." );
+
         $id = ( isset( $this->data->{$this->fields[$side . "_image"]} ) ?  $this->data->{$this->fields[$side . "_image"]} : null );
+
+        dbg( "e20rMeasurementViews::loadImage() - Locate attachment ID {$id}..." );
 
         if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
 

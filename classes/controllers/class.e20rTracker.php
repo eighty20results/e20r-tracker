@@ -36,24 +36,33 @@ class e20rTracker {
 
     public function loadAllHooks() {
 
-        global $e20rClient, $e20rMeasurements, $e20rArticle, $e20rCheckin, $current_user, $pagenow;
+        global $current_user, $pagenow;
+        global $e20rClient, $e20rMeasurements, $e20rArticle, $e20rCheckin, $e20rExercise, $e20rProgram, $e20rWorkout;
 
         if ( ! $this->hooksLoaded ) {
 
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
-            $e20rProgram = new e20rProgram(); // TODO: Figure out a better way to handle this (the e20rProgram Hook)
+            // $e20rProgram = new e20rProgram(); // TODO: Figure out a better way to handle this (the e20rProgram Hook)
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
+            // add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_workoutCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_checkinCPT"), 10 );
+
+            //e20r_checkins
 
             dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
             dbg("e20rTracker::loadAllHooks() - Pagenow = {$pagenow}" );
 
             if ( ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php') )  {
                 dbg("e20rTracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
-                add_filter('upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir') );
+                // add_filter( 'media-view-strings', array( &$e20rMeasurements, 'clientMediaUploader' ) );
+                add_filter( 'upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir' ) );
+                // add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
             }
 
             // add_action("gform_after_submission", array( &$e20rClient, "afterGFSubmission" ), 10, 2);
@@ -61,6 +70,10 @@ class e20rTracker {
             // add_action( 'parse_query', array( &$this, 'current_user_only' ) );
             add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
             add_filter( 'media_view_settings', array( &$this, 'media_view_settings'), 99 );
+
+            add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
+            add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
+
             // add_filter( 'media_upload_default_tab', array( &$this, 'default_media_tab') );
 
             /* Load scripts & CSS */
@@ -76,22 +89,38 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rClient, 'ajax_assignmentData' ) );
             add_action( 'wp_ajax_get_memberlistForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
             add_action( 'wp_ajax_e20r_userinfo', array( &$e20rClient, 'ajax_userInfo_callback' ) );
-            add_action( 'wp_ajax_save_program_info', array( &$e20rProgram->model, 'ajax_save_program_info' ) );
             add_action( 'wp_ajax_saveMeasurementForUser', array( &$e20rMeasurements, 'saveMeasurement_callback' ) );
             add_action( 'wp_ajax_checkCompletion', array( &$e20rMeasurements, 'checkProgressFormCompletion_callback' ) );
             add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$e20rMeasurements, 'ajax_getPlotDataForUser' ) );
             add_action( 'wp_ajax_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
+            add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
 
-            add_action( 'wp_ajax_get_checkinItem', array( &$e20rClient->checkin, 'ajax_getCheckin_item' ) );
-            add_action( 'wp_ajax_save_item_data', array( &$e20rClient->checkin, 'ajax_save_item_data' ) );
+            // TODO: Remove?
+            add_action( 'wp_ajax_save_program_info', array( &$e20rProgram->model, 'ajax_save_program_info' ) );
+            // End TODO
+
+            add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
+            add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
 
             add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
-            add_action( 'post_updated', array( &$e20rProgram, 'postSave' ) );
+            add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
+            add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
+
 
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
 
             add_action( 'add_meta_boxes', array( &$e20rArticle, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rProgram, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rExercise, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rWorkout, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rCheckin, 'editor_metabox_setup') );
 
             add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
@@ -112,7 +141,10 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_e20r_measurementDataForUser', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_deletePhoto', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_addPhoto', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_addWorkoutGroup', 'e20r_ajaxUnprivError' );
 
+
+            // TODO: Investigate the need for this.
             add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
 
             /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
@@ -128,6 +160,49 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+    public function sanitize( $field ) {
+
+        if ( ! is_numeric( $field ) ) {
+            // dbg( "setFormat() - {$value} is NOT numeric" );
+
+            if ( is_array( $field ) ) {
+
+                foreach( $field as $key => $val ) {
+                    $field[$key] = $this->sanitize( $val );
+                }
+            }
+
+            if ( is_object( $field ) ) {
+
+                foreach( $field as $key => $val ) {
+                    $field->{$key} = $this->sanitize( $val );
+                }
+            }
+
+            if ( ctype_alpha( $field ) ||
+                 strtotime( $field ) ||
+                 is_string( $field ) ) {
+
+                $field = sanitize_text_field( $field ) ;
+            }
+
+        }
+        else {
+
+            if ( is_float( $field + 1 ) ) {
+
+                $field = sanitize_text_field( $field );
+            }
+
+            if ( is_int( $field + 1 ) ) {
+
+                $field = intval( $field );
+            }
+        }
+
+        return $field;
+    }
+
     public function init() {
 
         global $wpdb, $current_user, $e20rClient, $e20rMeasurements;
@@ -137,6 +212,29 @@ class e20rTracker {
             dbg("e20rTracker::init() - Loading Client info");
             $e20rClient->init();
         }
+    }
+
+    public function setEmptyTitleString( $title ) {
+
+        $screen = get_current_screen();
+
+        switch ( $screen->post_type ) {
+            case 'e20r_exercises':
+                $title = 'Enter Exercise Name Here';
+                break;
+            case 'e20r_programs':
+                $title = 'Enter Program Name Here';
+                break;
+            case 'e20r_workout':
+                $title = 'Enter Workout Name Here';
+                break;
+            case 'e20r_checkins':
+                $title = 'Enter Checkin Description Here';
+                break;
+
+        }
+        dbg("e20rTracker::setEmptyTitleString() - New title string defined");
+        return $title;
     }
 
     public function dependency_warnings() {
@@ -331,13 +429,18 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $e20rTracker;
 
-
         self::load_adminJS();
 
         $e20r_plot_jscript = true;
         self::register_plotSW();
         self::enqueue_plotSW();
         $e20r_plot_jscript = false;
+
+        wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
+        wp_enqueue_style( 'select2', '"//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.js"' );
+        wp_enqueue_script( 'jquery.timeago' );
+        wp_enqueue_script( 'select2' );
+
 
     }
 
@@ -528,11 +631,12 @@ class e20rTracker {
 
         global $e20rClient, $e20rProgram, $e20rCheckin;
 
-        dbg("e20rTracker::registerAdminPages() - Loading client rendering page");
+        dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
         $page = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r-tracker', __( 'Program','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$e20rProgram, 'render_submenu_page'));
-        add_submenu_page( 'e20r-tracker', __( 'Check-in Item','e20r_tracker'), __('Check-in Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$e20rCheckin, 'render_submenu_page'));
         add_submenu_page( 'e20r-tracker', __( 'Client Data','e20r_tracker'), __( 'Client Data','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
+
+//        add_submenu_page( 'e20r-tracker', __( 'Check-in Item','e20r_tracker'), __('Check-in Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$e20rCheckin, 'render_submenu_page'));
+//        add_submenu_page( 'e20r-tracker', __( 'Program','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$e20rProgram, 'render_submenu_page'));
 //        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$e20rArticle,'render_submenu_page') );
 //        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
 //        add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
@@ -690,7 +794,7 @@ class e20rTracker {
             global $e20r_plot_jscript;
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
-
+            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.js", array('jquery'), '4.0', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
             wp_register_script('e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery'), '0.1', false); // true == in footer of body.
@@ -701,8 +805,6 @@ class e20rTracker {
                     'ajaxurl' => admin_url('admin-ajax.php'),
                 )
             );*/
-
-            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
 
             $e20r_plot_jscript = true;
             self::enqueue_plotSW();
@@ -965,7 +1067,7 @@ class e20rTracker {
 
         dbg("e20r_tracker_activate() - Loading table SQL");
 
-
+/*
         $programsTableSql = "
             CREATE TABLE {$wpdb->prefix}e20r_programs (
                     id int not null auto_increment,
@@ -1006,7 +1108,7 @@ class e20rTracker {
                 primary key (id) )
                 {$charset_collate}
         ";
-
+*/
         $intakeTableSql =
             "CREATE TABLE {$wpdb->prefix}e20r_client_info (
                     id int not null,
@@ -1063,7 +1165,7 @@ class e20rTracker {
                     key user_id ( user_id asc) )
                   {$charset_collate}
               ";
-        // TODO: Add item_text on admin page.
+/*        // TODO: Add item_text on admin page.
         $itemsTableSql =
             "CREATE TABLE {$wpdb->prefix}e20r_checkin_items (
                     id int not null auto_increment,
@@ -1078,7 +1180,8 @@ class e20rTracker {
                 primary key  ( id ) ,
                 unique key shortname_UNIQUE ( short_name asc ) )
                 {$charset_collate}";
-
+*/
+/*
         $businessRulesSql =
             "CREATE TABLE {$wpdb->prefix}e20r_checkin_rules (
                     id int not null auto_increment,
@@ -1087,7 +1190,7 @@ class e20rTracker {
                     primary key  ( id ),
                     key checkin_id ( checkin_id asc ) )
                 {$charset_collate}";
-
+*/
         /**
          *
          */
@@ -1173,17 +1276,16 @@ class e20rTracker {
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('e20r_tracker_activate() - Creating tables in database');
-        dbDelta( $itemsTableSql );
-        dbDelta( $businessRulesSql );
+/*        dbDelta( $itemsTableSql );
+        dbDelta( $businessRulesSql ); */
         dbDelta( $checkinSql );
         dbDelta( $measurementTableSql );
         dbDelta( $intakeTableSql );
         dbDelta( $assignmentAsSql );
         dbDelta( $assignmentQsSql );
-        dbDelta( $programsTableSql );
+/*        dbDelta( $programsTableSql );
         dbDelta( $setsTableSql );
-        dbDelta( $exercisesTableSql );
-        dbDelta( $intakeTableSql );
+        dbDelta( $exercisesTableSql ); */
         dbDelta( $oldMeasurementTableSql );
 
         // dbg("e20r_tracker_activate() - Adding triggers in database");
@@ -1204,16 +1306,16 @@ class e20rTracker {
         dbg("Deactivation options: " . print_r( $options, true ) );
 
         $tables = array(
-            $wpdb->prefix . 'e20r_checkin_items',
-            $wpdb->prefix . 'e20r_checkin_rules',
+//            $wpdb->prefix . 'e20r_checkin_items',
+//            $wpdb->prefix . 'e20r_checkin_rules',
             $wpdb->prefix . 'e20r_checkin',
             $wpdb->prefix . 'e20r_assignment',
             $wpdb->prefix . 'e20r_question',
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
-            $wpdb->prefix . 'e20r_programs',
-            $wpdb->prefix . 'e20r_sets',
-            $wpdb->prefix . 'e20r_exercises',
+//            $wpdb->prefix . 'e20r_programs',
+//            $wpdb->prefix . 'e20r_sets',
+//            $wpdb->prefix . 'e20r_exercises',
             $wpdb->prefix . 'e20r_articles',
         );
 
@@ -1239,6 +1341,48 @@ class e20rTracker {
         $wpdb->query("DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total");
         // Remove existing options
         delete_option( $this->setting_name );
+    }
+
+    public function e20r_tracker_programCPT() {
+
+        $labels =  array(
+            'name' => __( 'Program', 'e20rtracker'  ),
+            'singular_name' => __( 'Programs', 'e20rtracker' ),
+            'slug' => 'e20r_programs',
+            'add_new' => __( 'New Program', 'e20rtracker' ),
+            'add_new_item' => __( 'New Program', 'e20rtracker' ),
+            'edit' => __( 'Edit program', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Program', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Programs', 'e20rtracker' ),
+            'view_item' => __( 'View This Program', 'e20rtracker' ),
+            'search_items' => __( 'Search Programs', 'e20rtracker' ),
+            'not_found' => __( 'No Programs Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Programs Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_programs',
+            array( 'labels' => apply_filters( 'e20r-tracker-program-cpt-labels', $labels ),
+                   'public' => true,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker',
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-program-cpt-slug', 'tracker-programs'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-program-cpt-archive-slug', 'tracker-programs')
+            )
+        );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: Failed to register e20r_program CPT: ' . $error->get_error_message);
+        }
     }
 
     public function e20r_tracker_articleCPT() {
@@ -1310,7 +1454,7 @@ class e20rTracker {
                    'hierarchical' => true,
                    'supports' => array('title','editor','excerpt','thumbnail','custom-fields','author'),
                    'can_export' => true,
-                   'show_in_nav_menus' => true,
+                   'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
@@ -1325,6 +1469,131 @@ class e20rTracker {
         }
     }
 
+    public function e20r_tracker_exerciseCPT() {
+
+        $labels =  array(
+            'name' => __( 'Exercise', 'e20rtracker'  ),
+            'singular_name' => __( 'Exercises', 'e20rtracker' ),
+            'slug' => 'e20r_exercise',
+            'add_new' => __( 'New Exercise', 'e20rtracker' ),
+            'add_new_item' => __( 'New Exercise', 'e20rtracker' ),
+            'edit' => __( 'Edit Exercise', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Exercise', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Exercises', 'e20rtracker' ),
+            'view_item' => __( 'View This Exercise', 'e20rtracker' ),
+            'search_items' => __( 'Search Exercises', 'e20rtracker' ),
+            'not_found' => __( 'No Exercises Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Exercises Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_exercises',
+            array( 'labels' => apply_filters( 'e20r-tracker-exercise-cpt-labels', $labels ),
+                   'public' => true,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title','editor','excerpt','thumbnail', 'page-attributes'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker',
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-exercise-cpt-slug', 'tracker-exercise'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-exercise-cpt-archive-slug', 'tracker-exercises')
+            )
+        );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: Failed to register e20r_exercise CPT: ' . $error->get_error_message);
+        }
+    }
+
+    public function e20r_tracker_workoutCPT() {
+
+        $labels =  array(
+            'name' => __( 'Workout', 'e20rtracker'  ),
+            'singular_name' => __( 'Workouts', 'e20rtracker' ),
+            'slug' => 'e20r_workout',
+            'add_new' => __( 'New Workout', 'e20rtracker' ),
+            'add_new_item' => __( 'New Workout', 'e20rtracker' ),
+            'edit' => __( 'Edit Workout', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Workout', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Workouts', 'e20rtracker' ),
+            'view_item' => __( 'View This Workout', 'e20rtracker' ),
+            'search_items' => __( 'Search Workouts', 'e20rtracker' ),
+            'not_found' => __( 'No Workouts Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Workouts Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_workout',
+            array( 'labels' => apply_filters( 'e20r-tracker-workout-cpt-labels', $labels ),
+                   'public' => true,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker',
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-workout-cpt-slug', 'tracker-workout'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-workout-cpt-archive-slug', 'tracker-workout')
+            )
+        );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: Failed to register e20r_workout CPT: ' . $error->get_error_message);
+        }
+    }
+
+    public function e20r_tracker_checkinCPT() {
+
+        $labels =  array(
+            'name' => __( 'Check-in', 'e20rtracker'  ),
+            'singular_name' => __( 'Check-ins', 'e20rtracker' ),
+            'slug' => 'e20r_checkins',
+            'add_new' => __( 'New Check-in', 'e20rtracker' ),
+            'add_new_item' => __( 'New Check-in', 'e20rtracker' ),
+            'edit' => __( 'Edit Check-in', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Check-in', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Check-ins', 'e20rtracker' ),
+            'view_item' => __( 'View This Check-in', 'e20rtracker' ),
+            'search_items' => __( 'Search Check-ins', 'e20rtracker' ),
+            'not_found' => __( 'No Check-ins Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Check-ins Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_checkins',
+            array( 'labels' => apply_filters( 'e20r-tracker-checkin-cpt-labels', $labels ),
+                   'public' => true,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker',
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-checkin-cpt-slug', 'tracker-checkin'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-checkin-cpt-archive-slug', 'tracker-checkin')
+            )
+        );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: Failed to register e20r_checkin CPT: ' . $error->get_error_message);
+        }
+    }
     /**
      * Configure & display the icon for the Sequence Post type (in the Dashboard)
      */
@@ -1459,4 +1728,20 @@ class e20rTracker {
             return $levels;
         }
     }
+
+    public function isActiveUser( $userId ) {
+
+        if ( function_exists('pmpro_hasMembershipLevel' ) ) {
+
+            $ud = get_user_by( 'id', $userId );
+
+            $notFreeMember = (! pmpro_hasMembershipLevel( 13, $userId ) );
+            $notDummyUser = (! $ud->has_cap('app_dmy_users') );
+
+            return ( $notFreeMember && $notDummyUser );
+        }
+
+        return true;
+    }
+
 }

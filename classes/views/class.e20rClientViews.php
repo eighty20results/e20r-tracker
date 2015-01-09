@@ -93,7 +93,7 @@ class e20rClientViews {
                             ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
                         } ?>
                         </select>
-                        <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Client Data', 'e20r-tracker'); ?></a></span>
+                        <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Client D', 'e20r-tracker'); ?></a></span>
                         <div id="spin-for-member" class="seq_spinner"></div>
                         <input type="hidden" name="hidden_e20r_client_id" id="hidden_e20r_client_id" value="0" >
                     </div>
@@ -156,17 +156,17 @@ class e20rClientViews {
             </form>
         </div>
         <hr class="e20r-admin-hr" />
-        <div id="e20r-info">
+        <div id="e20r-progr-info">
 
             <?php echo $this->viewClientDetail( $this->client_id ); ?>
         </div>
-        <div id="e20r-compliance">
+        <div id="e20r-progr-compliance">
             <?php echo $this->viewCompliance( $this->client_id, null ); ?>
         </div>
-        <div id="e20r-assignments">
+        <div id="e20r-progr-assignment">
             <?php echo $this->viewAssignments( $this->client_id ); ?>
         </div>
-        <div id="e20r-admin-measurements">
+        <div id="e20r-progr-measurements">
 
         </div>
     <?php

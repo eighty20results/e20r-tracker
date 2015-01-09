@@ -48,7 +48,7 @@ class e20rTables {
         $this->tables->responses     = $wpdb->prefix . 'e20r_answers';
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
-        $this->tables->programs      = $wpdb->prefix . 'e20r_programs';
+        $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
         $this->tables->exercise      = $wpdb->prefix . 'e20r_exercises';
         $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
@@ -90,7 +90,7 @@ class e20rTables {
 
     private function loadProgramFields() {
 
-        $this->fields['programs'] = array(
+        $this->fields['program'] = array(
             'id'                => 'id',
             'program_name'      => 'program_name',
             'program_shortname' => 'program_shortname',
@@ -164,7 +164,7 @@ class e20rTables {
             case 'measurements':
                 $this->loadMeasurementFields();
                 break;
-            case 'programs':
+            case 'program':
                 $this->loadProgramFields();
                 break;
         }

@@ -10,11 +10,85 @@ class e20rProgramView {
 
     private $programs = null;
 
-    public function e20rProgramView( $programData ) {
+    public function e20rProgramView( $programData = null ) {
 
         $this->programs = $programData;
 
     }
+
+    public function viewProgramSettingsBox( $programData, $feeds ) {
+
+        dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
+        ?>
+        <form action="" method="post">
+            <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
+            <div class="e20r-editform">
+                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->ID : 0 ); ?>">
+                <table id="e20r-program-settings">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-shortname">Program Shortname</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed">Drip Feed</label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="5"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                        if ( is_null( $programData->starttime ) ) {
+                            $start = '';
+                        } else {
+                            $start = new DateTime( $programData->starttime );
+                            $start = $start->format( 'Y-m-d' );
+                        }
+
+                        if ( is_null( $programData->endtime ) ) {
+                            $end = '';
+                        } else {
+                            $end = new DateTime( $programData->endtime );
+                            $end = $end->format( 'Y-m-d' );
+                        }
+
+                        dbg( "Program - Start: {$start}, End: {$end}" );
+                        ?>
+                        <tr id="<?php echo $programData->ID; ?>" class="program-inputs">
+                            <td class="text-input">
+                                <input type="date" id="e20r-program-starttime" name="e20r-program-starttime" value="<?php echo $start; ?>">
+                            </td>
+                            <td class="text-input">
+                                <input type="date" id="e20r-program-endtime" name="e20r-program-endtime" value="<?php echo $end; ?>">
+                            </td>
+                            <td class="text-input">
+                                <input type="text" id="e20r-program-shortname" name="e20r-program-shortname" size="25" value="<?php echo( ( ! empty( $programData->program_shortname ) ) ? $programData->program_shortname : null ); ?>">
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-dripfeed" name="e20r-program-dripfeed">
+                                    <option value="0">Not configured</option>
+                                    <?php
+
+                                        foreach($feeds as $df) { ?>
+                                            <option value="<?php echo $df->ID;?>"<?php selected( $programData->sequences, $df->ID ); ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
+                                <?php   } ?>
+                                </select>
+                                <style>
+                                    .select2-container {min-width: 150px; max-width: 300px; width: 90%;}
+                                </style>
+                                <script>
+                                    jQuery('#e20r-program-dripfeed').select2();
+                                </script>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    <?php
+    }
+
+    /****************** Obsolete ********************/
 
     public function programSelector( $add_new = true, $selectedId = 0, $listId = null, $disabled = false ) {
 
@@ -66,6 +140,21 @@ class e20rProgramView {
 
     }
 
+    public function relatedProgramsMeta() {
+        ?>
+        <div id="e20r-tracker-program-settings">
+			<?php
+				$box = $this->ProgramSettings();
+				echo $box['html'];
+			?>
+			</div>
+        <?
+    }
+
+    private function showSequenceListForMetaBox() {
+
+    }
+
     public function viewProgramEditSelect() {
 
         //$this->programs = $this->load_program_info( null, true ); // Load all programs & generate a select <div></div>
@@ -106,7 +195,7 @@ class e20rProgramView {
 
         // Fetch the Checkin Item we're looking to manage
         // $program_list = $this->load_program_info( null, false );
-
+        dbg("e20rProgramView::view_listPrograms() - Loading list of programs");
         ob_start();
         ?>
         <H1>List of Programs</H1>
@@ -236,6 +325,7 @@ class e20rProgramView {
         return $html;
     }
 
+
     public function view_selectMemberships( $mId, $rowId = null ) {
 
         if ( function_exists( 'pmpro_getAllLevels' ) ) {
@@ -271,7 +361,7 @@ class e20rProgramView {
 
         global $post;
 
-        $this->init();
+        // $this->init();
 
         $pgms = get_post_meta($post->ID, 'e20r_tracker_program_ids', true);
         $pgms = array_unique( $pgms );
