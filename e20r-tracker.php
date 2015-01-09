@@ -148,17 +148,38 @@ if ( ! class_exists( 'e20rTracker' ) ):
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rProgramModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rProgram.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rProgramView.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rExerciseModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rExercise.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rExerciseView.php" );
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rWorkoutModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rWorkout.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rWorkoutView.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php" );
 
-        require_once( E20R_PLUGIN_DIR . "classes/class.e20rCheckin.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rCheckin.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rCheckinModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rCheckinView.php" );
 
-        require_once( E20R_PLUGIN_DIR . "classes/class.e20rWorkouts.php" );
+        // require_once( E20R_PLUGIN_DIR . "classes/class.e20rWorkouts.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/class.e20rAssignment.php" );
 
 
-        global $e20rTracker, $e20rClient, $e20rMeasurements, $e20rArticle, $e20rProgram, $e20rTables, $e20rMeasurementDate;
+        global $e20rTracker;
+        global $e20rClient;
+        global $e20rMeasurements;
+        global $e20rArticle;
+        global $e20rProgram;
+        global $e20rTables;
+        global $e20rExercise;
+        global $e20rWorkout;
+        global $e20rCheckin;
+        global $e20rMeasurementDate;
+        global $e20rExampleProgress;
 
         /*
          * $GLOBALS['e20rTracker']
@@ -167,6 +188,9 @@ if ( ! class_exists( 'e20rTracker' ) ):
          *
          */
 //        dbg("Request: " . print_r($_REQUEST, true));
+
+        // Set to false unless the user is accessing the example/demo progress form.
+        $e20rExampleProgress = false;
 
         if ( ! isset( $e20rTables ) ) {
 
@@ -190,15 +214,29 @@ if ( ! class_exists( 'e20rTracker' ) ):
             $e20rMeasurements = new e20rMeasurements();
         }
 
+        if ( ! isset( $e20rCheckin ) ) {
+            dbg("E20R Tracker Init: Loading e20rCheckin class");
+            $e20rCheckin = new e20rCheckin();
+        }
+
+
         if ( ! isset( $e20rArticle ) ) {
             $e20rArticle = new e20rArticle();
         }
 
         if ( ! isset( $e20rProgram ) ) {
-            $e20rPrograms = new e20rProgram();
+            $e20rProgram = new e20rProgram();
         }
 
-        $e20rMeasurementDate = '2014-9';
+        if ( ! isset( $e20rExercise ) ) {
+            $e20rExercise = new e20rExercise();
+        }
+
+        if ( ! isset( $e20rWorkout ) ) {
+            $e20rWorkout = new e20rWorkout();
+        }
+
+        $e20rMeasurementDate = '2014-01-01';
 
         add_action( 'init' , 'loadTracker', 9 );
 
