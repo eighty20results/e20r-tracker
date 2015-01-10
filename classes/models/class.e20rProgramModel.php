@@ -1,135 +1,33 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 12/23/14
- * Time: 9:17 AM
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * License Information:
+ *  the GPL v2 license(?)
  */
 
-class e20rProgramModel {
+class e20rProgramModel extends e20rSettingsModel {
 
-    private $id;
-    private $program_name;
-    private $description;
-    private $startime;
-    private $endtime;
-    private $member_id;
-    private $belongs_to;
+    public function e20rProgramModel() {
 
-    private $programTree;
-
-    private $table;
-    private $fields;
-
-    public function e20rProgramModel( $program_id = null ) {
-
-        if ( $program_id === null ) {
-
-            global $post;
-
-            if ( $post->post_type == 'e20r_programs' ) {
-
-                $program_id = $post->ID;
-            }
-        }
-
-
-        $this->settings = $this->loadSettings( $program_id );
-
-        global $e20rTables;
-
-        $this->table = $e20rTables->getTable('program');
-        $this->fields = $e20rTables->getFields('program');
+        parent::__construct( 'program', 'e20r_programs');
 
     }
 
-    private function defaultSettings() {
+    public function defaultSettings() {
 
-        $settings = new stdClass();
-        $settings->starttime = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
-        $settings->program_shortname = null;
-        $settings->endtime = null;
-        $settings->sequences = null;
+        global $post;
+
+        $settings = parent::defaultSettings();
+
+        $settings->program_shortname = ( isset( $post->post_name ) ? $post->post_name : null );
+        $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
+        $settings->enddate = null;
+        $settings->groups = array();
+        $settings->sequences = array();
 
         return $settings;
-    }
-
-    public function getFieldValue( $name = 'id' ) {
-
-        return $this->{$name};
-    }
-
-    /**
-     * Returns an array of all programs merged with their associated settings.
-     *
-     * @param $statuses string|array - Statuses to return program data for.
-     * @return mixed - Array of program objects
-     */
-    public function loadAllProgramData( $statuses = 'any' ) {
-
-        $query = array(
-            'post_type' => 'e20r_programs',
-            'post_status' => $statuses,
-        );
-
-        wp_reset_query();
-
-        /* Fetch all Sequence posts */
-        $program_list = get_posts( $query );
-
-        if ( empty( $program_list ) ) {
-
-            return false;
-        }
-
-        dbg("e20rProgramModel::loadAllProgramData() - Loading program settings for " . count( $program_list ) . ' settings');
-
-        foreach( $program_list as $key => $data ) {
-
-            $settings = $this->loadSettings( $data->ID );
-
-            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
-
-            $program_list[$key] = $loaded_settings;
-        }
-
-        return $program_list;
-    }
-
-    public function loadProgramData( $id, $statuses = 'any' ) {
-
-        if ( $id == null ) {
-            dbg("Error: Unable to load program data. No ID specified!");
-            return false;
-        }
-
-        $query = array(
-            'post_type' => 'e20r_programs',
-            'post_status' => $statuses,
-            'p' => $id,
-        );
-
-        wp_reset_query();
-
-        /* Fetch Programs */
-        $program_list = get_posts( $query );
-
-        if ( empty( $program_list ) ) {
-            dbg("e20rProgramModel::loadProgramData() - No programs found!");
-            return false;
-        }
-
-        foreach( $program_list as $key => $data ) {
-
-            $settings = $this->loadSettings( $data->ID );
-
-            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
-
-            $program_list[$key] = $loaded_settings;
-        }
-
-
-        return $program_list[0];
     }
 
     /**
@@ -142,45 +40,35 @@ class e20rProgramModel {
     public function saveSettings( $settings ) {
 
         $programId = $settings->id;
-        unset($settings->id);
 
-        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
+        $defaults = $this->defaultSettings();
 
         dbg("e20rProgramModel::saveSettings() - Saving program Metadata: " . print_r( $settings, true ) );
 
-        if ( false === update_post_meta( $programId, 'e20r-program-settings', $settings ) ) {
+        $error = false;
 
-            dbg("e20rProgram::saveSettings() - ERROR saving settings for program with ID: {$programId}");
-            return false;
+        foreach ( $defaults as $key => $value ) {
+
+            if ( in_array( $key, array( 'id', 'program_shortname' ) ) ) {
+                continue;
+            }
+
+            if ( false === $this->settings( $programId, 'update', $key, $settings->{$key} ) ) {
+
+                dbg( "e20rProgram::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for program definition with ID: {$programId}" );
+
+                $error = true;
+            }
         }
 
-        return true;
-    }
-
-    /**
-     * Load the Program Settings from the metadata table.
-     *
-     * @param $id (int) - The ID of the program to load settings for
-     *
-     * @return mixed - Array of settings if successful at loading the settings, otherwise returns false.
-     */
-    public function loadSettings( $id ) {
-
-        if ( false === ( $settings = get_post_meta( $id, 'e20r-program-settings', true ) ) ) {
-
-            dbg("e20rProgramModel::loadSettings() - ERROR loading settings for program with ID: {$id}");
-        }
-
-        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
-
-        return $settings;
+        return ( !$error ) ;
     }
 
     /**
      * Save program settings to the post_meta table.
      *
      * @param $data - Array of data to insert/update/delete.
-     */
+     * /
     public function saveProgram( $data ) {
 
         global $wpdb;
@@ -215,7 +103,7 @@ class e20rProgramModel {
             }
         }
     }
-
+    */
     /********************** OBSOLETE ***************************/
 
     public function ajax_save_program_info() {
