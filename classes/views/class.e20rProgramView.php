@@ -16,7 +16,9 @@ class e20rProgramView {
 
     }
 
-    public function viewProgramSettingsBox( $programData, $feeds ) {
+    public function viewSettingsBox( $programData, $feeds ) {
+
+        global $e20rTracker;
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
         ?>
@@ -27,9 +29,9 @@ class e20rProgramView {
                 <table id="e20r-program-settings">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-shortname">Program Shortname</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-startdate">Starts on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate">Ends on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-levels">Member Levels</label></th>
                         <th class="e20r-label header"><label for="e20r-program-dripfeed">Drip Feed</label></th>
                     </tr>
                     <tr>
@@ -38,46 +40,62 @@ class e20rProgramView {
                     </thead>
                     <tbody>
                     <?php
-                        if ( is_null( $programData->starttime ) ) {
+                        if ( is_null( $programData->startdate ) ) {
                             $start = '';
                         } else {
-                            $start = new DateTime( $programData->starttime );
+                            $start = new DateTime( $programData->startdate );
                             $start = $start->format( 'Y-m-d' );
                         }
 
-                        if ( is_null( $programData->endtime ) ) {
+                        if ( is_null( $programData->enddate ) ) {
                             $end = '';
                         } else {
-                            $end = new DateTime( $programData->endtime );
+                            $end = new DateTime( $programData->enddate );
                             $end = $end->format( 'Y-m-d' );
                         }
 
                         dbg( "Program - Start: {$start}, End: {$end}" );
                         ?>
-                        <tr id="<?php echo $programData->ID; ?>" class="program-inputs">
+                        <tr id="<?php echo $programData->id; ?>" class="program-inputs">
                             <td class="text-input">
-                                <input type="date" id="e20r-program-starttime" name="e20r-program-starttime" value="<?php echo $start; ?>">
+                                <input type="date" id="e20r-program-startdate" name="e20r-program-startdate" value="<?php echo $start; ?>">
                             </td>
                             <td class="text-input">
-                                <input type="date" id="e20r-program-endtime" name="e20r-program-endtime" value="<?php echo $end; ?>">
-                            </td>
-                            <td class="text-input">
-                                <input type="text" id="e20r-program-shortname" name="e20r-program-shortname" size="25" value="<?php echo( ( ! empty( $programData->program_shortname ) ) ? $programData->program_shortname : null ); ?>">
+                                <input type="date" id="e20r-program-enddate" name="e20r-program-enddate" value="<?php echo $end; ?>">
                             </td>
                             <td>
-                                <select class="select2-container" id="e20r-program-dripfeed" name="e20r-program-dripfeed">
+                                <select class="select2-container" id="e20r-program-groups" name="e20r-program-groups[]" multiple>
+                                    <option value="0"><?php _e("Not Applicable", "e20rtracker"); ?></option>
+                                    <?php
+                                        $levels = $e20rTracker->getMembershipLevels( null, true );
+
+                                        foreach( $levels as $id => $name ) {
+
+                                            $selected = ( in_array( $id, $programData->groups ) ? ' selected="selected" ' : null ); ?>
+                                            <option value="<?php echo $id; ?>" <?php echo $selected; ?>><?php echo $name; ?></option>
+                                            <?php
+                                        }
+                                    ?>
+                                </select>
+                                <!-- <input type="text" id="e20r-program-groups" name="e20r-program-groups" size="25" value="<?php echo( ( ! empty( $programData->groups ) ) ? $programData->program_shortname : null ); ?>"> -->
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple>
                                     <option value="0">Not configured</option>
                                     <?php
 
-                                        foreach($feeds as $df) { ?>
-                                            <option value="<?php echo $df->ID;?>"<?php selected( $programData->sequences, $df->ID ); ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
+                                        foreach($feeds as $df) {
+
+                                            $selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null ); ?>
+                                            <option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
                                 <?php   } ?>
                                 </select>
                                 <style>
-                                    .select2-container {min-width: 150px; max-width: 300px; width: 90%;}
+                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
                                 </style>
                                 <script>
-                                    jQuery('#e20r-program-dripfeed').select2();
+                                    jQuery("#e20r-program-groups").select2();
+                                    jQuery('#e20r-program-sequences').select2();
                                 </script>
                             </td>
                         </tr>
@@ -210,8 +228,8 @@ class e20rProgramView {
                         <th class="e20r-label header"><label for="e20r-program_id">Edit</label></th>
                         <th class="e20r-label header"><label for="e20r-program_id">ID</label></th>
                         <th class="e20r-label header"><label for="e20r-program_name">Name</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-starttime">Starts on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-endtime">Ends on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-startdate">Starts on</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate">Ends on</label></th>
                         <th class="e20r-label header"><label for="e20r-program-descr">Description</label></th>
                         <th class="e20r-label header"><label for="e20r-memberships">Belongs to (Membership)</label></th>
                         <th class="e20r-save-col hidden">Save</td>
@@ -231,17 +249,17 @@ class e20rProgramView {
 
                         foreach ($this->programs as $program) {
 
-                            if ( is_null( $program->starttime ) ) {
+                            if ( is_null( $program->startdate ) ) {
                                 $start = '';
                             } else {
-                                $start = new DateTime( $program->starttime );
+                                $start = new DateTime( $program->startdate );
                                 $start = $start->format( 'Y-m-d' );
                             }
 
-                            if ( is_null( $program->endtime ) ) {
+                            if ( is_null( $program->enddate ) ) {
                                 $end = '';
                             } else {
-                                $end = new DateTime( $program->endtime );
+                                $end = new DateTime( $program->enddate );
                                 $end = $end->format( 'Y-m-d' );
                             }
 
@@ -260,10 +278,10 @@ class e20rProgramView {
                                     <input type="text" id="e20r-program_name_<?php echo $pid; ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-starttime_<?php echo $pid; ?>" disabled name="e20r_program_starttime" value="<?php echo $start; ?>">
+                                    <input type="date" id="e20r-program-startdate_<?php echo $pid; ?>" disabled name="e20r_program_startdate" value="<?php echo $start; ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-endtime_<?php echo $pid; ?>" disabled name="e20r_program_endtime" value="<?php echo $end; ?>">
+                                    <input type="date" id="e20r-program-enddate_<?php echo $pid; ?>" disabled name="e20r_program_enddate" value="<?php echo $end; ?>">
                                 </td>
                                 <td class="text-descr">
                                     <textarea class="expand" id="e20r-program-descr_<?php echo $pid; ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
@@ -305,8 +323,8 @@ class e20rProgramView {
                         <td class="text-input"><input type="checkbox" disabled name="edit" id="edit"></td>
                         <td class="text-input"><input type="text" id="e20r-program_id" name="e20r_program_id" disabled size="5" value="auto"></td>
                         <td class="text-input"><input type="text" id="e20r-program_name" name="e20r_program_name" size="25" value=""></td>
-                        <td class="text-input"><input type="date" id="e20r-program-starttime" name="e20r_program_starttime" value=""></td>
-                        <td class="text-input"><input type="date" id="e20r-program-endtime" name="e20r_program_endtime" value=""></td>
+                        <td class="text-input"><input type="date" id="e20r-program-startdate" name="e20r_program_startdate" value=""></td>
+                        <td class="text-input"><input type="date" id="e20r-program-enddate" name="e20r_program_enddate" value=""></td>
                         <td class="text-descr"><textarea class="expand" id="e20r-program-descr" name="e20r_program_descr" rows="1" wrap="soft"></textarea></td>
                         <td class="select-input"><?php echo $this->view_selectMemberships( 0, null ); ?></td>
                         <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#">Save</a></td>
