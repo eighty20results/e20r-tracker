@@ -41,8 +41,6 @@ class e20rTables {
         $this->tables = new stdClass();
 
         /* The database tables used by this plugin */
-        $this->tables->checkin_items = $wpdb->prefix . 'e20r_checkin_items';
-        $this->tables->checkin_rules = $wpdb->prefix . 'e20r_checkin_rules';
         $this->tables->checkin       = $wpdb->prefix . 'e20r_checkin';
         $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
         $this->tables->responses     = $wpdb->prefix . 'e20r_answers';
@@ -86,6 +84,18 @@ class e20rTables {
     public function isBetaClient() {
 
         return $this->inBeta;
+    }
+
+    private function loadCheckinFields() {
+
+        $this->fields['checkin'] = array(
+            'id'                => 'id',
+            'user_id'           => 'user_id',
+            'checkin_date'      => 'checkin_date',
+            'checkin_item_id'   => 'checkin_item_id',
+            'checkedin'         => 'checkedin',
+            'checkin_type'      => 'checkin_type',
+        );
     }
 
     private function loadProgramFields() {
@@ -154,18 +164,20 @@ class e20rTables {
         }
     }
 
-    private function loadCheckinFields() {
-
-    }
-
     private function loadFields( $name ) {
 
         switch ( $name ) {
+
             case 'measurements':
                 $this->loadMeasurementFields();
                 break;
+
             case 'program':
                 $this->loadProgramFields();
+                break;
+
+            case 'checkin':
+                $this->loadCheckinFields();
                 break;
         }
     }
