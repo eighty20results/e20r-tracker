@@ -1596,6 +1596,7 @@ class e20rTracker {
             dbg('ERROR: Failed to register e20r_checkin CPT: ' . $error->get_error_message);
         }
     }
+
     /**
      * Configure & display the icon for the Sequence Post type (in the Dashboard)
      */
