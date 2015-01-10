@@ -76,11 +76,55 @@ function loadTracker() {
 
     try {
 
-        global $e20rTables, $e20rTracker, $e20rClient, $e20rMeasurements;
+        global $e20rTables;
+        global $e20rTracker;
+        global $e20rClient;
+        global $e20rMeasurements;
+        global $e20rArticle;
+        global $e20rProgram;
+        global $e20rTables;
+        global $e20rExercise;
+        global $e20rWorkout;
+        global $e20rCheckin;
 
         $e20rTables->init();
-        $e20rTracker->init();
+        // $e20rTracker->init();
+
+        if ( ! isset( $e20rClient ) ) {
+            dbg("E20R Tracker Init: Loading e20rClient class");
+            $e20rClient = new e20rClient();
+        }
+
+        if ( ! isset( $e20rMeasurements ) ) {
+            dbg("E20R Tracker Init: Loading e20rMeasurements class");
+            $e20rMeasurements = new e20rMeasurements();
+        }
+
+        if ( ! isset( $e20rProgram ) ) {
+            $e20rProgram = new e20rProgram();
+        }
+
+        if ( ! isset( $e20rCheckin ) ) {
+            dbg("E20R Tracker Init: Loading e20rCheckin class");
+            $e20rCheckin = new e20rCheckin();
+        }
+
+
+        if ( ! isset( $e20rArticle ) ) {
+            $e20rArticle = new e20rArticle();
+        }
+
+
+        if ( ! isset( $e20rExercise ) ) {
+            $e20rExercise = new e20rExercise();
+        }
+
+        if ( ! isset( $e20rWorkout ) ) {
+            $e20rWorkout = new e20rWorkout();
+        }
+
         $e20rTracker->loadAllHooks();
+
 
     }
     catch ( Exception $e ) {
@@ -135,8 +179,13 @@ if ( ! class_exists( 'e20rTracker' ) ):
     try {
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
+
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTrackerModel.php");
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rTracker.php");
+
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rSettingsModel.php");
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rSettings.php");
+//        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rSettingsView.php");
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
@@ -167,7 +216,6 @@ if ( ! class_exists( 'e20rTracker' ) ):
         // require_once( E20R_PLUGIN_DIR . "classes/class.e20rWorkouts.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/class.e20rAssignment.php" );
-
 
         global $e20rTracker;
         global $e20rClient;
@@ -204,37 +252,7 @@ if ( ! class_exists( 'e20rTracker' ) ):
             $e20rTracker = new e20rTracker();
         }
 
-        if ( ! isset( $e20rClient ) ) {
-            dbg("E20R Tracker Init: Loading e20rClient class");
-            $e20rClient = new e20rClient();
-        }
 
-        if ( ! isset( $e20rMeasurements ) ) {
-            dbg("E20R Tracker Init: Loading e20rMeasurements class");
-            $e20rMeasurements = new e20rMeasurements();
-        }
-
-        if ( ! isset( $e20rCheckin ) ) {
-            dbg("E20R Tracker Init: Loading e20rCheckin class");
-            $e20rCheckin = new e20rCheckin();
-        }
-
-
-        if ( ! isset( $e20rArticle ) ) {
-            $e20rArticle = new e20rArticle();
-        }
-
-        if ( ! isset( $e20rProgram ) ) {
-            $e20rProgram = new e20rProgram();
-        }
-
-        if ( ! isset( $e20rExercise ) ) {
-            $e20rExercise = new e20rExercise();
-        }
-
-        if ( ! isset( $e20rWorkout ) ) {
-            $e20rWorkout = new e20rWorkout();
-        }
 
         $e20rMeasurementDate = '2014-01-01';
 
