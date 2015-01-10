@@ -96,10 +96,6 @@ class e20rTracker {
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
             add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
 
-            // TODO: Remove?
-            add_action( 'wp_ajax_save_program_info', array( &$e20rProgram->model, 'ajax_save_program_info' ) );
-            // End TODO
-
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
 
@@ -203,33 +199,35 @@ class e20rTracker {
         return $field;
     }
 
-    public function init() {
-
-        global $wpdb, $current_user, $e20rClient, $e20rMeasurements;
-
-        // TODO: Don't init the client here. No need until it's actually used by something (i.e. in the has_weeklyProgress_shortcode, etc)
-        if ( ! $e20rClient->client_loaded ) {
-            dbg("e20rTracker::init() - Loading Client info");
-            $e20rClient->init();
-        }
-    }
-
     public function setEmptyTitleString( $title ) {
 
         $screen = get_current_screen();
 
         switch ( $screen->post_type ) {
             case 'e20r_exercises':
+
                 $title = 'Enter Exercise Name Here';
                 break;
+
             case 'e20r_programs':
+
                 $title = 'Enter Program Name Here';
+                remove_meta_box( 'postexcerpt', 'e20r_programs', 'side' );
+                add_meta_box('postexcerpt', __('Summary'), 'post_excerpt_meta_box', 'e20r_programs', 'normal', 'high');
+
                 break;
+
             case 'e20r_workout':
+
                 $title = 'Enter Workout Name Here';
                 break;
+
             case 'e20r_checkins':
-                $title = 'Enter Checkin Description Here';
+
+                $title = 'Enter Check-in Short-code Here';
+                remove_meta_box( 'postexcerpt', 'e20r_checkins', 'side' );
+                add_meta_box('postexcerpt', __('Check-in text'), 'post_excerpt_meta_box', 'e20r_checkins', 'normal', 'high');
+
                 break;
 
         }
@@ -1199,6 +1197,7 @@ class e20rTracker {
             "CREATE TABLE {$wpdb->prefix}e20r_checkin (
                     id int not null auto_increment,
                     user_id int null,
+                    checkin_type int null,
                     checkin_date datetime null,
                     checkin_item_id int not null,
                     checkedin tinyint not null default 0,
@@ -1685,9 +1684,7 @@ class e20rTracker {
 
     public function getMembershipLevels( $level = null, $onlyVisible = false ) {
 
-        if ( ! function_exists( 'pmpro_getAllLevels' ) ) {
-            $this->dependency_warnings();
-        } else {
+        if ( function_exists( 'pmpro_getAllLevels' ) ) {
 
             if ( is_numeric( $level ) ) {
 
@@ -1727,6 +1724,8 @@ class e20rTracker {
 
             return $levels;
         }
+
+        $this->dependency_warnings();
     }
 
     public function isActiveUser( $userId ) {
