@@ -91,6 +91,7 @@ class e20rTables {
         $this->fields['checkin'] = array(
             'id'                => 'id',
             'user_id'           => 'user_id',
+            'program_id'        => 'program_id',
             'checkin_date'      => 'checkin_date',
             'checkin_item_id'   => 'checkin_item_id',
             'checkedin'         => 'checkedin',
@@ -120,6 +121,7 @@ class e20rTables {
                 'id'                    => 'id',
                 'user_id'               => 'user_id',
                 'article_id'            => 'article_id',
+                'program_id'            => 'program_id',
                 'recorded_date'         => 'recorded_date',
                 'weight'                => 'weight',
                 'girth_neck'            => 'neck',
