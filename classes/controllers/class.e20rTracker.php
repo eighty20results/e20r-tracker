@@ -1159,6 +1159,7 @@ class e20rTracker {
                     front_image int default null,
                     side_image int default null,
                     back_image int default null,
+                    program_id int default 0,
                     primary key id ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
@@ -1197,12 +1198,14 @@ class e20rTracker {
             "CREATE TABLE {$wpdb->prefix}e20r_checkin (
                     id int not null auto_increment,
                     user_id int null,
+                    program_id int null,
                     checkin_type int null,
                     checkin_date datetime null,
                     checkin_item_id int not null,
                     checkedin tinyint not null default 0,
                     primary key  (id),
-                    key checkin_item_id ( checkin_item_id asc ) )
+                        key program_id ( program_id asc ),
+                        key checkin_item_id ( checkin_item_id asc ) )
                 {$charset_collate}";
 
 
