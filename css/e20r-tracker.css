@@ -272,6 +272,7 @@
     font-size: 20px !important;
     line-height: 50% !important;
     font-weight: bold;
+    margin: 0 0 15px;
 }
 
 #saturday-progress-container.progress-container > h3 span {
@@ -341,6 +342,7 @@
     border-top: 1px solid #5C5C5C;
     background: rgba( 197, 197, 197, 0.3 );
     color: #004CFF;
+    margin: 0;
 }
 #saturday-progress-container h5.measurement-header:after {
     content: ".";
@@ -373,6 +375,7 @@
 #saturday-progress-container .girth-row-container .girth-descript-container {
     width: 452px;
     float: left;
+    /* vertical-align: baseline; */
 }
 
 #saturday-progress-container .girth-row-container .girth-descript-container.active { width: 362px; }
@@ -1003,4 +1006,28 @@ div.date {
 }
 div.timeagosize {
     color: #888888;
+}
+#e20r-workout-settings {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+#e20r-workout-settings .sub-table {
+    width:100%;
+    position: relative;
+    left: 0px;
+    min-width: 400px;
+    max-width: 700px;
+}
+#e20r-workout-settings .sub-table th {
+    text-align: left;
+}
+#e20r-workout-settings .sub-table td > input,
+#e20r-workout-settings .sub-table td > select {
+    width: 100%;
+}
+td.e20r-group-header {
+    font-size: 150%;
+    color: #004CFF;
+    font-variant: small-caps;
 }
