@@ -7,49 +7,38 @@
  *  the GPL v2 license(?)
  */
 
-class e20rProgram {
+class e20rProgram extends e20rSettings {
 
-    private $programs = array();
-    public $model = null;
-    public $view;
+    private $programTree = array();
 
-    private $type;
-
-    private $loadedTS;
-
-    public function init( $programId = null ) {
+    public function e20rProgram() {
 
         dbg("e20rProgram::init() - Initializing Program data");
+        parent::__construct( 'program', 'e20r_programs', new e20rProgramModel(), new e20rProgramView() );
+
+    }
+
+    public function init( $programId = null ) {
 
         global $post;
 
         if ( $programId !== null ) {
-            $this->programs = ( is_array( $programId ) ? $programId : array( $programId ) );
+            $this->programTree = ( is_array( $programId ) ? $programId : array( $programId ) );
         }
         else {
-            $this->programs = get_post_meta( $post->ID, 'e20r_tracker_program_ids', true );
+            $this->programTree = get_post_meta( $post->ID, 'e20r_tracker_program_ids', true );
 
-            if ( ( $this->programs !== false ) && ( is_array( $this->programs ) ) ) {
-                $this->programs = array_unique( $this->programs );
+            if ( ( $this->programTree !== false ) && ( is_array( $this->programs ) ) ) {
+                $this->programTree = array_unique( $this->programs );
             }
         }
 
-        $this->model = new e20rProgramModel();
-        $this->view = new e20rProgramView();
-
-        // $this->programs = $this->model->loadPrograminfo( $this->programs, true );
-
-        $this->loadedTS = current_time('timestamp');
+        return true;
     }
 
     public function isActive( $program_shortname ) {
 
-
-        if ( ! isset($this->model) ) {
-            $this->init();
-        }
-
-        $program = $this->getProgram( $program_shortname );
+        $program = $this->findByName( $program_shortname );
 
         if ( ( $program !== false ) && ( ! in_array( $program->post_status, array( 'publish', 'private' ) ) ) ) {
 
@@ -58,8 +47,8 @@ class e20rProgram {
         }
 
         $now = current_time( 'timestamp' );
-        $start = strtotime( $program->starttime );
-        $end = strtotime( $program->endtime );
+        $start = strtotime( $program->startdate );
+        $end = strtotime( $program->enddate );
 
         // It's available since no start has been configured.
         if ( ! $start ) {
@@ -81,79 +70,6 @@ class e20rProgram {
         return false;
     }
 
-    public function getProgram( $shortName ) {
-
-        if ( ! isset( $this->model ) ) {
-            $this->init();
-        }
-
-        $pgmList = $this->model->loadAllPrograms( 'any' );
-
-        foreach ($pgmList as $pgm ) {
-            if ( $pgm->program_shortname == $shortName ) {
-                unset($pgmList);
-                return $pgm;
-            }
-        }
-
-        unset($pgmList);
-        return false; // Returns false if the program isn't found.
-    }
-
-    public function editor_metabox_setup( $object, $box ) {
-
-        global $e20rTracker;
-
-        // $this->view = new e20rProgramView( $this->model->load_program_info() );
-        add_meta_box('e20r-tracker-program-settings', __('Program Settings', 'e20rtracker'), array(&$this, "addMeta_ProgramSettings"), 'e20r_programs', 'normal', 'high');
-
-        /*
-        dbg("e20rProgram::editor_metablox_setup() - Metabox for Post/Page editor being loaded");
-
-        foreach( $e20rTracker->managed_types as $type ) {
-
-            add_meta_box( 'e20r-program-meta', __( 'Eighty/20 Tracker', 'e20rtracker' ),
-                array( &$this->view, 'view_programPostMetabox' ), $type, 'side', 'high' );
-        }
-        */
-    }
-
-    public function saveSettings( $post_id ) {
-
-        global $post;
-
-        dbg("e20rProgram::saveSettings() - Saving Program Settings to DB");
-
-        if ( $post->post_type != 'e20r_programs') {
-            return $post_id;
-        }
-
-        if ( empty( $post_id ) ) {
-            dbg("e20rProgram::saveSettings() - No post ID supplied");
-            return false;
-        }
-
-        if ( wp_is_post_revision( $post_id ) ) {
-            return $post_id;
-        }
-
-        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
-            return $post_id;
-        }
-
-        $this->init( $post->ID );
-
-        dbg("e20rProgram::saveSettings()  - Saving metadata for the post_type(s)");
-
-        $settings = new stdClass();
-        $settings->id = $post_id;
-        $settings->starttime = isset( $_POST['e20r-program-starttime'] ) ? sanitize_text_field( $_POST['e20r-program-endtime'] ) : null;
-        $settings->endtime = isset( $_POST['e20r-program-endtime'] ) ? sanitize_text_field( $_POST['e20r-program-endtime'] ) : null;
-        $settings->program_shortname = isset( $_POST['e20r-program-shortname']) ? sanitize_text_field( $_POST['e20r-program-shortname'] ) : null;
-        $settings->sequences = isset( $_POST['e20r-program-dripfeed']) ? intval( $_POST['e20r-program-dripfeed'] ) : null;
-
-        $this->model->saveSettings( $settings );
-    }
 
     public function getPeerPrograms( $programId = null ) {
 
@@ -196,18 +112,8 @@ class e20rProgram {
         return $ProgramList;
     }
 
-    public function addMeta_ProgramSettings() {
 
-        global $post;
-
-        $this->init( $post->ID );
-
-        dbg("e20rProgram::addMeta_ProgramSettings() - Loading settings metabox for program page");
-        echo $this->view->viewProgramSettingsBox( $this->model->loadProgramData( $post->ID ), $this->loadDripFeed( 'all' ) );
-
-    }
-
-    private function loadDripFeed( $feedId ) {
+    protected function loadDripFeed( $feedId ) {
 
         if ( $feedId == 'all' ) {
             $id = null;

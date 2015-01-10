@@ -7,24 +7,20 @@
  *  the GPL v2 license(?)
  */
 
-class e20rCheckin {
+class e20rCheckin extends e20rSettings {
 
     private $checkin = array();
-    public $model = null;
-    public $view = null;
 
     public function e20rCheckin() {
 
-        dbg("e20rProgram:: - Initializing Checkin class");
-
-        $this->model = new e20rCheckinModel();
-        $this->view = new e20rCheckinView();
+        dbg("e20rCheckin::__construct() - Initializing Checkin class");
+        parent::__construct( 'checkin', 'e20r_program', new e20rCheckinModel(), new e20rCheckinView() );
     }
 
-
+    /*
     public function getCheckin( $shortName ) {
 
-        $chkinList = $this->model->loadAllCheckins( 'any' );
+        $chkinList = $this->model->loadAllSettings( 'any' );
 
         foreach ($chkinList as $chkin ) {
 
@@ -38,54 +34,22 @@ class e20rCheckin {
         unset($chkinList);
         return false; // Returns false if the program isn't found.
     }
-
+*/
+    /*
     public function getAllCheckins() {
 
-        return $this->model->loadAllData();
+        return $this->model->loadAllSettings();
 
     }
     public function getCheckinSettings( $id ) {
 
         return $this->model->loadSettings( $id );
     }
-
+*/
     public function editor_metabox_setup( $object, $box ) {
 
-        add_meta_box('e20r-tracker-checkin-settings', __('Checkin Settings', 'e20rtracker'), array( &$this, "addMeta_CheckinSettings" ), 'e20r_checkins', 'normal', 'high');
+        add_meta_box('e20r-tracker-checkin-settings', __('Check-In Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_checkins', 'normal', 'high');
 
-    }
-
-    public function saveSettings( $post_id ) {
-
-        global $post;
-
-        dbg("e20rCheckin::saveSettings() - Saving Program Settings to DB");
-
-        if ( $post->post_type != 'e20r_checkins') {
-            return $post_id;
-        }
-
-        if ( empty( $post_id ) ) {
-            dbg("e20rCheckin::saveSettings() - No post ID supplied");
-            return false;
-        }
-
-        if ( wp_is_post_revision( $post_id ) ) {
-            return $post_id;
-        }
-
-        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
-            return $post_id;
-        }
-
-        dbg("e20rCheckin::saveSettings()  - Saving metadata for the post_type(s)");
-
-        $settings = new stdClass();
-        $settings->id = $post_id;
-        $settings->reps = isset( $_POST['e20r-checkin-reps'] ) ? intval( $_POST['e20r-checkin-reps'] ) : null;
-        $settings->rest = isset( $_POST['e20r-checkin-rest'] ) ? intval( $_POST['e20r-checkin-rest'] ) : null;
-
-        $this->model->saveSettings( $settings );
     }
 
     public function getPeers( $checkinId = null ) {
@@ -129,10 +93,12 @@ class e20rCheckin {
         return $checkinList;
     }
 
-    public function addMeta_CheckinSettings() {
+
+    public function addMeta_Settings() {
 
         global $post;
 
+        // Query to load all available programs (used with check-in definition)
         $query = array(
             'post_type'   => 'e20r_programs',
             'post_status' => 'publish',
@@ -140,17 +106,19 @@ class e20rCheckin {
 
         wp_reset_query();
 
-        /* Fetch Workouts */
+        //  Fetch Programs
         $programs = get_posts( $query );
 
         if ( empty( $programs ) ) {
 
-            dbg( "e20rWorkoutModel::loadProgramData() - No programs found!" );
+            dbg( "e20rCheckin::addMeta_CheckinSettings() - No programs found!" );
         }
 
-        dbg("e20rCheckin::addMeta_CheckinSettings() - Loading settings metabox for checkin page");
+        dbg("e20rCheckin::addMeta_CheckinSettings() - Loading settings metabox for checkin page {$post->ID}");
+        $settings = $this->model->loadSettings( $post->ID );
 
-        echo $this->view->viewSettingsBox( $this->model->loadCheckinData( $post->ID ), $programs );
+        echo $this->view->viewSettingsBox( $settings , $programs );
 
     }
+
 } 
