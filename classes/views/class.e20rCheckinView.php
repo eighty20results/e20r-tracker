@@ -32,7 +32,7 @@ class e20rCheckinView {
                         <th class="e20r-label header"><label for="e20r-checkin-starttime">Starts on</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-endtime">Ends on</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-number_days">Max # Check-ins</label></th>
-                        <th class="e20r-label header"><label for="e20r-checkin-program_id">Program</label></th>
+                        <th class="e20r-label header"><label for="e20r-checkin-program_ids">Program</label></th>
                     </tr>
                     <tr>
                         <td colspan="5">
@@ -75,7 +75,7 @@ class e20rCheckinView {
                             <input type="number" id="e20r-checkin-maxcount" name="e20r-checkin-maxcount" value="<?php echo $checkinData->maxcount; ?>">
                         </td>
                         <td>
-                            <select class="select2-container" id="e20r-checkin-program_id" name="e20r-checkin-program_id[]" multiple>
+                            <select class="select2-container" id="e20r-checkin-program_ids" name="e20r-checkin-program_ids[]" multiple>
                                 <option value="0">Not configured</option>
                                 <?php
                                 foreach ( $programs as $pgm ) {
