@@ -29,6 +29,7 @@ class e20rCheckinView {
                 <table id="e20r-checkin-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
+                        <th class="e20r-label header"><label for="e20r-checkin-checkin_type">Type</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-starttime">Starts on</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-endtime">Ends on</label></th>
                         <th class="e20r-label header"><label for="e20r-checkin-number_days">Max # Check-ins</label></th>
@@ -65,6 +66,15 @@ class e20rCheckinView {
                     dbg( "Checkin - Start: {$start}, End: {$end}" );
                     ?>
                     <tr id="<?php echo $checkinData->ID; ?>" class="checkin-inputs">
+                        <td>
+                            <select id="e20r-checkin-checkin_type" name="e20r-checkin-type">
+                                <option value="0"><?php _e("Not configured", "e20rtracker"); ?></option>
+                                <option value="1"><?php _e("Action", "e20rtracker"); ?></option>
+                                <option value="2"><?php _e("Assignment", "e20rtracker"); ?></option>
+                                <option value="3"><?php _e("Workout", "e20rtracker"); ?></option>
+                                <option value="4"><?php _e("Survey", "e20rtracker"); ?></option>
+                            </select>
+                        </td>
                         <td class="text-input">
                             <input type="date" id="e20r-checkin-startdate" name="e20r-checkin-startdate" value="<?php echo $start; ?>">
                         </td>
