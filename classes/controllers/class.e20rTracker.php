@@ -104,11 +104,13 @@ class e20rTracker {
             add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
             add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
             add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
+
             add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
-
+            add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
 
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
 
@@ -117,6 +119,7 @@ class e20rTracker {
             add_action( 'add_meta_boxes', array( &$e20rExercise, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rWorkout, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rCheckin, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rArticle, 'editor_metabox_setup') );
 
             add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
