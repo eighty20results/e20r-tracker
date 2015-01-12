@@ -264,6 +264,7 @@
     background: rgba( 0, 76, 255, 0.95 );
     border: 1px solid rgb( 0, 76, 255);
     padding: 14px;
+    max-width: 700px;
 }
 
 #saturday-progress-container.progress-container > h3 {
@@ -568,7 +569,7 @@
     line-height: 12px;
     margin-top: -13px;
 }
-/** TODO: Do we use #photo-upload-table related CSS **/
+
 /**** For the measurements table ****/
 table.e20r-progress-form { width: 630px; }
 table.e20r-progress-form > tbody > tr td {
