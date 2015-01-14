@@ -24,7 +24,11 @@ class e20rSettings {
         $this->view = $view;
     }
 
-    protected function init( $postId ) {
+    protected function init( $postId = null ) {
+
+        if ( ! $postId ) {
+            return false;
+        }
 
         $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
 
@@ -43,10 +47,6 @@ class e20rSettings {
     }
 
     public function findByName( $shortName ) {
-
-        if ( ! isset( $this->model ) ) {
-            $this->init();
-        }
 
         $list = $this->model->loadAllSettings( 'any' );
         $key = false;
