@@ -3,15 +3,12 @@
 /*
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
-Description: Track Nutrition & Fitness Activities
+Description: Track Coaching Activities
 Version: 0.1
 Author: Thomas Sjolshagen <thomas@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 License: GPL2
 */
-
-/* Enable / Disable DEBUG logging to separate file */
-define( 'E20R_T_DEBUG', true );
 
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
@@ -21,6 +18,10 @@ define( 'CONST_SATURDAY', 6 );
 define( 'CONST_SUNDAY', 0 );
 define( 'CONST_MONDAY', 1 );
 define( 'GF_PHOTOFORM_ID', 45 );
+
+// define( 'URL_TO_PROGRESS_FORM', site_url('/coaching/progress-update/'));
+define( 'E20R_COACHING_URL' , site_url( '/nutrition-coaching/' ) );
+define( 'URL_TO_PROGRESS_FORM', E20R_COACHING_URL. 'weekly-progress/');
 
 define ('CONST_MEASUREMENTDAY', 6 );
 
@@ -39,7 +40,7 @@ if ( ! function_exists( 'dbg' ) ):
     {
         $dbgPath = E20R_PLUGIN_DIR . 'debug';
 
-        if (E20R_T_DEBUG)
+        if (WP_DEBUG === true)
         {
 
             if (!  file_exists( $dbgPath )) {
@@ -58,7 +59,8 @@ if ( ! function_exists( 'dbg' ) ):
 
                 // Format the debug log message
                 $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
-                $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp' ) ) . "-{$tid}) -- ". $msg;
+                $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp' ) ) . "-{$tid}) -- ".
+                          ( ( is_array( $msg ) || ( is_object( $msg ) ) ) ? print_r( $msg, true ) : $msg );
 
                 // Write it to the debug log file
                 fwrite( $fh, $dbgMsg . "\r\n" );
@@ -185,7 +187,7 @@ if ( ! class_exists( 'e20rTracker' ) ):
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rSettingsModel.php");
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rSettings.php");
-//        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rSettingsView.php");
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rSettingsView.php");
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rMeasurements.php" );
@@ -207,13 +209,13 @@ if ( ! class_exists( 'e20rTracker' ) ):
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rWorkout.php" );
         require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rWorkoutView.php" );
 
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rArticleModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rArticleView.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rCheckin.php" );
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rCheckinModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rCheckinView.php" );
-
-        // require_once( E20R_PLUGIN_DIR . "classes/class.e20rWorkouts.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/class.e20rAssignment.php" );
 
