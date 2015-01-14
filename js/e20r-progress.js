@@ -135,7 +135,7 @@ jQuery(function() {
             this._state = 'default';
             this._isSkinfold = this.type.indexOf('skinfold') != -1;
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
-            this.__overrideDifferenceCheck = e20r_progress.settings.overrideDiff;
+            this.__overrideDifferenceCheck = 0; // e20r_progress.settings.overrideDiff;
 
             if (bool(this.$girthImage.length)) {
 
@@ -161,7 +161,6 @@ jQuery(function() {
                     }
                 }
             });
-
 
             jQuery.bindEvents({
                 self: this,
@@ -200,14 +199,7 @@ jQuery(function() {
             this.stateTransition('default', 'active', function(self) {
 
                 self.$fieldContainer.addClass('active');
-                /*
-                if (self._isSkinfold) { // ad hoc
-                    self.$girthImage.insertBefore(self.$description);
-                    self.$description.filter('p:first').css('margin-top', '8px');
-                    self.$fieldContainer.css('float', 'left').css('margin-top', '12px').css('width', '520px');
-                    self.$savedContainer.css('float', 'left').css('margin-top', '12px').css('width', '520px');
-                }
-                */
+
                 if (bool(self.$girthImage.length)) {
                     self.$girthImage.addClass('active');
                 }
@@ -436,7 +428,7 @@ jQuery(function() {
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_hip', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_thigh', period: 'week', unit: lengthUNIT }));
     GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_calf', period: 'week', unit: lengthUNIT }));
-
+/*
     new MeasurementField_({ type: 'skinfold_abdominal', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_triceps', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_chest', period: 'month', unit: 'millimeters (mm)' });
@@ -444,7 +436,7 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_subscapular', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
-
+*/
     jQuery('#submit-weekly-progress-button').click(function() {
 
         event.preventDefault(); // Disable POST action - handle it in AJAX instead
@@ -658,7 +650,7 @@ jQuery(function() {
 
             jQuery.each(['front', 'side', 'back'], function() {
 
-                self.bindUploadify(this);
+                self.bindPhotoUploader(this);
 
                 if (jQuery('#photo-' + this).hasClass('null')) {
 
@@ -711,7 +703,7 @@ jQuery(function() {
                     var $data = {
                         'article-id': jQuery('#article_id').val(),
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
-                        'image-url': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation, // Don't think I need this...?
                         'action': 'deletePhoto',
                         'user-id': NourishUser.user_id
@@ -745,7 +737,7 @@ jQuery(function() {
                 });
         },
 
-        bindUploadify: function(orientation) {
+        bindPhotoUploader: function(orientation) {
 
             var progress_uploader;
             var self = this;
@@ -775,6 +767,7 @@ jQuery(function() {
                 }
 
                 progress_uploader = wp.media.frames.file_frame = wp.media({
+                    className: 'media-frame e20r-tracker-frame',
                     title: "Upload & Select " + titleCase(orientation) + " Image",
                     button: {
                         text: 'Use as the ' + titleCase(orientation) + ' Image'
@@ -782,6 +775,8 @@ jQuery(function() {
                     library: {
                         type: 'image'
                     },
+                    frame: 'select',
+                    editing: false,
                     multiple: false
                 });
 
@@ -796,19 +791,21 @@ jQuery(function() {
                         if( attachment.id != '' ) { return '<img src="' + attachment.sizes.thumbnail.url + '" id="id-' + attachment.id + '" />'; }
                     }).join(' ');
 
+                    console.log( 'Attacment info:', attachment );
+
                     jQuery("#photo-" + orientation + "-url-hidden").val( attachment.id );
 
+                    // Save the image value with the measurements data
                     var $data = {
                         'action': 'saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': orientation + '_image',
-                        'measurement-value': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'measurement-value': attachment.id,
                         'user-id': NourishUser.user_id,
                         'article-id': jQuery('#article_id').val()
                     };
 
-                    // TODO: Implement back-end photo addition
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
@@ -842,12 +839,13 @@ jQuery(function() {
 
                 progress_uploader.open();
                 jQuery("#media-attachment-date-filters option[value='all']").each( function() {
+
                     this.remove();
                 });
 
                 /*
                  jQuery("#media-attachment-date-filters").each( function() {
-                 this.trigger('click');
+                    this.trigger('click');
                  });
                  */
 
@@ -1020,4 +1018,3 @@ jQuery(function() {
 
     checkFormCompletion();
 });
-

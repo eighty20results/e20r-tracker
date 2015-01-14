@@ -30,6 +30,134 @@ jQuery(document).ready( function($) {
 
     e20rPgm_showMetaControls();
 
+    $(document).on('change', '#e20r-article-post_id', function() {
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            timeout: 10000,
+            dataType: 'JSON',
+            data: {
+                action: 'getDelayValue',
+                'post_ID': $('#e20r-article-post_id').find('option:selected').val(),
+                'e20r-tracker-article-settings-nonce': $('#e20r-tracker-article-settings-nonce').val()
+            },
+            success: function( $response ) {
+
+                console.log("Received from getDelayValue: ", $response );
+
+                if ( $response.data.nodelay != 0) {
+                    console.log("No delay specified. Exiting!");
+                    return false;
+                }
+
+                if ( $response.data.delay > 0 ) {
+
+                    console.log("Got delay value from back-end: " + $response.data.delay);
+                    $('#e20r-article-release_day').val($response.data.delay);
+                }
+            },
+            error: function( $response, $errString, $errType ) {
+                console.log($errString + ' error returned from getDelayValue action: ' + $errType );
+            }
+        });
+    });
+
+    $(document).on('click', '#e20r-new-group-button', function() {
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            timeout: 5000,
+            dataType: 'JSON',
+            data: {
+                action: 'addWorkoutGroup',
+                'e20r-tracker-workout-settings-nonce': $('#e20r-tracker-workout-settings-nonce').val(),
+                'post_ID': $('#post_ID').val()
+            },
+            error: function($response, $errString, $errType) {
+                console.log($errString + ' error returned from addWorkoutGroup action: ' + $errType );
+                console.dir( $response );
+                return;
+            },
+            success: function( $retVal ) {
+
+                console.log( 'Group data being added', $retVal );
+
+                if ( $retVal.data.groupHtml !== '' ) {
+
+                    jQuery('#e20r-workout-tbody').append($retVal.data.groupHtml);
+
+                }
+
+            },
+            complete: function () {
+
+                // Enable the Save button again.
+                // saveBtn.removeAttr('disabled');
+
+                // Reset the text for the 'Save Settings" button
+                // saveBtn.html(e20r-tracker-admin.lang.saveSettings);
+
+                // Disable the spinner again
+                // jQuery('#load-new-programs').hide();
+                // $btn.removeAttr('disabled');
+            }
+        });
+    });
+
+    $(document).on('click', '.e20r-remove-group', function () {
+
+        var $header = $(this).closest('tr');
+        var $data = $header.next('tr');
+
+        $header.remove();
+        $data.remove();
+        return false;
+    });
+
+    $(document).on('click', '.e20r-exercise-remove', function () {
+
+        var $exLine = $(this).closest('tr');
+
+        $exLine.remove();
+
+    });
+
+    $(document).on('click', '.e20r-workout-save-exercise', function() {
+
+        var $exerciseList = $(this).closest('.e20r-exercise-list').find('tbody');
+
+        var $tFooter = $(this).closest('.e20r-exercise-list').find('tfoot');
+        var $groupId = $tFooter.find("input[id*='e20r-workout-group_id-']").val();
+
+        var $exDef = $tFooter.find("select[class*='e20r-workout-group-exercise']");
+        var $exReps = $tFooter.find("input[id*='e20r-workout-add-exercise-reps']");
+        var $exRest = $tFooter.find("input[id*='e20r-workout-add-exercise-rest']");
+        var $exType = $tFooter.find("select[id*='e20r-workout-add-exercise-type']");
+
+        var $data = {
+            'action': 'addExerciseToGroup',
+            'e20r-tracker-workout-settings-nonce': $('#e20r-tracker-workout-settings-nonce').val(),
+            'post_ID': $('#post_ID').val(),
+            'group_id': $groupId,
+            'exercise-id': $exDef.find("option:selected").val(),
+            'exercise-type': $exType.find("option:selected").val(),
+            'exercise-reps': $exReps.val(),
+            'exercise-rest': $exRest.val()
+        }
+
+        console.log("Action data: ", $data );
+
+        // Strip out the list of existing exercises.
+        $exerciseList.find('tr').each( function() {
+            if ( this.length == 1) {
+                this.remove();
+            }
+        });
+
+    });
+
     $(document).on("change", "#e20r_levels", function() {
 
         $detailBtn.prop('disabled', true);
@@ -68,7 +196,6 @@ jQuery(document).ready( function($) {
 
     });
 
-
     $(document).on("change", "#e20r_tracker_client",function() {
 
         console.log("Client to find changed");
@@ -84,7 +211,7 @@ jQuery(document).ready( function($) {
         loadCheckinItem( $('#e20r_checkin_items').find('option:selected').val() );
         jQuery('#spin-for-checkin-item').show();
         $loadItem.prop('disabled', false);
-    })
+    });
 
     $(document).on("click","#e20r-client-info", function() {
 
@@ -92,7 +219,7 @@ jQuery(document).ready( function($) {
         e20r_LoadClientData('info');
         saveClientId( $oldClientId );
 
-    })
+    });
 
     $(document).on("click", "#e20r-client-compliance", function() {
 
@@ -100,7 +227,7 @@ jQuery(document).ready( function($) {
         e20r_LoadClientData('compliance');
         saveClientId( $oldClientId );
 
-    })
+    });
 
     $(document).on("click", "#e20r-client-assignments", function() {
 
@@ -108,7 +235,7 @@ jQuery(document).ready( function($) {
         e20r_LoadClientData('assignments');
         saveClientId( $oldClientId );
 
-    })
+    });
 
     $(document).on("click", "#e20r-client-measurements", function() {
 
@@ -116,7 +243,7 @@ jQuery(document).ready( function($) {
         e20r_LoadClientData('measurements');
         saveClientId( $oldClientId );
 
-    })
+    });
 
     $( document).on( "click", '.checkin-inputs input:checkbox', function() {
 
@@ -747,6 +874,8 @@ function saveProgram( $programArray ) {
         }
     });
 }
+
+
 function e20r_LoadClientData( $type ) {
 
     console.log("e20r_LoadClientData");
@@ -805,12 +934,12 @@ function e20r_LoadClientData( $type ) {
 
             // Refresh the sequence post list (include the new post.
             if ( ( data.data !== '' ) && ( $type == 'info') ) {
-                jQuery('#e20r-info').html( data.data );
+                jQuery('#e20r-progr-info').html( data.data );
             }
 
             if ( ( data.data !== '' ) && ( $type == 'measurements') ) {
 
-                jQuery('#e20r-admin-measurements').html(data.data);
+                jQuery('#e20r-progr-measurements').html(data.data);
 
                 var firstDate;
                 var lastDate;
@@ -1162,7 +1291,7 @@ function e20rPgm_postMetaSelectChanged( $self ) {
         data: {
             action: 'e20r_add_program',
             'e20r-program-id': $program_id,
-            'e20r-old-program-id': $oldId.val();
+            'e20r-old-program-id': $oldId.val(),
             'e20r-tracker-program-nonce': jQuery('#e20r-tracker-program-nonce').val(),
             'post-id': jQuery('#post_ID').val()
         },
