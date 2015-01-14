@@ -887,11 +887,10 @@ class e20rTracker {
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
             dbg($_POST);
 
+            // Get the requested Measurement date & article ID (passed from the "Need your measuresments today" form.)
             $measurementDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
             $articleId = isset( $_POST['e20r-progress-form-article']) ? intval( $_POST['e20r-progress-form-article']) : null;
 
-            // TODO: How do we locate the post ID for the day/lesson..?
-            // So how do we get the
             $articleId = $e20rArticle->init( $articleId );
             $articleURL = $e20rArticle->getPostUrl( $articleId );
 
