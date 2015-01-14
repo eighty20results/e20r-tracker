@@ -84,7 +84,7 @@ class e20rArticle extends e20rSettings {
         <?php
     }
 
-    public function init( $postId ) {
+    public function init( $postId = NULL ) {
 
         $this->articleId = parent::init( $postId );
 
