@@ -157,8 +157,6 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
-        // $settings = $this->model->init( $articleId );
-
         $measured = false;
 
         $rDay = $this->model->getSetting( $this->articleId, 'release_day' );
@@ -196,24 +194,15 @@ class e20rArticle extends e20rSettings {
         return $content;
     }
 
+    // Used on article post page to add check-in info for the article.
     public function addMeta_Checkin() {
 
     }
 
-    /*
-    public function setId( $id = null ) {
+    public function addMeta_Assignments() {
 
-        if ( $id === null ) {
-
-            global $post;
-
-            $id = $post->ID;
-        }
-
-        $this->post_id = $post;
-        $this->init( $id );
     }
-    */
+
     public function getDelayValue_callback() {
 
         global $e20rTracker;
@@ -241,8 +230,6 @@ class e20rArticle extends e20rSettings {
 
         wp_send_json_success( array( 'nodelay' => true ) );
     }
-
-
 
     public function releaseDate( $articleId ) {
 
@@ -423,12 +410,25 @@ class e20rArticle extends e20rSettings {
                 array( &$this, 'view_articlePostMetabox' ), 'e20r_articles', 'advanced', 'high' );
         }
     }
-*/
+
     public function view_manageArticles() {
 
         $html = '';
 
         return $html;
+    }
+
+    public function setId( $id = null ) {
+
+        if ( $id === null ) {
+
+            global $post;
+
+            $id = $post->ID;
+        }
+
+        $this->post_id = $post;
+        $this->init( $id );
     }
 
     private function load_articles() {
@@ -455,7 +455,7 @@ class e20rArticle extends e20rSettings {
     <?php
 
     }
-
+*/
     public function addArticle( $obj ) {
 
         $key = $this->findArticle( $obj->id );
