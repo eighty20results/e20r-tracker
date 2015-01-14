@@ -25,6 +25,7 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
         $settings->enddate = null;
         $settings->groups = array();
+        $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
         $settings->sequences = array();
 
         return $settings;

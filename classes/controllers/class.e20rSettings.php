@@ -24,9 +24,22 @@ class e20rSettings {
         $this->view = $view;
     }
 
-    protected function init( ) {
+    protected function init( $postId ) {
 
-        return true;
+        $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
+
+        if ( ! $settingsId ) {
+
+            return false;
+        }
+
+        if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
+
+            dbg("e20r" . ucfirst($this->type) . "::init() - FAILED to load settings for {$settingsId}");
+            return false;
+        }
+
+        return $settingsId;
     }
 
     public function findByName( $shortName ) {
@@ -84,6 +97,28 @@ class e20rSettings {
 
     }
 
+    /*
+    public function getID( $userId = null ) {
+
+        if (is_null( $userId ) ) {
+            global $current_user;
+
+            $userId = $current_user->ID;
+        }
+*/
+        /*
+         * Fetch all programs this user is a member of.
+         *
+         * On user sign-up (to Nourish), select the program that has a startdate that matches the membership level.
+         *
+         * Set program_id in wp_usermeta ('e20r-tracker-program')
+         *
+         * in_array( user->membership_level, $e20rPrograms->levels ) or in_array( 'e20r-tracker-program'  + member_level->ID for user ==> program
+         * Set PROGRAM ID when lesson (or measurement page) is being loaded.
+         */
+/*            return $this->model->id;
+    }
+*/
     public function addMeta_Settings() {
 
         global $post;

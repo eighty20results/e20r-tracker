@@ -9,11 +9,15 @@
 
 class e20rCheckinModel extends e20rSettingsModel {
 
-
     public function e20rCheckinModel()  {
 
         parent::__construct( 'checkin', 'e20r_checkins' );
 
+/*        global $e20rTables;
+
+        $this->table = $e20rTables->getTable('checkin');
+        $this->fields = $e20rTables->getFields('checkin');
+*/
     }
 
     public function defaultSettings() {
@@ -31,6 +35,49 @@ class e20rCheckinModel extends e20rSettingsModel {
         $settings->program_ids = null;
 
         return $settings;
+    }
+
+    public function exists( $checkin ) {
+
+        global $wpdb;
+
+        if ( ! is_array( $checkin ) ) {
+
+            return false;
+        }
+
+        $sql = $wpdb->prepare(
+           "SELECT id, checkedin
+                FROM {$this->table}
+                WHERE (
+                ( {$this->fields['user_id']} = %d ) AND
+                ( {$this->fields['checkin_date']} LIKE %s ) AND
+                ( {$this->fields['program_id']} = %d )
+           ",
+           $checkin['user_id'],
+           $checkin['checkin_date'] . '%',
+           $checkin['program_id']
+        );
+
+        $result = $wpdb->get_row( $sql );
+
+        if ( ! empty( $result ) ) {
+            return $result;
+        }
+
+        return false;
+    }
+
+    public function setCheckin( $checkin ) {
+
+        global $wpdb;
+
+        if ( $result = $this->exists( $checkin ) ) {
+
+            $checkin['id'] = $result->id;
+        }
+
+        return ( $wpdb->replace( $this->table, $checkin ) ? true : false );
     }
 
     /**

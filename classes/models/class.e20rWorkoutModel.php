@@ -10,7 +10,7 @@ class e20rWorkoutModel {
 
     private $meta;
 
-    public function e20rWorkoutModel( $workoutId = null ) {
+    public function init( $workoutId = null ) {
 
         if ( $workoutId === null ) {
 
@@ -21,7 +21,6 @@ class e20rWorkoutModel {
                 $workoutId = $post->ID;
             }
         }
-
 
         $this->meta = $this->loadSettings( $workoutId );
     }

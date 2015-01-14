@@ -17,7 +17,20 @@ class e20rClientViews {
 
     public function displayData() {
 
+        global $e20rClient;
+        global $e20rTracker;
+
         // TODO: Create page for back-end to display customers.
+        ?>
+        <div id="e20r-tracker-progress-display">
+
+            <div id="e20r-progr-measurements">
+
+            </div>
+
+            <?php echo $e20rClient->showUserProgress(); ?>
+        </div>
+        <?php
     }
 
     public function get_item_count( $item_id, $habit_name, $user_id ) {

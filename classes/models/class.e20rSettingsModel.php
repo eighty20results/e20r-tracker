@@ -11,9 +11,10 @@
 class e20rSettingsModel {
 
     protected $id;
-    protected $settings;
     protected $type;
     protected $cpt_slug;
+
+    private $settings;
 
     protected $table;
     protected $fields;
@@ -33,8 +34,17 @@ class e20rSettingsModel {
         global $e20rTables;
 
         dbg("e20rSettingsModel::e20rSettingsModel() - Type: {$type}");
-        $this->table = $e20rTables->getTable($this->type);
-        $this->fields = $e20rTables->getFields($this->type);
+        try {
+            $this->table  = $e20rTables->getTable( $this->type );
+            $this->fields = $e20rTables->getFields( $this->type );
+        }
+        catch( Exception $e ) {
+
+            dbg("e20rSettingsModel::e20rSettingsModel() - Warning while loading tables & fields: " . $e->getMessage() );
+            $this->table = null;
+            $this->fields = null;
+            return;
+        }
 
     }
 
@@ -66,6 +76,25 @@ class e20rSettingsModel {
         return $this->settings;
     }
 
+    public function getSetting( $id, $fieldName ) {
+
+        if (! $id ) {
+            return false;
+        }
+        if ( !$fieldName ) {
+            return false;
+        }
+
+        $value = $this->settings->{$fieldName};
+
+        if ( $value === null ) {
+
+            $value = $this->settings( $id, 'get', $fieldName );
+        }
+
+        return $value;
+    }
+
     /**
      * Load the Settings from the metadata table.
      *
@@ -81,11 +110,11 @@ class e20rSettingsModel {
         }
 
         if ( $id == null ) {
-            dbg("Error: Unable to load settings. No ID specified!");
+            dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Error: Unable to load settings. No ID specified!");
             return false;
         }
 
-        dbg("e20r{$this->type}Model::loadSettings() - Loading settings for {$this->type} ID {$id}");
+        dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loading settings for {$this->type} ID {$id}");
         $defaults = $this->defaultSettings();
 
         if ( ! is_object( $this->settings ) ) {
@@ -93,20 +122,29 @@ class e20rSettingsModel {
             $this->settings = $defaults;
         }
 
-        foreach( $defaults as $key => $value ) {
+        foreach( $this->settings as $key => $value ) {
 
-            if ( false === ( $this->settings( $id, 'get', $key ) ) ) {
+            if ( false === ( $this->settings = self::settings( $id, 'get', $key ) ) ) {
 
-                dbg("e20r{$this->type}Model::loadSettings() - ERROR loading setting {$key} for {$this->type} with ID: {$id}");
+                if ( $key == 'id' ) {
+
+                    $this->settings->{$key} = $id;
+                    continue;
+                }
+
+                dbg( "e20r" . ucfirst( $this->type ) . "Model::loadSettings() - ERROR loading setting {$key} for {$this->type} with ID: {$id}" );
+
                 return false;
             }
+
+            dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$id}");
         }
 
         return $this->settings;
     }
 
     /**
-     * Returns an array of all checkins merged with their associated settings.
+     * Returns an array of all settings merged with their associated settings.
      *
      * @param $statuses string|array - Statuses to return checkin data for.
      * @return mixed - Array of checkin objects
@@ -135,7 +173,7 @@ class e20rSettingsModel {
 
         foreach( $sList as $key => $data ) {
 
-            $settings = $this->loadSettings( $data->ID );
+            $settings = self::loadSettings( $data->ID );
 
             $loaded_settings = (object) array_replace( (array)$default, (array)$settings );
 
@@ -175,8 +213,8 @@ class e20rSettingsModel {
                     dbg("e20r{$this->type}Model::settings()  - Key and setting defined. Saving.");
                     $this->settings->{$key} = $setting;
 
-                    add_post_meta( $post_id, "e20r-{$this->type}-{$key}", $setting, true ) or
-                    update_post_meta( $post_id, "e20r-{$this->type}-{$key}", $setting );
+                    update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting, true ) or
+                    add_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting, true );
                     return true;
                 }
 
@@ -189,21 +227,27 @@ class e20rSettingsModel {
                 unset( $this->settings->{$key});
                 $this->settings->{$key} = $defaults->{$key};
 
-                delete_post_meta( $post_id, "e20r-{$this->type}-{$key}" );
-
+                delete_post_meta( $post_id, "_e20r-{$this->type}-{$key}" );
+                return true;
                 break;
 
             case 'get':
 
-                $val = get_post_meta( $post_id, "e20r-{$this->type}-{$key}", true );
+                $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
+
+                dbg("e20rSettingsModel::settings() - Got: {$val} for {$post_id}");
 
                 $this->settings->{$key} = ( false === $val ? null : $val );
 
-                return $this->settings;
+                dbg("e20rSettingsModel::settings() - Loaded: {$this->settings->{$key}}");
+
                 break;
 
             default:
                 return false;
+
         } // End switch
+
+        return $this->settings;
     } // End function
 }

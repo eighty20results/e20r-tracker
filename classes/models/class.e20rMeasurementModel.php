@@ -19,7 +19,13 @@ class e20rMeasurementModel {
 
     public function e20rMeasurementModel( $user_id = null, $forDate = null ) {
 
-        global $wpdb, $e20rTables;
+        global $wpdb;
+        global $e20rTables;
+        global $current_user;
+
+        if ( ( $user_id == null ) && ( $current_user->ID != 0 ) ) {
+            $user_id = $current_user->ID;
+        }
 
         $this->client_id = $user_id;
 
@@ -30,7 +36,7 @@ class e20rMeasurementModel {
 
     }
 
-    public function checkCompletion( $article, $user_id, $date ) {
+    public function checkCompletion( $articleId, $user_id, $date ) {
 
         global $wpdb;
 
@@ -53,7 +59,7 @@ class e20rMeasurementModel {
                       {$this->fields['user_id']} = %d AND
                       {$this->fields['recorded_date']} = %s
                 ",
-                $article,
+                $articleId,
                 $user_id,
                 $date
         );
@@ -220,9 +226,15 @@ class e20rMeasurementModel {
 
     }
 
-    private function hasExistingData( $when ) {
+    private function hasExistingData( $when, $userId = null ) {
+
+        dbg("e20rMeasurementModel::hasExistingData() - Checking data for {$userId}/{$this->client_id} on {$when}");
 
         global $wpdb;
+
+        if ( is_null( $this->client_id ) ) {
+            $this->client_id = $userId;
+        }
 
         $existing = $wpdb->get_row( $sql = $wpdb->prepare(
                         "SELECT *
@@ -292,6 +304,7 @@ class e20rMeasurementModel {
             $data = array(
                 $this->fields['id']            => $existing->{$this->fields['id']},
                 $this->fields['user_id']       => $this->client_id,
+                $this->fields['program_id']    => $existing->{$this->fields['program_id']},
                 $this->fields['article_id']    => $articleID,
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
             );
@@ -327,6 +340,7 @@ class e20rMeasurementModel {
                 $this->fields['user_id']       => $this->client_id,
                 $this->fields['article_id']    => $articleID,
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
+                $this->fields['program_id']    => $existing->{$this->fields['program_id']},
                 $this->fields[ $form_key ]     => esc_sql($value)
             );
         }
@@ -334,8 +348,8 @@ class e20rMeasurementModel {
         // Define/prepare the format for the supplied data
         $format = $this->setFormatForRecord( $data );
 
-        dbg("e20rMeasurementModel::saveField - Data to 'replace': " . print_r( $data, true ) );
-        dbg("e20rMeasurementModel::saveField - formats for Data to 'replace': " . print_r( $format, true ) );
+//        dbg("e20rMeasurementModel::saveField - Data to 'replace': " . print_r( $data, true ) );
+//        dbg("e20rMeasurementModel::saveField - formats for Data to 'replace': " . print_r( $format, true ) );
 
         if ( $wpdb->replace( $this->table, $data, $format ) === false ) {
 
@@ -417,6 +431,7 @@ class e20rMeasurementModel {
             $tmp->id = $record->{$this->fields['id']};
             $tmp->user_id = $record->{$this->fields['user_id']};
             $tmp->article_id = $record->{$this->fields['article_id']};
+            $this->program_id = $record->{$this->fields['program_id']};
             $tmp->recorded_date = $record->{$this->fields['recorded_date']};
             $tmp->weight = $record->{$this->fields['weight']};
             $tmp->neck = $record->{$this->fields['girth_neck']};
@@ -448,6 +463,9 @@ class e20rMeasurementModel {
 
     private function loadByDate( $when ) {
 
+        global $e20rTracker;
+        global $e20rMeasurementDate;
+
         if ( ( ! in_array( array( 'current', 'last_week', 'next' ), $when ) ) &&
              ( strtotime( $when ) !== false ) ) {
 
@@ -461,8 +479,8 @@ class e20rMeasurementModel {
         else {
 
             dbg("e20rMeasurements::loadByDate() - Specified an relative date value ({$when})");
-            global $e20rTracker;
-            $mDates = $e20rTracker->datesForMeasurements();
+
+            $mDates = $e20rTracker->datesForMeasurements( $e20rMeasurementDate) ;
             $date = $mDates[$when];
         }
 
@@ -491,7 +509,7 @@ class e20rMeasurementModel {
             $date . ' 00:00:00');
 
 
-        dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
+        // dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
 
         $results = $wpdb->get_results( $sql );
 

@@ -11,10 +11,68 @@ class e20rCheckin extends e20rSettings {
 
     private $checkin = array();
 
+    protected $model;
+    protected $view;
+
+    // checkin_type: 0 - action (habit), 1 - lesson, 2 - activity (workout), 3 - survey
+    // "Enum" for the types of check-ins
+    private $types = array(
+        'action' => 0,
+        'lesson' => 1,
+        'activity' => 2,
+        'survey' => 3
+    );
+
+    // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
+    // "Enum" for the valid statuses.
+    private $status = array(
+        'no' => 0,
+        'yes' => 1,
+        'partial' => 2,
+        'na' => 3
+    );
+
     public function e20rCheckin() {
 
         dbg("e20rCheckin::__construct() - Initializing Checkin class");
-        parent::__construct( 'checkin', 'e20r_program', new e20rCheckinModel(), new e20rCheckinView() );
+
+        $this->model = new e20rCheckinModel();
+        $this->view = new e20rCheckinView();
+
+        parent::__construct( 'checkin', 'e20r_program', $this->model, $this->view );
+    }
+
+    public function findCheckinItemId( $articleId ) {
+
+        global $e20rArticle;
+    }
+
+    public function setArticleAsComplete( $userId, $articleId ) {
+
+        global $e20rArticle;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        // $articleId = $e20rArticle->init( $articleId );
+        $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+        $checkin = array(
+            'user_id' => $userId,
+            'checkedin' => $this->status['yes'],
+            'article_id' => $articleId,
+            'program_id' => $programId,
+            'checkin_date' => $e20rArticle->getReleaseDate( $articleId ),
+            'checkin_item_id' => null, // This is the 'checkin_item_id', aka post->ID for the checkin CPT in question.
+            'checkin_type' => 2,
+        );
+
+        if ( $this->model->setCheckin( $checkin ) ) {
+            dbg("e20rCheckin::setArticleAsComplete() - Check-in for user {$userId}, article {$articleId} in program ${$programId} has been saved");
+            return true;
+        }
+
+        dbg("e20rCheckin::setArticleAsComplete() - Unable to save checkin value!");
+        return false;
     }
 
     /*

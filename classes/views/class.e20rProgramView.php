@@ -16,6 +16,34 @@ class e20rProgramView {
 
     }
 
+    public function view_userProfile( $programList, $activePgm ) {
+
+        ob_start();
+        ?>
+        <h3><?php _e("E20R Tracker Settings", "e20rtracker"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="e20r-tracker-user-program"><?php _e( "Coaching program", "e20rtracker"); ?></label></th>
+                <td>
+                    <select id="e20r-tracker-user-program" name="e20r-tracker-user-program" class="select2-container">
+                        <option value="0" <?php selected( $activePgm, 0 ) ?>>Not Applicable</option>
+                        <?php
+
+                        foreach( $programList as $id => $name ) {
+                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $activePgm, $id ); ?>><?php echo esc_attr($name); ?></option> <?php
+                        }
+
+                        ?>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <?php
+
+        $html = ob_get_clean();
+        return $html;
+    }
+
     public function viewSettingsBox( $programData, $feeds ) {
 
         global $e20rTracker;

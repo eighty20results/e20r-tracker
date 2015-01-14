@@ -112,6 +112,83 @@ class e20rProgram extends e20rSettings {
         return $ProgramList;
     }
 
+    public function getProgramList() {
+
+        $list = array();
+
+        $programs = new WP_Query( array(
+            'post_type' => 'e20r_programs',
+            'posts_per_page' => -1,
+            'post_status' => array( 'publish', 'private' ),
+            'orderby' => 'menu_order',
+            'order' => 'ASC',
+            'fields' => 'ids',
+        ) );
+
+        dbg("e20rProgram::getProgramList() - Loaded " . count($programs) . " program definitions from the DB");
+
+        while( $programs->have_posts() ) {
+
+            $programs->the_post();
+            dbg("e20rProgram::getProgramList() - Adding ". get_the_title());
+            $list[get_the_ID()] = get_the_title();
+        }
+
+        wp_reset_postdata();
+
+        return $list;
+    }
+
+    public function getProgramIdForUser( $userId, $articleId = null ) {
+
+        $programId = get_user_meta( $userId, '_e20r-tracker-program-id', true);
+
+        if ( $programId ) {
+
+            return $programId;
+        }
+
+        return false;
+    }
+
+    /**
+     * Action Hook to add the E20R Tracker user specific settings (like adding a program for the user)
+     *
+     * @param $user -- WP_User object
+     */
+    public function selectProgramForUser( $user ) {
+
+        $programlist = $this->getProgramList();
+        $activeProgram = $this->getProgramIdForUser( $user->ID, null );
+
+        echo $this->view->view_userProfile( $programlist, $activeProgram );
+    }
+
+    /**
+     * @param $userId - The USER id
+     *
+     * @return bool -- DIE()s if we're unable to save the settings.
+     */
+    public function updateProgramForUser( $userId ) {
+
+        if ( ! current_user_can( 'edit_user', $userId ) ) {
+            return false;
+        }
+
+        dbg("e20rProgram::updateProgramForUser() - Setting program ID for user with ID of {$userId}");
+
+        $programId = isset( $_POST['e20r-tracker-user-program'] ) ? intval( $_POST['e20r-tracker-user-program'] ) : 0;
+
+        if ( $programId != 0 ) {
+
+            update_user_meta( $userId, '_e20r-tracker-program-id', $programId );
+
+            if ( get_user_meta( $userId, '_e20r-tracker-program-id', true ) != $programId ) {
+
+                wp_die( 'Unable to save the program for this user' );
+            }
+        }
+    }
 
     protected function loadDripFeed( $feedId ) {
 

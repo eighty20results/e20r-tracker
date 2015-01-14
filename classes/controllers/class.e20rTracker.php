@@ -1,4 +1,11 @@
 <?php
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * License Information:
+ *  the GPL v2 license(?)
+ */
 
 class e20rTracker {
 
@@ -21,7 +28,7 @@ class e20rTracker {
         // Set defaults (in case there are none saved already
         $this->settings = get_option( $this->setting_name, array(
                             'delete_tables' => false,
-                            'purge_tables' => true,
+                            'purge_tables' => false,
                             'measurement_day' => CONST_SATURDAY,
             )
         );
@@ -47,7 +54,7 @@ class e20rTracker {
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
-            // add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_workoutCPT"), 10 );
@@ -95,6 +102,7 @@ class e20rTracker {
             add_action( 'wp_ajax_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
             add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
+            add_action( 'wp_ajax_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -113,6 +121,7 @@ class e20rTracker {
             add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
 
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
 
             add_action( 'add_meta_boxes', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rProgram, 'editor_metabox_setup') );
@@ -128,7 +137,6 @@ class e20rTracker {
             add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
             add_action( 'admin_menu', array(&$this, "renderGirthTypesMetabox"));
 
-
             /* AJAX call-backs if user is unprivileged */
             add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_e20r_complianceData', 'e20r_ajaxUnprivError' );
@@ -141,10 +149,16 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_deletePhoto', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_addPhoto', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_addWorkoutGroup', 'e20r_ajaxUnprivError' );
-
+            add_action( 'wp_ajax_nopriv_getDelayValue', 'e20r_ajaxUnprivError' );
 
             // TODO: Investigate the need for this.
-            add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
+            // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
+
+
+            /* Allow admin to set the program ID for the user in their profile(s) */
+            add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
+            add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
+            add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
 
             /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
             add_action( 'gform_after_submission', array( &$this, 'gravityform_submission' ), 10, 2);
@@ -152,7 +166,8 @@ class e20rTracker {
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
 
-            unset($e20rProgram);
+            add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
+
             dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -230,6 +245,12 @@ class e20rTracker {
                 $title = 'Enter Check-in Short-code Here';
                 remove_meta_box( 'postexcerpt', 'e20r_checkins', 'side' );
                 add_meta_box('postexcerpt', __('Check-in text'), 'post_excerpt_meta_box', 'e20r_checkins', 'normal', 'high');
+
+                break;
+
+            case 'e20r_articles':
+
+                $title = 'Enter Article Prefix Here';
 
                 break;
 
@@ -471,7 +492,7 @@ class e20rTracker {
         return ( 1 == intval( $value ) ? 1 : 0);
     }
 
-    function loadAdminPage() {
+    public function loadAdminPage() {
 
         add_options_page( 'Eighty / 20 Tracker', 'E20R Tracker', 'manage_options', 'e20r_tracker_opt_page', array( $this, 'render_settings_page' ) );
 
@@ -816,6 +837,41 @@ class e20rTracker {
         }
     }
 
+    public function has_measurementprogress_shortcode() {
+
+        global $post;
+        global $e20rArticle;
+        global $e20rClient;
+
+        if ( has_shortcode( $post->post_content, 'progress_measurements' ) ) {
+
+            $e20rArticle->setId( $post->ID );
+
+            if ( ! $e20rClient->client_loaded ) {
+                $e20rClient->init();
+                dbg( "e20rTracker::has_measurementprogress_shortcode() - Have to init e20rClient class & grab data..." );
+            }
+
+            // $e20rMeasurements->init( $e20rArticle->releaseDate(), $e20rClient->clientId() );
+
+            $this->enqueue_plotSW();
+
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'jquery' ), '0.1', true );
+
+            wp_print_scripts( 'e20r-jquery-json' );
+            wp_print_scripts( 'jquery.timeago' );
+            wp_print_scripts( 'e20r-progress-measurements' );
+
+            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
+
+                dbg("e20rTracker::has_measurementprogress_shortcode() - Need to load CSS for e20rTracker.");
+                wp_deregister_style("e20r-tracker");
+                wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+            }
+        }
+    }
+
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
@@ -828,32 +884,48 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'weekly_progress' ) ) {
 
-            $e20rArticle->setId( $post->ID );
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
+            dbg($_POST);
+
+            $measurementDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
+            $articleId = isset( $_POST['e20r-progress-form-article']) ? intval( $_POST['e20r-progress-form-article']) : null;
+
+            // TODO: How do we locate the post ID for the day/lesson..?
+            // So how do we get the
+            $articleId = $e20rArticle->init( $articleId );
+            $articleURL = $e20rArticle->getPostUrl( $articleId );
 
             if ( ! $e20rClient->client_loaded ) {
-                $e20rClient->init();
+
                 dbg( "e20rTracker::has_weeklyProgress_shortcode() - Have to init e20rClient class & grab data..." );
+                $e20rClient->init();
             }
 
-            // $e20rMeasurements->init( $e20rArticle->releaseDate(), $e20rClient->clientId() );
+            if ( ! $this->isActiveUser( $e20rClient->clientId() ) ) {
+                dbg("e20rTracker::has_weeklyProgress_shortcode() - User isn't a valid user. Not loading any data.");
+                return;
+            }
 
-            $this->enqueue_plotSW();
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for {$measurementDate}");
+            $e20rMeasurements->init( $measurementDate, $e20rClient->clientId() );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
 
+            $this->enqueue_plotSW();
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
             wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', true );
 
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Find client info");
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
             $lw_measurements = $e20rMeasurements->getMeasurement( 'last_week', true );
-
-            // $userData = $e20rClient->data->info;
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Measurements from last week:");
 
             if ( $e20rClient->data->info->incomplete_interview ) {
                 dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
+                /* TODO: Uncomment the redirect to the welcome questionnaire */
+                // wp_redirect( E20R_COACHING_URL . "/welcome-questionnaire/", 302 );
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
@@ -863,11 +935,12 @@ class e20rTracker {
                 array(
                     'ajaxurl'   => admin_url('admin-ajax.php'),
                     'settings'     => array(
-                        'article_id'   => $e20rArticle->getID(),
-                        'lengthunit'   => $e20rClient->getLengthUnit(),
-                        'weightunit'   => $e20rClient->getWeightUnit(),
-                        'imagepath'    => E20R_PLUGINS_URL . '/images/',
-                        'overrideDiff' => ( isset( $lw_measurements->id ) ? false : true )
+                        'article_id'        => $articleId,
+                        'lengthunit'        => $e20rClient->getLengthUnit(),
+                        'weightunit'        => $e20rClient->getWeightUnit(),
+                        'imagepath'         => E20R_PLUGINS_URL . '/images/',
+                        'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
+                        'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
                     ),
                     'measurements' => array(
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
@@ -937,7 +1010,7 @@ class e20rTracker {
 
         if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
 
-            dbg("e20rTracker::enqueue_frontend_css() - Need to load CSS for e20rTracker.");
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
             wp_deregister_style("e20r-tracker");
             wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
         }
@@ -1121,14 +1194,12 @@ class e20rTracker {
                     heritage int null,
                     waist_circumference decimal(18,3),
                     weight decimal(18,3) null,
-                    is_metric tinyint default 0,
-                    is_imperial tinyint default 0,
-                    is_gb_imperial tinyint default 0,
                     lengthunits varchar(20) null,
                     weightunits varchar(20) null,
                     gender varchar(1) null,
                     progress_photo_dir varchar(255) not null default 'e20r-pics/',
                     user_enc_key varchar(64) not null,
+
                     use_pictures tinyint default 0,
                     for_research tinyint default 0,
                     chronic_pain tinyint default 0,
@@ -1197,11 +1268,14 @@ class e20rTracker {
          *
          */
         // TODO: How do you combine Assignments (flexibility, unlimited # of boxes & questions) and
+        // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
+        // checkin_type: 0 - action (habit), 1 - lesson, 2 - activity (workout), 3 - survey
         $checkinSql =
             "CREATE TABLE {$wpdb->prefix}e20r_checkin (
                     id int not null auto_increment,
                     user_id int null,
                     program_id int null,
+                    article_id int null,
                     checkin_type int null,
                     checkin_date datetime null,
                     checkin_item_id int not null,
@@ -1415,7 +1489,7 @@ class e20rTracker {
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title', 'excerpt', 'custom-fields','author'),
+                   'supports' => array('title', 'excerpt'),
                    'can_export' => true,
                    'show_in_nav_menus' => true,
                    'show_in_menu' => 'e20r-tracker',
@@ -1601,7 +1675,7 @@ class e20rTracker {
     }
 
     /**
-     * Configure & display the icon for the Sequence Post type (in the Dashboard)
+     * Configure & display the icon for the Tracker (in the Dashboard)
      */
     function post_type_icon() {
         ?>
@@ -1750,4 +1824,58 @@ class e20rTracker {
         return true;
     }
 
+    public function getDateForPost( $days ) {
+
+        dbg("e20rTracker::getDateForPost() - Loading function...");
+        global $current_user;
+        global $wpdb;
+
+        $startDateTS = false;
+
+        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+            // Paid Memberships Pro manages the membership info.
+            $startDateTS = pmpro_getMemberStartdate( $current_user->ID );
+        }
+
+        if (! $startDateTS ) {
+            dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$current_user->ID}");
+            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
+        }
+
+        $startDate = date( 'Y-m-d', $startDateTS );
+        dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$current_user->ID}: {$startDate}");
+
+        $releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +{$days} days") );
+
+        dbg("e20rTracker::getDateForPost( {$days} ) -> Calculated date for delay of {$days}: {$releaseDate}");
+        return $releaseDate;
+    }
+
+    public function getDripFeedDelay( $postId ) {
+
+        if ( class_exists( 'PMProSequence') ) {
+            dbg("e20rArticle::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
+
+            if ( false === ( $sequenceIds = get_post_meta( $postId, '_post_sequences', true ) ) ) {
+                return false;
+            }
+
+            foreach ($sequenceIds as $id ) {
+
+                $seq = new PMProSequence( $id );
+                $details = $seq->get_postDetails( $postId );
+
+                unset($seq);
+
+                dbg("e20rArticle::getDripFeedDelay() - Delay details: " . print_r( $details, true  ) );
+
+                if ( $id != false ) {
+                    dbg("e20rArticle::getDripFeedDelay() - Returning {$details->delay}");
+                    return $details->delay;
+                }
+            }
+        }
+
+        return false;
+    }
 }

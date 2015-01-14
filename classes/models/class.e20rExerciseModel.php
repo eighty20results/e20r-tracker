@@ -10,7 +10,7 @@ class e20rExerciseModel {
 
     private $settings;
 
-    public function e20rExerciseModel( $exerciseId = null ) {
+    public function init( $exerciseId = null ) {
 
         if ( $exerciseId === null ) {
 
@@ -21,7 +21,6 @@ class e20rExerciseModel {
                 $exerciseId = $post->ID;
             }
         }
-
 
         $this->settings = $this->loadSettings( $exerciseId );
     }

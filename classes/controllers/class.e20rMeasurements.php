@@ -19,13 +19,22 @@ class e20rMeasurements {
 
     public function e20rMeasurements( $user_id = null ) {
 
+        global $e20rMeasurements;
+
         $this->id = $user_id;
 
+        $this->view = new e20rMeasurementViews();
+        $this->model = new e20rMeasurementModel( $this->id );
+
+        if ( ! isset( $e20rMeasurements ) ) {
+            $e20rMeasurements = $this;
+        }
     }
 
     public function init( $forDate = null, $user_id = 0 ) {
 
-        global $e20rTracker, $e20rMeasurementDate;
+        global $e20rMeasurementDate;
+        global $e20rTracker;
 
         if ( $user_id != 0 ) {
 
@@ -43,13 +52,21 @@ class e20rMeasurements {
             }
         }
 
-        if ( isset( $forDate ) ) {
+        if ( ( $forDate !== null ) && ( $this->measurementDate == null ) ) {
+
+            dbg("e20rMeasurements::init() - Loading measurement dates based on article date of {$forDate}");
+            $this->dates = $e20rTracker->datesForMeasurements( $forDate );
+        }
+        elseif ( $forDate !== null ) {
 
             $this->dates = $e20rTracker->datesForMeasurements( $forDate );
         }
         else {
             $this->dates = $e20rTracker->datesForMeasurements();
         }
+
+        dbg("e20rMeasurements::init() - Setting date to the 'current' value of: " . $this->dates['current']);
+        dbg( $this->dates );
 
         $this->measurementDate = $this->dates['current'];
 
@@ -97,6 +114,12 @@ class e20rMeasurements {
             dbg("e20rMeasurements::getMeasurementDate() - returning the current date");
             return $this->dates['current'];
         }
+    }
+
+    public function areCaptured( $articleId, $userId, $mDate ) {
+
+        dbg("e20rMeasurements::areCaptured() - Checking if the user has recorded data already");
+        return $this->model->checkCompletion( $articleId, $userId, $mDate );
     }
 
     public function setClient( $client_id ) {
@@ -159,7 +182,7 @@ class e20rMeasurements {
         return $file;
     }
 
-    function clientMediaUploader( $strings ) {
+    public function clientMediaUploader( $strings ) {
 
         global $current_user;
 
@@ -240,7 +263,6 @@ class e20rMeasurements {
         );
 
         return $factors["{$oldUnit}->{$newUnit}"];
-
     }
 
     public function updateMeasurementsForType( $unitType, $newUnit ) {
@@ -350,7 +372,7 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Nonce is OK");
 
-        $clientId = isset( $_POST['hidden_e20r_client_id'] ) ? intval( $_POST['hidden_e20r_client_id'] ) : null;
+        $clientId = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
 
         if ( $e20rClient->validateAccess( $clientId ) ) {
             $this->id = $clientId;
@@ -387,7 +409,13 @@ class e20rMeasurements {
 
     public function shortcode_progressOverview( $attributes ) {
 
-        global $e20r_plot_jscript, $current_user, $post, $e20rArticle, $e20rTracker, $e20rClient, $e20rTables;
+        global $e20r_plot_jscript;
+        global $current_user;
+        global $post;
+        global $e20rArticle;
+        global $e20rTracker;
+        global $e20rClient;
+        global $e20rTables;
 
         dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
 
@@ -398,10 +426,9 @@ class e20rMeasurements {
 
         $e20r_plot_jscript = true;
 
+        // Load javascript for the progress overview.
         extract( shortcode_atts( array(
-            'day' => 0,
-            'from_programstart' => 1,
-            'use_article_id' => 1,
+            'something' => 0,
         ), $attributes ) );
 
         if ( $e20rClient->validateAccess( $current_user->ID ) ) {
@@ -440,15 +467,21 @@ class e20rMeasurements {
 
     public function shortcode_weeklyProgress( $attributes ) {
 
-        global $e20r_plot_jscript, $current_user, $post, $e20rArticle, $e20rTracker, $e20rClient;
+        global $e20r_plot_jscript;
+        global $current_user;
+        global $e20rArticle;
+        global $e20rTracker;
+        global $e20rClient;
+        global $e20rMeasurementDate;
 
         dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
 
         $e20r_plot_jscript = true;
 
-        $dated = ( isset( $_GET['for'] ) ? sanitize_text_field( $_GET['for'] ) : null );
+        dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_POST, true ) );
 
-        dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_GET, true ) );
+        $mDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
+        $articleId = isset( $_POST['e20r-progress-form-article']) ? intval( $_POST['e20r-progress-form-article']) : null;
 
         $day = 0;
         $from_programstart = 1;
@@ -468,9 +501,10 @@ class e20rMeasurements {
             $e20rExampleProgress = true;
         }
 
-        if ( strtotime( $dated ) ) {
+        if ( strtotime( $mDate ) ) {
 
-            $date = $dated;
+            dbg("e20rMeasurements::shortcode_weeklyProgress() - Date to measure for requested: {$mDate}");
+            $this->setMeasurementDate( $mDate );
         }
 
         if ( $current_user->ID == 0 ) {
@@ -481,42 +515,8 @@ class e20rMeasurements {
         // TODO: Does user have permission...?
         try {
 
-            if ( $use_article_id == 1 ) {
-
-                global $post;
-
-                if ( ! isset( $e20rArticle ) ) {
-
-                    dbg("e20rMeasurements::shortcode_weeklyProgress() - WARNING: Loading e20rArticle global here. Should have done that on plugin load!");
-                    $e20rArticle = new e20rArticle();
-                }
-
-                $e20rArticle->setId( $post->ID );
-                $when = $this->getWeeklyUpdateSettings( $e20rArticle->getID(), $from_programstart, $day );
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Date (from Article): {$when}");
-            }
-
-            if ( ! empty( $date ) ) {
-                $when = $date;
-            }
-
-            /*
-            if ( ! class_exists( 'e20rMeasurementModel' ) ) {
-
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading model class for measurements: " . E20R_PLUGIN_DIR );
-
-                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                    wp_die( "Unable to load e20rMeasurementModel class" );
-                }
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Model Class loaded");
-            }
-*/
-
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading measurement class");
-            // $this->setMeasurementDate( $when ); // TODO: Is this really necessary?
-
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$when}");
-            $this->init( $this->id, $this->measurementDate );
+            dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
+            $this->init( $this->measurementDate, $this->id );
 
             if ( ! isset( $e20rClient->data ) ) {
 
@@ -524,17 +524,12 @@ class e20rMeasurements {
                 $e20rClient->init();
             }
 
-
-            if ( $this->loadData( $when ) == false ) {
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Error loading data for (user: {$current_user->ID}) for {$when}");
+            if ( $this->loadData( $this->measurementDate ) == false ) {
+                dbg("e20rMeasurements::shortcode_weeklyProgress() - Error loading data for (user: {$current_user->ID}) for {$this->measurementDate}");
             }
 
-//            dbg("shortcode: Attempting to load data for {$when}");
-//            $this->measurements->getMeasurement( $when );
-
-
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading progress form for {$this->measurementDate} by {$this->id}");
-            return $this->view_EditProgress( $this->measurementDate );
+            return $this->load_EditProgress( $articleId );
 
             dbg('e20rMeasurements::shortcode_weeklyProgress() - Form load completed...');
         }
@@ -543,12 +538,28 @@ class e20rMeasurements {
         }
     }
 
+    /*
+    public function alreadyRecorded( $articleId, $userId, $date ) {
+
+        //
+        // if ( $userId != $this->id ) {
+        //    dbg("e20rMeasurements::alreadyRecorded() - User ID supplied ({$userId}) doesn't match ID ({$this->id})");
+        //    return false;
+        // }
+
+        $completion = $this->model->checkCompletion( $articleId, $userId, $date );
+
+        dbg("e20rMeasurements::alreadyRecorded() - Completion: {$completion}");
+
+        return $completion;
+    }
+*/
     public function loadData( $when = 'all') {
 
         dbg("Loading measurement data for {$when}");
 
         try {
-
+            /*
             if ( ! class_exists( ' e20rMeasurementModel' ) ) {
                 dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
                 if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
@@ -556,10 +567,10 @@ class e20rMeasurements {
                 }
                 dbg("Model Class loaded");
             }
+            */
+            if ( !isset( $this->model ) ) {
 
-            if ( empty( $this->model ) ) {
-
-                dbg("Init of measurement model");
+                dbg("e20rMeasurements::loadData() - Init of measurement model");
                 $this->model = new e20rMeasurementModel( $this->id, $when );
             }
 
@@ -568,7 +579,7 @@ class e20rMeasurements {
         }
         catch ( Exception $e ) {
 
-            dbg("Error loading measurement data: " . $e->getMessage() );
+            dbg("e20rMeasurements::loadData() - Error loading measurement data: " . $e->getMessage() );
             return false;
         }
 
@@ -578,15 +589,36 @@ class e20rMeasurements {
     private function transformForJS( $data ) {
 
         global $e20rClient;
+        global $e20rTables;
 
         $retVal = array();
+        $fields = $e20rTables->getFields('measurements');
+
+        $exclude = array(
+            'id',
+            'user_id',
+            'article_id',
+            'recorded_date',
+            'essay1',
+            'behaviorprogress',
+            'front_image',
+            'side_image',
+            'back_image',
+        );
 
         foreach ($data as $key => $value ) {
 
-            $retVal[$key] = array(
-                'value' => $value,
-                'units' => ( $key != 'weight' ? $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
-            );
+            $mKey = array_search( $key, $fields);
+
+            dbg("e20rMeasurements::transformForJS() - Key ({$key}) is really {$mKey}");
+
+            if ( ! in_array( $key, $exclude ) ) {
+
+                $retVal[ $mKey ] = array(
+                    'value' => $value,
+                    'units' => ( $key != 'weight' ? $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
+                );
+            }
         }
 
         return ( empty( $retVal ) ? $data : $retVal );
@@ -595,6 +627,7 @@ class e20rMeasurements {
     public function getGirthTypes() {
 
         if (empty( $this->girths ) ) {
+
             $this->load_girthTypes();
         }
 
@@ -609,14 +642,15 @@ class e20rMeasurements {
             dbg("e20rMeasurements::getMeasurement() - User ID hasn't been set yet.");
 
             if ( $current_user->ID == 0 ) {
-                dbg("e20rMeasurements::getMeasurement() - No user ID configurable.");
+                dbg("e20rMeasurements::getMeasurement() - No user ID defined.");
                 return;
             }
 
             $this->id = $current_user->ID;
         }
 
-        if ( empty( $this->model ) ) {
+        if ( !isset( $this->model ) ) {
+
             dbg("e20rMeasurements::getMeasurement() - For some reason, the model isn't loaded yet!");
             $this->model = new e20rMeasurementModel( $this->id );
             // $this->model->getFields( $when );
@@ -631,12 +665,11 @@ class e20rMeasurements {
         if ( $when !== 'all' ) {
 
             dbg( "e20rMeasurements::getMeasurement({$when}, {$forJS}) was called by: " . $e20rTracker->whoCalledMe() );
-            $date = $e20rTracker->datesForMeasurements();
+            $date = $this->dates[$when];
 
-            dbg( "e20rMeasurements::getMeasurement() - {$when} week: " . $date[ $when ] );
+            dbg( "e20rMeasurements::getMeasurement() - {$when} week: " . $date );
 
-            $data = $this->model->getByDate( $date[ $when ] );
-            dbg( "e20rMeasurements::getMeasurement() - Data: " . print_r( $data, true ) );
+            $data = $this->model->getByDate( $date );
 
         }
         else {
@@ -648,60 +681,59 @@ class e20rMeasurements {
 
     }
 
-    public function view_EditProgress( $date = null ) {
+    private function load_EditProgress( $articleId = null ) {
 
-        global $e20rTracker, $e20rMeasurements, $e20rTables;
+        global $e20rTracker;
+        global $current_user;
+        global $e20rProgram;
+        global $e20rArticle;
+        global $e20rMeasurements;
+        global $e20rTables;
 
-        if ( ! class_exists( 'e20rMeasurementViews' ) ) {
-            if ( ! include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rMeasurementViews.php" ) )
-                wp_die( "Unable to load the e20rMeasurementViews() class" );
-        }
-
-        dbg("view_EditProgress() - Date supplied is: " . print_r($date, true) . " " . $e20rTracker->whoCalledMe() );
+        dbg("e20rMeasurements::load_EditProgress() - Date supplied is: " . print_r($this->measurementDate, true) . " " . $e20rTracker->whoCalledMe() );
         $count = 1;
 
-        $this->setMeasurementDate( $date );
+        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID,  $articleId );
 
-        dbg("view_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
+        dbg("e20rMeasurements::load_EditProgress() - Program ID for user ({$current_user->ID}): {$programId}");
+        dbg("e20rMeasurements::load_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
 
         if ( ! isset( $this->model ) ) {
-            $this->model = new e20rMeasurementModel( $this->id, $date );
+            $this->model = new e20rMeasurementModel($this->id, $this->measurementDate);
         }
 
-        dbg("Measurement model is present. Loading data for {$this->measurementDate}...");
+        dbg("e20rMeasurements::load_EditProgress() - Measurement model is present. Loading data for {$this->measurementDate}...");
         $measurements   = $this->model->getByDate( $this->measurementDate );
-        $fields = $e20rTables->getFields('measurements');
 
-        $this->view = new e20rMeasurementViews( $this->measurementDate, $measurements );
-
-        dbg("view_EditProgress() - Views for measurements are loaded");
+        dbg("e20rMeasurements::load_EditProgress() - Views for measurements are loaded");
+        $this->view->init( $this->measurementDate, $measurements );
 
         ob_start();
 
-        echo $this->view->startProgressForm();
-        dbg("Start of measurement form generated.");
+        echo $this->view->startProgressForm( $articleId, $programId );
+        dbg("e20rMeasurements::load_EditProgress() - Start of measurement form generated.");
 
         echo $this->view->showChangeBirthDate();
 
-        dbg("Birth date portion of measurement form generated.");
+        dbg("e20rMeasurements::load_EditProgress() - Birth date portion of measurement form generated.");
 
         echo $this->view->showWeightRow( );
 
-        dbg("Weight info for form generated.");
+        dbg("e20rMeasurements::load_EditProgress() - Weight info for form generated.");
         $this->load_girthTypes();
-        dbg("Girth Count: " . count($this->girths));
+        dbg("e20rMeasurements::load_EditProgress() - Girth Count: " . count($this->girths));
 
         echo $this->view->showGirthRow( $this->girths );
-        dbg("Girth Row generated");
+        dbg("e20rMeasurements::load_EditProgress() - Girth Row generated");
 
         echo $this->view->showPhotoRow( $this->requestPhotos() );
-        dbg("Photo Row generated");
+        dbg("e20rMeasurements::load_EditProgress() - Photo Row generated");
 
         echo $this->view->showOtherIndicatorsRow( $this->requestPhotos() );
-        dbg("Other Indicators row generated");
+        dbg("e20rMeasurements::load_EditProgress() - Other Indicators row generated");
 
         echo $this->view->showProgressQuestionRow( $this->requestPhotos() );
-        dbg("Progress Questionnaire row generated");
+        dbg("e20rMeasurements::load_EditProgress() - Progress Questionnaire row generated");
 
         echo $this->view->endProgressForm();
 
@@ -758,16 +790,18 @@ class e20rMeasurements {
      */
     public function saveMeasurement_callback() {
 
-        dbg("saveMeasurement() - Checking access");
+        global $e20rCheckin;
+
+        dbg("e20rMeasurements::saveMeasurement() - Checking access");
 
         check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
 
-        dbg("saveMeasurement() - Access approved");
+        dbg("e20rMeasurements::saveMeasurement() - Access approved");
 
         global $current_user, $e20rTables;
 
         if ( $current_user->ID == 0 ) {
-            dbg("User Isn't logged in! Redirect immediately");
+            dbg("e20rMeasurements::saveMeasurement() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
 
@@ -777,17 +811,18 @@ class e20rMeasurements {
         $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
         $post_date = ( isset( $_POST['date'] ) ? sanitize_text_field($_POST['date']) : null );
 
-        dbg("Received from user {$user_id}- Type: {$measurementType}, Value: {$measurementValue}, Date: {$post_date}");
+        dbg("e20rMeasurements::saveMeasurement() - Received from user {$user_id}- Type: {$measurementType}, Value: {$measurementValue}, Date: {$post_date}");
+
         if ( ! $post_date ) {
-            dbg("No date specified for the measurement");
+
+            dbg("e20rMeasurements::saveMeasurement() - No date specified for the measurement");
             wp_send_json_error( "No date specified for the measurement" );
-            exit;
         }
 
         if ( ! $articleId ) {
-            dbg("No article ID specified for the measurement ");
+
+            dbg("e20rMeasurements::saveMeasurement() - No article ID specified for the measurement ");
             wp_send_json_error( "No article ID specified for the measurement ");
-            exit;
         }
 
 /*        if ( ( ! $measurementType ) || ( ( ! $measurementValue ) && ( $measurementType != 'essay1' ) ) ) {
@@ -796,15 +831,21 @@ class e20rMeasurements {
         }
 */
         if ( ( $measurementType == 'completed') && ( $measurementValue == 1) ){
-            dbg("Measurement form is being saved by the user. TODO: Display with correct header to show completion");
-            // TODO: Add functionality to set the assignment for this article_id as "complete"
-            wp_send_json_success("Progress saved for {$post_date}");
-            exit;
+
+            dbg("e20rMeasurements::saveMeasurement() - Measurement form is being saved by the user. TODO: Display with correct header to show completion");
+            // TODO: Add functionality to set the check-in for this article_id as "complete"
+            if ( $e20rCheckin->setArticleAsComplete( $current_user->ID, $articleId ) ) {
+                wp_send_json_success( "Progress saved for {$post_date}" );
+            }
+            else {
+                wp_send_json_success( "Unable to save your progress measurements. Please try again" );
+            }
         }
 
         try {
-            dbg( "saveMeasurement() - Saving measurement: {$measurementType} -> {$measurementValue}");
+            dbg( "e20rMeasurements::saveMeasurement() - Saving measurement: {$measurementType} -> {$measurementValue}");
 
+            /*
             if ( ! class_exists( ' e20rMeasurementModel' ) ) {
 
                 dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
@@ -815,10 +856,10 @@ class e20rMeasurements {
                 }
                 dbg("Measurement class loaded");
             }
-
+            */
             $fields = $e20rTables->getFields( 'measurements' );
 
-            if ( $this->model == null ) {
+            if ( ! isset( $this->model) ) {
                 $this->model = new e20rMeasurementModel( $user_id, $post_date );
             }
 
@@ -830,7 +871,7 @@ class e20rMeasurements {
 
         }
         catch ( Exception $e ) {
-            dbg("saveProgressForm() - Exception while saving the {$measurementType} measurement" );
+            dbg("saveProgressForm() - Exception while saving the {$measurementType} measurement: " . $e->getMessage() );
             wp_send_json_error( "Error saving {$measurementType} measurement" );
             exit;
         }
@@ -952,35 +993,4 @@ class e20rMeasurements {
     */
         return $when;
     }
-
-    /*
-    // private function getUserSetting( $setting, $user_id = null ) {
-    private function userInfo( $setting, $user_id = null ) {
-        global $wpdb;
-
-        $value = get_user_meta( $this->user_info->id,  "{$wpdb->prefix}e20r-tracker-{$setting}", true);
-
-        if ( empty( $value ) ) {
-
-            switch ($setting) {
-
-                case 'unit-type';
-                    $value = new stdClass();
-                    $value->weigth = 'lbs (pounds)';
-                    $value->length = 'inches (in)';
-            }
-        }
-
-        return $value;
-
-    }
-*/
-    /**
-     * @param $setting
-     */
-    /*
-    private function setUserSettings( $setting ) {
-
-    }
-    */
-} 
+}

@@ -47,32 +47,19 @@ class e20rClient {
 
     public function init() {
 
-        global $e20rTables, $e20rTracker, $e20rMeasurements, $e20rArticle, $e20rProgram;
+        global $e20rTracker;
 
         dbg('e20rClient::init() - Running INIT for Client Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
         if ( $this->id != null ) {
 
-            $e20rTables->init( $this->id );
-
             $this->loadClient( $this->id );
-
-            if ( ! isset( $e20rMeasurements ) ) {
-                $e20rMeasurements = new e20rMeasurements( $this->id );
-            }
-
-            if ( ! isset( $e20rArticle ) ) {
-                $e20rArticle = new e20rArticle();
-            }
-
-            if ( ! isset( $this->checkin ) ) {
-                $this->checkin = new e20rCheckin( $this->id );
-            }
+            $this->client_loaded = true;
         }
 
-        $this->loadClient();
-        $this->client_loaded = true;
+        // $this->loadClient();
+
     }
 
     public function isNourishClient( $user_id = 0 ) {
@@ -158,6 +145,103 @@ class e20rClient {
 
     }
 
+    public function afterGFSubmission( $entry, $form ) {
+
+        dbg("gf_after_submission - entry: ". print_r( $entry, true));
+        dbg("gf_after_submission - form: ". print_r( $form, true));
+    }
+/*
+    public function ajax_userInfo_callback() {
+
+        dbg("ajax_userInfo_Callback() - Checking access");
+        dbg("Received data: " . print_r($_POST, true ) );
+
+        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
+
+        dbg("ajax_userInfo_Callback() - Access approved");
+
+        global $wpdb;
+
+        $var = ( isset( $_POST['measurement-type']) ? sanitize_text_field( $_POST['measurement-type']): null );
+
+        try {
+
+            if ( empty( $this->data ) ) {
+                $this->init();
+            }
+
+            $userData = $this->data->info->getInfo();
+            $retVal = $userData->{$var};
+
+            dbg("Requested variable: {$var} = {$retVal}" );
+            echo json_encode( $retVal, JSON_FORCE_OBJECT );
+            exit;
+        }
+        catch ( Exception $e ) {
+            dbg("Error loading and returning user data: " . $e->getMessage() );
+        }
+    }
+*/
+    public function initClientViews() {
+
+        if ( ! class_exists( 'e20rClientViews' ) ) {
+            include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
+        }
+        try {
+            $this->show = new e20rClientViews();
+        }
+        catch ( Exception $e ) {
+            dbg("Error loading views for client controller: " . $e->getMessage() );
+        }
+
+    }
+
+    /**
+     * Render page on back-end for client data (admin selectable).
+     */
+    public function render_client_page( $lvlName = '', $client_id = 0 ) {
+
+        global $current_user;
+
+        $this->init();
+        $this->initClientViews();
+
+        if ( $client_id == 0 ) {
+
+            $client_id = $this->clientId();
+        }
+
+        if ( is_null( $this->show ) ) {
+            dbg("e20rClient::render_client_page() - Init the ClientViews class");
+            $this->initClientViews();
+        }
+
+        echo $this->show->viewClientAdminPage( $lvlName );
+    }
+
+    public function getArticleID() {
+
+        global $post;
+
+        // TODO: Simply returns the current POST ID - needs to get the correct article ID at some point.
+        return $post->ID;
+    }
+
+    public function getInfo() {
+
+        if ( empty( $this->data->info ) ) {
+
+            try {
+                $this->loadInfo();
+            }
+            catch ( Exception $e ) {
+                dbg('Error loading user info from the database: ' . $e->getMessage() );
+            }
+        }
+
+        return $this->info;
+    }
+
     public function updateUnitTypes() {
 
 
@@ -227,100 +311,6 @@ class e20rClient {
         wp_die();
     }
 
-    public function afterGFSubmission( $entry, $form ) {
-
-        dbg("gf_after_submission - entry: ". print_r( $entry, true));
-        dbg("gf_after_submission - form: ". print_r( $form, true));
-    }
-/*
-    public function ajax_userInfo_callback() {
-
-        dbg("ajax_userInfo_Callback() - Checking access");
-        dbg("Received data: " . print_r($_POST, true ) );
-
-        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
-
-        dbg("ajax_userInfo_Callback() - Access approved");
-
-        global $wpdb;
-
-        $var = ( isset( $_POST['measurement-type']) ? sanitize_text_field( $_POST['measurement-type']): null );
-
-        try {
-
-            if ( empty( $this->data ) ) {
-                $this->init();
-            }
-
-            $userData = $this->data->info->getInfo();
-            $retVal = $userData->{$var};
-
-            dbg("Requested variable: {$var} = {$retVal}" );
-            echo json_encode( $retVal, JSON_FORCE_OBJECT );
-            exit;
-        }
-        catch ( Exception $e ) {
-            dbg("Error loading and returning user data: " . $e->getMessage() );
-        }
-    }
-*/
-    public function initClientViews() {
-
-        if ( ! class_exists( 'e20rClientViews' ) ) {
-            include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
-        }
-        try {
-            $this->show = new e20rClientViews();
-        }
-        catch ( Exception $e ) {
-            dbg("Error loading views for client controller: " . $e->getMessage() );
-        }
-
-    }
-
-    /**
-     * Render page on back-end for client data (admin selectable).
-     */
-    public function render_client_page( $lvlName = '', $client_id = 0 ) {
-
-        global $current_user;
-
-        if ( $client_id == 0 ) {
-
-            $client_id = $this->clientId();
-        }
-
-        if ( is_null( $this->show ) ) {
-            dbg("e20rClient::render_client_page() - Init the ClientViews class");
-            $this->initClientViews();
-        }
-
-        echo $this->show->viewClientAdminPage( $lvlName );
-    }
-
-    public function getArticleID() {
-
-        global $post;
-
-        // TODO: Simply returns the current POST ID - needs to get the correct article ID at some point.
-        return $post->ID;
-    }
-
-    public function getInfo() {
-
-        if ( empty( $this->data->info ) ) {
-
-            try {
-                $this->loadInfo();
-            }
-            catch ( Exception $e ) {
-                dbg('Error loading user info from the database: ' . $e->getMessage() );
-            }
-        }
-
-        return $this->info;
-    }
-
     function ajax_getMemberlistForLevel() {
 
         check_ajax_referer('e20r-tracker-data', 'e20r_tracker_levels_nonce');
@@ -360,6 +350,20 @@ class e20rClient {
 
         dbg("Request: " . print_r($_REQUEST, true));
 
+        $this->init();
+        // $this->initClientViews();
+
+        /*
+        global $wpdb, $current_user, $e20rClient, $e20rMeasurements;
+
+        // TODO: Don't init the client here. No need until it's actually used by something (i.e. in the has_weeklyProgress_shortcode, etc)
+        if ( ! $e20rClient->client_loaded ) {
+            dbg("e20rTracker::init() - Loading Client info");
+            $e20rClient->init();
+        }
+        */
+
+
     }
 
     function ajax_complianceData() {
@@ -369,6 +373,9 @@ class e20rClient {
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
+
+        $this->init();
+//        $this->initClientViews();
 
         $checkins = new E20Rcheckin();
 
@@ -387,6 +394,10 @@ class e20rClient {
         check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
 
         dbg("Nonce is OK");
+
+        $this->init();
+//        $this->initClientViews();
+
     }
 
     public function validateAccess( $clientId ) {

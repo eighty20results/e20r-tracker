@@ -192,7 +192,6 @@ class e20rTables {
 
         if ( empty ( $this->tables->{$name} ) ) {
             throw new Exception( "No {$name} table exists" );
-            return false;
         }
 
         return $this->tables->{$name};

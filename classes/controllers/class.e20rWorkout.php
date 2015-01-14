@@ -21,6 +21,18 @@ class e20rWorkout {
         $this->view = new e20rWorkoutView();
     }
 
+    public function init( $id = null ) {
+
+        if ( $id ) {
+
+            $this->init( $id );
+        }
+        else {
+            global $post;
+
+            $this->model->init( $post->ID );
+        }
+    }
 
     public function getWorkout( $shortName ) {
 
@@ -71,10 +83,12 @@ class e20rWorkout {
         }
 
         dbg("e20rWorkout::saveSettings()  - Saving metadata for the post_type(s)");
+        $this->init( $post_id );
 
-        $settings = new $this->model->defaultSettings();
+        $settings = $this->model->defaultSettings();
 
         foreach( $settings as $key => $value ) {
+
             $settings->{$key} = isset( $_POST["e20r-workout-{$key}"] ) ? $e20rTracker->sanitize( $_POST["e20r-workout-{$key}"] ) : null;
         }
 
@@ -130,6 +144,7 @@ class e20rWorkout {
         global $post;
 
         dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page");
+        $this->init( $post->ID );
 
         $workout = $this->model->loadWorkoutData( $post->ID, 'any' );
 
@@ -153,6 +168,7 @@ class e20rWorkout {
 
         return $memberGroups;
     }
+
     public function workout_attributes_dropdown_pages_args( $args, $post ) {
 
         if ( 'e20r_workouts' == $post->post_type ) {
@@ -170,6 +186,9 @@ class e20rWorkout {
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
         $workoutId = isset( $_POST['post_ID']) ? intval( $_POST['post_ID']) : 0;
+
+        $this->init( $workoutId );
+
         dbg("e20rWorkout::addGroup_callback() - Requested to add another Group to workout with ID {$workoutId}.");
 
         if ( ( $workout = $this->model->loadWorkoutData( $workoutId ) ) ) {

@@ -10,24 +10,21 @@ class e20rMeasurementViews {
     private $fields;
 
 
-    public function e20rMeasurementViews( $when = null, $data = null ) {
+    public function e20rMeasurementViews() {
 
         global $e20rTables;
 
-        $this->when = $when;
-        $this->data = $data;
         $this->fields = $e20rTables->getFields( 'measurements' );
-
-        dbg("When: {$this->when}");
-        dbg("Data: " . print_r( $this->data, true ) );
-        dbg("Fields: " . print_r( $this->fields, true ) );
-
     }
 
-    public function startProgressForm() {
+    public function init( $when = null, $data = null ) {
+
+        $this->when = $when;
+        $this->data = $data;
+    }
+    public function startProgressForm( $articleId, $programId ) {
 
         // $this->load_scripts();
-        global $e20rArticle;
 
         ob_start();
         ?>
@@ -43,8 +40,9 @@ class e20rMeasurementViews {
                         <tr>
                             <td></td>
                             <td>
-                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $e20rArticle->releaseDate(); ?>">
-                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $e20rArticle->getID(); ?>">
+                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
+                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $articleId; ?>">
+                                <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $programId; ?>">
                                 <button class="submit" id="submit-weekly-progress-button">
                                     <div>Save Your Weekly Progress Update</div>
                                 </button>
@@ -156,11 +154,6 @@ class e20rMeasurementViews {
         <?php
 
         return ob_get_clean();
-    }
-
-    public function addUserData() {
-
-
     }
 
     public function showOtherIndicatorsRow( $showPhotos ) {
@@ -514,7 +507,7 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function viewTableOfMeasurements( $clientId, $measurements, $dimensions = null, $tabbed = true ) {
+    public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true ) {
         // TESTING: using $clientId = 12;
         // $clientId = 12;
         global $e20rTables, $e20rClient, $current_user;
@@ -542,16 +535,14 @@ class e20rMeasurementViews {
             $html = ob_get_clean();
         }
         else {
-            // dbg( "Tabbed measurements for $clientId: " . print_r( $measurements, true ) );
 
             ob_start();
-            // echo $reloadBtn;
 
             ?>
             <!--[if IE]>
             <style type="text/css">
                 .box { display: block; }
-                #box { overflow: hidden;position: relative; }
+                #box { overflow: hidden; position: relative; }
                 b { position: absolute; top: 0px; right: 0px; width:1px; height: 251px; overflow: hidden; text-indent: -9999px; }
             </style>
             <![endif]-->
