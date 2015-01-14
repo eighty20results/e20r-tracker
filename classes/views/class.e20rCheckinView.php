@@ -154,7 +154,7 @@ class e20rCheckinView extends e20rSettingsView {
                                 <option value="0"><?php _e("Not configured", "e20rtracker"); ?></option>
                                 <option value="1"><?php _e("Action", "e20rtracker"); ?></option>
                                 <option value="2"><?php _e("Assignment", "e20rtracker"); ?></option>
-                                <option value="3"><?php _e("Workout", "e20rtracker"); ?></option>
+                                <option value="3"><?php _e("Activity", "e20rtracker"); ?></option>
                                 <option value="4"><?php _e("Survey", "e20rtracker"); ?></option>
                             </select>
                         </td>
