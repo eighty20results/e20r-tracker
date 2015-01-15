@@ -30,6 +30,16 @@ global $e20r_db_version;
 
 $e20r_db_version = "1.0";
 
+// TODO: Remove this before going live.
+function exception_error_handler($errno, $errstr, $errfile, $errline ) {
+    if (!(error_reporting() & $errno)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+}
+set_error_handler("exception_error_handler");
+
 if ( ! function_exists( 'dbg' ) ):
 
     /**
@@ -104,6 +114,7 @@ function loadTracker() {
         }
 
         if ( ! isset( $e20rProgram ) ) {
+            dbg("E20R Tracker Init: Loading e20rProgram class");
             $e20rProgram = new e20rProgram();
         }
 
@@ -114,15 +125,18 @@ function loadTracker() {
 
 
         if ( ! isset( $e20rArticle ) ) {
+            dbg("E20R Tracker Init: Loading e20rArticle class");
             $e20rArticle = new e20rArticle();
         }
 
 
         if ( ! isset( $e20rExercise ) ) {
+            dbg("E20R Tracker Init: Loading e20rExercise class");
             $e20rExercise = new e20rExercise();
         }
 
         if ( ! isset( $e20rWorkout ) ) {
+            dbg("E20R Tracker Init: Loading e20rWorkout class");
             $e20rWorkout = new e20rWorkout();
         }
 
@@ -240,6 +254,7 @@ if ( ! class_exists( 'e20rTracker' ) ):
          */
 //        dbg("Request: " . print_r($_REQUEST, true));
 
+        dbg("\n\n------------------------------------- New Iteration ---------------------------\n\n");
         // Set to false unless the user is accessing the example/demo progress form.
         $e20rExampleProgress = false;
 
