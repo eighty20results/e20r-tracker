@@ -345,6 +345,7 @@ jQuery(function() {
                 'action': 'saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                 'article-id': jQuery('#article_id').val(),
+                'program-id': jQuery('#program_id').val(),
                 'date': jQuery( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
@@ -500,6 +501,7 @@ jQuery(function() {
                 dataType: 'JSON',
                 data: {
                     'article-id': jQuery('#article_id').val(),
+                    'program-id': jQuery('#program_id').val(),
                     'action': 'saveMeasurementForUser',
                     'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                     'date': jQuery('#date').val(),
@@ -532,7 +534,8 @@ jQuery(function() {
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val()
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
                     };
 
                     jQuery.ajax({
@@ -563,7 +566,8 @@ jQuery(function() {
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val()
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
                     };
 
                     jQuery.ajax({
@@ -664,52 +668,19 @@ jQuery(function() {
                 }
             });
 
-/*            jQuery('.manip-container img')
-                .click(function() {
-
-                    var isCounterClockwise = jQuery(this).is(':first-child');
-
-                    var deg = (isCounterClockwise) ? 270 : 90;
-
-                    var orientation = jQuery(this).parent('.manip-container').attr('data-orientation');
-
-                    var $loading = jQuery('<img src="../../images/spinner.gif" style="display: block; margin: 0 auto; margin-bottom: 8px;" class="loading" />').prependTo(jQuery(this).closest('td'));
-
-                    var postdata = {
-                        'action': 'rotatephoto',
-                        'article-id': jQuery('#article_id').val(),
-                        'degrees': deg,
-                        'view': orientation,
-                        'user_id': NourishUser.user_id
-                    };
-
-                    // TODO: Photo rotation, is it even needed?
-                    jQuery.post('cpds-assignments.php', postdata, function() {
-                        jQuery('#photo-' + orientation)
-                            .attr('src', function(src) {
-                                return src + '&rand=' + Math.random();
-                            })
-                            .load(function() {
-                                $loading.remove();
-                            });
-                    })
-                    //?action=rotatephoto&assignment-id=[assignmentid]&degrees=90&view=[front|side|back]
-                });
-*/
             jQuery('.delete-photo')
                 .click(function() {
                     var orientation = jQuery(this).attr('data-orientation');
 
                     var $data = {
                         'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation, // Don't think I need this...?
                         'action': 'deletePhoto',
                         'user-id': NourishUser.user_id
                     };
-
-                    // TODO: Implement back-end photo deletion (remove the attachment as well as
 
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
@@ -803,7 +774,8 @@ jQuery(function() {
                         'measurement-type': orientation + '_image',
                         'measurement-value': attachment.id,
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val()
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
                     };
 
                     jQuery.ajax({
@@ -952,6 +924,7 @@ jQuery(function() {
         var $data = {
             'action': 'checkCompletion',
             'article-id': jQuery('#article_id').val(),
+            'program-id': jQuery('#program_id').val(),
             'date': jQuery('#date').val(),
             'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
             'user-id': NourishUser.user_id
