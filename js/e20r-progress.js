@@ -314,13 +314,13 @@ jQuery(function() {
 					<button class="override-difference-check">I\'m certain, save this measurement</button>\
 					<button class="cancel" style="margin-right: 4px;">Change this measurement</button>',
                         handler: function(self) {
-                            jQuery('.bouyant-error button.override-difference-check')
+                            jQuery('.floating-error button.override-difference-check')
                                 .click(function() {
                                     self.__overrideDifferenceCheck = 1;
                                     self.attemptSave(self);
                                 });
 
-                            jQuery('.bouyant-error button.cancel')
+                            jQuery('.floating-error button.cancel')
                                 .click(function() {
                                     self._clearErrors();
                                     self.$field.select();
@@ -377,12 +377,12 @@ jQuery(function() {
         },
 
         _clearErrors: function() {
-            jQuery('.bouyant-error[data-measurement-type="' + this.type + '"]')
+            jQuery('.floating-error[data-measurement-type="' + this.type + '"]')
                 .remove();
         },
 
         _displayError: function(errorText) {
-            jQuery('<div class="bouyant-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
+            jQuery('<div class="floating-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
                 .positionAtOffset(this.$fieldContainer, +20, +66)
                 .appendTo(document.body);
         },
