@@ -1336,7 +1336,8 @@ class e20rTracker {
                     behaviorprogress tinyint NULL,
                     front_image int default null,
                     side_image int default null,
-                    back_image int default null
+                    back_image int default null,
+                    program_id int default 0
                     )
                     {$charset_collate}
             ";
