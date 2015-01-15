@@ -140,6 +140,33 @@
     visibility: hidden;
 }
 /*** TODO: Do we need the .rounded-corners-* CSS? ***/
+.floating-error {
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    position: absolute;
+    z-index: 999;
+    background: #f8d3d0;
+    border: 2px solid #cb3f36;
+    padding: 8px;
+    font-size: 12px;
+    line-height: 18px;
+    color: black;
+    -moz-box-shadow: 1px 1px 3px #333333;
+    max-width: 600px;
+}
+.floating-error button {
+    font-size: 14px;
+    float: right;
+    color: buttontext;
+    border: 2px outset buttonface;
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    background-color: buttonface;
+    box-sizing: border-box;
+}
 .notice .li { line-height: 150%; }
 .orange-notice {
     margin-bottom: 8px;
@@ -245,6 +272,15 @@
 .floating-error button {
     font-size: 14px;
     float: right;
+    color: buttontext;
+    border: 1px outset buttonface;
+    border-image-source: initial;
+    border-image-slice: initial;
+    border-image-width: initial;
+    border-image-outset: initial;
+    border-image-repeat: initial;
+    background-color: buttonface;
+    box-sizing: border-box;
 }
 #saturday-progress-container #e20r-progress-canvas {
     -moz-border-radius: 6px;
@@ -516,8 +552,8 @@
     align-items: flex-start;
     text-align: center;
     cursor: default;
-    color: buttontext;
     padding: 2px 6px 3px;
+    color: buttontext;
     border: 2px outset buttonface;
     border-image-source: initial;
     border-image-slice: initial;
