@@ -165,20 +165,22 @@ class e20rArticle extends e20rSettings {
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
         $measured = $e20rMeasurements->areCaptured( $this->articleId, $current_user->ID, $rDate );
+        dbg("e20rArticle::contentFilter() - Result from e20rMeasurements::areCaptured: ");
+        dbg($measured);
 
         $md = $this->isMeasurementDay( $this->articleId );
 
         // dbg("e20rArticle::contentFilter() - Settings: " . print_r( $settings, true));
         dbg("e20rArticle::contentFilter() - Check whether it's a measurement day or not: {$md}, {$measured}");
 
-        if ( $md && !$measured ) {
+        if ( $md && !$measured['status'] ) {
 
             dbg("e20rArticle::contentFilter() - It's a measurement day!");
             $data = $this->view->viewMeasurementAlert( $this->isPhotoDay( $this->articleId ), $rDay, $this->articleId );
             $content = $data . $content;
         }
 
-        if ( $md && $measured ) {
+        if ( $md && $measured['status'] ) {
 
             dbg("e20rArticle::contentFilter() - Measurement day, and we've measured.");
             $data = $this->view->viewLessonComplete( $rDay, $md );
