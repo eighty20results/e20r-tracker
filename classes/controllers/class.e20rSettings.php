@@ -32,6 +32,7 @@ class e20rSettings {
 
         $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
 
+        dbg("e20r" . ucfirst($this->type) . "::init() - Loaded {$this->type} id: {$settingsId}");
         if ( ! $settingsId ) {
 
             return false;
@@ -136,6 +137,7 @@ class e20rSettings {
         dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Saving {$this->type} Settings to DB");
 
         if ( $post->post_type != $this->cpt_slug) {
+            dbg("e20r" .ucfirst($this->type) . "::saveSettings() -Incorrect type! {$post->post_type}");
             return $post_id;
         }
 

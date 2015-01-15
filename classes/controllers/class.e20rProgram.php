@@ -23,14 +23,8 @@ class e20rProgram extends e20rSettings {
         global $post;
 
         if ( $programId !== null ) {
-            $this->programTree = ( is_array( $programId ) ? $programId : array( $programId ) );
-        }
-        else {
-            $this->programTree = get_post_meta( $post->ID, 'e20r_tracker_program_ids', true );
 
-            if ( ( $this->programTree !== false ) && ( is_array( $this->programs ) ) ) {
-                $this->programTree = array_unique( $this->programs );
-            }
+            $this->programTree = $this->getPeerPrograms( $programId );
         }
 
         return true;
@@ -89,7 +83,7 @@ class e20rProgram extends e20rSettings {
             'fields' => 'ids',
         ) );
 
-        $ProgramList = array(
+        $this->programTree = array(
             'pages' => $programs->posts,
         );
 
@@ -99,17 +93,17 @@ class e20rProgram extends e20rSettings {
 
                 if( isset( $programs->posts[$k-1] ) ) {
 
-                    $ProgramList['prev'] = $programs->posts[ $k - 1 ];
+                    $this->programTree['prev'] = $programs->posts[ $k - 1 ];
                 }
 
                 if( isset( $programs->posts[$k+1] ) ) {
 
-                    $ProgramList['next'] = $programs->posts[ $k + 1 ];
+                    $this->programTree['next'] = $programs->posts[ $k + 1 ];
                 }
             }
         }
 
-        return $ProgramList;
+        return $this->programTree;
     }
 
     public function getProgramList() {
@@ -143,12 +137,8 @@ class e20rProgram extends e20rSettings {
 
         $programId = get_user_meta( $userId, '_e20r-tracker-program-id', true);
 
-        if ( $programId ) {
-
-            return $programId;
-        }
-
-        return false;
+        dbg("e20rProgram::getProgramIdForUser() - User's programID: {$programId}");
+        return $programId;
     }
 
     /**

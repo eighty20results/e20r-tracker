@@ -144,14 +144,20 @@ class e20rArticle extends e20rSettings {
      */
     public function contentFilter( $content ) {
 
+        // Quit if this isn't a single-post display and we're not in the main query of wordpress.
+        if ( ! ( is_singular() && is_main_query() ) ) {
+            return $content;
+        }
+
         global $post;
         global $current_user;
         global $e20rMeasurements;
+        global $e20rProgram;
 
         dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
-        $this->articleId = $this->init( $post->ID );
+        $this->init( $post->ID );
 
-        if ( ! $this->articleId ) {
+        if ( empty($this->articleId) ) {
 
             dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
             return $content;
@@ -161,10 +167,11 @@ class e20rArticle extends e20rSettings {
 
         $rDay = $this->model->getSetting( $this->articleId, 'release_day' );
         $rDate =  $this->releaseDate( $this->articleId );
+        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
 
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
-        $measured = $e20rMeasurements->areCaptured( $this->articleId, $current_user->ID, $rDate );
+        $measured = $e20rMeasurements->areCaptured( $this->articleId, $programId, $current_user->ID, $rDate );
         dbg("e20rArticle::contentFilter() - Result from e20rMeasurements::areCaptured: ");
         dbg($measured);
 
@@ -183,13 +190,13 @@ class e20rArticle extends e20rSettings {
         if ( $md && $measured['status'] ) {
 
             dbg("e20rArticle::contentFilter() - Measurement day, and we've measured.");
-            $data = $this->view->viewLessonComplete( $rDay, $md );
+            $data = $this->view->viewLessonComplete( $rDay, $md, $this->articleId );
             $content = $data . $content;
         }
 
         if ( $this->hasCompletedLesson( $post->ID ) && ( !$md ) ) {
 
-             $data = $this->view->viewLessonComplete( $rDay, false );
+             $data = $this->view->viewLessonComplete( $rDay, false, $this->articleId );
              $content = $data . $content;
         }
 
@@ -252,7 +259,19 @@ class e20rArticle extends e20rSettings {
 
     public function isPhotoDay( $articleId ) {
 
-        return ( $this->model->getSetting( $articleId, 'photo_day' ) == 0 ? false : true );
+        dbg("e20rArticle::isPhotoDay() - getting photo_day setting for {$articleId}");
+
+        $setting = $this->model->getSetting( $articleId, 'photo_day' );
+        dbg("e20rArticle::isPhotoDay() - Is ({$articleId}) on a photo day ({$setting})? " . ($setting==0 ? 'No' : 'Yes') );
+
+        if ( empty($setting) ) {
+            dbg("e20rArticle::isPhotoDay() - photo_day setting ID empty/null." );
+            return false;
+        }
+        else {
+            return ($setting != 0 ? true : false);
+        }
+        // return ( is_null( $retVal ) ? false : true );
     }
 
 /*

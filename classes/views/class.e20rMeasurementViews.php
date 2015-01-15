@@ -162,7 +162,7 @@ class e20rMeasurementViews {
         ?>
         <tr>
             <td id="other-indicators">
-                <div class="e20r-number-col"><?php echo ( $showPhotos ? '4' : '3' ); ?>:</div>
+                <div class="e20r-number-col"><?php echo ( empty($showPhotos) ? '4' : '3' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -185,7 +185,7 @@ class e20rMeasurementViews {
         ?>
         <tr id="progress-questionnaire">
             <td >
-                <div class="e20r-number-col"><?php echo ( $showPhotos ? '5' : '4' ); ?>:</div>
+                <div class="e20r-number-col"><?php echo ( empty($showPhotos)? '5' : '4' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -215,7 +215,7 @@ class e20rMeasurementViews {
 
         dbg("In createPhotoBlock()");
 
-        if ( ! $showPhotos ) {
+        if ( empty($showPhotos) ) {
             return;
         }
 

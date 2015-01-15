@@ -19,19 +19,29 @@ class e20rArticleView extends e20rSettingsView {
         $this->error = $error;
     }
 
-    public function viewLessonComplete( $day, $measurements = 0 ) {
+    public function viewLessonComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
         $postDate = $e20rTracker->getDateForPost( $day );
 
-        $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to update</a> measurements';
+        // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
         ?>
-        <div class="green-notice">
-            <p style="font-size: 16px; color: black;">You have completed this lesson.
-                <?php echo ( $measurements != 0 ? $progressLink : null ); ?></p>
+        <div class="green-notice big" style="background-image: url( http://home.strongcubedfitness.com/wp-content/plugins/e20r-tracker/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+            <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong>
+            <?php
+                if ( $measurements != 0 ) { ?>
+                <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "e20rTracker"); ?></strong>  &raquo;</a>
+                <form action="<?php echo URL_TO_PROGRESS_FORM; ?>" method="POST" id="e20r-start" style="display: none;">
+                    <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
+                    <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+                </form>
+
+        <?php } ?>
+            </p>
         </div>
+
         <?php
         $html = ob_get_clean();
 

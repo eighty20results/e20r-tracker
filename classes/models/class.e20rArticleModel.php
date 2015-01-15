@@ -91,8 +91,7 @@ class e20rArticleModel extends e20rSettingsModel {
             if ( $key == 'post_id' ) {
 
                 dbg("e20rArticleModel::saveSettings() - Saving the article ID with the post ");
-                update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId ) or
-                add_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
+                update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
             }
 
             if ( false === $this->settings( $articleId, 'update', $key, $settings->{$key} ) ) {

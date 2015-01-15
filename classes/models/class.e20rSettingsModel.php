@@ -76,23 +76,29 @@ class e20rSettingsModel {
         return $this->settings;
     }
 
-    public function getSetting( $id, $fieldName ) {
+    public function getSetting( $articleId, $fieldName ) {
 
-        if (! $id ) {
+        if (! $articleId ) {
+            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - No Article ID!");
             return false;
         }
         if ( !$fieldName ) {
+            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - No field!");
             return false;
         }
 
-        $value = $this->settings->{$fieldName};
+        if ( empty( $this->settings->{$fieldName} ) ) {
 
-        if ( $value === null ) {
-
-            $value = $this->settings( $id, 'get', $fieldName );
+            $setting = self::settings( $articleId, 'get', $fieldName );
+            dbg("e20rSettingsModel::getSetting() - Fetched {$fieldName} for {$articleId} with result of {$setting->{$fieldName}}");
+            return $setting->{$fieldName};
+        }
+        else {
+            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and article {$articleId}");
+            return $this->settings->{$fieldName};
         }
 
-        return $value;
+        return false;
     }
 
     /**
@@ -197,24 +203,28 @@ class e20rSettingsModel {
      */
     protected function settings( $post_id, $action = 'get', $key = null, $setting = null ) {
 
-        dbg("e20r{$this->type}Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}");
+        dbg("e20r" . ucfirst($this->type) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}");
+
         switch ($action) {
 
             case 'update':
 
-                if ( ( !$setting ) && ( !$key ) ) {
-                    dbg("e20r{$this->type}Model::settings()  - No key nor settings. Returning quietly.");
+                $setting = ( empty($setting) ? 0 : $setting );
+                dbg("e20r" . ucfirst($this->type) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}");
+
+                if ( ( empty($setting) ) && ( !$key ) ) {
+                    dbg("e20r" . ucfirst($this->type) . "Model::settings()  - No key nor settings. Returning quietly.");
                     return false;
                 }
 
-                if  ( ( $setting ) &&
-                      ( ( ! in_array( $key, array( null, 'short_code', 'item_text') ) ) ) ) {
+                if  ( ! in_array( $key, array( null, 'short_code', 'item_text') ) ) {
 
-                    dbg("e20r{$this->type}Model::settings()  - Key and setting defined. Saving.");
+                    dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Key and setting defined. Saving.");
+
                     $this->settings->{$key} = $setting;
 
-                    update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting, true ) or
-                    add_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting, true );
+                    update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting );
+
                     return true;
                 }
 
@@ -235,11 +245,9 @@ class e20rSettingsModel {
 
                 $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
 
-                dbg("e20rSettingsModel::settings() - Got: {$val} for {$post_id}");
+                dbg("e20r" . ucfirst($this->type) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}");
 
-                $this->settings->{$key} = ( false === $val ? null : $val );
-
-                dbg("e20rSettingsModel::settings() - Loaded: {$this->settings->{$key}}");
+                $this->settings->{$key} = $val;
 
                 break;
 

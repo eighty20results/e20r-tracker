@@ -36,10 +36,13 @@ class e20rMeasurementModel {
 
     }
 
-    public function checkCompletion( $articleId, $user_id, $date ) {
+    public function checkCompletion( $articleId, $programId, $user_id, $date ) {
 
         global $wpdb;
 
+        $nextDay = date( 'Y-m-d', strtotime( $date . '+ 1 day') );
+
+        dbg( "e20rMeasurementModel::checkCompletion() - Day: {$date} -> next day: {$nextDay}");
         $sql = $wpdb->prepare(
             "SELECT id,
                 ( COUNT({$this->fields['girth_neck']}) +
@@ -57,44 +60,66 @@ class e20rMeasurementModel {
                 FROM {$this->table}
                 WHERE {$this->fields['article_id']} = %d AND
                       {$this->fields['user_id']} = %d AND
-                      {$this->fields['recorded_date']} = %s
+                      {$this->fields['program_id']} = %d AND
+                      ( ( {$this->fields['recorded_date']} >=  %s) AND ( {$this->fields['recorded_date']} <= %s ) )
                 ",
                 $articleId,
                 $user_id,
-                $date
+                $programId,
+                $date,
+                $nextDay
         );
 
+        dbg("e20rMeasurementModel::checkCompletion() - SQL: ");
+        dbg($sql);
+
         $results = $wpdb->get_results( $sql );
+
+        dbg("e20rMeasurementModel::checkCompletion() - Returned " . count( $results ) . " records");
         $completionStatus = false;
-        $girth_compl = true;
-        $weight_compl = true;
+        $girth_compl = false;
+        $weight_compl = false;
         $completionPct = 0;
+
+        if ( is_wp_error( $results ) ) {
+            dbg("e20rMeasurementModel::checkCompletion() - Error searching database: " . $wpdb->print_error() );
+            throw new Exception( "Error searching database: " . $wpdb->print_error() );
+            return false;
+        }
 
         if ( ! empty( $results ) ) {
 
             foreach( $results as $res ) {
 
-                if ( $res->completed < 8 ) {
+                dbg("e20rMeasurementModel::checkCompletion() - Returned Data: ");
+                dbg($res);
 
-                    $completionPct = ( $res->completed / 8 );
-                    $girth_compl = false;
+                if ( $res->completed >= TOTAL_GIRTH_MEASUREMENTS ) {
+
+                    $girth_compl = true;
+                    dbg("e20rMeasurementModel::checkCompletion() - Have all girth measurements.");
                 }
 
-                if ( empty ($res->weight ) ) {
-                    $weight_compl = false;
+                $completionPct = ( $res->completed / TOTAL_GIRTH_MEASUREMENTS );
+
+                if ( ! empty( $res->weight ) ) {
+
+                    dbg("e20rMeasurementModel::checkCompletion() - Recorded weight.");
+                    $weight_compl = true;
                 }
 
-                if ( empty( $res->girth ) && ( $completionPct == 1 ) ) {
+                if ( !empty( $res->girth ) && ( $girth_compl ) ) {
+
+                    dbg("e20rMeasurementModel::checkCompletion() - Updating total Girth for user {$user_id} on {$date}");
                     $this->setTotalGirth( $res->id );
                 }
             }
 
             $completionStatus = ( $girth_compl && $weight_compl );
-
-            dbg("Completion Status: {$completionStatus} and percentage: {$completionPct}");
         }
 
-        return $completionStatus;
+        dbg("e20rMeasurementModel::checkCompletion() - Completion Status: {$completionStatus} and percentage: {$completionPct}");
+        return array( 'status' => $completionStatus, 'percent' => ( $completionPct * 100));
     }
 
     /**
@@ -226,7 +251,7 @@ class e20rMeasurementModel {
 
     }
 
-    private function hasExistingData( $when, $userId = null ) {
+    private function hasExistingData( $when, $programId, $userId = null ) {
 
         dbg("e20rMeasurementModel::hasExistingData() - Checking data for {$userId}/{$this->client_id} on {$when}");
 
@@ -236,17 +261,25 @@ class e20rMeasurementModel {
             $this->client_id = $userId;
         }
 
-        $existing = $wpdb->get_row( $sql = $wpdb->prepare(
+        $nextDay = date( 'Y-m-d', strtotime( $when . '+ 1 day') );
+
+        $sql = $wpdb->prepare(
                         "SELECT *
                                     FROM {$this->table}
                                     WHERE ( {$this->fields['user_id']} = %d ) AND
-                                          ( {$this->fields['recorded_date']} = %s )",
+                                          ( ( {$this->fields['recorded_date']} >= %s ) AND
+                                            ( {$this->fields['recorded_date']} < %s ) ) AND
+                                          ( {$this->fields['program_id']} = %d )",
                         $this->client_id,
-                        "{$when} 00:00:00"
-                    )
-            );
+                        $when,
+                        $nextDay,
+                        $programId
+                    );
 
-        // dbg("SQL for save: " . $sql );
+//        dbg("e20rMeasurementModel::hasExistingData() - SQL: ");
+//        dbg($sql);
+
+        $existing = $wpdb->get_row( $sql );
 
         if ( is_wp_error( $existing ) ) {
             dbg("e20rMeasurementModel::hasExistingData - Error searching database: " . $wpdb->print_error() );
@@ -275,7 +308,7 @@ class e20rMeasurementModel {
      * @return bool|void
      * @throws Exception
      */
-    public function saveField( $form_key, $value, $articleID, $when, $user_id ) {
+    public function saveField( $form_key, $value, $articleID, $programId, $when, $user_id ) {
 
         global $e20rClient;
 
@@ -290,22 +323,21 @@ class e20rMeasurementModel {
             $this->client_id = $user_id;
         }
 
-        dbg("e20rMeasurementModel::saveField - Received variables: {$form_key}, {$value}, {$articleID}, {$when}");
+        dbg("e20rMeasurementModel::saveField - Received variables: {$form_key}, {$value}, {$articleID}, {$programId}, {$when}");
 
         global $wpdb;
 
         $varFormat = false;
 
+        if ( ( $existing = $this->hasExistingData( $when, $programId, $user_id ) ) !== false ) {
 
-        if ( ( $existing = $this->hasExistingData( $when ) ) !== false ) {
-
-            dbg("e20rMeasurementModel::saveField - Assuming we've gotta include existing data when updating the database");
+            dbg("e20rMeasurementModel::saveField - Assuming we have to include existing data when updating the database");
 
             $data = array(
                 $this->fields['id']            => $existing->{$this->fields['id']},
                 $this->fields['user_id']       => $this->client_id,
-                $this->fields['program_id']    => $existing->{$this->fields['program_id']},
-                $this->fields['article_id']    => $articleID,
+                $this->fields['program_id']    => ( empty($existing->{$this->fields['program_id']}) ? esc_sql($programId) : $existing->{$this->fields['program_id']}),
+                $this->fields['article_id']    => esc_sql($articleID),
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
             );
 
@@ -313,7 +345,7 @@ class e20rMeasurementModel {
 
             foreach ( $existing as $key => $val ) {
 
-                // dbg("Key: {$key} => Val: {$val}");
+                dbg("e20rMeasurementModel::saveField() - Key: {$key} => Val: {$val}");
 
                 if ( $key != $form_key ) {
 
@@ -338,9 +370,9 @@ class e20rMeasurementModel {
         else {
             $data = array(
                 $this->fields['user_id']       => $this->client_id,
-                $this->fields['article_id']    => $articleID,
+                $this->fields['article_id']    => esc_sql($articleID),
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
-                $this->fields['program_id']    => $existing->{$this->fields['program_id']},
+                $this->fields['program_id']    => esc_sql($programId),
                 $this->fields[ $form_key ]     => esc_sql($value)
             );
         }
@@ -587,11 +619,14 @@ class e20rMeasurementModel {
         $row = $wpdb->get_row( $SQL );
 
         if ( ! empty($row) ) {
-            dbg("Updating the total GIRTH value in the database");
+            dbg("e20rMeasurementModel::setTotalGirth() - Updating the total GIRTH value in the database");
             $wpdb->update(
                 $this->table,
                 array( $this->fields['girth'] => ( $row->neck + $row->shoulder + $row->chest + $row->arm + $row->waist + $row->hip + $row->thigh + $row->calf ) ),
                 array( $this->fields['id'] => $recordId ), array( '%f', ));
+        }
+        else {
+            dbg("e20rMeasurementModel::setTotalGirth() - This doesn't really make sense.. We've just inserted this record and now it's not here?!?");
         }
     }
 
