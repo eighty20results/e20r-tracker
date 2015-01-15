@@ -146,6 +146,7 @@ class e20rTables {
                 'id' => 'lead_id',
                 'user_id' => 'created_by',
                 'article_id' => 'article_id',
+                'program_id' => 'program_id',
                 'recorded_date' => 'recordedDate',
                 'weight' => 'weight',
                 'girth_neck' => 'neckCM',
