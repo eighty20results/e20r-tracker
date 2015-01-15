@@ -60,7 +60,7 @@ class e20rSettingsView {
     protected function buildSelect2( $name, $data, $comparison, $style = null ) {
         ?>
         <td class="select-input">
-            <select class="select2-container" id="e20r-setting-select-<?php echo $name; ?>" <?php echo ( stripos( $name, '[]') ? 'multiple' : null ); ?>></select>
+            <select class="select2-container" id="e20r-setting-select-<?php echo $name; ?>" <?php echo ( stripos( $name, '[]') ? 'multiple="multiple"' : null ); ?>></select>
             <?php
             foreach( $data as $k => $v ) {
                 $selected = ( in_array( $v, $comparison ) ? ' selected="selected"' : null );

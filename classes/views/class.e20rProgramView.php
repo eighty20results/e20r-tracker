@@ -92,7 +92,7 @@ class e20rProgramView {
                                 <input type="date" id="e20r-program-enddate" name="e20r-program-enddate" value="<?php echo $end; ?>">
                             </td>
                             <td>
-                                <select class="select2-container" id="e20r-program-groups" name="e20r-program-groups[]" multiple>
+                                <select class="select2-container" id="e20r-program-groups" name="e20r-program-groups[]" multiple="multiple">
                                     <option value="0"><?php _e("Not Applicable", "e20rtracker"); ?></option>
                                     <?php
                                         $levels = $e20rTracker->getMembershipLevels( null, true );
@@ -108,7 +108,7 @@ class e20rProgramView {
                                 <!-- <input type="text" id="e20r-program-groups" name="e20r-program-groups" size="25" value="<?php echo( ( ! empty( $programData->groups ) ) ? $programData->program_shortname : null ); ?>"> -->
                             </td>
                             <td>
-                                <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple>
+                                <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
                                     <option value="0">Not configured</option>
                                     <?php
 

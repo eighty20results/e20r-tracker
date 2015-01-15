@@ -154,7 +154,7 @@ class e20rCheckinView extends e20rSettingsView {
                                 <option value="0"><?php _e("Not configured", "e20rtracker"); ?></option>
                                 <option value="1"><?php _e("Action", "e20rtracker"); ?></option>
                                 <option value="2"><?php _e("Assignment", "e20rtracker"); ?></option>
-                                <option value="3"><?php _e("Activity", "e20rtracker"); ?></option>
+                                <option value="3"><?php _e("A", "e20rtracker"); ?></option>
                                 <option value="4"><?php _e("Survey", "e20rtracker"); ?></option>
                             </select>
                         </td>
@@ -168,7 +168,7 @@ class e20rCheckinView extends e20rSettingsView {
                             <input type="number" id="e20r-checkin-maxcount" name="e20r-checkin-maxcount" value="<?php echo $checkinData->maxcount; ?>">
                         </td>
                         <td>
-                            <select class="select2-container" id="e20r-checkin-program_ids" name="e20r-checkin-program_ids[]" multiple>
+                            <select class="select2-container" id="e20r-checkin-program_ids" name="e20r-checkin-program_ids[]" multiple="multiple">
                                 <option value="0">Not configured</option>
                                 <?php
                                 foreach ( $programs as $pgm ) {

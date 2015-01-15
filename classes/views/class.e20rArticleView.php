@@ -148,7 +148,7 @@ class e20rArticleView extends e20rSettingsView {
                             <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo $settings->prefix; ?>">
                         </td>
                         <td colspan="3">
-                            <select class="select2-container" id="e20r-article-programs" name="e20r-article-programs[]" multiple> <?php
+                            <select class="select2-container" id="e20r-article-programs" name="e20r-article-programs[]" multiple="multiple"> <?php
 
                                 $programs = new WP_Query( array(
                                     'post_type' => 'e20r_programs',
