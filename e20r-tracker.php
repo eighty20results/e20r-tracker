@@ -24,6 +24,7 @@ define( 'E20R_COACHING_URL' , site_url( '/nutrition-coaching/' ) );
 define( 'URL_TO_PROGRESS_FORM', E20R_COACHING_URL. 'weekly-progress/');
 
 define ('CONST_MEASUREMENTDAY', 6 );
+define( 'TOTAL_GIRTH_MEASUREMENTS', 8 ); // Total number of girth measurements expected
 
 global $e20r_db_version;
 
