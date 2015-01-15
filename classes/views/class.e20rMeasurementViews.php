@@ -42,7 +42,7 @@ class e20rMeasurementViews {
                             <td>
                                 <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
                                 <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $articleId; ?>">
-                                <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $programId; ?>">
+                                <input type="hidden" name="program-id" id="program-id" data-measurement-type="program-id" value="<?php echo $programId; ?>">
                                 <button class="submit" id="submit-weekly-progress-button">
                                     <div>Save Your Weekly Progress Update</div>
                                 </button>
