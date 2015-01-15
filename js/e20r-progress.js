@@ -549,12 +549,6 @@ jQuery(function() {
                             return;
                         }
                     });
-                    /*
-                     jQuery.post('cpds-assignments.php', data,
-                     function(response) {
-                     console.log(response);
-                     });
-                     */
                 });
 
             jQuery('textarea[name=essay1]')
@@ -635,8 +629,6 @@ jQuery(function() {
                 }
 
             });
-            // FixMe - jQuery.post('cp-participantSaveSettings.php?savesettings=true&' + queryString, function(response) { });
-
         });
 
 
@@ -930,8 +922,6 @@ jQuery(function() {
             'user-id': NourishUser.user_id
         };
 
-        // console.dir($data);
-
         jQuery.ajax({
             url: e20r_progress.ajaxurl,
             type: 'POST',
@@ -978,7 +968,7 @@ jQuery(function() {
 
         // show saved message
         jQuery('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
-              <strong>You have completed this Progress Update.</strong> <a href="/nutrition-coaching/home/?update_completed=1">Return to Dashboard</a>.\
+              <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Lesson</a>.\
             </div>').appendTo('#e20r-progress-canvas');
     }
 
