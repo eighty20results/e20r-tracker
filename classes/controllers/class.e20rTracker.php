@@ -374,21 +374,156 @@ class e20rTracker {
         return $tabName;
     }
 
-    public function gravityform_submission( $entries, $form ) {
+    public function gravityform_submission( $submitted, $form ) {
 
-        dbg("e20rTracker::gravityform_submission() - Entry: " . print_r( $entries, true));
-        // dbg("e20rTracker::gravityform_submission() - Form: " . print_r( $form, true));
+        dbg("e20rTracker::gravityform_submission() - Start");
+        // dbg($form);
+        // dbg($submitted);
 
-        if ( stripos( $form['title'], 'Welcome' ) ) {
-            dbg("e20rTracker::gravityform_submission - Processing intake form");
+        dbg("e20rTracker::gravityform_submission() - Processing ");
 
-            foreach ( $entries as $key => $entry ) {
+        $db_Data = array();
 
-                dbg("e20rTracker::form_data - Field: .{$form['fields'][$key]['label']}=>{$entry}.");
+        if ( stripos( $form['title'], 'welcome' ) ) {
+            dbg("e20rTracker::gravityform_submission - Processing the Welcome Interview form");
 
+            foreach( $form['fields'] as $item ) {
 
+                $skip = false;
 
+                if ( ! in_array( $item['type'], array( 'section' ) ) ) {
+
+                    $fieldName = $item['label'];
+                    $subm_key = $item['id'];
+
+                    if ( $item['type'] == 'checkbox' ) {
+
+                        foreach( $item['inputs'] as $k => $i ) {
+
+                            if ( !empty( $submitted[$i['id']] ) ) {
+                                $subm_key = $i['id'];
+                            }
+                        }
+                    }
+
+                    if ( $item['type'] == 'survey' ) {
+
+                        $key = $submitted[$item['id']];
+                        $subm_key = $item['id'];
+
+                        if ( $item['type'] == 'likert' ) {
+
+                            foreach( $item['choices'] as $k => $i ) {
+
+                                if ( $key == $i['value']) {
+
+                                    $submitted[$subm_key] = $item['choices'][$k]['score'];
+                                }
+                            }
+                        }
+                    }
+
+                    if ( $item['type'] == 'address' ) {
+
+                        $key = $item['id'];
+
+                        foreach( $item['inputs'] as $k => $aItem ) {
+
+                            $splt = preg_split( "/\./", $aItem['id'] );
+
+                            switch ( $splt[1] ) {
+                                case '1':
+                                    $fieldName = 'address_1';
+                                    break;
+
+                                case '2':
+                                    $fieldName = 'address_1';
+                                    break;
+
+                                case '3':
+                                    $fieldName = 'address_city';
+                                    break;
+
+                                case '4':
+                                    $fieldName = 'address_state';
+                                    break;
+
+                                case '5':
+                                    $fieldName = 'address_zip';
+                                    break;
+
+                                case '6':
+                                    $fieldName = 'address_country';
+                                    break;
+                            }
+
+                            $db_Data[$fieldName] = $submitted[$aItem['id']];
+                            $skip = true;
+                        }
+                    }
+
+                    // if ( $item['type'] == 'radio' ) {
+                        // TODO Grab $item['chocies'][0-N]['text'] when the $item['chocies'][0-N]['value'] == $submitted[$subm_key]
+                    //}
+                    if ( ! $skip ) {
+
+                        $db_Data[ $fieldName ] = $submitted[ $subm_key ];
+                    }
+
+                    dbg("{$fieldName} => {$submitted[$subm_key]}");
+                }
             }
+        }
+
+        if ( stripos( $form['title'], 'assignment' ) ) {
+
+            foreach ( $submitted as $key => $entry ) {
+
+                if ( strpos( $form['fields'][$key]['label'], 'Day' ) ) {
+                    $assignmentDay = $entry;
+                }
+
+                if ( stripos($form['fields'][$key]['label'], 'date' ) ) {
+                    $assignmentDate = $entry;
+                }
+
+                if ( strpos( $form['fields'][$key]['label'], 'Assignment' ) ) {
+                    $answer = $entry;
+                }
+            }
+
+            dbg("e20rTracker::gravityform_submission - Processing Assignment form for day {$form['title']}");
+            dbg("e20rTracker::gravityform_submission - Day: {$assignmentDay}" );
+            dbg("e20rTracker::gravityform_submission - Date: {$assignmentDate}");
+            dbg("e20rTracker::gravityform_submission - Answer: {$answer}");
+        }
+
+        if ( stripos( $form['title'], 'Habit' ) ) {
+
+            foreach ( $submitted as $key => $entry ) {
+
+                if ( strpos( $form['fields'][$key]['label'], 'checkin_day' ) ) {
+                    $checkin_day = $entry;
+                }
+
+                if ( stripos($form['fields'][$key]['label'], 'date' ) ) {
+                    $checkin_date = $entry;
+                }
+
+                if ( strpos($form['fields'][$key]['label'], 'short_code' ) ) {
+                    $short_code = $entry;
+                }
+
+                if ( strpos( $form['fields'][$key]['label'], 'checkedin' ) ) {
+                    $checkedin = $entry;
+                }
+            }
+
+            dbg("e20rTracker::gravityform_submission - Processing Assignment form for day {$form['title']}");
+            dbg("e20rTracker::gravityform_submission - Day: {$checkin_day}" );
+            dbg("e20rTracker::gravityform_submission - Date: {$checkin_date}");
+            dbg("e20rTracker::gravityform_submission - Habit: {$short_code}");
+            dbg("e20rTracker::gravityform_submission - Status: {$checkedin}");
         }
     }
 
@@ -1187,26 +1322,143 @@ class e20rTracker {
                     id int not null,
                     user_id int not null,
                     program_id int not null,
-                    birthdate date not null,
                     program_start date not null,
-                    height decimal(18,3) null,
-                    heritage int null,
-                    waist_circumference decimal(18,3),
-                    weight decimal(18,3) null,
-                    lengthunits varchar(20) null,
-                    weightunits varchar(20) null,
-                    gender varchar(1) null,
                     progress_photo_dir varchar(255) not null default 'e20r-pics/',
-                    user_enc_key varchar(64) not null,
-
-                    use_pictures tinyint default 0,
-                    for_research tinyint default 0,
-                    chronic_pain tinyint default 0,
-                    injuries tinyint default 0,
-
-                    primary key (id),
-                    key user_id (user_id asc),
-                    key programstart (program_start asc)
+                    user_enc_key varchar(512) not null,
+                    first_name varchar(20) null,
+                    last_name varchar(50) null,
+                    phone varchar(18) null,
+                    alt_phone varchar(18) null,
+                    contact_method varchar(15) null,
+                    skype_name varchar(12) null,
+                    address_1 varchar(255) null,
+                    address_2 varchar(255) null,
+                    address_city varchar(50) null,
+                    address_zip varchar(10) null,
+                    address_state varchar(30) null,
+                    address_country varchar(30) null,
+                    emergency_contact varchar(100) null,
+                    emergency_mail varchar(255) null,
+                    emergency_phone varchar(18) null,
+                    birthdate date not null,
+                    ethnicity varchar(255) null,
+                    lengthunits varchar(3) not null default 'in',
+                    height_ft int null default 0,
+                    height_in int null default 0,
+                    calculated_height_in int not null default 0,
+                    height_m int not null default 0,
+                    height_cm int not null default 0,
+                    calculated_height_cm int not null default 0,
+                    weightunits varchar(6) not null default 'lbs',
+                    weight_lbs decimal(7,2) null,
+                    weight_kg decimal(7,2) null,
+                    weight_st decimal(7,2) null,
+                    weight_st_uk decimal(7,2) null,
+                    first_time tinyint not null default 1,
+                    number_of_times smallint null default 0,
+                    coaches varchar(255) null,
+                    referred tinyint null default 0,
+                    referral_name varchar(255) null,
+                    referral_email varchar(255) null,
+                    hear_about varchar(255) null,
+                    other_programs_considered text null,
+                    weight_loss smallint null default 0,
+                    muscle_gain smallint null default 0,
+                    look_feel smallint null default 0,
+                    consistency smallint null default 0,
+                    energy_vitality smallint null default 0,
+                    off_medication smallint null default 0,
+                    control_eating smallint null default 0,
+                    learn_maintenance smallint null default 0,
+                    stronger smallint null default 0,
+                    modeling smallint null default 0,
+                    sport_performance smallint null default 0,
+                    goals_other text null,
+                    goal_achievement text null,
+                    goal_reward text null,
+                    regular_exercise tinyint not null default 0,
+                    exercise_hours_per_week varchar(3) not null default '0',
+                    regular_exercise_type varchar(10) not null default 'none',
+                    other_exercise text null,
+                    exercise_plan tinyint not null default 0,
+                    exercise_level varchar(20) default 'not-applicable',
+                    competitive_sports tinyint null,
+                    competitive_survey text null,
+                    enjoyable_activities text null,
+                    exercise_challenge text null,
+                    chronic_pain tinyint not null default 0,
+                    pain_symptoms text null,
+                    limiting_injuries tinyint not null default 0,
+                    injury_summary varchar(11) not null default 'none',
+                    other_injuries text null,
+                    injury_details text null,
+                    nutritional_challenge text null,
+                    buy_groceries varchar(6) null,
+                    groceries_who varchar(255) null,
+                    cooking varchar(6) null,
+                    cooking_who varchar(255) null,
+                    eats_with varchar(8) null,
+                    meals_at_home varchar(4) null,
+                    following_diet tinyint null default 0,
+                    diet_summary varchar(18) null default 'none',
+                    other_diet varchar(255) null,
+                    diet_duration varchar(255) null,
+                    food_allergies tinyint null default 0,
+                    food_allergy_summary varchar(15) null,
+                    food_allergy_other varchar(255) null,
+                    food_sensitivity tinyint null default 0,
+                    sensitivity_summary varchar(15) null,
+                    sensitivity_other varchar(255) null,
+                    supplements tinyint null default 0,
+                    supplement_summary varchar(20) null default 'none',
+                    other_vitamins varchar(255) null,
+                    supplements_other varchar(255) null,
+                    daily_water_servings varchar(4) null,
+                    daily_protein_servings varchar(4) null,
+                    daily_vegetable_servings varchar(4) null,
+                    nutritional_knowledge smallint null default 0,
+                    diagnosed_medical_problems tinyint null default 0,
+                    medical_issues text null,
+                    on_prescriptions tinyint null default 0,
+                    prescription_summary varchar(20) null,
+                    other_treatments tinyint null default 0,
+                    treatment_summary text null,
+                    working tinyint null default 0,
+                    work_type varchar(150) null,
+                    working_when varchar(10) null,
+                    typical_hours_worked varchar(6) null,
+                    work_activity_level varchar(12) null,
+                    work_stress varchar(9) null,
+                    work_travel varchar(11) null,
+                    student tinyint null default 0,
+                    school_stress varchar(9) null,
+                    caregiver tinyint null default 0,
+                    caregiver_for varchar(150) null,
+                    caregiver_stress varchar(9) null,
+                    committed_relationship tinyint null default 0,
+                    partner varchar(50) null,
+                    children tinyint null default 0,
+                    children_count smallint null default 0,
+                    child_name_age text null,
+                    pets tinyint null default 0,
+                    pet_count int null,
+                    pet_names_types varchar(255) null,
+                    home_stress varchar(9) null,
+                    stress_coping varchar(15) null,
+                    vacations varchar(11) null,
+                    hobbies text null,
+                    alcohol varchar(15) null,
+                    smoking varchar(10) null,
+                    non_prescriptiondrugs varchar(10) null,
+                    program_expectations text null,
+                    coach_expectations text null,
+                    more_info text null,
+                    photo_consent tinyint not null default 0,
+                    research_consent tinyint not null default 0,
+                    medical_release tinyint not null default 0,
+                    primary key  (id),
+                    key user_id  (user_id asc),
+                    key programstart  (program_start asc)
               )
                   {$charset_collate}
         ";
@@ -1233,7 +1485,7 @@ class e20rTracker {
                     side_image int default null,
                     back_image int default null,
                     program_id int default 0,
-                    primary key id ( id ),
+                    primary key  ( id ),
                     key user_id ( user_id asc) )
                   {$charset_collate}
               ";
@@ -1293,7 +1545,7 @@ class e20rTracker {
                     id int not null auto_increment,
                     article_id int not null,
                     question text null,
-                    primary key (id)
+                    primary key  (id)
                     ) {$charset_collate}
         ";
 
@@ -1306,7 +1558,7 @@ class e20rTracker {
                     answer_date datetime null,
                     answer text null,
                     field_type enum( 'textbox', 'input', 'checkbox', 'radio' ),
-                    primary key id (id),
+                    primary key  (id),
                      key lessons (article_id asc),
                      key user_id ( user_id asc ),
                      key questions ( question_id asc )
