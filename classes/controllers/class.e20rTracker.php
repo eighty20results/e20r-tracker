@@ -381,6 +381,12 @@ class e20rTracker {
         // dbg($submitted);
 
         global $e20rMeasurements;
+        global $current_user;
+        global $e20rProgram;
+
+        $userId = $current_user->ID;
+        $userProgramId = $e20rProgram->getProgramIdForUser( $userId );
+        $userProgramStart = $e20rProgram->startdate( $userId );
 
         dbg("e20rTracker::gravityform_submission() - Processing ");
 
@@ -410,12 +416,12 @@ class e20rTracker {
 
                     if ( ( $item['label'] == 'calculated_weigth_lbs') && ( ! empty( $submitted[$item['id']] ) )  ) {
 
-                        $e20rMeasurements->saveMeasurement( $submitted[$item['id']] );
+                        $e20rMeasurements->saveMeasurement( 'weight', $submitted[$item['id']], -1, $userProgramId, $userProgramStart, $userId );
                     }
 
                     if ( ( $item['label'] == 'calculated_weigth_kg') && ( ! empty( $submitted[$item['id']] ) )  ) {
 
-                        $e20rMeasurements->saveMeasurement( $submitted[$item['id']] );
+                        $e20rMeasurements->saveMeasurement( 'weight', $submitted[$item['id']], -1, $userProgramId, $userProgramStart, $userId );
                     }
 
                                         // TODO: If Add the weight total to the e20r_measurements table for this user.
@@ -2144,4 +2150,5 @@ class e20rTracker {
 
         return false;
     }
+
 }
