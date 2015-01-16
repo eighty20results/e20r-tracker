@@ -871,7 +871,9 @@ class e20rMeasurements {
     public function saveMeasurement( $type, $value, $articleId, $programId, $post_date, $user_id ) {
 
         // $measurementType, $measurementValue, $articleId, $programId, $post_date, $user_id;
+        return $this->model->saveField( $type, $value, $articleId, $programId, $post_date, $user_id );
     }
+
     public function checkProgressFormCompletion_callback() {
 
         global $current_user;
