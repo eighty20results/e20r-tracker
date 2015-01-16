@@ -380,6 +380,8 @@ class e20rTracker {
         // dbg($form);
         // dbg($submitted);
 
+        global $e20rMeasurements;
+
         dbg("e20rTracker::gravityform_submission() - Processing ");
 
         $db_Data = array();
@@ -406,7 +408,17 @@ class e20rTracker {
                         }
                     }
 
-                    // TODO: If Add the weight total to the e20r_measurements table for this user.
+                    if ( ( $item['label'] == 'calculated_weigth_lbs') && ( ! empty( $submitted[$item['id']] ) )  ) {
+
+                        $e20rMeasurements->saveMeasurement( $submitted[$item['id']] );
+                    }
+
+                    if ( ( $item['label'] == 'calculated_weigth_kg') && ( ! empty( $submitted[$item['id']] ) )  ) {
+
+                        $e20rMeasurements->saveMeasurement( $submitted[$item['id']] );
+                    }
+
+                                        // TODO: If Add the weight total to the e20r_measurements table for this user.
 
                     if ( $item['type'] == 'survey' ) {
 
