@@ -406,6 +406,8 @@ class e20rTracker {
                         }
                     }
 
+                    // TODO: If Add the weight total to the e20r_measurements table for this user.
+
                     if ( $item['type'] == 'survey' ) {
 
                         $key = $submitted[$item['id']];
