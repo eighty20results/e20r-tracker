@@ -135,7 +135,7 @@ class e20rProgram extends e20rSettings {
 
     public function getProgramIdForUser( $userId, $articleId = null ) {
 
-        $programId = get_user_meta( $userId, '_e20r-tracker-program-id', true);
+        $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true);
 
         dbg("e20rProgram::getProgramIdForUser() - User's programID: {$programId}");
         return $programId;
@@ -155,6 +155,35 @@ class e20rProgram extends e20rSettings {
     }
 
     /**
+     * Calculates the startdate (as a 'seconds since epoch') value and returns it to the calling function.
+     *
+     * Currently supports:
+     *      Internal usermeta value. (e20r-tracker-program-startdate => 'first date of
+     *      Paid Memberships Pro.
+     *
+     * @param $userId - ID of user to find the startdate for.
+     *
+     * @return int|mixed - Timestamp (seconds since UNIX epoch
+     */
+    public function startdate( $userId ) {
+
+        $userPID = get_user_meta( $userId, 'e20r-tracker-program-id' );
+        $userStartDate = get_post_meta( $userPID, 'e20r-program-starttime', true);
+
+        if ( $userStartDate !== false ) {
+
+            // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
+            return strtotime( $userStartDate );
+        }
+
+        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+
+            return pmpro_getMemberStartdate( $userId );
+        }
+
+    }
+
+    /**
      * @param $userId - The USER id
      *
      * @return bool -- DIE()s if we're unable to save the settings.
@@ -171,9 +200,9 @@ class e20rProgram extends e20rSettings {
 
         if ( $programId != 0 ) {
 
-            update_user_meta( $userId, '_e20r-tracker-program-id', $programId );
+            update_user_meta( $userId, 'e20r-tracker-program-id', $programId );
 
-            if ( get_user_meta( $userId, '_e20r-tracker-program-id', true ) != $programId ) {
+            if ( get_user_meta( $userId, 'e20r-tracker-program-id', true ) != $programId ) {
 
                 wp_die( 'Unable to save the program for this user' );
             }
