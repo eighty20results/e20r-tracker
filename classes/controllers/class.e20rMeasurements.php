@@ -156,7 +156,7 @@ class e20rMeasurements {
         }
 
         $path = $e20rClient->getUploadPath( $current_user->ID );
-
+        // TODO: Measurement date doesn't get set on load.
         $upload['path'] = $upload['basedir'] . "/{$path}/{$e20rMeasurementDate}";
         $upload['url'] = $upload['baseurl'] . "/{$path}/{$e20rMeasurementDate}";
 

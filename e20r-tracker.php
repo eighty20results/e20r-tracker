@@ -103,11 +103,6 @@ function loadTracker() {
         $e20rTables->init();
         // $e20rTracker->init();
 
-        if ( ! isset( $e20rClient ) ) {
-            dbg("E20R Tracker Init: Loading e20rClient class");
-            $e20rClient = new e20rClient();
-        }
-
         if ( ! isset( $e20rMeasurements ) ) {
             dbg("E20R Tracker Init: Loading e20rMeasurements class");
             $e20rMeasurements = new e20rMeasurements();
@@ -138,6 +133,11 @@ function loadTracker() {
         if ( ! isset( $e20rWorkout ) ) {
             dbg("E20R Tracker Init: Loading e20rWorkout class");
             $e20rWorkout = new e20rWorkout();
+        }
+
+        if ( ! isset( $e20rClient ) ) {
+            dbg("E20R Tracker Init: Loading e20rClient class");
+            $e20rClient = new e20rClient();
         }
 
         $e20rTracker->loadAllHooks();
