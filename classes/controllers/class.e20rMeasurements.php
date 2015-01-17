@@ -119,6 +119,7 @@ class e20rMeasurements {
     public function areCaptured( $articleId, $programId, $userId, $mDate ) {
 
         dbg("e20rMeasurements::areCaptured() - Checking if the user has recorded data already");
+        dbg("e20rMeasurements::areCaptured() - Article({$articleId}), Program({$programId}), User({$userId}), Date({$mDate})");
         return $this->model->checkCompletion( $articleId, $programId, $userId, $mDate );
     }
 
@@ -144,15 +145,18 @@ class e20rMeasurements {
 
     public function set_progress_upload_dir( $upload ) {
 
-        global $e20rClient, $e20rMeasurementDate;
+        global $e20rClient;
+        global $e20rMeasurementDate;
+        global $current_user;
 
         if ( ! $e20rClient->client_loaded ) {
             dbg("e20rMeasurements::progress_upload_dir() - Need to init the Client class");
+            $e20rClient->setClient( $current_user->ID );
             $e20rClient->init();
         }
 
-        $upload['path'] = $upload['basedir'] . "/{$e20rClient->data->info->progress_photo_dir}/{$e20rMeasurementDate}";
-        $upload['url'] = $upload['baseurl'] . "/{$e20rClient->data->info->progress_photo_dir}/{$e20rMeasurementDate}";
+        $upload['path'] = $upload['basedir'] . "/{$e20rClient->data->info->program_photo_dir}/{$e20rMeasurementDate}";
+        $upload['url'] = $upload['baseurl'] . "/{$e20rClient->data->info->program_photo_dir}/{$e20rMeasurementDate}";
 
         dbg("e20rMeasurements::progress_upload_dir() - Directory: {$upload['path']}");
         return $upload;
@@ -454,9 +458,7 @@ class e20rMeasurements {
         $dimensions = array( 'width' => '650', 'height' => '350', 'type' => 'px' );
 
         $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
-        //
-        // TODO: Load $weight and $girth data for graph.
-        //
+
         $weight = $this->generatePlotData( $measurements, 'weight' );
         $girth = $this->generatePlotData( $measurements, 'girth' );
 
