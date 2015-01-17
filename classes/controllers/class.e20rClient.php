@@ -11,50 +11,34 @@ class e20rClient {
     private $id;
     public $client_loaded = false;
 
-    public $show = null; // Views
     public $actionsLoaded = false;
     public $scriptsLoaded = false;
 
-    public $data = null; // Client Model
+    private $model = null; // Client Model.
+    private $view = null; // Client Views.
 
-    private $program = null; // The Program class for the user
+    private $weightunits;
+    private $lengthunits;
 
-    private $current_programs = array();
-    private $current_article = null;
-
-    private $assignments = null;
-    public $checkin;
-
-    private $lengthunit = "in";
-    private $weightunit = "lbs";
-
-    public function e20rClient( $user_id = null ) {
-
-        if ( ! isset( $user_id ) ) {
-            dbg('e20rClient::constructor() - No user ID specified');
-
-            global $current_user;
-
-            if ( isset( $current_user->ID ) ) {
-                dbg("e20rClient::constructor() - Using ID {$current_user->id}");
-                $user_id = $current_user->ID;
-            }
-        }
+    public function __construct( $user_id ) {
 
         $this->id = $user_id;
 
+        $this->model = new e20rClientModel( $this->id );
+        $this->view = new e20rClientViews();
     }
 
     public function init() {
 
         global $e20rTracker;
 
-        dbg('e20rClient::init() - Running INIT for Client Controller');
+        dbg('e20rClient::init() - Running INIT for e20rClient Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
-        if ( $this->id != null ) {
+        if ( $this->client_loaded !== true ) {
 
-            $this->loadClient( $this->id );
+            $this->model->setUser( $this->id );
+            $this->model->load();
             $this->client_loaded = true;
         }
 
@@ -64,92 +48,131 @@ class e20rClient {
 
     public function isNourishClient( $user_id = 0 ) {
 
-        if ( ( ! $this->id ) && ( $user_id != 0 ) ) {
-            $this->id = $user_id;
-        }
+        dbg("e20rClient::isNourishClient() - is user with id {$user_id} a nourish client?");
 
-        dbg("e20rClient::isNourishClient() - is user with id {$this->id} a nourish client?");
+        if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
-        $nourish_levels = array( 16, 21, 22, 23, 18 );
+            dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
+            $nourish_levels = array( 16, 21, 22, 23, 18 );
 
-        if ( pmpro_hasMembershipLevel( $nourish_levels, $this->id ) ) {
-            dbg("e20rClient::isNourishClient() - user with id {$this->id} is a nourish client");
-            return true;
+            if ( pmpro_hasMembershipLevel( $nourish_levels, $user_id ) ) {
+
+                dbg("e20rClient::isNourishClient() - User with id {$user_id} has a Nourish Coaching membership");
+                return true;
+            }
         }
 
         return false;
     }
 
     public function clientId() {
+
         return $this->id;
     }
 
     public function getLengthUnit() {
 
-        dbg("e20rClient::getLengthUnit() - Returning the current setting for the length unit: {$this->data->info->lengthunits}");
-        return $this->data->info->lengthunits;
+        dbg("e20rClient::getLengthUnit() - Returning the current setting for the length unit.");
+        return $this->model->getData( $this->id, 'lengthunits');
     }
 
     public function getWeightUnit() {
-        dbg("e20rClient::getWeightUnit() - Returning the current setting for the weight unit: {$this->data->info->weightunits}");
-        return $this->data->info->weightunits;
+
+        dbg("e20rClient::getWeightUnit() - Returning the current setting for the weight unit.");
+        return $this->model->getData( $this->id, 'weightunits' );
     }
 
+    public function getBirthdate( $user_id ) {
+
+        dbg("e20rClient::getBirthdate() - Returning the birthdate setting for {$user_id}");
+        return $this->model->getData( $user_id, 'birthdate' );
+    }
+
+    public function getUploadPath( $user_id ) {
+
+        dbg("e20rClient::getBirthdate() - Returning the progress photo path setting for {$user_id}");
+        return $this->model->getData( $user_id, 'program_photo_dir' );
+    }
+
+    public function setClient( $userId ) {
+
+        $this->id = $userId;
+        $this->model->setUser( $this->id );
+    }
+
+    public function getData() {
+
+        if ( ! $this->client_loaded ) {
+
+            $this->init();
+        }
+
+        return $this->model->getData( $this->id );
+    }
+
+    public function completedInterview( $userId ) {
+
+        $data = $this->model->getData( $userId, 'weight_loss');
+
+        return ( ! empty( $data ) ? true : false );
+    }
+
+    /*
     public function saveNewUnit( $type, $unit ) {
 
         switch ($type) {
+
             case 'length':
+
                 dbg("e20rClient::saveNewUnit() - Saving new length unit: {$unit}");
-                $this->data->info->saveUnitInfo( $unit, $this->data->info->weightunits );
+                $this->model->info->saveUnitInfo( $unit, $this->getWeightUnit() );
                 break;
+
             case 'weight':
+
                 dbg("e20rClient::saveNewUnit() - Saving new weight unit: {$unit}");
-                $this->data->info->saveUnitInfo( $this->data->info->lengthunits, $unit );
+                $this->model->info->saveUnitInfo( $this->getLengthUnit(), $unit );
                 break;
         }
+
         return true;
     }
-
-    public function loadClient( $id = null ) {
-
-        if ( $id ) {
-            $this->id = $id;
-        }
-
-        if ( ! class_exists( 'e20rClientModel' ) ) {
-            include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rClientModel.php" );
-        }
-
-        if ( ! isset( $this->data->info->id ) ) {
-            dbg("e20rClient::loadClient() - Instantiate the client model");
-            $this->data = new e20rClientModel( $this->id );
-        }
-
-        $this->loadClientInfo( $this->id );
-
-    }
-
+*/
     public function loadClientInfo( $user_id ) {
-
-        $this->id = $user_id;
-        $this->program = get_user_meta( $this->id, 'e20r_tracker_programId', true );
 
         try {
 
-            dbg("Loading data for client model");
-            $this->data->load();
+            dbg("e20rClient::loadClientInfo() - Loading data for client model");
+            $this->model->setUser($user_id);
+            $this->model->load();
+
         }
         catch ( Exception $e ) {
-            dbg("Error loading user data: " . $e->getMessage() );
+
+            dbg("Error loading user data for ({$user_id}): " . $e->getMessage() );
         }
 
     }
 
+    /*
+public function loadClient( $id = null ) {
+
+    if ( $id ) {
+        $this->id = $id;
+    }
+
+    $this->model->setUser( $this->id );
+    $this->model->load();
+
+}
+*/
+    /*
     public function afterGFSubmission( $entry, $form ) {
 
         dbg("gf_after_submission - entry: ". print_r( $entry, true));
         dbg("gf_after_submission - form: ". print_r( $form, true));
     }
+    */
 /*
     public function ajax_userInfo_callback() {
 
@@ -166,11 +189,11 @@ class e20rClient {
 
         try {
 
-            if ( empty( $this->data ) ) {
+            if ( empty( $this->model ) ) {
                 $this->init();
             }
 
-            $userData = $this->data->info->getInfo();
+            $userData = $this->model->info->getInfo();
             $retVal = $userData->{$var};
 
             dbg("Requested variable: {$var} = {$retVal}" );
@@ -182,20 +205,6 @@ class e20rClient {
         }
     }
 */
-    public function initClientViews() {
-
-        if ( ! class_exists( 'e20rClientViews' ) ) {
-            include_once( E20R_PLUGIN_DIR . "classes/views/class.e20rClientViews.php" );
-        }
-        try {
-            $this->show = new e20rClientViews();
-        }
-        catch ( Exception $e ) {
-            dbg("Error loading views for client controller: " . $e->getMessage() );
-        }
-
-    }
-
     /**
      * Render page on back-end for client data (admin selectable).
      */
@@ -211,25 +220,18 @@ class e20rClient {
             $client_id = $this->clientId();
         }
 
-        if ( is_null( $this->show ) ) {
+        if ( is_null( $this->view ) ) {
             dbg("e20rClient::render_client_page() - Init the ClientViews class");
-            $this->initClientViews();
+            $this->view = new e20rClientViews( $this->id );
         }
 
-        echo $this->show->viewClientAdminPage( $lvlName );
+        echo $this->view->viewClientAdminPage( $lvlName );
     }
 
-    public function getArticleID() {
-
-        global $post;
-
-        // TODO: Simply returns the current POST ID - needs to get the correct article ID at some point.
-        return $post->ID;
-    }
-
+    /*
     public function getInfo() {
 
-        if ( empty( $this->data->info ) ) {
+        if ( empty( $this->model->info ) ) {
 
             try {
                 $this->loadInfo();
@@ -241,9 +243,8 @@ class e20rClient {
 
         return $this->info;
     }
-
+*/
     public function updateUnitTypes() {
-
 
         dbg( "e20rClient::updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
 
@@ -251,29 +252,16 @@ class e20rClient {
 
         dbg("e20rClient::updateUnitTypes() - POST content: " . print_r($_POST, true));
 
-        global $current_user, $e20rMeasurements;
+        global $current_user;
+        global $e20rMeasurements;
 
-        $user_id = isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID;
+        $this->id = isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID;
         $dimension = isset( $_POST['dimension'] ) ? sanitize_text_field( $_POST['dimension'] ) : null;
         $value = isset( $_POST['value'] ) ? sanitize_text_field( $_POST['value'] ) : null;
 
-        $userObj = new WP_User( $user_id );
-
-        $e20rMeasurements->setClient( $user_id );
-
-        $this->id = $user_id;
-
-        try {
-            if ( ! isset( $this->data ) ) {
-                $this->loadClientInfo( $userObj->get( 'user_login' ), $user_id );
-            };
-        }
-        catch ( Exception $e ) {
-
-            dbg("e20rClient::updateUnitTypes() - Error loading client info");
-            wp_send_json_error( "Error loading data: " . $e->getMessage() );
-            wp_die();
-        }
+        // Configure the client data object(s).
+        $this->init();
+        $e20rMeasurements->setClient( $this->id );
 
         // Update the data for this user in the measurements table.
         try {
@@ -281,29 +269,30 @@ class e20rClient {
             $e20rMeasurements->updateMeasurementsForType( $dimension, $value );
         }
         catch ( Exception $e ) {
-            dbg("e20rClient::updateUnitTypes() - Error updating measurements for new measurement type(s)");
+            dbg("e20rClient::updateUnitTypes() - Error updating measurements for new measurement type(s): " . $e->getMessage() );
             wp_send_json_error( "Error updating existing data: " . $e->getMessage() );
-            wp_die();
         }
 
         // Save the actual setting for the current user
 
+        $this->weightunits = $this->getWeightUnit();
+        $this->lengthunits = $this->getLengthUnit();
+
         if ( $dimension == 'weight' ) {
-            $this->weightunit = $value;
+            $this->weightunits = $value;
         }
 
         if ( $dimension == 'length' ) {
-            $this->lengthunit = $value;
+            $this->lengthunits = $value;
         }
 
         // Update the settings for the user
         try {
-            $this->data->saveUnitInfo( $this->lengthunit, $this->weightunit );
+            $this->model->saveUnitInfo( $this->lengthunits, $this->weightunits );
         }
         catch ( Exception $e ) {
             dbg("e20rClient::updateUnitTypes() - Error updating measurement unit for {$dimension}");
             wp_send_json_error( "Unable to save new {$dimension} type " );
-            wp_die();
         }
 
         dbg("e20rClient::updateUnitTypes() - Unit type updated");

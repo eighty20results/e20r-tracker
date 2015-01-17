@@ -374,6 +374,30 @@ class e20rTracker {
         return $tabName;
     }
 
+    public function encryptData( $data ) {
+
+        if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
+
+            dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine!");
+            throw new Exception( 'GDS Encryption Engine not found!');
+
+            return false;
+        }
+
+        return GDS_Encryption_Class::encrypt( $data );
+    }
+
+    public function decryptData( $encData ) {
+
+        if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
+            dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine!");
+            throw new Exception( 'GDS Decryption Engine not found!');
+            return false;
+        }
+
+        return GDS_Encryption_Class::decrypt( $encData );
+    }
+
     public function gravityform_submission( $submitted, $form ) {
 
         dbg("e20rTracker::gravityform_submission() - Start");
@@ -383,6 +407,7 @@ class e20rTracker {
         global $e20rMeasurements;
         global $current_user;
         global $e20rProgram;
+        global $e20rClient;
 
         $userId = $current_user->ID;
         $userProgramId = $e20rProgram->getProgramIdForUser( $userId );
@@ -390,7 +415,12 @@ class e20rTracker {
 
         dbg("e20rTracker::gravityform_submission() - Processing ");
 
-        $db_Data = array();
+        $db_Data = array(
+            'user_id' => $userId,
+            'program_id' => $userProgramId,
+            'program_start' => $userProgramStart,
+            'program_photo_dir'=> 'e20r-pics/',
+        );
 
         if ( stripos( $form['title'], 'welcome' ) ) {
             dbg("e20rTracker::gravityform_submission - Processing the Welcome Interview form");
@@ -423,8 +453,6 @@ class e20rTracker {
 
                         $e20rMeasurements->saveMeasurement( 'weight', $submitted[$item['id']], -1, $userProgramId, $userProgramStart, $userId );
                     }
-
-                                        // TODO: If Add the weight total to the e20r_measurements table for this user.
 
                     if ( $item['type'] == 'survey' ) {
 
@@ -544,6 +572,13 @@ class e20rTracker {
             dbg("e20rTracker::gravityform_submission - Date: {$checkin_date}");
             dbg("e20rTracker::gravityform_submission - Habit: {$short_code}");
             dbg("e20rTracker::gravityform_submission - Status: {$checkedin}");
+        }
+
+        if ( ! empty( $db_Data['first_name'] ) ) {
+
+            if ( ! $e20rClient->saveInterviewData( $db_Data ) ) {
+                throw new Exception( "Unable to save the data from the Welcome Interview form" );
+            }
         }
     }
 
@@ -1033,7 +1068,14 @@ class e20rTracker {
     public function has_weeklyProgress_shortcode() {
 
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- Loading & adapting javascripts. ");
-        global $e20rMeasurements, $e20rClient, $e20rMeasurementDate, $e20rArticle, $pagenow, $post;
+        global $e20rMeasurements;
+        global $e20rClient;
+        global $e20rMeasurementDate;
+        global $e20rArticle;
+        global $e20rProgram;
+        global $pagenow;
+        global $post;
+        global $current_user;
 
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- pagenow is '{$pagenow}'. ");
 
@@ -1055,13 +1097,16 @@ class e20rTracker {
                 $e20rClient->init();
             }
 
-            if ( ! $this->isActiveUser( $e20rClient->clientId() ) ) {
+            $userId = $current_user->ID;
+            $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+            if ( ! $this->isActiveUser( $userId ) ) {
                 dbg("e20rTracker::has_weeklyProgress_shortcode() - User isn't a valid user. Not loading any data.");
                 return;
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for {$measurementDate}");
-            $e20rMeasurements->init( $measurementDate, $e20rClient->clientId() );
+            $e20rMeasurements->init( $measurementDate, $userId );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
 
@@ -1076,7 +1121,10 @@ class e20rTracker {
             $lw_measurements = $e20rMeasurements->getMeasurement( 'last_week', true );
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Measurements from last week:");
 
-            if ( $e20rClient->data->info->incomplete_interview ) {
+            $bDay = $e20rClient->getBirthdate( $userId );
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
+
+            if ( $e20rClient->completedInterview( $userId, $programId) ) {
                 dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
                 /* TODO: Uncomment the redirect to the welcome questionnaire */
                 // wp_redirect( E20R_COACHING_URL . "/welcome-questionnaire/", 302 );
@@ -1100,9 +1148,9 @@ class e20rTracker {
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->data->info, JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->getData(), JSON_NUMERIC_CHECK ),
                         'progress_pictures' => '',
-                        'display_birthdate' => ( empty( $e20rClient->data->info->birthdate ) ? false : true ),
+                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
                     ),
                 )
@@ -1127,7 +1175,7 @@ class e20rTracker {
 
                 function setBirthday() {
 
-                    if ( typeof NourishUser.birthdate === "undefined" ) {
+                    if ( ( typeof NourishUser.birthdate === "undefined" ) || ( NourishUser.birthdate === null ) ) {
                         console.log("Error: No Birthdate specified. Should we redirect to Interview page?");
                         return;
                     }
@@ -2083,17 +2131,21 @@ class e20rTracker {
 
     public function isActiveUser( $userId ) {
 
+        dbg("e20Tracker::isActiveUser() - Supplied User ID: {$userId}");
+
         if ( function_exists('pmpro_hasMembershipLevel' ) ) {
 
+            dbg("e20Tracker::isActiveUser() - Using Paid Memberships Pro");
             $ud = get_user_by( 'id', $userId );
 
             $notFreeMember = (! pmpro_hasMembershipLevel( 13, $userId ) );
             $notDummyUser = (! $ud->has_cap('app_dmy_users') );
 
+            dbg("e20Tracker::isActiveUser() - Dummy User? ({$notDummyUser}). Not Free member? ($notFreeMember)");
             return ( $notFreeMember && $notDummyUser );
         }
 
-        return true;
+        return false;
     }
 
     public function getDateForPost( $days ) {
@@ -2151,4 +2203,77 @@ class e20rTracker {
         return false;
     }
 
+    public function setFormatForRecord( $record ) {
+
+        $format = array();
+
+        foreach( $record as $key => $val ) {
+
+            $varFormat = $this->setFormat( $val );
+
+            if ( $varFormat !== false ) {
+
+                $format = array_merge( $format, array( $varFormat ) );
+            }
+            else {
+
+                dbg("e20rMeasurementModel::setFormatForRecord() - Invalid DB type for {$key}/{$val} pair");
+                throw new Exception( "The value submitted to the Database for {$key} is of an invalid/unknown type" );
+                return false;
+            }
+        }
+
+        return ( ! empty( $format ) ? $format : false );
+    }
+
+    /**
+     * Identify the format of the variable value.
+     *
+     * @param $value -- The variable to set the format for
+     *
+     * @return bool|string -- Either %d, %s or %f (integer, string or float). Can return false if unsupported format.
+     *
+     * @access private
+     */
+    private function setFormat( $value ) {
+
+        if ( ! is_numeric( $value ) ) {
+            // dbg( "setFormat() - {$value} is NOT numeric" );
+
+            if ( ctype_alpha( $value ) ) {
+                // dbg( "setFormat() - {$value} is a string" );
+                return '%s';
+            }
+
+            if ( strtotime( $value ) ) {
+                // dbg( "setFormat() - {$value} is a date (treating it as a string)" );
+                return '%s';
+            }
+
+            if ( is_string( $value ) ) {
+                // dbg( "setFormat() - {$value} is a string" );
+                return '%s';
+            }
+
+            if (is_null( $value )) {
+                // dbg( "setFormat() - it's a NULL value");
+                return '%s';
+            }
+        }
+        else {
+            // dbg( "setFormat() - .{$value}. IS numeric" );
+
+            if ( is_float( $value + 1 ) ) {
+                // dbg( "setFormat() - {$value} is a float" );
+
+                return '%f';
+            }
+
+            if ( is_int( $value + 1 ) ) {
+                // dbg( "setFormat() - {$value} is an integer" );
+                return '%d';
+            }
+        }
+        return false;
+    }
 }

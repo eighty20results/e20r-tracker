@@ -155,8 +155,10 @@ class e20rMeasurements {
             $e20rClient->init();
         }
 
-        $upload['path'] = $upload['basedir'] . "/{$e20rClient->data->info->program_photo_dir}/{$e20rMeasurementDate}";
-        $upload['url'] = $upload['baseurl'] . "/{$e20rClient->data->info->program_photo_dir}/{$e20rMeasurementDate}";
+        $path = $e20rClient->getUploadPath( $current_user->ID );
+
+        $upload['path'] = $upload['basedir'] . "/{$path}/{$e20rMeasurementDate}";
+        $upload['url'] = $upload['baseurl'] . "/{$path}/{$e20rMeasurementDate}";
 
         dbg("e20rMeasurements::progress_upload_dir() - Directory: {$upload['path']}");
         return $upload;

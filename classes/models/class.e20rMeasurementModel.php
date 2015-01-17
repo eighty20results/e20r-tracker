@@ -179,7 +179,10 @@ class e20rMeasurementModel {
 
     public function saveRecord( $rec, $user_id, $date ) {
 
-        global $wpdb, $e20rClient;
+        global $wpdb;
+        global $e20rProgram;
+        global $e20rTracker;
+        global $e20rClient;
 
         if (! is_array( $rec ) ) {
 
@@ -191,12 +194,13 @@ class e20rMeasurementModel {
         $record = $rec;
         unset($rec); // Free memory
 
-        $format = $this->setFormatForRecord( $record );
+        $format = $e20rTracker->setFormatForRecord( $record );
+        $programId = $e20rProgram->getProgramIdForUser( $user_id );
 
         // $insert_formats = implode( ', ', array_values( $format ) );
         // $insert_fields = implode( ', ', array_keys( $record ) );
 
-        if ( $existing = $this->hasExistingData( $date ) ) {
+        if ( $existing = $this->hasExistingData( $date, $programId, $user_id ) ) {
 
             dbg("e20rMeasurementModel::saveRecord() - Found existing record for same user/date/article");
             $record[$this->fields['id']] = $existing->{$this->fields['id']};
@@ -215,29 +219,6 @@ class e20rMeasurementModel {
         }
 
         return true;
-    }
-
-    private function setFormatForRecord( $record ) {
-
-        $format = array();
-
-        foreach( $record as $key => $val ) {
-
-            $varFormat = $this->setFormat( $val );
-
-            if ( $varFormat !== false ) {
-
-                $format = array_merge( $format, array( $varFormat ) );
-            }
-            else {
-
-                dbg("e20rMeasurementModel::setFormatForRecord() - Invalid DB type for {$key}/{$val} pair");
-                throw new Exception( "The value submitted to the Database for {$key} is of an invalid/unknown type" );
-                return false;
-            }
-        }
-
-        return ( ! empty( $format ) ? $format : false );
     }
 
     public function setFreshClientData() {
@@ -311,6 +292,7 @@ class e20rMeasurementModel {
     public function saveField( $form_key, $value, $articleID, $programId, $when, $user_id ) {
 
         global $e20rClient;
+        global $e20rTracker;
 
         if ( $this->client_id == 0 ) {
 
@@ -378,7 +360,7 @@ class e20rMeasurementModel {
         }
 
         // Define/prepare the format for the supplied data
-        $format = $this->setFormatForRecord( $data );
+        $format = $e20rTracker->setFormatForRecord( $data );
 
 //        dbg("e20rMeasurementModel::saveField - Data to 'replace': " . print_r( $data, true ) );
 //        dbg("e20rMeasurementModel::saveField - formats for Data to 'replace': " . print_r( $format, true ) );
@@ -395,55 +377,6 @@ class e20rMeasurementModel {
         $this->setFreshClientData();
 
         return true;
-    }
-
-    /**
-     * Identify the format of the variable value.
-     *
-     * @param $value -- The variable to set the format for
-     *
-     * @return bool|string -- Either %d, %s or %f (integer, string or float). Can return false if unsupported format.
-     */
-    private function setFormat( $value ) {
-
-        if ( ! is_numeric( $value ) ) {
-            // dbg( "setFormat() - {$value} is NOT numeric" );
-
-            if ( ctype_alpha( $value ) ) {
-                // dbg( "setFormat() - {$value} is a string" );
-                return '%s';
-            }
-
-            if ( strtotime( $value ) ) {
-                // dbg( "setFormat() - {$value} is a date (treating it as a string)" );
-                return '%s';
-            }
-
-            if ( is_string( $value ) ) {
-                // dbg( "setFormat() - {$value} is a string" );
-                return '%s';
-            }
-
-            if (is_null( $value )) {
-                // dbg( "setFormat() - it's a NULL value");
-                return '%s';
-            }
-        }
-        else {
-            // dbg( "setFormat() - .{$value}. IS numeric" );
-
-            if ( is_float( $value + 1 ) ) {
-                // dbg( "setFormat() - {$value} is a float" );
-
-                return '%f';
-            }
-
-            if ( is_int( $value + 1 ) ) {
-                // dbg( "setFormat() - {$value} is an integer" );
-                return '%d';
-            }
-        }
-        return false;
     }
 
     /**
