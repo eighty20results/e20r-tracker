@@ -270,8 +270,6 @@ if ( ! class_exists( 'e20rTracker' ) ):
             $e20rTracker = new e20rTracker();
         }
 
-
-
         $e20rMeasurementDate = '2014-01-01';
 
         add_action( 'init' , 'loadTracker', 9 );
