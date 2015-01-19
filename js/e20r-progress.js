@@ -561,7 +561,7 @@ jQuery(function() {
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
                         'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val(),
+                        'program-id': jQuery('#program_id').val()
                     };
 
                     jQuery.ajax({
