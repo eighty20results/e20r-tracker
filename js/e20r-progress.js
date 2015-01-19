@@ -650,13 +650,14 @@ jQuery(function() {
 
                 if (jQuery('#photo-' + this).hasClass('null')) {
 
+                    console.log("Hiding for: " + this);
                     jQuery('.delete-photo.' + this).hide();
                     jQuery('.manip-container.' + this).hide();
                 }
                 else {
 
-                    jQuery('.delete-photo.' + this).closest('tfoot').show();
-                    jQuery('.manip-container.' + this).closest('tfoot').show();
+                    jQuery('.delete-photo.' + this).closest('tfoot > td').show();
+                    jQuery('.manip-container.' + this).closest('tfoot > td').show();
                 }
             });
 
@@ -669,7 +670,7 @@ jQuery(function() {
                         'program-id': jQuery('#program_id').val(),
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
-                        'view': orientation, // Don't think I need this...?
+                        'view': orientation,
                         'action': 'deletePhoto',
                         'user-id': NourishUser.user_id
                     };
@@ -691,6 +692,9 @@ jQuery(function() {
                                 .closest('td')
                                 .find('.photo-upload-notifier')
                                 .hide();
+
+                            // var $photo =  self._getPhoto$(orientation);
+                            // self._getPhotoSaveNotifier$($photo).fadeOut('slow');
 
                             jQuery('.delete-photo.' + orientation).hide();
                         }
@@ -768,6 +772,7 @@ jQuery(function() {
                         'user-id': NourishUser.user_id,
                         'article-id': jQuery('#article_id').val(),
                         'program-id': jQuery('#program_id').val(),
+                        'view': orientation
                     };
 
                     jQuery.ajax({
