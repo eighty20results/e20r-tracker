@@ -20,11 +20,14 @@ class e20rClient {
     private $weightunits;
     private $lengthunits;
 
-    public function __construct( $user_id ) {
+    public function __construct( $user_id = null) {
 
-        $this->id = $user_id;
+        if ( $user_id !== null ) {
 
-        $this->model = new e20rClientModel( $this->id );
+            $this->id = $user_id;
+        }
+
+        $this->model = new e20rClientModel();
         $this->view = new e20rClientViews();
     }
 
@@ -35,14 +38,12 @@ class e20rClient {
         dbg('e20rClient::init() - Running INIT for e20rClient Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
-        if ( $this->client_loaded !== true ) {
+        if ( $this->client_loaded !== TRUE ) {
 
             $this->model->setUser( $this->id );
             $this->model->load();
-            $this->client_loaded = true;
+            $this->client_loaded = TRUE;
         }
-
-        // $this->loadClient();
 
     }
 
@@ -90,7 +91,7 @@ class e20rClient {
 
     public function getUploadPath( $user_id ) {
 
-        dbg("e20rClient::getBirthdate() - Returning the progress photo path setting for {$user_id}");
+        dbg("e20rClient::getUploadPath() - Returning the progress photo path setting for {$user_id}");
         return $this->model->getData( $user_id, 'program_photo_dir' );
     }
 
@@ -100,14 +101,19 @@ class e20rClient {
         $this->model->setUser( $this->id );
     }
 
-    public function getData() {
+    public function getData( $clientId ) {
 
         if ( ! $this->client_loaded ) {
 
+            $this->setClient( $clientId );
             $this->init();
         }
 
-        return $this->model->getData( $this->id );
+        $data = $this->model->getData( $this->id );
+        dbg("e20rClient::getData() - Returned data for {$this->id} from client_info table:");
+        dbg($data);
+
+        return $data;
     }
 
     public function completedInterview( $userId ) {
@@ -212,18 +218,12 @@ public function loadClient( $id = null ) {
 
         global $current_user;
 
+        if ( $client_id != 0 ) {
+
+            $this->setClient( $client_id );
+        }
+
         $this->init();
-        $this->initClientViews();
-
-        if ( $client_id == 0 ) {
-
-            $client_id = $this->clientId();
-        }
-
-        if ( is_null( $this->view ) ) {
-            dbg("e20rClient::render_client_page() - Init the ClientViews class");
-            $this->view = new e20rClientViews( $this->id );
-        }
 
         echo $this->view->viewClientAdminPage( $lvlName );
     }

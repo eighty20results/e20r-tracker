@@ -20,8 +20,12 @@ class e20rMeasurements {
     public function e20rMeasurements( $user_id = null ) {
 
         global $e20rMeasurements;
+        global $current_user;
 
-        $this->id = $user_id;
+        if ( $user_id === null ) {
+
+            $this->id = $current_user->ID;
+        }
 
         $this->view = new e20rMeasurementViews();
         $this->model = new e20rMeasurementModel( $this->id );
@@ -106,6 +110,9 @@ class e20rMeasurements {
 
     public function getMeasurementDate() {
 
+        dbg("e20rMeasurements::getMeasurementDate() - Is POST configured..?");
+        dbg($_REQUEST);
+
         if ( isset( $this->measurementDate ) ) {
             dbg("e20rMeasurements::getMeasurementDate() - returning the configured date");
             return $this->measurementDate;
@@ -146,25 +153,34 @@ class e20rMeasurements {
     public function set_progress_upload_dir( $upload ) {
 
         global $e20rClient;
-        global $e20rMeasurementDate;
         global $current_user;
 
         if ( ! $e20rClient->client_loaded ) {
-            dbg("e20rMeasurements::progress_upload_dir() - Need to init the Client class");
+
+            dbg("e20rMeasurements::set_progress_upload_dir() - Need to load the Client class");
             $e20rClient->setClient( $current_user->ID );
             $e20rClient->init();
         }
 
         $path = $e20rClient->getUploadPath( $current_user->ID );
-        // TODO: Measurement date doesn't get set on load.
-        $upload['path'] = $upload['basedir'] . "/{$path}/{$e20rMeasurementDate}";
-        $upload['url'] = $upload['baseurl'] . "/{$path}/{$e20rMeasurementDate}";
 
-        dbg("e20rMeasurements::progress_upload_dir() - Directory: {$upload['path']}");
+        $upload['path'] = $upload['basedir'] . "/{$path}";
+        $upload['url'] = $upload['baseurl'] . "/{$path}";
+
+        dbg("e20rMeasurements::set_progress_upload_dir() - Directory: {$upload['path']}");
         return $upload;
     }
 
     public function setFilenameForClientUpload( $file ) {
+
+        global $current_user;
+        global $e20rProgram;
+        global $pagenow;
+        global $post;
+
+        dbg("e20rMeasurements::setFilenameForClientUpload() - Data: ");
+        dbg( $file );
+        dbg( $_REQUEST );
 
         if ( ( $this->id == 0 ) || ( $this->id === null ) ) {
 
@@ -172,18 +188,42 @@ class e20rMeasurements {
             $this->id == get_current_user_id();
         }
 
-        dbg("e20rMeasurements::setFilenameForClientUpload() - Filename was: {$file['name']}");
+        if ( !is_a( $current_user, "WP_User") ) {
+            dbg("e20rMeasurements::setFilenameForClientUpload() - Not a user");
+            return $file;
+        }
+
+        $pgmId = $e20rProgram->getProgramIdForUser( $this->id );
+
+        dbg( "e20rMeasurements::setFilenameForClientUpload() - Filename was: {$file['name']}" );
         $timestamp = date( "Ymd", current_time( 'timestamp' ) );
-        $side = '';
+        $side      = 'REPLACEME';
 
         // $fileName[0] = name, $fileName[(count($fileName)] = Extension
         $fileName = explode( '.', $file['name'] );
-        $ext = $fileName[ (count($fileName) - 1)];
+        $ext      = $fileName[ ( count( $fileName ) - 1 ) ];
 
-        dbg("e20rMeasurements::setFilenameForClientUpload() - " . print_r( $_FILES, true ) );
+        dbg( "e20rMeasurements::setFilenameForClientUpload(): " );
+        dbg( $_FILES );
 
-        $file['name'] = "{$this->id}-{$timestamp}-{$side}.{$ext}";
-        dbg("e20rMeasurements::setFilenameForClientUpload() - New filename: {$file['name']}");
+        $file['name'] = "{$pgmId}-{$this->id}-{$timestamp}-{$side}.{$ext}";
+        dbg( "e20rMeasurements::setFilenameForClientUpload() - New filename: {$file['name']}" );
+
+        $img = getimagesize( $file['tmp_name'] );
+
+        $minimum = array('width' => '1280', 'height' => '1024');
+
+        $width= $img[0];
+        $height =$img[1];
+
+        if ($width < $minimum['width'] ) {
+
+            return array( "error" => "Image dimensions are too small. Minimum width is {$minimum['width']}px. Uploaded image width is $width px" );
+        }
+        elseif ($height <  $minimum['height']) {
+
+            return array( "error" => "Image dimensions are too small. Minimum height is {$minimum['height']}px. Uploaded image height is $height px" );
+        }
 
         return $file;
     }
@@ -337,6 +377,9 @@ class e20rMeasurements {
 
     public function ajax_deletePhoto_callback() {
 
+        global $current_user;
+        global $e20rMeasurements;
+
         dbg('e20rMeasurements::ajax_deletePhoto_callback() - Deleting uploaded photo');
 
         check_ajax_referer('e20r-tracker-progress', 'e20r-progress-nonce');
@@ -345,6 +388,11 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::ajax_deletePhoto_callback() - Request: " . print_r( $_REQUEST, true ) );
         $imgId = isset( $_POST['image-id'] ) ? intval( $_POST['image-id'] ) : null;
+        $user_id = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID );
+        $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
+        $programId = ( isset( $_POST['program-id'] ) ? intval( $_POST['program-id'] ) : null );
+        $post_date = ( isset( $_POST['date'] ) ? sanitize_text_field($_POST['date']) : null );
+        $imageSide = ( isset( $_POST['view'] ) ? sanitize_text_field($_POST['view']) : null );
 
         if ( ! $imgId ) {
 
@@ -354,15 +402,26 @@ class e20rMeasurements {
             wp_die();
         }
 
-        // TODO: Remove image from e20r_measurements for this user, on this date, by setting the field to null.
         if ( wp_delete_attachment( $imgId , true ) ) {
 
             dbg("e20rMeasurements::ajax_deletePhoto_callback() - Attachment with ID {$imgId} successfully deleted");
+        }
 
-            wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" ) );
+        if ( $this->model->saveField( "{$imageSide}_image", NULL, $articleId, $programId, $post_date, $user_id ) === FALSE ) {
+
+            wp_send_json_error( "Error removing the image from the database");
             wp_die();
         }
 
+        $attLnk = wp_get_attachment_link( $imgId );
+
+        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Link: {$attLnk} ");
+        if ( 'Missing Attachment' === $attLnk ) {
+
+            wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" ) );
+        }
+
+        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Not deleted");
         wp_send_json_error( "Error: Unable to delete image.");
         wp_die();
 
@@ -486,6 +545,8 @@ class e20rMeasurements {
 
         $mDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
+
+        $e20rMeasurementDate = $mDate;
 
         $day = 0;
         $from_programstart = 1;
@@ -802,6 +863,7 @@ class e20rMeasurements {
         $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
         $programId = ( isset( $_POST['program-id'] ) ? intval( $_POST['program-id'] ) : null );
         $post_date = ( isset( $_POST['date'] ) ? sanitize_text_field($_POST['date']) : null );
+        $imageSide = ( isset( $_POST['view'] ) ? sanitize_text_field($_POST['view']) : null );
 
         dbg("e20rMeasurements::saveMeasurement() - Received from user {$user_id}- Type: {$measurementType}, Value: {$measurementValue}, Date: {$post_date}");
 
@@ -833,27 +895,32 @@ class e20rMeasurements {
             }
         }
 
+        if ( $imageSide ) {
+
+            $attachId = $measurementValue;
+            $post = get_post( $attachId );
+
+            $file = get_attached_file( $attachId );
+            $path = pathinfo( $file );
+
+            //dirname   = File Path
+            //basename  = Filename.Extension
+            //extension = Extension
+            //filename  = Filename
+
+            $newfilename = str_replace( 'REPLACEME', $imageSide, $path['filename'] );
+            $newfile = $path['dirname']."/".$newfilename.".".$path['extension'];
+
+            dbg("e20rMeasurements::saveMeasurement() - Renaming {$file['filename']} to {$newfilename}");
+
+            rename($file, $newfile);
+            update_attached_file( $attachId, $newfile );
+
+        }
+
         try {
             dbg( "e20rMeasurements::saveMeasurement() - Saving measurement: {$measurementType} -> {$measurementValue}");
 
-            /*
-            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-
-                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
-
-                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                    wp_send_json_error( "Unknown error while trying to save measurement. Please contact the Webmaster!");
-                    exit;
-                }
-                dbg("Measurement class loaded");
-            }
-
-            $fields = $e20rTables->getFields( 'measurements' );
-
-            if ( ! isset( $this->model) ) {
-                $this->model = new e20rMeasurementModel( $user_id, $post_date );
-            }
-*/
             if ( ! $this->model->saveField( $measurementType, $measurementValue, $articleId, $programId, $post_date, $user_id ) ) {
 
                 wp_send_json_error( "Unknown error saving measurement for {$measurementType}" );

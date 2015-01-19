@@ -153,6 +153,7 @@ class e20rArticle extends e20rSettings {
         global $current_user;
         global $e20rMeasurements;
         global $e20rProgram;
+        global $e20rTracker;
 
         dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
         $this->init( $post->ID );
@@ -160,6 +161,12 @@ class e20rArticle extends e20rSettings {
         if ( empty($this->articleId) ) {
 
             dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
+            return $content;
+        }
+
+        if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+
+            dbg("e20rArticle::contentFilter() - User doesn't have access to this post/page. Exiting the filter.");
             return $content;
         }
 

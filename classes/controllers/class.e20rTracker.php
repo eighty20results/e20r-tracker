@@ -69,14 +69,14 @@ class e20rTracker {
                 dbg("e20rTracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
                 // add_filter( 'media-view-strings', array( &$e20rMeasurements, 'clientMediaUploader' ) );
                 add_filter( 'upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir' ) );
-                // add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
             }
 
-            // add_action("gform_after_submission", array( &$e20rClient, "afterGFSubmission" ), 10, 2);
             /* Control access to the media uploader for Nourish users */
             // add_action( 'parse_query', array( &$this, 'current_user_only' ) );
             add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
-            add_filter( 'media_view_settings', array( &$this, 'media_view_settings'), 99 );
+            // add_filter( 'media_view_settings', array( &$this, 'media_view_settings'), 99 );
+            add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
+
 
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
@@ -312,6 +312,7 @@ class e20rTracker {
         return;
     }
 
+    /*
     public function media_view_settings( $settings, $post ) {
 
         global $e20rMeasurementDate, $e20rTracker;
@@ -319,13 +320,8 @@ class e20rTracker {
 //        unset( $settings['mimeTypes']['audio'] );
 //        unset( $settings['mimeTypes']['video'] );
 
-        dbg("Measurement date: {$e20rMeasurementDate}");
+        dbg("e20rTracker::media_view_settings() - Measurement date: {$e20rMeasurementDate}");
 
-        if ( $e20rMeasurementDate == '2014-01-01') {
-            $tmp = $e20rTracker->datesForMeasurements( date( 'Y-m-d', current_time('timestamp') ) );
-            $e20rMeasurementDate = $tmp['current'];
-            dbg("Measurement date is now: {$e20rMeasurementDate}");
-        }
         $monthYear = date('F Y',strtotime( $e20rMeasurementDate ) );
         $settings['currentMonth'] = $monthYear;
 
@@ -336,28 +332,12 @@ class e20rTracker {
             }
         }
 
-        // dbg("Media view settings: " . print_r( $settings, true ) );
+        dbg("e20rTracker::media_view_settings() - Now using: ");
+        dbg($settings);
 
-        /*
-        if ( isset( $_REQUEST['post_id'] ) && ! empty( $_REQUEST['post_id'] ) ) {
-            $post_type = get_post_type( absint( $_REQUEST['post_id'] ) );
-
-            if ( $post_type ) {
-                if ( 'page' == $post_type ) {
-                    // Simply uncomment any of the following to remove them from the media uploader.
-                    //unset( $media_tabs['type'] ); // This removes the "From Computer" tab
-                    unset( $media_tabs['type_url'] ); // This removes the "From URL" tab
-                    unset( $media_tabs['gallery'] ); // This removes the "Gallery" tab
-                    unset( $media_tabs['library'] ); // This remove the "Media Library" tab
-                }
-            }
-        }
-*/
-
-        //dbg("e20rTracker::remove_media_tabs() - Now using: " . print_r( $media_tabs, true));
         return $settings;
     }
-
+*/
     public function default_media_tab( $tabName ) {
 
         if ( isset( $_REQUEST['post_id'] ) && ! empty( $_REQUEST['post_id'] ) ) {
@@ -740,76 +720,6 @@ class e20rTracker {
         <?php
     }
 
-    public function render_measurement_list() {
-
-        global $current_user;
-
-        $options = get_option( $this->setting_name );
-/*
-        dbg( "Measured Items: " . print_r($measured_items, true ) );
-        ?>
-        <table class="e20r-settings-table">
-            <tbody>
-            <?php
-
-            foreach ( $measured_items as $key => $list ) {
-
-                if ( ! is_array( $list ) ) {
-                    dbg("Item: {$list}");
-                    ?>
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="<?php echo $list; ?>-measurement" name="<?php echo $this->setting_name; ?>[measuring][<?php echo $list; ?>]" value="1" <?php checked( $options['measuring'][ $list ], 1 ); ?>>
-                        </td>
-                        <td>
-                            <label for="<?php echo $list ?>-measurement"><strong style="text-transform: capitalize;"><?php echo $list; ?></strong></label>
-                        </td>
-                    </tr>
-                <?php
-                }
-                else {
-                    $i = 1;
-                    dbg("Item List: " . print_r( $list, true ) );
-                    ?>
-                    <tr>
-                        <td colspan="2" style="text-transform: capitalize;"><h3><?php echo $key; ?></h3></td>
-                    </tr>
-                    <tr><td colspan="2">
-                        <table class="e20r-inline-table">
-                            <tbody>
-                                <tr><?php
-
-                            foreach ( $list as $item ) {
-                                $i++;
-                                    ?>
-                                    <td>
-                                        <input type="checkbox" id="<?php echo $item; ?>-measurement" name="<?php echo $this->setting_name; ?>[measuring][<?php echo $key; ?>][<?php echo $item; ?>]" value="1" <?php checked( $options['measuring'][ $key ][ $item ], 1 ); ?>>
-                                    </td>
-                                    <td>
-                                        <label for="<?php echo $item ?>-measurement"><strong style="text-transform: capitalize;"><?php echo $item; ?></strong></label>
-                                    </td><?php
-
-                                if ( $i == 3 ) {
-                                    $i = 1;
-                                    ?>
-                                </tr><tr><?php
-                                }
-                            }
-                            ?>
-                            </tr>
-                            </tbody>
-                        </table>
-                        </td>
-                    </tr><?php
-                }
-            }
-            ?>
-            </tbody>
-        </table>
-        <?php
-*/
-    }
-
     public function render_section_text() {
 
         $html = "<p>These settings will determine the behavior of the plugin during deactivation.</p>";
@@ -1062,6 +972,27 @@ class e20rTracker {
         }
     }
 
+    public function hasAccess( $userId, $postId ) {
+
+        if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
+
+            dbg("Post #{$postId} is a preview for {$userId}");
+            return true;
+        }
+
+        if ( function_exists( 'pmpro_has_membership_access' ) ) {
+
+            $results = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+
+            if ( $results[0] === true ) { // First item in results array == true if user has access
+
+                dbg( "e20rTracker::hasAccess() - User {$userId} has access to this post" );
+                return true;
+            }
+        }
+
+        return false;
+    }
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
@@ -1082,27 +1013,28 @@ class e20rTracker {
         if ( has_shortcode( $post->post_content, 'weekly_progress' ) ) {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
-            dbg($_POST);
 
             // Get the requested Measurement date & article ID (passed from the "Need your measuresments today" form.)
             $measurementDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
             $articleId = isset( $_POST['e20r-progress-form-article']) ? intval( $_POST['e20r-progress-form-article']) : null;
 
-            $articleId = $e20rArticle->init( $articleId );
-            $articleURL = $e20rArticle->getPostUrl( $articleId );
-
-            if ( ! $e20rClient->client_loaded ) {
-
-                dbg( "e20rTracker::has_weeklyProgress_shortcode() - Have to init e20rClient class & grab data..." );
-                $e20rClient->init();
-            }
+            $e20rMeasurementDate = $measurementDate;
 
             $userId = $current_user->ID;
             $programId = $e20rProgram->getProgramIdForUser( $userId );
+            $articleId = $e20rArticle->init( $articleId );
+            $articleURL = $e20rArticle->getPostUrl( $articleId );
 
             if ( ! $this->isActiveUser( $userId ) ) {
                 dbg("e20rTracker::has_weeklyProgress_shortcode() - User isn't a valid user. Not loading any data.");
                 return;
+            }
+
+            if ( ! $e20rClient->client_loaded ) {
+
+                dbg( "e20rTracker::has_weeklyProgress_shortcode() - Have to init e20rClient class & grab data..." );
+                $e20rClient->setClient( $userId );
+                $e20rClient->init();
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for {$measurementDate}");
@@ -1148,7 +1080,7 @@ class e20rTracker {
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->getData(), JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->getData( $userId ), JSON_NUMERIC_CHECK ),
                         'progress_pictures' => '',
                         'display_birthdate' => ( empty( $bDay ) ? false : true ),
 

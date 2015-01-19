@@ -10,20 +10,10 @@ class e20rClientModel {
 
     protected $data;
 
-    public function __construct( $user_id ) {
+    public function __construct() {
 
-        global $current_user;
-        global $wpdb;
         global $e20rTables;
         global $e20rProgram;
-
-        if ( ( $user_id == 0 ) && ( $current_user->ID !== 0 ) ) {
-
-            $user_id = $current_user->id;
-        }
-
-        $this->id = $user_id;
-        $this->program_id = $e20rProgram->getProgramIdForUser( $this->id );
 
         try {
             $this->table = $e20rTables->getTable( 'client_info' );
@@ -39,7 +29,7 @@ class e20rClientModel {
         // No item specified, returning everything we have.
         if ( $item == null ) {
 
-            if ( empty( $this->data->weight_loss ) ) {
+            if ( empty( $this->data->gender ) ) {
 
                 dbg("e20rClientModel::getData() - Required data item not found. Reloading..");
                 $this->setUser( $userId );

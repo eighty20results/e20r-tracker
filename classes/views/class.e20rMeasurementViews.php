@@ -272,9 +272,9 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-front-url-hidden" id="photo-front-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["front_image"]} ) ? null : $this->data->{$this->fields["front_image"]} ); ?>" />
+                                        <input type="hidden" name="photo-front-url-hidden" id="photo-front-url-hidden" value="<?php echo ( empty( $this->data->{$this->fields["front_image"]} ) ? null : $this->data->{$this->fields["front_image"]} ); ?>" />
                                         <div class="descript-overlay">Front</div>
-                                        <img id="photo-front" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["front_image"]} ) ? ' null' : null ); ?>">
+                                        <img id="photo-front" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( empty( $this->data->{$this->fields["front_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                                 <td>
@@ -282,9 +282,9 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-side-url-hidden" id="photo-side-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["side_image"]} ) ? null : $this->data->{$this->fields["side_image"]} ); ?>" />
+                                        <input type="hidden" name="photo-side-url-hidden" id="photo-side-url-hidden" value="<?php echo ( empty( $this->data->{$this->fields["side_image"]} ) ? null : $this->data->{$this->fields["side_image"]} ); ?>" />
                                         <div class="descript-overlay">Side</div>
-                                        <img id="photo-side" src="<?php echo $this->loadImage( 'side' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["side_image"]} ) ? ' null' : null ); ?>">
+                                        <img id="photo-side" src="<?php echo $this->loadImage( 'side' ); ?>" class="photo<?php echo ( empty( $this->data->{$this->fields["side_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                                 <td>
@@ -292,19 +292,17 @@ class e20rMeasurementViews {
                                         Photo Saved
                                     </div>
                                     <div class="photo-container">
-                                        <input type="hidden" name="photo-back-url-hidden" id="photo-back-url-hidden" value="<?php echo ( is_null( $this->data->{$this->fields["back_image"]} ) ? null : $this->data->{$this->fields["back_image"]} ); ?>" />
+                                        <input type="hidden" name="photo-back-url-hidden" id="photo-back-url-hidden" value="<?php echo ( empty( $this->data->{$this->fields["back_image"]} ) ? null : $this->data->{$this->fields["back_image"]} ); ?>" />
                                         <div class="descript-overlay">Back</div>
-                                        <img id="photo-back" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( is_null( $this->data->{$this->fields["back_image"]} ) ? ' null' : null ); ?>">
+                                        <img id="photo-back" src="<?php echo $this->loadImage( 'front' ); ?>" class="photo<?php echo ( empty( $this->data->{$this->fields["back_image"]} ) ? ' null' : null ); ?>">
                                     </div>
                                 </td>
                             </tr class="e20r-noline">
                             </tbody>
                             <tfoot>
-                            <tr>
-                                <td><a style="display: none;" href="javascript:" class="delete-photo front" data-orientation="front">Delete Front Image</a></td>
-                                <td><a style="display: none;" href="javascript:" class="delete-photo side" data-orientation="side">Delete Side Image</a></td>
-                                <td><a style="display: none;" href="javascript:" class="delete-photo back" data-orientation="back">Delete Back Image</a></td>
-                            </tr>
+                                <td><a href="javascript:" class="delete-photo front" data-orientation="front">Delete Front Image</a></td>
+                                <td><a href="javascript:" class="delete-photo side" data-orientation="side">Delete Side Image</a></td>
+                                <td><a href="javascript:" class="delete-photo back" data-orientation="back">Delete Back Image</a></td>
                             </tfoot>
                         </table>
                         </div>
