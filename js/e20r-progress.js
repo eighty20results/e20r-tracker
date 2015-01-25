@@ -974,5 +974,6 @@ jQuery(function() {
         jQuery('#birth-date').hide();
     }
 
+    jQuery(".inline").colorbox({inline: true, width: '75%'})
     checkFormCompletion();
 });
