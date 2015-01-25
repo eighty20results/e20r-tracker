@@ -101,12 +101,8 @@ class e20rMeasurementViews {
                         </a>Girth Measurements
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
-                        Need some help with taking your girth measurements? Check out the
+                        Need some help with how to take your girth measurements? Check out the
                         <a href="#load_help_girth" class="inline cboxElement">instructions</a>.
-<!--                        or download our comprehensive
-                        <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
-                        in PDF format.
--->
                     </div>
                     <?php echo $this->showChangeLengthUnit(); ?>
                     <?php dbg("showGirthRow() -> Length Units changer loaded. Girth Count: " . count($girths) ); ?>
@@ -316,7 +312,6 @@ class e20rMeasurementViews {
 
         global $e20rClient;
 
-        dbg("Weight Units: " . print_r($e20rClient->getWeightUnit(), true));
         ob_start();
         ?>
         <tr>
@@ -332,10 +327,6 @@ class e20rMeasurementViews {
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help with taking your body weight measurements? Check out the
                         <a href="#load_help_weight" class="inline cboxElement">instructions</a>.
-<!--                        or download our comprehensive
-                        <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
-                        in PDF format.
--->
                     </div>
                     <?php echo $this->showChangeWeightUnit(); ?>
                     <div class="measurement-field-container">
