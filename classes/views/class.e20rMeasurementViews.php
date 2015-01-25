@@ -93,16 +93,17 @@ class e20rMeasurementViews {
             <td class="content validate-girth-measurements" id="girth-measurements">
                 <fieldset>
                     <legend>
-                        <a href="e20r-tracker-help.php?topic=girths" class="lbp_secondary">
+                        <a href="#load_help?topic=girth" class="lbp_secondary">
                             <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
                         </a>Girth Measurements
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help with taking your girth measurements? Check out the
-                        <a href="e20r-tracker-help.php?topic=girth" class="lbp_secondary">instructions</a>
-                        or download the comprehensive
+                        <a href="#load_help?topic=girth" class="lbp_secondary">instructions</a>.
+<!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
+-->
                     </div>
                     <?php echo $this->showChangeLengthUnit(); ?>
                     <?php dbg("showGirthRow() -> Length Units changer loaded. Girth Count: " . count($girths) ); ?>
@@ -231,17 +232,18 @@ class e20rMeasurementViews {
             <td class="content validate-photos" id="photos">
                 <fieldset>
                     <legend>
-                        <a href="e20r-tracker-help.php?topic=photos" class="lbp_secondary">
+                        <a href="#load_help?topic=photo" class="lbp_secondary">
                             <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
                         </a>
                         Photos
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help figuring out how to take your progress photos? Check out the
-                        <a href="e20r-tracker-help.php?topic=photo" class="lbp_secondary">instructions</a>
-                        or download the comprehensive
+                        <a href="#load_help?topic=photo" class="lbp_secondary">instructions</a>.
+<!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
+-->
                     </div>
                     <div style="clear: both;"></div>
                     <p class="hide-if-no-js">
@@ -352,15 +354,16 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-                        <a href="e20r-tracker-help.php?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
+                        <a href="#load_help?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
                         Body Weight Measurement
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help with taking your body weight measurements? Check out the
-                        <a href="e20r-tracker-help.php?topic=weight" class="lbp_secondary">instructions</a>
-                        or download the comprehensive
+                        <a href="#load_help?topic=weight" class="lbp_secondary">instructions</a>.
+<!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
+-->
                     </div>
                     <?php echo $this->showChangeWeightUnit(); ?>
                     <div class="measurement-field-container">
@@ -884,5 +887,285 @@ class e20rMeasurementViews {
                 <img src="<?php echo $imageUrl; ?>" style="max-width: 38px; max-height: 38px; height: auto; width: auto;"/>
             </a>
         <?php
+    }
+
+    public function loadHelp($type = null) {
+
+        ob_start();
+
+        switch ($type) {
+
+            case 'weight';
+                ?>
+                <h3>Body Weight Measurement Guide</h3>
+                <div>
+                    <table class="e20r-help-items">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">1</div>
+                            </td>
+                            <td class="content">
+                                <h4>Find a scale.</h4>
+                                Start with a good scale, preferably a pre-calibrated digital scale or a beam scale
+                                (like the kind you find in doctor's offices).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">2</div>
+                            </td>
+                            <td class="content">
+                                <h4>Test and calibrate.</h4>
+                                Once you have a good scale, determine its accuracy and reliability. To do so, select an
+                                object of
+                                known weight (in a lab scientists use a pre-calibrated reference weight) and weigh it
+                                five times
+                                successively. If these five readings are within one pound or so of both the known weight
+                                and the
+                                other readings, your scale is as good as you're going to find. If the variation is
+                                greater than
+                                two pounds, you'll need to re-set your scale (if it's digital). If it still doesn't
+                                produce
+                                reliable or accurate readings, you need a better scale.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">3</div>
+                            </td>
+                            <td class="content">
+                                <h4>Test again.</h4>
+                                Each time you weigh yourself, make sure to test your known object a few times (three
+                                times
+                                or so) beforehand to see if the scale is accurate and reliable on that day. The same
+                                rules
+                                above apply.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">4</div>
+                            </td>
+                            <td class="content">
+                                <h4>Weigh yourself.</h4>
+                                Next, step on the scale yourself. Record your first reading. Weigh yourself two
+                                additional
+                                times and record these readings. If your measurements are within one pound of each
+                                other,
+                                take the average of the three. If not, weigh a fourth time and average the closest three
+                                measurements.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">5</div>
+                            </td>
+                            <td class="content">
+                                <h4>Input your measurement.</h4>
+                                Record the mean (average) body weight measurement. Make sure you are recording in the
+                                correct units: if your scale is in pounds, record in pounds; if it is in kilograms,
+                                record in kilograms; etc. You can change your measurement units at any time by clicking
+                                the "change this" link next to the "Preferred measurement units" at the top of the Body
+                                Weight Measurement section.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <?php
+                $html = ob_get_clean();
+                break;
+
+            case 'girth':
+
+                ?>
+                <h3>Girth measurement guide</h3>
+                <table class="e20r-help-items">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">1</div>
+                            </td>
+                            <td class="content">
+                                <h4>Pick up a good measuring tape.</h4>
+                                A simple cloth measuring tape will work, but we prefer to use the MyoTape device from
+                                (<a href="http://www.accumeasurefitness.com/">www.accumeasurefitness.com</a>).
+                                It's inexpensive, it's handy, and since the tape encircles the body part with a consistent
+                                tightness, it allows for more accurate and consistent readings.
+                                <p align="center">
+                                    <img class="alignnone" src="<?php echo E20R_PLUGINS_URL; ?>/images/myotape.png" alt="" width="302" height="267" />
+                                </p>
+                            </td>
+                            </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">2</div>
+                            </td>
+                            <td class="content">
+                                <h4>Choose the body parts to record.</h4>
+                                As part of the Nourish Coaching program, we typically ask you to record girths for the following
+                                eight body parts:
+                                <ul>
+                                    <li>Neck girth: Measure just below the Adam’s apple and at the level of the 7th cervical vertebra.</li>
+                                    <li>Shoulder girth: Measure at the widest point of the shoulders, around the entire shoulder area. Make sure you’re standing upright and breathing normally. Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li>Chest girth: The maximal horizontal girth of the chest at the nipple line. Stand upright and pass the tape measure over the shoulder blades and under the armpits. Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li>Upper arm girth: Measure halfway between the elbow and the bony point on the top of your shoulder. Measure this distance if you have to and take the mid-point.</li>
+                                    <li>Waist girth: Measure at the navel. Stand upright and breathe normally with the abdomen relaxed. Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li>Hip girth: Measure around the glutes at the level of maximal circumference (aka the widest point).</li>
+                                    <li>Thigh girth: Measure at the halfway point between the center of the kneecap and inguinal crease (the line where leg inserts into trunk). Measure the distance if you have to and take the mid-point.</li>
+                                    <li>Calf girth: Measure at the widest point of your calf muscle.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">3</div>
+                            </td>
+                            <td class="content">&nbsp;
+                                <h4>Wrap tape around body part.</h4>
+                                If you’re using the MyoTape device (which we recommend), pull the end of the tape
+                                around the body part that you want to measure (pressing the button in the center will
+                                make it easier to pull) and place the rod at the end of the tape into the circular slot.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">4</div>
+                            </td>
+                            <td class="content">
+                                <h4>Tighten tape to a snug fit.</h4>
+                                Press the button in the center and let the tape retract to a snug fit. Make sure the tape
+                                is perpendicular to the body part and parallel with the ground. If you’re using a regular
+                                cloth tape, try to achieve a consistent tightness with each measurement.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">5</div>
+                            </td>
+                            <td class="content">
+                                <h4>Read and record measurement.</h4>
+                                Read your measurement on the outer edge of the tape measure (the end opposite the locked
+                                in rod) and write it down. Remember to take three different measurements at each site and
+                                record the average of the three.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">6</div>
+                            </td>
+                            <td class="content">&nbsp;
+                                <h4>Input your measurements.</h4>
+                                Once you have calculated the average measurements for all eight sites, return to the
+                                Coaching Progress Update form and record your measurements. Make sure you are
+                                recording in the correct units: if your tape measure is in inches, record in inches;
+                                if it is in centimetres, record in centimetres. You can change your measurement units
+                                at any time by clicking the "change this" link next to the "Preferred measurement
+                                units" at the top of the Girth Measurements section.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            <?php
+                $html = ob_get_clean();
+                break;
+
+            case 'photo':
+                ?>
+                <h3>Photo Guide</h3>
+                <div>
+                    <table class="e20r-help-items">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">1</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Clothing and location.</h4>
+                                    Dressed in a swimsuit, or small pair of shorts and fitted/revealing top like a
+                                    sports bra, stand against a bare wall.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">2</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Camera setup.</h4>
+                                    Set up your camera about 5-7 feet away from you so that it can capture your whole body
+                                    from head to toe. You can use a tripod or have a friend snap the photo.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">3</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Lighting.</h4>
+                                    Make sure the room is well-lit and that you use the flash when taking your photo.
+                                    However, make sure there isn't a ton of overhead light; you don't want to cast
+                                    shadows.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">4</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Write it down.</h4>
+                                    Write down exactly how you took the before pictures (camera settings, lighting
+                                    conditions, how far away the camera was, etc.). This will help you duplicate the same
+                                    conditions in the future.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">5</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Take three photos.</h4>
+                                    Take three total photographs: one of your front side, one of your left side and one
+                                    of your back side.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="e20r-number-col">6</div>
+                                </td>
+                                <td class="content">
+                                    <h4>Copy photos to your hard drive.</h4>
+                                    <p>Connect your camera to your computer, typically with the USB cable that comes
+                                    with the camera. You should be able to copy the photos to a folder on your computer.</p>
+                                    <p>Here's a brief video on the basics of getting photos off your digital camera
+                                    and on to your Windows XP computer: <a href="http://www.youtube.com/watch?v=W_hxdY7g-sw">
+                                    http://www.youtube.com/watch?v=W_hxdY7g-sw</a></p>
+                                    <p>Here is another video on copying photos to a Windows Vista computer:
+                                    <a href="http://www.youtube.com/watch?v=nnlEcMwikuw">http://www.youtube.com/watch?v=nnlEcMwikuw</a></p>
+                                    <p>If you have a Mac, you might want to view the Apple article on
+                                    <a href="http://support.apple.com/kb/HT2498">Connecting Your Camera</a>.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                            <td>
+                                <div class="e20r-number-col">7</div>
+                            </td>
+                            <td class="content">
+                                <h4>Upload the photos.</h4>
+                                Using the photo upload form on the Coaching Progress Update page, browse to the photos
+                                you copied. Select each one in the appropriate box (the front photo for the "Front
+                                View" box, the side photo for the "Side View" box, etc) and upload them, one at a time.
+                            </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <?php
+                $html = ob_get_clean();
+                break;
+
+        }
+
+        return $html;
     }
 } 
