@@ -3,16 +3,12 @@
 class e20rMeasurementViews {
 
     private $id;
-    private $count;
-    private $items;
     private $when;
 
-    private $model;
     private $data;
     private $fields;
 
-
-    public function e20rMeasurementViews() {
+    public function __construct() {
 
         global $e20rTables;
 
@@ -25,6 +21,7 @@ class e20rMeasurementViews {
         $this->when = $when;
         $this->data = $data;
     }
+
     public function startProgressForm( $articleId, $programId ) {
 
         // $this->load_scripts();
@@ -58,23 +55,29 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    /**
-     * @param string $type - The type of measurement to check ('weight', 'girth', 'photo', 'progress')
-     *
-     * @return bool|int -- True if the measurement field is complete. Otherwise a percentage value (integer)
-     */
-    private function isComplete( $type ) {
-        return false;
-    }
-
     public function endProgressForm() {
-        ob_start();?>
+        ob_start();
+        ?>
                     </tbody>
                 </table>
                 </form>
             </div> <!-- End of progress-canvas -->
         </div>
-
+        <div style="display: none;">
+            <div id="load_help_weight" class="colorbox-guide-container">
+                <?php echo $this->loadHelp('weight'); ?>
+            </div>
+        </div>
+        <div style="display: none;">
+            <div id="load_help_girth" class="colorbox-guide-container">
+                <?php echo $this->loadHelp("girth"); ?>
+            </div>
+        </div>
+        <div style="display: none;">
+            <div id="load_help_photo" class="colorbox-guide-container">
+                <?php echo $this->loadHelp("photo"); ?>
+            </div>
+        </div>
         <?php
         return ob_get_clean();
     }
@@ -93,13 +96,13 @@ class e20rMeasurementViews {
             <td class="content validate-girth-measurements" id="girth-measurements">
                 <fieldset>
                     <legend>
-                        <a href="#load_help?topic=girth" class="lbp_secondary">
+                        <a href="#load_help_girth" class="inline cboxElement">
                             <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
                         </a>Girth Measurements
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help with taking your girth measurements? Check out the
-                        <a href="#load_help?topic=girth" class="lbp_secondary">instructions</a>.
+                        <a href="#load_help_girth" class="inline cboxElement">instructions</a>.
 <!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
@@ -146,18 +149,6 @@ class e20rMeasurementViews {
         </tr>
 
         <?php
-        return ob_get_clean();
-    }
-
-    public function generateMeasurementEnd() {
-
-        ob_start();
-        ?>
-        </fieldset>
-        </td>
-        </tr>
-        <?php
-
         return ob_get_clean();
     }
 
@@ -232,14 +223,14 @@ class e20rMeasurementViews {
             <td class="content validate-photos" id="photos">
                 <fieldset>
                     <legend>
-                        <a href="#load_help?topic=photo" class="lbp_secondary">
+                        <a href="#load_help_photo" class="inline cboxElement">
                             <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
                         </a>
                         Photos
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help figuring out how to take your progress photos? Check out the
-                        <a href="#load_help?topic=photo" class="lbp_secondary">instructions</a>.
+                        <a href="#load_help_photo" class="inline cboxElement">instructions</a>.
 <!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
@@ -321,25 +312,6 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    private function loadImage( $side ) {
-
-        dbg( "e20rMeasurementViews::loadImage() - Looking for {$side} image..." );
-
-        $id = ( isset( $this->data->{$this->fields[$side . "_image"]} ) ?  $this->data->{$this->fields[$side . "_image"]} : null );
-
-        dbg( "e20rMeasurementViews::loadImage() - Locate attachment ID {$id}..." );
-
-        if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
-
-            dbg( "e20rMeasurementViews::loadImage() - No image ID saved. Loading placeholder" );
-            $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
-        }
-
-        dbg("e20rMeasurementviews::loadImage() - Loading: {$url}");
-        return $url;
-
-    }
-
     public function showWeightRow() {
 
         global $e20rClient;
@@ -354,12 +326,12 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-                        <a href="#load_help?topic=weight" class="lbp_secondary"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
+                        <a href="#load_help_weight" class="inline cboxElement"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
                         Body Weight Measurement
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
                         Need some help with taking your body weight measurements? Check out the
-                        <a href="#load_help?topic=weight" class="lbp_secondary">instructions</a>.
+                        <a href="#load_help_weight" class="inline cboxElement">instructions</a>.
 <!--                        or download our comprehensive
                         <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
                         in PDF format.
@@ -387,80 +359,6 @@ class e20rMeasurementViews {
     <?php
 
         return ob_get_clean();
-    }
-
-    private function bgImage( $what, $type ) {
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'F' ? '-f.png");' : '-m.png");' );
-    }
-
-    private function prettyUnit( $type ) {
-
-       // dbg("Pretty Unit request: {$type}");
-
-        switch ( $type ) {
-            case 'lbs':
-                $descr = 'pounds (lbs)';
-                break;
-            case 'kg':
-                $descr = 'kilogram (kg)';
-                break;
-            case 'st':
-                $descr = 'stone (st)';
-                break;
-            case 'st_uk':
-                $descr = 'stone (st) - (UK)';
-                break;
-            case 'in':
-                $descr = 'inches (in)';
-                break;
-            case 'cm':
-                $descr = 'centimeters (cm)';
-                break;
-            default:
-                $descr = '';
-        }
-
-        return $descr;
-    }
-
-    private function showChangeWeightUnit() {
-
-        global $e20rClient;
-
-        ob_start();
-        ?>
-        <div style="margin-bottom: 24px;">
-            Preferred weight units:
-            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
-            <select id="selected-weight-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
-                <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
-                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
-                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    private function showChangeLengthUnit() {
-
-        global $e20rClient;
-        ob_start();
-        ?>
-        <div style="margin-bottom: 24px;">
-            Preferred length units:
-            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
-            <select id="selected-length-unit" style="display: none; font-size: 14px; margin-top: 8px;">
-                <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
-                <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="length">change this</a>)
-        </div>
-        <?php
-        return ob_get_clean();
-
     }
 
     public function showChangeBirthdate() {
@@ -515,18 +413,6 @@ class e20rMeasurementViews {
 
         ob_start();
         ?>
-<!--        <style type="text/css">
-            #status-tabs {
-                position: relative;
-                min-height: 200px;
-                max-height: 95%;
-                height: 1024px;
-                min-width: 80%;
-                width: 95%;
-                clear: both;
-                margin: 10px 0;
-            }
-        </style> -->
         <div id="status-tabs">
             <ul>
         <?php
@@ -811,26 +697,6 @@ class e20rMeasurementViews {
         return $html;
     }
 
-    private function resizeImage( $size ) {
-        global $e20rTables;
-
-        $style = '';
-        switch ( $size ) {
-            case 'thumbnail':
-                break;
-            case 'small':
-                break;
-            case 'medium':
-                break;
-            case 'large':
-                break;
-            case 'full':
-                break;
-        }
-            return 'width: 38px; height: 38px;';
-
-    }
-
     public function getProgressPhoto( $data, $userId, $key = null ) {
 
         global $e20rClient;
@@ -848,7 +714,7 @@ class e20rMeasurementViews {
         if ( ! is_admin() ) { ?>
         <div style="display: none;" id="e20r-progress-pop-up">
         <!-- <div id="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" style="padding: 10px; background: #fff"> -->
-            <div id="lbp-inline-href-1" style="padding: 10px; background: #fff; max-width: 400px; max-height: 600px; width: auto; height: auto;"> <?php
+            <div id="inline-content-href-<?php echo ( $key ? $key : 1 ) ?>" style="padding: 10px; background: #fff; max-width: 400px; max-height: 600px; width: auto; height: auto;"> <?php
         }
         else {
         ?>
@@ -879,7 +745,8 @@ class e20rMeasurementViews {
         <?php
         if ( ! is_admin() ) { ?>
         </div>
-            <a class="lbp-inline-link-<?php echo ( $key ? $key : 1 ); ?> cboxElement" data-link="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" href="#"> <?php
+            <a class="inline cboxElement" data-link="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" href="#inline-content-href-<?php echo ( $key ? $key : 1 ) ?>">
+            <!-- <a class="lbp-inline-link-<?php echo ( $key ? $key : 1 ); ?> inline cboxElement" data-link="lbp-inline-href-<?php echo ( $key ? $key : 1 ); ?>" href="#inline-content-href-<?php echo ( $key ? $key : 1 ) ?>"> --> <?php
         }
         else { ?>
             <a href="#TB_inline?width=<?php echo ( ( $width + 20 ) > 600 ? 600 : $width ); ?>&height=<?php echo ( ( $height + 20 ) > 730 ? 730 :  $height ); ?>&inlineId=e20r-progress-pic-<?php echo ( $key ? $key : 1 ); ?>" class="thickbox"><?php
@@ -898,81 +765,79 @@ class e20rMeasurementViews {
             case 'weight';
                 ?>
                 <h3>Body Weight Measurement Guide</h3>
-                <div>
-                    <table class="e20r-help-items">
-                        <tbody>
-                        <tr>
-                            <td>
-                                <div class="e20r-number-col">1</div>
-                            </td>
-                            <td class="content">
-                                <h4>Find a scale.</h4>
-                                Start with a good scale, preferably a pre-calibrated digital scale or a beam scale
-                                (like the kind you find in doctor's offices).
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="e20r-number-col">2</div>
-                            </td>
-                            <td class="content">
-                                <h4>Test and calibrate.</h4>
-                                Once you have a good scale, determine its accuracy and reliability. To do so, select an
-                                object of
-                                known weight (in a lab scientists use a pre-calibrated reference weight) and weigh it
-                                five times
-                                successively. If these five readings are within one pound or so of both the known weight
-                                and the
-                                other readings, your scale is as good as you're going to find. If the variation is
-                                greater than
-                                two pounds, you'll need to re-set your scale (if it's digital). If it still doesn't
-                                produce
-                                reliable or accurate readings, you need a better scale.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="e20r-number-col">3</div>
-                            </td>
-                            <td class="content">
-                                <h4>Test again.</h4>
-                                Each time you weigh yourself, make sure to test your known object a few times (three
-                                times
-                                or so) beforehand to see if the scale is accurate and reliable on that day. The same
-                                rules
-                                above apply.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="e20r-number-col">4</div>
-                            </td>
-                            <td class="content">
-                                <h4>Weigh yourself.</h4>
-                                Next, step on the scale yourself. Record your first reading. Weigh yourself two
-                                additional
-                                times and record these readings. If your measurements are within one pound of each
-                                other,
-                                take the average of the three. If not, weigh a fourth time and average the closest three
-                                measurements.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="e20r-number-col">5</div>
-                            </td>
-                            <td class="content">
-                                <h4>Input your measurement.</h4>
-                                Record the mean (average) body weight measurement. Make sure you are recording in the
-                                correct units: if your scale is in pounds, record in pounds; if it is in kilograms,
-                                record in kilograms; etc. You can change your measurement units at any time by clicking
-                                the "change this" link next to the "Preferred measurement units" at the top of the Body
-                                Weight Measurement section.
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="e20r-help-items">
+                    <tbody>
+                    <tr>
+                        <td>
+                            <div class="e20r-number-col">1</div>
+                        </td>
+                        <td class="content">
+                            <h4>Find a scale.</h4>
+                            Start with a good scale, preferably a pre-calibrated digital scale or a beam scale
+                            (like the kind you find in doctor's offices).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="e20r-number-col">2</div>
+                        </td>
+                        <td class="content">
+                            <h4>Test and calibrate.</h4>
+                            Once you have a good scale, determine its accuracy and reliability. To do so, select an
+                            object of
+                            known weight (in a lab scientists use a pre-calibrated reference weight) and weigh it
+                            five times
+                            successively. If these five readings are within one pound or so of both the known weight
+                            and the
+                            other readings, your scale is as good as you're going to find. If the variation is
+                            greater than
+                            two pounds, you'll need to re-set your scale (if it's digital). If it still doesn't
+                            produce
+                            reliable or accurate readings, you need a better scale.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="e20r-number-col">3</div>
+                        </td>
+                        <td class="content">
+                            <h4>Test again.</h4>
+                            Each time you weigh yourself, make sure to test your known object a few times (three
+                            times
+                            or so) beforehand to see if the scale is accurate and reliable on that day. The same
+                            rules
+                            above apply.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="e20r-number-col">4</div>
+                        </td>
+                        <td class="content">
+                            <h4>Weigh yourself.</h4>
+                            Next, step on the scale yourself. Record your first reading. Weigh yourself two
+                            additional
+                            times and record these readings. If your measurements are within one pound of each
+                            other,
+                            take the average of the three. If not, weigh a fourth time and average the closest three
+                            measurements.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="e20r-number-col">5</div>
+                        </td>
+                        <td class="content">
+                            <h4>Input your measurement.</h4>
+                            Record the mean (average) body weight measurement. Make sure you are recording in the
+                            correct units: if your scale is in pounds, record in pounds; if it is in kilograms,
+                            record in kilograms; etc. You can change your measurement units at any time by clicking
+                            the "change this" link next to the "Preferred measurement units" at the top of the Body
+                            Weight Measurement section.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
                 <?php
                 $html = ob_get_clean();
                 break;
@@ -1007,14 +872,19 @@ class e20rMeasurementViews {
                                 As part of the Nourish Coaching program, we typically ask you to record girths for the following
                                 eight body parts:
                                 <ul>
-                                    <li>Neck girth: Measure just below the Adam’s apple and at the level of the 7th cervical vertebra.</li>
-                                    <li>Shoulder girth: Measure at the widest point of the shoulders, around the entire shoulder area. Make sure you’re standing upright and breathing normally. Record the measure after a normal (not a forced) exhalation.</li>
-                                    <li>Chest girth: The maximal horizontal girth of the chest at the nipple line. Stand upright and pass the tape measure over the shoulder blades and under the armpits. Record the measure after a normal (not a forced) exhalation.</li>
-                                    <li>Upper arm girth: Measure halfway between the elbow and the bony point on the top of your shoulder. Measure this distance if you have to and take the mid-point.</li>
-                                    <li>Waist girth: Measure at the navel. Stand upright and breathe normally with the abdomen relaxed. Record the measure after a normal (not a forced) exhalation.</li>
-                                    <li>Hip girth: Measure around the glutes at the level of maximal circumference (aka the widest point).</li>
-                                    <li>Thigh girth: Measure at the halfway point between the center of the kneecap and inguinal crease (the line where leg inserts into trunk). Measure the distance if you have to and take the mid-point.</li>
-                                    <li>Calf girth: Measure at the widest point of your calf muscle.</li>
+                                    <li><strong>Neck girth</strong>: Measure just below the Adam’s apple and at the level of the 7th cervical vertebra.</li>
+                                    <li><strong>Shoulder girth</strong>: Measure at the widest point of the shoulders, around the entire shoulder area.
+                                        Make sure you’re standing upright and breathing normally. Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li><strong>Chest girth</strong>: The maximal horizontal girth of the chest at the nipple line.
+                                        Stand upright and pass the tape measure over the shoulder blades and under the armpits. Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li><strong>Upper arm girth</strong>: Measure halfway between the elbow and the bony point on the top of your shoulder.
+                                        Measure this distance if you have to and take the mid-point.</li>
+                                    <li><strong>Waist girth</strong>: Measure at the navel. Stand upright and breathe normally with the abdomen relaxed.
+                                        Record the measure after a normal (not a forced) exhalation.</li>
+                                    <li><strong>Hip girth</strong>: Measure around the glutes at the level of maximal circumference (the widest point).</li>
+                                    <li><strong>Thigh girth</strong>: Measure at the halfway point between the center of the kneecap and inguinal crease
+                                        (the line where leg inserts into trunk). Measure the distance if you have to and take the mid-point.</li>
+                                    <li><strong>Calf girth</strong>: Measure at the widest point of your calf muscle.</li>
                                 </ul>
                             </td>
                         </tr>
@@ -1074,98 +944,210 @@ class e20rMeasurementViews {
             case 'photo':
                 ?>
                 <h3>Photo Guide</h3>
-                <div>
-                    <table class="e20r-help-items">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">1</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Clothing and location.</h4>
-                                    Dressed in a swimsuit, or small pair of shorts and fitted/revealing top like a
-                                    sports bra, stand against a bare wall.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">2</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Camera setup.</h4>
-                                    Set up your camera about 5-7 feet away from you so that it can capture your whole body
-                                    from head to toe. You can use a tripod or have a friend snap the photo.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">3</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Lighting.</h4>
-                                    Make sure the room is well-lit and that you use the flash when taking your photo.
-                                    However, make sure there isn't a ton of overhead light; you don't want to cast
-                                    shadows.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">4</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Write it down.</h4>
-                                    Write down exactly how you took the before pictures (camera settings, lighting
-                                    conditions, how far away the camera was, etc.). This will help you duplicate the same
-                                    conditions in the future.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">5</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Take three photos.</h4>
-                                    Take three total photographs: one of your front side, one of your left side and one
-                                    of your back side.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="e20r-number-col">6</div>
-                                </td>
-                                <td class="content">
-                                    <h4>Copy photos to your hard drive.</h4>
-                                    <p>Connect your camera to your computer, typically with the USB cable that comes
-                                    with the camera. You should be able to copy the photos to a folder on your computer.</p>
-                                    <p>Here's a brief video on the basics of getting photos off your digital camera
-                                    and on to your Windows XP computer: <a href="http://www.youtube.com/watch?v=W_hxdY7g-sw">
-                                    http://www.youtube.com/watch?v=W_hxdY7g-sw</a></p>
-                                    <p>Here is another video on copying photos to a Windows Vista computer:
-                                    <a href="http://www.youtube.com/watch?v=nnlEcMwikuw">http://www.youtube.com/watch?v=nnlEcMwikuw</a></p>
-                                    <p>If you have a Mac, you might want to view the Apple article on
-                                    <a href="http://support.apple.com/kb/HT2498">Connecting Your Camera</a>.</p>
-                                </td>
-                            </tr>
-                            <tr>
+                <table class="e20r-help-items">
+                    <tbody>
+                        <tr>
                             <td>
-                                <div class="e20r-number-col">7</div>
+                                <div class="e20r-number-col">1</div>
                             </td>
                             <td class="content">
-                                <h4>Upload the photos.</h4>
-                                Using the photo upload form on the Coaching Progress Update page, browse to the photos
-                                you copied. Select each one in the appropriate box (the front photo for the "Front
-                                View" box, the side photo for the "Side View" box, etc) and upload them, one at a time.
+                                <h4>Clothing and location.</h4>
+                                Dressed in a swimsuit, or small pair of shorts and fitted/revealing top like a
+                                sports bra, stand against a bare wall.
                             </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">2</div>
+                            </td>
+                            <td class="content">
+                                <h4>Camera setup.</h4>
+                                Set up your camera about 5-7 feet away from you so that it can capture your whole body
+                                from head to toe. You can use a tripod or have a friend snap the photo.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">3</div>
+                            </td>
+                            <td class="content">
+                                <h4>Lighting.</h4>
+                                Make sure the room is well-lit and that you use the flash when taking your photo.
+                                However, make sure there isn't a ton of overhead light; you don't want to cast
+                                shadows.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">4</div>
+                            </td>
+                            <td class="content">
+                                <h4>Write it down.</h4>
+                                Write down exactly how you took the before pictures (camera settings, lighting
+                                conditions, how far away the camera was, etc.). This will help you duplicate the same
+                                conditions in the future.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">5</div>
+                            </td>
+                            <td class="content">
+                                <h4>Take three photos.</h4>
+                                Take three total photographs: one of your front side, one of your left side and one
+                                of your back side.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="e20r-number-col">6</div>
+                            </td>
+                            <td class="content">
+                                <h4>Copy photos to your hard drive.</h4>
+                                <p>Connect your camera to your computer, typically with the USB cable that comes
+                                with the camera. You should be able to copy the photos to a folder on your computer.</p>
+                                <p>Here's a brief video on the basics of getting photos off your digital camera
+                                and on to your Windows XP computer: <a href="http://www.youtube.com/watch?v=W_hxdY7g-sw">
+                                http://www.youtube.com/watch?v=W_hxdY7g-sw</a></p>
+                                <p>Here is another video on copying photos to a Windows Vista computer:
+                                <a href="http://www.youtube.com/watch?v=nnlEcMwikuw">http://www.youtube.com/watch?v=nnlEcMwikuw</a></p>
+                                <p>If you have a Mac, you might want to view the Apple article on
+                                <a href="http://support.apple.com/kb/HT2498">Connecting Your Camera</a>.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                        <td>
+                            <div class="e20r-number-col">7</div>
+                        </td>
+                        <td class="content">
+                            <h4>Upload the photos.</h4>
+                            Using the photo upload form on the Coaching Progress Update page, browse to the photos
+                            you copied. Select each one in the appropriate box (the front photo for the "Front
+                            View" box, the side photo for the "Side View" box, etc) and upload them, one at a time.
+                        </td>
+                        </tr>
+                    </tbody>
+                </table>
             <?php
                 $html = ob_get_clean();
                 break;
-
         }
 
         return $html;
     }
+
+    private function bgImage( $what, $type ) {
+
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'F' ? '-f.png");' : '-m.png");' );
+    }
+
+    private function prettyUnit( $type ) {
+
+        // dbg("Pretty Unit request: {$type}");
+
+        switch ( $type ) {
+            case 'lbs':
+                $descr = 'pounds (lbs)';
+                break;
+            case 'kg':
+                $descr = 'kilogram (kg)';
+                break;
+            case 'st':
+                $descr = 'stone (st)';
+                break;
+            case 'st_uk':
+                $descr = 'stone (st) - (UK)';
+                break;
+            case 'in':
+                $descr = 'inches (in)';
+                break;
+            case 'cm':
+                $descr = 'centimeters (cm)';
+                break;
+            default:
+                $descr = '';
+        }
+
+        return $descr;
+    }
+
+    private function showChangeWeightUnit() {
+
+        global $e20rClient;
+
+        ob_start();
+        ?>
+        <div style="margin-bottom: 24px;">
+            Preferred weight units:
+            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
+            <select id="selected-weight-unit" style="display: none; font-size: 14px; margin-top: 8px;">
+                <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
+                <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
+                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
+                <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
+            </select>
+            (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    private function showChangeLengthUnit() {
+
+        global $e20rClient;
+        ob_start();
+        ?>
+        <div style="margin-bottom: 24px;">
+            Preferred length units:
+            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
+            <select id="selected-length-unit" style="display: none; font-size: 14px; margin-top: 8px;">
+                <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
+                <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
+            </select>
+            (<a class="change-measurement-unit" data-dimension="length">change this</a>)
+        </div>
+        <?php
+        return ob_get_clean();
+
+    }
+
+    private function loadImage( $side ) {
+
+        dbg( "e20rMeasurementViews::loadImage() - Looking for {$side} image..." );
+
+        $id = ( isset( $this->data->{$this->fields[$side . "_image"]} ) ?  $this->data->{$this->fields[$side . "_image"]} : null );
+
+        dbg( "e20rMeasurementViews::loadImage() - Locate attachment ID {$id}..." );
+
+        if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
+
+            dbg( "e20rMeasurementViews::loadImage() - No image ID saved. Loading placeholder" );
+            $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
+        }
+
+        dbg("e20rMeasurementviews::loadImage() - Loading: {$url}");
+        return $url;
+
+    }
+
+    private function resizeImage( $size ) {
+        global $e20rTables;
+
+        $style = '';
+        switch ( $size ) {
+            case 'thumbnail':
+                break;
+            case 'small':
+                break;
+            case 'medium':
+                break;
+            case 'large':
+                break;
+            case 'full':
+                break;
+        }
+        return 'width: 38px; height: 38px;';
+
+    }
+
 } 
