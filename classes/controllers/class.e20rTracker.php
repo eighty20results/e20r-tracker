@@ -1080,10 +1080,11 @@ class e20rTracker {
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
 
             $this->enqueue_plotSW();
-            wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', true );
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
-            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', true );
+            wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
+            wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', false );
+            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', false );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
@@ -1118,7 +1119,7 @@ class e20rTracker {
                     ),
                     'user_info'    => array(
                         'userdata'          => json_encode( $e20rClient->getData( $userId ), JSON_NUMERIC_CHECK ),
-                        'progress_pictures' => '',
+//                        'progress_pictures' => '',
                         'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
                     ),
@@ -1127,12 +1128,12 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading scripts in footer of page");
             wp_enqueue_media();
+            wp_print_scripts( 'jquery-colorbox' );
             wp_print_scripts( 'e20r-jquery-json' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-js' );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Add manually created javascript");
-
             ?>
             <script type="text/javascript">
 
