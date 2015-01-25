@@ -9,6 +9,8 @@
 class e20rMeasurementModel {
 
     private $client_id = null;
+    private $programId = null;
+
     private $measured_items = array();
 
     public $all = array();
@@ -17,10 +19,12 @@ class e20rMeasurementModel {
     private $table = array();
     private $fields = array();
 
-    public function e20rMeasurementModel( $user_id = null, $forDate = null ) {
+    public function e20rMeasurementModel( $user_id = null ) {
 
         global $wpdb;
         global $e20rTables;
+        global $e20rProgram;
+
         global $current_user;
 
         if ( ( $user_id == null ) && ( $current_user->ID != 0 ) ) {
@@ -28,8 +32,8 @@ class e20rMeasurementModel {
         }
 
         $this->client_id = $user_id;
-
-        dbg("e20rMeasurementModel::construct() - For user_id: {$user_id} on {$forDate}");
+        $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id);
+        dbg("e20rMeasurementModel::construct() - For user_id: {$user_id}");
 
         $this->table = $e20rTables->getTable( 'measurements' );
         $this->fields = $e20rTables->getFields( 'measurements' );
@@ -129,7 +133,16 @@ class e20rMeasurementModel {
      */
     public function getMeasurements() {
 
-        $this->loadAll();
+        try {
+            $this->loadAll();
+
+        }
+        catch( Exception $e ) {
+            dbg("e20rMeasurementModel::getMeasurements() - Error loading all data: " . $e->getMessage() );
+            return false;
+        }
+
+        dbg("e20rMeasurementModel::getMeasurements() - Loaded " . count($this->all) . " records");
 
         return $this->all;
     }
@@ -160,6 +173,29 @@ class e20rMeasurementModel {
         $this->byDate[$date] = $record;
 
 
+    }
+
+    public function setUser( $userId ) {
+
+        global $e20rProgram;
+        global $e20rTables;
+
+        $this->client_id = $userId;
+        $this->programId = $e20rProgram->getProgramIdForUser($this->client_id);
+
+        // Update tables (account for possible beta group data).
+        $e20rTables->init( $this->client_id);
+        $this->table = $e20rTables->getTable( 'measurements', true);
+        $this->fields = $e20rTables->getFields('measurements', true);
+
+        try {
+            $this->loadAll();
+        }
+        catch ( Exception $e ) {
+
+            dbg("e20rMeasurementModel::setUser() - Error loading all data for {$this->client_id}: " . $e->getMessage() );
+            return;
+        }
     }
 
     /**
@@ -465,12 +501,16 @@ class e20rMeasurementModel {
                 {$this->fields['girth_calf']}, {$this->fields['girth']},
                 {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
                 {$this->fields['front_image']}, {$this->fields['side_image']},
-                {$this->fields['back_image']}
+                {$this->fields['back_image']}, {$this->fields['program_id']}
                 FROM {$this->table}
-                WHERE {$this->fields['user_id']} = %d AND {$this->fields['recorded_date']} LIKE %s
+                WHERE {$this->fields['user_id']} = %d AND
+                  {$this->fields['program_id']} = %d AND
+                  {$this->fields['recorded_date']} LIKE %s
+
                 ORDER BY {$this->fields['recorded_date']} ASC
             ",
             $this->client_id,
+            $this->programId,
             $date . ' 00:00:00');
 
 
@@ -501,25 +541,53 @@ class e20rMeasurementModel {
 
             // Not stored yet, so grab the data from the DB and store it.
             global $wpdb;
+            if ( $this->programId === null  ) {
 
-            $sql = $wpdb->prepare(
-                "
-                  SELECT
-                    {$this->fields['id']}, {$this->fields['user_id']},
-                    {$this->fields['article_id']}, {$this->fields['recorded_date']},
-                    {$this->fields['weight']}, {$this->fields['girth_neck']},
-                    {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
-                    {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
-                    {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
-                    {$this->fields['girth_calf']}, {$this->fields['girth']},
-                    {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
-                    {$this->fields['front_image']}, {$this->fields['side_image']},
-                    {$this->fields['back_image']}
-                    FROM {$this->table}
-                    WHERE {$this->fields['user_id']} = %d
-                    ORDER BY {$this->fields['recorded_date']} ASC
-                ", $this->client_id );
+                $sql = $wpdb->prepare(
+                    "
+                      SELECT
+                        {$this->fields['id']}, {$this->fields['user_id']},
+                        {$this->fields['article_id']}, {$this->fields['recorded_date']},
+                        {$this->fields['weight']}, {$this->fields['girth_neck']},
+                        {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
+                        {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
+                        {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
+                        {$this->fields['girth_calf']}, {$this->fields['girth']},
+                        {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
+                        {$this->fields['front_image']}, {$this->fields['side_image']},
+                        {$this->fields['back_image']}, {$this->fields['program_id']}
+                        FROM {$this->table}
+                        WHERE {$this->fields['user_id']} = %d
+                        ORDER BY {$this->fields['recorded_date']} ASC
+                    ",
+                    $this->client_id
+                );
+            }
+            else {
+                $sql = $wpdb->prepare(
+                    "
+                      SELECT
+                        {$this->fields['id']}, {$this->fields['user_id']},
+                        {$this->fields['article_id']}, {$this->fields['recorded_date']},
+                        {$this->fields['weight']}, {$this->fields['girth_neck']},
+                        {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
+                        {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
+                        {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
+                        {$this->fields['girth_calf']}, {$this->fields['girth']},
+                        {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
+                        {$this->fields['front_image']}, {$this->fields['side_image']},
+                        {$this->fields['back_image']}, {$this->fields['program_id']}
+                        FROM {$this->table}
+                        WHERE {$this->fields['user_id']} = %d AND
+                              {$this->fields['program_id']} = %d
+                        ORDER BY {$this->fields['recorded_date']} ASC
+                    ",
+                    $this->client_id,
+                    $this->programId
+                );
+            }
 
+            dbg("e20rMeasurementModel::loadAll() - SQL: " . $sql );
 
             $results = $wpdb->get_results( $sql );
 

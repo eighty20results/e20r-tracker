@@ -4,11 +4,12 @@ class e20rClientViews {
 
     protected $client_id;
 
-    function e20rClientViews( $id = null ) {
+    public function __construct( $id = null ) {
 
-        dbg("Constructor for e20rClientViews");
+        dbg("e20rClientviews::__construct() - Setting client ID");
 
         if ( ! empty( $id ) ) {
+
             $this->client_id = $id;
         }
 
@@ -24,7 +25,7 @@ class e20rClientViews {
         ?>
         <div id="e20r-tracker-progress-display">
 
-            <div id="e20r-progr-measurements">
+            <div id="e20r-progress-measurements">
 
             </div>
 
@@ -50,15 +51,16 @@ class e20rClientViews {
 
         ob_start(); ?>
 
-        <div class="e20r-selectLevel">
+        <div id="e20r-selectLevel">
             <form action="<?php admin_url('admin-ajax.php'); ?>" method="post">
-                <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_levels_nonce' ); ?>
+                <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                 <div class="e20r-select">
                     <input type="hidden" name="hidden_e20r_level" id="hidden_e20r_level" value="0" >
                     <label for="e20r_levels">Filter by Membership Level:</label>
                     <span class="e20r-level-select-span">
                         <select name="e20r_levels" id="e20r_levels">
-                            <option value="0" selected="selected">All levels</option>
+                            <option value="-1"></option>
+                            <option value="0">All levels</option>
                         <?php
 
                         $level_list = $e20rTracker->getMembershipLevels( null, false );
@@ -69,7 +71,6 @@ class e20rClientViews {
                 ?>
                         </select>
                     </span>
-                    <span class="seq_spinner" id="spin-for-level"></span>
                 </div>
             </form>
         </div>
@@ -90,13 +91,12 @@ class e20rClientViews {
         }
 
         ob_start(); ?>
-        <div class="startHidden e20r-selectMember">
-            <div class="e20r-client-list">
+        <div class="e20r-client-list">
                 <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="post">
-                    <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
+                    <?php // wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                     <div class="e20r-select">
                         <label for="e20r_tracker_client">Select client to view data for:</label>
-                        <select name="e20r_tracker_client" id="e20r_tracker_client">
+                        <select name="e20r_tracker_client" id="e20r_members">
                         <?php
 
                         $user_list = $e20rTracker->getUserList( $levelId );
@@ -106,13 +106,12 @@ class e20rClientViews {
                             ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
                         } ?>
                         </select>
-                        <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Client D', 'e20r-tracker'); ?></a></span>
-                        <div id="spin-for-member" class="seq_spinner"></div>
+                        <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span>
                         <input type="hidden" name="hidden_e20r_client_id" id="hidden_e20r_client_id" value="0" >
                     </div>
                 </form>
             </div>
-        </div>
+        <!-- </div> -->
         <?php
 
         $html = ob_get_clean();
@@ -147,22 +146,26 @@ class e20rClientViews {
         ?>
         <H1>Client Data</H1>
         <div class="e20r-client-service-select">
+            <div id="spinner" class="e20r-spinner"></div>
             <?php echo $this->viewLevelSelect(); ?>
+            <div id="e20r-selectMember" class="startHidden">
             <?php echo $this->viewMemberSelect( $lvlName ); ?>
+            </div>
         </div>
-        <hr class="startHidden e20r-admin-hr" />
+
         <div class="startHidden e20r-data-choices">
+            <hr class="startHidden e20r-admin-hr" />
             <!-- Where the choices for the client data to fetch gets listed -->
             <form action="" method="post">
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce' ); ?>
                 <table class="e20r-single-row-table">
                     <tbody>
                     <tr>
+                        <td><div id="load-client-data" class="e20r-spinner"></div></td>
                         <!--                            <td><a href="#" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-compliance" class="e20r-choice-button button" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-assignments" class="e20r-choice-button button" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td> -->
                         <td><a href="#" id="e20r-client-measurements" class="e20r-choice-button button" ><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
-                        <td><div id="load-client-data" class="seq_spinner"></div></td>
                     </tr>
                     </tbody>
                 </table>
@@ -173,13 +176,13 @@ class e20rClientViews {
 
             <?php echo $this->viewClientDetail( $this->client_id ); ?>
         </div>
-        <div id="e20r-progr-compliance">
+        <div id="e20r-progress-compliance">
             <?php echo $this->viewCompliance( $this->client_id, null ); ?>
         </div>
-        <div id="e20r-progr-assignment">
+        <div id="e20r-progress-assignment">
             <?php echo $this->viewAssignments( $this->client_id ); ?>
         </div>
-        <div id="e20r-progr-measurements">
+        <div id="e20r-progress-measurements">
 
         </div>
     <?php
@@ -239,10 +242,6 @@ class e20rClientViews {
 
 
     }
-
-
-
-
 
     public function render_assignments_page() {
 

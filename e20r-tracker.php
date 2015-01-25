@@ -103,14 +103,14 @@ function loadTracker() {
         $e20rTables->init();
         // $e20rTracker->init();
 
-        if ( ! isset( $e20rMeasurements ) ) {
-            dbg("E20R Tracker Init: Loading e20rMeasurements class");
-            $e20rMeasurements = new e20rMeasurements();
-        }
-
         if ( ! isset( $e20rProgram ) ) {
             dbg("E20R Tracker Init: Loading e20rProgram class");
             $e20rProgram = new e20rProgram();
+        }
+
+        if ( ! isset( $e20rMeasurements ) ) {
+            dbg("E20R Tracker Init: Loading e20rMeasurements class");
+            $e20rMeasurements = new e20rMeasurements();
         }
 
         if ( ! isset( $e20rCheckin ) ) {

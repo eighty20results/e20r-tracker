@@ -36,6 +36,11 @@ class e20rTables {
         dbg("e20rTables::constructor() - Initializing the e20rTables() class");
         global $wpdb, $current_user;
 
+        if ( $user_id === null ) {
+
+            $user_id = $current_user->ID;
+        }
+
         $this->inBeta = in_betagroup( $user_id );
 
         $this->tables = new stdClass();
@@ -56,7 +61,7 @@ class e20rTables {
 
         if ( ( $this->inBeta ) ) {
 
-            dbg("User {$current_user->ID} IS in the beta group");
+            dbg("User $user_id IS in the beta group");
             $this->tables->assignments  = "{$wpdb->prefix}s3f_nourishAssignments";
             $this->tables->compliance   = "{$wpdb->prefix}s3f_nourishHabits";
             $this->tables->surveys      = "{$wpdb->prefix}e20r_Surveys";
@@ -331,9 +336,9 @@ class e20rTables {
         }
     }
 
-    public function getTable( $name = null ) {
+    public function getTable( $name = null, $force = false  ) {
 
-        if ( ! $name ) {
+        if ( ! $name )  {
             return $this->tables;
         }
 
@@ -344,9 +349,9 @@ class e20rTables {
         return $this->tables->{$name};
     }
 
-    public function getFields( $name = null ) {
+    public function getFields( $name = null, $force = false ) {
 
-        if ( empty( $this->fields[ $name ] ) ) {
+        if ( ( empty( $this->fields[ $name ] ) ) || ( $force)  ) {
 
             $this->loadFields( $name );
         }

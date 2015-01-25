@@ -2,10 +2,12 @@
 
 class e20rMeasurementViews {
 
+    private $id;
     private $count;
     private $items;
     private $when;
 
+    private $model;
     private $data;
     private $fields;
 
@@ -17,8 +19,9 @@ class e20rMeasurementViews {
         $this->fields = $e20rTables->getFields( 'measurements' );
     }
 
-    public function init( $when = null, $data = null ) {
+    public function init( $when = null, $data = null, $who = null ) {
 
+        $this->id = $who;
         $this->when = $when;
         $this->data = $data;
     }
@@ -33,7 +36,7 @@ class e20rMeasurementViews {
                 <span>Update</span>
             </h3>
             <div id="e20r-progress-canvas" style="min-height: 100px;">
-                <form action="POST">
+                <form method="POST">
                 <?php wp_nonce_field( 'e20r-tracker-progress', 'e20r-progress-nonce'); ?>
                 <table class="e20r-progress-form">
                     <tfoot>
@@ -50,6 +53,7 @@ class e20rMeasurementViews {
                         </tr>
                     </tfoot>
                     <tbody>
+                </form>
         <?php
         return ob_get_clean();
     }
@@ -313,7 +317,6 @@ class e20rMeasurementViews {
         </tr>
         <?php
         return ob_get_clean();
-
     }
 
     private function loadImage( $side ) {
@@ -505,17 +508,86 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true ) {
+    public function viewTabbedProgress( $progressEntries, $dimensions ) {
+
+        ob_start();
+        ?>
+<!--        <style type="text/css">
+            #status-tabs {
+                position: relative;
+                min-height: 200px;
+                max-height: 95%;
+                height: 1024px;
+                min-width: 80%;
+                width: 95%;
+                clear: both;
+                margin: 10px 0;
+            }
+        </style> -->
+        <div id="status-tabs">
+            <ul>
+        <?php
+            $count = 1;
+            foreach( $progressEntries as $label => $contentHtml ) {
+            ?><li><a href="#tabs-<?php echo $count++; ?>"><?php echo $label; ?></a></li><?php
+            }
+        ?>
+            </ul>
+            <div id="spinner" class="e20r-spinner"></div>
+            <?php
+                $count = 1;
+                foreach( $progressEntries as $label => $contentHtml ) {
+                ?>
+                    <div id="tabs-<?php echo $count++; ?>">
+                        <?php echo $contentHtml; ?>
+                    </div>
+                <?php
+                }
+                ?>
+        </div> <!-- tabs div -->
+        <?php
+    }
+
+    public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
         // TESTING: using $clientId = 12;
         // $clientId = 12;
-        global $e20rTables, $e20rClient, $current_user;
+        global $e20rTables;
+        global $e20rClient;
+        global $current_user;
 
         if ( $dimensions === null ) {
 
-            $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
+            $dimensions = array( 'width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px' );
         }
 
-        $user = get_user_by( 'id', $clientId );
+        if ( $dimensions['htype'] != '%') {
+
+            $maxHeight = ( ( (int) $dimensions['height']) + 95 );
+            $height =   ( ( (int) $dimensions['height']) + 75 );
+        }
+        else {
+            $maxHeight = ( (int)$dimensions['height'] + 10 ) <= 100 ? ( (int)$dimensions['height'] + 10 ) : $dimensions['height'];
+            $height = ( (int)$dimensions['height'] + 5 ) <= 100 ? ( (int)$dimensions['height'] + 5 ) : $dimensions['height'];
+        }
+
+        if ( $dimensions['wtype'] != '%') {
+
+            $minWidth = ( (int) $dimensions['width'] + 15 );
+            $width = ( (int) $dimensions['width'] + 95 );
+        }
+        else {
+            $minWidth = ( ( (int) $dimensions['width'] - 5 ) <= 100 ? ( (int) $dimensions['width'] - 5 ) : $dimensions['width']);
+            $width = (  ( (int) $dimensions['width'] + 5 ) <= 100 ? ( (int) $dimensions['width'] + 5 ) : $dimensions['width']);
+        }
+
+        $maxHeight = $maxHeight . $dimensions['htype'];
+        $height = $height . $dimensions['htype'];
+
+        $minWidth = $minWidth . $dimensions['wtype'];
+        $width = $width . $dimensions['wtype'];
+
+        $this->id = $clientId;
+        $user = get_user_by( 'id', $this->id );
 
         $reloadBtn = '
             <div id="e20r_reload_btn">
@@ -528,7 +600,7 @@ class e20rMeasurementViews {
             ob_start();
             // echo $reloadBtn;
             ?>
-            <div id="e20r_errorMsg"><em>No measurements found for <?php echo $user->first_name . " " . $user->last_name; ?></em></div>
+            <div id="e20r_errorMsg"><em><?php sprintf(__("No measurements found for %s", "e20rtracker"), $user->first_name . " " . $user->last_name ); ?></em></div>
             <?php
             $html = ob_get_clean();
         }
@@ -537,51 +609,56 @@ class e20rMeasurementViews {
             ob_start();
 
             ?>
-            <!--[if IE]>
-            <style type="text/css">
-                .box { display: block; }
-                #box { overflow: hidden; position: relative; }
-                b { position: absolute; top: 0px; right: 0px; width:1px; height: 251px; overflow: hidden; text-indent: -9999px; }
-            </style>
-            <![endif]-->
-            <style type="text/css">
-                .tabs {
-                    position: relative;
-                    min-height: 200px;
-                    max-height: <?php echo ( ((int) $dimensions['height']) + 95) . $dimensions['type']; ?>;
-                    height: <?php echo ( ((int) $dimensions['height']) + 75) . $dimensions['type']; ?>;
-                    min-width: <?php echo ( ((int) $dimensions['width']) + 95) . $dimensions['type']; ?>;
-                    width: <?php echo ( ((int) $dimensions['height']) + 95) . $dimensions['type']; ?>;
-                    clear: both;
-                    margin: 25px 0;
-                }
-            </style>
-            <?php if ( $tabbed ): ?>
-                <div class="tabs">
+            <input type="hidden" name="h_dimension" id="h_dimension" value="<?php echo $dimensions['height']; ?>">
+            <input type="hidden" name="h_dimension_type" id="h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
+            <input type="hidden" name="w_dimension" id="w_dimension" value="<?php echo $dimensions['width']; ?>">
+            <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
+            <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
+        <?php if ( $tabbed ): ?>
+            <div id="inner-tabs">
+                <ul>
+                    <li><a href="#inner-tab-1">Weight History</a></li>
+                    <li><a href="#inner-tab-2">Total Girth</a></li>
+                </ul>
+                <div id="inner-tab-1">
+                    <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading weight history graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                    <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+                </div>
+                <div id="inner-tab-2">
+                    <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading total girth graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                    <div id="girth_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+                </div>
+            </div> <!-- tabs div -->
+                <!-- Load tabs script here because this content is dynamic -->
+                <script type="text/javascript">
+                    <!-- jQuery(function() {
+                        console.log("Configure tabs for weight/girth");
+                        jQuery("#inner-tabs").tabs();
 
-                    <div class="tab">
-                        <input type="radio" id="girth-tab" name="tab-group-1" checked>
-                        <label for="girth-tab">Total Girth</label>
+                        jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
 
-                        <div class="tab-content">
-                            <div id="girth_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>;width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
-                        </div>
-                    </div>
+                            if ( (ui.newTab.index() === 0) && ( progMeasurements.wPlot._drawCount === 0 ) ) {
 
-                    <div class="tab">
-                        <input type="radio" id="weight-tab" name="tab-group-1" checked>
-                        <label for="weight-tab">Weight History</label>
+                                console.log("Redrawing wPlot");
+                                progMeasurements.wPlot.replot();
+                            }
+                            else if ( (ui.newTab.index() === 1 ) && (progMeasurements.gPlot._drawCount === 0) ) {
 
-                        <div class="tab-content">
-                            <div id="weight_chart" style="height: <?php echo $dimensions['height'] . $dimensions['type']; ?>; width: <?php echo $dimensions['width'] . $dimensions['type']; ?>;"></div>
-                        </div>
-                    </div>
-                </div> <!-- tabs div -->
+                                console.log("Redrawing gPlot");
+                                progMeasurements.gPlot.replot();
+                            }
+                        });
+
+                        jQuery('.load_progress_data').on("click", function() {
+                            progMeasurements.loadProgressPage( this );
+                        });
+
+                    }); -->
+                </script>
             <?php else: ?>
-                <div id="weight_chart" style="height: <?php echo $dimensions['height']. $dimensions['type']; ?>; width: <?php echo $dimensions['width']. $dimensions['type']; ?>;"></div>
-                <div id="girth_chart" style="height: <?php echo $dimensions['height']. $dimensions['type']; ?>;width: <?php echo $dimensions['width']. $dimensions['type']; ?>;"></div>
-            <?php endif; ?>
-
+            <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+            <div id="girth_chart" style="height: <?php echo $height; ?>;width: <?php echo $width; ?>;"></div>
+        <?php endif; ?>
             <hr class="e20r-big-hr" />
             <div class="e20r-measurements-container">
                 <h4>Measurements for <?php echo $user->first_name; ?></h4>
@@ -590,7 +667,7 @@ class e20rMeasurementViews {
                     <table class="e20r-measurement-table">
                         <thead>
                             <tr>
-                                <th></th>
+                                <th class="e20r_mHead rotate"></th>
                                 <th class="e20r_mHead rotate"><div><span>Weight (<?php echo $e20rClient->getWeightUnit(); ?>)</span></div></th>
                                 <th class="e20r_mHead rotate"><div><span>Neck (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
                                 <th class="e20r_mHead rotate"><div><span>Shoulder (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
@@ -616,24 +693,30 @@ class e20rMeasurementViews {
                                     $measurement->waist + $measurement->hip + $measurement->thigh + $measurement->calf
                                 );
 
+                                $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
+                                $showLink = ( $clientId == $current_user->ID ? true : false);
+
                                 ?>
                             <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
                                 <td class="e20r_mData">
                                     <div class="date">
                                     <!-- <span> -->
                                         <?php
-                                            $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
-                                            $showLink = ( $clientId == $current_user->ID ? true : false);
                                         if ( $showLink ) {
                                             ?>
-                                            <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
-                                                <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
-                                            </a>
+                                            <form method="POST" class="article_data" action="<?php echo URL_TO_PROGRESS_FORM; ?>">
+                                                <input type="hidden" name="e20r-progress-form-date" class="e20r-progress-form-date" data-measurement-type="date" value="<?php echo $when; ?>">
+                                                <input type="hidden" name="e20r-progress-form-article" class="e20r-progress-form-article" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
+                                                <!-- <input type="hidden" name="program_id" class="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>"> -->
+                                                <a href="<?php echo $when; ?>" onclick="jQuery(this).parent().submit();" class="load_progress_data" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
+                                                    <?php echo date_i18n( "M j, Y", strtotime( $measurement->recorded_date ) ); ?>
+                                                </a>
+                                            </form>
                                         <?php
                                         }
                                         else {
                                             ?>
-                                                <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
+                                                <?php echo date_i18n( "M j, Y", strtotime( $measurement->recorded_date ) ); ?>
                                         <?php
                                         }
                                         ?>
@@ -659,61 +742,69 @@ class e20rMeasurementViews {
                     </table>
                 </div>
             </div>
-            <?php
-                if ( ! $e20rTables->isBetaClient() ) {
-                    ?>
-                    <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
-                    <div class="e20r-measurements-container">
-                        <h4>Other Progress Indicators</h4>
-                        <a class="close" href="#">X</a>
-                        <div class="quick-nav">
-                            <table class="e20r-measurement-table">
-                                <tbody>
-                                <?php
-                                    $counter = 0;
+        <?php
+            if ( ! $e20rTables->isBetaClient() ) {
+                ?>
+                <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
+                <div class="e20r-measurements-container">
+                    <h4>Other Progress Indicators</h4>
+                    <a class="close" href="#">X</a>
+                    <div class="quick-nav other">
+                        <table class="e20r-measurement-table">
+                            <tbody>
+                            <?php
+                                $counter = 0;
 
-                                    foreach ( $measurements as $key => $measurement ) { ?>
+                                foreach ( $measurements as $key => $measurement ) { ?>
+
+                                    $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
+                                    $showLink = ( $clientId == $current_user->ID ? true : false);
 
                                     <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
-                                        <td class="measurement-date">
-                                            <div class="date">
+                                    <td class="measurement-date">
+                                        <div class="date">
+                                            <form method="POST">
+                                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
+                                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
+                                                <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
+                                            </form>
                                                 <!-- <span> -->
-                                                <?php
-                                                $when = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
-                                                $showLink = ( $clientId == $current_user->ID ? true : false);
-                                                if ( $showLink ) {
-                                                    ?>
-                                                    <a href="<?php echo get_site_url( null, "/nutrition-coaching/weekly-progress/?for={$when}" ) ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
-                                                        <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
-                                                    </a>
-                                                <?php
-                                                }
-                                                else {
-                                                    ?>
-                                                    <?php echo date_i18n( get_option( 'date_format' ), strtotime( $measurement->recorded_date ) ); ?>
-                                                <?php
-                                                }
+                                            <?php
+                                            if ( $showLink ) {
                                                 ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="other-progress-info">
-                                                <?php echo $measurement->essay1; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php
-                                    $counter ++;
-                                } ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                                    <a href="#load_progress" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
+                                                        <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
+                                                    </a>
+                                            <?php
+                                            }
+                                            else {
+                                                ?>
+                                                <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
+                                            <?php
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="other-progress-info">
+                                            <?php echo $measurement->essay1; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php
+                                $counter ++;
+                            } ?>
+                            </tbody>
+                        </table>
                     </div>
-                <?php
+                </div>
+            <?php
             }
 
             $html = ob_get_clean();
         }
+
         return $html;
     }
 
@@ -742,7 +833,7 @@ class e20rMeasurementViews {
         global $e20rClient;
 
         $isBeta = true; // I know... This is a bit backwards
-        $imageUrl = $e20rClient->data->getBetaUserUrl( $userId, $data->recorded_date, 'front' );
+        $imageUrl = $e20rClient->getUserImgUrl( $userId, $data->recorded_date, 'front' );
 
         if ( $imageUrl === false ) {
             $imageUrl = $this->loadImage( 'front' );

@@ -137,6 +137,11 @@ class e20rProgram extends e20rSettings {
 
         $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true);
 
+        if ( $userId == 5 || $programId === false ) {
+
+            $programId = -1;
+        }
+
         dbg("e20rProgram::getProgramIdForUser() - User's programID: {$programId}");
         return $programId;
     }

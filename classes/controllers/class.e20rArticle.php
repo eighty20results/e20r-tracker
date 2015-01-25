@@ -281,20 +281,34 @@ class e20rArticle extends e20rSettings {
         // return ( is_null( $retVal ) ? false : true );
     }
 
-/*
-    private function defaults( ) {
+    public function setId( $id = null ) {
 
-        $this->meta = array (
-            'category' => 'Lesson',
-            'assignment_question_ids' => array(),
-            'checkin_item_id' => 0,
-            'is_measurement_day' => 1,
-            'is_photo_day' => 1,
-            'release_date' => '',
-            'release_day' => 1, // Get from post_id's postmeta ('get sequence ID and delay value for sequence')
-        );
+        if ( $id === null ) {
+
+            global $post;
+
+            $id = $post->ID;
+        }
+
+        $this->post_id = $post;
+        $this->init( $id );
     }
-*/
+
+
+    /*
+        private function defaults( ) {
+
+            $this->meta = array (
+                'category' => 'Lesson',
+                'assignment_question_ids' => array(),
+                'checkin_item_id' => 0,
+                'is_measurement_day' => 1,
+                'is_photo_day' => 1,
+                'release_date' => '',
+                'release_day' => 1, // Get from post_id's postmeta ('get sequence ID and delay value for sequence')
+            );
+        }
+    */
     /**
      * An article can have multiple program IDs associated with it.
      *
@@ -446,18 +460,6 @@ class e20rArticle extends e20rSettings {
         return $html;
     }
 
-    public function setId( $id = null ) {
-
-        if ( $id === null ) {
-
-            global $post;
-
-            $id = $post->ID;
-        }
-
-        $this->post_id = $post;
-        $this->init( $id );
-    }
 
     private function load_articles() {
 

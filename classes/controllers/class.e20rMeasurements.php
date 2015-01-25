@@ -31,6 +31,8 @@ class e20rMeasurements {
         $this->model = new e20rMeasurementModel( $this->id );
 
         if ( ! isset( $e20rMeasurements ) ) {
+
+            dbg("e20rMeasurements::__construct() - Self-referencing for the e20rMeasurements global");
             $e20rMeasurements = $this;
         }
     }
@@ -427,48 +429,66 @@ class e20rMeasurements {
 
     }
 
+    // TODO: This is the current / active AJAX option
     public function ajax_getPlotDataForUser() {
 
-        global $e20rTables, $e20rClient, $e20rMeasurements;
+        global $e20rTables;
+        global $e20rClient;
+        global $post;
 
         dbg('e20rMeasurements::ajax_getPlotDataForUser() - Requesting measurement data');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
 
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Nonce is OK");
 
-        $clientId = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
+        $this->id = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
 
-        if ( $e20rClient->validateAccess( $clientId ) ) {
-            $this->id = $clientId;
+        if ( $e20rClient->validateAccess( $this->id ) ) {
+            $this->init();
         }
         else {
-            dbg( "e20rMeasurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user ${clientId}" );
+            dbg( "e20rMeasurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$this->id}" );
             wp_send_json_error( 'You do not have permission to access the data you requested.' );
             wp_die();
         }
 
-        dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data");
+        dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data for {$this->id}");
         $e20rTables->init( $this->id );
 
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
+        $this->model->setFreshClientData();
+        $measurements = $this->getMeasurement( 'all', false );
 
-        $measurements = $this->getMeasurement('all');
+        if ( isset( $_POST['h_dimension'] ) ) {
 
-        if ( $this->view == null ) {
-            dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading Views() class");
-            $this->view = new e20rMeasurementViews();
+            dbg("e20rMeasurements::ajax_getPlotDataForUser() - We're displaying the front-end user progress summary");
+            $dimensions = array( 'width' => intval( $_POST['w_dimension'] ),
+                                 'wtype' => sanitize_text_field($_POST['w_dimension_type']),
+                                 'height' => intval( $_POST['h_dimension'] ),
+                                 'htype' => sanitize_text_field( $_POST['h_dimension_type'] )
+            );
+
+            // $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+        }
+        else {
+
+            dbg("e20rMeasurements::ajax_getPlotDataForUser() - We're displaying on the admin page.");
+            $dimensions = array( 'width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px' );
         }
 
-        $dimensions = array( 'width' => '650', 'height' => '500', 'type' => 'px' );
+        dbg("e20rMeasurements::ajax_getPlotDataForuser() - Dimensions: ");
+        dbg($dimensions);
 
         $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
 
         $weight = $this->generatePlotData( $measurements, 'weight' );
         $girth = $this->generatePlotData( $measurements, 'girth' );
 
-        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
+        dbg("e20rMeasurements::ajax_get_PlotDataForUser() - Generated plot data for measurements");
+        $data = json_encode( array( 'success' => true, 'html' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
         echo $data;
+        // wp_send_json_success( array( 'html' => $data, 'weight' => $weight, 'girth' => $girth ) );
         exit;
     }
 
@@ -489,7 +509,8 @@ class e20rMeasurements {
             auth_redirect();
         }
 
-        $e20r_plot_jscript = true;
+        $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+        $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
 
         // Load javascript for the progress overview.
         extract( shortcode_atts( array(
@@ -497,6 +518,7 @@ class e20rMeasurements {
         ), $attributes ) );
 
         if ( $e20rClient->validateAccess( $current_user->ID ) ) {
+
             $this->id = $current_user->ID;
         }
         else {
@@ -504,30 +526,59 @@ class e20rMeasurements {
             return;
         }
 
-        dbg("e20rMeasurements::shortcode_progressOverview() - Loading client data");
-        $e20rTables->init( $this->id );
+        dbg("e20rMeasurements::shortcode_provressOverview() - Loading progress data...");
+        $measurements = $this->getMeasurement( 'all', false );
 
-        dbg("e20rMeasurements::shortcode_progressOverview() - Using measurement data & configure dimensions");
+        $tabs = array(
+            'Measurements' => '<div id="e20r-progress-measurements">' . $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false ) . '</div>',
+            'Assignments' => '<div id="e20r-progress-assignments" style="height: 250px;"></div>',
+        );
 
-        $measurements = $this->getMeasurement('all');
+        return $this->view->viewTabbedProgress( $tabs, $pDimensions );
+    }
 
-        if ( $this->view == null ) {
-            dbg("e20rMeasurements::shortcode_progressOverview() - Loading e20rMeasurementViews() class");
-            $this->view = new e20rMeasurementViews();
-        }
+    /*
+    public function ajax_loadProgressSummary() {
 
-        $dimensions = array( 'width' => '650', 'height' => '350', 'type' => 'px' );
+        dbg("e20rMeasurements::ajax_loadProgress() - Checking access");
+        dbg($_POST);
+        check_ajax_referer( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
 
-        $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
+        dbg("e20rMeasurements::ajax_loadProgress() - Access approved");
+
+        global $e20rTracker;
+        global $e20rClient;
+        global $e20rTables;
+        global $e20rProgram;
+
+        $userId = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : null );
+        $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
+
+        $programId = $e20rProgram->getProgramIdForUser( $userId,  $articleId );
+        $this->setClient( $userId );
+        $this->init();
+
+        dbg("e20rMeasurements::ajax_loadProgress() - Loading client data");
+        dbg("e20rMeasurements::ajax_loadProgress() - Using measurement data & configure dimensions");
+
+        $measurements = $this->getMeasurement('all', $programId);
+
+        $dimensions = array( 'width' => '650', 'height' => '350', 'htype' => 'px', 'wtype' => 'px' );
+
+        $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, true );
 
         $weight = $this->generatePlotData( $measurements, 'weight' );
         $girth = $this->generatePlotData( $measurements, 'girth' );
 
-        $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
-        echo $data;
-        exit;
-    }
+        wp_send_json_success( array( 'data' => $data, 'weight' => $weight, 'girth' => $girth ) );
+        wp_die();
 
+        // $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
+        //echo $data;
+        //exit;
+
+    }
+*/
     public function shortcode_weeklyProgress( $attributes ) {
 
         global $e20r_plot_jscript;
@@ -543,10 +594,15 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_POST, true ) );
 
-        $mDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
+        $mDate = ( strtotime( $_POST['e20r-progress-form-date'] ) ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
 
-        $e20rMeasurementDate = $mDate;
+        if ( $mDate ) {
+
+            $e20rMeasurementDate = $mDate;
+            dbg( "e20rMeasurements::shortcode_weeklyProgress() - Date to measure for requested: {$mDate}" );
+            $this->setMeasurementDate( $mDate );
+        }
 
         $day = 0;
         $from_programstart = 1;
@@ -566,13 +622,8 @@ class e20rMeasurements {
             $e20rExampleProgress = true; // TODO: Do something if it's an example progress form.
         }
 
-        if ( strtotime( $mDate ) ) {
-
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - Date to measure for requested: {$mDate}");
-            $this->setMeasurementDate( $mDate );
-        }
-
         if ( $current_user->ID == 0 ) {
+
             dbg("e20rMeasurements::shortcode_weeklyProgress() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
@@ -583,7 +634,7 @@ class e20rMeasurements {
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
             $this->init( $this->measurementDate, $this->id );
 
-            if ( ! isset( $e20rClient->data ) ) {
+            if ( ! isset( $e20rClient->model ) ) {
 
                 dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the e20rClient class()");
                 $e20rClient->init();
@@ -651,44 +702,6 @@ class e20rMeasurements {
         return true;
     }
 
-    private function transformForJS( $data ) {
-
-        global $e20rClient;
-        global $e20rTables;
-
-        $retVal = array();
-        $fields = $e20rTables->getFields('measurements');
-
-        $exclude = array(
-            'id',
-            'user_id',
-            'article_id',
-            'recorded_date',
-            'essay1',
-            'behaviorprogress',
-            'front_image',
-            'side_image',
-            'back_image',
-        );
-
-        foreach ($data as $key => $value ) {
-
-            $mKey = array_search( $key, $fields);
-
-            dbg("e20rMeasurements::transformForJS() - Key ({$key}) is really {$mKey}");
-
-            if ( ! in_array( $key, $exclude ) ) {
-
-                $retVal[ $mKey ] = array(
-                    'value' => $value,
-                    'units' => ( $key != 'weight' ? $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
-                );
-            }
-        }
-
-        return ( empty( $retVal ) ? $data : $retVal );
-    }
-
     public function getGirthTypes() {
 
         if (empty( $this->girths ) ) {
@@ -701,7 +714,9 @@ class e20rMeasurements {
 
     public function getMeasurement( $when = 'all', $forJS = false ) {
 
-        global $e20rTracker, $current_user;
+        global $e20rTracker;
+        global $current_user;
+        global $e20rProgram;
 
         if ( ! isset( $this->id ) ) {
             dbg("e20rMeasurements::getMeasurement() - User ID hasn't been set yet.");
@@ -721,6 +736,8 @@ class e20rMeasurements {
             // $this->model->getFields( $when );
         }
 
+        $this->model->setUser( $this->id );
+
         $byDateArr = (array)$this->model->byDate;
 
         if ( empty($byDateArr) ) {
@@ -738,12 +755,62 @@ class e20rMeasurements {
 
         }
         else {
-                dbg("e20rMeasurements::getMeasurement() - Load all");
+                dbg("e20rMeasurements::getMeasurement() - Load all measurements");
                 $data = $this->model->getMeasurements();
+            /**
+             * $data = array(
+             *      0 => stdClass( obj->id, obj->user_id ),
+             *      1 => stdClass( obj->id, obj->user_id ),
+             * )
+             */
         }
 
         return ( $forJS === true ? $this->transformForJS( $data ) : $data );
+    }
 
+    private function transformForJS( $records ) {
+
+        global $e20rClient;
+        global $e20rTables;
+
+        $retVal = array();
+        $fields = $e20rTables->getFields('measurements');
+
+        $exclude = array(
+            'id',
+            'user_id',
+            'article_id',
+            'program_id',
+            'recorded_date',
+            'essay1',
+            'behaviorprogress',
+            'front_image',
+            'side_image',
+            'back_image',
+        );
+
+        dbg("e20rMeasurements::transformForJS() - DB fields");
+        dbg( $fields );
+        dbg( $records );
+
+        foreach( $records as $data ) {
+
+            foreach ( $data as $key => $value ) {
+
+                $mKey = array_search( $key, $fields );
+
+                // dbg( "e20rMeasurements::transformForJS() - Key ({$key}) is really {$mKey}" );
+
+                if ( ! in_array( $key, $exclude ) ) {
+
+                    $retVal[ $mKey ] = array(
+                        'value' => $value,
+                        'units' => ( $key != 'weight' ? $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
+                    );
+                }
+            }
+        }
+        return ( empty( $retVal ) ? $data : $retVal );
     }
 
     private function load_EditProgress( $articleId = null ) {

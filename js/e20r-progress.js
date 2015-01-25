@@ -866,7 +866,7 @@ jQuery(function() {
 
             jQuery('.unit.' + dimension).text(newUnitFull);
 
-            // update the acutal objects (new MeasurementField)
+            // update the actual objects (new MeasurementField)
             var fieldObjectArr = (dimension == 'weight')
                 ? WEIGHT_FIELD : GIRTH_FIELDS;
 
@@ -880,7 +880,7 @@ jQuery(function() {
                 LAST_WEEK_MEASUREMENTS[measurementField.type] = newMeasurementValue;
             }
 
-            /* Done: Add Ajax support for saving & updating measurements & unit type if the user chooses to change it */
+            /* Saving & updating measurements & unit type if the user chooses to change it */
 
             var $data = {
                 'action': 'updateUnitTypes',
@@ -949,16 +949,6 @@ jQuery(function() {
                 }
             }
         });
-
-        /*
-         jQuery.post('cpds-assignments.php', data, function(response) {
-         console.log('Response: ' + response);
-
-         if (jQuery.secureEvalJSON(response)['progress_form_completed']) {
-         formToSavedState();
-         }
-         });
-         */
     }
 
     function formToSavedState() {

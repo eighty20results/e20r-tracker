@@ -19,7 +19,7 @@ class e20rTrackerModel {
 
         $sql = $e20rTracker->prepare_in( $sql, $levels );
 
-        // dbg("e20rTrackerModel::loadUsers() - SQL: " . print_r( $sql, true));
+        dbg("e20rTrackerModel::loadUsers() - SQL: " . print_r( $sql, true));
 
         $user_list = $wpdb->get_results( $sql, OBJECT );
 

@@ -28,7 +28,7 @@ class e20rClient {
         }
 
         $this->model = new e20rClientModel();
-        $this->view = new e20rClientViews();
+        $this->view = new e20rClientViews( $this->id );
     }
 
     public function init() {
@@ -73,26 +73,34 @@ class e20rClient {
 
     public function getLengthUnit() {
 
-        dbg("e20rClient::getLengthUnit() - Returning the current setting for the length unit.");
         return $this->model->getData( $this->id, 'lengthunits');
     }
 
     public function getWeightUnit() {
 
-        dbg("e20rClient::getWeightUnit() - Returning the current setting for the weight unit.");
         return $this->model->getData( $this->id, 'weightunits' );
     }
 
     public function getBirthdate( $user_id ) {
 
-        dbg("e20rClient::getBirthdate() - Returning the birthdate setting for {$user_id}");
         return $this->model->getData( $user_id, 'birthdate' );
     }
 
     public function getUploadPath( $user_id ) {
 
-        dbg("e20rClient::getUploadPath() - Returning the progress photo path setting for {$user_id}");
         return $this->model->getData( $user_id, 'program_photo_dir' );
+    }
+
+    public function getUserImgUrl( $who, $when, $imageSide ) {
+
+        global $e20rTables;
+
+        if ( $this->isNourishClient( $who ) &&  $e20rTables->isBetaClient() ) {
+
+            return $this->model->getBetaUserUrl( $who, $when, $imageSide );
+        }
+
+        return false;
     }
 
     public function setClient( $userId ) {
@@ -301,15 +309,14 @@ public function loadClient( $id = null ) {
     }
 
     function ajax_getMemberlistForLevel() {
-
-        check_ajax_referer('e20r-tracker-data', 'e20r_tracker_levels_nonce');
+        // dbg($_POST);
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
         global $e20rTracker;
 
         $levelId = ( isset($_POST['hidden_e20r_level']) ? intval( $_POST['hidden_e20r_level']) : 0 );
 
         $this->init();
-        $this->initClientViews();
 
         dbg("e20rClient::getMemberListForLevel() - Level requested: {$levelId}");
 
@@ -318,12 +325,12 @@ public function loadClient( $id = null ) {
             $levels = $e20rTracker->getMembershipLevels( $levelId );
             // $this->load_levels( $levelObj->name );
             dbg("e20rClient::getMemberListForLevel() - Loading members for {$levels->name}");
-            $data = $this->show->viewMemberSelect(  $levelId );
+            $data = $this->view->viewMemberSelect(  $levelId );
         }
         else {
 
-            $this->show->load_levels();
-            $data = $this->show->viewMemberSelect();
+            $this->view->load_levels();
+            $data = $this->view->viewMemberSelect();
         }
 
         wp_send_json_success( $data );
@@ -333,7 +340,7 @@ public function loadClient( $id = null ) {
     function ajax_clientDetail() {
         dbg('Requesting client detail');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
         dbg("Nonce is OK");
 
@@ -359,7 +366,7 @@ public function loadClient( $id = null ) {
 
         dbg('Requesting Check-In details');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
         dbg("Nonce is OK");
 
@@ -380,7 +387,7 @@ public function loadClient( $id = null ) {
     function ajax_assignmentData() {
         dbg('Requesting Assignment details');
 
-        check_ajax_referer('e20r-tracker-data', 'e20r_client_detail_nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
         dbg("Nonce is OK");
 

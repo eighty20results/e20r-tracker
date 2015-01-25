@@ -2,6 +2,17 @@
 .e20r-admin-hr {
     width: 90%;
 }
+.e20r-spinner{
+    background: url('/wp-admin/images/wpspin_light.gif') no-repeat;
+    background-size: 16px 16px;
+    display: none;
+    float: left;
+    opacity: .7;
+    filter: alpha(opacity=70);
+    width: 16px;
+    height: 16px;
+    margin: 5px 5px 0;
+}
 .e20r-client-service-select {
     border: solid 1px #ffffff;
     padding: 5px 5px 5px 5px;
@@ -52,9 +63,9 @@
     min-width: 20px;
     text-align: right;
 }
-/*#e20r-measurement-table {
-    background-color: #ffffff;
-}*/
+#e20r-measurement-table {
+    width: 90%;
+}
 .e20rEven {
     background-color: #e5e5e5;
 }
@@ -64,6 +75,79 @@
 #e20r_reload_btn {
     margin: 20px 20px;
 }
+#tabs-1 {
+    padding: 0;
+}
+#tabs-2 {
+    padding: 0;
+}
+.quick-nav th {
+    padding: 0;
+}
+#status-tabs {
+    background: transparent;
+}
+#status-tabs > ul.ui-tabs-nav .ui-state-active a {
+    background-color: #004CFF;
+    color: #FFFFFF;
+}
+#status-tabs {
+    padding: 0px;
+    background: none;
+    border-width: 0px;
+}
+#status-tabs .ui-tabs-nav {
+    padding-left: 0px;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+#status-tabs > ul.ui-tabs-nav > li.ui-state-default.ui-state-active,
+#status-tabs > ul.ui-tabs-nav > li.ui-tabs-active,{
+    margin-top: 0em;
+    font-size: 100%;
+}
+#status-tabs > ul.ui-tabs-nav > li.ui-state-default {
+    margin-top: 0.6em;
+    font-size: 80%;
+}
+#status-tabs .ui-tabs-panel {
+    background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/images/ui-bg_highlight-hard_100_f5f3e5_1x100.png) repeat-x scroll 50% top;
+    border-width: 0px 1px 1px 1px;
+}
+
+#inner-tabs {
+    background: transparent;
+    border: none;
+}
+#inner-tabs .ui-widget-header {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #c0c0c0;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+#inner-tabs .ui-tabs-nav .ui-state-default {
+    background: transparent;
+    border: none;
+}
+#inner-tabs .ui-tabs-nav .ui-state-active {
+    background: transparent url(../images/uiArrow.png) no-repeat bottom center;
+    border: none;
+}
+#inner-tabs .ui-tabs-nav .ui-state-default a {
+    color: #555;
+}
+#inner-tabs > ul.ui-tabs-nav .ui-state-active a {
+    color: #004CFF;
+}
+#status-tabs .ui-tabs-nav .ui-state-default a {
+    color: #555;
+}
+/*
 .tab {
     float: left;
 }
@@ -78,6 +162,51 @@
 
 .tab [type=radio] {
     display: none;
+}
+*/
+/*
+#status-tabs {
+    float: left;
+    width: 99%;
+}
+#inner-tabs {
+    float: left;
+    width: 99%;
+}
+*/
+/*
+.status-tab label {
+    background: #eee;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-left: -1px;
+    position: relative;
+    left: 1px;
+}
+
+.status-tab [type=radio] {
+    display: none;
+}
+
+.status-tab > .tab-content {
+    position: absolute;
+    top: 28px;
+    left: 0;
+    background: white;
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.status-tab [type=radio]:checked ~ label {
+    background: white;
+    border-bottom: 1px solid white;
+    z-index: 3;
+}
+
+[type=radio]:checked ~ label ~ .status-tab-content {
+    z-index: 0;
 }
 
 .tab-content {
@@ -100,6 +229,7 @@
 [type=radio]:checked ~ label ~ .tab-content {
     z-index: 1;
 }
+*/
 .expand {
     height: 28px;
     min-width: 250px;
@@ -254,7 +384,6 @@
     color: #242a24;
     border: 1px solid #9BBCCC;
 }
-/* TODO: Do we include the floating error (boyant-error) CSS? */
 .floating-error {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -607,7 +736,7 @@
 }
 
 /**** For the measurements table ****/
-table.e20r-progress-form { width: 630px; }
+table.e20r-progress-form { width: 600px; }
 table.e20r-progress-form > tbody > tr td {
     vertical-align: top;
     padding: 4px;
@@ -872,15 +1001,16 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 }
 .e20r-measurements-container {
     margin-top: 20px;
+    margin-left: 4px;
     background-color: #004CFF;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
     position: relative;
-    min-width: 700px;
-    width: 80%;
+    min-width: 80%;
+    width: 95%;
     max-width: 800px;
-    z-index: 100;
+    /* z-index: 100; */
     padding: 30px 14px 14px 14px;
     /* display: none; */
 }
@@ -890,7 +1020,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     font-size: 14px;
     font-weight: bold;
     width: 350px;
-    top: -20px;
+    top: -12px;
     left: 0px;
     margin-left: 10px;
     text-align: left;
@@ -916,13 +1046,15 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 }
 .e20r-measurements-container div.other-progress-info {
     min-width: 250px;
-    max-width: 80%;
-    width: 80%;
+    max-width: 100%;
+    width: 90%;
 }
 .e20r-measurements-container td.measurement-date {
     min-width: 80px;
+/*
     max-width: 30%;
     width: 30%;
+*/
 }
 .e20r-measurements-container a.close {
     position: absolute;
@@ -930,7 +1062,8 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     right: 12px;
     width: 16px;
     height: 16px;
-    text-decoration: none;
+    padding-bottom: 4px;
+    text-decoration: none !important;
     color: #004CFF;
     background-color: #FFFFFF;
     -moz-border-radius: 8px;
@@ -978,20 +1111,23 @@ div.photo-overlay span.value {
     position: relative;
     background-color: #FFFFFF;
     font-size: 10px;
-    padding: 20px 90px 20px 20px;
+    padding: 20px 65px 20px 5px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
 }
+.other {
+    padding: 20px 20px 20px 10px;
+}
 .quick-nav a {
     color: #9C0000;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 0.6rem;
 }
 .quick-nav table th.rotate {
     /* Something you can count on */
-    height: 60px;
-    width: 40px;
+    height: 68px;
+    width: 35px;
     position: relative;
     vertical-align: bottom;
     white-space: nowrap;
@@ -1019,16 +1155,17 @@ div.photo-overlay span.value {
     -o-transform:skew(45deg,0deg) rotate(315deg);
     position: absolute;
     bottom: 10px;
-    left: 1px;
+    left: 0;
     display: inline-block;
     width: 100%;
-    text-align: left;
-    text-weight: bold;
+    padding-left: 7px;
+    text-align: center;
+    font-weight: bold;
 }
 .quick-nav table td a {
     display: block;
     width: 100%;
-    text-align: center;
+    /* text-align: center; */
 }
 .hover {
     background-color: #84c37e;
@@ -1038,12 +1175,15 @@ td.smallPhoto {
     vertical-align: middle;
 }
 div.date {
-    font-size: 120%;
+    font-size: 0.7rem !important;
     font-weight: bold;
     color: rgba( 0, 76, 255, 0.6);
+    min-width: 75px;
 }
 div.timeagosize {
-    color: #888888;
+    color: #555;
+    font-weight: bold;
+    font-size: 0.45rem;
 }
 #e20r-workout-settings {
     width: 100%;

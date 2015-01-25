@@ -47,7 +47,6 @@ class e20rClientModel {
         }
 
         // Only return the specified item value.
-        dbg("e20rClientModel::getData() - Loading {$item} value: {$this->data->{$item}}");
         return ( empty( $this->data->{$item} ) ? false : $this->data->{$item} );
     }
 
