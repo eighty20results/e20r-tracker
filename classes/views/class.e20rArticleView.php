@@ -84,7 +84,38 @@ class e20rArticleView extends e20rSettingsView {
 
         return $html;
     }
-    public function viewArticleSettings( $settings, $lessons ) {
+    public function viewCheckinSettings( $settings, $checkinList ) {
+
+        global $post;
+        global $e20rTracker;
+
+        if ( ! current_user_can( 'manage_options ') ) {
+            return false;
+        }
+
+        ob_start();
+        ?>
+
+        <form action="" method="post">
+            <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' ); ?>
+            <div class="e20r-editform">
+                <table id="e20r-article-checkin-settings" class="wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </form>
+        <?php
+        $checkinMeta = ob_get_clean();
+
+        return $checkinMeta;
+    }
+
+    public function viewArticleSettings( $settings, $lessons, $checkinList = null ) {
 
         global $post;
         global $e20rTracker;
@@ -99,7 +130,7 @@ class e20rArticleView extends e20rSettingsView {
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-article-id" id="hidden-e20r-article-id"
                        value="<?php echo $post->ID; ?>">
-                <table id="e20r-article-settings wp-list-table widefat fixed">
+                <table id="e20r-article-settings" class="wp-list-table widefat fixed">
                     <thead>
                     <tr>
                         <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Article", "e20rtracker"); ?></label></th>
@@ -183,6 +214,38 @@ class e20rArticleView extends e20rSettingsView {
                                 jQuery('#e20r-article-programs').select2();
                             </script>
 
+                        </td>
+                    </tr>
+                    <tr><td colspan="4"><hr width="100%" /></td></tr>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select class="select2-container" id="e20r-article-checkin_id" name="e20r-article-checkin_id"><?php
+
+                                $checkins = new WP_Query( array(
+                                    'post_type' => 'e20r_checkins',
+                                    'posts_per_page' => -1,
+                                    'order_by' => 'title',
+                                    'order' => 'ASC',
+                                    'fields' => array( 'ids', 'title')
+                                ));
+
+                                // $programs = $e20rTracker->getMembershipLevels();
+                                dbg("e20rArticleView::viewArticleSettings() - Grabbed " . count( $checkins ) . " checkin options");
+                                // dbg("e20rArticleView::viewArticleSettings() - " . print_r( $programs, true));
+                                while ( $checkins->have_posts() ) {
+
+                                    $checkins->the_post();
+
+                                    $selected = ( in_array( get_the_ID(), $settings->checkin ) ? ' selected="selected"' : null );
+                                    ?><option value="<?php echo get_the_ID(); ?>" <?php echo $selected; ?>><?php echo get_the_title(); ?></option><?php
+                                } ?>
+                            </select>
+                            <script>
+                                jQuery('#e20r-article-checkin_id').select2();
+                            </script>
                         </td>
                     </tr>
                     </tbody>
