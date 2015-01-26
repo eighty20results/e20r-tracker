@@ -1030,6 +1030,7 @@ class e20rTracker {
 
         return false;
     }
+
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
