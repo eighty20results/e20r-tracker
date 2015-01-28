@@ -29,38 +29,6 @@ jQuery(document).ready( function($) {
     var $loadItem = $("#e20r-load-checkin-items");
     var $spinner = $('#e20r-postmeta-setprogram').find('e20r_spinner');
 
-    $(document).on('change', '#e20r-article-post_id', function() {
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            timeout: 10000,
-            dataType: 'JSON',
-            data: {
-                action: 'getDelayValue',
-                'post_ID': $('#e20r-article-post_id').find('option:selected').val(),
-                'e20r-tracker-article-settings-nonce': $('#e20r-tracker-article-settings-nonce').val()
-            },
-            success: function( $response ) {
-
-                console.log("Received from getDelayValue: ", $response );
-
-                if ( $response.data.nodelay != 0) {
-                    console.log("No delay specified. Exiting!");
-                    return false;
-                }
-
-                if ( $response.data.delay > 0 ) {
-
-                    console.log("Got delay value from back-end: " + $response.data.delay);
-                    $('#e20r-article-release_day').val($response.data.delay);
-                }
-            },
-            error: function( $response, $errString, $errType ) {
-                console.log($errString + ' error returned from getDelayValue action: ' + $errType );
-            }
-        });
-    });
 
     $(document).on('click', '#e20r-new-group-button', function() {
 
@@ -163,6 +131,8 @@ jQuery(document).ready( function($) {
         saveClientId( $oldClientId );
 
     });
+
+    /*********************************************************/
 
     $(document).on("click", "#e20r-load-checkin-items", function() {
 
@@ -271,6 +241,8 @@ jQuery(document).ready( function($) {
     });
 
 });
+
+
 /*
 function getCheckboxWithStatus( $status ) {
 
