@@ -7,22 +7,38 @@
  */
 
 jQuery.noConflict();
-jQuery(document).ready( function($) {
+jQuery(document).ready( function() {
 
-    $("#e20r-checkin-startdate").datepicker({
-        dateFormat: 'y-m-d',
+    jQuery("#e20r-checkin-startdate").datepicker({
+        dateFormat: 'yy-mm-dd',
         onSelect: function( $dateStr, inst ) {
 
-            var $days = parseInt( $("#e20r-checkin-maxcount").val() );
+            var $days = parseInt( jQuery("#e20r-checkin-maxcount").val() );
 
-            if ( $days == 0 ) {
+            console.log("Days: ", $days );
+
+            if ( $days == null ) {
                 $days = 14; // Default value
             }
 
-            var $endDate = $.datepicker.parseDate('y-m-d', $dateStr );
-            $endDate.setDate($endDate.getDate('y-m-d') + $days );
+            var nextDate = jQuery('#e20r-checkin-startdate').datepicker('getDate');
+            nextDate.setDate( nextDate.getDate() + ( $days - 1 ) );
 
-            $("#e20r-checkin-enddate").val($endDate.toLocaleDateString());
+            jQuery("#e20r-checkin-enddate").datepicker('setDate', nextDate);
+
+            // .val( nextDate.getFullYear()+ '-' + nextDate.getMonth() + 1 + '-' + nextDate.getDate() );
         }
     });
+
+    jQuery("#e20r-checkin-enddate").datepicker({
+        dateFormat: 'yy-mm-dd',
+        onSelect: function( $dateStr, inst ) {
+
+            var $startDate = new Date( jQuery('#e20r-checkin-startdate').val() );
+            var $endDate = new Date( $dateStr );
+
+            jQuery("#e20r-checkin-maxcount").val( ( Math.abs( $endDate - $startDate ) / 86400000 ) );
+        }
+    });
+
 });
