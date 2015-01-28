@@ -166,6 +166,7 @@ class e20rTracker {
 
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
+            add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
@@ -617,27 +618,56 @@ class e20rTracker {
         dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
 
         global $e20rAdminPage;
+        global $post;
 
-        if( $hook != $e20rAdminPage ) {
+        if( $hook == $e20rAdminPage ) {
 
-            return;
+            global $e20r_plot_jscript, $e20rTracker;
+
+            self::load_adminJS();
+
+            $e20r_plot_jscript = true;
+            self::register_plotSW();
+            self::enqueue_plotSW();
+            $e20r_plot_jscript = false;
+
+            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
+            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
+            wp_enqueue_script( 'jquery.timeago' );
+            wp_enqueue_script( 'select2' );
+
         }
 
-        global $e20r_plot_jscript, $e20rTracker;
+        if( $hook == 'edit.php' || $hook == 'post.php' || $hook == 'post-new.php' ) {
 
-        self::load_adminJS();
+            switch( self::getCurrentPostType() ) {
 
-        $e20r_plot_jscript = true;
-        self::register_plotSW();
-        self::enqueue_plotSW();
-        $e20r_plot_jscript = false;
+                case 'e20r_checkins':
 
-        wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
-        wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
-        wp_enqueue_script( 'jquery.timeago' );
-        wp_enqueue_script( 'select2' );
+                    wp_enqueue_script( 'jquery-ui-datepicker' );
+                    wp_enqueue_style( 'jquery-style', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
+                    $type = 'checkin';
+                    $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
+                    break;
 
+                case 'e20r_programs':
+
+                    break;
+
+                case 'e20r_articles':
+
+                    $type = 'article';
+                    $deps = array( 'jquery', 'jquery-ui-core' );
+
+                    break;
+            }
+
+            dbg("e20rTracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
+
+            wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, '1.0', true );
+            wp_enqueue_script( 'e20r-cpt-admin');
+        }
     }
 
     public function validate( $input ) {
@@ -1566,13 +1596,13 @@ class e20rTracker {
                     user_id int null,
                     program_id int null,
                     article_id int null,
-                    checkin_type int null,
+                    checkin_type int default 0,
                     checkin_date datetime null,
-                    checkin_item_id int not null,
+                    checkin_short_name varchar(50) null,
                     checkedin tinyint not null default 0,
                     primary key  (id),
                         key program_id ( program_id asc ),
-                        key checkin_item_id ( checkin_item_id asc ) )
+                        key checkin_short_name ( checkin_short_name asc ) )
                 {$charset_collate}";
 
 
@@ -2250,5 +2280,31 @@ class e20rTracker {
             }
         }
         return false;
+    }
+
+    public function getCurrentPostType() {
+
+        global $post, $typenow, $current_screen;
+
+        //we have a post so we can just get the post type from that
+        if ( $post && $post->post_type ) {
+
+            return $post->post_type;
+        } //check the global $typenow - set in admin.php
+        elseif( $typenow ) {
+
+            return $typenow;
+        } //check the global $current_screen object - set in sceen.php
+        elseif( $current_screen && $current_screen->post_type ) {
+
+            return $current_screen->post_type;
+        } //lastly check the post_type querystring
+        elseif( isset( $_REQUEST['post_type'] ) ) {
+
+            return sanitize_key( $_REQUEST['post_type'] );
+        }
+
+        //we do not know the post type!
+        return null;
     }
 }
