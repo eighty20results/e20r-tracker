@@ -135,8 +135,8 @@ class e20rArticleView extends e20rSettingsView {
                     <tr>
                         <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Article", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-release_day"><?php _e("Delay", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measure", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pics", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20rtracker"); ?></label></th>
                     </tr>
                     <tr>
                         <td colspan="4">
@@ -183,7 +183,6 @@ class e20rArticleView extends e20rSettingsView {
                         <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20rtracker"); ?></label></th>
                         <th colspan="3" class="e20r-label header"><label for="e20r-article-programs"><?php _e("Programs", "e20rtracker"); ?></label></th>
                     </tr>
-                    <tr><td colspan="4"><hr width="100%" /></td></tr>
                     <tr>
                         <td style="vertical-align: top;">
                             <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo $settings->prefix; ?>">
@@ -200,14 +199,14 @@ class e20rArticleView extends e20rSettingsView {
                                 ));
 
                                 // $programs = $e20rTracker->getMembershipLevels();
-                                dbg("e20rArticleView::viewArticleSettings() - Grabbed " . count( $programs ) . " programs");
-                                // dbg("e20rArticleView::viewArticleSettings() - " . print_r( $programs, true));
+                                dbg("e20rArticleView::viewArticleSettings() - Grabbed {$programs->post_count} programs");
+
                                 while ( $programs->have_posts() ) {
 
                                     $programs->the_post();
 
-                                    $selected = ( in_array( get_the_ID(), $settings->programs ) ? ' selected="selected"' : null );
-                                    ?><option value="<?php echo get_the_ID(); ?>" <?php echo $selected; ?>><?php echo get_the_title(); ?></option><?php
+                                    $selected = ( in_array( $programs->post->ID, $settings->programs ) ? ' selected="selected"' : null );
+                                    ?><option value="<?php echo $programs->post->ID; ?>" <?php echo $selected; ?>><?php echo $programs->post->post_title; ?></option><?php
                                 } ?>
                             </select>
                             <script>
@@ -218,18 +217,18 @@ class e20rArticleView extends e20rSettingsView {
                     </tr>
                     <tr><td colspan="4"><hr width="100%" /></td></tr>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkins"><?php _e("Check-Ins", "e20rtracker"); ?></label></th>
                     </tr>
                     <tr>
                         <td>
-                            <select class="select2-container" id="e20r-article-checkin_id" name="e20r-article-checkin_id"><?php
+                            <select class="select2-container" id="e20r-article-checkins" name="e20r-article-checkins[]" multiple="multiple"><?php
 
                                 $checkins = new WP_Query( array(
                                     'post_type' => 'e20r_checkins',
                                     'posts_per_page' => -1,
                                     'order_by' => 'title',
                                     'order' => 'ASC',
-                                    'fields' => array( 'ids', 'title')
+                                    'fields' => array( 'id', 'title')
                                 ));
 
                                 // $programs = $e20rTracker->getMembershipLevels();
@@ -239,12 +238,12 @@ class e20rArticleView extends e20rSettingsView {
 
                                     $checkins->the_post();
 
-                                    $selected = ( in_array( get_the_ID(), $settings->checkin ) ? ' selected="selected"' : null );
-                                    ?><option value="<?php echo get_the_ID(); ?>" <?php echo $selected; ?>><?php echo get_the_title(); ?></option><?php
+                                    $selected = ( in_array( $checkins->post->ID, $settings->checkins ) ? ' selected="selected"' : null );
+                                    ?><option value="<?php echo $checkins->post->ID; ?>" <?php echo $selected; ?>><?php echo $checkins->post->post_title; ?></option><?php
                                 } ?>
                             </select>
                             <script>
-                                jQuery('#e20r-article-checkin_id').select2();
+                                jQuery('#e20r-article-checkins').select2();
                             </script>
                         </td>
                     </tr>
