@@ -17,10 +17,11 @@ class e20rCheckin extends e20rSettings {
     // checkin_type: 0 - action (habit), 1 - lesson, 2 - activity (workout), 3 - survey
     // "Enum" for the types of check-ins
     private $types = array(
-        'action' => 0,
-        'lesson' => 1,
-        'activity' => 2,
-        'survey' => 3
+        'none' => 0,
+        'action' => 1,
+        'assignment' => 2,
+        'survey' => 3,
+        'activity' => 4
     );
 
     // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
@@ -32,14 +33,14 @@ class e20rCheckin extends e20rSettings {
         'na' => 3
     );
 
-    public function e20rCheckin() {
+    public function __construct() {
 
         dbg("e20rCheckin::__construct() - Initializing Checkin class");
 
         $this->model = new e20rCheckinModel();
         $this->view = new e20rCheckinView();
 
-        parent::__construct( 'checkin', 'e20r_program', $this->model, $this->view );
+        parent::__construct( 'checkin', 'e20r_checkins', $this->model, $this->view );
     }
 
     public function findCheckinItemId( $articleId ) {
@@ -71,7 +72,7 @@ class e20rCheckin extends e20rSettings {
             return true;
         }
 
-        dbg("e20rCheckin::setArticleAsComplete() - Unable to save checkin value!");
+        dbg("e20rCheckin::setArticleAsComplete() - Unable to save check0in value!");
         return false;
     }
 
@@ -110,6 +111,66 @@ class e20rCheckin extends e20rSettings {
 
     }
 
+    public function shortcode_dailyProgress( $attributes ) {
+
+        global $post;
+        global $current_user;
+        global $e20rTracker;
+        global $e20rArticle;
+
+        $type = 'action';
+
+        extract( shortcode_atts( array(
+            'type' => $type,
+        ), $attributes ) );
+
+        $articleId = $e20rArticle->init($post->ID);
+
+        if ( $articleId === false ) {
+
+            dbg("e20rCheckin::shortcode_dailyProgress() - No article defined. Quitting.");
+            return false;
+        }
+
+        // $checkIn = $this->findCheckinItemId($articleId);
+        $checkinIds = $e20rArticle->getCheckins( $articleId );
+
+        dbg("e20rCheckin::shortcode_dailyProgress() - Article info loaded.");
+        dbg($checkinIds);
+
+        if ( !empty( $type ) ) {
+            $type = $this->types[$type];
+        }
+        else {
+            $type = $this->types['action'];
+        }
+
+        dbg("e20rCheckin::shortcode_dailyProgress() - Checkin Type selected: {$type}.");
+
+        foreach( $checkinIds as $id ) {
+
+            $this->model->loadSettings( $id );
+
+            if ( $this->model->getSetting( $id, 'checkin_type')  == $type ) {
+                dbg("e20rCheckin::shortcode_dailyProgress() - Found the checkin type we're looking for in checkin # {$id}.");
+                $checkinId = $id;
+                break;
+            }
+        }
+
+        $habitEntries = $this->model->getCheckins( $checkinId, $type, -3 );
+
+        $actions = $this->model->loadUserCheckin( $articleId, $current_user->ID, $this->types['action'], $habitEntries[0]->short_name);
+        $activities = $this->model->loadUserCheckin( $articleId, $current_user->ID, $this->types['activity'] );
+
+        dbg("e20rCheckin::shortcode_dailyProgress() - Loaded user check-in information: ");
+        dbg($actions);
+        dbg($activities);
+
+        // return '';
+        return $this->view->viewCheckInField( $actions, $activities, $habitEntries );
+
+    }
     public function getPeers( $checkinId = null ) {
 
         if ( is_null( $checkinId ) ) {
@@ -151,32 +212,51 @@ class e20rCheckin extends e20rSettings {
         return $checkinList;
     }
 
-
     public function addMeta_Settings() {
 
         global $post;
 
+        $def_status = array(
+            'publish',
+            'pending',
+            'draft',
+            'future',
+            'private'
+        );
+
         // Query to load all available programs (used with check-in definition)
         $query = array(
             'post_type'   => 'e20r_programs',
-            'post_status' => 'publish',
+            'post_status' => apply_filters( 'e20r_tracker_checkin_status', $def_status ),
+            'posts_per_page' => -1,
         );
 
         wp_reset_query();
 
         //  Fetch Programs
-        $programs = get_posts( $query );
+        $checkins = get_posts( $query );
 
-        if ( empty( $programs ) ) {
+        if ( empty( $checkins ) ) {
 
-            dbg( "e20rCheckin::addMeta_CheckinSettings() - No programs found!" );
+            dbg( "e20rCheckin::addMeta_Settings() - No programs found!" );
         }
 
-        dbg("e20rCheckin::addMeta_CheckinSettings() - Loading settings metabox for checkin page {$post->ID}");
+        dbg("e20rCheckin::addMeta_Settings() - Loading settings metabox for checkin page {$post->ID}");
         $settings = $this->model->loadSettings( $post->ID );
 
-        echo $this->view->viewSettingsBox( $settings , $programs );
+        echo $this->view->viewSettingsBox( $settings , $checkins );
 
     }
 
-} 
+    public function saveSettings( $post_id ) {
+
+        $post = get_post( $post_id );
+
+        setup_postdata( $post );
+
+        $this->model->set( 'short_name', the_title() );
+        $this->model->set( 'item_text', the_excerpt() );
+
+        parent::saveSettings( $post_id );
+    }
+}
