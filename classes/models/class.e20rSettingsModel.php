@@ -101,6 +101,11 @@ class e20rSettingsModel {
         return false;
     }
 
+    public function set( $fieldName, $fieldValue ) {
+
+        $this->settings->{$fieldName} = $fieldValue;
+
+    }
     /**
      * Load the Settings from the metadata table.
      *
@@ -120,7 +125,9 @@ class e20rSettingsModel {
             return false;
         }
 
-        dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loading settings for {$this->type} ID {$id}");
+        $this->id = $id;
+
+        dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loading settings for {$this->type} ID {$this->id}");
         $defaults = $this->defaultSettings();
 
         if ( ! is_object( $this->settings ) ) {
@@ -134,16 +141,16 @@ class e20rSettingsModel {
 
                 if ( $key == 'id' ) {
 
-                    $this->settings->{$key} = $id;
+                    $this->settings->{$key} = $this->id;
                     continue;
                 }
 
-                dbg( "e20r" . ucfirst( $this->type ) . "Model::loadSettings() - ERROR loading setting {$key} for {$this->type} with ID: {$id}" );
+                dbg( "e20r" . ucfirst( $this->type ) . "Model::loadSettings() - ERROR loading setting {$key} for {$this->type} with ID: {$this->id}" );
 
                 return false;
             }
 
-            dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$id}");
+            dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$this->id}");
         }
 
         return $this->settings;
