@@ -104,6 +104,7 @@ class e20rTracker {
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
             add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
             add_action( 'wp_ajax_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
+            add_action( 'wp_ajax_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -123,6 +124,7 @@ class e20rTracker {
 
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
 
             add_action( 'add_meta_boxes', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rProgram, 'editor_metabox_setup') );
@@ -151,10 +153,10 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_addPhoto', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_addWorkoutGroup', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_getDelayValue', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_saveCheckin', 'e20r_ajaxUnprivError' );
 
             // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
-
 
             /* Allow admin to set the program ID for the user in their profile(s) */
             add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
@@ -1061,6 +1063,29 @@ class e20rTracker {
         return false;
     }
 
+    public function has_dailyProgress_shortcode() {
+
+        global $post;
+        global $pagenow;
+
+
+        if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
+
+            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting user javascripts. ");
+
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery' ), '0.1', false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'jquery', 'e20r-tracker-js' ), '0.1', false );
+
+            wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
+                array(
+                    'url' => admin_url('admin-ajax.php'),
+                )
+            );
+
+            wp_print_scripts( array( 'e20r-tracker-js', 'e20r-checkin-js' ) );
+        }
+    }
+
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
@@ -1596,10 +1621,12 @@ class e20rTracker {
                     user_id int null,
                     program_id int null,
                     article_id int null,
+                    descr_id int not null default 0,
                     checkin_type int default 0,
                     checkin_date datetime null,
                     checkin_short_name varchar(50) null,
                     checkedin tinyint not null default 0,
+                    checkin_note text null,
                     primary key  (id),
                         key program_id ( program_id asc ),
                         key checkin_short_name ( checkin_short_name asc ) )
