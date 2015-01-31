@@ -21,7 +21,8 @@ class e20rCheckin extends e20rSettings {
         'action' => 1,
         'assignment' => 2,
         'survey' => 3,
-        'activity' => 4
+        'activity' => 4,
+        'note' => 5,
     );
 
     // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
@@ -48,6 +49,45 @@ class e20rCheckin extends e20rSettings {
         global $e20rArticle;
     }
 
+    public function saveCheckin_callback() {
+
+        dbg("e20rCheckin::saveCheckin_callback() - Attempting to save checkin for user.");
+
+        // Save the $_POST data for the Action callback
+        global $current_user;
+
+        dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
+        dbg($_POST);
+
+        $data = array(
+            'user_id' => $current_user->ID,
+            'id' => (isset( $_POST['id']) ? intval( $_POST['id'] ) : null),
+            'checkin_type' => (isset( $_POST['checkin-type']) ? intval( $_POST['checkin-type'] ) : null),
+            'article_id' => (isset( $_POST['article-id']) ? intval( $_POST['article-id'] ) : null ),
+            'program_id' => (isset( $_POST['program-id']) ? intval( $_POST['program-id'] ) : -1 ),
+            'checkin_date' => (isset( $_POST['checkin-date']) ? sanitize_text_field( $_POST['checkin-date'] ) : null ),
+            'checkin_short_name' => isset( $_POST['checkin-short-name']) ? sanitize_text_field( $_POST['checkin-short-name'] ) : null,
+        );
+
+        if ( ! $this->saveCheckin( $data['checkin_type'], $data ) ) {
+
+            dbg("e20rCheckin::saveCheckin_callback() - Error saving checkin information...");
+            wp_send_json_error();
+            wp_die();
+        }
+
+        wp_send_json_success();
+        wp_die();
+    }
+
+    private function saveCheckin( $type, $data ) {
+
+        dbg("e20rCheckin::saveCheckin() - Type: {$type}, data: ");
+        dbg($data);
+
+        return false;
+
+    }
     public function setArticleAsComplete( $userId, $articleId ) {
 
         global $e20rArticle;
@@ -57,17 +97,18 @@ class e20rCheckin extends e20rSettings {
         // $articleId = $e20rArticle->init( $articleId );
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
-        $checkin = array(
+        $defaults = array(
             'user_id' => $userId,
             'checkedin' => $this->status['yes'],
             'article_id' => $articleId,
             'program_id' => $programId,
             'checkin_date' => $e20rArticle->getReleaseDate( $articleId ),
-            'checkin_item_id' => null, // This is the 'checkin_item_id', aka post->ID for the checkin CPT in question.
-            'checkin_type' => 2,
+            'checkin_short_name' => null,
+            'checkin_type' => $this->types['action'],
+            'checkin_note' => null,
         );
 
-        if ( $this->model->setCheckin( $checkin ) ) {
+        if ( $this->model->setCheckin( $defaults ) ) {
             dbg("e20rCheckin::setArticleAsComplete() - Check-in for user {$userId}, article {$articleId} in program ${$programId} has been saved");
             return true;
         }
@@ -119,9 +160,11 @@ class e20rCheckin extends e20rSettings {
         global $e20rArticle;
 
         $type = 'action';
+        $survey_id = null;
 
         extract( shortcode_atts( array(
             'type' => $type,
+            'surveyId' => $survey_id,
         ), $attributes ) );
 
         $articleId = $e20rArticle->init($post->ID);
@@ -132,45 +175,71 @@ class e20rCheckin extends e20rSettings {
             return false;
         }
 
-        // $checkIn = $this->findCheckinItemId($articleId);
+        // Get the check-in id list for the specified article ID
         $checkinIds = $e20rArticle->getCheckins( $articleId );
 
         dbg("e20rCheckin::shortcode_dailyProgress() - Article info loaded.");
         dbg($checkinIds);
 
-        if ( !empty( $type ) ) {
-            $type = $this->types[$type];
-        }
-        else {
-            $type = $this->types['action'];
-        }
-
-        dbg("e20rCheckin::shortcode_dailyProgress() - Checkin Type selected: {$type}.");
-
         foreach( $checkinIds as $id ) {
 
-            $this->model->loadSettings( $id );
+            $settings = $this->model->loadSettings( $id );
 
-            if ( $this->model->getSetting( $id, 'checkin_type')  == $type ) {
-                dbg("e20rCheckin::shortcode_dailyProgress() - Found the checkin type we're looking for in checkin # {$id}.");
-                $checkinId = $id;
-                break;
+            switch ($settings->checkin_type) {
+
+                case $this->types['assignment']:
+
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Loading data for assignment check-in");
+
+                    // TODO: Load view for assignment check-in (including check for questions & answers to load).
+                    $checkin = null;
+                    break;
+
+                case $this->types['survey']:
+
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Loading data for survey check0-in");
+                    // TODO: Load view for survey data (pick up survey(s) from Gravity Forms entry.
+                    $checkin = null;
+                    break;
+
+                case $this->types['action']:
+
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Loading data for daily action checkin");
+
+                    $checkin = $this->model->loadUserCheckin( $articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                    $checkin->habitList = $this->model->getCheckins( $id, $settings->checkin_type, - 3 );
+
+                    break;
+
+                case $this->types['activity']:
+
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Loading data for daily activity checkin");
+                    $checkin = $this->model->loadUserCheckin( $articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                    break;
+
+                case $this->types['note']:
+                    // TODO: Decide.. Do we handler this in the action check-in?
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Loading data for daily activity note(s)");
+                    break;
+
+                default:
+
+                    // Load action and acitvity view.
+                    dbg("e20rCheckin::shortcode_dailyProgress() - No default action to load!");
+                    $checkin = null;
+
             }
+
+            $this->checkin[$settings->checkin_type] = $checkin;
         }
 
-        $habitEntries = $this->model->getCheckins( $checkinId, $type, -3 );
+        dbg("e20rCheckin::shortcode_dailyProgress() - Loading checkin for user..");
+        dbg($this->checkin);
 
-        $actions = $this->model->loadUserCheckin( $articleId, $current_user->ID, $this->types['action'], $habitEntries[0]->short_name);
-        $activities = $this->model->loadUserCheckin( $articleId, $current_user->ID, $this->types['activity'] );
-
-        dbg("e20rCheckin::shortcode_dailyProgress() - Loaded user check-in information: ");
-        dbg($actions);
-        dbg($activities);
-
-        // return '';
-        return $this->view->viewCheckInField( $actions, $activities, $habitEntries );
+        return $this->view->load_UserCheckin( $this->checkin );
 
     }
+
     public function getPeers( $checkinId = null ) {
 
         if ( is_null( $checkinId ) ) {
