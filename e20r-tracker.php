@@ -26,11 +26,12 @@ define( 'URL_TO_PROGRESS_FORM', E20R_COACHING_URL. 'weekly-progress/');
 define ('CONST_MEASUREMENTDAY', 6 );
 define( 'TOTAL_GIRTH_MEASUREMENTS', 8 ); // Total number of girth measurements expected
 
-define( 'CHECKIN_ACTION', 1);
-define( 'CHECKIN_ASSIGNMENT', 2);
-define( 'CHECKIN_ACTIVITY', 3);
-define( 'CHECKIN_SURVEY', 4);
-define( 'CHECKIN_ACTION_AND_ACTIVITY', 13);
+define( 'CHECKIN_ACTION', 1 );
+define( 'CHECKIN_ASSIGNMENT', 2 );
+define( 'CHECKIN_SURVEY', 3 );
+define( 'CHECKIN_ACTIVITY', 4 );
+define( 'CHECKIN_NOTE', 5 );
+define( 'CHECKIN_ACTION_AND_ACTIVITY', 14 );
 
 global $e20r_db_version;
 
