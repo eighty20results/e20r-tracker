@@ -155,6 +155,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->program_id = $programId;
             $result->article_id = $articleId;
             $result->checkin_date = $e20rArticle->releaseDate( $articleId );
+            $result->checkin_note = '';
 
             dbg("e20rCheckinModel::loadCheckinData() - Using default values: ");
             dbg($result);
