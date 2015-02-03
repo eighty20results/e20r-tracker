@@ -97,9 +97,10 @@ class e20rTables {
             'id'                => 'id',
             'user_id'           => 'user_id',
             'program_id'        => 'program_id',
+            'article_id'        => 'article_id',
+            'checkin_type'      => 'checkin_type',
             'checkin_date'      => 'checkin_date',
-            'checkin_item_id'   => 'checkin_item_id',
-            'checkedin'         => 'checkedin',
+            'checkin_short_name' => 'checkin_short_name',
             'checkin_type'      => 'checkin_type',
         );
     }
