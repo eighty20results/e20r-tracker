@@ -19,12 +19,11 @@ class e20rTables {
     public function e20rTables() {
 
         if ( ! function_exists( 'in_betagroup' ) ) {
+
             dbg( "Error: in_betagroup function is missing!" );
             wp_die( "Critical plugin functionality is missing: in_betagroup()" );
         }
-
     }
-
 
     public function init( $user_id = null ) {
 
@@ -48,15 +47,12 @@ class e20rTables {
         /* The database tables used by this plugin */
         $this->tables->checkin       = $wpdb->prefix . 'e20r_checkin';
         $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
-        $this->tables->responses     = $wpdb->prefix . 'e20r_answers';
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
         $this->tables->exercise      = $wpdb->prefix . 'e20r_exercises';
         $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
-        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignment';
-        $this->tables->questions     = $wpdb->prefix . 'e20r_question';
 
 
         if ( ( $this->inBeta ) ) {
@@ -71,16 +67,6 @@ class e20rTables {
         }
     }
 
-    // TODO: Implement this as a custome post type.
-    private function loadAssignmentFields() {
-
-    }
-
-    // TODO: Implement this as a custom post type.
-    private function loadQuestionFields() {
-
-    }
-
     /**
      * Returns status for membership in the Nourish Beta group.
      *
@@ -89,6 +75,20 @@ class e20rTables {
     public function isBetaClient() {
 
         return $this->inBeta;
+    }
+
+    private function loadAssignmentFields() {
+
+        $this->fields['assignments'] = array(
+            'id'            => 'id',
+            'article_id'    => 'article_id',
+            'program_id'    => 'program_id',
+            'delay'         => 'delay',
+            'user_id'       => 'user_id',
+            'answer_date'   => 'answer_date',
+            'answer'        => 'answer',
+            'field_type'    => 'field_type',
+        );
     }
 
     private function loadCheckinFields() {
@@ -335,6 +335,10 @@ class e20rTables {
             case 'client_info':
                 $this->loadClientDataFields();
                 break;
+
+            case 'assignments':
+                $this->loadAssignmentFields();
+                break;
         }
     }
 
@@ -361,8 +365,5 @@ class e20rTables {
         return $this->fields[$name];
     }
 
-    public function createTables() {
-
-    }
 }
 endif;
