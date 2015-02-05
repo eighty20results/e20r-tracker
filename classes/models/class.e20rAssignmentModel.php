@@ -134,6 +134,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         if ( ! empty( $result ) ) {
 
+            // Index the result array by the ID of the assignment (key)
             foreach( $result as $key => $data ) {
 
                 $result[$data->id] = $data;
@@ -143,8 +144,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
                 $result[$data->id]->descr = $post->post_excerpt;
                 $result[$data->id]->question = $post->post_title;
+
+
                 unset($result[$key]);
 
+                // Array is now indexed by record/post/assignment ID
                 wp_reset_postdata();
             }
         }
@@ -161,6 +165,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $result;
     }
 
+    /*
     public function exists( $assignment ) {
 
         global $wpdb;
@@ -201,19 +206,20 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         return false;
     }
-
+*/
     public function loadSettings( $id ) {
 
         $this->settings = parent::loadSettings($id);
 
         $pst = get_post( $id );
 
-        $this->settings->item_text = $pst->post_excerpt;
-        $this->settings->short_name = $pst->post_title;
+        $this->settings->descr = $pst->post_excerpt;
+        $this->settings->question = $pst->post_title;
+        $this->settings->id = $id;
 
         return $this->settings;
     }
-
+/*
     public function setAssignment( $assignment ) {
 
         global $wpdb;
@@ -230,7 +236,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         return ( $wpdb->replace( $this->table, $assignment ) ? true : false );
     }
-
+*/
     /**
      * Save the Assignment Settings to the metadata table.
      *
@@ -250,7 +256,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         foreach ( $defaults as $key => $value ) {
 
-            if ( in_array( $key, array( 'id', 'short_name', 'item_text' ) ) ) {
+            if ( in_array( $key, array( 'id', 'descr', 'question' ) ) ) {
                 continue;
             }
 
