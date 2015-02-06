@@ -137,7 +137,7 @@ class e20rProgram extends e20rSettings {
 
         $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true);
 
-        if ( $userId == 5 || $programId === false ) {
+        if ( $programId === false ) {
 
             $programId = -1;
         }
@@ -163,7 +163,7 @@ class e20rProgram extends e20rSettings {
      * Calculates the startdate (as a 'seconds since epoch') value and returns it to the calling function.
      *
      * Currently supports:
-     *      Internal usermeta value. (e20r-tracker-program-startdate => 'first date of
+     *      Internal usermeta value. (e20r-program-startdate => 'When this user started the program'
      *      Paid Memberships Pro.
      *
      * @param $userId - ID of user to find the startdate for.
@@ -172,20 +172,28 @@ class e20rProgram extends e20rSettings {
      */
     public function startdate( $userId ) {
 
-        $userPID = get_user_meta( $userId, 'e20r-tracker-program-id' );
-        $userStartDate = get_post_meta( $userPID, 'e20r-program-starttime', true);
+        $userPID = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-        if ( $userStartDate !== false ) {
+        if ( $userPID !== false ) {
+
+            dbg("e20rProgram::startdate() - Using startdate as configured for program with id: ");
+            dbg($userPID);
+
+            $programStartDate = $this->model->getSetting( $userPID, 'startdate');
 
             // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
-            return strtotime( $userStartDate );
+            return strtotime( $programStartDate );
         }
 
+        // No program setting was configured so we'll use the start date for the users active membership level.
         if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
 
+            dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}");
             return pmpro_getMemberStartdate( $userId );
         }
 
+        // Default return value
+        return false;
     }
 
     /**
