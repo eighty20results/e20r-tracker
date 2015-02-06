@@ -135,6 +135,35 @@ class e20rArticle extends e20rSettings {
 
     }
 
+    public function findArticleByDelay( $delayVal ) {
+
+        global $e20rProgram;
+        global $current_user;
+
+        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+
+        if ( $programId == -1 ) {
+            // No article either.
+            return -1;
+        }
+
+        $article = $this->model->findArticle('release_day', $delayVal, 'numeric', $programId );
+
+        if ( count($article) == 1 ) {
+
+            dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article->id}");
+            return $article->id;
+        }
+        else {
+            // TODO: Won't return all of the articles defined for this program!
+
+            dbg("e20rArticle::findArticleByDelay() - Returning first of multiple articleIDs");
+            return $article[0]->id;
+        }
+
+        return false;
+    }
+
     /**
      * Filters the content for a post to check whether ot inject e20rTracker Article info in the post/page.
      *
@@ -211,11 +240,6 @@ class e20rArticle extends e20rSettings {
         }
 
         return $content;
-    }
-
-    // Used on article post page to add check-in info for the article.
-    public function addMeta_Checkin() {
-
     }
 
     public function addMeta_Assignments() {
