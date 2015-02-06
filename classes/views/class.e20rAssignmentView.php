@@ -34,7 +34,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 <table id="e20r-assignment-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-assignment-assignment_type">Type</label></th>
+                        <th class="e20r-label header"><label for="e20r-assignment-field_type">Answer Type</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-maxcount">Max # Check-ins</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-startdate">Starts on</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-enddate">Ends on</label></th>
@@ -77,12 +77,12 @@ class e20rAssignmentView extends e20rSettingsView {
                     ?>
                     <tr id="<?php echo $assignmentData->ID; ?>" class="assignment-inputs">
                         <td>
-                            <select id="e20r-assignment-assignment_type" name="e20r-assignment-assignment_type">
-                                <option value="0" <?php selected( $assignmentData->assignment_type, 0 ); ?><?php _e("Not configured", "e20rtracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ACTION; ?>" <?php selected( $assignmentData->assignment_type, CHECKIN_ACTION ); ?>><?php _e("Action", "e20rtracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ASSIGNMENT; ?>" <?php selected( $assignmentData->assignment_type, CHECKIN_ASSIGNMENT ); ?>><?php _e("Assignment", "e20rtracker"); ?></option>
-                                <option value="<?php echo CHECKIN_SURVEY; ?>" <?php selected( $assignmentData->assignment_type, CHECKIN_SURVEY ); ?>><?php _e("Survey", "e20rtracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ACTIVITY; ?>" <?php selected( $assignmentData->assignment_type, CHECKIN_ACTIVITY ); ?>><?php _e("Activity", "e20rtracker"); ?></option>
+                            <select id="e20r-assignment-field_type" name="e20r-assignment-field_type">
+                                <option value="0" <?php selected( $assignmentData->field_type, 0 ); ?><?php _e("Paragraph (textbox)", "e20rtracker"); ?></option>
+                                <option value="1" <?php selected( $assignmentData->field_type, 1 ); ?>><?php _e("Line of text (input)", "e20rtracker"); ?></option>
+                                <option value="2" <?php selected( $assignmentData->field_type, 2 ); ?>><?php _e("Checkbox", "e20rtracker"); ?></option>
+                                <option value="3" <?php selected( $assignmentData->field_type, 3 ); ?>><?php _e("Multiple Choice", "e20rtracker"); ?></option>
+                                <option value="4" <?php selected( $assignmentData->field_type, 4 ); ?>><?php _e("Button", "e20rtracker"); ?></option>
                             </select>
                         </td>
                         <td class="text-input">
