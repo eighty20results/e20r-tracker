@@ -9,6 +9,13 @@
 jQuery.noConflict();
 jQuery(document).ready(function() {
 
+    var $body = jQuery("body");
+
+    jQuery(document).on({
+        ajaxStart: function() { $body.addClass("loading");   },
+         ajaxStop: function() { $body.removeClass("loading"); }
+    });
+
     var e20rCheckinEvent = {
         init: function() {
 
@@ -18,21 +25,77 @@ jQuery(document).ready(function() {
             this.$checkinProgramId = jQuery('#e20r-checkin-program_id').val();
             this.$nonce = jQuery('#e20r-checkin-nonce').val();;
             this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
+            this.$ulList = this.$checkinOptions.parents('ul');
+            this.$tomorrowBtn = jQuery("#e20r-checkin-tomorrow-lnk");
+            this.$yesterdayBtn = jQuery("#e20r-checkin-yesterday-lnk");
 
-            var self = this;
+            var me = this;
 
-            jQuery(this.$checkinOptions).on('click', function() {
-
+            jQuery(this.$checkinOptions).on('click', function () {
                 var $radioBtn = this;
 
-                console.log("Checkin button: ", this );
-                self.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
-                console.log("Action or activity? ", self.$actionOrActivity);
-                self.saveCheckin( this, self.$actionOrActivity );
+                console.log("Checkin button: ", this);
+                me.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
+                console.log("Action or activity? ", me.$actionOrActivity);
+                me.saveCheckin(this, me.$actionOrActivity, me);
+            });
+
+            me.showBtn( me );
+
+            jQuery(me.$tomorrowBtn).on('click', function() {
+
+                event.preventDefault();
+                me.toNext(me, this);
+            });
+
+            jQuery(me.$yesterdayBtn).on('click', function() {
+
+                event.preventDefault();
+                me.toNext(me, this);
             });
 
         },
-        saveCheckin: function( elem, $a ){
+        showBtn: function( self ) {
+
+            var radioFieldsActivity = jQuery('fieldset.did-you:eq(0) input:radio', '#e20r-daily-checkin-canvas');
+            var radioFieldsAction = jQuery('fieldset.did-you:eq(1) input:radio', '#e20r-daily-checkin-canvas');
+
+            jQuery(radioFieldsActivity)
+                .add(radioFieldsAction)
+                .filter(':checked')
+                .parent('li')
+                .addClass('active');
+
+            var setEditState = function(set) {
+                jQuery(set)
+                    .not(':checked')
+                    .parent('li')
+                    .addClass('concealed')
+                    .parents('fieldset.did-you')
+                    .append('<button class="e20r-button edit-selection">Edit check-in</button>');
+            }
+
+            if (bool(jQuery(radioFieldsActivity).filter(':checked').length)) {
+
+                setEditState(radioFieldsActivity);
+
+                jQuery(document).on('click', '#e20r-daily-checkin-canvas .edit-selection', function(){
+
+                    self.editCheckin( this );
+                });
+            }
+
+            if (bool(jQuery(radioFieldsAction).filter(':checked').length)) {
+
+                setEditState(radioFieldsAction);
+
+                jQuery(document).on('click', '#e20r-daily-checkin-canvas .edit-selection', function(){
+
+                    self.editCheckin( this );
+                });
+            }
+        },
+        saveCheckin: function( elem, $a, self ){
 
 //            console.log("Element is: ", elem );
 
@@ -41,10 +104,10 @@ jQuery(document).ready(function() {
             var $data = {
                 action: 'saveCheckin',
                 'checkin-action': $a,
-                'e20r-checkin-nonce': this.$nonce,
-                'checkin-date': this.$checkinDate,
-                'article-id': this.$checkinArticleId,
-                'program-id': this.$checkinProgramId,
+                'e20r-checkin-nonce': self.$nonce,
+                'checkin-date': self.$checkinDate,
+                'article-id': self.$checkinArticleId,
+                'program-id': self.$checkinProgramId,
                 'checkedin': jQuery(elem).val(),
                 'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first').val(),
                 'id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
@@ -66,23 +129,25 @@ jQuery(document).ready(function() {
                 }
                 else {
 
-                    jQuery(self).data('__persisted', true);
+                    jQuery(elem).data('__persisted', true);
 
-                    var ul = jQuery(self).parents('ul');
+                    var ul = jQuery(elem).parents('ul');
 
-                    var index = jQuery(ul).children('li').index(jQuery(self).parent());
+                    var index = jQuery(ul).children('li').index(jQuery(elem).parent());
+                    console.log("index: ", index);
 
                     if (null !== jQuery(ul).data('activeIndex')
                         && index == jQuery(ul).data('activeIndex'))
                         return false;
 
+                    console.log("activeIndex..??");
 
                     jQuery(ul)
                         .find('input[type=radio]')
                         .parent('li')
                         .removeClass('active');
 
-                    jQuery(self)
+                    jQuery(elem)
                         .parent('li')
                         .addClass('active');
 
@@ -99,18 +164,26 @@ jQuery(document).ready(function() {
                             });
                     };
 
-                    var selectionSlideUp = function() {
-                        var activeItemOffsetTop = index * listItemHeight;
+                    var selectionSlideUp = function( self ) {
+                        var activeItemOffsetTop = index * self.$itemHeight;
 
                         jQuery(ul)
                             .css('margin-top', (activeItemOffsetTop) + 'px')
                             .animate({
                                 marginTop: 0
                             }, 200 * index, function() {
-                                notificationAnimation(function() {
+                                notificationAnimation( function() {
                                     jQuery(ul)
                                         .parents('fieldset.did-you')
-                                        .append('<button class="edit-selection">Edit Selection</button>');
+                                        .append('<button class="e20r-button edit-selection">Edit check-in</button>');
+
+                                    jQuery(document).on('click', '#e20r-daily-checkin-canvas .edit-selection', function(){
+                                        console.log("Clicked the edit-selection button");
+                                        console.log("This = ", this );
+                                        console.log("Self = ", self);
+                                        self.editCheckin( this );
+                                    });
+
                                 });
                             });
                     }
@@ -124,7 +197,7 @@ jQuery(document).ready(function() {
                             if (1 == once) // only run this callback once
                                 return;
 
-                            selectionSlideUp();
+                            selectionSlideUp( self );
 
                             once = 1;
                         });
@@ -132,10 +205,40 @@ jQuery(document).ready(function() {
                     jQuery(ul)
                         .data('activeIndex', index)
                         .data('updateMode', true);
+
+                    console.log("Set .data: ");
                 }
 
             });
 
+        },
+        editCheckin: function( elem ) {
+
+            var button = jQuery(elem);
+
+            jQuery(button)
+                .parents('fieldset.did-you')
+                .find('ul')
+                .find('li')
+                .removeClass('concealed')
+                .css('display', 'block');
+
+            jQuery(button)
+                .remove();
+
+        },
+        toNext: function( self, elem ) {
+
+            var data = {
+                action: 'nextDay',
+                'e20r-checkin-nonce': self.$nonce,
+                'checkin-date': self.$checkinDate,
+                'article-id': self.$checkinArticleId,
+                'program-id': self.$checkinProgramId,
+                'e20r-checkin-day': jQuery(elem).next("input[name='e20r-checkin-day']").val()
+            }
+
+            console.log("toNext data: ", data);
         }
     };
 
