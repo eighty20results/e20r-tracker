@@ -43,17 +43,24 @@ class e20rTracker {
 
     public function loadAllHooks() {
 
-        global $current_user, $pagenow;
-        global $e20rClient, $e20rMeasurements, $e20rArticle, $e20rCheckin, $e20rExercise, $e20rProgram, $e20rWorkout;
+        global $current_user;
+        global $pagenow;
+
+        global $e20rClient;
+        global $e20rMeasurements;
+        global $e20rArticle;
+        global $e20rCheckin;
+        global $e20rExercise;
+        global $e20rProgram;
+        global $e20rWorkout;
 
         if ( ! $this->hooksLoaded ) {
 
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
-            // $e20rProgram = new e20rProgram(); // TODO: Figure out a better way to handle this (the e20rProgram Hook)
-
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 10 );
@@ -76,7 +83,6 @@ class e20rTracker {
             add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
             // add_filter( 'media_view_settings', array( &$this, 'media_view_settings'), 99 );
             add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
-
 
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
@@ -172,6 +178,9 @@ class e20rTracker {
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
+            if ( function_exists( 'pmpro_activation' ) ) {
+                add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
+            }
             dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -258,7 +267,15 @@ class e20rTracker {
 
                 break;
 
+            case 'e20r_assignments':
+
+                $title = "Enter Assignment/Question Here";
+                remove_meta_box( 'postexcerpt', 'e20r_assignments', 'side' );
+                add_meta_box('postexcerpt', __('Assignment description'), 'post_excerpt_meta_box', 'e20r_assignments', 'normal', 'high');
+
+
         }
+
         dbg("e20rTracker::setEmptyTitleString() - New title string defined");
         return $title;
     }
@@ -1411,10 +1428,16 @@ class e20rTracker {
                 {$charset_collate}
         ";
 */
+        /**
+         * Intake interview / exit interview data.
+         */
         $intakeTableSql =
             "CREATE TABLE {$wpdb->prefix}e20r_client_info (
                     id int not null,
                     user_id int not null,
+                    started_date timestamp default current_timestamp,
+                    edited_date timestamp null,
+                    completed_date timestamp null,
                     program_id int not null,
                     program_start date not null,
                     progress_photo_dir varchar(255) not null default 'e20r-pics/',
@@ -1557,6 +1580,9 @@ class e20rTracker {
                   {$charset_collate}
         ";
 
+        /**
+         * Track user measurements/metrics
+         */
         $measurementTableSql =
             "CREATE TABLE {$wpdb->prefix}e20r_measurements (
                     id int not null auto_increment,
@@ -1583,38 +1609,12 @@ class e20rTracker {
                     key user_id ( user_id asc) )
                   {$charset_collate}
               ";
-/*        // TODO: Add item_text on admin page.
-        $itemsTableSql =
-            "CREATE TABLE {$wpdb->prefix}e20r_checkin_items (
-                    id int not null auto_increment,
-                    short_name varchar(20) null,
-                    program_id int null,
-                    item_name varchar(50) null,
-                    item_text mediumtext null,
-                    startdate datetime null,
-                    enddate datetime null,
-                    item_order int not null default 1,
-                    maxcount int null,
-                primary key  ( id ) ,
-                unique key shortname_UNIQUE ( short_name asc ) )
-                {$charset_collate}";
-*/
-/*
-        $businessRulesSql =
-            "CREATE TABLE {$wpdb->prefix}e20r_checkin_rules (
-                    id int not null auto_increment,
-                    checkin_id int null,
-                    success_rule mediumtext null,
-                    primary key  ( id ),
-                    key checkin_id ( checkin_id asc ) )
-                {$charset_collate}";
-*/
         /**
+         * For user Check-Ins of various types.
          *
+         * check-in values: 0 - No, 1 - yes, 2 - partial, 3 - not applicable
+         * check-in type: 1 - action (habit), 2 - assignment, 3 - survey, 4 - activity (workout)
          */
-        // TODO: How do you combine Assignments (flexibility, unlimited # of boxes & questions) and
-        // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
-        // checkin_type: 0 - action (habit), 1 - lesson, 2 - activity (workout), 3 - survey
         $checkinSql =
             "CREATE TABLE {$wpdb->prefix}e20r_checkin (
                     id int not null auto_increment,
@@ -1635,27 +1635,20 @@ class e20rTracker {
 
         /**
          * For assignments
+         * Uses the post->ID of the e20r_assignments CPT for it's unique ID.
          */
-        $assignmentQsSql =
-            "CREATE TABLE {$wpdb->prefix}e20r_question (
-                    id int not null auto_increment,
-                    article_id int not null,
-                    question text null,
-                    primary key  (id)
-                    ) {$charset_collate}
-        ";
-
         $assignmentAsSql =
             "CREATE TABLE {$wpdb->prefix}e20r_assignment (
-                    id int not null auto_increment,
+                    id int not null,
                     article_id int not null,
-                    question_id int not null,
+                    program_id int not null,
+                    delay int not null,
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
-                    field_type enum( 'textbox', 'input', 'checkbox', 'radio' ),
+                    field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button' ),
                     primary key  (id),
-                     key lessons (article_id asc),
+                     key articles (article_id asc),
                      key user_id ( user_id asc ),
                      key questions ( question_id asc )
                      )
@@ -1703,14 +1696,12 @@ class e20rTracker {
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('e20r_tracker_activate() - Creating tables in database');
-/*        dbDelta( $itemsTableSql );
-        dbDelta( $businessRulesSql ); */
         dbDelta( $checkinSql );
         dbDelta( $measurementTableSql );
         dbDelta( $intakeTableSql );
         dbDelta( $assignmentAsSql );
-        dbDelta( $assignmentQsSql );
-/*        dbDelta( $programsTableSql );
+/*        dbDelta( $assignmentQsSql );
+        dbDelta( $programsTableSql );
         dbDelta( $setsTableSql );
         dbDelta( $exercisesTableSql ); */
         dbDelta( $oldMeasurementTableSql );
@@ -1733,11 +1724,8 @@ class e20rTracker {
         dbg("Deactivation options: " . print_r( $options, true ) );
 
         $tables = array(
-//            $wpdb->prefix . 'e20r_checkin_items',
-//            $wpdb->prefix . 'e20r_checkin_rules',
             $wpdb->prefix . 'e20r_checkin',
-            $wpdb->prefix . 'e20r_assignment',
-            $wpdb->prefix . 'e20r_question',
+            $wpdb->prefix . 'e20r_assignments',
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
 //            $wpdb->prefix . 'e20r_programs',
@@ -1770,11 +1758,53 @@ class e20rTracker {
         delete_option( $this->setting_name );
     }
 
+    public function e20r_tracker_assignmentsCPT() {
+
+        $labels =  array(
+            'name' => __( 'Assignments', 'e20rtracker'  ),
+            'singular_name' => __( 'Assignment', 'e20rtracker' ),
+            'slug' => 'e20r_assignment',
+            'add_new' => __( 'New Assignment', 'e20rtracker' ),
+            'add_new_item' => __( 'New Assignment', 'e20rtracker' ),
+            'edit' => __( 'Edit assignments', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Assignment', 'e20rtracker'),
+            'new_item' => __( 'Add New', 'e20rtracker' ),
+            'view' => __( 'View Assignments', 'e20rtracker' ),
+            'view_item' => __( 'View This Assignment', 'e20rtracker' ),
+            'search_items' => __( 'Search Assignments', 'e20rtracker' ),
+            'not_found' => __( 'No Assignments Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Assignment Found In Trash', 'e20rtracker' )
+        );
+
+        $error = register_post_type('e20r_assignments',
+            array( 'labels' => apply_filters( 'e20r-tracker-assignment-cpt-labels', $labels ),
+                   'public' => false,
+                   'show_ui' => true,
+                   'show_in_menu' => true,
+                   'publicly_queryable' => true,
+                   'hierarchical' => true,
+                   'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
+                   'can_export' => true,
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker',
+                   'rewrite' => array(
+                       'slug' => apply_filters('e20r-tracker-assignment-cpt-slug', 'tracker-assignments'),
+                       'with_front' => false
+                   ),
+                   'has_archive' => apply_filters('e20r-tracker-assignment-cpt-archive-slug', 'tracker-assignments')
+            )
+        );
+
+        if ( is_wp_error($error) ) {
+            dbg('ERROR: Failed to register e20r_assignments CPT: ' . $error->get_error_message);
+        }
+    }
+
     public function e20r_tracker_programCPT() {
 
         $labels =  array(
-            'name' => __( 'Program', 'e20rtracker'  ),
-            'singular_name' => __( 'Programs', 'e20rtracker' ),
+            'name' => __( 'Programs', 'e20rtracker'  ),
+            'singular_name' => __( 'Program', 'e20rtracker' ),
             'slug' => 'e20r_programs',
             'add_new' => __( 'New Program', 'e20rtracker' ),
             'add_new_item' => __( 'New Program', 'e20rtracker' ),
@@ -1815,8 +1845,8 @@ class e20rTracker {
     public function e20r_tracker_articleCPT() {
 
         $labels =  array(
-            'name' => __( 'Article', 'e20rtracker'  ),
-            'singular_name' => __( 'Articles', 'e20rtracker' ),
+            'name' => __( 'Articles', 'e20rtracker'  ),
+            'singular_name' => __( 'Article', 'e20rtracker' ),
             'slug' => 'e20r_articles',
             'add_new' => __( 'New Article', 'e20rtracker' ),
             'add_new_item' => __( 'New Tracker Article', 'e20rtracker' ),
@@ -1857,8 +1887,8 @@ class e20rTracker {
     public function e20r_tracker_girthCPT() {
 
         $labels =  array(
-            'name' => __( 'Girth Type', 'e20rtracker'  ),
-            'singular_name' => __( 'Girth Types', 'e20rtracker' ),
+            'name' => __( 'Girth Types', 'e20rtracker'  ),
+            'singular_name' => __( 'Girth Type', 'e20rtracker' ),
             'slug' => 'e20r_girth_types',
             'add_new' => __( 'New Girth Type', 'e20rtracker' ),
             'add_new_item' => __( 'New Girth Type', 'e20rtracker' ),
@@ -1899,8 +1929,8 @@ class e20rTracker {
     public function e20r_tracker_exerciseCPT() {
 
         $labels =  array(
-            'name' => __( 'Exercise', 'e20rtracker'  ),
-            'singular_name' => __( 'Exercises', 'e20rtracker' ),
+            'name' => __( 'Exercises', 'e20rtracker'  ),
+            'singular_name' => __( 'Exercise', 'e20rtracker' ),
             'slug' => 'e20r_exercise',
             'add_new' => __( 'New Exercise', 'e20rtracker' ),
             'add_new_item' => __( 'New Exercise', 'e20rtracker' ),
@@ -1941,8 +1971,8 @@ class e20rTracker {
     public function e20r_tracker_workoutCPT() {
 
         $labels =  array(
-            'name' => __( 'Workout', 'e20rtracker'  ),
-            'singular_name' => __( 'Workouts', 'e20rtracker' ),
+            'name' => __( 'Workouts', 'e20rtracker'  ),
+            'singular_name' => __( 'Workout', 'e20rtracker' ),
             'slug' => 'e20r_workout',
             'add_new' => __( 'New Workout', 'e20rtracker' ),
             'add_new_item' => __( 'New Workout', 'e20rtracker' ),
@@ -1983,8 +2013,8 @@ class e20rTracker {
     public function e20r_tracker_checkinCPT() {
 
         $labels =  array(
-            'name' => __( 'Check-in', 'e20rtracker'  ),
-            'singular_name' => __( 'Check-ins', 'e20rtracker' ),
+            'name' => __( 'Check-ins', 'e20rtracker'  ),
+            'singular_name' => __( 'Check-in', 'e20rtracker' ),
             'slug' => 'e20r_checkins',
             'add_new' => __( 'New Check-in', 'e20rtracker' ),
             'add_new_item' => __( 'New Check-in', 'e20rtracker' ),
@@ -2180,20 +2210,69 @@ class e20rTracker {
         return false;
     }
 
+    public function getDelay( $delayVal, $userId = null ) {
+
+        global $current_user;
+        global $e20rProgram;
+
+        // We've been given a numeric value so assuming it's the delay.
+        if ( is_numeric( $delayVal ) ) {
+            dbg("e20rTracker::getDelay() - Numeric delay value specified. Returning: {$delayVal}");
+            return $delayVal;
+        }
+
+        if ( $delayVal == 'now' ) {
+            dbg("e20rTracker::getDelay() - Calculating delay since startdate...");
+            // Calculate the user's current "days in program".
+            if ( ! $userId ) {
+
+                $userId = $current_user->ID;
+            }
+
+            $startDate = $e20rProgram->startdate( $userId );
+
+            dbg("e20rTracker::getDelay() - Based on startdate of {$startDate}...");
+
+            $delay = $this->daysBetween( $startDate );
+
+            dbg("e20rTracker::getDelay() - Days since startdate is: {$delay}...");
+
+            return $delay;
+        }
+
+        return false;
+    }
+
+    public function setUserProgramStart( $levelId, $userId ) {
+
+        global $e20rProgram;
+
+        $levels = $this->coachingLevels();
+
+        if ( in_array( $levelId, $levels) ) {
+
+            $startDate = $e20rProgram->startdate( $userId );
+            dbg( "e20rTracker::setuserProgramStart() - Received startdate of: {$startDate} aka " . date( 'Y-m-d', $startDate ) );
+
+            if ( false !== update_user_meta( $userId, 'e20r-tracker-program-startdate', date( 'Y-m-d', $startDate ) ) ) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getDateForPost( $days ) {
 
         dbg("e20rTracker::getDateForPost() - Loading function...");
         global $current_user;
-        global $wpdb;
+        global $e20rProgram;
 
-        $startDateTS = false;
-
-        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
-            // Paid Memberships Pro manages the membership info.
-            $startDateTS = pmpro_getMemberStartdate( $current_user->ID );
-        }
+        $startDateTS = $e20rProgram->startdate( $current_user->ID );
 
         if (! $startDateTS ) {
+
             dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$current_user->ID}");
             return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
         }
@@ -2210,6 +2289,7 @@ class e20rTracker {
     public function getDripFeedDelay( $postId ) {
 
         if ( class_exists( 'PMProSequence') ) {
+
             dbg("e20rArticle::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
 
             if ( false === ( $sequenceIds = get_post_meta( $postId, '_post_sequences', true ) ) ) {
@@ -2333,5 +2413,95 @@ class e20rTracker {
 
         //we do not know the post type!
         return null;
+    }
+
+    private function coachingLevels( $invert = false ) {
+
+        global $wpdb;
+
+        $coaching_levels = array();
+
+        if ( function_exists( 'pmpro_activation' ) ) {
+            $sql = "SELECT id
+                    FROM $wpdb->pmpro_membership_levels
+                    WHERE name " . ( $invert ? "NOT " : '' ) . "LIKE '%coaching%' AND allow_signups = 1
+                ";
+        }
+
+        if ( ! $sql ) {
+            return false;
+        }
+
+        $results = $wpdb->get_results( $sql );
+
+        foreach ( $results as $result ) {
+
+            if ( $invert ) {
+                $coaching_levels[] = 0 - $result->id;
+            }
+            else {
+                $coaching_levels[] = $result->id;
+            }
+        }
+
+        return $coaching_levels;
+    }
+
+    /**
+     * Calculates the # of days between two dates (specified in UTC seconds)
+     *
+     * @param $startdate (timestamp) - timestamp value for start date
+     * @param $enddate (timestamp) - timestamp value for end date
+     * @return int ( the # of days )
+     */
+    public function daysBetween( $startdate, $enddate = null, $tz = 'UTC' ) {
+
+        $days = 0;
+
+        // use current day as $enddate if nothing is specified
+        if ( ( is_null( $enddate ) ) && ( $tz == 'UTC') ) {
+
+            $enddate = current_time( 'timestamp', true );
+        }
+        elseif ( is_null( $enddate ) ) {
+
+            $enddate = current_time( 'timestamp' );
+        }
+
+        // Create two DateTime objects
+        $dStart = new DateTime( date( 'Y-m-d', $startdate ), new DateTimeZone( $tz ) );
+        $dEnd   = new DateTime( date( 'Y-m-d', $enddate ), new DateTimeZone( $tz ) );
+
+        if ( version_compare( PHP_VERSION, "5.3", '>=' ) ) {
+
+            /* Calculate the difference using 5.3 supported logic */
+            $dDiff  = $dStart->diff( $dEnd );
+            $dDiff->format( '%d' );
+            //$dDiff->format('%R%a');
+
+            $days = $dDiff->days;
+
+            // Invert the value
+            if ( $dDiff->invert == 1 )
+                $days = 0 - $days;
+        }
+        else {
+
+            // V5.2.x workaround
+            $dStartStr = $dStart->format('U');
+            $dEndStr = $dEnd->format('U');
+
+            // Difference (in seconds)
+            $diff = abs($dStartStr - $dEndStr);
+
+            // Convert to days.
+            $days = $diff * 86400; // Won't manage DST correctly, but not sure that's a problem here..?
+
+            // Sign flip if needed.
+            if ( gmp_sign($dStartStr - $dEndStr) == -1)
+                $days = 0 - $days;
+        }
+
+        return $days + 1;
     }
 }
