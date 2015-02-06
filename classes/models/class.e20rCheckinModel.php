@@ -77,8 +77,6 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $query->the_post();
 
-            $new = new stdClass();
-
             $new = $this->loadSettings( get_the_ID() );
 
             $new->id = get_the_ID();
@@ -101,43 +99,55 @@ class e20rCheckinModel extends e20rSettingsModel {
         global $e20rArticle;
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
+        $date = $e20rArticle->releaseDate($articleId);
+
+        dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$articleId} in program {$programId} for user {$userId}: {$date}");
 
         if ( is_null( $short_name ) ) {
+            dbg("e20rCheckinModel::loadUserCheckin() - No short_name defined...");
             $sql = $wpdb->prepare(
                 "SELECT *
-                FROM {$this->table} AS c
+                 FROM {$this->table} AS c
+                 WHERE ( ( c.user_id = %d ) AND
+                  ( c.checkin_short_name = NULL ) AND
+                  ( c.program_id = %d ) AND
+                  ( c.checkin_type = %d ) AND
+                  ( c.checkin_date LIKE %s ) AND
+                  ( c.article_id = %d ) )",
+                $userId,
+                $programId,
+                $type,
+                $date . "%",
+                $articleId
+            );
+        }
+        else {
+            dbg("e20rCheckinModel::loadUserCheckin() - short_name defined: {$short_name}");
+            $sql = $wpdb->prepare(
+                "SELECT *
+                 FROM {$this->table} AS c
                  WHERE ( ( c.user_id = %d ) AND
                   ( c.checkin_short_name = %s ) AND
                   ( c.program_id = %d ) AND
                   ( c.checkin_type = %d ) AND
+                  ( c.checkin_date LIKE %s ) AND
                   ( c.article_id = %d ) )",
                 $userId,
                 $short_name,
                 $programId,
                 $type,
+                $date . "%",
                 $articleId
             );
         }
-        else {
-            $sql = $wpdb->prepare(
-                "SELECT *
-                FROM {$this->table} AS c
-                 WHERE ( ( c.user_id = %d ) AND
-                  ( c.checkin_short_name = null ) AND
-                  ( c.program_id = %d ) AND
-                  ( c.checkin_type = %d ) AND
-                  ( c.article_id = %d ) )",
-                $userId,
-                $programId,
-                $type,
-                $articleId
-            );
-        }
+
+        dbg("e20rCheckinModel::loadUserCheckin() - SQL: {$sql}");
+
         $result = $wpdb->get_row( $sql );
 
-        if ( is_wp_error( $result ) ) {
+        if ( $result === false ) {
 
-            dbg("e20rCheckinModel::loadCheckinData() - Error loading checkin... " . $wpdb->last_error );
+            dbg("e20rCheckinModel::loadCheckinData() - Error loading checkin: " . $wpdb->last_error );
             return false;
         }
 
@@ -145,17 +155,20 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         if ( empty( $result ) ) {
 
+            /*
             if ( empty( $this->settings ) ) {
                 $this->loadSettings( $articleId );
             }
-
+            */
             $result = new stdClass();
             $result->descr_id = $short_name;
             $result->user_id = $current_user->ID;
             $result->program_id = $programId;
             $result->article_id = $articleId;
-            $result->checkin_date = $e20rArticle->releaseDate( $articleId );
-            $result->checkin_note = '';
+            $result->checkin_date = $date;
+            $result->checkin_note = null;
+            $result->checkedin = null;
+            $result->checkin_short_name = $short_name;
 
             dbg("e20rCheckinModel::loadCheckinData() - Using default values: ");
             dbg($result);
@@ -168,6 +181,9 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
+        dbg("e20rCheckinModel::exists() -  Data: ");
+        dbg( $checkin );
+
         if ( ! is_array( $checkin ) ) {
 
             return false;
@@ -179,16 +195,23 @@ class e20rCheckinModel extends e20rSettingsModel {
                 WHERE (
                 ( {$this->fields['user_id']} = %d ) AND
                 ( {$this->fields['checkin_date']} LIKE %s ) AND
-                ( {$this->fields['program_id']} = %d )
+                ( {$this->fields['program_id']} = %d ) AND
+                ( {$this->fields['checkin_type']} = %d ) AND
+                ( {$this->fields['checkin_short_name']} = %s )
+                )
            ",
-           $checkin['user_id'],
-           $checkin['checkin_date'] . '%',
-           $checkin['program_id']
+            $checkin['user_id'],
+            $checkin['checkin_date'] . '%',
+            $checkin['program_id'],
+            $checkin['checkin_type'],
+            $checkin['checkin_short_name']
         );
 
         $result = $wpdb->get_row( $sql );
 
         if ( ! empty( $result ) ) {
+            dbg("e20rCheckinModel::exists() - Got a result returned: ");
+            dbg($result);
             return $result;
         }
 
@@ -211,10 +234,15 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
-        if ( $result = $this->exists( $checkin ) ) {
+        if ( ( $result = $this->exists( $checkin ) ) !== false ) {
+            dbg("e20rCheckinModel::setCheckin() - found existing record: ");
+            dbg($result->id);
 
             $checkin['id'] = $result->id;
         }
+
+        dbg("e20rCheckinModel::setCheckin() - Checkin record:");
+        dbg($checkin);
 
         return ( $wpdb->replace( $this->table, $checkin ) ? true : false );
     }
