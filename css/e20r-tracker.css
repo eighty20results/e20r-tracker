@@ -1,4 +1,33 @@
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
+.e20r-button {
+    display: inline-block;
+    margin: 0 10px 0 0;
+    color: #004CFF;
+    padding: 8px 15px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: bold;
+    /* font-variant: small-caps; */
+    text-align: center;
+    text-decoration: none;
+    /* box-shadow: 1px 1px 4px #999; */
+    /* background: #666; */
+    background-image: -webkit-linear-gradient(#FFF, #E5E5E5);
+    background-image: -moz-linear-gradient(#FFF, #E5E5E5);
+    background-image: -o-linear-gradient(#FFF, #E5E5E5);
+    background-image: linear-gradient(#FFF, #E5E5E5);
+    border: 1px solid #C5C5C5;
+    text-shadow: none;
+}
+.e20r-button:hover {
+    color: #FFF;
+    /* background: #000; */
+    background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
+    background-image: -moz-linear-gradient(#E5E5E5, #004CFF);
+    background-image: -o-linear-gradient(#E5E5E5, #004CFF);
+    background-image: linear-gradient(#E5E5E5, #004CFF);
+}
 .e20r-admin-hr {
     width: 90%;
 }
@@ -1417,8 +1446,8 @@ td.e20r-group-header {
     margin-left: 6px;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you .edit-selection {
-    margin: 4px;
-    margin-top: 8px;
+    margin: 8px 4px 0 40px;
+    padding: 4px 4px;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes { padding: 0 4px; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes legend {
@@ -1724,4 +1753,43 @@ td.e20r-group-header {
     height: 20px;
     margin-left: 4px;
     margin-top: 4px;
+}
+#e20r-checkin-daynav {
+    width: 100%;
+}
+#e20r-checkin-yesterday-nav {
+    text-align: left;
+}
+#e20r-checkin-tomorrow-nav {
+    text-align: right;
+}
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   speak for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 )
+    url('../images/saving.gif')
+    50% 50%
+    no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading {
+    overflow: hidden;
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
 }
