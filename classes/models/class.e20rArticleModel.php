@@ -21,6 +21,7 @@ class e20rArticleModel extends e20rSettingsModel {
 
         $this->settings = parent::defaultSettings();
 
+        $this->settings->id = null;
         $this->settings->programs = null;
         $this->settings->post_id = null;
         $this->settings->release_day = null;
@@ -46,6 +47,48 @@ class e20rArticleModel extends e20rSettingsModel {
         }
 
         // Combination of program from usermeta & the $settings-Programs;
+    }
+
+    public function findArticle($key, $value, $type = 'numeric', $programId = -1 ) {
+
+        $articleList = array();
+
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type' => 'e20r_articles',
+            'post_status' => 'publish',
+            'order_by' => 'meta_value',
+            'order' => 'DESC',
+            'meta_query' => array(
+                array(
+                    'key' => "_e20r-article-{$key}",
+                    'value' => $value,
+                    'compare' => '=',
+                    'type' => $type,
+                ),
+            )
+        );
+
+        $query = new WP_Query( $args );
+        dbg("e20rArticleModel::findArticle() - Returned articles: {$query->post_count}" );
+
+        while ( $query->have_posts() ) {
+
+            $query->the_post();
+
+            $new = $this->loadSettings( get_the_ID() );
+            $new->id = get_the_ID();
+
+            if ( $query->post_count > 1 ) {
+
+                $articleList[] = $new;
+            }
+            else {
+                $articleList = $new;
+            }
+        }
+
+        return $articleList;
     }
 
     // TODO: This requires the presence of checkin IDs in the Article list, etc.
