@@ -39,10 +39,60 @@ class e20rCheckinModel extends e20rSettingsModel {
         return $settings;
     }
 
-    public function getCheckins( $id, $type = 1, $numBack = -1 ) {
+    public function findActionByDate( $date, $programId ) {
+
+        dbg("e20rCheckinModel::findActionByDate() - Searching by date: {$date}" );
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type' => 'e20r_checkins',
+            'post_status' => 'publish',
+            'order_by' => 'meta_value',
+            'order' => 'DESC',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => '_e20r-checkin-startdate',
+                    'value' => $date,
+                    'compare' => '<=',
+                    'type' => 'DATE',
+                ),
+                array(
+                    'key' => '_e20r-checkin-enddate',
+                    'value' => $date,
+                    'compare' => '>=',
+                    'type' => 'DATE',
+                ),
+            )
+        );
+
+        $query = new WP_Query( $args );
+        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count}" );
+
+        while ( $query->have_posts() ) {
+
+            $query->the_post();
+
+            $id = get_the_ID();
+
+            dbg("e20rCheckinModel::findActionByDate() - Getting program info for action ID: {$id}");
+
+            $programs = get_post_meta( $id, '_e20r-checkin-program_ids', true);
+
+            dbg("e20rCheckinModel::findActionByDate() - Getting program info: ");
+            dbg($programs);
+
+            if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
+
+                $actions[] = $id;
+            }
+        }
+
+        return $actions;
+    }
+
+    public function getActions( $id, $type = 1, $numBack = -1 ) {
 
         $start_date = $this->getSetting( $id, 'startdate' );
-
         $checkins = array();
 
         dbg("e20rCheckinModel::getCheckins() - Loaded startdate: {$start_date}");
@@ -50,7 +100,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $args = array(
             'posts_per_page' => $numBack,
             'post_type' => 'e20r_checkins',
-            // 'post_status' => 'published',
+            'post_status' => 'publish',
             'order_by' => 'meta_value',
             'order' => 'DESC',
             'meta_query' => array(
@@ -85,8 +135,6 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $checkins[] = $new;
         }
-
-        dbg("e20rCheckinModel::getCheckins() - Data to return:");
 
         return $checkins;
     }
