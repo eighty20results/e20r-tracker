@@ -22,7 +22,7 @@ class e20rCheckinView extends e20rSettingsView {
 
     }
 
-    public function load_UserCheckin( $checkinArr ) {
+    public function load_UserCheckin( $checkinArr, $delay, $type ) {
 
         $action = null;
         $activity = null;
@@ -30,90 +30,113 @@ class e20rCheckinView extends e20rSettingsView {
         $survey = null;
         $view = null;
 
-        foreach( $checkinArr as $type => $c ) {
+        if ( ! empty($checkinArr) ) {
 
-            dbg("e20rCheckinView::load_UserCheckin() - Loading view type {$type} for checkin");
+            dbg( "e20rCheckinView::load_UserCheckin() - Array of checkin values isn't empty..." );
+            dbg($checkinArr);
 
-            if ( $type == CHECKIN_ACTION ) {
+            foreach ( $checkinArr as $type => $c ) {
 
-                dbg("e20rCheckinView::load_UserCheckin() - Setting Action checkin data");
-                $action = $c;
+                dbg( "e20rCheckinView::load_UserCheckin() - Loading view type {$type} for checkin" );
+
+                if ( $type == CHECKIN_ACTION ) {
+
+                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Action checkin data" );
+                    $action = $c;
+                }
+
+                if ( $type == CHECKIN_ACTIVITY ) {
+
+                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Activity checkin data" );
+                    $activity = $c;
+                }
+
+                if ( $type == CHECKIN_ASSIGNMENT ) {
+                    $assignment = $c;
+                }
+
+                if ( $type == CHECKIN_SURVEY ) {
+                    $survey = $c;
+                }
+                /*
+							if ( $type == CHECKIN_NOTE ) {
+								$note = $c;
+							}
+				*/
             }
 
-            if ( $type == CHECKIN_ACTIVITY ) {
+            if ( ( ! empty( $action ) ) && ( ! empty( $activity ) ) ) {
 
-                dbg("e20rCheckinView::load_UserCheckin() - Setting Activity checkin data");
-                $activity = $c;
+                dbg( "e20rCheckinView::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
+                $view = $this->view_actionAndActivityCheckin( $delay, $action, $activity, $action->actionList );
             }
-
-            if ( $type == CHECKIN_ASSIGNMENT ) {
-                $assignment = $c;
-            }
-
-            if ( $type == CHECKIN_SURVEY ) {
-                $survey = $c;
-            }
-
-            if ( $type == CHECKIN_NOTE ) {
-                $note = $c;
-            }
-
         }
-
-        if ( ( !empty( $action )) && (!empty( $activity )) ) {
-            dbg($action);
-            dbg($activity);
-
-            dbg("e20rCheckinView::load_UserCheckin() - Loading the view for the Actions & Activity check-in.");
-            $view = $this->view_actionAndActivityCheckin( $action, $activity, $action->habitList );
+        else if ( ( $type == CHECKIN_ACTION ) || ( $type == CHECKIN_ACTIVITY ) ) {
+            dbg("e20rCheckinView::load_UserCheckin() - An activity or Action check-in requested...");
+            $view = $this->view_actionAndActivityCheckin( $delay, $action, $activity, $action->actionList );
         }
 
         return $view;
     }
 
-    public function view_actionAndActivityCheckin( $action, $activity, $habitEntries ) {
+    public function view_actionAndActivityCheckin( $delay = 0, $action, $activity, $habitEntries ) {
+
+        global $e20rTracker;
 
         if ( ! is_array( $action ) ) {
             $this->setError("No check-in recorded");
         }
 
+        $url = '/coaching/home/';
+
         ob_start();
         ?>
+
+        <div id="e20r-checkin-daynav">
+            <p id="e20r-checkin-yesterday-nav">
+                <a id="e20r-checkin-yesterday-lnk" href="<?php echo $url; ?>">To yesterday</a>
+                <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-yesterday" value="<?php echo ( ( $delay - 1 ) >= 0 ? ( $delay - 1 ) : 0 ); ?>" />
+            </p>
+            <p id="e20r-checkin-tomorrow-nav">
+                <a id="e20r-checkin-tomorrow-lnk" href="<?php echo $url; ?>">To tomorrow</a>
+                <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-tomorrow" value="<?php echo ( $delay +1  ); ?>" />
+            </p>
+        </div>
+        <div style="clear: both;"></div>
         <div id="e20r-daily-checkin-container" class="progress-container">
             <h3><?php _e("Daily Coaching <span>Update</span>", "e20rtracker"); ?></h3>
-            <!--<p><span style="background: #e6f4fa;">The Lean Eating program has one simple rule: Every night before you go to bed, take 60 seconds to update us on your progress. Be honest, because we're here to help!</span></p>-->
             <div id="e20r-daily-checkin-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
                 <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo $action->article_id; ?>" />
-                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $action->checkin_date; ?>" />
+                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateForPost( ($delay - 1) ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo $action->program_id; ?>" />
                 <div class="clear-after">
                     <fieldset class="did-you workout">
                         <legend><?php _e("Did you work out today?", "e20rtracker"); ?></legend>
                         <div>
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $activity->id; ?>" />
-                            <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="4" />
+                            <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTIVITY; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $activity->checkin_short_name; ?>" />
                             <ul style="max-width: 300px; width: 290px;">
                                 <li>
-                                    <input type="radio" value="1" <?php checked( $activity->checkedin, 1 ); ?> name="did-activity-today[]" id="did-activity-today-radio-1" />
+                                    <input type="radio" value="1" <?php checked( $activity->checkedin, 1 ); ?> name="did-activity-today" id="did-activity-today-radio-1" />
                                     <label for="did-activity-today-radio-1"><?php _e("I did my workout", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
-                                    <input type="radio" value="2" <?php checked( $activity->checkedin, 2 ); ?> name="did-activity-today[]" id="did-activity-today-radio-2" />
+                                    <input type="radio" value="2" <?php checked( $activity->checkedin, 2 ); ?> name="did-activity-today" id="did-activity-today-radio-2" />
                                     <label for="did-activity-today-radio-2"><?php _e("I was active but didn't complete my workout", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
-                                    <input type="radio" value="0" <?php checked( $activity->checkedin, 0 ); ?> name="did-activity-today[]" id="did-activity-today-radio-3" />
+                                    <input type="radio" value="0" <?php checked( $activity->checkedin, 0 ); ?> name="did-activity-today" id="did-activity-today-radio-3" />
                                     <label for="did-activity-today-radio-3"><?php _e("I missed my workout", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
-                                    <input type="radio" value="3" <?php checked( $activity->checkedin, 3 ); ?> name="did-activity-today[]" id="did-activity-today-radio-4" />
+                                    <input type="radio" value="3" <?php checked( $activity->checkedin, 3 ); ?> name="did-activity-today" id="did-activity-today-radio-4" />
                                     <label for="did-activity-today-radio-4"><?php _e("There was no workout scheduled", "e20rtracker"); ?></label>
                                 </li>
                             </ul>
                             <div class="notification-entry-saved" style="width: 300px; display: none;">
-                                <div><?php _e("Workout entry saved", "e20rtracker"); ?></div>
+                                <div><?php _e("Activity check-in saved", "e20rtracker"); ?></div>
                             </div>
                         </div>
 
@@ -142,15 +165,15 @@ class e20rCheckinView extends e20rSettingsView {
                             }
                             ?>
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $action->id; ?>" />
-                            <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="2" />
+                            <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTION; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
                             <ul style="width: 295px;">
-                                <li><input type="radio" value="1" <?php checked( $action->checkedin, 1 ); ?> name="did-action-today[]" id="did-action-today-radio-1" /><label for="did-action-today-radio-1"><?php _e("Yes", "e20rtracker");?></label></li>
-                                <li><input type="radio" value="0" <?php checked( $action->checkedin, 0 ); ?> name="did-action-today[]" id="did-action-today-radio-2" /><label for="did-action-today-radio-2"><?php _e("No", "e20rtracker"); ?></label></li>
+                                <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 1 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="1" <?php checked( $action->checkedin, 1 ); ?> name="did-action-today" id="did-action-today-radio-1" /><label for="did-action-today-radio-1"><?php _e("Yes", "e20rtracker");?></label></li>
+                                <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 0 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="0" <?php checked( $action->checkedin, 0 ); ?> name="did-action-today" id="did-action-today-radio-2" /><label for="did-action-today-radio-2"><?php _e("No", "e20rtracker"); ?></label></li>
                             </ul>
 
                             <div class="notification-entry-saved" style="width: 295px; display:none;">
-                                <div><?php _e("Habit entry saved", "e20rtracker"); ?></div>
+                                <div><?php _e("Action check-in saved", "e20rtracker"); ?></div>
                             </div>
                         </div>
                     </fieldset><!--.did-you //right-->
@@ -186,6 +209,7 @@ class e20rCheckinView extends e20rSettingsView {
 
             </div><!--#e20r-daily-checkin-canvas-->
         </div><!--#e20r-daily-checkin-container-->
+        <div class="modal"></div>
         <?php
         $html = ob_get_clean();
         return $html;
@@ -248,10 +272,10 @@ class e20rCheckinView extends e20rSettingsView {
                         <td>
                             <select id="e20r-checkin-checkin_type" name="e20r-checkin-checkin_type">
                                 <option value="0" <?php selected( $checkinData->checkin_type, 0 ); ?><?php _e("Not configured", "e20rtracker"); ?></option>
-                                <option value="1" <?php selected( $checkinData->checkin_type, 1 ); ?>><?php _e("Action", "e20rtracker"); ?></option>
-                                <option value="2" <?php selected( $checkinData->checkin_type, 2 ); ?>><?php _e("Assignment", "e20rtracker"); ?></option>
-                                <option value="3" <?php selected( $checkinData->checkin_type, 3 ); ?>><?php _e("Survey", "e20rtracker"); ?></option>
-                                <option value="4" <?php selected( $checkinData->checkin_type, 4 ); ?>><?php _e("Exercise", "e20rtracker"); ?></option>
+                                <option value="<?php echo CHECKIN_ACTION; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTION ); ?>><?php _e("Action", "e20rtracker"); ?></option>
+                                <option value="<?php echo CHECKIN_ASSIGNMENT; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ASSIGNMENT ); ?>><?php _e("Assignment", "e20rtracker"); ?></option>
+                                <option value="<?php echo CHECKIN_SURVEY; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_SURVEY ); ?>><?php _e("Survey", "e20rtracker"); ?></option>
+                                <option value="<?php echo CHECKIN_ACTIVITY; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTIVITY ); ?>><?php _e("Activity", "e20rtracker"); ?></option>
                             </select>
                         </td>
                         <td class="text-input">
