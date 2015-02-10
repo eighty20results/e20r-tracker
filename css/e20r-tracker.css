@@ -1299,7 +1299,6 @@ td.e20r-group-header {
     padding: 14px;
 }
 .progress-container > h3 {
-    text-transform: uppercase;
     color: #FFF !important;
     font-size: 20px !important;
     font-weight: bold;
@@ -1766,12 +1765,28 @@ td.e20r-group-header {
 #e20r-checkin-yesterday-nav {
     float: left;
     padding-left: 25px;
+}
+#e20r-checkin-yesterday-nav > a {
     text-decoration: none !important;
 }
 #e20r-checkin-tomorrow-nav {
     padding-right: 25px;
-    float: right;
+    float: right
+}
+#e20r-checkin-tomorrow-nav > a {
     text-decoration: none !important;
+}
+#e20r-checkin-content {
+    width: 98%;
+    align-content: center;
+}
+#e20r-checkin-lesson {
+    width: 48%;
+    float: right;
+}
+#e20r-checkin-activity {
+    width: 48%;
+    float: left;
 }
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
@@ -1802,4 +1817,23 @@ body.loading {
    modal element will be visible */
 body.loading .modal {
     display: block;
+}
+.e20r-arrow {
+    font-size: 18px;
+    text-decoration: none !important;
+    vertial-align: middle;
+}
+.small-triangle-right {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-left: 10px solid #004CFF;
+    border-bottom: 5px solid transparent;
+}
+.small-triangle-left {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-right: 10px solid #004CFF;
+    border-bottom: 5px solid transparent;
 }
