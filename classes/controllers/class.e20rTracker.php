@@ -30,6 +30,7 @@ class e20rTracker {
                             'delete_tables' => false,
                             'purge_tables' => false,
                             'measurement_day' => CONST_SATURDAY,
+                            'lesson_source' => null,
             )
         );
 
@@ -111,6 +112,7 @@ class e20rTracker {
             add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
             add_action( 'wp_ajax_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
             add_action( 'wp_ajax_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
+            add_action( 'wp_ajax_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -160,6 +162,7 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_addWorkoutGroup', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_getDelayValue', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_saveCheckin', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_daynav', 'e20r_ajaxUnprivError' );
 
             // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
@@ -734,6 +737,7 @@ class e20rTracker {
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
+        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
         // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
@@ -741,6 +745,23 @@ class e20rTracker {
 
     }
 
+    public function render_lessons_select() {
+
+        $options = get_option( $this->setting_name );
+        $sequences = new WP_Query( array(
+            "post_type" => "pmpro_sequence",
+        ) );
+
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[lesson_source]" id="<?php echo $this->setting_name; ?>_lesson_source">
+            <option value="0" <?php selected(0, $options['lesson_source']); ?>>Not Specified</option> <?php
+            while ( $sequences->have_posts() ) : $sequences->the_post(); ?>
+                <option	value="<?php echo the_ID(); ?>" <?php echo selected( the_ID(), $options['lesson_source'] ); ?> ><?php echo the_title_attribute(); ?></option><?php
+            endwhile;
+            wp_reset_postdata(); ?>
+        </select>
+        <?php
+    }
     public function render_delete_checkbox() {
 
         $options = get_option( $this->setting_name );
@@ -2263,22 +2284,67 @@ class e20rTracker {
         return false;
     }
 
-    public function getDateForPost( $days ) {
+    public function getDateFromDelay( $delay = 0, $userId = null ) {
+
+        global $current_user;
+        global $e20rProgram;
+
+        if ( ! $userId ) {
+            $userId = $current_user->ID;
+        }
+
+        $startTS = $e20rProgram->startdate( $userId );
+
+        if ( empty( $delay ) || ( $delay == 'now' ) ) {
+
+            dbg("e20rTracker::getDateForPost() - Calculating 'now' based on current time and startdate for the user");
+            $delay = $this->daysBetween( $startTS, current_time('timestamp') );
+        }
+
+        dbg("e20rTracker::getDateFromDelay() - user w/id {$userId} has a startdate timestamp of {$startTS}");
+
+        if ( ! $startTS ) {
+
+            dbg("e20rTracker::getDateFromDelay( {$delay} ) -> No startdate found for user with ID of {$userId}");
+            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
+        }
+
+        $sDate = date('Y-m-d', $startTS );
+        dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Startdate found for user with ID of {$userId}: {$sDate}");
+
+        $rDate = date( 'Y-m-d', strtotime( "{$sDate} +{$delay} days") );
+
+        dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Startdate ({$sDate}) + delay ({$delay}) days = date: {$rDate}");
+
+        return $rDate;
+    }
+
+    public function getDateForPost( $days, $userId = null ) {
 
         dbg("e20rTracker::getDateForPost() - Loading function...");
         global $current_user;
         global $e20rProgram;
 
-        $startDateTS = $e20rProgram->startdate( $current_user->ID );
+        if ( $userId  === null ) {
+
+            $userId = $current_user->ID;
+        }
+
+        $startDateTS = $e20rProgram->startdate( $userId );
 
         if (! $startDateTS ) {
 
-            dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$current_user->ID}");
+            dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$userId}");
             return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
         }
 
+        if ( empty( $days ) || ( $days == 'now' ) ) {
+            dbg("e20rTracker::getDateForPost() - Calculating 'now' based on current time and startdate for the user");
+            $days = $this->daysBetween( $startDateTS, current_time('timestamp') );
+        }
+
         $startDate = date( 'Y-m-d', $startDateTS );
-        dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$current_user->ID}: {$startDate}");
+        dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate}");
 
         $releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +{$days} days") );
 
@@ -2450,27 +2516,27 @@ class e20rTracker {
     /**
      * Calculates the # of days between two dates (specified in UTC seconds)
      *
-     * @param $startdate (timestamp) - timestamp value for start date
-     * @param $enddate (timestamp) - timestamp value for end date
+     * @param $startTS (timestamp) - timestamp value for start date
+     * @param $endTS (timestamp) - timestamp value for end date
      * @return int ( the # of days )
      */
-    public function daysBetween( $startdate, $enddate = null, $tz = 'UTC' ) {
+    public function daysBetween( $startTS, $endTS = null, $tz = 'UTC' ) {
 
         $days = 0;
 
-        // use current day as $enddate if nothing is specified
-        if ( ( is_null( $enddate ) ) && ( $tz == 'UTC') ) {
+        // use current day as $endTS if nothing is specified
+        if ( ( is_null( $endTS ) ) && ( $tz == 'UTC') ) {
 
-            $enddate = current_time( 'timestamp', true );
+            $endTS = current_time( 'timestamp', true );
         }
-        elseif ( is_null( $enddate ) ) {
+        elseif ( is_null( $endTS ) ) {
 
-            $enddate = current_time( 'timestamp' );
+            $endTS = current_time( 'timestamp' );
         }
 
         // Create two DateTime objects
-        $dStart = new DateTime( date( 'Y-m-d', $startdate ), new DateTimeZone( $tz ) );
-        $dEnd   = new DateTime( date( 'Y-m-d', $enddate ), new DateTimeZone( $tz ) );
+        $dStart = new DateTime( date( 'Y-m-d', $startTS ), new DateTimeZone( $tz ) );
+        $dEnd   = new DateTime( date( 'Y-m-d', $endTS ), new DateTimeZone( $tz ) );
 
         if ( version_compare( PHP_VERSION, "5.3", '>=' ) ) {
 
@@ -2495,13 +2561,13 @@ class e20rTracker {
             $diff = abs($dStartStr - $dEndStr);
 
             // Convert to days.
-            $days = $diff * 86400; // Won't manage DST correctly, but not sure that's a problem here..?
+            $days = $diff * 86400; // Won't handle DST correctly, that's probably not a problem here..?
 
             // Sign flip if needed.
             if ( gmp_sign($dStartStr - $dEndStr) == -1)
                 $days = 0 - $days;
         }
 
-        return $days + 1;
+        return $days;
     }
 }
