@@ -111,6 +111,7 @@ function loadTracker() {
         global $e20rExercise;
         global $e20rWorkout;
         global $e20rCheckin;
+        global $e20rAssignment;
 
         $e20rTables->init();
         // $e20rTracker->init();
@@ -150,6 +151,11 @@ function loadTracker() {
         if ( ! isset( $e20rClient ) ) {
             dbg("E20R Tracker Init: Loading e20rClient class");
             $e20rClient = new e20rClient();
+        }
+
+        if ( ! isset( $e20rAssignment ) ) {
+            dbg("E20R Tracker Init: Loading e20rAssignment class");
+            $e20rAssignment = new e20rAssignment();
         }
 
         $e20rTracker->loadAllHooks();
@@ -244,7 +250,9 @@ if ( ! class_exists( 'e20rTracker' ) ):
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rCheckinModel.php" );
         require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rCheckinView.php" );
 
-        require_once( E20R_PLUGIN_DIR . "classes/class.e20rAssignment.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rAssignment.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rAssignmentModel.php" );
+        require_once( E20R_PLUGIN_DIR . "classes/views/class.e20rAssignmentView.php" );
 
         global $e20rTracker;
         global $e20rClient;
@@ -255,6 +263,7 @@ if ( ! class_exists( 'e20rTracker' ) ):
         global $e20rExercise;
         global $e20rWorkout;
         global $e20rCheckin;
+        global $e20rAssignment;
         global $e20rMeasurementDate;
         global $e20rExampleProgress;
 
