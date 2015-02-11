@@ -131,7 +131,6 @@ class e20rAssignmentView extends e20rSettingsView {
         global $post;
         global $e20rArticle;
         global $e20rTracker;
-        global $e20rAssignment;
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -169,7 +168,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
                     <tr class="e20r-article-list">
                     <td class="e20r-assignment-hdr_order"><?php echo $a->order_num; ?></td>
-                    <td class="e20r-assignment-hdr_title"><?php echo $a->descr; ?></td>
+                    <td class="e20r-assignment-hdr_title"><?php echo $a->question; ?></td>
                     <td class="e20r-assignment-hdr_type">
                         <?php
                         // TODO: Properly display the assignment type selected.
