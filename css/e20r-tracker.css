@@ -1,3 +1,11 @@
+.clear-after { zoom: 1; }
+.clear-after:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
 .e20r-button {
     display: inline-block;
@@ -1762,32 +1770,64 @@ td.e20r-group-header {
     margin-left: auto;
     margin-right: auto;
 }
-#e20r-checkin-yesterday-nav {
+.e20r-checkin-yesterday-nav {
+    font-size: 15px;
+    text-decoration: underline;
+    font-variant: small-caps;
+    font-weight: bold;
+    color: #004CFF;
     float: left;
     padding-left: 25px;
 }
-#e20r-checkin-yesterday-nav > a {
+/* #e20r-checkin-yesterday-nav > a {
     text-decoration: none !important;
-}
-#e20r-checkin-tomorrow-nav {
+}*/
+.e20r-checkin-tomorrow-nav {
+    font-size: 15px;
+    text-decoration: underline;
+    font-weight: bold;
+    font-variant: small-caps;
+    color: #004CFF;
     padding-right: 25px;
     float: right
 }
-#e20r-checkin-tomorrow-nav > a {
+/* #e20r-checkin-tomorrow-nav > a {
     text-decoration: none !important;
+}*/
+div#e20r-checkin-content {
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
-#e20r-checkin-content {
-    width: 98%;
-    align-content: center;
+.e20r-content-cell {
+    /* border: 1px solid #eeeeee; */
+    /* border-radius: 4px;
+    margin-bottom: 10px; */
+    width: 50%;
+    max-height: 150px;
+    min-height: 100px;
+    overflow: hidden;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 #e20r-checkin-lesson {
-    width: 48%;
-    float: right;
+    padding-right: 20px;
+    padding-left: 10px;
+}
+#e20r-checkin-lesson > a {
+    padding-left: 20px;
 }
 #e20r-checkin-activity {
-    width: 48%;
-    float: left;
+    border-right: 2px solid #9C0000;
+    padding-right: 10px;
+    padding-left: 20px;
 }
+#e20r-checkin-activity > a {
+    padding-left: 20px;
+}
+.e20r-checkin-header {}
+.e20r-descr { font-size: 0.9em !important;}
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
    with position:fixed. Width, height, top and left speak
@@ -1823,17 +1863,19 @@ body.loading .modal {
     text-decoration: none !important;
     vertial-align: middle;
 }
-.small-triangle-right {
-    width: 0;
-    height: 0;
-    border-top: 5px solid transparent;
-    border-left: 10px solid #004CFF;
-    border-bottom: 5px solid transparent;
+.date-past-future {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    margin-bottom: 8px;
+    background: #fff6eb;
+    background-repeat: no-repeat;
+    background-position: 12px 8px;
+    border: 1px solid #df8b37;
+    padding: 8px 12px;
+    padding-left: 34px;
+    font-size: 14px;
+    font-weight: normal;
+    background-image: url(../images/small-calendar.png);
 }
-.small-triangle-left {
-    width: 0;
-    height: 0;
-    border-top: 5px solid transparent;
-    border-right: 10px solid #004CFF;
-    border-bottom: 5px solid transparent;
-}
+.date-past-future .li { line-height: 150%; }
+.date-past-future { margin-bottom: 16px; }
