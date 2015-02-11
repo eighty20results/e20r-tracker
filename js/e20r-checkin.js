@@ -26,34 +26,41 @@ jQuery(document).ready(function() {
             this.$nonce = jQuery('#e20r-checkin-nonce').val();;
             this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
-            this.$tomorrowBtn = jQuery("#e20r-checkin-tomorrow-lnk");
-            this.$yesterdayBtn = jQuery("#e20r-checkin-yesterday-lnk");
+/*            this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk"); */
+/*            this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk"); */
 
             var me = this;
 
-            jQuery(this.$checkinOptions).on('click', function () {
+            this.bindProgressElements( me );
+        },
+        bindProgressElements: function(self) {
+
+            self.$tomorrowBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
+            self.$yesterdayBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+
+            jQuery("#e20r-daily-progress").find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
+
                 var $radioBtn = this;
 
                 console.log("Checkin button: ", this);
-                me.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
-                console.log("Action or activity? ", me.$actionOrActivity);
-                me.saveCheckin(this, me.$actionOrActivity, me);
+                self.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
+                console.log("Action or activity? ", self.$actionOrActivity);
+                self.saveCheckin(this, self.$actionOrActivity, self);
             });
 
-            me.showBtn( me );
+            self.showBtn( self );
 
-            jQuery(me.$tomorrowBtn).on('click', function() {
+            jQuery(self.$tomorrowBtn).on('click', function() {
 
                 event.preventDefault();
-                me.toNext(me, this);
+                self.dayNav(self, this);
             });
 
-            jQuery(me.$yesterdayBtn).on('click', function() {
+            jQuery(self.$yesterdayBtn).on('click', function() {
 
                 event.preventDefault();
-                me.toNext(me, this);
+                self.dayNav(self, this);
             });
-
         },
         showBtn: function( self ) {
 
@@ -227,10 +234,12 @@ jQuery(document).ready(function() {
                 .remove();
 
         },
-        toNext: function( self, elem ) {
+        dayNav: function( self, elem ) {
+
+            var NextDay = jQuery(elem).next("input[name='e20r-checkin-day']").val();
 
             var data = {
-                action: 'nextDay',
+                action: 'daynav',
                 'e20r-checkin-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
@@ -239,6 +248,31 @@ jQuery(document).ready(function() {
             }
 
             console.log("toNext data: ", data);
+
+            jQuery.post(e20r_checkin.url, data, function(response) {
+
+                if ( ! response.success ) {
+
+                    var $string;
+                    $string = "An error occurred while trying to load the requested page. If you\'d like to try again, please reload ";
+                    $string += "this page, and click your selection once more. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using our Contact form ";
+                    $string += "at the top of this page.";
+
+                    alert($string);
+
+                    return;
+                }
+                else {
+
+                    jQuery('#e20r-daily-progress').html(response.data);
+
+                    self.bindProgressElements( self );
+
+                }
+
+            });
+
         }
     };
 
