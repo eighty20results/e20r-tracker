@@ -22,6 +22,7 @@ define( 'GF_PHOTOFORM_ID', 45 );
 // define( 'URL_TO_PROGRESS_FORM', site_url('/coaching/progress-update/'));
 define( 'E20R_COACHING_URL' , site_url( '/nutrition-coaching/' ) );
 define( 'URL_TO_PROGRESS_FORM', E20R_COACHING_URL. 'weekly-progress/');
+define( 'URL_TO_CHECKIN_FORM', site_url('/coaching/home') );
 
 define ('CONST_MEASUREMENTDAY', 6 );
 define( 'TOTAL_GIRTH_MEASUREMENTS', 8 ); // Total number of girth measurements expected
