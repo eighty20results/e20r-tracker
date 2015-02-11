@@ -144,58 +144,71 @@ class e20rCheckin extends e20rSettings {
 
     }
 
-    public function shortcode_dailyProgress( $attributes ) {
+    public function dailyProgress( $config ) {
 
-        global $post;
-        global $current_user;
         global $e20rTracker;
         global $e20rArticle;
-        global $e20rProgram;
 
-        $type = 'action';
-        $survey_id = null;
+        global $current_user;
 
-        extract( shortcode_atts( array(
-            'type' => $type,
-            'form_id' => $survey_id,
-        ), $attributes ) );
+        if ( $config->delay > ( $config->delay_byDate + 2 ) ) {
+            // The user is attempting to view a day >2 days after today.
+            $config->maxDelayFlag = CONST_MAXDAYS_FUTURE;
+        }
 
-        $articleId = $e20rArticle->init($post->ID);
-        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID, $articleId );
+        if ( $config->delay < ( $config->delay_byDate - 2 ) ) {
 
-        if ( ( strtolower($type) == 'action' ) || ( strtolower($type) == 'activity' ) ) {
+            // The user is attempting to view a day >2 days before today.
+            $config->maxDelayFlag = CONST_MAXDAYS_PAST;
+        }
 
-            dbg("e20rCheckin::shortcode_dailyProgress() - Configured daily action check-ins");
+        $config->prev = $config->delay - 1;
+        $config->next = $config->delay + 1;
 
-            // Check if this is a "Yesterday/tomorrow" link click.
-            if ( ! isset( $_POST['e20r-checkin-day'] ) ) {
+//        $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
+//        dbg("e20rCheckinView::view_actionAndActivityCheckin() - ArticleID: {$articleId}");
 
-                dbg("e20rCheckin::shortcode_dailyProgress() - No delay specified. Using 'now' for user {$current_user->ID}");
-                $delay = 'now';
+        $t = $e20rTracker->getDateFromDelay( $config->next );
+        $config->tomorrow = date_i18n( 'l M. jS', strtotime( $t ));
+
+        $y = $e20rTracker->getDateFromDelay( $config->prev );
+        $config->yesterday = date_i18n( 'l M. jS', strtotime( $y ) );
+
+
+        if ( ( strtolower($config->type) == 'action' ) || ( strtolower($config->type) == 'activity' ) ) {
+
+            dbg("e20rCheckin::dailyProgress() - Configured daily action check-ins for article ID(s):");
+            dbg($config->articleId);
+
+            if ( empty( $config->articleId ) ) {
+
+                dbg("e20rCheckin::dailyProgress() -  No articleId specified. Searching...");
+                $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
+
+                if ( empty( $config->articleId ) ) {
+                    dbg("e20rCheckin::dailyProgress() - No article found. Using default of -1");
+                    $config->articleId = CONST_NULL_ARTICLE;
+                }
             }
-            else {
 
-                $delay = intval( $_POST['e20r-checkin-day'] );
+            if ( $config->articleId !== CONST_NULL_ARTICLE ) {
+
+                dbg("e20rCheckin::dailyProgress() - Loading lesson & activity excerpts");
+
+                $config->lessonExcerpt = $e20rArticle->getLessonExcerpt( $config->articleId );
+                // TODO: Load $config->activityExcerpt (first need to create Activity stuff)
             }
-
-            $delay = $e20rTracker->getDelay( $delay );
-            dbg("e20rCheckin::shortcode_dailyProgress() - Using delay value of {$delay} days");
-
-            if ( $articleId === false ) {
-
-                $articleId = $e20rArticle->findArticleByDelay( $delay );
-            }
-
             // Get the check-in id list for the specified article ID
-            $checkinIds = $e20rArticle->getCheckins( $articleId );
+            $checkinIds = $e20rArticle->getCheckins( $config->articleId );
 
             if ( ! $checkinIds ) {
 
-                $checkinIds = $this->model->findActionByDate( date( 'Y-m-d', current_time('timestamp') ), $programId );
+                $config->post_date = $e20rTracker->getDateForPost( $config->delay );
+                $checkinIds = $this->model->findActionByDate( $config->post_date , $config->programId );
             }
 
-            dbg( "e20rCheckin::shortcode_dailyProgress() - Article info loaded." );
-            dbg( $checkinIds );
+            dbg( "e20rCheckin::dailyProgress() - Checkin/article info loaded." );
+            // dbg( $checkinIds );
 
             foreach ( $checkinIds as $id ) {
 
@@ -205,7 +218,7 @@ class e20rCheckin extends e20rSettings {
 
                     case $this->types['assignment']:
 
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - Loading data for assignment check-in" );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for assignment check-in" );
 
                         // TODO: Load view for assignment check-in (including check for questions & answers to load).
                         $checkin = null;
@@ -213,35 +226,35 @@ class e20rCheckin extends e20rSettings {
 
                     case $this->types['survey']:
 
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - Loading data for survey check0-in" );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for survey check-in" );
                         // TODO: Load view for survey data (pick up survey(s) from Gravity Forms entry.
                         $checkin = null;
                         break;
 
                     case $this->types['action']:
 
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - Loading data for daily action checkin" );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in" );
 
-                        $checkin            = $this->model->loadUserCheckin( $articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        $checkin            = $this->model->loadUserCheckin( $config->articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
                         $checkin->actionList = $this->model->getActions( $id, $settings->checkin_type, - 3 );
 
                         break;
 
                     case $this->types['activity']:
 
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - Loading data for daily activity checkin" );
-                        $checkin = $this->model->loadUserCheckin( $articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity check-in" );
+                        $checkin = $this->model->loadUserCheckin( $config->articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
                         break;
 
                     case $this->types['note']:
                         // TODO: Decide.. Do we handler this in the action check-in?
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - Loading data for daily activity note(s)" );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity note(s)" );
                         break;
 
                     default:
 
                         // Load action and acitvity view.
-                        dbg( "e20rCheckin::shortcode_dailyProgress() - No default action to load!" );
+                        dbg( "e20rCheckin::dailyProgress() - No default action to load!" );
                         $checkin = null;
 
                 }
@@ -251,26 +264,168 @@ class e20rCheckin extends e20rSettings {
                 $this->checkin[ $settings->checkin_type ] = $checkin;
             }
 
-            dbg( "e20rCheckin::shortcode_dailyProgress() - Loading checkin for user and delay{$delay}.." );
+            dbg( "e20rCheckin::dailyProgress() - Loading checkin for user and delay {$config->delay}.." );
             dbg( $this->checkin );
 
-            return $this->view->load_UserCheckin( $this->checkin, $delay, $settings->checkin_type );
+            return $this->load_UserCheckin( $config, $this->checkin );
         }
 
-        if ( strtolower($type) == 'assignment' ) {
+        if ( strtolower($config->type) == 'assignment' ) {
 
-            if ( $articleId === false ) {
+            if ( $config->articleId === false ) {
 
-                dbg("e20rCheckin::shortcode_dailyProgress() - No article defined. Quitting.");
+                dbg("e20rCheckin::dailyProgress() - No article defined. Quitting.");
                 return false;
             }
 
-            dbg("e20rCheckin::shortcode_dailyProgress() - Loading pre-existing data for the lesson/assignment ");
+            dbg("e20rCheckin::dailyProgress() - Loading pre-existing data for the lesson/assignment ");
 
             // $assignments = $e20rAssignment->getAssignment( $articleId );
 
             // return $this->view->viewAssignment( $assignments, $articleId, $delay );
         }
+    }
+
+    public function nextCheckin_callback() {
+
+        dbg("e20rCheckin::nextCheckin_callback() - Checking ajax referrer privileges");
+        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+
+        dbg("e20rCheckin::nextCheckin_callback() - Checking ajax referrer has the right privileges");
+
+        global $e20rArticle;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $current_user;
+        global $post;
+
+        $config = new stdClass();
+
+        $config->type = 'action';
+        $config->survey_id = null;
+        $config->post_date = null;
+
+        $config->userId = $current_user->ID;
+        $config->startTS = $e20rProgram->startdate( $config->userId );
+        $config->url = URL_TO_CHECKIN_FORM;
+
+        $config->articleId = ( ! isset( $_POST['article-id'] ) ? $e20rArticle->init($post->ID) : intval($_POST['article-id']) );
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+
+        $config->delay = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
+        $config->delay_byDate = $e20rTracker->daysBetween( $config->startTS, current_time('timestamp') );
+
+        dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}");
+
+        if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
+
+            dbg("e20rCheckin::nextCheckin() - Sending new dailyProgress data (html)");
+            wp_send_json_success( $html );
+        }
+
+        wp_send_json_error();
+    }
+
+    public function shortcode_dailyProgress( $attributes = null ) {
+
+        global $e20rArticle;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $current_user;
+        global $post;
+
+        $config = new stdClass();
+
+        $config->type = 'action';
+        $config->survey_id = null;
+        $config->post_date = null;
+        $config->maxDelayFlag = null;
+        $config->url = URL_TO_CHECKIN_FORM;
+
+        $config->userId = $current_user->ID;
+        $config->startTS = $e20rProgram->startdate( $config->userId );
+        $config->delay = $e20rTracker->getDelay( 'now' );
+        $config->delay_byDate = $config->delay;
+
+        extract( shortcode_atts( array(
+            'type' => $config->type,
+            'form_id' => $config->survey_id,
+        ), $attributes ) );
+
+        dbg("e20rCheckin::shortcode_dailyProgress() - Using delay value of {$config->delay} days");
+
+        // TODO: Get article ID for the post/lesson that this check_in belongs to
+        $article = $e20rArticle->findArticle( 'release_day', $config->delay );
+
+        $config->articleId = $article->id;
+        $config->programId = $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId );
+
+        ob_start();
+        ?>
+        <div id="e20r-daily-progress">
+            <?php echo $this->dailyProgress( $config ); ?>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public function load_UserCheckin( $config, $checkinArr ) {
+
+        $action = null;
+        $activity = null;
+        $assignment = null;
+        $survey = null;
+        $view = null;
+
+        if ( ! empty($checkinArr) ) {
+
+            dbg( "e20rCheckinView::load_UserCheckin() - Array of checkin values isn't empty..." );
+            dbg($checkinArr);
+
+            foreach ( $checkinArr as $type => $c ) {
+
+                dbg( "e20rCheckinView::load_UserCheckin() - Loading view type {$type} for checkin" );
+
+                if ( $type == CHECKIN_ACTION ) {
+
+                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Action checkin data" );
+                    $action = $c;
+                }
+
+                if ( $type == CHECKIN_ACTIVITY ) {
+
+                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Activity checkin data" );
+                    $activity = $c;
+                }
+
+                if ( $type == CHECKIN_ASSIGNMENT ) {
+                    $assignment = $c;
+                }
+
+                if ( $type == CHECKIN_SURVEY ) {
+                    $survey = $c;
+                }
+                /*
+							if ( $type == CHECKIN_NOTE ) {
+								$note = $c;
+							}
+				*/
+            }
+
+            if ( ( ! empty( $action ) ) && ( ! empty( $activity ) ) ) {
+
+                dbg( "e20rCheckinView::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
+                $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
+            }
+        }
+        else if ( ( $config->type == CHECKIN_ACTION ) || ( $config->type == CHECKIN_ACTIVITY ) ) {
+            dbg("e20rCheckinView::load_UserCheckin() - An activity or Action check-in requested...");
+            $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
+        }
+
+        return $view;
     }
 
     public function getPeers( $checkinId = null ) {
