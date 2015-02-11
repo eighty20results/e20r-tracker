@@ -44,14 +44,14 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $settings;
     }
 
-    public function getAssignments( $id, $articleId ) {
+    public function getArticleAssignments( $articleId ) {
 
         global $current_user;
         global $e20rProgram;
 
         $assignments = array();
 
-        dbg("e20rAssignmentModel::getAssignments() - for article #: {$articleId}");
+        dbg("e20rAssignmentModel::getArticleAssignments() - for article #: {$articleId}");
 
         $args = array(
             'posts_per_page' => -1,
