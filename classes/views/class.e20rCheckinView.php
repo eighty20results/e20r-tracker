@@ -22,93 +22,83 @@ class e20rCheckinView extends e20rSettingsView {
 
     }
 
-    public function load_UserCheckin( $checkinArr, $delay, $type ) {
-
-        $action = null;
-        $activity = null;
-        $assignment = null;
-        $survey = null;
-        $view = null;
-
-        if ( ! empty($checkinArr) ) {
-
-            dbg( "e20rCheckinView::load_UserCheckin() - Array of checkin values isn't empty..." );
-            dbg($checkinArr);
-
-            foreach ( $checkinArr as $type => $c ) {
-
-                dbg( "e20rCheckinView::load_UserCheckin() - Loading view type {$type} for checkin" );
-
-                if ( $type == CHECKIN_ACTION ) {
-
-                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Action checkin data" );
-                    $action = $c;
-                }
-
-                if ( $type == CHECKIN_ACTIVITY ) {
-
-                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Activity checkin data" );
-                    $activity = $c;
-                }
-
-                if ( $type == CHECKIN_ASSIGNMENT ) {
-                    $assignment = $c;
-                }
-
-                if ( $type == CHECKIN_SURVEY ) {
-                    $survey = $c;
-                }
-                /*
-							if ( $type == CHECKIN_NOTE ) {
-								$note = $c;
-							}
-				*/
-            }
-
-            if ( ( ! empty( $action ) ) && ( ! empty( $activity ) ) ) {
-
-                dbg( "e20rCheckinView::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
-                $view = $this->view_actionAndActivityCheckin( $delay, $action, $activity, $action->actionList );
-            }
-        }
-        else if ( ( $type == CHECKIN_ACTION ) || ( $type == CHECKIN_ACTIVITY ) ) {
-            dbg("e20rCheckinView::load_UserCheckin() - An activity or Action check-in requested...");
-            $view = $this->view_actionAndActivityCheckin( $delay, $action, $activity, $action->actionList );
-        }
-
-        return $view;
-    }
-
-    public function view_actionAndActivityCheckin( $delay = 0, $action, $activity, $habitEntries ) {
+    public function view_actionAndActivityCheckin( $config, $action, $activity, $habitEntries) {
 
         global $e20rTracker;
+        global $e20rArticle;
 
         if ( ! is_array( $action ) ) {
             $this->setError("No check-in recorded");
         }
 
-        $url = '/coaching/home/';
+        $trackerOpts = get_option('e20r-tracker');
+        $article = $e20rArticle->getSettings($config->articleId);
 
         ob_start();
-        ?>
 
+        if ( ( $config->delay < $config->delay_byDate ) && ( is_null( $config->maxDelayFlag ) ) ){ ?>
+            <div class="date-past-future notice">You are viewing a day in the past.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
+            <?php
+        }
+
+        if ( ( $config->delay > $config->delay_byDate ) && ( is_null( $config->maxDelayFlag ) ) ) { ?>
+            <div class="date-past-future notice">You are viewing a day in the future.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
+            <?php
+        }
+
+        if ( $config->maxDelayFlag == CONST_MAXDAYS_FUTURE ) {
+
+            // The user is attempting to view a day >2 days after today.
+            ?>
+            <div class="date-past-future orange-notice">
+                <h4>We love that you're interested</h4>
+                <p>However, we feel there's already plenty to keep yourself busy with for now. Please head on
+                    <a href="<?php echo $config->url; ?>">back to the dashboard for Today</a>.</p>
+            </div><?php
+        }
+        else {
+        ?>
+        <noscript>
+            <div class="red-notice" style="font-size: 18px; line-height: 22px;">
+                <strong style="display: block; margin-bottom: 8px;">There's a little problem...</strong>
+                You are using a web browser that doesn't have JavaScript enabled! <br/><br/>
+                JavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
+                To get something useful from the Nourish Coaching platform, you will need to enable JavaScript.
+                Start by checking your browser's help pages or support forums or "the Google". You'll probably find
+                step by step instructions.<br/>
+                Or you can post a note in your Nourish Coaching forum and we'll help you.</div>
+        </noscript>
+        <div class="clear-after"></div>
         <div id="e20r-checkin-daynav">
-            <p id="e20r-checkin-yesterday-nav">
-                <a id="e20r-checkin-yesterday-lnk" href="<?php echo $url; ?>">To yesterday</a>
-                <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-yesterday" value="<?php echo ( ( $delay - 1 ) >= 0 ? ( $delay - 1 ) : 0 ); ?>" />
-            </p>
-            <p id="e20r-checkin-tomorrow-nav">
-                <a id="e20r-checkin-tomorrow-lnk" href="<?php echo $url; ?>">To tomorrow</a>
-                <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-tomorrow" value="<?php echo ( $delay +1  ); ?>" />
-            </p>
+                <p class="e20r-checkin-yesterday-nav">
+                    <a id="e20r-checkin-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
+                    <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
+                </p>
+                <p class="e20r-checkin-tomorrow-nav">
+                    <a id="e20r-checkin-tomorrow-lnk" href="<?php echo $config->url; ?>"><?php echo $config->tomorrow; ?></a>
+                    <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-tomorrow" value="<?php echo ( $config->next  ); ?>">
+                </p>
         </div>
-        <div style="clear: both;"></div>
+        <div class="clear-after"></div>
+        <table id="e20r-checkin-content">
+            <tbody>
+            <tr>
+                <td id="e20r-checkin-activity" class="e20r-content-cell">
+                    <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">Activity</h4><p class="e20r-descr">No activity scheduled.</p>' : $config->activityExcerpt ); ?>
+                </td>
+                <td id="e20r-checkin-lesson" class="e20r-content-cell">
+                    <?php echo ( ! isset( $config->lessonExcerpt ) ? '<h4 class="e20r-checkin-header">Lesson</h4><p class="e20r-descr">No lesson scheduled.' : $config->lessonExcerpt ); ?>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="clear-after"></div>
         <div id="e20r-daily-checkin-container" class="progress-container">
             <h3><?php _e("Daily Coaching <span>Update</span>", "e20rtracker"); ?></h3>
             <div id="e20r-daily-checkin-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
-                <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo $action->article_id; ?>" />
-                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateForPost( ($delay - 1) ); ?>" />
+                <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo $article->id; ?>" />
+                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateFromDelay( $config->delay ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo $action->program_id; ?>" />
                 <div class="clear-after">
                     <fieldset class="did-you workout">
@@ -201,7 +191,7 @@ class e20rCheckinView extends e20rSettingsView {
 
 
                     <div class="button-container">
-                        <button data-assignment-id="6807271" id="save-note"><?php _e("Save Note", "e20rtracker"); ?></button>
+                        <button id="save-note" class="e20r-button"><?php _e("Save Note", "e20rtracker"); ?></button>
                     </div>
 
                 </fieldset><!--.notes-->
@@ -209,8 +199,9 @@ class e20rCheckinView extends e20rSettingsView {
 
             </div><!--#e20r-daily-checkin-canvas-->
         </div><!--#e20r-daily-checkin-container-->
-        <div class="modal"></div>
-        <?php
+    <?php } ?>
+    <div class="modal"></div>
+    <?php
         $html = ob_get_clean();
         return $html;
     }
