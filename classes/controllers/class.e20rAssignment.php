@@ -29,7 +29,20 @@ class e20rAssignment extends e20rSettings {
         global $e20rArticle;
     }
 
-    /*
+    public function addMeta_answers() {
+
+        global $post;
+
+        dbg("e20rAssignment::addMeta_answers() - Loading the article answers metabox");
+
+        $assignments = $this->model->getAssignments( $post->ID );
+        ?>
+        <div id="e20r-assignment-settings">
+            <?php echo $this->view->viewArticle_Assignments( null, $assignments ); ?>
+        </div>
+    <?php
+    }
+
     public function saveAssignment_callback() {
 
         dbg("e20rAssignment::saveAssignment_callback() - Attempting to save assignment for user.");
@@ -61,7 +74,7 @@ class e20rAssignment extends e20rSettings {
         wp_send_json_success();
         wp_die();
     }
-    */
+
     /*
     public function getAssignment( $shortName ) {
 
