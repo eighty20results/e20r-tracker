@@ -8,6 +8,8 @@
 
 jQuery(document).ready( function(){
 
+    jQuery('#e20r-assignments-id').select2();
+
     $(document).on('change', '#e20r-article-post_id', function() {
 
         $.ajax({
