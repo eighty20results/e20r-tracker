@@ -34,25 +34,16 @@ class e20rArticle extends e20rSettings {
 
     public function editor_metabox_setup( $object, $box ) {
 
+        global $e20rAssignment;
+
         remove_meta_box( 'postexcerpt', 'e20r_articles', 'side' );
         remove_meta_box( 'wpseo_meta', 'e20r_articles', 'side' );
         add_meta_box('postexcerpt', __('Article Summary'), 'post_excerpt_meta_box', 'e20r_articles', 'normal', 'high');
 
         add_meta_box('e20r-tracker-article-settings', __('Article Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_articles', 'normal', 'high');
-        add_meta_box('e20r-tracker-answer-settings', __('Assignments', 'e20rtracker'), array( &$this, "addMeta_answers" ), 'e20r_articles', 'normal', 'high');
+        add_meta_box('e20r-tracker-answer-settings', __('Assignments', 'e20rtracker'), array( &$e20rAssignment, "addMeta_answers" ), 'e20r_articles', 'normal', 'high');
         // add_meta_box('e20r-tracker-article-checkinlist', __('Check-in List', 'e20rtracker'), array( &$this, "addMeta_SettingsCheckin" ), 'e20r_articles', 'normal', 'high');
 
-    }
-
-    public function addMeta_answers() {
-
-        dbg("e20rArticle::addMeta_answers() - Loading the article answers metabox");
-
-        ?>
-        <div id="e20r-article-settings">
-            <?php echo $this->view->viewSettings_Assignments( null, null ); ?>
-        </div>
-    <?php
     }
 
     public function addMeta_Settings() {
