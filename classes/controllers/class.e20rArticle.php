@@ -39,8 +39,20 @@ class e20rArticle extends e20rSettings {
         add_meta_box('postexcerpt', __('Article Summary'), 'post_excerpt_meta_box', 'e20r_articles', 'normal', 'high');
 
         add_meta_box('e20r-tracker-article-settings', __('Article Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_articles', 'normal', 'high');
+        add_meta_box('e20r-tracker-answer-settings', __('Assignments', 'e20rtracker'), array( &$this, "addMeta_answers" ), 'e20r_articles', 'normal', 'high');
         // add_meta_box('e20r-tracker-article-checkinlist', __('Check-in List', 'e20rtracker'), array( &$this, "addMeta_SettingsCheckin" ), 'e20r_articles', 'normal', 'high');
 
+    }
+
+    public function addMeta_answers() {
+
+        dbg("e20rArticle::addMeta_answers() - Loading the article answers metabox");
+
+        ?>
+        <div id="e20r-article-settings">
+            <?php echo $this->view->viewSettings_Assignments( null, null ); ?>
+        </div>
+    <?php
     }
 
     public function addMeta_Settings() {
@@ -133,6 +145,101 @@ class e20rArticle extends e20rSettings {
 
         return $this->model->lessonComplete( $this->articleId );
 
+    }
+
+    public function getLessonExcerpt( $articleId ) {
+
+        global $post;
+
+        $postId = $this->model->getSetting( $articleId, 'post_id');
+
+        $articles = new WP_Query( array(
+            'post_type'           => apply_filters( 'e20r-tracker-lesson-type-filter', array( 'any' ) ),
+            'post_status'         => apply_filters( 'e20r-tracker-post-status-filter', array( 'publish' ) ),
+            'posts_per_page'      => 1,
+            'p'                   => $postId,
+            'ignore_sticky_posts' => true,
+        ) );
+
+        dbg( "e20rArticle::getLessonExcerpt() - Number of posts in {$articleId} is {$articles->found_posts}" );
+
+        $prefix = $this->model->getSetting( $articleId, 'prefix' );
+        dbg( "e20rArticle::getLessonExcerpt() - Prefix for lesson: {$prefix}");
+
+        if ( $articles->found_posts > 0 ) {
+
+            ob_start();
+
+            while ( $articles->have_posts() ) : $articles->the_post();
+
+                $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID, 'pmpro_seq_recentpost_widget_size' ) : '<div class="noThumb"></div>' );
+                ?>
+                <h4>
+                    <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
+                </h4>
+                <p class="e20r-descr"><?php echo $post->post_excerpt; ?></p>
+                <p class="e20r-descr"><a href="<?php echo get_permalink() ?>" title="<?php the_title(); ?>">
+                        <?php _e( 'Click to read lesson', 'e20tracker' ); ?>
+                    </a>
+                </p>
+            <?php
+            endwhile;
+
+            wp_reset_postdata();
+
+            $html = ob_get_clean();
+        }
+        else {
+            dbg("e20rArticle::getLessonExcerpt() - No posts found. Returning null ");
+            $html = null;
+        }
+
+        return $html;
+    }
+
+    public function getArticleForCheckin( ) {
+
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $current_user;
+
+        $pId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        $startTS = $e20rProgram->startdate( $current_user->ID );
+
+        $endTS = current_time('timestamp');
+
+        $currentDelay = $e20rTracker->daysBetween( $startTS );
+
+    }
+    /**
+     * Get the 'prefix' setting for the specified articleId
+     *
+     * @param $articleId - The Article ID to look up settings for
+     *
+     * @return string - The actual prefix (or NULL) for the articleId
+     */
+    public function getArticlePrefix( $articleId ) {
+
+        $settings = $this->getSettings( $articleId );
+
+        if ( !empty( $settings ) ) {
+
+            return $settings->prefix;
+        }
+
+        return null;
+    }
+
+    public function getSettings( $articleId ) {
+
+        $article = $this->model->getSettings();
+
+        if ( $article->id == $articleId ) {
+            return $article;
+        }
+
+        return false;
     }
 
     public function findArticleByDelay( $delayVal ) {
@@ -374,16 +481,8 @@ class e20rArticle extends e20rSettings {
         return $this->post_id;
     }
 
-    private function findArticle( $id ) {
+    public function findArticle( $type = 'id', $val = null ) {
 
-        foreach ( $this->article_list as $key => $article ) {
-
-            if ( $article->id == $id ) {
-
-                return $key;
-            }
-        }
-
-        return false;
+        return $this->model->findArticle( $type, $val );
     }
 } 

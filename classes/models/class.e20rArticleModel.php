@@ -91,6 +91,10 @@ class e20rArticleModel extends e20rSettingsModel {
         return $articleList;
     }
 
+    public function getSettings() {
+
+        return $this->settings;
+    }
     // TODO: This requires the presence of checkin IDs in the Article list, etc.
     // checkin definitions -> $obj->type, $obj->
     public function lessonComplete( $articleId ) {

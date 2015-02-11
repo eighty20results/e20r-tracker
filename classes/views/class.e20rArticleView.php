@@ -84,6 +84,7 @@ class e20rArticleView extends e20rSettingsView {
 
         return $html;
     }
+
     public function viewCheckinSettings( $settings, $checkinList ) {
 
         global $post;
@@ -254,7 +255,7 @@ class e20rArticleView extends e20rSettingsView {
         <?php
     }
 
-    protected function viewSettings_Assignments( $assignments  ) {
+    public function viewSettings_Assignments( $assignments, $answerTypes  ) {
 
         global $post;
         global $e20rTracker;
@@ -264,16 +265,16 @@ class e20rArticleView extends e20rSettingsView {
         }
 
         $this->displayError();
+        $articleId = CONST_NULL_ARTICLE;
 
         ?>
         <table id="e20r-tracker-article-assignment-list" class="wp-list-table widefat fixed">
             <thead>
             <tr>
-                <th class="e20r-label header"><?php _e("Order", "e20rtracker"); ?></th>
-                <th class="e20r-label header" style="width: 50%;"><?php _e("Assignment", "e20rtracker"); ?></th>
-                <th class="e20r-label header"><?php _e("Type", "e20rtracker"); ?></th>
-                <th><input type="hidden" name="hidden-e20r-article-id"  id="hidden-e20r-article-id" value="<?php echo $post->ID; ?>" /></th>
-                <th></th>
+                <th class="e20r-label header"><label for=""><?php _e("Order", "e20rtracker"); ?></label></th>
+                <th class="e20r-label header" style="width: 50%;"><label for=""><?php _e("Assignment", "e20rtracker"); ?></label></th>
+                <th class="e20r-label header"><label for=""><?php _e("Answer Type", "e20rtracker"); ?></label</th>
+                <th colspan="2">Operation</th>
             </tr>
             </thead>
             <tbody class="e20r-settings-list-tbody">
@@ -285,29 +286,74 @@ class e20rArticleView extends e20rSettingsView {
                 ?>
                 <tr class="e20r-article-list">
                     <td>1.</td>
-                    <?php $this->buildSelect2( 'assignments[]', array( 0 => 'None'), array( 0 ) ); ?>
-                    <td></td>
-                    <td></td>
+                    <td><?php _e("Lesson complete (default)", 'e20rtracker'); ?></td>
+                    <td><?php _e("Button", 'e20rtracker'); ?></td>
+                    <td><?php _e("Edit", "e20rtracker"); ?></td>
+                    <td><?php _e("Remove", "e20rtracker"); ?></td>
                 </tr><?php
             }
             else {
                 foreach ( $assignments as $a ) { ?>
 
                 <tr class="e20r-article-list">
-                    <td><?php echo $count++; ?></td>
-                    <td><?php echo get_the_title( $a ); ?></td>
-                    <td><?php echo ( $type = get_post_meta( $a, 'e20r-tracker-assignments-type' ) ) === false ? null : $type; ?></td>
-                    <td>
-                        <a href="javascript:e20r_tracker_edit(this, <?php echo $a; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
+                    <td class="e20r-assignment-order"><?php echo $count++; ?></td>
+                    <td class="e20r-assignment-title"><?php echo get_the_title( $a ); ?></td>
+                    <td class="e20r-assignment-typedescr">
+                        <?php
+                        // TODO: Properly display the assignment type selected.
+                            echo ( $type = get_post_meta( $a, 'e20r-assignments-type' ) ) === false ? null : $type;
+                        ?>
+                        <input type="hidden" class="e20r-assignment-type" name="e20r-assignment-type[]" value="<?php echo $type; ?>" />
                     </td>
-                    <td>
-                        <a href="javascript:e20r_tracker_remove(this, <?php echo $a; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
+                    <td class="e20r-assignment-buttons">
+                        <a class="e20r-assignment-edit" href="javascript:e20r_assignmentEdit(<?php echo $a; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
                     </td>
-                    </tr><?php
+                    <td class="e20r-assignment-buttons">
+                        <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
+                        <input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]" value="<?php echo $a ?>" />
+                    </td>
+                </tr><?php
                 }
             } ?>
             </tbody>
         </table>
+        <div id="postcustomstuff">
+            <p><strong><?php _e('Add/Edit Assignments:', 'e20rtracker'); ?></strong></p>
+            <table id="new-assignments">
+                <thead>
+                <tr>
+                    <th id="new-assigments-header-order"><label for="e20r-assignments-order"><?php _e('Order', 'e20rtracker'); ?></label></th>
+                    <th id="new-assignments-header-id"><label for="e20r-assignments-id"><?php _e('Assignment', 'e20rtracker'); ?></label></th>
+                    <th id="new-assignments-header-answer_type"><label for="e20r-assignments-answer_type"><?php _e("Answer Type", 'e20rtracker'); ?></label></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <input id="e20r-assignments-order" name="e20r-assignments-order" type="text" value="" size="5" />
+                    </td>
+                    <td>
+                        <select class="e20r-select2-container" id="e20r-assignments-id" name="e20r-assignments-id">
+                            <option value="0"><?php _e("Button: Assignment complete", 'e20rtracker'); ?></option><?php
+                            // TODO: Add logic to list all possible assignments (Read from CPT: e20r-assignments )
+                            ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="e20r-select2-container" id="e20r-assignments-answer_type" name="e20r-assignments-answer_type">
+                            <option value="0"><?php _e("Button: Assignment complete", 'e20rtracker'); ?></option><?php
+                            // TODO: Add logic to list all possible assignments (Read from CPT: e20r-assignments )
+                            ?>
+                        </select>
+                    </td>
+                    <td>
+                        <a class="e20r-button" id="e20r-article-assignment-save" onclick="javascript:e20r_assignmentSave(); return false;"><?php _e('Save Assignment', 'e20rtracker'); ?></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     <?php
     }
 
