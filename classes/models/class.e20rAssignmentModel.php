@@ -31,6 +31,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         $settings->id = null;
         $settings->descr = null;
+        $settings->order_num = 1;
         $settings->question = null;
         $settings->delay = 0;
         $settings->field_type = 'textbox';
