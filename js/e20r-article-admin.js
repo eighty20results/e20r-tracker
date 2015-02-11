@@ -42,16 +42,4 @@ jQuery(document).ready( function(){
             }
         });
     });
-
-    function e20re20r_assignmentEdit( assignmentId ) {
-
-    };
-
-    function e20r_assignmentRemove( assignmentId ) {
-
-    };
-
-    function e20r_assignmentSave() {
-
-    }
 });
