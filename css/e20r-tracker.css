@@ -1499,7 +1499,7 @@ td.e20r-group-header {
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display-overflow-pad { height: 0; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes .button-container {
     margin-top: 8px;
-    height: 30px;
+    height: 40px;
     position: relative;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes .button-container button {
