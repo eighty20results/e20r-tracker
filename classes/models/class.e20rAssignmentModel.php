@@ -22,6 +22,17 @@ class e20rAssignmentModel extends e20rSettingsModel {
 */
     }
 
+    public function getAnswerDescriptions() {
+
+        return array(
+            0 => __("'Lesson complete' button", "e20rtracker"),
+            1 => __("Line of text (input)", "e20rtracker"),
+            2 => __("Paragraph of text (textbox)", "e20rtracker"),
+            3 => __("Checkbox", "e20rtracker"),
+            4 => __("Multiple Choice", "e20rtracker"),
+        );
+    }
+
     public function defaultSettings() {
 
         global $current_user;
@@ -92,6 +103,32 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $assignments;
     }
 
+    public function loadAllAssignments() {
+
+        global $post;
+
+        $assignments = parent::loadAllSettings( 'publish' );
+        $savePost = $post;
+
+        foreach( $assignments as $id => $obj ) {
+
+            $post = get_post( $id );
+            setup_postdata( $post );
+
+            $obj->descr = $post->post_excerpt;
+            $obj->question = $post->post_title;
+            $obj->id = $id;
+
+            wp_reset_postdata();
+
+            $assignments[$id] = $obj;
+        }
+
+        $post = $savePost;
+
+        return $assignments;
+    }
+
     public function loadUserAssignment( $articleId, $userId, $delay = null ) {
 
         // TODO: Load the recored user assignment answers by assignment ID.
@@ -139,6 +176,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             foreach( $result as $key => $data ) {
 
                 $result[$data->id] = $data;
+
                 $post = get_post( $data->id );
 
                 setup_postdata( $post );
@@ -210,13 +248,21 @@ class e20rAssignmentModel extends e20rSettingsModel {
 */
     public function loadSettings( $id ) {
 
+        global $post;
+
+        $savePost = $post;
+
         $this->settings = parent::loadSettings($id);
 
-        $pst = get_post( $id );
+        $post = get_post( $id );
+        setup_postdata( $post );
 
-        $this->settings->descr = $pst->post_excerpt;
-        $this->settings->question = $pst->post_title;
+        $this->settings->descr = $post->post_excerpt;
+        $this->settings->question = $post->post_title;
         $this->settings->id = $id;
+
+        wp_reset_postdata();
+        $post = $savePost;
 
         return $this->settings;
     }
