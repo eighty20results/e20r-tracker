@@ -1006,11 +1006,14 @@ class e20rTracker {
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
 
             /* Localize ajax script */
-            /*wp_localize_script('e20r_tracker_admin', 'e20r_tracker',
+            wp_localize_script( 'e20r_tracker_admin', 'e20r-tracker-admin',
                 array(
                     'ajaxurl' => admin_url('admin-ajax.php'),
+                    'lang' => array(
+                        'saving' => __('Saving...', 'e20rtracker'),
+                    ),
                 )
-            );*/
+            );
 
             $e20r_plot_jscript = true;
             self::enqueue_plotSW();
