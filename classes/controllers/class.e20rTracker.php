@@ -114,6 +114,7 @@ class e20rTracker {
             add_action( 'wp_ajax_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
             add_action( 'wp_ajax_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
             add_action( 'wp_ajax_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
+            add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -693,6 +694,18 @@ class e20rTracker {
             dbg("e20rTracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
 
             wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, '1.0', true );
+
+            /* Localize ajax script */
+            wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
+                array(
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                    'lang' => array(
+                        'saving' => __('Adding...', 'e20rtracker'),
+                        'save' => __('Add', 'e20rtracker'),
+                    ),
+                )
+            );
+
             wp_enqueue_script( 'e20r-cpt-admin');
         }
     }
@@ -1004,16 +1017,6 @@ class e20rTracker {
             wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), '0.1', false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), '0.1', false); // true == in footer of body.
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
-
-            /* Localize ajax script */
-            wp_localize_script( 'e20r_tracker_admin', 'e20r-tracker-admin',
-                array(
-                    'ajaxurl' => admin_url('admin-ajax.php'),
-                    'lang' => array(
-                        'saving' => __('Saving...', 'e20rtracker'),
-                    ),
-                )
-            );
 
             $e20r_plot_jscript = true;
             self::enqueue_plotSW();
