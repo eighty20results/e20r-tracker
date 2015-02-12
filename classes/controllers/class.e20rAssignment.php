@@ -35,10 +35,12 @@ class e20rAssignment extends e20rSettings {
 
         dbg("e20rAssignment::addMeta_answers() - Loading the article answers metabox");
 
-        $assignments = $this->model->getAssignments( $post->ID );
+        $assignments = $this->model->getArticleAssignments( $post->ID );
+        $answerDefs = $this->model->getAnswerDescriptions();
+
         ?>
         <div id="e20r-assignment-settings">
-            <?php echo $this->view->viewArticle_Assignments( null, $assignments ); ?>
+            <?php echo $this->view->viewArticle_Assignments( null, $assignments, $answerDefs ); ?>
         </div>
     <?php
     }
@@ -93,12 +95,12 @@ class e20rAssignment extends e20rSettings {
         return false; // Returns false if the program isn't found.
     }
 */
-    /*
+
     public function getAllAssignments() {
 
-        return $this->model->loadAllSettings();
-
+        return $this->model->loadAllAssignments();
     }
+/*
     public function getAssignmentSettings( $id ) {
 
         return $this->model->loadSettings( $id );
@@ -155,39 +157,13 @@ class e20rAssignment extends e20rSettings {
 
         global $post;
 
-        $def_status = array(
-            'publish',
-            'pending',
-            'draft',
-            'future',
-            'private'
-        );
-
-        // Query to load all available programs (used with check-in definition)
-        $query = array(
-            'post_type'   => 'e20r_programs',
-            'post_status' => apply_filters( 'e20r_tracker_assignment_status', $def_status ),
-            'posts_per_page' => -1,
-        );
-
-        wp_reset_query();
-
-        //  Fetch Programs
-        $assignments = get_posts( $query );
-
-        if ( empty( $assignments ) ) {
-
-            dbg( "e20rAssignment::addMeta_Settings() - No programs found!" );
-        }
-
         dbg("e20rAssignment::addMeta_Settings() - Loading settings metabox for assignment page {$post->ID}");
-        $settings = $this->model->loadSettings( $post->ID );
+        $assignmentData = $this->model->loadSettings( $post->ID );
 
-        echo $this->view->viewSettingsBox( $settings , $assignments );
-
+        echo $this->view->viewSettingsBox( $assignmentData, $this->model->getAnswerDescriptions() );
     }
-/*
-    public function saveSettings( $post_id ) {
+
+    public function saveSettings( $post_id, $settings = null ) {
 
         $post = get_post( $post_id );
 
@@ -196,7 +172,15 @@ class e20rAssignment extends e20rSettings {
         $this->model->set( 'question', the_title() );
         $this->model->set( 'descr', the_excerpt() );
 
-        parent::saveSettings( $post_id );
+        if ( ! is_null( $settings ) ) {
+
+            foreach( $settings as $key => $value ) {
+
+                $this->model->set( $key, $value);
+            }
+        }
+
+        return parent::saveSettings( $post_id );
     }
-*/
+
 }
