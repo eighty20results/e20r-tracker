@@ -217,7 +217,6 @@ class e20rSettingsModel {
             case 'update':
 
                 $setting = ( empty($setting) ? 0 : $setting );
-                dbg("e20r" . ucfirst($this->type) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}");
 
                 if ( ( empty($setting) ) && ( !$key ) ) {
                     dbg("e20r" . ucfirst($this->type) . "Model::settings()  - No key nor settings. Returning quietly.");
