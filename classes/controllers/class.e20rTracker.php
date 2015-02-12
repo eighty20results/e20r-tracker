@@ -50,6 +50,7 @@ class e20rTracker {
         global $e20rClient;
         global $e20rMeasurements;
         global $e20rArticle;
+        global $e20rAssignment;
         global $e20rCheckin;
         global $e20rExercise;
         global $e20rProgram;
@@ -123,18 +124,21 @@ class e20rTracker {
             add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
             add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
             add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
             add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
 
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
 
             add_action( 'add_meta_boxes', array( &$e20rArticle, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes', array( &$e20rAssignment, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rProgram, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rExercise, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes', array( &$e20rWorkout, 'editor_metabox_setup') );
@@ -184,6 +188,7 @@ class e20rTracker {
             if ( function_exists( 'pmpro_activation' ) ) {
                 add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
             }
+
             dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -998,6 +1003,7 @@ class e20rTracker {
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
             wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), '0.1', false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), '0.1', false); // true == in footer of body.
+            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
 
             /* Localize ajax script */
             /*wp_localize_script('e20r_tracker_admin', 'e20r_tracker',
@@ -1013,6 +1019,7 @@ class e20rTracker {
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
             wp_print_scripts( 'e20r_tracker_admin' );
+            wp_print_scripts( 'e20r-assignment-admin' );
         }
     }
 
@@ -1804,7 +1811,7 @@ class e20rTracker {
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
+                   'supports' => array('title', 'excerpt'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker',
