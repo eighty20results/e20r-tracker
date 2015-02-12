@@ -181,7 +181,7 @@ class e20rSettingsModel {
             return false;
         }
 
-        dbg("e20r{$this->type}Model::loadAllCheckinData() - Loading {$this->type} settings for " . count( $sList ) . ' settings');
+        dbg("e20r{$this->type}Model::load{$this->type}Data() - Loading {$this->type} settings for " . count( $sList ) . ' settings');
         $default = $this->defaultSettings();
 
         foreach( $sList as $key => $data ) {
