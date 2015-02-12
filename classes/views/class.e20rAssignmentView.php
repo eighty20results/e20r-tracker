@@ -22,7 +22,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
     }
     
-    public function viewSettingsBox( $assignmentData ) {
+    public function viewSettingsBox( $assignmentData, $answerTypes ) {
 
         dbg( "e20rAssignmentView::viewSettingsBox() - Supplied data: " . print_r( $assignmentData, true ) );
         ?>
@@ -36,6 +36,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     <tr>
                         <th class="e20r-label header"><label for="e20r-assignment-order_num">Order #</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-field_type">Answer type</label></th>
+                        <th class="e20r-label header"><label for="e20r-assignment-delay">Day #</label></th>
                     </tr>
                     <tr>
                         <td colspan="5">
@@ -46,16 +47,21 @@ class e20rAssignmentView extends e20rSettingsView {
                     <tbody>
                     <tr id="<?php echo $assignmentData->ID; ?>" class="assignment-inputs">
                         <td class="text-input">
-                            <input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num" value="<?php echo $assignmentData->order_num; ?>">
+                            <input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num" value="<?php echo ( ! isset( $assignmentData->order_num ) ? 1 : $assignmentData->order_num ); ?>">
                         </td>
-                        <td class="text-input">
-                            <select id="e20r-assignment-field_type select2-container" name="e20r-assignment-field_type">
-                                <option value="0" <?php selected( $assignmentData->field_type, 0 ); ?>><?php _e("Button", "e20rtracker"); ?></option>
-                                <option value="1" <?php selected( $assignmentData->field_type, 1 ); ?>><?php _e("Line of text (input)", "e20rtracker"); ?></option>
-                                <option value="2" <?php selected( $assignmentData->field_type, 2 ); ?>><?php _e("Checkbox", "e20rtracker"); ?></option>
-                                <option value="3" <?php selected( $assignmentData->field_type, 3 ); ?>><?php _e("Multiple Choice", "e20rtracker"); ?></option>
+                        <td class="text-input" style="width: 50%;">
+                            <select id="e20r-assignment-field_type select2-container" name="e20r-assignment-field_type" style="width: 100%;">
+                                <?php
+                                foreach ( $answerTypes as $key => $descr ) { ?>
+                                    <option value="<?php echo $key; ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
+                                }
+                                ?>
                             </select>
                         </td>
+                        <td class="text-input">
+                            <input type="number" id="e20r-assignment-delay" name="e20r-assignment-delay" value="<?php echo ( ! isset( $assignmentData->delay ) ? '' : $assignmentData->delay ); ?>">
+                        </td>
+
                     </tr>
                     </tbody>
                 </table>
@@ -64,11 +70,12 @@ class e20rAssignmentView extends e20rSettingsView {
     <?php
     }
 
-    public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments  ) {
+    public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments, $answerDefs = null  ) {
 
         global $post;
         global $e20rArticle;
         global $e20rTracker;
+        global $e20rAssignment;
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -108,10 +115,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     <td class="e20r-assignment-hdr_order"><?php echo $a->order_num; ?></td>
                     <td class="e20r-assignment-hdr_title"><?php echo $a->question; ?></td>
                     <td class="e20r-assignment-hdr_type">
-                        <?php
-                        // TODO: Properly display the assignment type selected.
-                        echo $a->field_type;
-                        ?>
+                        <?php echo $answerDefs[$a->field_type] ?>
                         <input type="hidden" class="e20r-assignment-type" name="e20r-assignment-field_type[]" value="<?php echo $a->field_type; ?>" />
                     </td>
                     <td class="e20r-assignment-buttons">
@@ -133,7 +137,6 @@ class e20rAssignmentView extends e20rSettingsView {
                 <tr>
                     <th id="new-assigments-header-order"><label for="e20r-assignments-order_num"><?php _e('Order', 'e20rtracker'); ?></label></th>
                     <th id="new-assignments-header-id"><label for="e20r-assignments-id"><?php _e('Assignment', 'e20rtracker'); ?></label></th>
-                    <th id="new-assignments-header-answer_type"><label for="e20r-assignments-answer_type"><?php _e("Answer Type", 'e20rtracker'); ?></label></th>
                     <th></th>
                 </tr>
                 </thead>
@@ -143,18 +146,13 @@ class e20rAssignmentView extends e20rSettingsView {
                         <input id="e20r-assignments-order" name="e20r-assignments-order_num" type="text" value="" size="5" />
                     </td>
                     <td>
-                        <select class="e20r-select2-container" id="e20r-assignments-id" name="e20r-assignments-id">
-                            <option value="0"><?php _e("Button: Assignment complete", 'e20rtracker'); ?></option><?php
-                            // TODO: Add logic to list all possible assignments (Read from CPT: e20r-assignments )
-                            // $e20rAssignment->
-                            ?>
-                        </select>
-                    </td>
-                    <td>
-                        <select class="e20r-select2-container" id="e20r-assignments-field_type" name="e20r-assignments-field_type">
-                            <option value="0"><?php _e("Button: Assignment complete", 'e20rtracker'); ?></option><?php
-                            // TODO: Add logic to list all possible assignments (Read from CPT: e20r-assignments )
-                            ?>
+                        <select class="e20r-select2-container" id="e20r-assignments-id" name="e20r-assignments-id"> <?php
+
+                            $all = $e20rAssignment->getAllAssignments();
+
+                            foreach( $all as $id => $assignment ) { ?>
+                                <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay})"; ?></option><?php
+                            } ?>
                         </select>
                     </td>
                     <td>
