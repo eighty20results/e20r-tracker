@@ -68,7 +68,7 @@ function e20r_assignmentSave() {
     saveBtn.attr('disabled', 'disabled');
     saveBtn.html(e20r_tracker.lang.saving);
 
-    var response = null;
+    var resp = null;
 
     //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
     wp.ajax.send({
@@ -77,32 +77,32 @@ function e20r_assignmentSave() {
         timeout:5000,
         dataType: 'JSON',
         data: {
-            action: 'e20r_addAssignment',
+            action: "e20r_addAssignment",
             'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val(),
             'e20r-assignment-id': jQuery('#e20r-add-assignment-id').find("option:selected").val(),
             'e20r-assignment-order_num': jQuery('#e20r-add-assignment-order_num').val(),
             'e20r-article-id': jQuery('#post_ID').val()
-            // 'e20r-tracker-assignment-settings': jQuery('#e20r-tracker-assignment-settings').val()
+        },
+        success: function( resp ){
+            console.log("success() - Returned data: ", resp );
+
+            if (resp.data) {
+                console.log('Entry added to sequence & refreshing metabox content');
+                jQuery('#e20r-assignment-settings').html(resp.data);
+            } else {
+                console.log('No HTML returned???');
+            }
+
         },
         error: function(jqxhr, $errString, $errType){
             // console.log("error() - Returned data: ", jqxhr );
             console.log("Error String: " + $errString + " and errorType: " + $errType);
 
-/*            if ( $response.data ) {
-                alert($response.data);
-                // pmpro_seq_setErroMsg($response.data);
+            /*
+            if ( resp.data ) {
+                alert(resp.data);
+                // pmpro_seq_setErroMsg(resp.data);
             } */
-        },
-        success: function(response){
-            console.log("success() - Returned data: ", response);
-
-            if (response.data) {
-                console.log('Entry added to sequence & refreshing metabox content');
-                jQuery('#e20r-assignment-settings').html(response.data);
-            } else {
-                console.log('No HTML returned???');
-            }
-
         },
         complete: function(response) {
 
