@@ -68,8 +68,10 @@ function e20r_assignmentSave() {
     saveBtn.attr('disabled', 'disabled');
     saveBtn.html(e20r_tracker.lang.saving);
 
+    var response = null;
+
     //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
-    jQuery.ajax({
+    wp.ajax.send({
         url: e20r_tracker.ajaxurl,
         type:'POST',
         timeout:5000,
@@ -80,30 +82,29 @@ function e20r_assignmentSave() {
             'e20r-assignment-id': jQuery('#e20r-add-assignment-id').find("option:selected").val(),
             'e20r-assignment-order_num': jQuery('#e20r-add-assignment-order_num').val(),
             'e20r-article-id': jQuery('#post_ID').val()
-
             // 'e20r-tracker-assignment-settings': jQuery('#e20r-tracker-assignment-settings').val()
         },
-        error: function($data,  $errString, $errType){
-            console.log("error() - Returned data: " + $data.success + ", data: ", $data.data);
+        error: function(jqxhr, $errString, $errType){
+            // console.log("error() - Returned data: ", jqxhr );
             console.log("Error String: " + $errString + " and errorType: " + $errType);
 
-            if ( $data.data ) {
-                alert($data.data);
-                // pmpro_seq_setErroMsg($data.data);
-            }
+/*            if ( $response.data ) {
+                alert($response.data);
+                // pmpro_seq_setErroMsg($response.data);
+            } */
         },
-        success: function($data){
-            console.log("success() - Returned data: ", $data);
+        success: function(response){
+            console.log("success() - Returned data: ", response);
 
-            if ($data.data) {
+            if (response.data) {
                 console.log('Entry added to sequence & refreshing metabox content');
-                jQuery('#e20r-assignment-settings').html($data.data);
+                jQuery('#e20r-assignment-settings').html(response.data);
             } else {
                 console.log('No HTML returned???');
             }
 
         },
-        complete: function($data) {
+        complete: function(response) {
 
             // Re-enable save button
             saveBtn.html(e20r_tracker.lang.save);
