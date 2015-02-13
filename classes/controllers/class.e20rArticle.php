@@ -91,7 +91,7 @@ class e20rArticle extends e20rSettings {
 
         $this->articleId = parent::init( $postId );
 
-        dbg("e20rArticle::contentFilter() - Loaded settings for {$this->articleId}");
+        dbg("e20rArticle::init() - Loaded settings for {$this->articleId}");
 
         if ( ! $this->articleId ) {
 
@@ -342,6 +342,66 @@ class e20rArticle extends e20rSettings {
 
     public function addMeta_Assignments() {
 
+    }
+
+    public function add_assignment_callback() {
+
+        global $e20rAssignment;
+
+        dbg($_POST);
+
+        dbg("e20rArticle::add_assignment_callback().");
+        check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
+        dbg("e20rArticle::add_assignment_callback() - Saving new assignment for article.");
+
+        $articleId = isset($_POST['e20r-article-id']) ? intval( $_POST['e20r-article-id']) : null;
+        $assignmentId = isset($_POST['e20r-assignment-id']) ? intval( $_POST['e20r-assignment-id']) : null;
+        $assignment_orderNum = isset($_POST['e20r-assignment-order_num']) ? intval( $_POST['e20r-assignment-order_num'] ) : null;
+
+        dbg("e20rArticle::add_assignment_callback() - Article: {$articleId}, Assignment: {$assignmentId}, Assignment Order#: {$assignment_orderNum}");
+
+        $this->articleId = $articleId;
+        $this->init();
+
+        $artSettings = $this->model->getSettings();
+        $assignment = $e20rAssignment->loadAssignment( $assignmentId );
+
+        dbg("e20rArticle::add_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
+        $assignment->order_num = $assignment_orderNum;
+        $assignment->article_id = $articleId;
+
+        dbg("e20rArticle::add_assignment_callback() - Assignment settings for ({$assignmentId}): ");
+
+        $e20rAssignment->saveSettings( $articleId, $assignment );
+
+        dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
+        if ( empty( $artSettings->assignments) ) {
+
+            $artSettings->assignments = array( $assignmentId );
+        }
+        else {
+            $artSettings->assignments[] = $assignmentId;
+        }
+
+        dbg($artSettings);
+
+        $this->model->set( 'assignments', $artSettings->assignments );
+
+        dbg("e20rArticle::add_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
+        $html = $e20rAssignment->configureArticleMetabox( $articleId );
+
+        if ( ! empty( $html ) ) {
+
+            dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
+            dbg($html);
+            $response = array( 'success' => true, 'data' => $html );
+/*            echo json_encode( $response );
+            wp_die(); */
+            wp_send_json_success( $response );
+        }
+
+        dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
+        wp_send_json_error( array( 'data' => "No assignments found for this article!" ) );
     }
 
     public function getDelayValue_callback() {

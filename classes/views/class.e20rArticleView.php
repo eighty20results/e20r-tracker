@@ -166,7 +166,7 @@ class e20rArticleView extends e20rSettingsView {
                                 }
                             </style>
                             <script>
-                                jQuery('#e20r-article-post_id').select2();
+                                // jQuery('#e20r-article-post_id').select2();
                             </script>
                         </td>
                         <td style="width: 50px !important;">

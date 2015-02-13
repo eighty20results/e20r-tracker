@@ -44,13 +44,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->descr = null;
         $settings->order_num = 1;
         $settings->question = null;
-        $settings->delay = 0;
-        $settings->field_type = 'textbox';
-        $settings->article_id;
+        $settings->delay = null;
+        $settings->field_type = 0;
+        $settings->article_id = null;
         $settings->user_id = $current_user->ID;
         $settings->program_id = $e20rProgram->getProgramIdForUser( $settings->user_id );
         $settings->answer_date = null;
-        $settings->answer;
+        $settings->answer = null;
 
         return $settings;
     }
@@ -68,11 +68,12 @@ class e20rAssignmentModel extends e20rSettingsModel {
             'posts_per_page' => -1,
             'post_type' => 'e20r_assignments',
             'post_status' => 'publish',
+            'meta_key' => '_e20r-assignments-order_num',
             'order_by' => 'meta_value',
-            'order' => 'DESC',
+            'order' => 'ASC',
             'meta_query' => array(
                 array(
-                    'key' => '_e20r-assignment-article_id',
+                    'key' => '_e20r-assignments-article_id',
                     'value' => $articleId,
                     'compare' => '=',
                     'type' => 'numeric',
@@ -81,7 +82,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rAssignmentModel::getAssignments() - Returned assignments: {$query->post_count}" );
+
+        dbg("e20rAssignmentModel::getArticleAssignments() - Returned assignments: {$query->post_count}" );
 
         while ( $query->have_posts() ) {
 
@@ -98,7 +100,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $assignments[] = $new;
         }
 
-        dbg("e20rAssignmentModel::getAssignments() - Data to return:");
+        dbg("e20rAssignmentModel::getArticleAssignments() - Returning: ");
+        dbg($assignments);
 
         return $assignments;
     }

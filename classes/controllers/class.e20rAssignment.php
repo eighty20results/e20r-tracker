@@ -24,9 +24,49 @@ class e20rAssignment extends e20rSettings {
         parent::__construct( 'assignment', 'e20r_assignments', $this->model, $this->view );
     }
 
+    public function loadAssignment( $assignmentId ) {
+
+        $settings = $this->model->loadSettings( $assignmentId );
+
+        dbg("e20rAssignment::init() - Loaded settings for {$assignmentId}");
+
+        return $settings;
+    }
+
     public function findAssignmentItemId( $articleId ) {
 
         global $e20rArticle;
+    }
+
+    public function configureArticleMetabox( $articleId ) {
+
+        dbg("e20rAssignment::configureArticleMetabox() - For article {$articleId}");
+
+        $assignments = $this->model->getArticleAssignments( $articleId );
+        $answerDefs = $this->model->getAnswerDescriptions();
+
+        if ( count( $assignments ) < 1 ) {
+
+            dbg("e20rAssignment::configureArticleMetabox() - No assignments defined. Using default");
+
+            $assignments = array();
+
+            $assignments[0] = $this->model->defaultSettings();
+            $assignments[0]->order_num = 1;
+            $assignments[0]->question = __( "Lesson complete (default)", 'e20rtracker' );
+            $assignments[0]->field_type = 0; // "Lesson complete" button.
+        }
+
+        ob_start();
+        ?>
+        <div id="e20r-assignment-settings">
+            <?php echo $this->view->viewArticle_Assignments( $articleId, $assignments, $answerDefs ); ?>
+        </div>
+    <?php
+        $html = ob_get_clean();
+        ob_end_flush();
+
+        return $html;
     }
 
     public function addMeta_answers() {
@@ -35,14 +75,7 @@ class e20rAssignment extends e20rSettings {
 
         dbg("e20rAssignment::addMeta_answers() - Loading the article answers metabox");
 
-        $assignments = $this->model->getArticleAssignments( $post->ID );
-        $answerDefs = $this->model->getAnswerDescriptions();
-
-        ?>
-        <div id="e20r-assignment-settings">
-            <?php echo $this->view->viewArticle_Assignments( null, $assignments, $answerDefs ); ?>
-        </div>
-    <?php
+        echo $this->configureArticleMetabox( $post->ID );
     }
 
     public function saveAssignment_callback() {
@@ -98,7 +131,13 @@ class e20rAssignment extends e20rSettings {
 
     public function getAllAssignments() {
 
-        return $this->model->loadAllAssignments();
+        $assignments =  $this->model->loadAllAssignments();
+
+        if ( count( $assignments) >= 1 ) {
+            dbg("e20rAssignment::getAllAssignments() - Process the assignments?");
+        }
+
+        return $assignments;
     }
 /*
     public function getAssignmentSettings( $id ) {
@@ -165,22 +204,92 @@ class e20rAssignment extends e20rSettings {
 
     public function saveSettings( $post_id, $settings = null ) {
 
-        $post = get_post( $post_id );
+        global $e20rTracker;
+        global $post;
 
-        setup_postdata( $post );
+        $savePost = $post;
 
-        $this->model->set( 'question', the_title() );
-        $this->model->set( 'descr', the_excerpt() );
+        dbg("e20rAssignment::saveSettings() - Saving e20rAssignment settings to DB: {$post->post_type}");
 
-        if ( ! is_null( $settings ) ) {
 
-            foreach( $settings as $key => $value ) {
+        if ( $settings === null ) {
 
-                $this->model->set( $key, $value);
+            dbg( "e20rAssignment::saveSettings()  - Saving metadata from edit.php page, related to the e20rAssignment post_type" );
+
+            if ( $post->post_type != 'e20r_assignments' ) {
+                dbg("e20rAssignment::saveSettings() - Incorrect type! {$post->post_type}");
+                return $post_id;
             }
+
+            if ( empty( $post_id ) ) {
+                dbg("e20re20rAssignment::saveSettings() - No post ID supplied");
+                return false;
+            }
+
+            if ( wp_is_post_revision( $post_id ) ) {
+                return $post_id;
+            }
+
+            if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+                return $post_id;
+            }
+
+            $this->model->init( $post_id );
+
+            $settings = $this->model->loadSettings( $post_id );
+            $defaults = $this->model->defaultSettings();
+
+            if ( ! $settings ) {
+
+                $settings = $defaults;
+            }
+
+            foreach ( $settings as $field => $setting ) {
+
+                $tmp = isset( $_POST["e20r-assignment-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-assignment-{$field}"] ) : null;
+
+                dbg( "e20rAssignment::saveSettings() - Page data : {$field} -> {$tmp}" );
+
+                if ( is_null( $tmp ) ) {
+
+                    $tmp = $defaults->{$field};
+
+                }
+
+                $settings->{$field} = $tmp;
+            }
+
+            // Add post ID (checkin ID)
+            $settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
+
+            dbg( "e20rAssignment::saveSettings() - Saving: " . print_r( $settings, true ) );
+
+            if ( ! $this->model->saveSettings( $settings ) ) {
+
+                dbg( "e20rAssignment::saveSettings() - Error saving settings!" );
+            }
+
+        }
+        else {
+
+            dbg("e20rAssignment::saveSettings() - Received settings from calling function.");
+            dbg($settings);
+
+            if ( ! $this->model->saveSettings( $settings ) ) {
+
+                dbg( "e20rAssignment::saveSettings() - Error saving settings!" );
+            }
+
+            $post = get_post( $post_id );
+
+            setup_postdata( $post );
+
+            $this->model->set( 'question', the_title() );
+            $this->model->set( 'descr', the_excerpt() );
+
         }
 
-        return parent::saveSettings( $post_id );
+        $post = $savePost;
     }
 
 }
