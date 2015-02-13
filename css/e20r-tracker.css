@@ -1841,18 +1841,13 @@ div#e20r-checkin-content {
     left:       0;
     height:     100%;
     width:      100%;
-    background: rgba( 255, 255, 255, .8 )
-    url('../images/saving.gif')
-    50% 50%
-    no-repeat;
+    background: rgba( 255, 255, 255, .8 ) url('../images/saving.gif') 50% 50% no-repeat;
 }
-
 /* When the body has the loading class, we turn
    the scrollbar off with overflow:hidden */
 body.loading {
     overflow: hidden;
 }
-
 /* Anytime the body has the loading class, our
    modal element will be visible */
 body.loading .modal {
@@ -1879,4 +1874,7 @@ body.loading .modal {
 }
 .date-past-future .li { line-height: 150%; }
 .date-past-future { margin-bottom: 16px; }
-.e20r-select2-container { width: 100%; }
+.e20r-select2-container {
+    width: 100%;
+    vertical-align: baseline;
+}
