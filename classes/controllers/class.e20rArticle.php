@@ -388,20 +388,25 @@ class e20rArticle extends e20rSettings {
         $this->model->set( 'assignments', $artSettings->assignments );
 
         dbg("e20rArticle::add_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
+
+        $html = null;
         $html = $e20rAssignment->configureArticleMetabox( $articleId );
 
         if ( ! empty( $html ) ) {
 
             dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
+            wp_send_json_success( $html );
+            /*
             dbg($html);
             $response = array( 'success' => true, 'data' => $html );
-/*            echo json_encode( $response );
-            wp_die(); */
-            wp_send_json_success( $response );
+            echo json_encode( $response );
+            wp_die();
+            */
+
         }
 
         dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
-        wp_send_json_error( array( 'data' => "No assignments found for this article!" ) );
+        wp_send_json_error( "No assignments found for this article!" );
     }
 
     public function getDelayValue_callback() {
