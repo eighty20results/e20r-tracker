@@ -101,9 +101,15 @@ class e20rSettingsModel {
         return false;
     }
 
-    public function set( $fieldName, $fieldValue ) {
+    public function set( $fieldName, $fieldValue, $post_id = null ) {
 
-        $this->settings->{$fieldName} = $fieldValue;
+        if ( ! $post_id ) {
+            $this->settings->{$fieldName} = $fieldValue;
+            return true;
+        }
+        else {
+            return $this->settings( $post_id, 'update', $fieldName, $fieldValue );
+        }
 
     }
     /**
