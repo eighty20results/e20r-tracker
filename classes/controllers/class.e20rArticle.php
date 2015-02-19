@@ -188,6 +188,28 @@ class e20rArticle extends e20rSettings {
         return $html;
     }
 
+	public function getAssignments( $articleId ) {
+
+		global $e20rAssignment;
+
+		dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
+
+		$this->init( $articleId );
+		$articleSettings = $this->model->loadSettings( $this->articleId );
+		$assignments = array();
+
+		foreach( $articleSettings->assignments as $assignmentId ) {
+
+			$tmp = $e20rAssignment->loadAssignment( $assignmentId );
+			$assignments[ $tmp->order_num ] = $tmp;
+		}
+
+		dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
+		ksort( $assignments );
+
+		return $assignments;
+	}
+
     public function getArticleForCheckin( ) {
 
         global $e20rProgram;
