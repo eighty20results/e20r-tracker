@@ -275,13 +275,13 @@ class e20rCheckin extends e20rSettings {
             if ( $config->articleId === false ) {
 
                 dbg("e20rCheckin::dailyProgress() - No article defined. Quitting.");
-                return false;
+                return null;
             }
 
             dbg("e20rCheckin::dailyProgress() - Loading pre-existing data for the lesson/assignment ");
 
-            // $assignments = $e20rAssignment->getAssignment( $articleId );
-
+            $assignments = $e20rArticle->getAssignments( $config->articleId );
+	        dbg($assignments);
             // return $this->view->viewAssignment( $assignments, $articleId, $delay );
         }
     }
@@ -349,15 +349,32 @@ class e20rCheckin extends e20rSettings {
         $config->delay = $e20rTracker->getDelay( 'now' );
         $config->delay_byDate = $config->delay;
 
-        extract( shortcode_atts( array(
-            'type' => $config->type,
-            'form_id' => $config->survey_id,
-        ), $attributes ) );
+        $tmp = shortcode_atts( array(
+            'type' => 'action',
+            'form_id' => null,
+        ), $attributes );
 
-        dbg("e20rCheckin::shortcode_dailyProgress() - Using delay value of {$config->delay} days");
+	    foreach ( $tmp as $key => $val ) {
 
-        // TODO: Get article ID for the post/lesson that this check_in belongs to
-        $article = $e20rArticle->findArticle( 'release_day', $config->delay );
+		    $config->{$key} = $val;
+	    }
+
+	    dbg( $config );
+
+	    if ( $config->type == 'assignment' ) {
+
+		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
+		    $article = $e20rArticle->findArticle( 'post_id', $post->ID );
+	    }
+	    elseif ( $config->type == 'action' ) {
+
+		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by delay value of {$config->delay} days");
+		    $article = $e20rArticle->findArticle( 'release_day', $config->delay );
+	    }
+
+
+	    dbg("e20rCheckin::shortcode_dailyProgress() - Article object:");
+	    dbg( $article );
 
         $config->articleId = $article->id;
         $config->programId = $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId );
