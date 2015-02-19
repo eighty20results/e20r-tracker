@@ -100,7 +100,9 @@ class e20rSettingsModel {
             return $setting->{$fieldName};
         }
         else {
-            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and article {$articleId}");
+	        if ( ! is_array( $this->settings->{$fieldName} ) ) {
+		        dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and article {$articleId}" );
+	        }
             return $this->settings->{$fieldName};
         }
 
@@ -222,6 +224,11 @@ class e20rSettingsModel {
      */
     protected function settings( $post_id, $action = 'get', $key = null, $setting = null ) {
 
+	    if ( empty( $this->settings ) ) {
+
+		    $this->loadSettings( $post_id );
+	    }
+
 	    if ( is_array( $setting ) ) {
 		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> " );
 		    dbg($setting);
@@ -229,6 +236,7 @@ class e20rSettingsModel {
 	    else {
 		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}" );
 	    }
+
         switch ($action) {
 
             case 'update':
@@ -276,7 +284,15 @@ class e20rSettingsModel {
 					dbg($val);
 				}
 
-                $this->settings->{$key} = $val;
+				if ( $val == false ) {
+
+					$this->settings->{$key} = null;
+				}
+				else {
+
+					$this->settings->{$key} = $val;
+				}
+
 
                 break;
 
