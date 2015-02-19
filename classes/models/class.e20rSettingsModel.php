@@ -162,7 +162,7 @@ class e20rSettingsModel {
                 return false;
             }
 
-            dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$this->id}");
+            // dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$this->id}");
         }
 
         return $this->settings;
@@ -222,8 +222,13 @@ class e20rSettingsModel {
      */
     protected function settings( $post_id, $action = 'get', $key = null, $setting = null ) {
 
-        dbg("e20r" . ucfirst($this->type) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}");
-
+	    if ( is_array( $setting ) ) {
+		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> " );
+		    dbg($setting);
+	    }
+	    else {
+		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}" );
+	    }
         switch ($action) {
 
             case 'update':
@@ -263,7 +268,13 @@ class e20rSettingsModel {
 
                 $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
 
-                dbg("e20r" . ucfirst($this->type) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}");
+				if ( ! is_array( $val ) ) {
+					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
+				}
+				else {
+					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
+					dbg($val);
+				}
 
                 $this->settings->{$key} = $val;
 
