@@ -87,9 +87,9 @@ class e20rAssignmentView extends e20rSettingsView {
             <thead>
             <tr>
                 <th class="e20r-label header"><?php _e("Order", "e20rtracker"); ?></th>
-                <th class="e20r-label header" style="width: 50%;"><?php _e("Assignment", "e20rtracker"); ?></th>
-                <th class="e20r-label header"><?php _e("Answer Type", "e20rtracker"); ?></th>
-                <th colspan="2" class="e20r-label header"><?php _e("Operation", "e20rtracekr"); ?></th>
+                <th class="e20r-label header" style="width: 30%;"><?php _e("Assignment", "e20rtracker"); ?></th>
+                <th class="e20r-label header" style="width: 30%;"><?php _e("Answer Type", "e20rtracker"); ?></th>
+                <th colspan="2" class="e20r-label header"><?php _e("Operation", "e20rtracker"); ?></th>
             </tr>
             </thead>
             <tbody class="e20r-settings-list-tbody">
@@ -99,7 +99,8 @@ class e20rAssignmentView extends e20rSettingsView {
             dbg("e20rAssignmentView::viewArticle_Assignments() - Processing previously defined assignment definitions.");
 
             foreach ( $assignments as $a ) {
-                dbg("e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->id}")
+                dbg("e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->id}");
+                dbg( $a );
                 ?>
 
                 <tr class="e20r-assignment-list">
@@ -107,8 +108,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     <td class="e20r-assignment-hdr_title"><?php echo $a->question; ?></td>
                     <td class="e20r-assignment-hdr_type">
                         <?php
-                            dbg($answerDefs);
-                        dbg("e20rAssignmentView::viewArticle_Assignments() - field type = {$a->field_type}");
+                            dbg("e20rAssignmentView::viewArticle_Assignments() - field type = {$a->field_type}");
                             if ( $answerDefs !== null ) {
 
                                 echo $answerDefs[ $a->field_type ];
@@ -120,7 +120,7 @@ class e20rAssignmentView extends e20rSettingsView {
                         <input type="hidden" class="e20r-assignment-type" name="e20r-assignment-field_type[]" value="<?php echo $a->field_type; ?>" />
                     </td>
                     <td class="e20r-assignment-buttons">
-                        <a class="e20r-assignment-edit" href="javascript:e20r_assignmentEdit(<?php echo $a->id; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
+                        <a class="e20r-assignment-edit" href="javascript:e20r_assignmentEdit(<?php echo $a->id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
                     </td>
                     <td class="e20r-assignment-buttons">
                         <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a->id; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
@@ -146,7 +146,8 @@ class e20rAssignmentView extends e20rSettingsView {
                         <input id="e20r-add-assignment-order_num" name="e20r-add-assignment-order_num" type="text" value="" size="5" />
                     </td>
                     <td>
-                        <select class="e20r-select2-container select2" id="e20r-add-assignment-id" name="e20r-assignment-id"> <?php
+                        <select class="e20r-select2-container select2" id="e20r-add-assignment-id" name="e20r-assignment-id">
+	                        <option value="0"></option><?php
                             dbg("e20rAssignmentView::viewArticle_Assignments() - Loading all possible assignments");
 
                             $all = $e20rAssignment->getAllAssignments();
