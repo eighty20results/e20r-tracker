@@ -179,6 +179,7 @@ class e20rProgram extends e20rSettings {
             dbg("e20rProgram::startdate() - Using startdate as configured for program with id: ");
             dbg($userPID);
 
+	        $this->model->loadSettings( $userPID );
             $programStartDate = $this->model->getSetting( $userPID, 'startdate');
 
             // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
