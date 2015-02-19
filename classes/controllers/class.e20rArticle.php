@@ -50,6 +50,8 @@ class e20rArticle extends e20rSettings {
 
         global $post;
 
+        $savePost = $post;
+
         $def_status = array(
             'publish',
             'pending',
@@ -70,21 +72,27 @@ class e20rArticle extends e20rSettings {
         //  Fetch Programs
         $lessons = new WP_Query( $query );
 
-
         if ( empty( $lessons ) ) {
 
             dbg( "e20rArticle::addMeta_Settings() - No lessons found!" );
         }
 
         dbg("e20rArticle::addMeta_Settings() - Loaded " . $lessons->found_posts . " lessons");
-        dbg("e20rArticle::addMeta_Settings() - Loading settings metabox for article page {$post->ID}");
+        dbg("e20rArticle::addMeta_Settings() - Loading settings metabox for article page {$post->ID} or {$savePost->ID}?");
 
         $settings = $this->model->loadSettings( $post->ID );
+
+        $post = $savePost;
+
+	    ob_start();
         ?>
         <div id="e20r-article-settings">
             <?php echo $this->view->viewArticleSettings( $settings , $lessons ); ?>
         </div>
         <?php
+
+	    echo ob_get_clean();
+	    // ob_end_clean();
     }
 
     public function init( $postId = NULL ) {
@@ -340,15 +348,66 @@ class e20rArticle extends e20rSettings {
         return $content;
     }
 
-    public function addMeta_Assignments() {
 
-    }
+	public function remove_assignment_callback() {
+
+		global $e20rAssignment;
+
+		dbg("e20rArticle::remove_assignment_callback().");
+		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
+		dbg("e20rArticle::remove_assignment_callback() - Deleting assignment for article.");
+
+		$articleId = isset($_POST['e20r-article-id']) ? intval( $_POST['e20r-article-id']) : null;
+		$assignmentId = isset($_POST['e20r-assignment-id']) ? intval( $_POST['e20r-assignment-id']) : null;
+
+		$this->articleId = $articleId;
+		$this->init( $this->articleId );
+
+		$artSettings = $this->model->getSettings();
+		dbg("e20rArticle::remove_assignment_callback() - Article settings for ({$articleId}): ");
+		dbg($artSettings);
+
+		$assignment = $e20rAssignment->loadAssignment( $assignmentId );
+
+		dbg("e20rArticle::remove_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
+		$assignment->article_id = null;
+
+		dbg("e20rArticle::remove_assignment_callback() - Assignment settings for ({$assignmentId}): ");
+		$e20rAssignment->saveSettings( $articleId, $assignment );
+
+		dbg("e20rArticle::remove_assignment_callback() - Updating Article settings for ({$articleId}): ");
+
+		if ( in_array( $assignmentId, $artSettings->assignments) ) {
+
+			$artSettings->assignments = array_diff($artSettings->assignments, array( $assignmentId ));
+		}
+
+		$this->model->set( 'assignments', $artSettings->assignments, $articleId );
+
+		dbg("e20rArticle::remove_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
+
+		$toBrowser = array(
+			'success' => true,
+			'data' => $e20rAssignment->configureArticleMetabox( $articleId ),
+		);
+
+		if ( ! empty( $toBrowser['data'] ) ) {
+
+			dbg("e20rArticle::remove_assignment_callback() - Transmitting new HTML for metabox");
+			// wp_send_json_success( $html );
+
+			// dbg($html);
+			echo json_encode( $toBrowser );
+			wp_die();
+		}
+
+		dbg("e20rArticle::remove_assignment_callback() - Error generating the metabox html!");
+		wp_send_json_error( "No assignments found for this article!" );
+	}
 
     public function add_assignment_callback() {
 
         global $e20rAssignment;
-
-        dbg($_POST);
 
         dbg("e20rArticle::add_assignment_callback().");
         check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
@@ -361,9 +420,12 @@ class e20rArticle extends e20rSettings {
         dbg("e20rArticle::add_assignment_callback() - Article: {$articleId}, Assignment: {$assignmentId}, Assignment Order#: {$assignment_orderNum}");
 
         $this->articleId = $articleId;
-        $this->init();
+        $this->init( $this->articleId );
 
         $artSettings = $this->model->getSettings();
+	    dbg("e20rArticle::add_assignment_callback() - Article settings for ({$articleId}): ");
+	    dbg($artSettings);
+
         $assignment = $e20rAssignment->loadAssignment( $assignmentId );
 
         dbg("e20rArticle::add_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
@@ -371,7 +433,6 @@ class e20rArticle extends e20rSettings {
         $assignment->article_id = $articleId;
 
         dbg("e20rArticle::add_assignment_callback() - Assignment settings for ({$assignmentId}): ");
-
         $e20rAssignment->saveSettings( $articleId, $assignment );
 
         dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
@@ -380,29 +441,30 @@ class e20rArticle extends e20rSettings {
             $artSettings->assignments = array( $assignmentId );
         }
         else {
-            $artSettings->assignments[] = $assignmentId;
+	        if ( ! in_array( $assignmentId, $artSettings->assignments ) ) {
+		        $artSettings->assignments[] = $assignmentId;
+	        }
         }
 
         dbg($artSettings);
 
-        $this->model->set( 'assignments', $artSettings->assignments );
+        $this->model->set( 'assignments', $artSettings->assignments, $articleId );
 
         dbg("e20rArticle::add_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
 
-        $html = null;
-        $html = $e20rAssignment->configureArticleMetabox( $articleId );
+	    $toBrowser = array(
+	        'success' => true,
+	        'data' => $e20rAssignment->configureArticleMetabox( $articleId ),
+        );
 
-        if ( ! empty( $html ) ) {
+        if ( ! empty( $toBrowser['data'] ) ) {
 
             dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
-            wp_send_json_success( $html );
-            /*
-            dbg($html);
-            $response = array( 'success' => true, 'data' => $html );
-            echo json_encode( $response );
-            wp_die();
-            */
+            // wp_send_json_success( $html );
 
+            // dbg($html);
+            echo json_encode( $toBrowser );
+            wp_die();
         }
 
         dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
