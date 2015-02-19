@@ -121,6 +121,8 @@ class e20rArticleView extends e20rSettingsView {
         global $post;
         global $e20rTracker;
 
+        $savePost = $post;
+
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
         }
@@ -191,6 +193,8 @@ class e20rArticleView extends e20rSettingsView {
                         <td colspan="3">
                             <select class="select2-container" id="e20r-article-programs" name="e20r-article-programs[]" multiple="multiple"> <?php
 
+                                wp_reset_query();
+
                                 $programs = new WP_Query( array(
                                     'post_type' => 'e20r_programs',
                                     'posts_per_page' => -1,
@@ -224,6 +228,8 @@ class e20rArticleView extends e20rSettingsView {
                         <td>
                             <select class="select2-container" id="e20r-article-checkins" name="e20r-article-checkins[]" multiple="multiple"><?php
 
+                                wp_reset_query();
+
                                 $checkins = new WP_Query( array(
                                     'post_type' => 'e20r_checkins',
                                     'posts_per_page' => -1,
@@ -253,6 +259,8 @@ class e20rArticleView extends e20rSettingsView {
             </div>
         </form>
         <?php
+
+        $post = $savePost;
     }
 
     public function viewSettings_Checkin( $data ) {
