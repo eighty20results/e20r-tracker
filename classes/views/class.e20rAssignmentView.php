@@ -173,4 +173,8 @@ class e20rAssignmentView extends e20rSettingsView {
         $html = ob_get_clean();
         return $html;
     }
+
+	public function viewAssignment( $assignmentData, $articleConfig ) {
+
+	}
 }
