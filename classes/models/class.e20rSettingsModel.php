@@ -66,12 +66,18 @@ class e20rSettingsModel {
 
     }
 
-    protected function defaultSettings() {
-
-        global $post;
+    protected function defaultSettings( ) {
 
         $this->settings = new stdClass();
-        $this->settings->id = $post->ID;
+
+	    if (! $this->id ) {
+
+		    global $post;
+		    $this->settings->id = $post->ID;
+	    }
+	    else {
+			$this->settings->id = $this->id;
+	    }
 
         return $this->settings;
     }
@@ -134,7 +140,7 @@ class e20rSettingsModel {
         $this->id = $id;
 
         dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loading settings for {$this->type} ID {$this->id}");
-        $defaults = $this->defaultSettings();
+        $defaults = $this->defaultSettings( $this->id );
 
         if ( ! is_object( $this->settings ) ) {
 
