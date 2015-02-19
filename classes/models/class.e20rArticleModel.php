@@ -51,23 +51,34 @@ class e20rArticleModel extends e20rSettingsModel {
 
     public function findArticle($key, $value, $type = 'numeric', $programId = -1 ) {
 
-        $articleList = array();
+	    if ( $key != 'id' ) {
+		    $args = array(
+			    'posts_per_page' => -1,
+			    'post_type' => 'e20r_articles',
+			    'post_status' => 'publish',
+			    'order_by' => 'meta_value',
+			    'order' => 'DESC',
+			    'meta_query' => array(
+				    array(
+					    'key' => "_e20r-article-{$key}",
+					    'value' => $value,
+					    'compare' => '=',
+					    'type' => $type,
+				    ),
+			    )
+		    );
+	    }
+	    else {
+		    $args = array(
+			    'posts_per_page' => -1,
+			    'post_type' => 'e20r_articles',
+			    'post_status' => 'publish',
+			    'page_id' => $value,
+		    );
+	    }
 
-        $args = array(
-            'posts_per_page' => -1,
-            'post_type' => 'e20r_articles',
-            'post_status' => 'publish',
-            'order_by' => 'meta_value',
-            'order' => 'DESC',
-            'meta_query' => array(
-                array(
-                    'key' => "_e20r-article-{$key}",
-                    'value' => $value,
-                    'compare' => '=',
-                    'type' => $type,
-                ),
-            )
-        );
+        $articleList = array();
+	    dbg( $args );
 
         $query = new WP_Query( $args );
         dbg("e20rArticleModel::findArticle() - Returned articles: {$query->post_count}" );
