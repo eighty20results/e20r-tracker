@@ -115,6 +115,7 @@ class e20rTracker {
             add_action( 'wp_ajax_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
             add_action( 'wp_ajax_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
             add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
+	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -168,8 +169,11 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_getDelayValue', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_saveCheckin', 'e20r_ajaxUnprivError' );
             add_action( 'wp_ajax_nopriv_daynav', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
 
-            // TODO: Investigate the need for this.
+
+	        // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
 
             /* Allow admin to set the program ID for the user in their profile(s) */
