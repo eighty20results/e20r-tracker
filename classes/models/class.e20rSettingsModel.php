@@ -140,7 +140,7 @@ class e20rSettingsModel {
         $this->id = $id;
 
         dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loading settings for {$this->type} ID {$this->id}");
-        $defaults = $this->defaultSettings( $this->id );
+        $defaults = $this->defaultSettings();
 
         if ( ! is_object( $this->settings ) ) {
 
