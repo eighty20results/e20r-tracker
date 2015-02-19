@@ -30,12 +30,16 @@ class e20rSettings {
             return false;
         }
 
+	    dbg("e20r" . ucfirst($this->type) . "::init() - Loading {$this->type} for id: {$postId}");
+
         $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
 
         dbg("e20r" . ucfirst($this->type) . "::init() - Loaded {$this->type} id: {$settingsId}");
-        if ( ! $settingsId ) {
 
-            return false;
+        if ( $settingsId == false ) {
+
+	        $settingsId = $postId;
+            // return false;
         }
 
         if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
