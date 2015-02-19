@@ -73,7 +73,7 @@ class e20rAssignment extends e20rSettings {
 
         global $post;
 
-        dbg("e20rAssignment::addMeta_answers() - Loading the article answers metabox");
+        dbg("e20rAssignment::addMeta_answers() - Loading the article answers metabox for {$post->ID}, a {$post->post_type} CPT");
 
         echo $this->configureArticleMetabox( $post->ID );
     }
@@ -147,7 +147,7 @@ class e20rAssignment extends e20rSettings {
 */
     public function editor_metabox_setup( $object, $box ) {
 
-        add_meta_box('e20r-tracker-assignment-settings', __('Assignment Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_assignments', 'normal', 'high');
+        add_meta_box('e20r-tracker-assignment-settings', __('Assignment Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_assignments', 'normal', 'core');
 
     }
 
@@ -209,10 +209,9 @@ class e20rAssignment extends e20rSettings {
 
         $savePost = $post;
 
-        dbg("e20rAssignment::saveSettings() - Saving e20rAssignment settings to DB: {$post->post_type}");
+        dbg("e20rAssignment::saveSettings() - Saving e20rAssignment settings to DB");
 
-
-        if ( $settings === null ) {
+        if ( is_null( $settings ) ) {
 
             dbg( "e20rAssignment::saveSettings()  - Saving metadata from edit.php page, related to the e20rAssignment post_type" );
 
@@ -284,8 +283,10 @@ class e20rAssignment extends e20rSettings {
 
             setup_postdata( $post );
 
-            $this->model->set( 'question', the_title() );
-            $this->model->set( 'descr', the_excerpt() );
+            $this->model->set( 'question', get_the_title() );
+            $this->model->set( 'descr', get_the_excerpt() );
+
+	        wp_reset_postdata();
 
         }
 
