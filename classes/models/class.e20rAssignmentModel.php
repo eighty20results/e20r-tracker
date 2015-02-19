@@ -255,7 +255,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         $savePost = $post;
 
-        $this->settings = parent::loadSettings($id);
+        $this->settings = parent::loadSettings( $id );
 
         $post = get_post( $id );
         setup_postdata( $post );
