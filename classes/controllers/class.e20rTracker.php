@@ -706,6 +706,7 @@ class e20rTracker {
                     'lang' => array(
                         'saving' => __('Adding...', 'e20rtracker'),
                         'save' => __('Add', 'e20rtracker'),
+	                    'edit' => __('Update', 'e20rtracker'),
                     ),
                 )
             );
