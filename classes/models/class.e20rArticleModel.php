@@ -25,7 +25,7 @@ class e20rArticleModel extends e20rSettingsModel {
         $this->settings->programs = null;
         $this->settings->post_id = null;
         $this->settings->release_day = null;
-        $this->settings->release_date;
+        $this->settings->release_date = null;
         $this->settings->assignments = null;
         $this->settings->checkins = null;
         $this->settings->measurement_day = false;
@@ -97,6 +97,7 @@ class e20rArticleModel extends e20rSettingsModel {
     }
     // TODO: This requires the presence of checkin IDs in the Article list, etc.
     // checkin definitions -> $obj->type, $obj->
+
     public function lessonComplete( $articleId ) {
 
         dbg("e20rArticleModel::lessonComplete() - Checking lesson status for article: {$articleId} (ID)");
