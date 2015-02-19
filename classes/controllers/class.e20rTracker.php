@@ -97,7 +97,7 @@ class e20rTracker {
             // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
 
             // add_action( 'wp_print_scripts', array( &$e20rClient, 'load_scripts' ) );
-            add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
+            // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
             add_action( 'wp_ajax_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
@@ -1004,6 +1004,12 @@ class e20rTracker {
         <?php
     }
 
+	public function enqueue_frontend_css() {
+
+		wp_deregister_style("e20r-tracker");
+		wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+
+	}
     /**
      * Load all JS for Admin page
      */
