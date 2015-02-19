@@ -42,17 +42,66 @@ jQuery(document).ready( function(){
                 console.log($errString + ' error returned from getDelayValue action: ' + $errType );
             }
         });
+
     });
 });
 
-function e20r_assignmentEdit( assignmentId ) {
+function e20r_assignmentEdit( assignmentId, orderNum ) {
 
     console.log("AssignmentId to edit: " + assignmentId );
+    jQuery('#new-assignments').focus();
+    jQuery('#e20r-add-assignment-id').val(assignmentId).trigger("change");
+    jQuery('#e20r-add-assignment-order_num').val(orderNum);
+    jQuery('#e20r-article-assignment-save').html(e20r_tracker.lang.edit);
+
 };
 
 function e20r_assignmentRemove( assignmentId ) {
 
     console.log("AssignmentId to remove: " + assignmentId );
+    var saveBtn = jQuery('#e20r-article-assignment-save');
+
+    if ('' == jQuery('#e20r-assignments-id').val() || undefined != saveBtn.attr('disabled'))
+        return false; //already processing, ignore this request
+
+    // Disable save button
+    saveBtn.attr('disabled', 'disabled');
+    saveBtn.html(e20r_tracker.lang.saving);
+
+    wp.ajax.send({
+        url: e20r_tracker.ajaxurl,
+        type:'POST',
+        timeout:5000,
+        dataType: 'JSON',
+        data: {
+            action: "e20r_removeAssignment",
+            'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val(),
+            'e20r-assignment-id': assignmentId,
+            'e20r-article-id': jQuery('#post_ID').val()
+        },
+        success: function( resp ){
+            // console.log("success() - Returned data: ", resp );
+
+            if (resp) {
+                console.log('Removed assignment& refreshing metabox content');
+                jQuery('#e20r-assignment-settings').html(resp);
+            } else {
+                console.log('No HTML returned???');
+            }
+
+        },
+        error: function(jqxhr, $errString, $errType){
+            // console.log("error() - Returned data: ", jqxhr );
+            console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+        },
+        complete: function(response) {
+
+            // Re-enable save button
+            saveBtn.removeAttr('disabled');
+
+        }
+    });
 };
 
 function e20r_assignmentSave() {
@@ -63,6 +112,12 @@ function e20r_assignmentSave() {
 
     if ('' == jQuery('#e20r-assignments-id').val() || undefined != saveBtn.attr('disabled'))
         return false; //already processing, ignore this request
+
+    var $assignmentId = jQuery('#e20r-add-assignment-id').find("option:selected").val();
+
+    if ( $assignmentId == 0 ) {
+        return false;
+    }
 
     // Disable save button
     saveBtn.attr('disabled', 'disabled');
@@ -79,16 +134,16 @@ function e20r_assignmentSave() {
         data: {
             action: "e20r_addAssignment",
             'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val(),
-            'e20r-assignment-id': jQuery('#e20r-add-assignment-id').find("option:selected").val(),
+            'e20r-assignment-id': $assignmentId,
             'e20r-assignment-order_num': jQuery('#e20r-add-assignment-order_num').val(),
             'e20r-article-id': jQuery('#post_ID').val()
         },
         success: function( resp ){
-            console.log("success() - Returned data: ", resp );
+            // console.log("success() - Returned data: ", resp );
 
-            if (resp.data) {
+            if (resp) {
                 console.log('Entry added to sequence & refreshing metabox content');
-                jQuery('#e20r-assignment-settings').html(resp.data);
+                jQuery('#e20r-assignment-settings').html(resp);
             } else {
                 console.log('No HTML returned???');
             }
