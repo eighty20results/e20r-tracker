@@ -10,13 +10,6 @@
 class e20rArticle extends e20rSettings {
 
     /* Articles contain list of programs it belongs to along with the PostID and all metadata.*/
-/*
-    private $post_id;
-    private $program_ids = false;
-    private $user_programId = 0;
-    private $meta;
-    private $sequence_list = array();
-*/
     protected $articleId;
 
     protected $model;
@@ -30,7 +23,6 @@ class e20rArticle extends e20rSettings {
 
         parent::__construct( 'article', 'e20r_articles', $this->model, $this->view );
     }
-
 
     public function editor_metabox_setup( $object, $box ) {
 
