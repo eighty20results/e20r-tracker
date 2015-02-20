@@ -188,7 +188,7 @@ class e20rArticle extends e20rSettings {
         return $html;
     }
 
-	public function getAssignments( $articleId ) {
+	public function getAssignments( $articleId, $userId = null ) {
 
 		global $e20rAssignment;
 
@@ -196,12 +196,14 @@ class e20rArticle extends e20rSettings {
 
 		$this->init( $articleId );
 		$articleSettings = $this->model->loadSettings( $this->articleId );
+
 		$assignments = array();
 
 		foreach( $articleSettings->assignments as $assignmentId ) {
 
-			$tmp = $e20rAssignment->loadAssignment( $assignmentId );
-			$assignments[ $tmp->order_num ] = $tmp;
+			// Load the user specific assignment data (if available. If not, load default data)
+			$tmp = $e20rAssignment->load_userAssignment( $articleId, $assignmentId, $userId );
+			$assignments[ $tmp[0]->order_num ] = $tmp[0];
 		}
 
 		dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
@@ -523,6 +525,11 @@ class e20rArticle extends e20rSettings {
 
         return ( !$release_date ? false : $release_date );
     }
+
+	public function releaseDay( $articleId ) {
+
+		return $this->model->getSetting( $articleId, 'release_day' );
+	}
 
     public function isMeasurementDay( $articleId = null ) {
 
