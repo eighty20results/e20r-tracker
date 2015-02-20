@@ -21,17 +21,27 @@ class e20rAssignment extends e20rSettings {
         $this->model = new e20rAssignmentModel();
         $this->view = new e20rAssignmentView();
 
-        parent::__construct( 'assignment', 'e20r_assignments', $this->model, $this->view );
+        parent::__construct( 'assignment', 'e20r_assignment', $this->model, $this->view );
     }
 
     public function loadAssignment( $assignmentId ) {
 
-        $settings = $this->model->loadSettings( $assignmentId );
+	    $settings = $this->model->loadSettings( $assignmentId );
 
         dbg("e20rAssignment::init() - Loaded settings for {$assignmentId}");
 
         return $settings;
     }
+
+	public function load_userAssignment( $articleID, $assignmentId, $userId = null ) {
+
+		global $e20rArticle;
+
+		$e20rArticle->init( $articleID );
+		$delay = $e20rArticle->releaseDay( $articleID );
+
+		return $this->model->loadUserAssignment( $articleID, $userId, $delay, $assignmentId );
+	}
 
     public function findAssignmentItemId( $articleId ) {
 
@@ -110,6 +120,10 @@ class e20rAssignment extends e20rSettings {
         wp_die();
     }
 
+	public function showAssignment($assignments, $articleConf) {
+
+		return $this->view->viewAssignment( $assignments, $articleConf );
+	}
     /*
     public function getAssignment( $shortName ) {
 
