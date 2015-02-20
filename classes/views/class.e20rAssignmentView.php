@@ -176,5 +176,114 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewAssignment( $assignmentData, $articleConfig ) {
 
+		$html = null;
+
+		ob_start();
+		?>
+		<div id="e20r-article-assignment">
+			<form>
+				<input type="hidden" value="<?php echo $articleConfig->articleId; ?>" name="e20r-article-id" id="e20r-article-id" />
+				<input type="hidden" value="<?php echo $articleConfig->userId; ?>" name="e20r-article-user_id" id="e20r-article-user_id" />
+				<input type="hidden" value="<?php echo $articleConfig->delay; ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
+				<input type="hidden" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
+		<?php
+		$html = ob_get_clean();
+
+		dbg("e20rAssignmentView::viewAssignment() - Processing for " . count($assignmentData) . " assignments");
+		foreach( $assignmentData as $orderId => $assignment ) {
+
+			switch ( $assignment->field_type ) {
+				case 0: // Button "Assignment read"
+
+					$html .= $this->showAssignmentButton( $assignment );
+					break;
+
+				case 1: // <input>
+					$html .= $this->showAssignmentInput( $assignment );
+					break;
+
+				case 2: // <textbox>
+
+					$html .= $this->showAssignmentParagraph( $assignment );
+					break;
+
+				case 3: // Checkbox ( array ?)
+
+					break;
+
+				case 4: // Mulitple choice (radio buttons) (array?)
+
+					break;
+			}
+		}
+
+		ob_start();
+		if ( ( count($assignmentData) > 1 )  && ($assignment->field_type != 0 ) ) {
+			?>
+			<button id="e20r-assignment-save" class="e20r-button">Save</button>
+		<?php } ?>
+			</form>
+		</div>
+		<?php
+		$html .= ob_get_clean();
+
+		return $html;
+	}
+
+	private function showAssignmentInput( $assignment ) {
+		ob_start();
+		?>
+		<div class="e20r-assignment-paragraph">
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
+			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+			if ( isset( $assignment->descr ) ) { ?>
+				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
+			}?>
+			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo $assignment->answer; ?>" name="e20r-assignment-response" />
+				<?php
+				if ( isset( $assignment->answer ) ) {
+					echo $assignment->answer;
+				}
+				?>
+			</textarea>
+		</div>
+		<?php
+		return ob_get_clean();
+
+	}
+	private function showAssignmentParagraph( $assignment ) {
+
+		ob_start();
+		?>
+		<div class="e20r-assignment-paragraph">
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
+			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+			if ( isset( $assignment->descr ) ) { ?>
+				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
+			}?>
+			<textarea class="e20r-assignment-response e20r-textarea" rows="7" cols="80" placeholder="Your response, please...">
+				<?php
+				if ( isset( $assignment->answer ) ) {
+					echo $assignment->answer;
+				}
+				?>
+			</textarea>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	private function showAssignmentButton( $assignment ) {
+
+		ob_start();
+		?>
+		<div class="button-container">
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />"
+			<button id="e20r-assignment-complete" class="e20r-button">I've completed this lesson</button>
+		</div>
+		<?php
+		$html = ob_get_clean();
+
+		return $html;
 	}
 }
