@@ -7,7 +7,7 @@
  *  the GPL v2 license(?)
  */
 
-class e20rWorkout {
+class e20rWorkout extends e20rSettings {
 
     private $workout = array();
     public $model = null;
@@ -15,23 +15,26 @@ class e20rWorkout {
 
     public function e20rWorkout() {
 
-        dbg("e20rProgram:: - Initializing Workout class");
+        dbg("e20rWorkout::__construct() - Initializing Workout class");
 
-        $this->model = new e20rWorkoutModel();
-        $this->view = new e20rWorkoutView();
+	    $this->model = new e20rWorkoutModel();
+	    $this->view = new e20rWorkoutView();
+
+	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
     }
 
     public function init( $id = null ) {
 
-        if ( $id ) {
+        if ( is_null( $id ) ) {
 
-            $this->init( $id );
-        }
-        else {
             global $post;
+	        $id = $post->ID;
 
-            $this->model->init( $post->ID );
         }
+
+	    parent::init( $id );
+
+	    $this->model->init( $id );
     }
 
     public function getWorkout( $shortName ) {
@@ -55,7 +58,7 @@ class e20rWorkout {
 
     public function editor_metabox_setup( $object, $box ) {
 
-        add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array( &$this, "addMeta_WorkoutSettings" ), 'e20r_workout', 'normal', 'high');
+        add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array( &$this, "addMeta_WorkoutSettings" ), 'e20r_workout', 'normal', 'core');
 
     }
 
@@ -98,6 +101,46 @@ class e20rWorkout {
         $this->model->saveSettings( $settings );
     }
 
+	/**
+	 * Save the Workout Settings to the metadata table.
+	 *
+	 * @param $settings - Array of settings for the specific article.
+	 *
+	 * @return bool - True if successful at updating article settings
+	 */
+/*	public function saveSettings( stdClass $settings ) {
+
+		$articleId = $settings->id;
+
+		$defaults = self::defaultSettings();
+
+		dbg("e20rWorkoutModel::saveSettings() - Saving workout Metadata: " . print_r( $settings, true ) );
+
+		$error = false;
+
+		foreach ( $defaults as $key => $value ) {
+
+			if ( in_array( $key, array( 'id' ) ) ) {
+				continue;
+			}
+
+			if ( $key == 'post_id' ) {
+
+				dbg("e20rWorkoutModel::saveSettings() - Saving the workout ID with the post ");
+				update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
+			}
+
+			if ( false === $this->settings( $articleId, 'update', $key, $settings->{$key} ) ) {
+
+				dbg( "e20rWorkoutModel::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for workout definition with ID: {$articleId}" );
+
+				$error = true;
+			}
+		}
+
+		return ( !$error ) ;
+	}
+*/
     public function getPeers( $workoutId = null ) {
 
         if ( is_null( $workoutId ) ) {

@@ -6,15 +6,17 @@
  * Time: 1:20 PM
  */
 
-class e20rWorkoutView {
+class e20rWorkoutView extends e20rSettingsView {
 
     private $workouts = null;
 
-    public function e20rWorkoutView( $workoutData = null ) {
+	public function e20rWorkoutView( $data = null, $error = null ) {
 
-        $this->workouts = $workoutData;
+		parent::__construct( 'workout', 'e20r_workout' );
 
-    }
+		$this->workouts = $data;
+		$this->error = $error;
+	}
 
     public function viewSettingsBox( $workoutData ) {
 

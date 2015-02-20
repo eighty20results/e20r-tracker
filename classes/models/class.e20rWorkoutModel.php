@@ -6,24 +6,14 @@
  * Time: 9:17 AM
  */
 
-class e20rWorkoutModel {
+class e20rWorkoutModel extends e20rSettingsModel {
 
     private $meta;
 
-    public function init( $workoutId = null ) {
+	public function e20rWorkoutModel() {
 
-        if ( $workoutId === null ) {
-
-            global $post;
-
-            if ( isset( $post->post_type) && ( $post->post_type == 'e20r_workouts' ) ) {
-
-                $workoutId = $post->ID;
-            }
-        }
-
-        $this->meta = $this->loadSettings( $workoutId );
-    }
+		parent::__construct( 'workout', 'e20r_workout' );
+	}
 
     public function defaultSettings() {
 
@@ -53,8 +43,23 @@ class e20rWorkoutModel {
         return $workout;
     }
 
+	public function init( $workoutId = null ) {
 
-    /**
+		if ( $workoutId === null ) {
+
+			global $post;
+
+			if ( isset( $post->post_type) && ( $post->post_type == 'e20r_workouts' ) ) {
+
+				$workoutId = $post->ID;
+			}
+		}
+
+		$this->meta = $this->loadSettings( $workoutId );
+	}
+
+
+	/**
      * Returns an array of all programs merged with their associated settings.
      *
      * @param $statuses string|array - Statuses to return program data for.
@@ -93,47 +98,52 @@ class e20rWorkoutModel {
 
     public function loadWorkoutData( $id, $statuses = 'any' ) {
 
-        if ( $id === null ) {
+	    global $post;
 
-            dbg("e20rWorkoutModel::loadWorkoutData() - Warning: Unable to load workout data. No ID specified!");
-            return $this->meta;
-        }
-        else {
-            $query = array(
-                'post_type'   => 'e20r_workouts',
-                'post_status' => $statuses,
-                'p'           => $id,
-            );
+	    $savePost = $post;
+	    $workouts = array();
 
-            wp_reset_query();
+	    if ( $id === null ) {
 
-            /* Fetch Workouts */
-            $workout_list = get_posts( $query );
+		    dbg( "e20rWorkoutModel::loadWorkoutData() - Warning: Unable to load workout data. No ID specified!" );
 
-            if ( empty( $workout_list ) ) {
-                dbg( "e20rWorkoutModel::loadWorkoutData() - No workouts found!" );
+		    return $this->meta;
+	    } else {
 
-                return $this->meta;
-            }
+		    $query = array(
+			    'post_type'   => 'e20r_workouts',
+			    'post_status' => $statuses,
+			    'p'           => $id,
+		    );
 
-            foreach ( $workout_list as $key => $data ) {
+		    wp_reset_query();
 
-                $settings = $this->loadSettings( $data->ID );
+		    /* Fetch Workouts */
+		    $workout_list = new WP_Query( $query );
 
-                $loaded_settings = (object) array_replace( (array) $data, (array) $settings );
+		    if ( empty( $workout_list ) ) {
+			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workouts found!" );
 
-                $workout_list[ $key ] = $loaded_settings;
-            }
+			    return $this->meta;
+		    }
 
-            return $workout_list[0];
-        }
+		    while ( $workout_list->have_posts() ) {
 
-        return false;
+			    $workout_list->the_post();
+
+			    $new = $this->loadSettings( get_the_ID() );
+
+			    $new->id         = get_the_ID();
+			    $new->item_text  = $query->post->post_excerpt;
+			    $new->short_name = $query->post->post_title;
+
+			    $workouts[] = $new;
+		    }
+	    }
+
+	    return $workouts;
     }
 
-    public function saveWorkout( $workout ) {
-        return true;
-    }
     /**
      * Save the Workout Settings to the metadata table.
      *
@@ -143,24 +153,41 @@ class e20rWorkoutModel {
      */
     public function saveSettings( $settings ) {
 
-        $workoutId = $settings->id;
-        unset($settings->id);
+	    $workoutId = $settings->id;
 
-        // $this->meta = $settings;
+	    // TODO: Handle workout groupings
+	    // $new_groups = $this->processGroups( $settings->groups, $this->defaultSettings() );
 
-        $new_groups = $this->processGroups( $settings->groups, $this->defaultSettings() );
+	    $defaults = $this->defaultSettings();
 
-        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
+	    dbg("e20rWorkoutModel::saveSettings() - Saving assignment Metadata: " . print_r( $settings, true ) );
 
-        dbg("e20rWorkoutModel::saveSettings() - Saving workout Metadata: " . print_r( $settings, true ) );
+	    $error = false;
 
-        if ( false === update_post_meta( $workoutId, 'e20r-workout-settings', $settings ) ) {
+	    foreach ( $defaults as $key => $value ) {
 
-            dbg("e20rWorkout::saveSettings() - ERROR saving settings for workout with ID: {$workoutId}");
-            return false;
-        }
+		    if ( in_array( $key, array( 'id' ) ) ) {
 
-        return true;
+			    continue;
+		    }
+
+		    if ( false === $this->settings( $workoutId, 'update', $key, $settings->{$key} ) ) {
+
+			    if ( is_array( $settings->{$key} ) || is_object( $settings->{$key} ) ) {
+
+				    dbg( "e20rWorkoutModel::saveSettings() - ERROR saving {$key} setting for workout definition with ID: {$workoutId}: " );
+				    dbg( $settings->{$key} );
+			    }
+			    else {
+
+				    dbg( "e20rWorkoutModel::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for workout definition with ID: {$workoutId}" );
+			    }
+
+			    $error = true;
+		    }
+	    }
+
+	    return ( !$error ) ;
     }
 
     /**
