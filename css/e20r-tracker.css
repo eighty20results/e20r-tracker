@@ -1876,3 +1876,44 @@ body.loading .modal {
     width: 100%;
     vertical-align: baseline;
 }
+.button-container {
+    margin-top: 8px;
+    height: 30px;
+    position: relative;
+}
+.button-container button {
+    position: absolute;
+    right: 0;
+    z-index: 99;
+    font-size: 14px;
+}
+.e20r-assignment-paragraph {
+    width: 80%;
+    padding-bottom: 20px;
+}
+.e20r-assignment-paragraph textarea {
+    width: 600px;
+    height: 120px;
+    border: 3px solid #cccccc;
+    padding: 5px;
+    font-family: Tahoma, sans-serif;
+}
+.e20r-assignment-paragraph input {
+    width: 600px;
+    height: 20px;
+    border: 3px solid #cccccc;
+    padding: 5px;
+    font-family: Tahoma, sans-serif;
+}
+.e20r-assignment-question {
+    font-size: 130%;
+    color: #9C0000;
+    font-weight: bold;
+}
+p.e20r-assignment-descr {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    paddin-left: 20px;
+    font-size: 0.8rem !important;
+    font-style: italic;
+}
