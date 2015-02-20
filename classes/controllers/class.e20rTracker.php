@@ -264,7 +264,10 @@ class e20rTracker {
             case 'e20r_workout':
 
                 $title = 'Enter Workout Name Here';
-                break;
+	            remove_meta_box( 'postexcerpt', 'e20r_workout', 'side' );
+	            add_meta_box('postexcerpt', __('Summary'), 'post_excerpt_meta_box', 'e20r_workout', 'normal', 'high');
+
+	            break;
 
             case 'e20r_checkins':
 
