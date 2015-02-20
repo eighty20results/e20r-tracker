@@ -273,23 +273,30 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		    $this->settings = $this->defaultSettings( $id );
 		    $this->settings->id = $id;
+		    $this->settings->question_id = $id;
 	    }
+	    else {
 
-        $savePost = $post;
+		    $savePost = $post;
 
-        $this->settings = parent::loadSettings( $id );
+		    $this->settings = parent::loadSettings( $id );
 
-        $post = get_post( $id );
-        setup_postdata( $post );
 
-        $this->settings->descr = $post->post_excerpt;
-        $this->settings->question = $post->post_title;
-        $this->settings->id = $id;
-	    $this->settings->question_id = $id;
+		    $post = get_post( $id );
+		    setup_postdata( $post );
+		    dbg( $post );
 
-        wp_reset_postdata();
-        $post = $savePost;
+		    if ( ! empty( $post->post_title ) ) {
 
+			    $this->settings->descr    = $post->post_excerpt;
+			    $this->settings->question = $post->post_title;
+			    $this->settings->id       = $id;
+			    $this->settings->question_id = $id;
+		    }
+
+		    wp_reset_postdata();
+		    $post = $savePost;
+	    }
         return $this->settings;
     }
 /*
