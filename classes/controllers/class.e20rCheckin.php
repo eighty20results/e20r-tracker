@@ -149,6 +149,7 @@ class e20rCheckin extends e20rSettings {
         global $e20rTracker;
         global $e20rArticle;
 	    global $e20rActivity;
+	    global $e20rAssignment;
 
         global $current_user;
 
@@ -175,6 +176,7 @@ class e20rCheckin extends e20rSettings {
         $y = $e20rTracker->getDateFromDelay( $config->prev );
         $config->yesterday = date_i18n( 'l M. jS', strtotime( $y ) );
 
+	    $config->userId = $current_user->ID;
 
         if ( ( strtolower($config->type) == 'action' ) || ( strtolower($config->type) == 'activity' ) ) {
 
@@ -283,10 +285,9 @@ class e20rCheckin extends e20rSettings {
 
             dbg("e20rCheckin::dailyProgress() - Loading pre-existing data for the lesson/assignment ");
 
-            $assignments = $e20rArticle->getAssignments( $config->articleId );
-	        dbg($assignments);
+            $assignments = $e20rArticle->getAssignments( $config->articleId, $current_user->ID );
 
-	        return $this->view->viewAssignment( $assignments, $config );
+	        return $e20rAssignment->showAssignment( $assignments, $config );
         }
     }
 
