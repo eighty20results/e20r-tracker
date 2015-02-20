@@ -44,6 +44,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->descr = null;
         $settings->order_num = 1;
         $settings->question = null;
+	    $settings->question_id = null;
         $settings->delay = null;
         $settings->field_type = 0;
         $settings->article_id = null;
@@ -132,11 +133,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $assignments;
     }
 
-    public function loadUserAssignment( $articleId, $userId, $delay = null ) {
+    public function loadUserAssignment( $articleId, $userId, $delay = null, $assignmentId = null ) {
 
         // TODO: Load the recored user assignment answers by assignment ID.
         global $wpdb;
-        global $current_user;
         global $post;
         global $e20rProgram;
 
@@ -148,16 +148,15 @@ class e20rAssignmentModel extends e20rSettingsModel {
         dbg("e20rAssignmentModel::loadUserAssignment() - date for article # {$articleId} in program {$programId} for user {$userId}: {$delay}");
 
         $sql = $wpdb->prepare(
-            "SELECT *
+            "SELECT answer_date, answer, user_id, question_id
              FROM {$this->table} AS a
              WHERE ( ( a.user_id = %d ) AND
-              ( c.program_id = %d ) AND
-              ( c.delay = %d ) AND
-              ( c.article_id = %d ) )
+              ( c.program_id = %d ) AND " .
+              ( ! is_null( $delay ) ? "( c.delay = " . intval( $delay ) . " ) AND " : null ) .
+             "( c.article_id = %d ) )
               ORDER BY c.id ",
             $userId,
             $programId,
-            $delay,
             $articleId
         );
 
@@ -165,10 +164,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         $result = $wpdb->get_results( $sql );
 
-        if ( $result === false ) {
+        if ( is_wp_error($result) ) {
 
             dbg("e20rAssignmentModel::loadAssignmentData() - Error loading assignments: " . $wpdb->last_error );
-            return false;
+	        return null;
         }
 
         dbg("e20rAssignmentModel::loadAssignmentData() - Loaded " . count($result) . " check-in records");
@@ -178,15 +177,26 @@ class e20rAssignmentModel extends e20rSettingsModel {
             // Index the result array by the ID of the assignment (key)
             foreach( $result as $key => $data ) {
 
-                $result[$data->id] = $data;
 
-                $post = get_post( $data->id );
+	            $assignment = $this->model->loadSettings( $data->id );
+
+	            foreach ( $assignment as $key => $val ) {
+
+		            // Don't clobber the user responses
+		            if ( ! in_array( $key, array( 'answer_date', 'answer', 'user_id', 'article_id' ) ) ) {
+			            $data->{$key} = $val;
+		            }
+	            }
+
+	            $result[$data->id] = $data;
+
+	            $post = get_post( $data->id );
 
                 setup_postdata( $post );
 
                 $result[$data->id]->descr = $post->post_excerpt;
                 $result[$data->id]->question = $post->post_title;
-
+	            $result[$data->id]->question_id = $post->ID;
 
                 unset($result[$key]);
 
@@ -195,7 +205,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
             }
         }
         else {
-            $result = array( 0 => $this->defaultSettings() );
+	        if ( $assignmentId ) {
+
+		        $result = array( 0 => $this->loadSettings( $assignmentId ) );
+	        }
+	        else {
+		        $result = array( 0 => $this->defaultSettings() );
+	        }
 
             dbg("e20rAssignmentModel::loadAssignmentData() - Using default values: ");
             dbg($result);
@@ -263,6 +279,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $this->settings->descr = $post->post_excerpt;
         $this->settings->question = $post->post_title;
         $this->settings->id = $id;
+	    $this->settings->question_id = $id;
 
         wp_reset_postdata();
         $post = $savePost;
