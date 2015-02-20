@@ -33,14 +33,14 @@ class e20rSettingsModel {
 
         global $e20rTables;
 
-        dbg("e20rSettingsModel::e20rSettingsModel() - Type: {$type}");
+        dbg("e20r" . ucfirst($this->type) . "Model::e20rSettingsModel() - Type: {$type}");
         try {
             $this->table  = $e20rTables->getTable( $this->type );
             $this->fields = $e20rTables->getFields( $this->type );
         }
         catch( Exception $e ) {
 
-            dbg("e20rSettingsModel::e20rSettingsModel() - Warning while loading tables & fields: " . $e->getMessage() );
+            dbg("e20r" . ucfirst($this->type) . "Modele20rSettingsModel() - Warning while loading tables & fields: " . $e->getMessage() );
             $this->table = null;
             $this->fields = null;
             return;
@@ -134,7 +134,7 @@ class e20rSettingsModel {
             $id = $this->id;
         }
 
-        if ( $id == null ) {
+        if ( $id === null ) {
             dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Error: Unable to load settings. No ID specified!");
             return false;
         }
