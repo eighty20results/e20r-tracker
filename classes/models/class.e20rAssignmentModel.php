@@ -269,6 +269,12 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         global $post;
 
+	    if ( $id == 0 ) {
+
+		    $this->settings = $this->defaultSettings( $id );
+		    $this->settings->id = $id;
+	    }
+
         $savePost = $post;
 
         $this->settings = parent::loadSettings( $id );
