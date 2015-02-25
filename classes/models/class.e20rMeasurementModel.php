@@ -467,7 +467,7 @@ class e20rMeasurementModel {
         global $e20rTracker;
         global $e20rMeasurementDate;
 
-        if ( ( ! in_array( array( 'current', 'last_week', 'next' ), $when ) ) &&
+        if ( ( ! in_array( $when, array( 'current', 'last_week', 'next' ) ) ) &&
              ( strtotime( $when ) !== false ) ) {
 
             dbg("e20rMeasurementModel::loadByDate() - Specified an actual date value ({$when})");
