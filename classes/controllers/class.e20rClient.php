@@ -124,6 +124,11 @@ class e20rClient {
         return $data;
     }
 
+	public function getGender() {
+
+		return $this->model->getData( $this->id, 'gender');
+	}
+
     public function completedInterview( $userId ) {
 
         $data = $this->model->getData( $userId, 'weight_loss');
