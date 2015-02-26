@@ -447,39 +447,119 @@
     background-color: buttonface;
     box-sizing: border-box;
 }
-#saturday-progress-container #e20r-progress-canvas {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    background: #FFF;
-    min-height: 300px;
-    padding: 14px;
-
-}
 /** The actual weekly progress measurement page container **/
+@media screen and (max-width: 533px) {
+    #saturday-progress-container #e20r-progress-canvas {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background: #FFF;
+        min-height: 300px;
+        padding: 4px;
+    }
+    #saturday-progress-container.progress-container {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        border-radius: 6px;
+        background: rgba( 0, 76, 255, 0.95 );
+        border: 1px solid rgb( 0, 76, 255);
+        padding: 14px;
+        max-width: 95%;
+        width: 330px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    #saturday-progress-container.progress-container table.e20r-progress-form {
+        width: 300px;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting {
+        font-size: 80%;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting > select {
+        font-size: 80%;
+        margin-top: 4px;
+    }
+    table.e20r-progress-form td.content {
+        padding-left: 16px;
+        width: 320px;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container {
+        width: 267px;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container.active {
+        width: 237px;
+    }
+    #saturday-progress-container .girth-image { display: none; }
+    #saturday-progress-container .girth-image.active { display: none; }
+    #saturday-progress-container.progress-container > h3 {
+        font-variant: small-caps;
+        color: #FFF !important;
+        font-size: 20px !important;
+        line-height: 50% !important;
+        font-weight: bold;
+        margin: 0 0 15px;
+    }
+    #saturday-progress-container.progress-container > h3 span {
+        font-size: 90%;
+        font-weight: normal;
+    }
+    table.e20r-progress-form textarea.e20r-note {
+        margin: 0px;
+        width: 264px;
+        height: 122px;
+    }
+    #progress-questionnaire h5,
+    #progress-questionnaire li {
+        font-size: 90%;
+    }
+    table.e20r-progress-form .e20r-number-col {
+        width: 20px;
+        text-align: center;
+        padding-top: 8px;
+        line-height: 35px;
+        color: #666666;
+        font-size: 2.5em;
+        max-font-size: 58px;
+        min-font-size: 18px;
+    }
+    #saturday-progress-container legend {
+        float: left;
+        margin-bottom: 12px;
+        font-size: 100%;
+        font-variant: small-caps;
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        color: #004CFF;
+        margin-top: 2px;
+    }
+    #saturday-progress-container .help {
+        clear: left;
+        font-size: 85%;
+        line-height: 18px;
+        margin-bottom: 12px;
+        color: #000;
+    }
+    .measurement-field-container label {
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        float: left;
+        display: block;
+        margin-left: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        padding: 0 2px;
+        font-size: 85%;
+        line-height: 12px;
+        background: #FFF;
+        margin-top: -5px;
+    }
+    .measurement-field-container span.unit {
+        float: left;
+        font-size: 90%;
+        margin: 8px;
+        color: #333;
+    }
+}
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
-}
-#saturday-progress-container.progress-container {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    background: rgba( 0, 76, 255, 0.95 );
-    border: 1px solid rgb( 0, 76, 255);
-    padding: 14px;
-    max-width: 700px;
-}
-
-#saturday-progress-container.progress-container > h3 {
-    font-variant: small-caps;
-    color: #FFF !important;
-    font-size: 20px !important;
-    line-height: 50% !important;
-    font-weight: bold;
-    margin: 0 0 15px;
-}
-
-#saturday-progress-container.progress-container > h3 span {
-    font-size: 100%;
-    font-weight: normal;
 }
 /*** TODO: Include or exclude Welcome banner? ****/
 #saturday-progress-container .welcome-initial { font-size: 16px; }
@@ -517,22 +597,6 @@
     font-size: 14px;
 }
 /** Content within the Measurements Page container **/
-#saturday-progress-container .help {
-    clear: left;
-    font-size: 14px;
-    line-height: 18px;
-    margin-bottom: 12px;
-    color: #000;
-}
-#saturday-progress-container legend {
-    float: left;
-    margin-bottom: 12px;
-    font-size: 1.8em;
-    font-variant: small-caps;
-    font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
-    color: #004CFF;
-    margin-top: 2px;
-}
 #saturday-progress-container ul {
     margin-left: 48px;
     margin-bottom: 16px;
@@ -573,34 +637,126 @@
     clear: both;
     visibility: hidden;
 }
-#saturday-progress-container .girth-row-container .girth-descript-container {
-    width: 362px;
-    float: right;
-    /* vertical-align: baseline; */
-}
-
-#saturday-progress-container .girth-row-container .girth-descript-container.active { width: 337px; }
 #saturday-progress-container .girth-row-container p {
     display: none;
     font-size: 0.8em !important;
 }
 #saturday-progress-container .girth-row-container.active { padding-top: 6px; }
-#saturday-progress-container .girth-image {
-    background-size: 61px 57px;
-    width: 60px;
-    height: 57px;
-    display: block;
-    border: 1px solid #0b3e56;
-    float: left;
-    margin-right: 8px;
+@media screen and (min-width: 534px) {
+    #saturday-progress-container #e20r-progress-canvas {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background: #FFF;
+        min-height: 300px;
+        padding: 14px;
+    }
+    #saturday-progress-container.progress-container {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background: rgba( 0, 76, 255, 0.95 );
+        border: 1px solid rgb( 0, 76, 255);
+        padding: 14px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    table.e20r-progress-form td.content {
+        padding-left: 16px;
+        max-width: 100%;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting > select {
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container {
+        width: 362px;
+        float: left;
+        /* vertical-align: baseline; */
+    }
+    table.e20r-progress-form textarea.e20r-note {
+        margin: 0px;
+        width: 80%;
+        height: 250px;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container.active {
+        width: 337px;
+    }
+    #saturday-progress-container .girth-image {
+        background-size: 61px 57px;
+        width: 60px;
+        height: 57px;
+        display: block;
+        border: 1px solid #0b3e56;
+        float: left;
+        margin-right: 8px;
+    }
+
+    #saturday-progress-container .girth-image.active {
+        background-size: 145px 138px;
+        width: 144px;
+        height: 137px;
+    }
+    #saturday-progress-container .girth-image.F { background-position: 60px 0; }
+    #saturday-progress-container .girth-image.active.F { background-position: 144px 0; }
+    table.e20r-progress-form .e20r-number-col {
+        width: 62px;
+        text-align: center;
+        padding-top: 8px;
+        line-height: 50px;
+        color: #666666;
+        font-size: 3.5em;
+        max-font-size: 58px;
+        min-font-size: 38px;
+    }
+    #saturday-progress-container.progress-container > h3 {
+        font-variant: small-caps;
+        color: #FFF !important;
+        font-size: 20px !important;
+        line-height: 50% !important;
+        font-weight: bold;
+        margin: 0 0 15px;
+    }
+    #saturday-progress-container.progress-container > h3 span {
+        font-size: 100%;
+        font-weight: normal;
+    }
+    #saturday-progress-container legend {
+        float: left;
+        margin-bottom: 12px;
+        font-size: 1.8em;
+        font-variant: small-caps;
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        color: #004CFF;
+        margin-top: 2px;
+    }
+    #saturday-progress-container .help {
+        clear: left;
+        font-size: 14px;
+        line-height: 18px;
+        margin-bottom: 12px;
+        color: #000;
+    }
+    .measurement-field-container label {
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        float: left;
+        display: block;
+        margin-left: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        padding: 0 2px;
+        font-size: 14px;
+        line-height: 12px;
+        background: #FFF;
+        margin-top: -5px;
+    }
+    .measurement-field-container span.unit {
+        float: left;
+        font-size: 16px;
+        margin: 8px;
+        color: #333;
+    }
 }
-#saturday-progress-container .girth-image.active {
-    background-size: 145px 138px;
-    width: 144px;
-    height: 137px;
-}
-/*#saturday-progress-container .girth-image.F { background-position: 60px 0; }
-#saturday-progress-container .girth-image.active.F { background-position: 144px 0; } */
 .measurement-field-container {
     -moz-border-radius: 3px;
     -webkit-border-right: 3px;
@@ -615,32 +771,12 @@
     clear: both;
     visibility: hidden;
 }
-.measurement-field-container label {
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    float: left;
-    display: block;
-    margin-left: 16px;
-    margin-bottom: 8px;
-    font-weight: bold;
-    padding: 0 2px;
-    font-size: 14px;
-    line-height: 12px;
-    background: #FFF;
-    margin-top: -5px;
-}
 .measurement-field-container input {
     clear: left;
     margin-left: 20px;
     display: block;
     float: left;
     margin-bottom: 10px;
-}
-.measurement-field-container span.unit {
-    float: left;
-    font-size: 16px;
-    margin: 8px;
-    color: #333;
 }
 .measurement-field-container.active {
     background: rgba(255, 184, 77, 0.3);
@@ -713,25 +849,11 @@
     margin-top: 12px;
 }
 .measurement-saved-container button.edit {
-    align-items: flex-start;
-    text-align: center;
     cursor: default;
-    padding: 2px 6px 3px;
-    color: buttontext;
-    border: 2px outset buttonface;
-    border-image-source: initial;
-    border-image-slice: initial;
-    border-image-width: initial;
-    border-image-outset: initial;
-    border-image-repeat: initial;
-    background-color: buttonface;
-    box-sizing: border-box;
-    font: -webkit-small-control;
     line-height: normal;
     font-size: 14px;
     float: right;
     margin-right: 12px;
-    margin-top: 9px;
 }
 .measurement-saved-container.active { display: block; }
 /** Internet Explorer specific - *sigh* **/
@@ -771,7 +893,8 @@
 }
 
 /**** For the measurements table ****/
-table.e20r-progress-form { width: 600px; }
+/* table.e20r-progress-form { width: 600px; } */
+/* table.e20r-progress-form { width: 100%; } */
 table.e20r-progress-form > tbody > tr td {
     vertical-align: top;
     padding: 4px;
@@ -779,7 +902,6 @@ table.e20r-progress-form > tbody > tr td {
     padding-top: 22px;
     border-bottom: 1px solid #c8cbcc;
 }
-table.e20r-progress-form td.content { padding-left: 16px; }
 table.e20r-progress-form > tbody > tr:first-child td { padding-top: 4px; }
 table.e20r-progress-form legend { padding-top: 4px; }
 table.e20r-progress-form legend .help-icon {
@@ -787,16 +909,6 @@ table.e20r-progress-form legend .help-icon {
     margin-top: -1px;
     margin-left: 6px;
     cursor: pointer;
-}
-table.e20r-progress-form .e20r-number-col {
-    width: 62px;
-    text-align: center;
-    padding-top: 8px;
-    line-height: 50px;
-    color: #666666;
-    font-size: 3.5em;
-    max-font-size: 58px;
-    min-font-size: 38px;
 }
 table.e20r-progress-form tbody tr.collapsed { background: #e8f6fc; }
 table.e20r-progress-form tbody tr.collapsed td { padding: 8px 0; }
@@ -848,20 +960,7 @@ table.e20r-progress-form tfoot button.submit {
     margin-bottom: 8px;
 }
 #submit-weekly-progress-button {
-    align-items: flex-start;
-    text-align: center;
     cursor: default;
-    color: buttontext;
-    padding: 2px 6px 3px;
-    border: 2px outset buttonface;
-    border-image-source: initial;
-    border-image-slice: initial;
-    border-image-width: initial;
-    border-image-outset: initial;
-    border-image-repeat: initial;
-    background-color: buttonface;
-    box-sizing: border-box;
-    font: -webkit-small-control;
     line-height: normal;
     font-size: 14px;
     margin-right: 12px;
@@ -1310,7 +1409,7 @@ td.e20r-group-header {
     color: #FFF !important;
     font-size: 20px !important;
     font-weight: bold;
-    margin: 0 !important;
+    /* margin: 0 !important; */
 }
 .progress-container > h3 span { font-weight: normal; }
 .progress-container p { color: #33383a; }
@@ -1878,14 +1977,27 @@ body.loading .modal {
 }
 .button-container {
     margin-top: 8px;
-    height: 30px;
+    height: 45px;
     position: relative;
+    width: 100%;
+}
+.button-container .e20r-assignment-complete-text {
+    display: none;
+    text-align: center;
+    font-color: #000;
+    font-weight: bold;
+    vertical-align: middle;
 }
 .button-container button {
     position: absolute;
     right: 0;
     z-index: 99;
     font-size: 14px;
+    width: 50%;
+}
+.button-container.e20r-complete {
+    border: 1px solid rgba(0, 126, 0, 0.5);
+    background-color: rgba(0, 255, 0, 0.2);
 }
 .e20r-assignment-paragraph {
     width: 80%;
@@ -1916,4 +2028,8 @@ p.e20r-assignment-descr {
     paddin-left: 20px;
     font-size: 0.8rem !important;
     font-style: italic;
+}
+#e20r-assignment-complete button {
+    text-align: left;
+    margin-left: 30px;
 }
