@@ -170,7 +170,7 @@ class e20rMeasurementViews {
                         Other Indicators of Progress I'm Tracking
                     </legend>
                     <div>
-                        <textarea name="essay1" id="essay1" data-measurement-type="essay1" class="e20r-textarea e20r-note"><?php echo $note; ?></textarea>
+                        <textarea name="essay1" id="essay1" data-measurement-type="essay1" class=".e20r-assignment-paragraph e20r-textarea e20r-note"><?php echo $note; ?></textarea>
                     </div>
                 </fieldset>
             </td>
