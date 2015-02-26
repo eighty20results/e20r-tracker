@@ -10,7 +10,7 @@
 
 class e20rSettingsModel {
 
-    protected $id;
+    protected $id = null;
     protected $type;
     protected $cpt_slug;
 
@@ -40,7 +40,7 @@ class e20rSettingsModel {
         }
         catch( Exception $e ) {
 
-            dbg("e20r" . ucfirst($this->type) . "Modele20rSettingsModel() - Warning while loading tables & fields: " . $e->getMessage() );
+            dbg("e20r" . ucfirst($this->type) . "Model::e20rSettingsModel - Warning while loading tables & fields: " . $e->getMessage() );
             $this->table = null;
             $this->fields = null;
             return;
@@ -50,7 +50,10 @@ class e20rSettingsModel {
 
     public function init( $id = null ) {
 
-        $this->id = $id;
+	    $typeVar = 'current' . ucfirst($this->type);
+	    global ${$typeVar};
+
+	    $this->id = $id;
 
         if ( $this->id === null ) {
 
@@ -62,8 +65,13 @@ class e20rSettingsModel {
             }
         }
 
-        $this->settings = $this->loadSettings( $this->id );
+	    if ( empty( ${$typeVar} ) || ( ${$typeVar}->id != $this->id ) ) {
 
+		    dbg("e20r" . ucfirst($this->type) . "Model::init() -  Loading settings");
+
+		    $this->settings = $this->loadSettings( $this->id );
+		    ${$typeVar} = $this->settings;
+	    }
     }
 
     protected function defaultSettings( ) {
@@ -82,29 +90,50 @@ class e20rSettingsModel {
         return $this->settings;
     }
 
-    public function getSetting( $articleId, $fieldName ) {
+    public function getSetting( $typeId, $fieldName ) {
 
-        if (! $articleId ) {
-            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - No Article ID!");
-            return false;
-        }
-        if ( !$fieldName ) {
-            dbg("e20r" . ucfirst($this->type) . "Model::getSetting() - No field!");
-            return false;
-        }
+	    $typeVar = 'current' . ucfirst($this->type);
+	    global ${$typeVar};
 
-        if ( empty( $this->settings->{$fieldName} ) ) {
+	    if ( empty( ${$typeVar} ) || ( ${$typeVar}->id != $typeId )) {
 
-            $setting = self::settings( $articleId, 'get', $fieldName );
-            dbg("e20rSettingsModel::getSetting() - Fetched {$fieldName} for {$articleId} with result of {$setting->{$fieldName}}");
-            return $setting->{$fieldName};
-        }
-        else {
-	        if ( ! is_array( $this->settings->{$fieldName} ) ) {
-		        dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and article {$articleId}" );
-	        }
-            return $this->settings->{$fieldName};
-        }
+		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Correct {$typeVar} entry for {$typeId} not found...");
+			dbg( ${$typeVar});
+
+		    if ( ! $typeId ) {
+			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - No Article ID!" );
+
+			    return false;
+		    }
+		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Loading data for {$typeId}.");
+
+		    $this->init( $typeId );
+
+		    if ( ! $fieldName ) {
+			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - No field!" );
+
+			    return false;
+		    }
+
+		    if ( empty( $this->settings->{$fieldName} ) ) {
+
+			    $setting = self::settings( $typeId, 'get', $fieldName );
+			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Fetched {$fieldName} for {$typeId} with result of {$setting->{$fieldName}}" );
+
+			    return $setting->{$fieldName};
+		    } else {
+			    if ( ! is_array( $this->settings->{$fieldName} ) ) {
+				    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and {$this->type} {$typeId}" );
+			    }
+
+			    return $this->settings->{$fieldName};
+		    }
+	    }
+	    else {
+
+		    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Using global settings entry and returning value={$this->settings->{$fieldName}} for {$fieldName} and {$this->type} {$typeId}" );
+		    return ${$typeVar}->{$fieldName};
+	    }
 
         return false;
     }
@@ -129,7 +158,16 @@ class e20rSettingsModel {
      */
     public function loadSettings( $id  ) {
 
-        if ( $id == null ) {
+	    $typeVar = 'current' . ucfirst($this->type);
+	    global ${$typeVar};
+
+	    if ( ! empty( ${$typeVar} ) && ( ${$typeVar}->id == $id )) {
+
+		    dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Already loaded settings ({$id})");
+		    return ${$typeVar};
+	    }
+
+	    if ( $id == null ) {
 
             $id = $this->id;
         }
@@ -167,7 +205,10 @@ class e20rSettingsModel {
             // dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Loaded {$this->settings->{$key}} for {$key} - a {$this->type} ID {$this->id}");
         }
 
-        return $this->settings;
+	    $this->settings->id = $this->id;
+
+	    ${$typeVar} = $this->settings;
+	    return $this->settings; // For compatibility
     }
 
     /**
