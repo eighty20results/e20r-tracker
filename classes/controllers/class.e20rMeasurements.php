@@ -259,7 +259,7 @@ class e20rMeasurements {
                 'post_type' => 'e20r_girth_types',
                 'post_status' => 'publish',
                 'posts_per_page' => -1,
-                'caller_get_posts' => 1
+                'ignore_sticky_posts' => true
             )
         );
 
@@ -594,7 +594,7 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_POST, true ) );
 
-        $mDate = ( strtotime( $_POST['e20r-progress-form-date'] ) ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
+        $mDate = ( isset( $_POST['e20r-progress-form-date'] ) ? ( strtotime( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null ) : null );
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
 
         if ( $mDate ) {

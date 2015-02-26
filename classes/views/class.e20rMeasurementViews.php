@@ -43,7 +43,7 @@ class e20rMeasurementViews {
                                 <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $this->when; ?>">
                                 <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $articleId; ?>">
                                 <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $programId; ?>">
-                                <button class="submit" id="submit-weekly-progress-button">
+                                <button class="submit e20r-button" id="submit-weekly-progress-button">
                                     <div>Save Your Weekly Progress Update</div>
                                 </button>
                             </td>
@@ -131,10 +131,10 @@ class e20rMeasurementViews {
                                     <div class="label-container">
                                         <label>Entered <?php echo ucfirst( $girth->type ); ?> Girth</label>
                                     </div>
-                                    <?php dbg("measurementViews() - Data for {$this->fields[ 'girth_' . strtolower($girth->type) ]} => {$this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]}}"); ?>
+                                    <?php // dbg("measurementViews() - Data for {$this->fields[ 'girth_' . strtolower($girth->type) ]} => {$this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]}}"); ?>
                                     <span class="value"><?php echo ( ! empty( $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} ) ? $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} : '' ); ?></span>
                                     <span class="unit length"><?php echo ( ! empty( $this->data->{$this->fields[ 'girth_' . strtolower($girth->type) ]} ) ? $this->prettyUnit( $e20rClient->getLengthUnit() ) : null ); ?></span>
-                                    <button class="edit">Change Girth</button>
+                                    <button class="edit e20r-button">Change Girth</button>
                                 </div>
                             </div>
                         </div>
@@ -148,13 +148,21 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function showOtherIndicatorsRow( $showPhotos ) {
+    public function showOtherIndicatorsRow( $showPhotos = null ) {
 
+	    if ( isset( $this->data->{$this->fields['essay1']} ) ) {
+
+		    $note = ( ( ! empty( $this->data->{$this->fields['essay1']} ) ) || ( $this->data->{$this->fields['essay1']} != 'NULL' ) ? stripslashes( $this->data->{$this->fields['essay1']} ) : '' );
+	    }
+	    else {
+
+		    $note = '';
+	    }
         ob_start();
         ?>
         <tr>
             <td id="other-indicators">
-                <div class="e20r-number-col"><?php echo ( empty($showPhotos) ? '4' : '3' ); ?>:</div>
+                <div class="e20r-number-col"><?php echo ( $showPhotos ? '4' : '3' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -162,7 +170,7 @@ class e20rMeasurementViews {
                         Other Indicators of Progress I'm Tracking
                     </legend>
                     <div>
-                        <textarea name="essay1" id="essay1" rows="5" cols="73" data-measurement-type="essay1"><?php echo ( ( ! empty( $this->data->{$this->fields['essay1']} ) ) || ($this->data->{$this->fields['essay1']} != 'NULL' ) ? stripslashes($this->data->{$this->fields['essay1']}) : '' ); ?></textarea>
+                        <textarea name="essay1" id="essay1" data-measurement-type="essay1" class="e20r-textarea e20r-note"><?php echo $note; ?></textarea>
                     </div>
                 </fieldset>
             </td>
@@ -171,13 +179,16 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function showProgressQuestionRow( $showPhotos ) {
+    public function showProgressQuestionRow( $showPhotos = null ) {
 
         ob_start();
+
+	    $behaviorProgress = isset( $this->data->{$this->fields['behaviorprogress']} ) ? $this->data->{$this->fields['behaviorprogress']} :  null;
+
         ?>
         <tr id="progress-questionnaire">
             <td >
-                <div class="e20r-number-col"><?php echo ( empty($showPhotos)? '5' : '4' ); ?>:</div>
+                <div class="e20r-number-col"><?php echo ( $showPhotos ? '5' : '4' ); ?>:</div>
             </td>
             <td class="content">
                 <fieldset>
@@ -186,11 +197,11 @@ class e20rMeasurementViews {
                     <div>
                         <ul>
                             <li>
-                                <input type="radio" name="pquestion-1" id="pquestion-1-1" value="1" data-measurement-type="behaviorprogress" <?php checked( $this->data->{$this->fields['behaviorprogress']} , 1, true ); ?>>
+                                <input type="radio" name="pquestion-1" id="pquestion-1-1" value="1" data-measurement-type="behaviorprogress" <?php checked( $behaviorProgress , 1, true ); ?>>
                                 <label for="pquestion-1-1">Yes</label>
                             </li>
                             <li>
-                                <input type="radio" name="pquestion-1" id="pquestion-1-2" value="2" data-measurement-type="behaviorprogress" <?php checked( $this->data->{$this->fields['behaviorprogress']} , 2, true ); ?>>
+                                <input type="radio" name="pquestion-1" id="pquestion-1-2" value="2" data-measurement-type="behaviorprogress" <?php checked( $behaviorProgress , 2, true ); ?>>
                                 <label for="pquestion-1-2">No</label>
                             </li>
                         </ul>
@@ -203,11 +214,11 @@ class e20rMeasurementViews {
 
     }
 
-    public function showPhotoRow( $showPhotos ) {
+    public function showPhotoRow( $showPhotos = null ) {
 
         dbg("In createPhotoBlock()");
 
-        if ( empty($showPhotos) ) {
+        if ( ! $showPhotos ) {
             return;
         }
 
@@ -342,7 +353,7 @@ class e20rMeasurementViews {
                         </div>
                         <span class="value"><?php echo (! empty( $this->data->weight ) ? $this->data->weight : null ); ?></span>
                         <span class="unit weight"><?php echo (! empty( $this->data->weight ) ? $this->prettyUnit( $e20rClient->getWeightUnit() ) : null ); ?></span>
-                        <button class="edit">Change Body Weight</button>
+                        <button class="edit e20r-button">Change Body Weight</button>
                     </div>
                 </fieldset>
             </td>
@@ -471,7 +482,7 @@ class e20rMeasurementViews {
 
         $reloadBtn = '
             <div id="e20r_reload_btn">
-                <a href="#e20r_tracker_data" id="e20r-reload-measurements" class="e20r-choice-button button" > ' . __("Reload Measurements", "e20r-tracker") . '</a>
+                <a href="#e20r_tracker_data" id="e20r-reload-measurements" class="e20r-choice-button button e20r-button" > ' . __("Reload Measurements", "e20r-tracker") . '</a>
             </div>
         ';
 
@@ -1029,7 +1040,9 @@ class e20rMeasurementViews {
 
     private function bgImage( $what, $type ) {
 
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $this->unitInfo->gender == 'F' ? '-f.png");' : '-m.png");' );
+	    global $e20rClient;
+
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $e20rClient->getGender() == 'F' ? '-f.png");' : '-m.png");' );
     }
 
     private function prettyUnit( $type ) {
@@ -1068,10 +1081,10 @@ class e20rMeasurementViews {
 
         ob_start();
         ?>
-        <div style="margin-bottom: 24px;">
+        <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred weight units:
             <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
-            <select id="selected-weight-unit" style="display: none; font-size: 14px; margin-top: 8px;">
+            <select id="selected-weight-unit" style="display: none;">
                 <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
                 <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
@@ -1088,10 +1101,10 @@ class e20rMeasurementViews {
         global $e20rClient;
         ob_start();
         ?>
-        <div style="margin-bottom: 24px;">
+        <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred length units:
             <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
-            <select id="selected-length-unit" style="display: none; font-size: 14px; margin-top: 8px;">
+            <select id="selected-length-unit" style="display: none;">
                 <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
                 <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
             </select>
