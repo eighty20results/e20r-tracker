@@ -10,29 +10,117 @@
 class e20rAssignmentModel extends e20rSettingsModel {
 
     private $settings;
+	private $answerTypes;
+	private $answerInputs;
 
     public function e20rAssignmentModel()  {
 
-        parent::__construct( 'assignments', 'e20r_assignments' );
+	    global $e20rTables;
 
-/*        global $e20rTables;
+	    parent::__construct( 'assignments', 'e20r_assignments' );
 
-        $this->table = $e20rTables->getTable('assignment');
-        $this->fields = $e20rTables->getFields('assignment');
-*/
+	    $this->answerInputs = array(
+	        0 => 'button',
+		    1 => 'input',
+		    2 => 'textbox',
+		    3 => 'radio',
+		    4 => 'checkbox'
+	    );
+
+	    $this->answerTypes = array(
+		    0 => __("'Lesson complete' button", "e20rtracker"),
+		    1 => __("Line of text (input)", "e20rtracker"),
+		    2 => __("Paragraph of text (textbox)", "e20rtracker"),
+		    3 => __("Checkbox", "e20rtracker"),
+		    4 => __("Multiple Choice", "e20rtracker"),
+	    );
+
+        $this->table = $e20rTables->getTable('assignments');
+        $this->fields = $e20rTables->getFields('assignments');
     }
 
     public function getAnswerDescriptions() {
 
-        return array(
-            0 => __("'Lesson complete' button", "e20rtracker"),
-            1 => __("Line of text (input)", "e20rtracker"),
-            2 => __("Paragraph of text (textbox)", "e20rtracker"),
-            3 => __("Checkbox", "e20rtracker"),
-            4 => __("Multiple Choice", "e20rtracker"),
-        );
+        return $this->answerTypes;
     }
 
+	public function getInputType( $key ) {
+
+		return $this->answerInputs[ $key ];
+	}
+
+	public function saveUserAssignment ( $aArray ) {
+
+		global $wpdb;
+
+		if ( ( $result = $this->exists( $aArray ) ) !== false ) {
+			dbg("e20rAssignmentModel::saveUserAssignment() - found existing record: ");
+			dbg($result->id);
+
+			$aArray['id'] = $result->id;
+		}
+
+		$state = $wpdb->replace( $this->table, $aArray );
+
+		dbg("e20rAssignmentModel::saveUserAssignment() - State: ({$state})");
+
+		if ( ! $state ) {
+			dbg("e20rAssignmentModel::saveUserAssignment() - Error: " .  $wpdb->last_error );
+		}
+		return ($state ? true : false );
+	}
+
+	public function exists( $assignment ) {
+
+		global $wpdb;
+
+//		dbg("e20rAssignmentModel::exists() -  Data: ");
+//		dbg( $assignment );
+
+		if ( ! is_array( $assignment ) ) {
+
+			dbg("e20rAssignmentModel::exists() -  Incorrect data received!");
+			return false;
+		}
+
+		$sql = $wpdb->prepare(
+			"SELECT id, answer
+                FROM {$this->table}
+                WHERE (
+                ( {$this->fields['user_id']} = %d ) AND
+                ( {$this->fields['delay']} = %d ) AND
+                ( {$this->fields['program_id']} = %d ) AND
+                ( {$this->fields['article_id']} = %d ) AND
+                ( {$this->fields['question_id']} = %d )
+                )
+           ",
+			$assignment['user_id'],
+			$assignment['delay'],
+			$assignment['program_id'],
+			$assignment['article_id'],
+			$assignment['question_id']
+		);
+
+		$result = $wpdb->get_row( $sql );
+
+		if ( ! empty( $result ) ) {
+
+			dbg("e20rAssignmentModel::exists() - Got a result returned. ");
+// 			dbg($result);
+
+			return $result;
+		}
+		elseif ( $result === false ) {
+
+			dbg("e20rAssignmentModel::exists() - Error: " . $wpdb->last_error );
+		}
+
+		return false;
+	}
+
+	public function getAnswerType( $typeId ) {
+
+	}
     public function defaultSettings() {
 
         global $current_user;
@@ -49,7 +137,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->field_type = 0;
         $settings->article_id = null;
         $settings->user_id = $current_user->ID;
-        $settings->program_id = $e20rProgram->getProgramIdForUser( $settings->user_id );
+	    $settings->program_id = $e20rProgram->getProgramIdForUser( $settings->user_id );
         $settings->answer_date = null;
         $settings->answer = null;
 
@@ -135,10 +223,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     public function loadUserAssignment( $articleId, $userId, $delay = null, $assignmentId = null ) {
 
-        // TODO: Load the recored user assignment answers by assignment ID.
+        // TODO: Load the recorded user assignment answers by assignment ID.
         global $wpdb;
         global $post;
         global $e20rProgram;
+	    global $userAssignment;
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
@@ -148,13 +237,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
         dbg("e20rAssignmentModel::loadUserAssignment() - date for article # {$articleId} in program {$programId} for user {$userId}: {$delay}");
 
         $sql = $wpdb->prepare(
-            "SELECT answer_date, answer, user_id, question_id
+            "SELECT id, answer_date, answer, user_id, question_id
              FROM {$this->table} AS a
              WHERE ( ( a.user_id = %d ) AND
-              ( c.program_id = %d ) AND " .
-              ( ! is_null( $delay ) ? "( c.delay = " . intval( $delay ) . " ) AND " : null ) .
-             "( c.article_id = %d ) )
-              ORDER BY c.id ",
+              ( a.program_id = %d ) AND " .
+              ( ! is_null( $delay ) ? "( a.delay = " . intval( $delay ) . " ) AND " : null ) .
+             "( a.article_id = %d ) )
+              ORDER BY a.id ",
             $userId,
             $programId,
             $articleId
@@ -164,21 +253,14 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         $result = $wpdb->get_results( $sql );
 
-        if ( is_wp_error($result) ) {
-
-            dbg("e20rAssignmentModel::loadAssignmentData() - Error loading assignments: " . $wpdb->last_error );
-	        return null;
-        }
-
         dbg("e20rAssignmentModel::loadAssignmentData() - Loaded " . count($result) . " check-in records");
 
-        if ( ! empty( $result ) ) {
+        if ( ! empty($result) ) {
 
             // Index the result array by the ID of the assignment (key)
             foreach( $result as $key => $data ) {
 
-
-	            $assignment = $this->model->loadSettings( $data->id );
+	            $assignment = $this->loadSettings( $data->id );
 
 	            foreach ( $assignment as $key => $val ) {
 
@@ -205,6 +287,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
             }
         }
         else {
+	        dbg("e20rAssignmentModel::loadAssignmentData() - No user data returned: {$wpdb->last_error}");
+	        dbg("e20rAssignmentModel::loadAssignmentData() - Defining settings ({$assignmentId})");
+
 	        if ( $assignmentId ) {
 
 		        $result = array( 0 => $this->loadSettings( $assignmentId ) );
@@ -213,8 +298,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		        $result = array( 0 => $this->defaultSettings() );
 	        }
 
-            dbg("e20rAssignmentModel::loadAssignmentData() - Using default values: ");
-            dbg($result);
+            dbg("e20rAssignmentModel::loadAssignmentData() - Using default values. ");
         }
 
         // Restore
@@ -268,14 +352,19 @@ class e20rAssignmentModel extends e20rSettingsModel {
     public function loadSettings( $id ) {
 
         global $post;
+	    global $currentAssignment;
+
+	    if ( ! empty( $currentAssignment ) && ( $currentAssignment->id == $id ) ) {
+
+		    return $currentAssignment;
+	    }
 
 	    if ( $id == 0 ) {
 
-		    $this->settings = $this->defaultSettings( $id );
-		    $this->settings->id = $id;
+		    $this->settings              = $this->defaultSettings( $id );
+		    $this->settings->id          = $id;
 		    $this->settings->question_id = $id;
-	    }
-	    else {
+	    } else {
 
 		    $savePost = $post;
 
@@ -288,15 +377,17 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		    if ( ! empty( $post->post_title ) ) {
 
-			    $this->settings->descr    = $post->post_excerpt;
-			    $this->settings->question = $post->post_title;
-			    $this->settings->id       = $id;
+			    $this->settings->descr       = $post->post_excerpt;
+			    $this->settings->question    = $post->post_title;
+			    $this->settings->id          = $id;
 			    $this->settings->question_id = $id;
 		    }
 
 		    wp_reset_postdata();
 		    $post = $savePost;
 	    }
+
+	    $currentAssignment = $this->settings;
         return $this->settings;
     }
 /*
