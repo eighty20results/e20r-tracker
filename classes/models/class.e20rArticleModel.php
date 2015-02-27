@@ -36,9 +36,10 @@ class e20rArticleModel extends e20rSettingsModel {
         return $this->settings;
     }
 
-    public function getProgramID() {
+/*    public function getProgramID() {
 
         global $current_user;
+	    global $currentProgram;
 
         $userPrograms = get_user_meta( $current_user->ID, '_e20r-user-programs' );
 
@@ -48,6 +49,7 @@ class e20rArticleModel extends e20rSettingsModel {
 
         // Combination of program from usermeta & the $settings-Programs;
     }
+*/
 
     public function findArticle($key, $value, $type = 'numeric', $programId = -1 ) {
 
@@ -105,23 +107,6 @@ class e20rArticleModel extends e20rSettingsModel {
     public function getSettings() {
 
         return $this->settings;
-    }
-    // TODO: This requires the presence of checkin IDs in the Article list, etc.
-    // checkin definitions -> $obj->type, $obj->
-
-    public function lessonComplete( $articleId ) {
-
-        dbg("e20rArticleModel::lessonComplete() - Checking lesson status for article: {$articleId} (ID)");
-
-        global $wpdb;
-
-
-        // Find the e20r_checkin record with the $articleId,
-        // for the $this->releaseDate( $articleId )
-        // AND the $userId AND the $checkin_item_id
-        // AND the $checkin_type == 1 (lesson)
-        // AND the $programId that applies to this $articleId and $userId.
-        return false;
     }
 
     /**
