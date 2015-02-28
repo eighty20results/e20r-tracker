@@ -63,7 +63,7 @@ class e20rExercise {
 
         dbg("e20rExercise::saveSettings() - Saving Program Settings to DB");
 
-        if ( $post->post_type != 'e20r_exercises') {
+        if ( (! isset( $post->post_type ) ) || ( $post->post_type != 'e20r_exercises' ) ) {
             return $post_id;
         }
 
