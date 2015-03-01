@@ -2004,7 +2004,8 @@ body.loading .modal {
     padding-bottom: 20px;
 }
 .e20r-assignment-paragraph textarea {
-    width: 600px;
+    max-width: 600px;
+    width: 100%;
     height: 120px;
     border: 3px solid #cccccc;
     padding: 5px;
@@ -2032,4 +2033,48 @@ p.e20r-assignment-descr {
 #e20r-assignment-complete button {
     text-align: left;
     margin-left: 30px;
+}
+.assignment-btn {
+    right: 0px;
+    width: 50%;
+}
+.e20r-assignments-question {
+    font-size: 1.05em;
+    font-weight: bold;
+    border-bottom: 1px solid white;
+}
+.e20r-assignments-answer {
+    font-size: 0.95em;
+    font-style: italic;
+}
+div#e20r-progress-activities{
+    min-height: 300px;
+}
+div#e20r-progress-results {
+    min-height: 300px;
+}
+td.e20r-tracker-score {
+    font-weight: bold;
+    font-size: 1.1em;
+    font-style: italic;
+    text-align: center;
+}
+td.e20r-tracker-no-badge {
+    min-height: 40px;
+    /* background: url('../images/bronze-badge.png') no-repeat center; */
+}
+td.e20r-tracker-bronze-badge {
+    background: url('../images/bronze-badge.png') no-repeat center;
+    height: 100px;
+}
+td.e20r-tracker-silver-badge {
+    background: url('../images/silver-badge.png') no-repeat center;
+    height: 100px;
+}
+td.e20r-tracker-gold-badge {
+    height: 100px;
+    background: url('../images/gold-badge.png') no-repeat center;
+}
+th.e20r-achievement-header {
+    text-align: center;
 }
