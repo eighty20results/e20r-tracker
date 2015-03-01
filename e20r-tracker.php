@@ -50,7 +50,7 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     }
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
-set_error_handler("exception_error_handler");
+// set_error_handler("exception_error_handler");
 
 if ( ! function_exists( 'dbg' ) ):
 
@@ -189,7 +189,7 @@ if ( ! function_exists( 'in_betagroup' ) ) {
             }
         }
 
-        dbg("User {$user->display_name} is NOT in the Nourish Beta group");
+        // dbg("User {$user->display_name} is NOT in the Nourish Beta group");
         return false;
     }
 }
