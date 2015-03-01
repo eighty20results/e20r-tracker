@@ -98,7 +98,9 @@ class e20rCheckinView extends e20rSettingsView {
             <div id="e20r-daily-checkin-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
                 <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo $article->id; ?>" />
+	            <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo $config->assignment_id; ?>" />
                 <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateFromDelay( $config->delay ); ?>" />
+	            <input type="hidden" name="e20r-checkin-checkedin_date" id="e20r-checkin-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo $action->program_id; ?>" />
                 <div class="clear-after">
                     <fieldset class="did-you workout">
@@ -214,7 +216,7 @@ class e20rCheckinView extends e20rSettingsView {
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-checkin-settings' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-checkin-id" id="hidden-e20r-checkin-id"
-                       value="<?php echo( ( ! empty( $checkinData ) ) ? $checkinData->ID : 0 ); ?>">
+                       value="<?php echo( ( ! empty( $checkinData ) ) ? $checkinData->id : 0 ); ?>">
                 <table id="e20r-checkin-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
@@ -259,7 +261,7 @@ class e20rCheckinView extends e20rSettingsView {
 
                     dbg( "Checkin - Start: {$start}, End: {$end}" );
                     ?>
-                    <tr id="<?php echo $checkinData->ID; ?>" class="checkin-inputs">
+                    <tr id="<?php echo $checkinData->id; ?>" class="checkin-inputs">
                         <td>
                             <select id="e20r-checkin-checkin_type" name="e20r-checkin-checkin_type">
                                 <option value="0" <?php selected( $checkinData->checkin_type, 0 ); ?><?php _e("Not configured", "e20rtracker"); ?></option>
@@ -309,4 +311,105 @@ class e20rCheckinView extends e20rSettingsView {
         </form>
     <?php
     }
+
+	public function view_user_achievements( $achievements ) {
+
+		global $current_user;
+		global $e20rTracker;
+
+		ob_start();
+		?>
+		<hr class="e20r-big-hr" />
+		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
+			<h4>Achievements</h4>
+			<a class="close" href="#">X</a>
+			<div class="quick-nav other">
+				<table class="e20r-measurement-table">
+					<thead>
+					<tr>
+						<th class="e20r-achievement-descr"></th>
+						<th class="e20r-achievement-header">Action</th>
+						<th class="e20r-achievement-header">Activity</th>
+						<th class="e20r-achievement-header">Assignments</th>
+					</tr>
+					</thead>
+					<tbody>
+					<?php
+					$counter = 0;
+
+					if ( ! empty( $achievements ) ) {
+
+						dbg("e20rCheckinView::view_user_achievements() - User has supplied answers...");
+						dbg($achievements);
+						$achievements = array_reverse( $achievements, true);
+
+						foreach ( $achievements as $key => $answer ) {
+
+							if ( isset( $answer->action ) ) { ?>
+
+								<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+									<td class="e20r-tracker-action-descr"><?php echo $answer->actionText ?></td>
+									<td class="e20r-tracker-action">
+										<table class="e20r-action-table">
+											<tbody>
+											<tr>
+												<td class="e20r-tracker-<?php echo isset( $answer->action->badge ) ? $answer->action->badge : 'no'; ?>-badge"></td>
+											</tr>
+											<tr>
+												<td class="e20r-tracker-score"><?php echo( $answer->action->score * 100 ); ?>
+													%
+												</td>
+											</tr>
+											</tbody>
+										</table>
+									</td>
+									<td class="e20r-tracker-activity">
+										<table class="e20r-activity-table">
+											<tbody>
+											<tr>
+												<td class="e20r-tracker-<?php echo isset( $answer->activity->badge ) ? $answer->activity->badge : 'no'; ?>-badge"></td>
+											</tr>
+											<tr>
+												<td class="e20r-tracker-score"><?php echo( $answer->activity->score * 100 ); ?>
+													%
+												</td>
+											</tr>
+											</tbody>
+										</table>
+									</td>
+									<td class="e20r-tracker-assignment">
+										<table class="e20r-assignment-table">
+											<tbody>
+											<tr>
+												<td class="e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? $answer->assignment->badge : 'no'; ?>-badge"></td>
+											</tr>
+											<tr>
+												<td class="e20r-tracker-score"><?php echo( $answer->assignment->score * 100 ); ?>
+													%
+												</td>
+											</tr>
+											</tbody>
+										</table>
+									</td>
+
+								</tr>
+								<?php
+								$counter ++;
+							}
+						}
+					}
+					else { ?>
+						<tr>
+							<td colspan="2"><?php _e("Don't worry. Your achievements will start piling up soon!", "e20rtracker"); ?></td>
+						</tr>
+					<?php   } ?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<?php
+
+		$html = ob_get_clean();
+		return $html;
+	}
 }
