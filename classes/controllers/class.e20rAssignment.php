@@ -24,22 +24,50 @@ class e20rAssignment extends e20rSettings {
         parent::__construct( 'assignment', 'e20r_assignment', $this->model, $this->view );
     }
 
-    public function loadAssignment( $assignmentId ) {
+	public function getInputType( $id ) {
 
-	    $settings = $this->model->loadSettings( $assignmentId );
+		return $this->model->getInputType( $id );
+	}
 
-        dbg("e20rAssignment::init() - Loaded settings for {$assignmentId}");
+	public function getDelay( $assignmentId ) {
 
-        return $settings;
+		return $this->model->getSetting( $assignmentId, 'delay' );
+	}
+
+	public function loadAssignment( $assignmentId ) {
+
+	    global $currentAssignment;
+
+	    if ( is_null( $currentAssignment ) || ( $currentAssignment->id != $assignmentId ) ) {
+
+		    $currentAssignment = $this->model->loadSettings( $assignmentId );
+		    $currentAssignment->id = $assignmentId;
+
+		    dbg("e20rAssignment::init() - Loaded settings for {$currentAssignment->id}");
+	    }
+
+        return $currentAssignment;
     }
+
+	public function saveAssignment( $aArray ) {
+
+		dbg('e20rAssignment::saveAssignment() - Saving assignment data for user... ');
+		return $this->model->saveUserAssignment( $aArray );
+	}
 
 	public function load_userAssignment( $articleID, $assignmentId, $userId = null ) {
 
 		global $e20rArticle;
+		global $currentArticle;
 
-		$e20rArticle->init( $articleID );
+		if ( is_null( $currentArticle ) || ( $currentArticle->id != $articleID ) ) {
+
+			dbg("e20rAssignment::load_userAssignment() - Loading article settings for {$articleID}");
+			$e20rArticle->init( $articleID );
+
+		}
+
 		$delay = $e20rArticle->releaseDay( $articleID );
-
 		return $this->model->loadUserAssignment( $articleID, $userId, $delay, $assignmentId );
 	}
 
@@ -78,6 +106,25 @@ class e20rAssignment extends e20rSettings {
 
         return $html;
     }
+
+	public function listUserAssignments( $userId ) {
+
+		global $current_user;
+		global $e20rProgram;
+		global $e20rTracker;
+
+		$config = new stdClass();
+		$config->type = 'action';
+		$config->post_date = null;
+
+		$config->userId = $current_user->ID;
+		$config->startTS = $e20rProgram->startdate( $config->userId );
+		$config->delay = $e20rTracker->getDelay( 'now' );
+
+		$answers = $this->model->loadAllUserAssignments( $userId );
+
+		return $this->view->viewAssignmentList( $config, $answers );
+	}
 
     public function addMeta_answers() {
 
@@ -159,7 +206,7 @@ class e20rAssignment extends e20rSettings {
         return $this->model->loadSettings( $id );
     }
 */
-    public function editor_metabox_setup( $object, $box ) {
+    public function editor_metabox_setup( $post ) {
 
         add_meta_box('e20r-tracker-assignment-settings', __('Assignment Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_assignments', 'normal', 'core');
 

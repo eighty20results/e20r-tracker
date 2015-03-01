@@ -500,6 +500,9 @@ class e20rMeasurements {
         global $e20rArticle;
         global $e20rTracker;
         global $e20rClient;
+	    global $e20rCheckin;
+	    global $e20rAssignment;
+	    global $e20rWorkout;
         global $e20rTables;
 
         dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
@@ -531,7 +534,9 @@ class e20rMeasurements {
 
         $tabs = array(
             'Measurements' => '<div id="e20r-progress-measurements">' . $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false ) . '</div>',
-            'Assignments' => '<div id="e20r-progress-assignments" style="height: 250px;"></div>',
+            'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
+            'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
+            // 'Activity' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
         );
 
         return $this->view->viewTabbedProgress( $tabs, $pDimensions );
@@ -829,8 +834,7 @@ class e20rMeasurements {
         $img = $e20rArticle->isPhotoDay( $articleId );
 
         dbg("e20rMeasurements::load_EditProgress() - Program ID for user ({$current_user->ID}): {$programId}");
-        dbg("e20rMeasurements::load_EditProgress() - Today is a photo day ({$img}) for user ({$current_user->ID})? ");
-        dbg($img);
+        dbg("e20rMeasurements::load_EditProgress() - Today is a photo day ({$img}) for user ({$current_user->ID})? " . print_r( $img, true) );
         dbg("e20rMeasurements::load_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
         dbg("e20rMeasurements::load_EditProgress() - Loading data for {$this->measurementDate}...");
 
@@ -879,6 +883,11 @@ class e20rMeasurements {
 
         $fields = $e20rTables->getFields( 'measurements' );
         $data_matrix = array();
+
+	    if ( empty( $data ) ) {
+
+		    return array();
+	    }
 
         foreach ( $data as $measurement ) {
 

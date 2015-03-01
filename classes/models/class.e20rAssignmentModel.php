@@ -118,9 +118,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		return false;
 	}
 
-	public function getAnswerType( $typeId ) {
-
-	}
     public function defaultSettings() {
 
         global $current_user;
@@ -143,6 +140,36 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         return $settings;
     }
+
+	public function loadAllUserAssignments( $userId ) {
+
+		global $e20rTracker;
+		global $e20rProgram;
+		global $e20rArticle;
+
+		$delay = $e20rTracker->getDelay( 'now', $userId );
+		$programId = $e20rProgram->getProgramIdForUser( $userId );
+
+		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay' );
+		dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $assignments ) . " to process ");
+
+		if ( empty( $assignments ) ) {
+
+			dbg("e20rAssignmentModel::loadAllUserAssignments() - No records found.");
+			return false;
+		}
+		$answers = array();
+
+		foreach ( $assignments as $assignment ) {
+
+			$userInfo = $this->loadUserAssignment( $assignment->article_id, $userId, $assignment->delay, $assignment->id );
+			$assignment->answer = isset( $userInfo[$assignment->id]->answer ) ? $userInfo[$assignment->id]->answer : null;
+			$assignment->answer_date = isset( $userInfo[$assignment->id]->answer_date ) ? $userInfo[$assignment->id]->answer_date : null;
+			$answers[] = $assignment;
+		}
+
+		return $answers;
+	}
 
     public function getArticleAssignments( $articleId ) {
 
@@ -189,11 +216,70 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $assignments[] = $new;
         }
 
-        dbg("e20rAssignmentModel::getArticleAssignments() - Returning: ");
-        dbg($assignments);
-
         return $assignments;
     }
+
+	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num' ) {
+
+		global $current_user;
+		global $e20rProgram;
+		global $e20rTracker;
+
+		$assignments = array();
+
+		dbg("e20rAssignmentModel::loadAssignmentByMeta() - for program #: {$programId}");
+
+		$args = array(
+			'posts_per_page' => -1,
+			'post_type' => 'e20r_assignments',
+			'post_status' => 'publish',
+			'meta_key' => "_e20r-assignments-{$orderbyKey}",
+			'order_by' => 'meta_value',
+			'order' => 'ASC',
+			'meta_query' => array(
+				array(
+					'key' => "_e20r-assignments-{$key}",
+					'value' => $value,
+					'compare' => $comp,
+					'type' => $type,
+				),
+				array(
+					'key' => "_e20r-assignments-program_id",
+					'value' => $programId,
+					'compare' => '=',
+					'type' => 'numeric',
+				),
+
+			)
+		);
+
+
+		$query = new WP_Query( $args );
+
+		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returned assignments: {$query->post_count}" );
+
+		while ( $query->have_posts() ) {
+
+			$query->the_post();
+
+			$new = new stdClass();
+
+			$new = $this->loadSettings( get_the_ID() );
+
+			$new->id = get_the_ID();
+			$new->descr = $query->post->post_excerpt;
+			$new->question = $query->post->post_title;
+			// $new->{$key} = $value;
+			$assignments[] = $new;
+		}
+
+		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returning " .
+		    count( $assignments ) . " records to: " . $e20rTracker->whoCalledMe() );
+
+		wp_reset_query();
+
+		return $assignments;
+	}
 
     public function loadAllAssignments() {
 
@@ -307,48 +393,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $result;
     }
 
-    /*
-    public function exists( $assignment ) {
-
-        global $wpdb;
-
-        dbg("e20rAssignmentModel::exists() -  Data: ");
-        dbg( $assignment );
-
-        if ( ! is_array( $assignment ) ) {
-
-            return false;
-        }
-
-        $sql = $wpdb->prepare(
-           "SELECT id, checkedin
-                FROM {$this->table}
-                WHERE (
-                ( {$this->fields['user_id']} = %d ) AND
-                ( {$this->fields['assignment_date']} LIKE %s ) AND
-                ( {$this->fields['program_id']} = %d ) AND
-                ( {$this->fields['assignment_type']} = %d ) AND
-                ( {$this->fields['assignment_short_name']} = %s )
-                )
-           ",
-            $assignment['user_id'],
-            $assignment['assignment_date'] . '%',
-            $assignment['program_id'],
-            $assignment['assignment_type'],
-            $assignment['assignment_short_name']
-        );
-
-        $result = $wpdb->get_row( $sql );
-
-        if ( ! empty( $result ) ) {
-            dbg("e20rAssignmentModel::exists() - Got a result returned: ");
-            dbg($result);
-            return $result;
-        }
-
-        return false;
-    }
-*/
     public function loadSettings( $id ) {
 
         global $post;

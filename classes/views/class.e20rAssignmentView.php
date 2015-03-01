@@ -125,6 +125,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     <td class="e20r-assignment-buttons">
                         <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a->id; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
                         <input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]" value="<?php echo $a->id ?>" />
+	                    <input type="hidden" class="e20r-assignment-id" name="e20r-article-assignments[]" value="<?php echo $a->id ?>" />
                     </td>
                 </tr><?php
             } ?>
@@ -176,15 +177,18 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewAssignment( $assignmentData, $articleConfig ) {
 
+		global $currentArticle;
+
 		$html = null;
 
 		ob_start();
 		?>
 		<div id="e20r-article-assignment">
-			<form>
-				<input type="hidden" value="<?php echo $articleConfig->articleId; ?>" name="e20r-article-id" id="e20r-article-id" />
+			<form id="e20r-assignment-answers">
+				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' ); ?>
+				<input type="hidden" value="<?php echo $currentArticle->id; ?>" name="e20r-article-id" id="e20r-article-id" />
 				<input type="hidden" value="<?php echo $articleConfig->userId; ?>" name="e20r-article-user_id" id="e20r-article-user_id" />
-				<input type="hidden" value="<?php echo $articleConfig->delay; ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
+				<input type="hidden" value="<?php echo $currentArticle->release_day; ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
 				<input type="hidden" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
 		<?php
 		$html = ob_get_clean();
@@ -195,7 +199,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			switch ( $assignment->field_type ) {
 				case 0: // Button "Assignment read"
 
-					$html .= $this->showAssignmentButton( $assignment );
+					$html .= $this->showAssignmentButton( $assignment, $articleConfig );
 					break;
 
 				case 1: // <input>
@@ -218,9 +222,28 @@ class e20rAssignmentView extends e20rSettingsView {
 		}
 
 		ob_start();
-		if ( ( count($assignmentData) > 1 )  && ($assignment->field_type != 0 ) ) {
+		dbg("e20rAssignmentView::viewAssignment() - Assignments: " . count($assignmentData) . " and last field type: {$assignment->field_type}");
+		// dbg("e20rAssignmentView::viewAssignment() - Config for completed article: {$articleConfig->completed}");
+
+		if ( ( count($assignmentData) >= 1 )  && ($assignment->field_type != 0 ) ) {
+
+			if ( isset( $articleConfig->completed ) && ( $articleConfig->completed != true ) ) {
 			?>
-			<button id="e20r-assignment-save" class="e20r-button">Save</button>
+				<div id="e20r-assignment-save-btn">
+			<?php } else { ?>
+				<div id="e20r-assignment-save-btn" style="display:none;">
+			<?php } ?>
+					<button id="e20r-assignment-save" class="e20r-button"><?php _e("Completed", 'e20rtracker'); ?></button>
+				</div>
+			<?php
+			if ( isset( $articleConfig->completed ) && ( $articleConfig->completed == true ) ) {
+			?>
+				<div id="e20r-assignment-complete">
+			<?php } else { ?>
+				<div id="e20r-assignment-complete" style="display: none;">
+			<?php } ?>
+					<?php echo $this->assignmentComplete() ;?>
+				</div>
 		<?php } ?>
 			</form>
 		</div>
@@ -234,56 +257,174 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
 			if ( isset( $assignment->descr ) ) { ?>
 				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
 			}?>
-			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo $assignment->answer; ?>" name="e20r-assignment-response" />
-				<?php
-				if ( isset( $assignment->answer ) ) {
-					echo $assignment->answer;
-				}
-				?>
-			</textarea>
+			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo trim(stripslashes($assignment->answer)); ?>" name="e20r-assignment-answer[]" />
 		</div>
 		<?php
 		return ob_get_clean();
 
 	}
+
 	private function showAssignmentParagraph( $assignment ) {
 
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
+			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
-			if ( isset( $assignment->descr ) ) { ?>
+			if ( ! empty( $assignment->descr ) ) { ?>
 				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
 			}?>
-			<textarea class="e20r-assignment-response e20r-textarea" rows="7" cols="80" placeholder="Your response, please...">
-				<?php
-				if ( isset( $assignment->answer ) ) {
-					echo $assignment->answer;
-				}
-				?>
-			</textarea>
+			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="Your response, please..."><?php
+				if ( ! empty( $assignment->answer ) ) {
+					dbg("e20rAssignmentView::showAssignmentParagraph() - Loading actual answer...");
+					echo trim(stripslashes($assignment->answer));
+				}?></textarea>
 		</div>
 		<?php
 		return ob_get_clean();
 	}
 
-	private function showAssignmentButton( $assignment ) {
+	private function showAssignmentButton( $assignment, $article ) {
 
 		ob_start();
 		?>
-		<div class="button-container">
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />"
-			<button id="e20r-assignment-complete" class="e20r-button">I've completed this lesson</button>
-		</div>
+		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
+		<button id="e20r-lesson-complete" class="e20r-button assignment-btn">I have read this lesson</button>
 		<?php
+		if ( isset( $article->completed ) && ( $article->completed == true ) ) { ?>
+		<div id="e20r-assignment-complete">
+  <?php }
+		else { ?>
+		<div id="e20r-assignment-complete" style="display: none;">
+  <?php } ?>
+		<?php echo $this->assignmentComplete() ;?>
+		</div><?php
+
 		$html = ob_get_clean();
 
+		return $html;
+	}
+
+	public function assignmentComplete() {
+
+		$html = '';
+
+		ob_start();
+		?>
+		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+			<p><strong><?php _e( "You have completed this lesson.", "e20rTracker" ); ?></strong></p>
+		</div>
+		<?php
+
+		$html = ob_get_clean();
+		return $html;
+	}
+
+	public function viewAssignmentList( $config, $answers ) {
+
+		global $current_user;
+		global $e20rTracker;
+		global $e20rArticle;
+
+		ob_start();
+		?>
+		<hr class="e20r-big-hr" />
+		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
+		<h4>Assignments</h4>
+		<a class="close" href="#">X</a>
+		<div class="quick-nav other">
+			<table class="e20r-measurement-table">
+				<tbody>
+				<?php
+				$counter = 0;
+				if ( ! empty( $answers ) ) {
+
+					dbg("e20rAssignmentView::viewAssignmentList() - User has supplied answers...");
+
+					foreach ( $answers as $key => $answer ) {
+
+						if ( $answer->field_type == 0 ) {
+
+							dbg("e20rAssignmentView::viewAssignmentList() - {$answer->id} has no answer ('lesson complete' button).");
+							continue;
+						}
+
+						$when     = date_i18n( "Y-m-d", strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) );
+						$showLink = ( $config->userId == $current_user->ID ? true : false );
+						?>
+						<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+							<td class="measurement-date">
+								<div class="date">
+									<form method="POST" action="">
+										<input type="hidden" name="assignment_id" id="assignment_id" data-measurement-type="id" value="<?php echo $answer->id; ?>">
+										<input type="hidden" name="date" id="delay" data-measurement-type="delay" value="<?php echo $answer->delay; ?>">
+										<input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $answer->article_id; ?>">
+										<input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $answer->program_id; ?>">
+									</form>
+									<!-- <span> -->
+									<?php
+									if ( $showLink ) {
+										?>
+										<a href="<?php echo $e20rArticle->getPostUrl( $answer->article_id ); ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
+											<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>
+										</a>
+									<?php
+									} else {
+										?>
+										<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>
+									<?php
+									}
+									?>
+								</div>
+								<div
+									class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?></div>
+							</td>
+							<td>
+								<table class="e20r-answers">
+									<tbody>
+									<tr>
+										<td>
+											<div class="e20r-assignments-question">
+												<?php echo stripslashes($answer->question); ?>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<div class="e20r-assignments-answer">
+												<?php echo stripslashes($answer->answer); ?>
+											</div>
+										</td>
+									</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+						<?php
+						$counter ++;
+					}
+				}
+				else { ?>
+					<tr>
+						<td colspan="2"><?php _e("No assignments or answers found.", "e20rtracker"); ?></td>
+					</tr>
+		<?php   } ?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<?php
+
+		$html = ob_get_clean();
 		return $html;
 	}
 }

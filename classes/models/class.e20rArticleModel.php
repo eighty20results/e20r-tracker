@@ -51,7 +51,7 @@ class e20rArticleModel extends e20rSettingsModel {
     }
 */
 
-    public function findArticle($key, $value, $type = 'numeric', $programId = -1 ) {
+    public function findArticle($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
 	    if ( $key != 'id' ) {
 		    $args = array(
@@ -64,7 +64,7 @@ class e20rArticleModel extends e20rSettingsModel {
 				    array(
 					    'key' => "_e20r-article-{$key}",
 					    'value' => $value,
-					    'compare' => '=',
+					    'compare' => $comp,
 					    'type' => $type,
 				    ),
 			    )

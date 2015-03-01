@@ -19,7 +19,21 @@ class e20rArticleView extends e20rSettingsView {
         $this->error = $error;
     }
 
-    public function viewLessonComplete( $day, $measurements = 0, $articleId ) {
+	public function viewLessonComplete( $day, $articleId ) {
+
+		ob_start();
+		?>
+		<div class="green-notice big" style="background-image: url( http://home.strongcubedfitness.com/wp-content/plugins/e20r-tracker/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+			<p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
+		</div>
+
+		<?php
+		$html = ob_get_clean();
+
+		return $html;
+	}
+
+    public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
         $postDate = $e20rTracker->getDateForPost( $day );
@@ -31,7 +45,7 @@ class e20rArticleView extends e20rSettingsView {
         <div class="green-notice big" style="background-image: url( http://home.strongcubedfitness.com/wp-content/plugins/e20r-tracker/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
             <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong>
             <?php
-                if ( $measurements != 0 ) { ?>
+                if ( $measurements !== 0 ) { ?>
                 <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "e20rTracker"); ?></strong>  &raquo;</a>
                 <form action="<?php echo URL_TO_PROGRESS_FORM; ?>" method="POST" id="e20r-start" style="display: none;">
                     <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
@@ -47,6 +61,7 @@ class e20rArticleView extends e20rSettingsView {
 
         return $html;
     }
+
     public function viewMeasurementAlert( $photos, $day, $articleId = null ) {
 
         dbg("e20rArticleView::viewMeasurementAlert() - Photos: {$photos} for {$day}");
@@ -148,7 +163,7 @@ class e20rArticleView extends e20rSettingsView {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="<?php echo $settings->ID; ?>" class="checkin-inputs">
+                    <tr id="<?php echo $settings->id; ?>" class="checkin-inputs">
                         <td style="width: 50%;">
                             <select class="select2-container" id="e20r-article-post_id" name="e20r-article-post_id">
                                 <option value="0">None</option>

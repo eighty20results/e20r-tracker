@@ -7,7 +7,7 @@
  *  the GPL v2 license(?)
  */
 
-class e20rExercise {
+class e20rExercise extends e20rSettings {
 
     private $exercise = array();
     public $model = null;
@@ -19,6 +19,8 @@ class e20rExercise {
 
         $this->model = new e20rExerciseModel();
         $this->view = new e20rExerciseView();
+
+	    parent::__construct( 'exercise', 'e20r_exercises', $this->model, $this->view );
     }
 
 
@@ -51,7 +53,7 @@ class e20rExercise {
         return $this->model->loadSettings( $id );
     }
 
-    public function editor_metabox_setup( $object, $box ) {
+    public function editor_metabox_setup( $post ) {
 
         add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20rtracker'), array( &$this, "addMeta_ExerciseSettings" ), 'e20r_exercises', 'normal', 'high');
 

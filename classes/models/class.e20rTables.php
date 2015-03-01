@@ -46,7 +46,7 @@ class e20rTables {
 
         /* The database tables used by this plugin */
         $this->tables->checkin       = $wpdb->prefix . 'e20r_checkin';
-        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
+        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignment';
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';

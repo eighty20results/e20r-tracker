@@ -436,6 +436,7 @@ class e20rMeasurementViews {
                 }
                 ?>
         </div> <!-- tabs div -->
+	    <div class="modal"></div>
         <?php
     }
 

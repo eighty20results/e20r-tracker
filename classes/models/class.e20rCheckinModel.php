@@ -139,6 +139,86 @@ class e20rCheckinModel extends e20rSettingsModel {
         return $checkins;
     }
 
+	// TODO: This requires the presence of checkin IDs in the Article list, etc.
+	// checkin definitions -> $obj->type, $obj->
+
+	public function lessonComplete( $articleId, $userId = null ) {
+
+		dbg("e20rArticleModel::lessonComplete() - Checking lesson status for article: {$articleId} (ID)");
+
+		global $wpdb;
+		global $currentArticle;
+		global $current_user;
+		global $e20rTracker;
+		global $e20rTables;
+		global $e20rCheckin;
+
+		if ( is_null( $userId ) ) {
+
+			$userId = $current_user->ID;
+		}
+
+
+
+		$sql = $wpdb->prepare("
+	    		    SELECT checkedin
+	    		    FROM $e20rTables->getTable('checkin')
+	    		    WHERE article_id = %d AND user_id = %d AND
+	    		    	program_id = %d AND checkin_type =
+
+
+
+	    ");
+		// Find the e20r_checkin record with the $articleId,
+		// for the $this->releaseDate( $articleId )
+		// AND the $userId AND the $checkin_item_id
+		// AND the $checkin_type == 1 (lesson)
+		// AND the $programId that applies to this $articleId and $userId.
+		return false;
+	}
+
+	public function loadCheckinsForUser( $userId, $articleArr, $typeArr, $dateArr ) {
+
+		global $wpdb;
+		global $current_user;
+		global $e20rTracker;
+		global $e20rProgram;
+		global $e20rArticle;
+
+		$programId = $e20rProgram->getProgramIdForUser( $userId );
+
+		$sql = "SELECT *
+                 FROM {$this->table} AS c
+                 WHERE ( ( c.user_id = %d ) AND
+                  ( c.program_id = %d ) AND
+                  ( c.checkin_type IN ([IN]) ) AND
+                  ( c.checkin_date BETWEEN %s AND %s ) AND
+                  ( c.article_id";
+
+		$sql = $e20rTracker->prepare_in( $sql, $typeArr );
+
+		// Add the article ID array
+		$sql .= " IN ([IN]) ) )";
+		$sql = $e20rTracker->prepare_in( $sql, $articleArr );
+
+		$sql = $wpdb->prepare( $sql,
+			$userId,
+			$programId,
+			$dateArr['min'] . " 00:00:00",
+			$dateArr['max'] . " 23:59:59"
+		);
+
+		$results = $wpdb->get_results( $sql );
+
+		if ( $results == false ) {
+
+			dbg("e20rCheckinModel::loadCheckinsForUser() - Error: {$wpdb->last_error}");
+			return array();
+		}
+
+		return $results;
+	}
+
     public function loadUserCheckin( $articleId, $userId, $type, $short_name = null ) {
 
         global $wpdb;
@@ -152,12 +232,12 @@ class e20rCheckinModel extends e20rSettingsModel {
         dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$articleId} in program {$programId} for user {$userId}: {$date}");
 
         if ( is_null( $short_name ) ) {
+
             dbg("e20rCheckinModel::loadUserCheckin() - No short_name defined...");
             $sql = $wpdb->prepare(
                 "SELECT *
                  FROM {$this->table} AS c
                  WHERE ( ( c.user_id = %d ) AND
-                  ( c.checkin_short_name = NULL ) AND
                   ( c.program_id = %d ) AND
                   ( c.checkin_type = %d ) AND
                   ( c.checkin_date LIKE %s ) AND
@@ -282,7 +362,10 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
+	    dbg("e20rCheckinModel::setCheckin() - Check if the record exists already");
+
         if ( ( $result = $this->exists( $checkin ) ) !== false ) {
+
             dbg("e20rCheckinModel::setCheckin() - found existing record: ");
             dbg($result->id);
 

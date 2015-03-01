@@ -81,7 +81,10 @@ class e20rSettingsModel {
 	    if (! $this->id ) {
 
 		    global $post;
-		    $this->settings->id = $post->ID;
+
+		    if ( isset( $post->ID ) ) {
+			    $this->settings->id = $post->ID;
+		    }
 	    }
 	    else {
 			$this->settings->id = $this->id;
@@ -97,15 +100,15 @@ class e20rSettingsModel {
 
 	    if ( empty( ${$typeVar} ) || ( ${$typeVar}->id != $typeId )) {
 
-		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Correct {$typeVar} entry for {$typeId} not found...");
-			dbg( ${$typeVar});
+		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  {$typeVar} data for {$typeId} not found");
 
 		    if ( ! $typeId ) {
 			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - No Article ID!" );
 
 			    return false;
 		    }
-		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Loading data for {$typeId}.");
+
+		    // dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Loading data for {$typeId}.");
 
 		    $this->init( $typeId );
 
@@ -118,14 +121,15 @@ class e20rSettingsModel {
 		    if ( empty( $this->settings->{$fieldName} ) ) {
 
 			    $setting = self::settings( $typeId, 'get', $fieldName );
-			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Fetched {$fieldName} for {$typeId} with result of {$setting->{$fieldName}}" );
+			    // dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Fetched {$fieldName} for {$typeId} with result of {$setting->{$fieldName}}" );
 
 			    return $setting->{$fieldName};
 		    } else {
+			    /*
 			    if ( ! is_array( $this->settings->{$fieldName} ) ) {
 				    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Returning value={$this->settings->{$fieldName}} for {$fieldName} and {$this->type} {$typeId}" );
 			    }
-
+				*/
 			    return $this->settings->{$fieldName};
 		    }
 	    }
@@ -149,6 +153,7 @@ class e20rSettingsModel {
         }
 
     }
+
     /**
      * Load the Settings from the metadata table.
      *
@@ -251,6 +256,11 @@ class e20rSettingsModel {
         return $settings_list;
     }
 
+	public function get_slug() {
+
+		return $this->cpt_slug;
+	}
+
     /**
      * Load the setting from the WP database
      *
@@ -270,6 +280,7 @@ class e20rSettingsModel {
 		    $this->loadSettings( $post_id );
 	    }
 
+	    /*
 	    if ( is_array( $setting ) ) {
 		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> " );
 		    dbg($setting);
@@ -277,7 +288,7 @@ class e20rSettingsModel {
 	    else {
 		    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - {$post_id} -> {$action} -> {$key} -> {$setting}" );
 	    }
-
+		*/
         switch ($action) {
 
             case 'update':
@@ -291,7 +302,7 @@ class e20rSettingsModel {
 
                 if  ( ! in_array( $key, array( null, 'short_code', 'item_text') ) ) {
 
-                    dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Key and setting defined. Saving.");
+                    // dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Key and setting defined. Saving.");
 
                     $this->settings->{$key} = $setting;
 
@@ -316,7 +327,7 @@ class e20rSettingsModel {
             case 'get':
 
                 $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
-
+				/*
 				if ( ! is_array( $val ) ) {
 					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
 				}
@@ -324,7 +335,7 @@ class e20rSettingsModel {
 					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
 					dbg($val);
 				}
-
+				*/
 				if ( $val == false ) {
 
 					$this->settings->{$key} = null;

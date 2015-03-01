@@ -43,6 +43,79 @@ class e20rCheckin extends e20rSettings {
         parent::__construct( 'checkin', 'e20r_checkins', $this->model, $this->view );
     }
 
+	public function hasCompletedLesson( $articleId, $postId = null, $userId = null ) {
+
+		dbg("e20rCheckin::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson.");
+
+		global $post;
+		global $currentArticle;
+		global $e20rArticle;
+
+		if ( is_null( $postId ) ) {
+
+			$postId = $post->ID;
+		}
+
+		if ( empty( $currentArticle ) || ( $currentArticle->post_id != $postId ) ) {
+
+			dbg("e20rCheckin::hasCompletedLesson() - loading settings for article post #{$postId} (ID)");
+			$articleId = $e20rArticle->init( $postId );
+		}
+
+		if ( ! $articleId ) {
+			dbg("e20rCheckin::hasCompletedLesson() - No article ID defined. Exiting.");
+			return false;
+		}
+
+		dbg("e20rCheckin::hasCompletedLesson() - Check if the e20r-checkin table indicates a completed lesson...");
+		$checkin = $this->model->loadUserCheckin( $articleId, $userId, CHECKIN_ASSIGNMENT );
+
+		if ( isset( $checkin->checkedin ) && ( $checkin->checkedin == 1 ) ) {
+
+			dbg("e20rCheckin::hasCompletedLesson() - User has completed this check-in.");
+			return true;
+		}
+		else {
+
+			dbg("e20rCheckin::hasCompletedLesson() - No user check-in found.");
+			return false;
+		}
+
+		// return $this->model->lessonComplete( $this->articleId );
+
+	}
+
+	public function hasCheckedIn( $userId, $articleId, $type = CHECKIN_ASSIGNMENT) {
+
+		global $wpdb;
+		global $currentArticle;
+		global $current_user;
+		global $e20rTracker;
+		global $e20rTables;
+		global $e20rCheckin;
+
+		if ( is_null( $userId ) ) {
+
+			$userId = $current_user->ID;
+		}
+
+		if ( ( empty($currentArticle) ) || ( $currentArticle->id != $articleId ) ) {
+
+			dbg("e20rArticleModel::lessonComplete() - loading settings for article: {$articleId} (ID)");
+			$currentArticle = $this->loadSettings( $articleId );
+		}
+
+		$sql = $wpdb->prepare("
+	    		    SELECT checkedin
+	    		    FROM $e20rTables->getTable('checkin')
+	    		    WHERE article_id = %d AND user_id = %d AND
+	    		    	program_id = %d AND checkin_type =
+
+
+
+	    ");
+	}
+
     public function findCheckinItemId( $articleId ) {
 
         global $e20rArticle;
@@ -65,7 +138,10 @@ class e20rCheckin extends e20rSettings {
             'article_id' => (isset( $_POST['article-id']) ? intval( $_POST['article-id'] ) : null ),
             'program_id' => (isset( $_POST['program-id']) ? intval( $_POST['program-id'] ) : -1 ),
             'checkin_date' => (isset( $_POST['checkin-date']) ? sanitize_text_field( $_POST['checkin-date'] ) : null ),
-            'checkin_short_name' => isset( $_POST['checkin-short-name']) ? sanitize_text_field( $_POST['checkin-short-name'] ) : null,
+	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? sanitize_text_field( $_POST['checkedin-date'] ) : null ),
+	        'descr_id' => (isset( $_POST['assignment-id']) ? intval( $_POST['assignment-id'] ) : null ),
+	        'checkin_note' => (isset( $_POST['checkin_note']) ? intval( $_POST['checkin_note'] ) : null ),
+            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? sanitize_text_field( $_POST['checkin-short-name'] ) : null),
             'checkedin' => (isset( $_POST['checkedin']) ? intval( $_POST['checkedin'] ) : null),
         );
 
@@ -138,9 +214,208 @@ class e20rCheckin extends e20rSettings {
         return $this->model->loadSettings( $id );
     }
 */
-    public function editor_metabox_setup( $object, $box ) {
+	private function count_actions( $action_list, $type, $start_date, $end_date ) {
 
-        add_meta_box('e20r-tracker-checkin-settings', __('Check-In Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_checkins', 'normal', 'high');
+		$action_count = 0;
+
+		foreach( $action_list as $action ) {
+
+			$comp_date = date( 'Y-m-d', strtotime( $action->checkin_date ) );
+
+			if ( ( $action->checkin_type == $type) && ( $action->checkedin == 1 ) &&
+			     ( $comp_date >= $start_date ) && ( $comp_date <= $end_date ) ) {
+
+				$action_count += 1;
+			}
+		}
+
+		dbg("e20rCheckin::count_actions() - Counted {$action_count} completed actions of type {$type} between {$start_date} and {$end_date}");
+		return $action_count;
+	}
+
+	private function days_of_action( $checkin ) {
+
+		global $e20rTracker;
+
+		if ( $checkin->enddate <= date( 'Y-m-d', current_time( 'timestamp' ) ) ) {
+
+			$days_to_add = $checkin->maxcount;
+		}
+		else {
+			// Calculate the # of days passed since start of current action
+			$days_to_add = $e20rTracker->daysBetween( strtotime( $checkin->startdate . " 00:00:00" ), current_time( 'timestamp' ), get_option( 'timezone_string' ) );
+		}
+
+		return $days_to_add;
+	}
+
+	public function listUserAccomplishments( $userId ) {
+
+		global $currentProgram;
+		global $current_user;
+
+		global $e20rArticle;
+		global $e20rAssignment;
+
+		global $e20rProgram;
+		global $e20rTracker;
+
+		// $config = new stdClass();
+
+		$user_delay = $e20rTracker->getDelay( 'now', $current_user->ID );
+
+		if ( ! isset( $currentProgram->id ) ) {
+
+			$e20rProgram->getUserProgramIdForUser( $userId );
+		}
+
+		$programId = $currentProgram->id;
+
+		$art_list = $e20rArticle->loadArticlesByMeta( 'release_day', $user_delay, 'numeric', $programId, '<=' );
+		dbg("e20rCheckin::listUserAccomplishments() - Loaded " . count( $art_list ) . " articles between start of program #{$programId} and day #{$user_delay}:");
+
+		$results = array();
+		$aIds = array();
+		$dates = array();
+		$delays = array();
+		$actions = array();
+
+		// Get all articleIds to look for:
+		foreach( $art_list as $article ) {
+
+			$aIds[] = $article->id;
+			$delays[] = $article->release_day;
+		}
+
+		// Sort the delays (to find min/max delays)
+		sort($delays, SORT_NUMERIC );
+
+		// dbg("e20rCheckin::getAllUserAccomplishments() - Loading user check-in for {$article->id} with delay value: {$article->release_day}");
+		$dates['min'] = $e20rTracker->getDateForPost( $delays[0] );
+		$dates['max'] = $e20rTracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ] );
+
+		dbg("e20rCheckin::listUserAccomplishments() - Dates between: {$dates['min']} and {$dates['max']}");
+
+		// Get an array of actions & Activities to match the max date for the $programId
+		$cTypes = array( $this->types['action'], $this->types['activity'] );
+		$curr_action_ids = $this->model->findActionByDate( $e20rTracker->getDateForPost( $user_delay, $userId ), $programId );
+
+		foreach( $curr_action_ids as $id ) {
+
+			$type = $this->model->getSetting( $id, 'checkin_type' );
+
+			switch ($type) {
+
+				case CHECKIN_ACTION:
+					$type_string = 'action';
+					break;
+
+				case CHECKIN_ACTIVITY:
+					$type_string = 'activity';
+					break;
+
+				case CHECKIN_ASSIGNMENT:
+					$type_string = 'assignment';
+					break;
+
+				default:
+					dbg("e20rCheckin::getAllUserAccomplishments() - No activity type specified in record! ($id)");
+			}
+
+			// Get all actions of this type.
+			$actions[$type_string] = $this->model->getActions( $id, $type, -1 );
+
+		}
+
+		$results['program_days'] = 0; //$user_delay;
+		$results['program_score'] = 0;
+
+		dbg("e20rCheckin::listUserAccomplishments() - Loaded " . count($actions). " defined actions. I.e. all possible 'check-ins' for this program so far.");
+		$checkins = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, $cTypes, $dates );
+		$lessons = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, array( $this->types['assignment'] ), $dates );
+
+		foreach( $actions as $type => $a_list ) {
+
+			foreach ( $a_list as $action ) {
+
+				// Skip
+				if ( $action->checkin_type != $this->types['action'] ) {
+
+					dbg( "e20rCheckin::listUserAccomplishments() - Skipping {$action->id} since it's not an action/habit: {$this->types['action']}" );
+					dbg( $action );
+					continue;
+				}
+
+				$count = 0;
+
+				$action_count     = 0;
+				$activity_count   = 0;
+				$assignment_count = 0;
+
+				$results[ $action->startdate ]             = new stdClass();
+				$results[ $action->startdate ]->actionText = $action->item_text;
+				$results[ $action->startdate ]->days       = $this->days_of_action( $action );
+
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing actions" );
+				$action_count     = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
+
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing activities" );
+				$activity_count   = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
+
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing assignments" );
+				$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
+
+				$avg_score = 0;
+
+				foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
+
+					$var_name = "{$key}_count";
+
+					$results[ $action->startdate ]->{$key} = new stdClass();
+					$score = round( ( ${$var_name} / $results[ $action->startdate ]->days ), 2 );
+					$badge = null;
+
+					if ( ( $score >= 0.7 ) && ( $score < 0.8 ) ) {
+
+						$badge = 'bronze';
+					}
+					elseif ( ( $score >= 0.8 ) && ( $score < 0.9 ) ) {
+
+						$badge = 'silver';
+					}
+					elseif ( ( $score >= 0.9 ) && ( $score <= 1.0 ) ) {
+
+						$badge = 'gold';
+					}
+
+					$results[ $action->startdate ]->{$key}->badge = $badge;
+					$results[ $action->startdate ]->{$key}->score = $score;
+					$avg_score += $score;
+				}
+
+
+				$results['program_days'] += $results[ $action->startdate ]->days;
+				$avg_score = ( $avg_score / 3 );
+
+				// All $action->shortname entries minus the two program_* entries in the array.
+				$result_count = count( $results ) - 2;
+
+				// Set the overall program score for this user.
+				$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
+
+			}
+		}
+
+		// Get list of articles (assignment check-ins) we could have completed until now (as array w/articleId as key).
+		// Get list of activities we could have completed until now (as array w/articleId as key).
+		// Get list of actions we could have completed until now (as array w/articleId as key).
+
+		return $this->view->view_user_achievements( $results );
+	}
+
+    public function editor_metabox_setup( $post ) {
+
+        add_meta_box('e20r-tracker-checkin-settings', __('Action Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_checkins', 'normal', 'high');
 
     }
 
@@ -148,10 +423,19 @@ class e20rCheckin extends e20rSettings {
 
         global $e20rTracker;
         global $e20rArticle;
+	    global $e20rProgram;
 	    global $e20rActivity;
 	    global $e20rAssignment;
+	    global $currentArticle;
 
         global $current_user;
+	    global $post;
+
+	    if ( empty( $currentArticle) || ( $config->articleId != $currentArticle->id ) ) {
+
+		    dbg("e20rCheckin::dailyProgress() - No or wrong article is active. Updating...");
+		    $e20rArticle->init( $post->ID );
+	    }
 
         if ( $config->delay > ( $config->delay_byDate + 2 ) ) {
             // The user is attempting to view a day >2 days after today.
@@ -177,6 +461,7 @@ class e20rCheckin extends e20rSettings {
         $config->yesterday = date_i18n( 'l M. jS', strtotime( $y ) );
 
 	    $config->userId = $current_user->ID;
+	    $config->complete = $this->hasCompletedLesson( $config->articleId, $currentArticle->post_id, $config->userId );
 
         if ( ( strtolower($config->type) == 'action' ) || ( strtolower($config->type) == 'activity' ) ) {
 
@@ -289,7 +574,132 @@ class e20rCheckin extends e20rSettings {
 
 	        return $e20rAssignment->showAssignment( $assignments, $config );
         }
+
+	    if ( strtolower( $config->type == 'show_assignment' ) ) {
+
+		    dbg("e20rCheckin::dailyProgress[show_assignment]() - Loading Assignment list");
+		    return $e20rAssignment->listUserAssignments( $config );
+	    }
     }
+
+	public function dailyProgress_callback() {
+
+		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
+		dbg("e20rCheckin::dailyProgress_callback() - Ajax calleee has the right privileges");
+
+		global $currentArticle;
+		global $e20rTracker;
+		global $e20rProgram;
+		global $e20rArticle;
+		global $e20rAssignment;
+
+		$descrId = null;
+		$success = false;
+
+		$articleId = ( isset( $_POST['e20r-article-id'] ) ? intval( $_POST['e20r-article-id'] ) : null );
+		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? intval( $_POST['e20r-article-user_id'] ) : null );
+		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? intval( $_POST['e20r-article-release_day'] ) : null );
+		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? sanitize_text_field( $_POST['e20r-assignment-answer_date'] ) : null );
+		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array() );
+		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array() );
+		$fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
+		$answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
+
+		$programId = $e20rProgram->getProgramIdForUser( $userId, $articleId );
+
+		if ( ! $articleId  && $userId && $answerDate && $delay ) {
+			wp_send_json_error( "Unable to save your answer. Please contact technical support!" );
+		}
+
+		if ( count( $questionIds ) != count( $answers ) ) {
+			dbg("e20rCheckin::dailyProgress_callback() - Mismatch for # of questions and # of answers provided/supplied. ");
+			wp_send_json_error( "You didn't answer all of the questions we had for you. We're saving what we got.");
+		}
+
+		if ( ( count( $answerIds ) == 1 ) && ( $fieldTypes[0]) == 0 ) {
+
+			dbg("e20rCheckin::dailyProgress_callback() - user clicked 'lesson complete' button.");
+			$checkin = array(
+				'article_id' => $articleId,
+				'descr_id' => $descrId,
+				'user_id' => $userId,
+				'checkin_type' => CHECKIN_ASSIGNMENT,
+				'program_id' => $programId,
+				'checkin_date' => $e20rArticle->releaseDate( $articleId ),
+				'checkedin_date' => $answerDate,
+				'checkin_short_name' => 'daily_lesson',
+				'checkedin' => true,
+			);
+		}
+		else {
+
+			// Build answer objects to save to database
+			foreach ( $answerIds as $key => $id ) {
+
+				if ( ! $descrId ) {
+					$descrId = $id;
+				}
+
+				$checkin = array(
+					'descr_id' => $descrId,
+					'article_id' => $articleId,
+					'user_id' => $userId,
+					'checkin_type' => CHECKIN_ASSIGNMENT,
+					'program_id' => $programId,
+					'checkin_date' => $e20rArticle->releaseDate( $articleId ),
+					'checkedin_date' => $answerDate,
+					'checkin_short_name' => 'daily_lesson',
+					'checkedin' => !empty( $answers[$key]),
+				);
+
+				dbg("e20rCheckin::dailyProgress_callback() - Saving answer(s) for assignment # {$id} ");
+
+				$answer = array(
+					'id' => $questionIds[$key],
+					'article_id' => $articleId,
+					'program_id' => $programId,
+					'delay' => $delay,
+					'question_id' => $id,
+					'user_id' => $userId,
+					'answer_date' => $answerDate,
+					'answer' => $answers[$key],
+					'field_type' => $e20rAssignment->getInputType( $fieldTypes[ $key ] ),
+				);
+
+				dbg('e20rCheckin::dailyProgress_callback() - Answer Provided: ');
+				dbg($answer);
+
+				dbg("e20rCheckin::dailyProgress_callback() - Saving answer to question # {$answer['question_id']}" );
+				$success = ( $success || $e20rAssignment->saveAssignment( $answer ) );
+			}
+		}
+
+		if ( ( $success !== false ) && ( !empty( $checkin ) ) ) {
+
+			dbg( "e20rCheckin::dailyProgress_callback() - Saving checkin for date {$checkin['checkin_date']}" );
+			$ok = $this->model->setCheckin( $checkin );
+
+			if ( ! $ok ) {
+				global $wpdb;
+				dbg("e20rCheckin::dailyProgress_callback() - DB: " . $wpdb->last_error );
+			}
+		}
+
+		if ( $success == true ) {
+			wp_send_json_success();
+		}
+		else {
+			wp_send_json_error( "Unable to save lesson data" );
+		}
+	}
+
+	public function dailyCheckin_callback() {
+
+		dbg($_POST);
+		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
+		dbg("e20rCheckin::dailyCheckin_callback() - Ajax callee has the right privileges");
+
+	}
 
     public function nextCheckin_callback() {
 
@@ -339,7 +749,14 @@ class e20rCheckin extends e20rSettings {
         global $e20rTracker;
 
         global $current_user;
+	    global $currentArticle;
         global $post;
+
+	    if ( $current_user->ID == 0 ) {
+
+		    dbg("e20rCheckin::shortcode_dailyProgress() - User Isn't logged in! Redirect immediately");
+		    auth_redirect();
+	    }
 
         $config = new stdClass();
 
@@ -375,6 +792,9 @@ class e20rCheckin extends e20rSettings {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by delay value of {$config->delay} days");
 		    $article = $e20rArticle->findArticle( 'release_day', $config->delay );
+	    }
+	    elseif ( $config->type == 'show_assignments' ) {
+
 	    }
 
 
@@ -531,11 +951,14 @@ class e20rCheckin extends e20rSettings {
 
         $post = get_post( $post_id );
 
-        setup_postdata( $post );
+	    if ( isset( $post->post_type ) && ( $post->post_type == $this->model->get_slug() ) ) {
 
-        $this->model->set( 'short_name', the_title() );
-        $this->model->set( 'item_text', the_excerpt() );
+		    setup_postdata( $post );
 
-        parent::saveSettings( $post_id );
+		    $this->model->set( 'short_name', get_the_title( $post_id) );
+		    $this->model->set( 'item_text', get_the_excerpt() );
+	    }
+
+	        parent::saveSettings( $post_id );
     }
 }

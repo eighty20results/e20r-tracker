@@ -21,10 +21,17 @@ class e20rProgram extends e20rSettings {
     public function init( $programId = null ) {
 
         global $post;
+	    global $currentProgram;
 
-        if ( $programId !== null ) {
+	    if ( empty($currentProgram ) || ( $currentProgram->id != $programId ) ) {
 
-            $this->programTree = $this->getPeerPrograms( $programId );
+		    $currentProgram = parent::init( $programId );
+		    dbg("e20rProgram::init() - Program ID: {$currentProgram->id}");
+	    }
+
+        if ( $currentProgram->id !== null ) {
+
+            $this->programTree = $this->getPeerPrograms( $currentProgram->id );
         }
 
         return true;
@@ -135,15 +142,26 @@ class e20rProgram extends e20rSettings {
 
     public function getProgramIdForUser( $userId, $articleId = null ) {
 
-        $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true);
+	    global $currentProgram;
 
-        if ( $programId === false ) {
+	    if ( empty( $currentProgram ) ) {
 
-            $programId = -1;
-        }
+		    $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-        dbg("e20rProgram::getProgramIdForUser() - User's programID: {$programId}");
-        return $programId;
+		    if ( $programId === false ) {
+
+			    dbg( "e20rProgram::getProgramIdForUser() - No program set for user. Returning -1.");
+			    return -1;
+		    }
+		    else {
+
+			    $this->init( $programId );
+		    }
+
+		    dbg( "e20rProgram::getProgramIdForUser() - User's programID: {$currentProgram->id}" );
+	    }
+
+	    return $currentProgram->id;
     }
 
     /**
@@ -172,14 +190,22 @@ class e20rProgram extends e20rSettings {
      */
     public function startdate( $userId ) {
 
+	    global $currentProgram;
+
         $userPID = get_user_meta( $userId, 'e20r-tracker-program-id', true );
+
 
         if ( $userPID !== false ) {
 
             dbg("e20rProgram::startdate() - Using startdate as configured for program with id: ");
             dbg($userPID);
 
-	        $this->model->loadSettings( $userPID );
+	        if ( empty( $currentProgram ) || ( $currentProgram->id != $userPID ) ) {
+
+		        dbg("e20rProgram::startdate() - Loading settings ");
+		        $this->model->loadSettings( $userPID );
+	        }
+
             $programStartDate = $this->model->getSetting( $userPID, 'startdate');
 
             // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).

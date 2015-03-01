@@ -111,6 +111,7 @@ class e20rClientModel {
 
             if ( empty( $this->data ) ) {
                 dbg("e20rClientModel::load() - No Client information in the database for {$this->id}");
+	            $this->data = $this->info;
             }
 
             dbg("e20rClientModel::load() - Client info loaded: " . print_r( $this->data, true ) );
@@ -298,9 +299,6 @@ class e20rClientModel {
             dbg("e20rClientModel::loadClientData() - Client interview has been completed.");
             $clientData->incomplete_interview = false;
         }
-
-        dbg("e20ClientModel::loadClientInfo() - Data: ");
-        dbg($clientData);
 
         // Restore the original User ID.
         $this->id = $oldId;

@@ -56,11 +56,16 @@ class e20rWorkout extends e20rSettings {
         return false; // Returns false if the program isn't found.
     }
 
-    public function editor_metabox_setup( $object, $box ) {
+    public function editor_metabox_setup( $post ) {
 
         add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array( &$this, "addMeta_WorkoutSettings" ), 'e20r_workout', 'normal', 'core');
 
     }
+
+	public function listUserActivities( $userId ) {
+
+		return false;
+	}
 
     public function saveSettings( $post_id ) {
 
@@ -68,7 +73,7 @@ class e20rWorkout extends e20rSettings {
 
         dbg("e20rWorkout::saveSettings() - Saving Program Settings to DB");
 
-        if ( $post->post_type != 'e20r_workouts') {
+        if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workouts' ) ) {
             return $post_id;
         }
 

@@ -24,7 +24,7 @@ class e20rArticle extends e20rSettings {
         parent::__construct( 'article', 'e20r_articles', $this->model, $this->view );
     }
 
-    public function editor_metabox_setup( $object, $box ) {
+    public function editor_metabox_setup( $post ) {
 
         global $e20rAssignment;
 
@@ -89,9 +89,16 @@ class e20rArticle extends e20rSettings {
 
     public function init( $postId = NULL ) {
 
-        $this->articleId = parent::init( $postId );
+	    global $currentArticle;
 
-        dbg("e20rArticle::init() - Loaded settings for {$this->articleId}");
+        if ( empty($currentArticle) || ( isset( $currentArticle->id) && ($currentArticle->id != $postId ) ) ) {
+
+	        $currentArticle = parent::init( $postId );
+            dbg("e20rArticle::init() - Loaded settings for {$postId}:");
+	        dbg($currentArticle);
+        }
+
+	    $this->articleId = ( ! isset($currentArticle->id) ? false : $currentArticle->id);
 
         if ( ! $this->articleId ) {
 
@@ -113,29 +120,6 @@ class e20rArticle extends e20rSettings {
         dbg("e20rArticle::getPostUrl() - Got URL for post ({$postId}): {$url}");
 
         return ( empty($url) ? false : $url );
-    }
-
-    public function hasCompletedLesson( $postId = null ) {
-
-        global $post;
-
-        if ( is_null( $postId ) ) {
-
-            $postId = $post->ID;
-        }
-
-        if ( is_null( $this->articleId ) ) {
-
-            $this->articleId = $this->init( $postId );
-        }
-
-        if ( ! $this->articleId ) {
-
-            return false;
-        }
-
-        return $this->model->lessonComplete( $this->articleId );
-
     }
 
     public function getLessonExcerpt( $articleId ) {
@@ -191,19 +175,28 @@ class e20rArticle extends e20rSettings {
 	public function getAssignments( $articleId, $userId = null ) {
 
 		global $e20rAssignment;
+		global $currentArticle;
 
 		dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
 
 		$this->init( $articleId );
 		$articleSettings = $this->model->loadSettings( $this->articleId );
 
+		dbg($articleSettings);
+
 		$assignments = array();
 
-		foreach( $articleSettings->assignments as $assignmentId ) {
+		if ( ! empty( $articleSettings->assignments ) ) {
+			foreach ( $articleSettings->assignments as $assignmentId ) {
 
-			// Load the user specific assignment data (if available. If not, load default data)
-			$tmp = $e20rAssignment->load_userAssignment( $articleId, $assignmentId, $userId );
-			$assignments[ $tmp[0]->order_num ] = $tmp[0];
+				// Load the user specific assignment data (if available. If not, load default data)
+				$tmp                               = $e20rAssignment->load_userAssignment( $articleId, $assignmentId, $userId );
+				$assignments[ $tmp[0]->order_num ] = $tmp[0];
+			}
+		}
+		else {
+
+			$assignments[0] = $e20rAssignment->loadAssignment( 0 );
 		}
 
 		dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
@@ -305,11 +298,13 @@ class e20rArticle extends e20rSettings {
         global $e20rMeasurements;
         global $e20rProgram;
         global $e20rTracker;
+	    global $e20rCheckin;
+	    global $currentArticle;
 
         dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
         $this->init( $post->ID );
 
-        if ( empty($this->articleId) ) {
+        if ( empty( $this->articleId ) ) {
 
             dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
             return $content;
@@ -323,15 +318,24 @@ class e20rArticle extends e20rSettings {
 
         $measured = false;
 
-        $rDay = $this->model->getSetting( $this->articleId, 'release_day' );
+        // $rDay = $this->model->getSetting( $this->articleId, 'release_day' );
+	    $rDay = $currentArticle->release_day;
         $rDate =  $this->releaseDate( $this->articleId );
+	    // $rDate = $currentArticle->release_date;
         $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
 
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
         $md = $this->isMeasurementDay( $this->articleId );
 
-        if ( $md ) {
+	    if ( $e20rCheckin->hasCompletedLesson( $this->articleId, $post->ID, $current_user->ID ) && ( !$md ) ) {
+
+		    dbg("e20rArticle::contentFilter() - Processing a defined article, but it's not for measurements.");
+		    $data = $this->view->viewLessonComplete( $rDay, false, $this->articleId );
+		    $content = $data . $content;
+	    }
+
+	    if ( $md ) {
 
             $measured = $e20rMeasurements->areCaptured( $this->articleId, $programId, $current_user->ID, $rDate );
             dbg( "e20rArticle::contentFilter() - Result from e20rMeasurements::areCaptured: " );
@@ -350,20 +354,19 @@ class e20rArticle extends e20rSettings {
             if ( $md && $measured['status'] ) {
 
                 dbg("e20rArticle::contentFilter() - Measurement day, and we've measured.");
-                $data = $this->view->viewLessonComplete( $rDay, $md, $this->articleId );
+                $data = $this->view->viewMeasurementComplete( $rDay, $md, $this->articleId );
                 $content = $data . $content;
             }
         }
-
-        if ( $this->hasCompletedLesson( $post->ID ) && ( !$md ) ) {
-
-             $data = $this->view->viewLessonComplete( $rDay, false, $this->articleId );
-             $content = $data . $content;
-        }
-
+	    dbg("e20rArticle::contentFilter() - Content being returned.");
         return $content;
     }
 
+	public function loadArticlesByMeta($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
+
+		dbg("e20rArticle::loadArticlesByMeta() - {$key}, {$value}, {$type}, {$programId}, {$comp}");
+		return $this->model->findArticle($key, $value, $type, $programId, $comp );
+	}
 
 	public function remove_assignment_callback() {
 
@@ -518,8 +521,14 @@ class e20rArticle extends e20rSettings {
     public function releaseDate( $articleId ) {
 
         global $e20rTracker;
+	    global $currentArticle;
 
-        $release_date = $e20rTracker->getDateForPost( $this->model->getSetting( $articleId, 'release_day' ) );
+	    if ( empty( $currentArticle ) ) {
+		    $release_date = $e20rTracker->getDateForPost( $this->model->getSetting( $articleId, 'release_day' ) );
+	    }
+	    else {
+		    $release_date = $e20rTracker->getDateForPost( $currentArticle->release_day );
+	    }
 
         dbg( "e20rArticle::releaseDate: {$release_date}" );
 
@@ -582,7 +591,7 @@ class e20rArticle extends e20rSettings {
             $id = $post->ID;
         }
 
-        $this->post_id = $post;
+        $this->post_id = $id;
         $this->init( $id );
     }
 

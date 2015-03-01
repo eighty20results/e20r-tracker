@@ -39,7 +39,6 @@ class e20rSettings {
         if ( $settingsId == false ) {
 
 	        $settingsId = $postId;
-            // return false;
         }
 
         if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
@@ -48,7 +47,9 @@ class e20rSettings {
             return false;
         }
 
-        return $settingsId;
+	    $settings->id = $settingsId;
+
+        return $settings;
     }
 
     public function findByName( $shortName ) {
@@ -92,7 +93,7 @@ class e20rSettings {
         return $this->model->loadSettings( $id );
     }
 
-    public function editor_metabox_setup( $object, $box ) {
+    public function editor_metabox_setup( $post ) {
 
         global $e20rTracker;
 
@@ -130,7 +131,7 @@ class e20rSettings {
 
         $this->init( $post->ID );
 
-        dbg("e20rSettings::addMeta_Settings() - Loading metabox for {$this->type} settings");
+        // dbg("e20rSettings::addMeta_Settings() - Loading metabox for {$this->type} settings");
         echo $this->view->viewSettingsBox( $this->model->loadSettings( $post->ID ), $this->loadDripFeed( 'all' ) );
     }
 
@@ -140,8 +141,8 @@ class e20rSettings {
 
         dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Saving {$this->type} Settings to DB");
 
-        if ( $post->post_type != $this->cpt_slug) {
-            dbg("e20r" .ucfirst($this->type) . "::saveSettings() -Incorrect type! {$post->post_type}");
+        if ( (! isset( $post->post_type ) ) || ( $post->post_type != $this->model->get_slug()) ) {
+            // dbg("e20r" .ucfirst($this->type) . "::saveSettings() -Incorrect type! {$post->post_type}");
             return $post_id;
         }
 
@@ -157,6 +158,7 @@ class e20rSettings {
         if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
             return $post_id;
         }
+
         dbg("e20r" . ucfirst($this->type) . "::saveSettings()  - Saving metadata for the {$this->type} post_type");
         $this->model->init( $post_id );
 
@@ -170,14 +172,15 @@ class e20rSettings {
 
         foreach( $settings as $field => $setting ) {
 
-            $tmp = isset( $_POST["e20r-{$this->type}-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-{$this->type}-{$field}"] ) : null;
 
-            dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Page data : {$field} -> {$tmp}");
+	        $tmp = isset( $_POST["e20r-{$this->type}-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-{$this->type}-{$field}"] ) : null;
 
-            if ( is_null( $tmp ) ) {
+            dbg( "e20r" . ucfirst( $this->type ) . "::saveSettings() - Page data : {$field} -> " );
+	        dbg($tmp);
+
+            if ( empty( $tmp ) ) {
 
                 $tmp = $defaults->{$field};
-
             }
 
             $settings->{$field} = $tmp;
