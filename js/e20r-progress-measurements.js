@@ -185,7 +185,6 @@ var progMeasurements = {
             type: 'POST',
             timeout: 5000,
             dataType: 'JSON',
-            async: false,
             data: {
                 action: 'e20r_measurementDataForUser',
                 'e20r_tracker_client_detail_nonce': jQuery('#e20r_tracker_client_detail_nonce').val(),
@@ -196,7 +195,7 @@ var progMeasurements = {
                 client_id: $clientId
             },
             error: function (data, $errString, $errType) {
-                console.log($errString + ' error returned from e20r_measurementDataForUser action: ' + $errType );
+                console.log($errString + ' error returned from e20r_measurementDataForUser action: ' + $errType, data );
                 $class.$spinner.hide();
 
             },
@@ -274,6 +273,9 @@ var progMeasurements = {
                             }]
                         });
                     }
+                    else {
+                        console.log("No Weight Data loaded...");
+                    }
 
                     console.log("Loading Girth chart");
                     if ( ( typeof data.girth !== 'undefined' ) && ( data.girth.length > 0 ) ) {
@@ -334,9 +336,7 @@ var progMeasurements = {
 
                     }
                     else {
-
-                        console.log("Weight measurement data:", data.weigth);
-                        console.log("Girth measurement data:", data.girth);
+                        jQuery("div#inner-tabs").hide();
                         alert("No measurement data found");
                     }
                 }

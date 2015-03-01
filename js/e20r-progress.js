@@ -703,7 +703,6 @@ jQuery(function() {
                     // return false;
                 });
         },
-
         bindPhotoUploader: function(orientation) {
 
             var progress_uploader;
@@ -821,11 +820,9 @@ jQuery(function() {
             });
 
         },
-
         _getPhoto$: function(orientation) {
             return jQuery('#photo-' + orientation);
         },
-
         _getPhotoSaveNotifier$: function($photo) {
             return $photo
                 .closest('.photo-container')
@@ -932,7 +929,7 @@ jQuery(function() {
             type: 'POST',
             timeout: 10000,
             dataType: 'JSON',
-            async: false,
+            // async: false,
             data: $data,
             error: function($response, $errString, $errType) {
                 console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );

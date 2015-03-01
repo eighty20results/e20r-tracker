@@ -2,7 +2,12 @@
 /**********************************************************/
 jQuery.noConflict();
 
-// TODO: How do I implement the jqplot for a shortcode...?
+var $body = jQuery("body");
+
+jQuery(document).on({
+    ajaxStart: function() { $body.addClass("loading");   },
+    ajaxStop: function() { $body.removeClass("loading"); }
+});
 
 (function() {
 
@@ -522,23 +527,6 @@ jQuery.noConflict();
     };
 })();
 
-/*
-(function() {
-    var match = document.URL.match(/scrollTo\(([0-9]+)\)/);
-
-    if (match === null) {
-        return;
-    }
-
-    var scrollToY = match[1];
-
-    jQuery.getScript(e20r_tracker.settings.jquery_scroll_plugin_path, function() {
-        setTimeout(function() {
-            jQuery.scrollTo(scrollToY, 500);
-        }, 500);
-    });
-})();
-
 var Tooltip = {
     init: function() {
         if (!jQuery.fn.livequery) {
@@ -556,14 +544,13 @@ var Tooltip = {
             .livequery('mouseover', Tooltip.event.mouseover)
             .livequery('mouseout', Tooltip.event.mouseout);
 
-        // TODO: Do we want to support base64? If so upload
-        // var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
+        var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
 
-        // if (usesBase64) {
-        //    if (!base64) {
-        //        jQuery.getScript(e20r_tracker.settings.base64_script_url);
-        //    }
-        //}
+        if (usesBase64) {
+            if (!base64) {
+                jQuery.getScript('http://www.precisionnutrition.com/members/js/base64.js');
+            }
+        }
 
         this._initiated = true;
     },
@@ -651,11 +638,26 @@ var Tooltip = {
             });
     }
 };
-*/
 
-//jQuery(function() {
-//    Tooltip.init();
-//});
+jQuery( function() { Tooltip.init(); });
+
+/*
+(function() {
+    var match = document.URL.match(/scrollTo\(([0-9]+)\)/);
+
+    if (match === null) {
+        return;
+    }
+
+    var scrollToY = match[1];
+
+    jQuery.getScript(e20r_tracker.settings.jquery_scroll_plugin_path, function() {
+        setTimeout(function() {
+            jQuery.scrollTo(scrollToY, 500);
+        }, 500);
+    });
+})();
+
 
 jQuery(function() {
     jQuery('button p').remove();

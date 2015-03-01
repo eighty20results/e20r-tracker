@@ -7,23 +7,19 @@
  */
 
 jQuery.noConflict();
+
 jQuery(document).ready(function() {
-
-    var $body = jQuery("body");
-
-    jQuery(document).on({
-        ajaxStart: function() { $body.addClass("loading");   },
-         ajaxStop: function() { $body.removeClass("loading"); }
-    });
 
     var e20rCheckinEvent = {
         init: function() {
 
             this.$checkinOptions = jQuery('#e20r-daily-checkin-canvas fieldset.did-you input:radio');
             this.$checkinDate = jQuery('#e20r-checkin-checkin_date').val();
+            this.$checkedinDate = jQuery('#e20r-checkin-checkedin_date').val();
+            this.$checkinAssignmentId = jQuery('#e20r-checkin-assignment_id').val();
             this.$checkinArticleId = jQuery('#e20r-checkin-article_id').val();
             this.$checkinProgramId = jQuery('#e20r-checkin-program_id').val();
-            this.$nonce = jQuery('#e20r-checkin-nonce').val();;
+            this.$nonce = jQuery('#e20r-checkin-nonce').val();
             this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
 /*            this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk"); */
@@ -102,6 +98,12 @@ jQuery(document).ready(function() {
                 });
             }
         },
+        saveNotes: function( elem, $a, self ) {
+
+            var $data = {
+
+            }
+        },
         saveCheckin: function( elem, $a, self ){
 
 //            console.log("Element is: ", elem );
@@ -113,6 +115,8 @@ jQuery(document).ready(function() {
                 'checkin-action': $a,
                 'e20r-checkin-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
+                'checkedin-date': self.$checkedinDate,
+                'descr-id': self.$checkinAssignmentId,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
                 'checkedin': jQuery(elem).val(),
@@ -270,11 +274,259 @@ jQuery(document).ready(function() {
                     self.bindProgressElements( self );
 
                 }
-
             });
-
         }
     };
 
-    e20rCheckinEvent.init();
+    var e20rDailyProgress = {
+        init: function( assignmentElem ) {
+
+            console.log("Init of e20rDailyProgress() class.");
+
+            this.$assignment = assignmentElem;
+            this.$saveAssignmentBtn = this.$assignment.find("#e20r-assignment-save");
+            this.$answerForm = this.$assignment.find("form#e20r-assignment-answers");
+            this.$checkinBtn = this.$assignment.find("button#e20r-lesson-complete");
+            this.$inputs = this.$answerForm.find('.e20r-assignment-response');
+
+            var self = this;
+
+            this.$saveAssignmentBtn.on('click', function(){
+                console.log("Clicked 'Save' for the assignment");
+                self.saveAnswers( self );
+            });
+
+            this.$checkinBtn.on('click', function(){
+                console.log("Clicked 'Read lesson' button");
+                self.lessonComplete( self );
+            })
+
+            this.$inputs.each(function() {
+                console.log("Working through response fields");
+
+                jQuery(this).focus(function(){
+
+                    console.log("Gave focus to", this);
+                    jQuery('#e20r-assignment-save-btn').show();
+                    jQuery('#e20r-assignment-complete').hide();
+                })
+            })
+        },
+        lessonComplete: function( self ) {
+
+            event.preventDefault();
+            console.log("lessonComplete()...");
+
+            jQuery.ajax({
+                url: e20r_checkin.url,
+                type: 'POST',
+                data: 'action=save_daily_checkin&' + self.$answerForm.serialize(),
+                success: function( $response ) {
+
+                    jQuery('#e20r-lesson-complete').hide();
+                    jQuery('#e20r-assignment-complete').each(function() {
+                        jQuery(this).show();
+                    });
+                },
+                error: function( jqxhr, $errString, $errType ) {
+                    console.log("Error String: " + $errString + " and errorType: " + $errType);
+                }
+            });
+
+            return false;
+        },
+        saveAnswers: function( self ) {
+
+            event.preventDefault();
+
+            var answers = self.$answerForm.serialize();
+            console.log("saveAssignment(): " + answers, self.$answerForm);
+
+            jQuery.ajax({
+                'type': 'POST',
+                'url': e20r_checkin.url,
+                'data': 'action=save_daily_progress&' + answers,
+                success: function( $response ) {
+
+                    jQuery('#e20r-assignment-save-btn').hide();
+                    jQuery('#e20r-assignment-complete').each(function() {
+                        jQuery(this).show();
+                    });
+
+                },
+                error: function( jqxhr, $errString, $errType ) {
+                    console.log("Error String: " + $errString + " and errorType: " + $errType, jqxhr);
+                }
+            });
+
+            return false;
+        }
+    };
+
+    var Note = {
+        init: function() {
+
+            var self = this;
+
+            jQuery('#note-textarea').autoResize().trigger('keyup');
+
+            setTimeout(function() {
+                jQuery('#note-display')
+                    .css('height', function() {
+                        return jQuery('#note-textarea').outerHeight() + 'px';
+                    });
+            }, 200)
+
+            var noteValOnLoad = jQuery('#note-textarea').val().strip();
+            var hadValPreviously = bool(noteValOnLoad);
+
+            var stickyNoteOverlay = function(fadeSpeed) {
+                fadeSpeed = fadeSpeed || 0;
+
+                var note = jQuery('#note-textarea')[0];
+
+                if ('' == jQuery(note).val().strip()) {
+                    return;
+                }
+
+                jQuery('#note-display')
+                    .children('div')
+                    .html(function() {
+                        return jQuery('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
+                    })
+                    .end()
+                    .css('height', function() {
+                        return jQuery('#note-textarea').outerHeight() + 'px';
+                    })
+                    .fadeIn(fadeSpeed);
+
+                setDisplayState();
+
+                return true;
+            };
+
+            var setDisplayState = function() {
+                jQuery('#save-note')
+                    .data('editMode', true)
+                    .text('Edit Note')
+                    .trigger('blur');
+
+                var noteDisplay = jQuery('#note-display');
+
+                var overflowHeight = noteDisplay.outerHeight() - parseInt(noteDisplay.css('height'));
+
+                jQuery('#note-display-overflow-pad')
+                    .height(overflowHeight);
+            }
+
+            var setEditState = function() {
+                jQuery('#note-display')
+                    .fadeOut('fast');
+
+                jQuery('#note-textarea')
+                    .trigger('focus');
+
+                jQuery('#save-note')
+                    .data('editMode', false)
+                    .text('Save Note');
+
+                jQuery('#note-display-overflow-pad')
+                    .height(0);
+            };
+
+            // initial state
+            stickyNoteOverlay(0);
+
+            jQuery('#save-note')
+                .bind('attempt_save_with_empty_textarea', function() {
+                    var $this = jQuery(this);
+                    var $noteTextarea = jQuery('#note-textarea');
+
+                    $this
+                        .addClass('tooltip-handle')
+                        .attr('data-tooltip', 'Enter your notes in the text area above')
+                        .data('__attemptedSaveOnEmpty', true);
+
+                    Tooltip.event.mouseover.call(this, {}, { pos: 'left' });
+                    Tooltip.unbindHandle(this, { timeout: 1500 });
+
+                    return;
+                });
+
+            jQuery('#save-note')
+                .click(function() {
+                    var $this = jQuery(this);
+                    var $noteTextarea = jQuery('#note-textarea');
+
+                    // the note field is empty, and didn't have a value previously
+                    if (!hadValPreviously
+                        && '' == $noteTextarea.val().strip()) {
+
+                        return $this.triggerHandler('attempt_save_with_empty_textarea');
+                    }
+
+                    // save
+                    if (false == bool($this.data('editMode'))) {
+                        var data = {
+                            action: 'saveNote',
+                            assignment_id: ASSIGNMENT_ID,
+                            value: base64.encode(jQuery('#note-textarea').val()),
+                            participant_id: CPUSER['id']
+                        };
+
+                        var url = 'cpds-assignments.php';//'cpds-assignments.php';
+
+                        jQuery.post(url, data, function(response, status) {
+                            if (status == 'success') {
+                                $this.data('__persisted', true);
+                            }
+                        });
+
+                        // ...
+                        $this.data('__attemptedSaveOnEmpty', null);
+                    }
+
+
+                    if (bool($this.data('editMode'))) {
+                        setEditState();
+
+                        return;
+                    }
+
+                    var notificationTimeout;
+
+                    /* save notification */
+                    jQuery('fieldset.notes')
+                        .find('.notification-entry-saved')
+                        .children('div')
+                        .fadeIn('medium', function() {
+                            var self = this;
+                            notificationTimeout = setTimeout(function() {
+                                jQuery(self)
+                                    .fadeOut('slow');
+                            }, 4200);
+                        });
+
+                    setTimeout(function() {
+                        stickyNoteOverlay(300);
+                    }, 2000);
+
+                }); // click
+        }
+    };
+
+    if (jQuery('#e20r-article-assignment').length > 0) {
+
+        jQuery( e20rDailyProgress.init( jQuery('#e20r-article-assignment') ) );
+    }
+
+    if ( jQuery("#e20r-daily-checkin-canvas").length > 0 ) {
+
+        jQuery(e20rCheckinEvent.init());
+    }
+
+    if ( jQuery("#note-textarea").length > 0 ) {
+
+        jQuery(Note.init());
+    }
 });
