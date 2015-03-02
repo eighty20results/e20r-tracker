@@ -557,6 +557,38 @@
         margin: 8px;
         color: #333;
     }
+    td.e20r-tracker-bronze-badge {
+        height: 40px;
+        background: url('../images/bronze-badge.png') no-repeat center;
+        background-size: 50%;
+    }
+    td.e20r-tracker-silver-badge {
+        height: 40px;
+        background: url('../images/silver-badge.png') no-repeat center;
+        background-size: 50%;
+    }
+    td.e20r-tracker-gold-badge {
+        height: 40px;
+        background: url('../images/gold-badge.png') no-repeat center;
+        background-size: 50%;
+    }
+    td.e20r-tracker-no-badge {
+        height: 40px;
+        background: url('../images/bronze-badge.png') no-repeat center;
+        background-size: 50%;
+    }
+    th.e20r-achievement-header {
+        display: none;
+    }
+    table.e20r-activity-table,
+    table.e20r-assignment-table,
+    table.e20r-action-table {
+        height: 50px;
+        font-size: 80%;
+    }
+    td.e20r-tracker-score {
+        white-space: nowrap;
+    }
 }
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
@@ -755,6 +787,27 @@
         font-size: 16px;
         margin: 8px;
         color: #333;
+    }
+    td.e20r-tracker-bronze-badge {
+        background: url('../images/bronze-badge.png') no-repeat center;
+        height: 100px;
+    }
+    td.e20r-tracker-silver-badge {
+        background: url('../images/silver-badge.png') no-repeat center;
+        height: 100px;
+    }
+    td.e20r-tracker-gold-badge {
+        height: 100px;
+        background: url('../images/gold-badge.png') no-repeat center;
+    }
+    td.e20r-tracker-no-badge {
+        height: 100px;
+        background: url('../images/bronze-badge.png') no-repeat center;
+    }
+    table.e20r-activity-table,
+    table.e20r-assignment-table,
+    table.e20r-action-table {
+        height: 110px;
     }
 }
 .measurement-field-container {
@@ -1570,25 +1623,35 @@ td.e20r-group-header {
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-textarea {
     width: 616px;
+    max-width: 616px;
     font-family: sans-serif;
     font-size: 16px;
     line-height: 22px;
     height: 72px;
     overflow: auto;
     display: block;
+    resize: vertical;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display {
     position: absolute;
     width: 624px;
     margin-top: 1px;
     display: none;
-    text-indent: 18px;
+    text-indent: 10px;
     background: white url(../images/left-quote.png) no-repeat top left;
+    background-size: 72px 72px;
     font-size: 16px;
     line-height: 22px;
+    padding-top: 25px;
+    padding-left: 35px;
+}
+#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display > div {
+    width: 100%;
+    word-wrap: break-word;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
     background: white url(../images/right-quote.png) no-repeat top left;
+    background-size: 72px 72px;
     position: absolute;
     width: 24px;
     height: 20px;
@@ -1840,16 +1903,6 @@ td.e20r-group-header {
     color: #242a24;
     display: none;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display {
-    position: absolute;
-    width: 624px;
-    margin-top: 1px;
-    display: none;
-    text-indent: 18px;
-    background: white url(../images/left-quote.png) no-repeat top left;
-    font-size: 16px;
-    line-height: 22px;
-}
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
     background: white url(../images/right-quote.png) no-repeat top left;
     position: absolute;
@@ -2054,27 +2107,20 @@ div#e20r-progress-results {
     min-height: 300px;
 }
 td.e20r-tracker-score {
-    font-weight: bold;
-    font-size: 1.1em;
+    font-size: 0.9em;
     font-style: italic;
     text-align: center;
 }
-td.e20r-tracker-no-badge {
-    min-height: 40px;
-    /* background: url('../images/bronze-badge.png') no-repeat center; */
-}
-td.e20r-tracker-bronze-badge {
-    background: url('../images/bronze-badge.png') no-repeat center;
-    height: 100px;
-}
-td.e20r-tracker-silver-badge {
-    background: url('../images/silver-badge.png') no-repeat center;
-    height: 100px;
-}
-td.e20r-tracker-gold-badge {
-    height: 100px;
-    background: url('../images/gold-badge.png') no-repeat center;
+td.e20r-tracker-action-descr {
+    font-size: 1.1em;
+    font-style: italic;
+    font-weight: bold;
 }
 th.e20r-achievement-header {
     text-align: center;
+}
+table.e20r-activity-table,
+table.e20r-assignment-table,
+table.e20r-action-table {
+    margin: 0;
 }
