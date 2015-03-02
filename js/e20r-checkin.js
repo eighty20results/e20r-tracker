@@ -368,22 +368,23 @@ jQuery(document).ready(function() {
 
             var self = this;
 
-            jQuery('textarea#note-textarea').autoResize().trigger('keyup');
+            jQuery('#note-textarea').autogrow().trigger('keyup');
 
             setTimeout(function() {
                 jQuery('#note-display')
                     .css('height', function() {
-                        return jQuery('textarea#note-textarea').outerHeight() + 'px';
-                    });
-            }, 200)
+                        return jQuery('#note-textarea').outerHeight() + 'px';
+                    })
+                    .css('color', '#757575')
+            }, 200);
 
-            var noteValOnLoad = jQuery('textarea#note-textarea').val().strip();
+            var noteValOnLoad = jQuery('#note-textarea').val().strip();
             var hadValPreviously = bool(noteValOnLoad);
 
             var stickyNoteOverlay = function(fadeSpeed) {
                 fadeSpeed = fadeSpeed || 0;
 
-                var note = jQuery('textarea#note-textarea')[0];
+                var note = jQuery('#note-textarea')[0];
 
                 if ('' == jQuery(note).val().strip()) {
                     return;
@@ -392,11 +393,11 @@ jQuery(document).ready(function() {
                 jQuery('#note-display')
                     .children('div')
                     .html(function() {
-                        return jQuery('textarea#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
+                        return jQuery('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
                     })
                     .end()
                     .css('height', function() {
-                        return jQuery('textarea#note-textarea').outerHeight() + 'px';
+                        return jQuery('#note-textarea').outerHeight() + 'px';
                     })
                     .fadeIn(fadeSpeed);
 
@@ -423,7 +424,7 @@ jQuery(document).ready(function() {
                 jQuery('#note-display')
                     .fadeOut('fast');
 
-                jQuery('textarea#note-textarea')
+                jQuery('#note-textarea')
                     .trigger('focus');
 
                 jQuery('#save-note')
@@ -440,7 +441,7 @@ jQuery(document).ready(function() {
             jQuery('#save-note')
                 .bind('attempt_save_with_empty_textarea', function() {
                     var $this = jQuery(this);
-                    var $noteTextarea = jQuery('textarea#note-textarea');
+                    var $noteTextarea = jQuery('#note-textarea');
 
                     $this
                         .addClass('tooltip-handle')
@@ -456,7 +457,7 @@ jQuery(document).ready(function() {
             jQuery('#save-note')
                 .click(function() {
                     var $this = jQuery(this);
-                    var $noteTextarea = jQuery('textarea#note-textarea');
+                    var $noteTextarea = jQuery('#note-textarea');
 
                     // the note field is empty, and didn't have a value previously
                     if (!hadValPreviously
@@ -476,7 +477,7 @@ jQuery(document).ready(function() {
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
                             'checkin-date': jQuery('#e20r-checkin-checkin_date').val(),
                             'program-id': jQuery('#e20r-checkin-program_id').val(),
-                            'value': base64.encode(jQuery('textarea#note-textarea').val())
+                            'value': Base64.encode(jQuery('textarea#note-textarea').val())
                         };
 
                         jQuery.post(e20r_checkin.url, data, function(response, status) {

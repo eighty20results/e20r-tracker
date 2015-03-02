@@ -547,8 +547,8 @@ var Tooltip = {
         var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
 
         if (usesBase64) {
-            if (!base64) {
-                jQuery.getScript('http://www.precisionnutrition.com/members/js/base64.js');
+            if (!Base64) {
+                jQuery.getScript('//javascriptbase64.googlecode.com/files/base64.js');
             }
         }
 
