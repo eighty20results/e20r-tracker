@@ -1176,8 +1176,10 @@ class e20rTracker {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting user javascripts. ");
 
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery' ), '0.1', false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'jquery', 'e20r-tracker-js' ), '0.1', false );
+	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
+	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), '0.1', false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.1', false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
@@ -1185,7 +1187,7 @@ class e20rTracker {
                 )
             );
 
-            wp_print_scripts( array( 'e20r-tracker-js', 'e20r-checkin-js' ) );
+            wp_print_scripts( array( 'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js' ) );
         }
     }
 

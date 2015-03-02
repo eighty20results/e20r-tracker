@@ -108,6 +108,11 @@ class e20rArticle extends e20rSettings {
         return $this->articleId;
     }
 
+	public function emptyArticle() {
+
+		$article = $this->model->defaultSettings();
+	}
+
     public function getPostUrl( $articleId ) {
 
         if ( !$articleId ) {
@@ -269,7 +274,7 @@ class e20rArticle extends e20rSettings {
             dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article->id}");
             return $article->id;
         }
-        else {
+        elseif ( count($article) > 1 ) {
             // TODO: Won't return all of the articles defined for this program!
 
             dbg("e20rArticle::findArticleByDelay() - Returning first of multiple articleIDs");
@@ -366,6 +371,11 @@ class e20rArticle extends e20rSettings {
 
 		dbg("e20rArticle::loadArticlesByMeta() - {$key}, {$value}, {$type}, {$programId}, {$comp}");
 		return $this->model->findArticle($key, $value, $type, $programId, $comp );
+	}
+
+	public function findArticleNear( $key, $value, $programId = -1, $comp = '<=', $sort_order = 'DESC', $limit = 1, $type = 'numeric' ) {
+		// findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' )
+		return $this->model->findClosestArticle( $key, $value, $programId, $comp, $limit, $type , $sort_order );
 	}
 
 	public function remove_assignment_callback() {

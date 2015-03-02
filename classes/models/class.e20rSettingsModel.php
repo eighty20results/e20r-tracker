@@ -135,7 +135,7 @@ class e20rSettingsModel {
 	    }
 	    else {
 
-		    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Using global settings entry and returning value={$this->settings->{$fieldName}} for {$fieldName} and {$this->type} {$typeId}" );
+		    // dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - Using global settings entry and returning value={$this->settings->{$fieldName}} for {$fieldName} and {$this->type} {$typeId}" );
 		    return ${$typeVar}->{$fieldName};
 	    }
 

@@ -50,6 +50,57 @@ class e20rArticleModel extends e20rSettingsModel {
         // Combination of program from usermeta & the $settings-Programs;
     }
 */
+	public function findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' ) {
+
+		$args = array(
+			'posts_per_page' => $limit,
+			'post_type' => 'e20r_articles',
+			'post_status' => 'publish',
+			'order_by' => 'meta_value_num',
+			'meta_key' => "_e20r-article-{$key}",
+			'order' => $sort_order,
+			'meta_query' => array(
+				array(
+					'key' => "_e20r-article-{$key}",
+					'value' => $value,
+					'compare' => $comp,
+					'type' => $type,
+				),
+/*				array(
+					'key' => "_e20r-article-programs",
+					'value' => $programId,
+					'compare' => 'IN'
+				) */
+			),
+		);
+
+		$a_list = $this->loadForQuery( $args );
+
+		if ( is_array( $a_list ) ) {
+
+			foreach( $a_list as $k => $a ) {
+
+				$programs = get_post_meta( $a->id, "_e20r-article-programs", true );
+
+				if ( ! in_array( $programId, $programs ) ) {
+						unset( $a_list[$k] );
+				}
+			}
+		}
+		else {
+
+			$programs = get_post_meta( $a_list->id, "_e20r-article-programs", true);
+
+			if ( ! in_array( $programId, $programs ) ) {
+				$a_list = false;
+			}
+		}
+
+		dbg("e20rArticleModel()::findClosestArticle() - List of articles:");
+		dbg( $a_list );
+
+		return $a_list;
+	}
 
     public function findArticle($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
@@ -67,6 +118,11 @@ class e20rArticleModel extends e20rSettingsModel {
 					    'compare' => $comp,
 					    'type' => $type,
 				    ),
+/*				    array(
+					    'key' => "_e20r-article-programs",
+					    'value' => $programId,
+					    'compare' => 'IN'
+				    ) */
 			    )
 		    );
 	    }
@@ -79,6 +135,7 @@ class e20rArticleModel extends e20rSettingsModel {
 		    );
 	    }
 
+/*
         $articleList = array();
 	    dbg( $args );
 
@@ -100,9 +157,37 @@ class e20rArticleModel extends e20rSettingsModel {
                 $articleList = $new;
             }
         }
-
-        return $articleList;
+*/
+        return $this->loadForQuery( $args );
     }
+
+	private function loadForQuery( $args ) {
+
+		$articleList = array();
+		dbg( $args );
+
+		$query = new WP_Query( $args );
+
+		dbg("e20rArticleModel::loadForQuery() - Returned articles: {$query->post_count}" );
+
+		while ( $query->have_posts() ) {
+
+			$query->the_post();
+
+			$new = $this->loadSettings( get_the_ID() );
+			$new->id = get_the_ID();
+
+			if ( $query->post_count > 1 ) {
+
+				$articleList[] = $new;
+			}
+			else {
+				$articleList = $new;
+			}
+		}
+
+		return $articleList;
+	}
 
     public function getSettings() {
 

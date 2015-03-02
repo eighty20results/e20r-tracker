@@ -97,14 +97,14 @@ class e20rCheckinView extends e20rSettingsView {
             <h3><?php _e("Daily Coaching <span>Update</span>", "e20rtracker"); ?></h3>
             <div id="e20r-daily-checkin-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
-                <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo $article->id; ?>" />
-	            <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo $config->assignment_id; ?>" />
+                <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo isset( $article->id ) ? $article->id : null; ?>" />
+	            <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? $config->assignment_id : null ); ?>" />
                 <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateFromDelay( $config->delay ); ?>" />
 	            <input type="hidden" name="e20r-checkin-checkedin_date" id="e20r-checkin-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
-                <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo $action->program_id; ?>" />
+                <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo isset( $action->program_id ) ? $action->program_id : -1 ; ?>" />
                 <div class="clear-after">
                     <fieldset class="did-you workout">
-                        <legend><?php _e("Did you work out today?", "e20rtracker"); ?></legend>
+                        <legend><?php _e("Did you do your activity today?", "e20rtracker"); ?></legend>
                         <div>
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $activity->id; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTIVITY; ?>" />
@@ -112,19 +112,19 @@ class e20rCheckinView extends e20rSettingsView {
                             <ul style="max-width: 300px; width: 290px;">
                                 <li>
                                     <input type="radio" value="1" <?php checked( $activity->checkedin, 1 ); ?> name="did-activity-today" id="did-activity-today-radio-1" />
-                                    <label for="did-activity-today-radio-1"><?php _e("I did my workout", "e20rtracker"); ?></label>
+                                    <label for="did-activity-today-radio-1"><?php _e("I did my activity", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
                                     <input type="radio" value="2" <?php checked( $activity->checkedin, 2 ); ?> name="did-activity-today" id="did-activity-today-radio-2" />
-                                    <label for="did-activity-today-radio-2"><?php _e("I was active but didn't complete my workout", "e20rtracker"); ?></label>
+                                    <label for="did-activity-today-radio-2"><?php _e("I was active but didn't complete my activity", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
                                     <input type="radio" value="0" <?php checked( $activity->checkedin, 0 ); ?> name="did-activity-today" id="did-activity-today-radio-3" />
-                                    <label for="did-activity-today-radio-3"><?php _e("I missed my workout", "e20rtracker"); ?></label>
+                                    <label for="did-activity-today-radio-3"><?php _e("I missed my activity", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
                                     <input type="radio" value="3" <?php checked( $activity->checkedin, 3 ); ?> name="did-activity-today" id="did-activity-today-radio-4" />
-                                    <label for="did-activity-today-radio-4"><?php _e("There was no workout scheduled", "e20rtracker"); ?></label>
+                                    <label for="did-activity-today-radio-4"><?php _e("There was no activity scheduled", "e20rtracker"); ?></label>
                                 </li>
                             </ul>
                             <div class="notification-entry-saved" style="width: 300px; display: none;">
@@ -135,7 +135,7 @@ class e20rCheckinView extends e20rSettingsView {
                     </fieldset><!--//left-->
 
                     <fieldset class="did-you habit">
-                        <legend style="padding-bottom: 9px;"><?php _e("Did you practice your habit today?", "e20rtracker"); ?></legend>
+                        <legend style="padding-bottom: 9px;"><?php _e("Did you complete your action today?", "e20rtracker"); ?></legend>
                         <div>
                             <p style="margin-bottom: 4px;" id="habit-names">
                             <?php
@@ -152,7 +152,7 @@ class e20rCheckinView extends e20rSettingsView {
                                 <?php
 
                                 case 1: ?>
-                                    <?php echo $habitEntries[0]->item_text; ?></p>
+                                    <strong><?php echo $habitEntries[0]->item_text; ?></strong></p>
                             <?php
                             }
                             ?>
@@ -319,7 +319,6 @@ class e20rCheckinView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<hr class="e20r-big-hr" />
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 			<h4>Achievements</h4>
 			<a class="close" href="#">X</a>
@@ -328,9 +327,9 @@ class e20rCheckinView extends e20rSettingsView {
 					<thead>
 					<tr>
 						<th class="e20r-achievement-descr"></th>
-						<th class="e20r-achievement-header">Action</th>
-						<th class="e20r-achievement-header">Activity</th>
-						<th class="e20r-achievement-header">Assignments</th>
+						<th class="e20r-achievement-header"><a title="Your daily actions">Action</a></th>
+						<th class="e20r-achievement-header"><a title="Your activities (exercise, etc).">Activity</a></th>
+						<th class="e20r-achievement-header"><a title="The daily lessons">Assignments</a></th>
 					</tr>
 					</thead>
 					<tbody>

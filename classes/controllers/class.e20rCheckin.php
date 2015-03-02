@@ -767,6 +767,7 @@ class e20rCheckin extends e20rSettings {
         $config->url = URL_TO_CHECKIN_FORM;
 
         $config->userId = $current_user->ID;
+	    $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
         $config->startTS = $e20rProgram->startdate( $config->userId );
         $config->delay = $e20rTracker->getDelay( 'now' );
         $config->delay_byDate = $config->delay;
@@ -795,13 +796,21 @@ class e20rCheckin extends e20rSettings {
 	    }
 	    elseif ( $config->type == 'show_assignments' ) {
 
+
 	    }
 
+	    /*
+	    if ( empty( $article ) ) {
 
+		    // TODO: Find article by closest delay.
+		    // $article = $e20rArticle->findArticleNear( 'release_day', $config->delay, $config->programId, '<=' );
+		    $article = $e20rArticle->emptyArticle();
+	    }
+		*/
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article object:");
 	    dbg( $article );
 
-        $config->articleId = $article->id;
+        $config->articleId = isset( $article->id ) ? $article->id : null;
         $config->programId = $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId );
 
         ob_start();

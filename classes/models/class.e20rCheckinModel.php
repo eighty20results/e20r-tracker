@@ -27,7 +27,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         global $post;
 
         $settings = parent::defaultSettings();
-
+	    $settings->id = ( isset( $post->id ) ? $post->id : null );
         $settings->checkin_type = 0; // 1 = Action, 2 = Assignment, 3 = Survey, 4 = Activity.
         $settings->item_text = ( isset( $post->post_excerpt ) ? $post->post_excerpt : null );
         $settings->short_name =  ( isset( $post->post_title ) ? $post->post_title : null );
@@ -223,11 +223,15 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
         global $current_user;
+	    global $currentCheckin;
+
         global $e20rProgram;
         global $e20rArticle;
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
         $date = $e20rArticle->releaseDate($articleId);
+
+	    // if ( $currentCheckin->articleId )
 
         dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$articleId} in program {$programId} for user {$userId}: {$date}");
 
@@ -275,11 +279,11 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         if ( $result === false ) {
 
-            dbg("e20rCheckinModel::loadCheckinData() - Error loading checkin: " . $wpdb->last_error );
+            dbg("e20rCheckinModel::loadUserCheckin() - Error loading checkin: " . $wpdb->last_error );
             return false;
         }
 
-        dbg("e20rCheckinModel::loadCheckinData() - Loaded " . count($result) . " check-in records");
+        dbg("e20rCheckinModel::loadUserCheckin() - Loaded " . count($result) . " check-in records");
 
         if ( empty( $result ) ) {
 
@@ -288,12 +292,40 @@ class e20rCheckinModel extends e20rSettingsModel {
                 $this->loadSettings( $articleId );
             }
             */
-            $result = new stdClass();
+	        $a = $this->findActionByDate( $date, $programId );
+
+	        $result = new stdClass();
+
+	        dbg($a);
+
+	        if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
+
+		        dbg( "e20rCheckinModel::loadUserCheckin() - Found more than one action id");
+
+		        foreach ( $a as $i ) {
+
+			        $n_type = $this->getSetting( $i, 'checkin_type' );
+
+			        dbg( "e20rCheckinModel::loadUserCheckin() - Type settings for {$i}: {$n_type}");
+
+			        if ($n_type == $type ) {
+
+				        $result->id = $i;
+				        break;
+			        }
+		        }
+	        }
+	        else {
+
+		        $result->id = null;
+	        }
+
             $result->descr_id = $short_name;
             $result->user_id = $current_user->ID;
             $result->program_id = $programId;
             $result->article_id = $articleId;
             $result->checkin_date = $date;
+	        $result->checkin_type = $type;
             $result->checkin_note = null;
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
