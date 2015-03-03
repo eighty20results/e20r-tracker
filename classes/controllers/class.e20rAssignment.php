@@ -270,9 +270,7 @@ class e20rAssignment extends e20rSettings {
 
         $savePost = $post;
 
-        dbg("e20rAssignment::saveSettings() - Saving e20rAssignment settings to DB");
-
-        if ( is_null( $settings ) ) {
+        if ( empty( $settings ) ) {
 
             dbg( "e20rAssignment::saveSettings()  - Saving metadata from edit.php page, related to the e20rAssignment post_type" );
 
@@ -330,10 +328,9 @@ class e20rAssignment extends e20rSettings {
             }
 
         }
-        else {
+        elseif ( get_class( $settings ) != 'WP_Post' ) {
 
             dbg("e20rAssignment::saveSettings() - Received settings from calling function.");
-            dbg($settings);
 
             if ( ! $this->model->saveSettings( $settings ) ) {
 
