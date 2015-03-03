@@ -51,7 +51,7 @@ class e20rTables {
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
-        $this->tables->exercise      = $wpdb->prefix . 'e20r_exercises';
+        $this->tables->workout       = $wpdb->prefix . 'e20r_workouts';
         $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
 
 
@@ -76,6 +76,19 @@ class e20rTables {
 
         return $this->inBeta;
     }
+
+	private function loadWorkoutFields() {
+
+		$this->fields['workout'] = array(
+			'id'            => 'id',
+			'assigned_user' => 'assigned_user',
+			'program_id'    => 'program_id',
+			'workout_id'    => 'workout_id',
+			'exercise_list' => 'exercise_list',
+			'completed'     => 'completed',
+			'notes'         => 'notes',
+		);
+	}
 
     private function loadAssignmentFields() {
 
@@ -340,6 +353,13 @@ class e20rTables {
             case 'assignments':
                 $this->loadAssignmentFields();
                 break;
+
+	        case 'workout':
+		        $this->loadWorkoutFields();
+		        break;
+
+	        default:
+		        dbg("e20rTables::loadFields() - No fields to load for {$name}");
         }
     }
 
@@ -350,7 +370,7 @@ class e20rTables {
         }
 
         if ( empty ( $this->tables->{$name} ) ) {
-            throw new Exception( "No {$name} table exists" );
+            throw new Exception( "The {$name} table is not defined" );
         }
 
         return $this->tables->{$name};
