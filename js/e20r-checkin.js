@@ -367,17 +367,22 @@ jQuery(document).ready(function() {
         init: function() {
 
             this.noteField = jQuery('fieldset.notes');
-            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
+            this.actionFields = jQuery('fieldset.did-you.habit');
+            // this.activityFields = jQuery('fieldset.did-you-workout');
+
             this.note_id = this.noteField.find('.e20r-checkin-id').val();
-            this.checkin_shortname = this.noteField.find('.e20r-checkin-short_name').val();
-            // this.checkin_note = this.noteField.find('#note-textarea');
+            this.checkin_shortname = this.noteField.find('.e20r-checkin-checkin_short_name').val();
             this.note_article = this.noteField.siblings('#e20r-checkin-article_id').val();
             this.note_assignment = this.noteField.siblings('#e20r-checkin-assignment_id').val();
             this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
             this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
-            this.note_actualdate = this.noteField.siblings('#e20r-checkedin_date').val();
+            this.note_actualdate = this.noteField.siblings('#e20r-checkin-checkedin_date').val();
+            this.checkin_type = this.actionFields.find('.e20r-checkin-checkin_type').val();
+            this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val()
 
             var self = this;
+
+            console.log('Note object: ', self);
 
             jQuery('#note-textarea').autogrow().trigger('keyup');
 
@@ -480,6 +485,18 @@ jQuery(document).ready(function() {
                     // save
                     if (false == bool($this.data('editMode'))) {
 
+                        // Unassigned (which is ok.
+                        if ( self.note_assignment == '' ) {
+
+                            self.note_assignment = 0;
+                        }
+
+                        // No defined article for this date/delay value (which is ok)
+                        if ( self.note_article == '' ) {
+
+                            self.note_article = 0;
+                        }
+
                         var data = {
                             action: 'saveCheckin',
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
@@ -491,9 +508,11 @@ jQuery(document).ready(function() {
                             'article-id': self.note_article,
                             'program-id': self.note_program,
                             'checkin-note': Base64.encode($noteTextarea.val()),
-                            'checkedin': 1,
-                            'checkin-type': self.checkin_type.val()
+                            'checkedin': self.checkin_value,
+                            'checkin-type': self.checkin_type
                         };
+
+                        console.log("Sending: ", data );
 
                         jQuery.post( e20r_checkin.url, data, function( response, status ) {
 
