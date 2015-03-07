@@ -366,6 +366,17 @@ jQuery(document).ready(function() {
     var Note = {
         init: function() {
 
+            this.noteField = jQuery('fieldset.notes');
+            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type');
+            this.note_id = this.noteField.find('.e20r-checkin-id');
+            this.checkin_shortname = this.noteField.find('.e20r-checkin-short_name');
+            this.checkin_note = this.noteField.find('#note-textarea');
+            this.note_article = this.noteField.siblings('#e20r-checkin-article_id').val();
+            this.note_assignment = this.noteField.siblings('#e20r-checkin-assignment_id').val();
+            this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
+            this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
+            this.note_actualdate = this.noteField.siblings('#e20r-checkedin_date'),val();
+
             var self = this;
 
             jQuery('#note-textarea').autogrow().trigger('keyup');
@@ -470,23 +481,27 @@ jQuery(document).ready(function() {
                     if (false == bool($this.data('editMode'))) {
 
                         var data = {
-                            action: 'e20r_save_daily_note',
-                            'article-id': jQuery('#e20r-checkin-article_id').val(),
-                            'delay': jQuery('#e20r-checkin-delay').val(),
-                            'assignment-id': jQuery('#e20r-checkin-assignment_id').val(),
+                            action: 'saveCheckin',
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
-                            'checkin-date': jQuery('#e20r-checkin-checkin_date').val(),
-                            'program-id': jQuery('#e20r-checkin-program_id').val(),
-                            'value': Base64.encode(jQuery('textarea#note-textarea').val())
+                            'id': self.note_id.val(),
+                            'checkin-short-name': self.checkin_shortname.val(),
+                            'checkin-date': self.note_date,
+                            'checkedin_date': self.note_actualdate,
+                            'assignment-id': self.note_assignment,
+                            'article-id': self.note_article,
+                            'program-id': self.note_program,
+                            'checkin-note': Base64.encode(self.checkin_note.val()),
+                            'checkedin': 1,
+                            'checkin-type': self.checkin_type.val()
                         };
 
-                        jQuery.post(e20r_checkin.url, data, function(response, status) {
+                        jQuery.post( e20r_checkin.url, data, function( response, status ) {
+
                             if (status == 'success') {
                                 $this.data('__persisted', true);
                             }
                         });
 
-                        // ...
                         $this.data('__attemptedSaveOnEmpty', null);
                     }
 
