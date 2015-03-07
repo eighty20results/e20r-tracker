@@ -6,9 +6,29 @@
  * Time: 9:17 AM
  */
 
-class e20rExerciseModel {
+class e20rExerciseModel extends e20rSettingsModel {
 
-    private $settings;
+    protected $settings;
+
+	private $exercise_types = null;
+
+	private $type_map = array(
+		'reps' => 0,
+		'time' => 1,
+		'amrap'=> 2
+	);
+
+	public function e20rExerciseModel() {
+
+		parent::__construct( 'exercise', 'e20r_exercises');
+
+		$this->exercise_types = array(
+
+			0 => __('# of repetitions', "e20rtracker"),
+			1 => __('For time', 'e20rtracker'),
+			2 => __('A.M.R.A.P', 'e20rtracker'),
+		);
+	}
 
     public function init( $exerciseId = null ) {
 
@@ -25,16 +45,93 @@ class e20rExerciseModel {
         $this->settings = $this->loadSettings( $exerciseId );
     }
 
-    private function defaultSettings() {
+    public function defaultSettings() {
 
-        $settings = new stdClass();
-        $settings->reps = null;
+        $settings = parent::defaultSettings();
+
+	    $settings->title = null; // get_the_title();
+	    $settings->descr = null; // $post->post_content;
+	    $settings->image = null; // featured image
+
+	    $settings->type = 0;
+	    $settings->reps = null;
         $settings->rest = null;
+	    $settings->shortcode = null;
+	    $settings->video_link = null;
 
         return $settings;
     }
 
+	public function get_activity_type( $type ) {
 
+	}
+
+	public function get_activity_types() {
+
+		return $this->exercise_types;
+	}
+
+	public function findExercise( $type = 'id', $value ) {
+
+		global $e20rProgram;
+		global $current_user;
+
+		// NUMERIC', 'BINARY', 'CHAR', 'DATE', 'DATETIME', 'DECIMAL', 'SIGNED', 'TIME', 'UNSIGNED'. Default value is 'CHAR'.
+		switch ($type) {
+
+			case 'id':
+			case 'reps':
+			case 'rest':
+				$dType = 'numeric';
+				break;
+
+			default:
+				$dType = 'char';
+		}
+
+		return parent::find( $type, $value, $dType, $e20rProgram->getProgramIdForUser( $current_user->ID) );
+	}
+
+	public function loadSettings( $id = null ) {
+
+		global $post;
+		global $currentExercise;
+
+		if ( ! empty( $currentExercise ) && ( $currentExercise->id == $id ) ) {
+
+			return $currentExercise;
+		}
+
+		if ( $id == 0 ) {
+
+			$this->settings              = $this->defaultSettings( $id );
+			$this->settings->id          = $id;
+
+		} else {
+
+			$savePost = $post;
+
+			$this->settings = parent::loadSettings( $id );
+
+			$post = get_post( $id );
+			setup_postdata( $post );
+
+			if ( ! empty( $post->post_title ) ) {
+
+				$this->settings->descr       = $post->post_content;
+				$this->settings->title       = $post->post_title;
+				$this->settings->id          = $id;
+				$this->settings->image       = get_post_thumbnail_id( $id ); // Returns the <img> element
+			}
+
+			wp_reset_postdata();
+			$post = $savePost;
+		}
+
+		$currentExercise = $this->settings;
+		return $this->settings;
+
+	}
     /**
      * Returns an array of all programs merged with their associated settings.
      *
@@ -62,20 +159,19 @@ class e20rExerciseModel {
 
         foreach( $exercise_list as $key => $data ) {
 
+
             $settings = $this->loadSettings( $data->ID );
 
-            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
-
-            $exercise_list[$key] = $loaded_settings;
+            $exercise_list[$key] = $settings;
         }
 
         return $exercise_list;
     }
 
-    public function loadExerciseData( $id, $statuses = 'any' ) {
+    public function loadData( $id = null, $statuses = 'any' ) {
 
         if ( $id == null ) {
-            dbg("Error: Unable to load exercise data. No ID specified!");
+            dbg("Error: Unable to load exercise data when no ID is specified!");
             return false;
         }
 
@@ -99,16 +195,19 @@ class e20rExerciseModel {
 
             $settings = $this->loadSettings( $data->ID );
 
-            $loaded_settings = (object) array_replace( (array)$data, (array)$settings );
-
-            $exercise_list[$key] = $loaded_settings;
+            $exercise_list[$key] = $settings;
         }
 
 
-        return $exercise_list[0];
+        return $settings;
     }
 
-    /**
+	public function getSettings() {
+
+		return $this->settings;
+	}
+
+	/**
      * Save the Exercise Settings to the metadata table.
      *
      * @param $settings - Array of settings for the specific program.
@@ -117,40 +216,29 @@ class e20rExerciseModel {
      */
     public function saveSettings( $settings ) {
 
-        $exerciseId = $settings->id;
-        unset($settings->id);
+	    $defaults = self::defaultSettings();
 
-        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
+	    dbg("e20rExerciseModel::saveSettings() - Saving exercise Metadata: " . print_r( $settings, true ) );
 
-        dbg("e20rExerciseModel::saveSettings() - Saving exercise Metadata: " . print_r( $settings, true ) );
+	    $error = false;
 
-        if ( false === update_post_meta( $exerciseId, 'e20r-exercise-settings', $settings ) ) {
+	    $exerciseId = $settings->id;
 
-            dbg("e20rExercise::saveSettings() - ERROR saving settings for exercise with ID: {$exerciseId}");
-            return false;
-        }
+	    foreach ( $defaults as $key => $value ) {
 
-        return true;
+		    if ( in_array( $key, array( 'id', 'title', 'descr', 'image' ) ) ) {
+			    continue;
+		    }
+
+		    if ( false === parent::settings( $exerciseId, 'update', $key, $settings->{$key} ) ) {
+
+			    dbg("e20rExercise::saveSettings() - ERROR saving settings for exercise with ID: {$exerciseId}");
+
+			    $error = true;
+		    }
+	    }
+
+	    return ( !$error ) ;
+
     }
-
-    /**
-     * Load the Exercise Settings from the metadata table.
-     *
-     * @param $id (int) - The ID of the program to load settings for
-     *
-     * @return mixed - Array of settings if successful at loading the settings, otherwise returns false.
-     */
-    public function loadSettings( $id ) {
-
-        if ( false === ( $settings = get_post_meta( $id, 'e20r-exercise-settings', true ) ) ) {
-
-            dbg("e20rExerciseModel::loadSettings() - ERROR loading settings for exercise with ID: {$id}");
-            $settings = $this->defaultSettings();
-        }
-
-        $settings = (object) array_replace( (array)$this->defaultSettings(), (array)$settings );
-
-        return $settings;
-    }
-
 }

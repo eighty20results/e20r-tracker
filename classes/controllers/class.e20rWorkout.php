@@ -23,20 +23,21 @@ class e20rWorkout extends e20rSettings {
 	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
     }
 
+	/*
     public function init( $id = null ) {
 
-        if ( is_null( $id ) ) {
+	    global $currentWorkout;
 
-            global $post;
-	        $id = $post->ID;
+	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id) && ($currentWorkout->id != $id ) ) ) {
 
-        }
+		    $currentWorkout = parent::init( $id );
+		    dbg("e20rWorkout::init() - Loaded settings for {$id}:");
+		    dbg($currentWorkout);
+	    }
 
-	    parent::init( $id );
-
-	    $this->model->init( $id );
+	    return $currentWorkout->id;
     }
-
+*/
     public function getWorkout( $shortName ) {
 
         if ( ! isset( $this->model ) ) {
@@ -71,8 +72,6 @@ class e20rWorkout extends e20rSettings {
 
         global $post, $e20rTracker;
 
-        dbg("e20rWorkout::saveSettings() - Saving Program Settings to DB");
-
         if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workouts' ) ) {
             return $post_id;
         }
@@ -90,7 +89,7 @@ class e20rWorkout extends e20rSettings {
             return $post_id;
         }
 
-        dbg("e20rWorkout::saveSettings()  - Saving metadata for the post_type(s)");
+        dbg("e20rWorkout::saveSettings()  - Saving workout to database");
         $this->init( $post_id );
 
         $settings = $this->model->defaultSettings();
@@ -194,9 +193,14 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page");
         $this->init( $post->ID );
 
-        $workout = $this->model->loadWorkoutData( $post->ID, 'any' );
+        $workout = $this->model->find( 'id', $post->ID );
 
-        echo $this->view->viewSettingsBox( $workout );
+	    if ( !empty( $workout ) ) {
+		    echo $this->view->viewSettingsBox( $workout );
+	    }
+	    else {
+		    echo $this->view->viewSettingsBox( $this->model->defaultSettings() );
+	    }
 
     }
 
@@ -227,39 +231,75 @@ class e20rWorkout extends e20rSettings {
         return $args;
     }
 
-    public function ajax_addGroup_callback() {
+	public function add_new_exercise_to_group_callback() {
 
-        dbg("e20rWorkout::addGroup_callback() - addGroup data");
+		dbg("e20rWorkout::add_new_exercise_group_callback() - addGroup data");
+
+		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
+
+		global $e20rTracker;
+		global $currentWorkout;
+
+		dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
+		dbg($_POST);
+
+		$workoutId = isset( $_POST['e20r-workout-id']) ? $e20rTracker->sanitize( $_POST['e20r-workout-id']) : null;
+		$groupId = isset( $_POST['e20r-exercise-group-id']) ? $e20rTracker->sanitize( $_POST['e20r-exercise-group-id']) : null;
+		$exerciseId = isset( $_POST['e20r-exercise-id']) ? $e20rTracker->sanitize( $_POST['e20r-exercise-id']) : null;
+		$key = isset( $_POST['e20r-workout-add-exercise-key']) ? $e20rTracker->sanitize( $_POST['e20r-workout-add-exercise-key']) : null;
+
+/*		if ( ! $workoutId ) {
+
+			wp_send_json_error( 'Unable to save data. Please contact support!');
+		}
+*/
+		$this->init( $workoutId );
+
+		dbg("e20rWorkout::add_new_exercise_group_callback() - The current workout: ");
+		dbg($currentWorkout);
+
+		wp_send_json_error("Unknown error processing new exercise request.");
+	}
+
+    public function add_new_exercise_group_callback() {
+
+        dbg("e20rWorkout::add_new_exercise_group_callback() - addGroup data");
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
-        $workoutId = isset( $_POST['post_ID']) ? intval( $_POST['post_ID']) : 0;
+	    global $e20rTracker;
+
+	    dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
+	    dbg($_POST);
+
+        $workoutId = isset( $_POST['post_ID']) ? $e20rTracker->sanitize( $_POST['post_ID']) : null;
+
+	    if ( ! $workoutId ) {
+		    wp_send_json_error( 'Unable to save data. Please contact support!');
+	    }
 
         $this->init( $workoutId );
 
-        dbg("e20rWorkout::addGroup_callback() - Requested to add another Group to workout with ID {$workoutId}.");
+        dbg("e20rWorkout::add_new_exercise_group_callback() - Requested to add another Group to workout with ID {$workoutId}.");
 
         if ( ( $workout = $this->model->loadWorkoutData( $workoutId ) ) ) {
 
-            dbg("e20rWorkout::addGroup_callback() - Adding default group settings to new group");
+            dbg("e20rWorkout::add_new_exercise_group_callback() - Adding default group settings to new group");
             $workout->groups[] = $this->model->defaultSettings();
             $groupNo = count( $workout->groups );
 
             if ( $this->model->saveWorkout( $workout ) )  {
-                dbg("e20rWorkout::addGroup_callback() - Saved the workout. - TODO!");
+                dbg("e20rWorkout::add_new_exercise_group_callback() - Saved the workout. - TODO!");
 
             }
 
-            $data = array(
-                'groupHtml' =>
-                   $this->view->newExerciseGroup( $workout->groups[$groupNo], $groupNo )
-            );
+            $data = $this->view->newExerciseGroup( $workout->groups[$groupNo], $groupNo );
 
-            dbg("e20rWorkout::addGroup_callback() - Table row generation completed. Sending...");
+            dbg("e20rWorkout::add_new_exercise_group_callback() - Table row generation completed. Sending...");
             wp_send_json_success( $data );
         }
 
-        dbg("e20rWorkout::addGroup_callback() - No data (not even the default values!) generated.");
+        dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
         wp_send_json_error( "Error: Unable to generate new group");
     }
 } 

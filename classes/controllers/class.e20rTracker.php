@@ -72,7 +72,10 @@ class e20rTracker {
 	        add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
 	        add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
 
-            dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
+	        add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
+	        add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
+
+	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
             dbg("e20rTracker::loadAllHooks() - Pagenow = {$pagenow}" );
 
             if ( ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php') )  {
@@ -80,6 +83,7 @@ class e20rTracker {
                 // add_filter( 'media-view-strings', array( &$e20rMeasurements, 'clientMediaUploader' ) );
                 add_filter( 'upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir' ) );
             }
+
 
             /* Control access to the media uploader for Nourish users */
             // add_action( 'parse_query', array( &$this, 'current_user_only' ) );
@@ -119,7 +123,8 @@ class e20rTracker {
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
 	        add_action( 'wp_ajax_save_daily_progress', array( $e20rCheckin, 'dailyProgress_callback' ) );
 	        add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
-
+	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( $e20rWorkout, 'add_new_exercise_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_add_exercise', array( $e20rWorkout, 'add_new_exercise_to_group_callback' ) );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -644,13 +649,12 @@ class e20rTracker {
 
         global $post;
 
-        dbg("save_gt_order() - Running save functionality");
-
         if ( ( ! isset( $post->post_type ) ) || ( $post->post_type != 'e20r_girth_types') ) {
             return $post_id;
         }
 
         if ( empty( $post_id ) ) {
+
             dbg("save_girthtype_order() No post ID supplied");
             return false;
         }
@@ -716,6 +720,7 @@ class e20rTracker {
                 case 'e20r_programs':
 
 	                $type = 'program';
+					$deps = array('jquery', 'jquery-ui-core');
                     break;
 
                 case 'e20r_articles':
@@ -724,6 +729,12 @@ class e20rTracker {
                     $deps = array( 'jquery', 'jquery-ui-core' );
 
                     break;
+
+	            case 'e20r_workout':
+
+		            $type = 'workout';
+					$deps = array( 'jquery', 'jquery-ui-core' );
+		            break;
 
 	            default:
 		            $type = null;
@@ -740,6 +751,7 @@ class e20rTracker {
 			        array(
 				        'ajaxurl' => admin_url( 'admin-ajax.php' ),
 				        'lang'    => array(
+					        'no_entry' => __( 'Please select', 'e20rtracker'),
 					        'saving' => __( 'Adding...', 'e20rtracker' ),
 					        'save'   => __( 'Add', 'e20rtracker' ),
 					        'edit'   => __( 'Update', 'e20rtracker' ),
@@ -2235,6 +2247,8 @@ class e20rTracker {
     public function getMembershipLevels( $level = null, $onlyVisible = false ) {
 
         if ( function_exists( 'pmpro_getAllLevels' ) ) {
+
+	        $name = null;
 
             if ( is_numeric( $level ) ) {
 

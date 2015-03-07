@@ -71,7 +71,6 @@ class e20rProgram extends e20rSettings {
         return false;
     }
 
-
     public function getPeerPrograms( $programId = null ) {
 
         if ( is_null( $programId ) ) {

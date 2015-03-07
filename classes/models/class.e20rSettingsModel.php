@@ -261,6 +261,154 @@ class e20rSettingsModel {
 		return $this->cpt_slug;
 	}
 
+	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = '=', $order = 'DESC' ) {
+
+		global $e20rProgram;
+
+		$programKey = null;
+		$pArray = false;
+
+		if ( $key != 'id' ) {
+			$args = array(
+				'posts_per_page' => -1,
+				'post_type' => $this->cpt_slug,
+				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+				'order_by' => 'meta_value',
+				'order' => $order,
+				'meta_query' => array(
+					array(
+						'key' => "_e20r-{$this->type}-{$key}",
+						'value' => $value,
+						'compare' => $comp,
+						'type' => $dataType,
+					),
+				)
+			);
+		}
+		else {
+			$args = array(
+				'posts_per_page' => -1,
+				'post_type' => $this->cpt_slug,
+				'post_status' => 'publish',
+				'page_id' => $value,
+			);
+		}
+
+		$dataList = $this->loadForQuery( $args );
+
+		dbg("e20r" . ucfirst($this->type) ."Model::find() - List of data: " );
+		dbg( $dataList );
+
+		if ( is_array( $dataList ) && ( ! empty( $dataList ) ) ) {
+
+			$pArray = true;
+			$tId = $dataList[0]->id;
+		}
+		elseif ( !empty( $dataList )) {
+
+			$pArray = false;
+			$tId = $dataList->id;
+		}
+		else {
+			$pArray = false;
+			$tId = 0;
+		}
+
+		$metaKeys = get_post_custom_keys( $tId );
+
+		if ( ! empty( $metaKeys ) ) {
+
+			foreach ( $metaKeys as $mk ) {
+
+				if ( strpos( $mk, 'program' ) !== false ) {
+
+					dbg( "e20r" . ucfirst( $this->type ) . "Model::find() - found key containing program id's: {$mk}" );
+					$programKey = $mk;
+				}
+			}
+		}
+
+		if ( ( $programKey !== null ) && ( $programId !== -1 ) ) {
+
+			// Drop elements that do _not_ associate with the program specified.
+			if ( $pArray ) {
+
+				foreach( $dataList as $k => $data ) {
+
+					if ( $this->inProgram( $programId, $programKey ,$data ) === false ) {
+
+						dbg("e20r" . ucfirst($this->type) ."Model::find() - Dropping " . $dataList[$k]->id . " (doesn't belong to program #{$programId})" );
+						unset($dataList[$k]);
+					}
+				}
+			}
+			else {
+
+				if ( $this->inProgram( $programId, $programKey, $dataList ) === false ) {
+
+					dbg("e20r" . ucfirst($this->type) ."Model::find() - Dropping " . $dataList->id . " (doesn't belong to program #{$programId})" );
+					$dataList = false;
+				}
+			}
+		}
+
+		return $dataList;
+	}
+
+	private function inProgram( $pId, $key, $obj ) {
+
+		if ( $pId == -1 ) {
+
+			return true; // No program Id specified from calling function.
+		}
+
+		$pVal = get_post_meta( $obj->id, $key, true );
+
+		if ( $pVal === false ) {
+
+			return false;
+		}
+
+		if ( ! is_array( $pVal ) ) {
+
+			$pVal = array( $pVal );
+		}
+
+		return in_array( $pId, $pVal );
+	}
+
+	private function loadForQuery( $args ) {
+
+		$articleList = array();
+		dbg( $args );
+
+		$query = new WP_Query( $args );
+
+		dbg("e20r" . ucfirst($this->type) ."Model::loadForQuery() - Returned {$this->type}s: {$query->post_count}" );
+
+		if ( $query->post_count == 0 ) {
+
+			return $articleList;
+		}
+		while ( $query->have_posts() ) {
+
+			$query->the_post();
+
+			$new = $this->loadSettings( get_the_ID() );
+			$new->id = get_the_ID();
+
+			if ( $query->post_count > 1 ) {
+
+				$articleList[] = $new;
+			}
+			else {
+				$articleList = $new;
+			}
+		}
+
+		return $articleList;
+	}
+
     /**
      * Load the setting from the WP database
      *

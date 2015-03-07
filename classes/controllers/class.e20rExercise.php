@@ -10,8 +10,8 @@
 class e20rExercise extends e20rSettings {
 
     private $exercise = array();
-    public $model = null;
-    public $view = null;
+    protected $model = null;
+    protected $view = null;
 
     public function e20rExercise() {
 
@@ -24,23 +24,20 @@ class e20rExercise extends e20rSettings {
     }
 
 
-    public function getExercise( $shortName ) {
+	public function empty_exercise() {
 
-        if ( ! isset( $this->model ) ) {
-            $this->init();
-        }
+		return $this->model->defaultSettings();
+	}
+	/**
+	 * @param $shortname string - The unique exercise shortname
+	 *
+	 * @return bool|stdClass - False if not found, e20rExercise object if found.
+	 */
+    public function getExercise( $shortname ) {
 
-        $pgmList = $this->model->loadAllExercises( 'any' );
+        $ex = $this->model->findExercise( 'shortname', $shortname );
 
-        foreach ($pgmList as $pgm ) {
-            if ( $pgm->shortname == $shortName ) {
-                unset($pgmList);
-                return $pgm;
-            }
-        }
-
-        unset($pgmList);
-        return false; // Returns false if the program isn't found.
+        return $ex; // Returns false if the exercise isn't found
     }
 
     public function getAllExercises() {
@@ -55,15 +52,15 @@ class e20rExercise extends e20rSettings {
 
     public function editor_metabox_setup( $post ) {
 
-        add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20rtracker'), array( &$this, "addMeta_ExerciseSettings" ), 'e20r_exercises', 'normal', 'high');
+        add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_exercises', 'normal', 'high');
 
     }
 
+	/*
     public function saveSettings( $post_id ) {
 
         global $post;
-
-        dbg("e20rExercise::saveSettings() - Saving Program Settings to DB");
+	    global $e20rTracker;
 
         if ( (! isset( $post->post_type ) ) || ( $post->post_type != 'e20r_exercises' ) ) {
             return $post_id;
@@ -82,63 +79,29 @@ class e20rExercise extends e20rSettings {
             return $post_id;
         }
 
-        dbg("e20rExercise::saveSettings()  - Saving metadata for the post_type(s)");
+        dbg("e20rExercise::saveSettings()  - Saving metadata");
 
         $settings = new stdClass();
         $settings->id = $post_id;
-        $settings->reps = isset( $_POST['e20r-exercise-reps'] ) ? intval( $_POST['e20r-exercise-reps'] ) : null;
-        $settings->rest = isset( $_POST['e20r-exercise-rest'] ) ? intval( $_POST['e20r-exercise-rest'] ) : null;
+        $settings->reps = isset( $_POST['e20r-exercise-reps'] ) ? $e20rTracker->sanitize( $_POST['e20r-exercise-reps'] ) : null;
+        $settings->rest = isset( $_POST['e20r-exercise-rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-exercise-rest'] ) : null;
+	    $settings->shortcode = isset( $_POST['e20r-exercise-shortcode'] ) ? $e20rTracker->sanitize( $_POST['e20r-exercise-shortcode'] ) : null;
 
         $this->model->saveSettings( $settings );
     }
-
-    public function getPeers( $exerciseId = null ) {
-
-        if ( is_null( $exerciseId ) ) {
-
-            global $post;
-            // Use the parent value for the current post to get all of its peers.
-            $exerciseId = $post->post_parent;
-        }
-
-        $exercises = new WP_Query( array(
-            'post_type' => 'page',
-            'post_parent' => $exerciseId,
-            'posts_per_page' => -1,
-            'orderby' => 'menu_order',
-            'order' => 'ASC',
-            'fields' => 'ids',
-        ) );
-
-        $exerciseList = array(
-            'pages' => $exercises->posts,
-        );
-
-        foreach ( $exerciseList->posts as $k => $v ) {
-
-            if ( $v == get_the_ID() ) {
-
-                if( isset( $exercises->posts[$k-1] ) ) {
-
-                    $exerciseList['prev'] = $exercises->posts[ $k - 1 ];
-                }
-
-                if( isset( $exercises->posts[$k+1] ) ) {
-
-                    $exerciseList['next'] = $exercises->posts[ $k + 1 ];
-                }
-            }
-        }
-
-        return $exerciseList;
-    }
-
-    public function addMeta_ExerciseSettings() {
+*/
+    public function addMeta_Settings() {
 
         global $post;
 
-        dbg("e20rExercise::addMeta_ExerciseSettings() - Loading settings metabox for exercise page");
-        echo $this->view->viewSettingsBox( $this->model->loadExerciseData( $post->ID ) );
+	    remove_meta_box( 'postexcerpt', 'e20r_exercises', 'side' );
+	    remove_meta_box( 'wpseo_meta', 'e20r_exercises', 'side' );
+
+	    add_meta_box('postexcerpt', __('Exercise Summary'), 'post_excerpt_meta_box', 'e20r_exercises', 'normal', 'high');
+
+	    dbg("e20rExercise::addMeta_ExerciseSettings() - Loading settings metabox for exercise page");
+
+        echo $this->view->viewSettingsBox( $this->model->find( 'id', $post->ID ), $this->model->get_activity_types() );
 
     }
 
@@ -152,4 +115,30 @@ class e20rExercise extends e20rSettings {
 
         return $args;
     }
+
+	public function col_head( $defaults ) {
+
+		$defaults['ex_shortcode'] = 'Identifier';
+		return $defaults;
+	}
+
+	public function col_content( $colName, $post_ID ) {
+
+		global $e20rExercise;
+		global $currentExercise;
+
+		dbg( "e20rExercise::col_content() - ID: {$post_ID}" );
+
+		if ( $colName == 'ex_shortcode' ) {
+
+			$shortcode = $this->model->getSetting( $post_ID, 'shortcode' );
+
+			dbg( "e20rExercise::col_content() - Used in shortcode: {$shortcode}" );
+
+			if ($shortcode ) {
+
+				echo $shortcode;
+			}
+		}
+	}
 } 

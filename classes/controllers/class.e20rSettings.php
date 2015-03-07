@@ -131,6 +131,10 @@ class e20rSettings {
 
         $this->init( $post->ID );
 
+	    remove_meta_box( 'postexcerpt', $this->cpt_slug, 'side' );
+	    remove_meta_box( 'wpseo_meta', $this->cpt_slug, 'side' );
+	    add_meta_box('postexcerpt', __( ucfirst($this->type) . ' Summary'), 'post_excerpt_meta_box', $this->cpt_slug, 'normal', 'high');
+
         // dbg("e20rSettings::addMeta_Settings() - Loading metabox for {$this->type} settings");
         echo $this->view->viewSettingsBox( $this->model->loadSettings( $post->ID ), $this->loadDripFeed( 'all' ) );
     }
@@ -139,10 +143,8 @@ class e20rSettings {
 
         global $e20rTracker, $post;
 
-        dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Saving {$this->type} Settings to DB");
-
         if ( (! isset( $post->post_type ) ) || ( $post->post_type != $this->model->get_slug()) ) {
-            // dbg("e20r" .ucfirst($this->type) . "::saveSettings() -Incorrect type! {$post->post_type}");
+            dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Incorrect post type for " . $this->model->get_slug());
             return $post_id;
         }
 
@@ -197,4 +199,45 @@ class e20rSettings {
         }
 
     }
+
+	public function getPeers( $id = null ) {
+
+		if ( is_null( $id ) ) {
+
+			global $post;
+			// Use the parent value for the current post to get all of its peers.
+			$id = $post->post_parent;
+		}
+
+		$items = new WP_Query( array(
+			'post_type' => 'page',
+			'post_parent' => $id,
+			'posts_per_page' => -1,
+			'orderby' => 'menu_order',
+			'order' => 'ASC',
+			'fields' => 'ids',
+		) );
+
+		$itemList = array(
+			'pages' => $items->posts,
+		);
+
+		foreach ( $itemList->posts as $k => $v ) {
+
+			if ( $v == get_the_ID() ) {
+
+				if( isset( $items->posts[$k-1] ) ) {
+
+					$itemList['prev'] = $items->posts[ $k - 1 ];
+				}
+
+				if( isset( $items->posts[$k+1] ) ) {
+
+					$itemList['next'] = $items->posts[ $k + 1 ];
+				}
+			}
+		}
+
+		return $itemList;
+	}
 }

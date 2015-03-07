@@ -53,7 +53,7 @@ class e20rProgramView {
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
             <div class="e20r-editform">
-                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->ID : 0 ); ?>">
+                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->id : 0 ); ?>">
                 <table id="e20r-program-settings">
                     <thead>
                     <tr>

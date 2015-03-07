@@ -17,33 +17,33 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
     public function defaultSettings() {
 
-        $group = new stdClass();
-        $group->group_sets = null;
-        $group->group_tempo = null;
-        $group->exercises = array(
-            'exercise_id' => null,
-            'exercise_type' => null, /* 0 = Reps, 1 = Time, 2 = AMRAP */
-            'exercise_reps' => null, /* Could be time or # of reps*/
-            'exercise_rest' => null
-        );
+	    global $e20rExercise;
+	    global $current_user;
 
-        $workout = new stdClass();
-        $workout->sets = null;
-        $workout->set_rest = null;
-        $workout->workout_id = 'A';
-        $workout->phase = null;
-        $workout->user_id = null;
-        $workout->group_id = null;
-        $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
-        $workout->enddate = null;
+	    $group = new stdClass();
+	    $group->group_set_count = null;
+	    $group->group_tempo = null;
+	    $group->group_rest = null;
 
-        $workout->groups = array();
-        $workout->groups[] = $group;
+	    // Key for the exercises array is the exercise id value (i.e. the post id)
+	    $group->exercises = array();
+	    $group->exercises[0] = 0;
 
-        return $workout;
+	    $workout = parent::defaultSettings();
+	    $workout->workout_ident = 'A';
+	    $workout->phase = null;
+	    $workout->assigned_user_id = 0;
+	    $workout->assigned_usergroups = 0;
+	    $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
+	    $workout->enddate = null;
+
+	    $workout->groups = array();
+	    $workout->groups[0] = $group;
+
+	    return $workout;
     }
 
-	public function init( $workoutId = null ) {
+/*	public function init( $workoutId = null ) {
 
 		if ( $workoutId === null ) {
 
@@ -57,7 +57,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 		$this->meta = $this->loadSettings( $workoutId );
 	}
-
+*/
 
 	/**
      * Returns an array of all programs merged with their associated settings.
@@ -160,7 +160,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	    $defaults = $this->defaultSettings();
 
-	    dbg("e20rWorkoutModel::saveSettings() - Saving assignment Metadata: " . print_r( $settings, true ) );
+	    dbg("e20rWorkoutModel::saveSettings() - Saving Activity metadata: " . print_r( $settings, true ) );
 
 	    $error = false;
 
@@ -197,7 +197,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
      *
      * @return mixed - Array of settings if successful at loading the settings, otherwise returns false.
      */
-    public function loadSettings( $id ) {
+/*    public function loadSettings( $id ) {
 
         $defaults = $this->defaultSettings();
 
@@ -217,7 +217,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         return $this->meta;
     }
-
+*/
+	/*
     private function processGroups( $groups, $defaults ) {
 
         foreach ( $groups as $key => $group ) {
@@ -229,5 +230,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         return $groups;
     }
+	*/
 
 }
