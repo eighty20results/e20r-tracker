@@ -367,15 +367,15 @@ jQuery(document).ready(function() {
         init: function() {
 
             this.noteField = jQuery('fieldset.notes');
-            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type');
-            this.note_id = this.noteField.find('.e20r-checkin-id');
-            this.checkin_shortname = this.noteField.find('.e20r-checkin-short_name');
+            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
+            this.note_id = this.noteField.find('.e20r-checkin-id').val();
+            this.checkin_shortname = this.noteField.find('.e20r-checkin-short_name').val();
             this.checkin_note = this.noteField.find('#note-textarea');
             this.note_article = this.noteField.siblings('#e20r-checkin-article_id').val();
             this.note_assignment = this.noteField.siblings('#e20r-checkin-assignment_id').val();
             this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
             this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
-            this.note_actualdate = this.noteField.siblings('#e20r-checkedin_date'),val();
+            this.note_actualdate = this.noteField.siblings('#e20r-checkedin_date').val();
 
             var self = this;
 
@@ -483,8 +483,8 @@ jQuery(document).ready(function() {
                         var data = {
                             action: 'saveCheckin',
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
-                            'id': self.note_id.val(),
-                            'checkin-short-name': self.checkin_shortname.val(),
+                            'id': self.note_id,
+                            'checkin-short-name': self.checkin_shortname,
                             'checkin-date': self.note_date,
                             'checkedin_date': self.note_actualdate,
                             'assignment-id': self.note_assignment,
