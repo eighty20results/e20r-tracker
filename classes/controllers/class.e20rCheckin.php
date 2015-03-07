@@ -142,7 +142,7 @@ class e20rCheckin extends e20rSettings {
             'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
 	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
 	        'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
-	        'checkin_note' => (isset( $_POST['checkin_note']) ? $e20rTracker->sanitize( $_POST['checkin_note'] ) : null ),
+	        'checkin_note' => (isset( $_POST['checkin-note']) ? $e20rTracker->sanitize( $_POST['checkin-note'] ) : null ),
             'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
             'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
         );
