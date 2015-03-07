@@ -2124,3 +2124,6 @@ table.e20r-assignment-table,
 table.e20r-action-table {
     margin: 0;
 }
+input[type=text].video_link {
+    width: 100%;
+}
