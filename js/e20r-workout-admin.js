@@ -6,7 +6,7 @@
  *  the GPL v2 license(?)
  */
 
-var ActivityClass = {
+var e20rActivity = {
     init: function() {
 
         this.activityForm = jQuery('e20r-editform');
