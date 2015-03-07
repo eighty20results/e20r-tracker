@@ -22,6 +22,7 @@ class e20rCheckin extends e20rSettings {
         'assignment' => CHECKIN_ASSIGNMENT,
         'survey' => CHECKIN_SURVEY,
         'activity' => CHECKIN_ACTIVITY,
+	    'note' => CHECKIN_NOTE
     );
 
     // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
@@ -127,22 +128,23 @@ class e20rCheckin extends e20rSettings {
 
         // Save the $_POST data for the Action callback
         global $current_user;
+	    global $e20rTracker;
 
         dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
         dbg($_POST);
 
         $data = array(
             'user_id' => $current_user->ID,
-            'id' => (isset( $_POST['id']) ? ( intval( $_POST['id'] ) != 0 ?  intval( $_POST['id'] ) : null ) : null),
-            'checkin_type' => (isset( $_POST['checkin-type']) ? intval( $_POST['checkin-type'] ) : null),
-            'article_id' => (isset( $_POST['article-id']) ? intval( $_POST['article-id'] ) : null ),
-            'program_id' => (isset( $_POST['program-id']) ? intval( $_POST['program-id'] ) : -1 ),
-            'checkin_date' => (isset( $_POST['checkin-date']) ? sanitize_text_field( $_POST['checkin-date'] ) : null ),
-	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? sanitize_text_field( $_POST['checkedin-date'] ) : null ),
-	        'descr_id' => (isset( $_POST['assignment-id']) ? intval( $_POST['assignment-id'] ) : null ),
-	        'checkin_note' => (isset( $_POST['checkin_note']) ? intval( $_POST['checkin_note'] ) : null ),
-            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? sanitize_text_field( $_POST['checkin-short-name'] ) : null),
-            'checkedin' => (isset( $_POST['checkedin']) ? intval( $_POST['checkedin'] ) : null),
+            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
+            'checkin_type' => (isset( $_POST['checkin-type']) ? $e20rTracker->sanitize( $_POST['checkin-type'] ) : null),
+            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null ),
+            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
+            'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
+	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
+	        'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
+	        'checkin_note' => (isset( $_POST['checkin_note']) ? $e20rTracker->sanitize( $_POST['checkin_note'] ) : null ),
+            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
+            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
         );
 
         if ( ! $this->model->setCheckin( $data ) ) {
