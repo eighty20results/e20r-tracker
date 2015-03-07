@@ -370,7 +370,7 @@ jQuery(document).ready(function() {
             this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
             this.note_id = this.noteField.find('.e20r-checkin-id').val();
             this.checkin_shortname = this.noteField.find('.e20r-checkin-short_name').val();
-            this.checkin_note = this.noteField.find('#note-textarea');
+            // this.checkin_note = this.noteField.find('#note-textarea');
             this.note_article = this.noteField.siblings('#e20r-checkin-article_id').val();
             this.note_assignment = this.noteField.siblings('#e20r-checkin-assignment_id').val();
             this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
@@ -490,7 +490,7 @@ jQuery(document).ready(function() {
                             'assignment-id': self.note_assignment,
                             'article-id': self.note_article,
                             'program-id': self.note_program,
-                            'checkin-note': Base64.encode(self.checkin_note.val()),
+                            'checkin-note': Base64.encode($noteTextarea.val()),
                             'checkedin': 1,
                             'checkin-type': self.checkin_type.val()
                         };
