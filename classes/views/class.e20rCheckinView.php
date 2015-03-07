@@ -174,16 +174,19 @@ class e20rCheckinView extends e20rSettingsView {
                 <hr />
 
                 <fieldset class="notes">
-                    <legend><?php _e("Notes", "e20rtracker"); ?></legend>
+	                <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $action->id; ?>" />
+	                <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_NOTE; ?>" />
+	                <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
+
+	                <legend><?php _e("Notes", "e20rtracker"); ?></legend>
 
                     <p><?php _e("Please, feel free to add any notes that you'd like to record for this day. The notes are for your benefit; your coaches won't read them unless you ask them to.", "e20rtracker"); ?></p>
 
                     <div id="note-display">
-
-                        <div style="margin: 8px;">hidden text</div>
+                        <div style="margin: 8px;"><?php isset( $action->checkin_note ) ? base64_decode( $action->checkin_note ) : 'hidden text'; ?></div>
                     </div>
 
-                    <textarea name="value" id="note-textarea"></textarea>
+                    <textarea name="value" id="note-textarea"><?php echo isset( $action->checkin_note ) ? base64_decode( $action->checkin_note ) : null ; ?></textarea>
 
                     <div id="note-display-overflow-pad"></div>
 
