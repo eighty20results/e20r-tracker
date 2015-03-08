@@ -456,6 +456,8 @@ class e20rCheckin extends e20rSettings {
 //        $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
 //        dbg("e20rCheckinView::view_actionAndActivityCheckin() - ArticleID: {$articleId}");
 
+	    dbg("e20rCheckin::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");
+
         $t = $e20rTracker->getDateFromDelay( $config->next );
         $config->tomorrow = date_i18n( 'l M. jS', strtotime( $t ));
 
