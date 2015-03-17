@@ -29,7 +29,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $settings = parent::defaultSettings();
 	    $settings->id = ( isset( $post->id ) ? $post->id : null );
         $settings->checkin_type = 0; // 1 = Action, 2 = Assignment, 3 = Survey, 4 = Activity.
-        $settings->item_text = ( isset( $post->post_excerpt ) ? $post->post_excerpt : 'Not defined' );
+        $settings->item_text = ( isset( $post->post_excerpt ) ? $post->post_excerpt : 'Not scheduled' );
         $settings->short_name =  ( isset( $post->post_title ) ? $post->post_title : null );
         $settings->startdate = null;
         $settings->enddate = null;
@@ -96,7 +96,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 		$action = $this->defaultSettings();
 		$action->id = CONST_NULL_ARTICLE;
-		$action->item_text = '';
+		$action->item_text = 'No action scheduled';
 		$action->short_name = 'null_action';
 
 		return $action;
