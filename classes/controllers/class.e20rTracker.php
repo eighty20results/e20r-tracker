@@ -2381,7 +2381,7 @@ class e20rTracker {
 
         if ( empty( $delay ) || ( $delay == 'now' ) ) {
 
-            dbg("e20rTracker::getDateForPost() - Calculating 'now' based on current time and startdate for the user");
+            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user");
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
         }
 

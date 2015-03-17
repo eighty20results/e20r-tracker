@@ -52,6 +52,8 @@ class e20rCheckin extends e20rSettings {
 		global $currentArticle;
 		global $e20rArticle;
 
+        $config = new stdClass();
+
 		if ( is_null( $postId ) ) {
 
 			$postId = $post->ID;
@@ -60,16 +62,16 @@ class e20rCheckin extends e20rSettings {
 		if ( empty( $currentArticle ) || ( $currentArticle->post_id != $postId ) ) {
 
 			dbg("e20rCheckin::hasCompletedLesson() - loading settings for article post #{$postId} (ID)");
-			$articleId = $e20rArticle->init( $postId );
+			$config->articleId = $e20rArticle->init( $postId );
 		}
 
-		if ( ! $articleId ) {
+		if ( ! isset( $config->articleId ) ) {
 			dbg("e20rCheckin::hasCompletedLesson() - No article ID defined. Exiting.");
 			return false;
 		}
 
 		dbg("e20rCheckin::hasCompletedLesson() - Check if the e20r-checkin table indicates a completed lesson...");
-		$checkin = $this->model->loadUserCheckin( $articleId, $userId, CHECKIN_ASSIGNMENT );
+		$checkin = $this->model->loadUserCheckin( $config, $userId, CHECKIN_ASSIGNMENT );
 
 		if ( isset( $checkin->checkedin ) && ( $checkin->checkedin == 1 ) ) {
 
@@ -478,7 +480,7 @@ class e20rCheckin extends e20rSettings {
                 $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
 
                 if ( empty( $config->articleId ) ) {
-                    dbg("e20rCheckin::dailyProgress() - No article found. Using default of -1");
+                    dbg("e20rCheckin::dailyProgress() - No article found. Using default of " . CONST_NULL_ARTICLE );
                     $config->articleId = CONST_NULL_ARTICLE;
                 }
             }
@@ -495,8 +497,9 @@ class e20rCheckin extends e20rSettings {
             // Get the check-in id list for the specified article ID
             $checkinIds = $e20rArticle->getCheckins( $config->articleId );
 
-            if ( ! $checkinIds ) {
+            if ( empty( $checkinIds ) ) {
 
+                dbg("e20rCheckin::dailyProgress() - No check-in ids stored for this user/article Id...");
                 $config->post_date = $e20rTracker->getDateForPost( $config->delay );
                 $checkinIds = $this->model->findActionByDate( $config->post_date , $config->programId );
             }
@@ -529,7 +532,7 @@ class e20rCheckin extends e20rSettings {
 
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in" );
 
-                        $checkin            = $this->model->loadUserCheckin( $config->articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        $checkin            = $this->model->loadUserCheckin( $config, $current_user->ID, $settings->checkin_type, $settings->short_name );
                         $checkin->actionList = $this->model->getActions( $id, $settings->checkin_type, - 3 );
 
                         break;
@@ -537,7 +540,7 @@ class e20rCheckin extends e20rSettings {
                     case $this->types['activity']:
 
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity check-in" );
-                        $checkin = $this->model->loadUserCheckin( $config->articleId, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        $checkin = $this->model->loadUserCheckin( $config, $current_user->ID, $settings->checkin_type, $settings->short_name );
                         break;
 
                     case $this->types['note']:
@@ -600,10 +603,10 @@ class e20rCheckin extends e20rSettings {
 		$descrId = null;
 		$success = false;
 
-		$articleId = ( isset( $_POST['e20r-article-id'] ) ? intval( $_POST['e20r-article-id'] ) : null );
-		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? intval( $_POST['e20r-article-user_id'] ) : null );
-		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? intval( $_POST['e20r-article-release_day'] ) : null );
-		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? sanitize_text_field( $_POST['e20r-assignment-answer_date'] ) : null );
+		$articleId = ( isset( $_POST['e20r-article-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-id'] ) : null );
+		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
+		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
+		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
 		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array() );
 		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array() );
 		$fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
@@ -733,9 +736,9 @@ class e20rCheckin extends e20rSettings {
         $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
 
         $config->delay = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
-        $config->delay_byDate = $e20rTracker->daysBetween( $config->startTS, current_time('timestamp') );
+        $config->delay_byDate = $e20rTracker->daysBetween( $config->startTS, ( $config->startTS + ( $config->delay * ( 3600*24 ) ) ) );
 
-        dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}");
+        dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
 
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
@@ -836,23 +839,27 @@ class e20rCheckin extends e20rSettings {
 
         if ( ! empty($checkinArr) ) {
 
-            dbg( "e20rCheckinView::load_UserCheckin() - Array of checkin values isn't empty..." );
+            dbg( "e20rCheckin::load_UserCheckin() - Array of checkin values isn't empty..." );
             dbg($checkinArr);
 
             foreach ( $checkinArr as $type => $c ) {
 
-                dbg( "e20rCheckinView::load_UserCheckin() - Loading view type {$type} for checkin" );
+                dbg( "e20rCheckin::load_UserCheckin() - Loading view type {$type} for checkin" );
 
                 if ( $type == CHECKIN_ACTION ) {
 
-                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Action checkin data" );
+                    dbg( "e20rCheckin::load_UserCheckin() - Setting Action checkin data" );
                     $action = $c;
+
+                    dbg( $action );
                 }
 
                 if ( $type == CHECKIN_ACTIVITY ) {
 
-                    dbg( "e20rCheckinView::load_UserCheckin() - Setting Activity checkin data" );
+                    dbg( "e20rCheckin::load_UserCheckin() - Setting Activity checkin data" );
                     $activity = $c;
+
+                    dbg( $activity );
                 }
 
                 if ( $type == CHECKIN_ASSIGNMENT ) {
@@ -869,14 +876,15 @@ class e20rCheckin extends e20rSettings {
 				*/
             }
 
+
             if ( ( ! empty( $action ) ) && ( ! empty( $activity ) ) ) {
 
-                dbg( "e20rCheckinView::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
+                dbg( "e20rCheckin::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
                 $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
             }
         }
         else if ( ( $config->type == CHECKIN_ACTION ) || ( $config->type == CHECKIN_ACTIVITY ) ) {
-            dbg("e20rCheckinView::load_UserCheckin() - An activity or Action check-in requested...");
+            dbg("e20rCheckin::load_UserCheckin() - An activity or Action check-in requested...");
             $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
         }
 

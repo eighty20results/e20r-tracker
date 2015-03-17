@@ -34,7 +34,7 @@ define( 'CHECKIN_ACTIVITY', 4 );
 define( 'CHECKIN_NOTE', 5 );
 define( 'CHECKIN_ACTION_AND_ACTIVITY', 14 );
 
-define( 'CONST_NULL_ARTICLE', 0 );
+define( 'CONST_NULL_ARTICLE', -9999 );
 define( 'CONST_MAXDAYS_FUTURE', 1 );
 define( 'CONST_MAXDAYS_PAST', 2 );
 

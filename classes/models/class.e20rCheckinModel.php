@@ -219,7 +219,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 		return $results;
 	}
 
-    public function loadUserCheckin( $articleId, $userId, $type, $short_name = null ) {
+    public function loadUserCheckin( $config, $userId, $type, $short_name = null ) {
 
         global $wpdb;
         global $current_user;
@@ -227,13 +227,20 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $e20rProgram;
         global $e20rArticle;
+        global $e20rTracker;
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
-        $date = $e20rArticle->releaseDate($articleId);
 
+        if ( empty( $config->articleId ) || ( $config->articleId == -1 ) ) {
+
+            $date = $e20rTracker->getDateForPost( $config->delay );
+        }
+        else {
+            $date = $e20rArticle->releaseDate( $config->articleId );
+        }
 	    // if ( $currentCheckin->articleId )
 
-        dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$articleId} in program {$programId} for user {$userId}: {$date}");
+        dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
 
         if ( is_null( $short_name ) ) {
 
@@ -250,7 +257,7 @@ class e20rCheckinModel extends e20rSettingsModel {
                 $programId,
                 $type,
                 $date . "%",
-                $articleId
+                $config->articleId
             );
         }
         else {
@@ -269,7 +276,7 @@ class e20rCheckinModel extends e20rSettingsModel {
                 $programId,
                 $type,
                 $date . "%",
-                $articleId
+                $config->articleId
             );
         }
 
@@ -323,7 +330,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->descr_id = $short_name;
             $result->user_id = $current_user->ID;
             $result->program_id = $programId;
-            $result->article_id = $articleId;
+            $result->article_id = $config->articleId;
             $result->checkin_date = $date;
 	        $result->checkin_type = $type;
             $result->checkin_note = null;

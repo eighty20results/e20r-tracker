@@ -103,12 +103,10 @@ class e20rSettingsModel {
 		    dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  {$typeVar} data for {$typeId} not found");
 
 		    if ( ! $typeId ) {
-			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - No Article ID!" );
 
+			    dbg( "e20r" . ucfirst( $this->type ) . "Model::getSetting() - No " . ucfirst( $this->type ) . " ID!" );
 			    return false;
 		    }
-
-		    // dbg("e20r" . ucfirst( $this->type ) . "Model::getSetting() -  Loading data for {$typeId}.");
 
 		    $this->init( $typeId );
 

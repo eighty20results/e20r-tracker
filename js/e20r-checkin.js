@@ -22,8 +22,8 @@ jQuery(document).ready(function() {
             this.$nonce = jQuery('#e20r-checkin-nonce').val();
             this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
-/*            this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk"); */
-/*            this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk"); */
+            this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
+            this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
 
             var me = this;
 
@@ -240,7 +240,7 @@ jQuery(document).ready(function() {
         },
         dayNav: function( self, elem ) {
 
-            var NextDay = jQuery(elem).next("input[name='e20r-checkin-day']").val();
+            var navDay = jQuery(elem).next("input[name='e20r-checkin-day']").val();
 
             var data = {
                 action: 'daynav',
@@ -248,7 +248,7 @@ jQuery(document).ready(function() {
                 'checkin-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
-                'e20r-checkin-day': jQuery(elem).next("input[name='e20r-checkin-day']").val()
+                'e20r-checkin-day': navDay
             }
 
             console.log("toNext data: ", data);

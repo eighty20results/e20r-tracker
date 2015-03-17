@@ -533,10 +533,26 @@ class e20rArticle extends e20rSettings {
         global $e20rTracker;
 	    global $currentArticle;
 
+        if ( ( empty( $articleId) || ( $articleId == -1 ) || ( $articleId == 0) ) ) {
+
+            $delay = isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->sanitize( $_POST['e20r-checkin-day'] ) : null;
+
+            if ( isset( $delay ) ) {
+                dbg("e20rArticle::releaseDate() No articleId specified... Using delay value from _POST");
+                $release_date = $e20rTracker->getDateForPost( $delay );
+
+                return $release_date;
+            }
+            dbg("e20rArticle::releaseDate() No articleId specified and no delay value found... returning FALSE");
+            return false;
+        }
+
 	    if ( empty( $currentArticle ) ) {
+            dbg("e20rArticle::releaseDate() - currentArticle is NOT defined.");
 		    $release_date = $e20rTracker->getDateForPost( $this->model->getSetting( $articleId, 'release_day' ) );
 	    }
 	    else {
+            dbg("e20rArticle::releaseDate() - currentArticle is defined.");
 		    $release_date = $e20rTracker->getDateForPost( $currentArticle->release_day );
 	    }
 
@@ -580,12 +596,12 @@ class e20rArticle extends e20rSettings {
 
     public function getCheckins( $articleId ) {
 
-        dbg("e20rArticle::getCheckins() - Get array of checkin IDs");
+        dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$articleId}");
 
         $setting = $this->model->getSetting( $articleId, 'checkins' );
 
         if ( empty($setting)) {
-            dbg("e20rArticle::getCheckins() - NO checkin IDs found for this article({$articleId})");
+            dbg("e20rArticle::getCheckins() - NO checkin IDs found for this article ({$articleId})");
             return false;
         }
 
