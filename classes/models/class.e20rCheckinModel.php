@@ -29,7 +29,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $settings = parent::defaultSettings();
 	    $settings->id = ( isset( $post->id ) ? $post->id : null );
         $settings->checkin_type = 0; // 1 = Action, 2 = Assignment, 3 = Survey, 4 = Activity.
-        $settings->item_text = ( isset( $post->post_excerpt ) ? $post->post_excerpt : null );
+        $settings->item_text = ( isset( $post->post_excerpt ) ? $post->post_excerpt : 'Not defined' );
         $settings->short_name =  ( isset( $post->post_title ) ? $post->post_title : null );
         $settings->startdate = null;
         $settings->enddate = null;
@@ -78,8 +78,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $programs = get_post_meta( $id, '_e20r-checkin-program_ids', true);
 
-            dbg("e20rCheckinModel::findActionByDate() - Getting program info: ");
-            dbg($programs);
+            dbg("e20rCheckinModel::findActionByDate() - Getting program info... ");
 
             if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
 
@@ -87,8 +86,21 @@ class e20rCheckinModel extends e20rSettingsModel {
             }
         }
 
+	    dbg("e20rCheckinModel::findActionByDate() - Returning ids:");
+	    dbg( $actions );
+
         return $actions;
     }
+
+	public function defaultAction() {
+
+		$action = $this->defaultSettings();
+		$action->id = CONST_NULL_ARTICLE;
+		$action->item_text = '';
+		$action->short_name = 'null_action';
+
+		return $action;
+	}
 
     public function getActions( $id, $type = 1, $numBack = -1 ) {
 
@@ -229,6 +241,8 @@ class e20rCheckinModel extends e20rSettingsModel {
         global $e20rArticle;
         global $e20rTracker;
 
+	    dbg("e20rCheckinModel::loadUserCheckin() - Loading {$type} check-ins for user {$userId}");
+
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
         if ( empty( $config->articleId ) || ( $config->articleId == -1 ) ) {
@@ -302,12 +316,11 @@ class e20rCheckinModel extends e20rSettingsModel {
 	        $a = $this->findActionByDate( $date, $programId );
 
 	        $result = new stdClass();
-
-	        dbg($a);
+	        $result->id = null;
 
 	        if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
 
-		        dbg( "e20rCheckinModel::loadUserCheckin() - Found more than one action id");
+		        dbg( "e20rCheckinModel::loadUserCheckin() - Found one or more ids");
 
 		        foreach ( $a as $i ) {
 
@@ -317,14 +330,14 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 			        if ($n_type == $type ) {
 
+				        dbg('e20rCheckinModel::loadUserCheckin() - the type settings are correct. Saving...');
 				        $result->id = $i;
 				        break;
 			        }
-		        }
-	        }
-	        else {
 
-		        $result->id = null;
+			        dbg("e20rCheckinModel::loadUserCheckin() - the type mismatch {$n_type} != {$type}. Looping again.");
+		        }
+
 	        }
 
             $result->descr_id = $short_name;
