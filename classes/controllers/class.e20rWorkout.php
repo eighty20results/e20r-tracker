@@ -20,10 +20,10 @@ class e20rWorkout extends e20rSettings {
 	    $this->model = new e20rWorkoutModel();
 	    $this->view = new e20rWorkoutView();
 
-	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
+	    parent::__construct( 'workout', 'e20r_workouts', $this->model, $this->view );
     }
 
-	/*
+
     public function init( $id = null ) {
 
 	    global $currentWorkout;
@@ -31,13 +31,13 @@ class e20rWorkout extends e20rSettings {
 	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id) && ($currentWorkout->id != $id ) ) ) {
 
 		    $currentWorkout = parent::init( $id );
+		    $this->model->init( $currentWorkout->id );
+
 		    dbg("e20rWorkout::init() - Loaded settings for {$id}:");
 		    dbg($currentWorkout);
 	    }
-
-	    return $currentWorkout->id;
     }
-*/
+
     public function getWorkout( $shortName ) {
 
         if ( ! isset( $this->model ) ) {
@@ -233,30 +233,29 @@ class e20rWorkout extends e20rSettings {
 
 	public function add_new_exercise_to_group_callback() {
 
-		dbg("e20rWorkout::add_new_exercise_group_callback() - addGroup data");
+		dbg("e20rWorkout::add_new_exercise_to_group_callback() - add_to_group data");
 
 		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
 		global $e20rTracker;
-		global $currentWorkout;
+		global $e20rExercise;
 
-		dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
+		dbg("e20rWorkout::add_new_exercise_to_group_callback() - Received POST data:");
 		dbg($_POST);
 
-		$workoutId = isset( $_POST['e20r-workout-id']) ? $e20rTracker->sanitize( $_POST['e20r-workout-id']) : null;
-		$groupId = isset( $_POST['e20r-exercise-group-id']) ? $e20rTracker->sanitize( $_POST['e20r-exercise-group-id']) : null;
 		$exerciseId = isset( $_POST['e20r-exercise-id']) ? $e20rTracker->sanitize( $_POST['e20r-exercise-id']) : null;
-		$key = isset( $_POST['e20r-workout-add-exercise-key']) ? $e20rTracker->sanitize( $_POST['e20r-workout-add-exercise-key']) : null;
 
-/*		if ( ! $workoutId ) {
+		if ( $exerciseId ) {
 
-			wp_send_json_error( 'Unable to save data. Please contact support!');
+			$exerciseData = $e20rExercise->getExerciseSettings( $exerciseId );
+
+			// Replace the $type variable before sending to frontend (make it comprehensible).
+			$exerciseData->type = $e20rExercise->getExerciseType( $exerciseData->type );
+
+			dbg( "e20rWorkout::add_new_exercise_to_group_callback() - loaded Workout info: " );
+
+			wp_send_json_success( $exerciseData );
 		}
-*/
-		$this->init( $workoutId );
-
-		dbg("e20rWorkout::add_new_exercise_group_callback() - The current workout: ");
-		dbg($currentWorkout);
 
 		wp_send_json_error("Unknown error processing new exercise request.");
 	}
