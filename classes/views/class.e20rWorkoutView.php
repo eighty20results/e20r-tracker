@@ -173,7 +173,7 @@ class e20rWorkoutView extends e20rSettingsView {
         global $e20rExercise;
         ob_start();
     ?>
-	    <table>
+	    <table class="e20r-exercise-group">
 		    <tbody>
 		    <tr class="e20r-workout-exercise-group-hr"><td colspan="3"><hr width="100%" /></td></tr>
 		    <tr class="e20r-workout-exercise-group-header">
@@ -260,7 +260,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
 						echo "<tr>";
 						echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
-						echo "<td colspan='2'>{$exSettings->title} ({$exSettings->shortcode})</td>";
+						echo "<td colspan='2'>{$exSettings->title}  ( {$exSettings->shortcode} )</td>";
 						echo "<td>{$exSettings->type}</td>";
 						echo "<td>{$exSettings->reps}</td>";
 						echo "<td>{$exSettings->rest}</td>";
@@ -281,7 +281,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			else {
 				?>
 				<tr>
-					<td colspan="6">
+					<td colspan="7">
 						<?php _e("No exercises found.", 'e20rtracker'); ?>
 					</td>
 				</tr>
@@ -290,24 +290,24 @@ class e20rWorkoutView extends e20rSettingsView {
 			?>
 			</tbody>
 		</table>
-
-		<div id="postcustomstuff">
+		<hr style="width: 100%;" />
+		<div class="postcustomstuff">
 			<p><strong><?php _e('Add/Edit:', 'e20rtracker'); ?></strong></p>
-			<table id="new-exercises">
+			<table class="new-exercises" style="width: 100%;">
 				<thead>
 				<tr>
-					<th id="new-exercise-header-exercise-key"><label for="e20r-workout-add-exercise-key"><?php _e('Order', 'e20rtracker'); ?></label></th>
-					<th id="new-exercise-header-exercise-id"><label for="e20r-workout-add-exercise-id"><?php _e('Exercise', 'e20rtracker'); ?></label></th>
+					<th class="new-exercise-header-exercise-key"><label for="e20r-workout-add-exercise-key"><?php _e('Order', 'e20rtracker'); ?></label></th>
+					<th class="new-exercise-header-exercise-id"><label for="e20r-workout-add-exercise-id"><?php _e('Exercise', 'e20rtracker'); ?></label></th>
 					<th></th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr>
 					<td style="width: 30%;">
-						<input id="e20r-workout-add-exercise-key" name="e20r-workout-add-exercise-key" type="number" value="" size="5" />
+						<input class="e20r-workout-add-exercise-key" name="e20r-workout-add-exercise-key" type="number" value="" size="5" />
 					</td>
 					<td style="width: 70%">
-						<select class="e20r-select2-container select2" id="e20r-workout-add-exercise-id" name="e20r-workout-add-exercise-id">
+						<select class="e20r-select2-container select2 e20r-workout-add-exercise-id" name="e20r-workout-add-exercise-id">
 							<option value="0"></option><?php
 							dbg("e20rWorkoutView::generateExerciseList() - Loading all possible exercises");
 
@@ -323,7 +323,7 @@ class e20rWorkoutView extends e20rSettingsView {
 						</select>
 					</td>
 					<td style="vertical-align: middle;">
-						<button style="width: 100%; padding: 5px;" class="e20r-button" id="e20r-workout-add-exercise-save"> <?php _e('Add', 'e20rtracker'); ?> </button>
+						<button style="width: 100%; padding: 5px;" class="e20r-button e20r-workout-add-exercise-save"> <?php _e('Add', 'e20rtracker'); ?> </button>
 					</td>
 				</tr>
 				</tbody>
