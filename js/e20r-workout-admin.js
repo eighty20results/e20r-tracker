@@ -6,7 +6,7 @@
  *  the GPL v2 license(?)
  */
 
-var $e20rActivity = {
+var e20rActivity = {
     init: function() {
 
         this.activityForm = jQuery('.e20r-editform');
@@ -131,6 +131,7 @@ var $e20rActivity = {
 
         console.log("Find group id: ", groupIdElem.val());
         console.log("Exercise ID: ", $exerciseId);
+        console.log("Exercise Order: ", $exOrder);
         var resp = null;
 
         //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
@@ -157,14 +158,15 @@ var $e20rActivity = {
                     console.log('Entry added to workout & refreshing metabox content', resp );
 
                     // var $newRow = "<tr>";
-                    var $newRow = '<td colspan="2">' + resp.title + '  ( ' + resp.shortcode + ' )</td>';
+                    var $newRow = '<td colspan="2">' + $exOrder + '. ' + resp.title + '  ( ' + resp.shortcode + ' )</td>';
                     $newRow += "<td>" + ( resp.type != null ? resp.type : e20r_tracker.lang.none ) + "</td>";
                     $newRow += "<td>" + ( resp.reps != null ? resp.reps : e20r_tracker.lang.none ) + "</td>";
-                    $newRow += "<td>" + ( resp.rest != null ? resp.rest : e20r_tracker.lang.none ) + "</td>";
-                    $newRow += '<td><a href="javascript:" class="e20r-exercise-edit">Edit</a></td>';
-                    $newRow += '<td><a href="javascript:" class="e20r-exercise-remove">Remove</a>';
+                    $newRow += "<td>" + ( resp.rest != null ? resp.rest : e20r_tracker.lang.none );
                     $newRow += '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' + resp.id + '" >';
-                    $newRow += '<input type="hidden" class="e20r-workout-group_id" name="e20r-workout-group[]" value="' + groupIdElem + '" ></td>';
+                    $newRow += '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' + $exOrder + '" >';
+                    $newRow += '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' + groupIdElem.val() + '" ></td>';
+                    $newRow += '<td><a href="javascript:e20rActivity.editExercise(' + resp.id + ')" class="e20r-exercise-edit">Edit</a></td>';
+                    $newRow += '<td><a href="javascript:e20rActivity.removeExercise(' + resp.id + ')" class="e20r-exercise-remove">Remove</a></td>';
                     // $newRow += '</tr>';
 
                     var $row = $exerciseList.find('tr:last');
@@ -207,12 +209,19 @@ var $e20rActivity = {
     },
     removeActivityGroup: function( self, id ) {
         return false;
+    },
+    editExercise: function( exId ) {
+        console.log("Editing exercise # " + exId );
+    },
+    removeExercise: function( exId ) {
+        console.log("Removing exercise # " + exId );
+
     }
 }
 
 jQuery(document).ready( function(){
 
     console.log("Loaded admin specific scripts for the e20r_workout CPT");
-    $e20rActivity.init();
+    e20rActivity.init();
 
 });
