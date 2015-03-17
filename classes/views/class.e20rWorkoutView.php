@@ -240,6 +240,7 @@ class e20rWorkoutView extends e20rSettingsView {
 		<table class="e20r-exercise-list sub-table wp-list-table widefat fixed">
 			<thead>
 			<tr>
+				<th style="width: 10px;" class="e20r-label header"><label for="exercise-order"></label></th>
 				<th colspan="2" class="e20r-label header"><label for="e20r-workout-exercise-name"><?php _e('Exercises', 'e20rtracker'); ?></label></th>
 				<th class="e20r-label header"><label for="e20r-workout-exercise-type"><?php _e('Type', 'e20rtracker'); ?></label></th>
 				<th class="e20r-label header"><label for="e20r-workout-exercise-reps"><?php _e('Reps / Duration', 'e20rtracker'); ?></label></th>
@@ -260,7 +261,8 @@ class e20rWorkoutView extends e20rSettingsView {
 						$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
 						echo "<tr>";
-						echo "<td colspan='2'>{$count}. {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
+						echo '<td class="exercise-order" style="width: 10px;">' . $count . '</td>';
+						echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
 						echo "<td>{$exSettings->type}</td>";
 						echo "<td>{$exSettings->reps}</td>";
 						echo "<td>{$exSettings->rest} ";
@@ -281,7 +283,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			else {
 				?>
 				<tr>
-					<td colspan="7">
+					<td colspan="8">
 						<?php _e("No exercises found.", 'e20rtracker'); ?>
 					</td>
 				</tr>

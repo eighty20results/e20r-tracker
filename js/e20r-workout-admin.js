@@ -158,7 +158,8 @@ var e20rActivity = {
                     console.log('Entry added to workout & refreshing metabox content', resp );
 
                     // var $newRow = "<tr>";
-                    var $newRow = '<td colspan="2">' + $exOrder + '. ' + resp.title + '  ( ' + resp.shortcode + ' )</td>';
+                    var $newRow = '<td class="exercise-order" style="width: 10px;">' + $exOrder + '</td>';
+                    $newRow += '<td colspan="2">' + resp.title + '  ( ' + resp.shortcode + ' )</td>';
                     $newRow += "<td>" + ( resp.type != null ? resp.type : e20r_tracker.lang.none ) + "</td>";
                     $newRow += "<td>" + ( resp.reps != null ? resp.reps : e20r_tracker.lang.none ) + "</td>";
                     $newRow += "<td>" + ( resp.rest != null ? resp.rest : e20r_tracker.lang.none );
