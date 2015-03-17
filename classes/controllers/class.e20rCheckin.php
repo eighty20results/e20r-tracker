@@ -38,7 +38,7 @@ class e20rCheckin extends e20rSettings {
 
         dbg("e20rCheckin::__construct() - Initializing Checkin class");
 
-        $this->model = new e20rCheckinModel();
+	    $this->model = new e20rCheckinModel();
         $this->view = new e20rCheckinView();
 
         parent::__construct( 'checkin', 'e20r_checkins', $this->model, $this->view );
@@ -471,9 +471,6 @@ class e20rCheckin extends e20rSettings {
 
         if ( ( strtolower($config->type) == 'action' ) || ( strtolower($config->type) == 'activity' ) ) {
 
-            dbg("e20rCheckin::dailyProgress() - Configured daily action check-ins for article ID(s):");
-            dbg($config->articleId);
-
             if ( empty( $config->articleId ) ) {
 
                 dbg("e20rCheckin::dailyProgress() -  No articleId specified. Searching...");
@@ -485,7 +482,10 @@ class e20rCheckin extends e20rSettings {
                 }
             }
 
-            if ( $config->articleId !== CONST_NULL_ARTICLE ) {
+	        dbg("e20rCheckin::dailyProgress() - Configured daily action check-ins for article ID(s):");
+	        dbg($config->articleId);
+
+	        if ( $config->articleId !== CONST_NULL_ARTICLE ) {
 
                 dbg("e20rCheckin::dailyProgress() - Loading lesson & activity excerpts");
 
@@ -499,12 +499,20 @@ class e20rCheckin extends e20rSettings {
 
             if ( empty( $checkinIds ) ) {
 
-                dbg("e20rCheckin::dailyProgress() - No check-in ids stored for this user/article Id...");
+	            dbg("e20rCheckin::dailyProgress() - No check-in ids stored for this user/article Id...");
+
+	            // Set default checkin data (to ensure rendering of form).
+	            $this->checkin[ CHECKIN_ACTION ] = $this->model->loadUserCheckin( $config, $current_user->ID, CHECKIN_ACTION );
+	            $this->checkin[ CHECKIN_ACTION ]->actionList = array();
+	            $this->checkin[ CHECKIN_ACTION ]->actionList[] = $this->model->defaultAction();
+
+	            $this->checkin[ CHECKIN_ACTIVITY ] = $this->model->loadUserCheckin( $config, $current_user->ID, CHECKIN_ACTIVITY );
+
                 $config->post_date = $e20rTracker->getDateForPost( $config->delay );
                 $checkinIds = $this->model->findActionByDate( $config->post_date , $config->programId );
             }
 
-            dbg( "e20rCheckin::dailyProgress() - Checkin/article info loaded." );
+            dbg( "e20rCheckin::dailyProgress() - Checkin/article info loaded: " . count( $checkinIds ) );
             // dbg( $checkinIds );
 
             foreach ( $checkinIds as $id ) {
@@ -556,7 +564,7 @@ class e20rCheckin extends e20rSettings {
 
                 }
 
-                // Reset the value to true Y-m-d format
+	            // Reset the value to true Y-m-d format
                 $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
                 $this->checkin[ $settings->checkin_type ] = $checkin;
             }
@@ -876,8 +884,7 @@ class e20rCheckin extends e20rSettings {
 				*/
             }
 
-
-            if ( ( ! empty( $action ) ) && ( ! empty( $activity ) ) ) {
+            if ( ( ! $this->isEmpty( $action ) ) && ( ! $this->isEmpty( $activity ) ) ) {
 
                 dbg( "e20rCheckin::load_UserCheckin() - Loading the view for the Actions & Activity check-in." );
                 $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
@@ -890,6 +897,18 @@ class e20rCheckin extends e20rSettings {
 
         return $view;
     }
+
+	private function isEmpty( $obj ) {
+
+		if ( ! is_object( $obj ) ) {
+
+			return empty( $obj );
+		}
+
+		$o = (array)$obj;
+
+		return empty( $o );
+	}
 
     public function getPeers( $checkinId = null ) {
 
