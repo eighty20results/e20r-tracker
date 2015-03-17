@@ -62,8 +62,9 @@ class e20rExerciseModel extends e20rSettingsModel {
         return $settings;
     }
 
-	public function get_activity_type( $type ) {
+	public function get_activity_type( $typeId ) {
 
+		return $this->exercise_types[$typeId];
 	}
 
 	public function get_activity_types() {
