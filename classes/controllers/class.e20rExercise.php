@@ -28,6 +28,11 @@ class e20rExercise extends e20rSettings {
 
 		return $this->model->defaultSettings();
 	}
+
+	public function getExerciseType( $typeId ) {
+
+		return $this->model->get_activity_type( $typeId );
+	}
 	/**
 	 * @param $shortname string - The unique exercise shortname
 	 *
