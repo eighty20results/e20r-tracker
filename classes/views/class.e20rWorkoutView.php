@@ -215,7 +215,7 @@ class e20rWorkoutView extends e20rSettingsView {
 					    <tr>
 						    <td colspan="3">
 							    <div class="e20r-list-exercises-for-group">
-								    <?php echo $this->generateExerciseList( $group ); ?>
+								    <?php echo $this->generateExerciseList( $group, $group_id ); ?>
 							    </div>
 						    </td>
 					    </tr>
@@ -232,7 +232,7 @@ class e20rWorkoutView extends e20rSettingsView {
         return ob_get_clean();
     }
 
-	public function generateExerciseList( $group ) {
+	public function generateExerciseList( $group, $groupId ) {
 		global $e20rExercise;
 
 		ob_start();
@@ -251,6 +251,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			<?php
 
 			if ( ( $group->exercises[0] != 0 ) && ( count( $group->exercises ) > 0 ) ) {
+				$count = 1;
 
 				foreach ( $group->exercises as $exId ) {
 
@@ -259,22 +260,21 @@ class e20rWorkoutView extends e20rSettingsView {
 						$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
 						echo "<tr>";
-						echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
-						echo "<td colspan='2'>{$exSettings->title}  ( {$exSettings->shortcode} )</td>";
+						echo "<td colspan='2'>{$count}. {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
 						echo "<td>{$exSettings->type}</td>";
 						echo "<td>{$exSettings->reps}</td>";
-						echo "<td>{$exSettings->rest}</td>";
+						echo "<td>{$exSettings->rest} ";
+				        echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
+						echo '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' . $count . '" >';
+						echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
+						echo "</td>";
 
-						foreach (
-							array(
-								__( 'Edit', 'e20rtracker' ),
-								__( 'Remove', 'e20rtracker' )
-							) as $btnName
-						) {
+						foreach ( array( __( 'Edit', 'e20rtracker' ), __( 'Remove', 'e20rtracker' ) ) as $btnName ) {
 
-							echo '<td><a href="javascript:" class="e20r-exercise-' . strtolower( $btnName ) . '">' . $btnName . '</a></td>';
+							echo '<td><a href="javascript:e20rActivity.' . strtolower($btnName) . 'Exercise(' . $exSettings->id . ')"" class="e20r-exercise-' . strtolower( $btnName ) . '">' . $btnName . '</a></td>';
 						}
 						echo "</tr>";
+						$count++;
 					}
 				}
 			}
