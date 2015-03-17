@@ -104,7 +104,7 @@ class e20rCheckinView extends e20rSettingsView {
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo isset( $action->program_id ) ? $action->program_id : -1 ; ?>" />
                 <div class="clear-after">
                     <fieldset class="did-you workout">
-                        <legend><?php _e("Did you do your activity today?", "e20rtracker"); ?></legend>
+                        <legend><?php _e("Did you complete your activity today?", "e20rtracker"); ?></legend>
                         <div>
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $activity->id; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTIVITY; ?>" />
