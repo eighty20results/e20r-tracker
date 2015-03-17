@@ -8,11 +8,11 @@
 
 class e20rWorkoutModel extends e20rSettingsModel {
 
-    private $meta;
+	protected $settings;
 
 	public function e20rWorkoutModel() {
 
-		parent::__construct( 'workout', 'e20r_workout' );
+		parent::__construct( 'workout', 'e20r_workouts' );
 	}
 
     public function defaultSettings() {
@@ -43,7 +43,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    return $workout;
     }
 
-/*	public function init( $workoutId = null ) {
+	public function init( $workoutId = null ) {
+
+		global $currentWorkout;
 
 		if ( $workoutId === null ) {
 
@@ -55,9 +57,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			}
 		}
 
-		$this->meta = $this->loadSettings( $workoutId );
+		$currentWorkout = $this->loadWorkoutData( $workoutId );
 	}
-*/
+
 
 	/**
      * Returns an array of all programs merged with their associated settings.
@@ -99,6 +101,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
     public function loadWorkoutData( $id, $statuses = 'any' ) {
 
 	    global $post;
+	    global $currentWorkout;
 
 	    $savePost = $post;
 	    $workouts = array();
@@ -137,7 +140,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			    $new->item_text  = $query->post->post_excerpt;
 			    $new->short_name = $query->post->post_title;
 
-			    $workouts[] = $new;
+			    $workouts[$new->id] = $new;
 		    }
 	    }
 
