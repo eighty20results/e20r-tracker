@@ -755,6 +755,8 @@ class e20rTracker {
 					        'saving' => __( 'Adding...', 'e20rtracker' ),
 					        'save'   => __( 'Add', 'e20rtracker' ),
 					        'edit'   => __( 'Update', 'e20rtracker' ),
+					        'empty'  => __( 'No exercises found.', 'e20rtracker'),
+					        'none'   => __( 'None', 'e20rtracker' ),
 				        ),
 			        )
 		        );
