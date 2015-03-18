@@ -27,150 +27,138 @@ class e20rWorkoutView extends e20rSettingsView {
         <style>
             .select2-container { min-width: 75px; max-width: 250px; width: 100%;}
         </style>
-        <!-- <form id="e20r-workout-group-data" method="post"> -->
-            <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce'); ?>
-            <div class="e20r-editform" style="width: 100%;">
-                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-workout-id" value="<?php echo ( ( isset($workoutData->ID) ) ? $workoutData->ID : $post->ID ); ?>">
-                <table id="e20r-workout-settings" class="wp-list-table widefat fixed">
-                    <tbody id="e20r-workout-tbody">
-                        <tr id="<?php echo $post->ID; ?>" class="workout-inputs">
-                            <td colspan="3">
-                                <table class="sub-table wp-list-table widefat fixed">
-                                    <tbody>
-                                    <tr>
-                                        <th class="e20r-label header" style="width: 20%;"><label for="e20r-workout-workout_ident">Workout (A/B/C/D)</label></th>
-                                        <th class="e20r-label header" style="width: 40%;"><label for="e20r-workout-phase">Phase (number)</label></th>
-                                    </tr>
-                                    <tr>
-                                        <td class="select-input" style="width: 20%;">
-                                            <select id="e20r-workout-workout_ident" name="e20r-workout-workout_ident">
-                                                <option value="A" <?php selected( $workoutData->workout_ident, 'A'); ?>>A</option>
-                                                <option value="B" <?php selected( $workoutData->workout_ident, 'B'); ?>>B</option>
-                                                <option value="C" <?php selected( $workoutData->workout_ident, 'C'); ?>>C</option>
-                                                <option value="D" <?php selected( $workoutData->workout_ident, 'D'); ?>>D</option>
-                                            </select>
-                                        </td>
-                                        <td class="text-input" style="width: 40%;">
-                                            <input type="number" id="e20r-workout-phase" name="e20r-workout-phase" value="<?php echo $workoutData->phase; ?>">
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr><td colspan="3"><hr width="100%"/></td></tr>
-                        <tr>
-                            <td colspan="3">
-                                <table class="sub-table wp-list-table widefat fixed">
-                                    <tbody>
-                                    <tr>
-                                        <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_usergroups">Client Group(s)</label></th>
-                                        <th style="width: 20%;"></th>
-                                        <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_user_id">Client(s)</label></th>
-                                    </tr>
-                                    <tr>
-                                        <td class="select-input">
-                                            <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups" class="select2-container" multiple="multiple">
-                                                <?php
-
-                                                $member_groups = $e20rWorkout->getMemberGroups();
-
-                                                foreach ( $member_groups as $id => $name ) { ?>
-                                                    <option value="<?php echo $id; ?>"<?php selected( $workoutData->assigned_usergroups, $id); ?>><?php echo $name; ?></option> <?php
-                                                } ?>
-
-                                            </select>
-                                            <script type="text/javascript">
-                                                jQuery('#e20r-workout-assigned_usergroups').select2({
-                                                    placeholder: "Select group(s)",
-                                                    allowClear: true
-                                                });
-                                            </script>
-                                        </td>
-                                        <td rowspan="2" style="font-size: 50px; font-color: #5c5c5c; font-weight: bold; vertical-align: middle; text-align: center; padding: 20px; margin: 0; position: relative;">
-                                            or
-                                        </td>
-                                        <td class="select-input ">
-                                            <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id" class="select2-container" multiple="multiple">
-                                                <?php
-
-                                                $memberArgs = array( 'orderby' => 'display_name' );
-                                                $members = get_users( $memberArgs );
-
-                                                foreach ( $members as $userData ) {
-
-                                                    $active = $e20rTracker->isActiveUser( $userData->ID );
-                                                    if ( $active ) { ?>
-
-                                                        <option value="<?php echo $userData->ID; ?>"<?php selected( $workoutData->assigned_user_id, $userData->ID ); ?>>
-                                                            <?php echo $userData->display_name; ?>
-                                                        </option> <?php
-                                                    }
-                                                } ?>
-                                            </select>
-                                            <script type="text/javascript">
-                                                jQuery('#e20r-workout-assigned_user_id').select2({
-                                                    placeholder: "Select User",
-                                                    allowClear: true
-                                                });
-                                            </script>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr><td colspan="3"><hr width="100%"/></td></tr>
-                        <tr>
-                            <td colspan="3">
-                                <table class="sub-table wp-list-table widefat fixed">
-                                    <tbody>
-                                    <tr>
-                                        <th class="e20r-label header indent"><label for="e20r-workout-startdate">First workout (date)</label></th>
-                                        <th class="e20r-label header indent"><label for="e20r-workout-enddate">Last workout (date)</label></th>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-input">
-                                            <input type="date" id="e20r-workout-startdate" name="e20r-workout-startdate" value="<?php echo $workoutData->startdate; ?>">
-                                        </td>
-                                        <td class="text-input">
-                                            <input type="date" id="e20r-workout-enddate" name="e20r-workout-enddate" value="<?php echo $workoutData->enddate; ?>">
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-	                        <td colspan="3">
-		                        <div id="e20r-workout-add-groups">
-			                        <?php
-			                        dbg("e20rWorkoutView::viewSettingsBox() - Loading " . count($workoutData->groups) . " groups of exercises");
-			                        foreach( $workoutData->groups as $key => $group ) {
-
-				                        dbg("e20rWorkoutView::viewSettingsBox() - Group # {$key} for workout {$workoutData->id}");
-				                        echo $this->newExerciseGroup( $workoutData->groups[$key], $key);
-			                        }
-			                        ?>
-
-		                        </div>
-	                        </td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colspan="3" style="text-align: right;"><a href="javascript:" class="button" id="e20r-new-group-button">Add Exercise Group</a></td>
+        <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce'); ?>
+        <div class="e20r-editform" style="width: 100%;">
+            <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-workout-id" value="<?php echo ( ( isset($workoutData->ID) ) ? $workoutData->ID : $post->ID ); ?>">
+            <table id="e20r-workout-settings" class="wp-list-table widefat fixed">
+                <tbody id="e20r-workout-tbody">
+                    <tr id="<?php echo $post->ID; ?>" class="workout-inputs">
+                        <td colspan="3">
+                            <table class="sub-table wp-list-table widefat fixed">
+                                <tbody>
+                                <tr>
+                                    <th class="e20r-label header" style="width: 20%;"><label for="e20r-workout-workout_ident">Workout (A/B/C/D)</label></th>
+                                    <th class="e20r-label header" style="width: 40%;"><label for="e20r-workout-phase">Phase (number)</label></th>
+                                </tr>
+                                <tr>
+                                    <td class="select-input" style="width: 20%;">
+                                        <select id="e20r-workout-workout_ident" name="e20r-workout-workout_ident">
+                                            <option value="A" <?php selected( $workoutData->workout_ident, 'A'); ?>>A</option>
+                                            <option value="B" <?php selected( $workoutData->workout_ident, 'B'); ?>>B</option>
+                                            <option value="C" <?php selected( $workoutData->workout_ident, 'C'); ?>>C</option>
+                                            <option value="D" <?php selected( $workoutData->workout_ident, 'D'); ?>>D</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-input" style="width: 40%;">
+                                        <input type="number" id="e20r-workout-phase" name="e20r-workout-phase" value="<?php echo $workoutData->phase; ?>">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
                     </tr>
-                    </tfoot>
-                </table>
-            </div>
-        <!-- </form> -->
+                    <tr><td colspan="3"><hr width="100%"/></td></tr>
+                    <tr>
+                        <td colspan="3">
+                            <table class="sub-table wp-list-table widefat fixed">
+                                <tbody>
+                                <tr>
+                                    <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_usergroups">Client Group(s)</label></th>
+                                    <th style="width: 20%;"></th>
+                                    <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_user_id">Client(s)</label></th>
+                                </tr>
+                                <tr>
+                                    <td class="select-input">
+                                        <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups" class="select2-container" multiple="multiple">
+                                            <?php
+
+                                            $member_groups = $e20rWorkout->getMemberGroups();
+
+                                            foreach ( $member_groups as $id => $name ) { ?>
+                                                <option value="<?php echo $id; ?>"<?php selected( $workoutData->assigned_usergroups, $id); ?>><?php echo $name; ?></option> <?php
+                                            } ?>
+
+                                        </select>
+                                    </td>
+                                    <td rowspan="2" style="font-size: 50px; font-color: #5c5c5c; font-weight: bold; vertical-align: middle; text-align: center; padding: 20px; margin: 0; position: relative;">
+                                        or
+                                    </td>
+                                    <td class="select-input ">
+                                        <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id" class="select2-container" multiple="multiple">
+                                            <?php
+
+                                            $memberArgs = array( 'orderby' => 'display_name' );
+                                            $members = get_users( $memberArgs );
+
+                                            foreach ( $members as $userData ) {
+
+                                                $active = $e20rTracker->isActiveUser( $userData->ID );
+                                                if ( $active ) { ?>
+
+                                                    <option value="<?php echo $userData->ID; ?>"<?php selected( $workoutData->assigned_user_id, $userData->ID ); ?>>
+                                                        <?php echo $userData->display_name; ?>
+                                                    </option> <?php
+                                                }
+                                            } ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr><td colspan="3"><hr width="100%"/></td></tr>
+                    <tr>
+                        <td colspan="3">
+                            <table class="sub-table wp-list-table widefat fixed">
+                                <tbody>
+                                <tr>
+                                    <th class="e20r-label header indent"><?php _e( "First workout (date)", "e20rtracker" ); ?></th>
+                                    <th class="e20r-label header indent"><?php _e( "Last workout (date)", "e20rtracker" ); ?></th>
+                                </tr>
+                                <tr>
+                                    <td class="text-input">
+                                        <input type="date" id="e20r-workout-startdate" name="e20r-workout-startdate" value="<?php echo $workoutData->startdate; ?>">
+                                    </td>
+                                    <td class="text-input">
+                                        <input type="date" id="e20r-workout-enddate" name="e20r-workout-enddate" value="<?php echo $workoutData->enddate; ?>">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+	                        <div id="e20r-workout-add-groups">
+		                        <?php
+		                        dbg("e20rWorkoutView::viewSettingsBox() - Loading " . count($workoutData->groups) . " groups of exercises");
+		                        foreach( $workoutData->groups as $key => $group ) {
+
+			                        dbg("e20rWorkoutView::viewSettingsBox() - Group # {$key} for workout {$workoutData->id}");
+			                        echo $this->newExerciseGroup( $workoutData->groups[$key], $key);
+		                        }
+		                        ?>
+	                        </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align: right;"><a href="javascript:" class="button" id="e20r-new-group-button">Add Exercise Group</a></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
     <?php
     }
 
-    public function newExerciseGroup( $group, $group_id ) {
+    public function newExerciseGroup( $group = null , $group_id = null ) {
 
         global $e20rExercise;
+
+	    $empty_group = new stdClass();
+
         ob_start();
     ?>
 	    <table class="e20r-exercise-group">
@@ -182,7 +170,7 @@ class e20rWorkoutView extends e20rSettingsView {
 				    <h3>Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></h3>
 			    </td>
 			    <?php if ( $group_id != 0 ) : ?>
-				    <td style="text-align: right"><a href="javascript:" class="e20r-remove-group button" id="e20r-workout-group_set_count-<?php echo $group_id; ?>">Remove Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></a></td>
+				    <td style="text-align: right"><a href="javascript:e20rActivity.removeActivityGroup(<?php echo $group_id; ?>, jQuery('#e20r-workout-group_set_count-<?php echo $group_id; ?>') ); return false;" class="e20r-remove-group button" id="e20r-workout-group_set_count-<?php echo $group_id; ?>">Remove Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></a></td>
 			    <?php endif; ?>
 		    </tr>
 		    <tr class="e20r-workout-exercise-group-data">
@@ -225,7 +213,6 @@ class e20rWorkoutView extends e20rSettingsView {
 		    </tr>
 		    </tbody>
 	    </table>
-
     <?php
 
         dbg("e20rWorkoutView::newExerciseGroup() -- HTML generation completed.");
@@ -240,7 +227,7 @@ class e20rWorkoutView extends e20rSettingsView {
 		<table class="e20r-exercise-list sub-table wp-list-table widefat fixed">
 			<thead>
 			<tr>
-				<th style="width: 10px;" class="e20r-label header"><label for="exercise-order"></label></th>
+				<th style="width: 15px;" class="e20r-label header"><label for="exercise-order"></label></th>
 				<th colspan="2" class="e20r-label header"><label for="e20r-workout-exercise-name"><?php _e('Exercises', 'e20rtracker'); ?></label></th>
 				<th class="e20r-label header"><label for="e20r-workout-exercise-type"><?php _e('Type', 'e20rtracker'); ?></label></th>
 				<th class="e20r-label header"><label for="e20r-workout-exercise-reps"><?php _e('Reps / Duration', 'e20rtracker'); ?></label></th>
@@ -261,7 +248,7 @@ class e20rWorkoutView extends e20rSettingsView {
 						$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
 						echo "<tr>";
-						echo '<td class="exercise-order" style="width: 10px;">' . $count . '</td>';
+						echo '<td class="exercise-order" style="width: 15px;">' . $count . '</td>';
 						echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
 						echo "<td>{$exSettings->type}</td>";
 						echo "<td>{$exSettings->reps}</td>";
@@ -271,9 +258,10 @@ class e20rWorkoutView extends e20rSettingsView {
 						echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
 						echo "</td>";
 
+						// TODO: Won't work well if the plugin gets translated. Need to spell this out manually.
 						foreach ( array( __( 'Edit', 'e20rtracker' ), __( 'Remove', 'e20rtracker' ) ) as $btnName ) {
 
-							echo '<td><a href="javascript:e20rActivity.' . strtolower($btnName) . 'Exercise(' . $exSettings->id . ')"" class="e20r-exercise-' . strtolower( $btnName ) . '">' . $btnName . '</a></td>';
+							echo '<td><a href="javascript:e20rActivity.' . strtolower($btnName) . 'Exercise(' . $groupId . ', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-' . strtolower( $btnName ) . '">' . $btnName . '</a></td>';
 						}
 						echo "</tr>";
 						$count++;
@@ -332,5 +320,6 @@ class e20rWorkoutView extends e20rSettingsView {
 			</table>
 		</div>
 	<?php
+		return ob_get_clean();
 	}
 }

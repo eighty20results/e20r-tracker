@@ -271,34 +271,27 @@ class e20rWorkout extends e20rSettings {
 	    dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
 	    dbg($_POST);
 
-        $workoutId = isset( $_POST['post_ID']) ? $e20rTracker->sanitize( $_POST['post_ID']) : null;
+        $groupId = isset( $_POST['e20r-workout-group-id']) ? $e20rTracker->sanitize( $_POST['e20r-workout-group-id']) : null;
 
-	    if ( ! $workoutId ) {
-		    wp_send_json_error( 'Unable to save data. Please contact support!');
+	    if ( ! $groupId ) {
+		    wp_send_json_error( 'Unable to add more groups. Please contact support!');
 	    }
 
-        $this->init( $workoutId );
+        dbg("e20rWorkout::add_new_exercise_group_callback() - Adding clean/default workout settings for new group. ID={$groupId}.");
 
-        dbg("e20rWorkout::add_new_exercise_group_callback() - Requested to add another Group to workout with ID {$workoutId}.");
+	    $workout = $this->model->defaultSettings();
+        $data = $this->view->newExerciseGroup( $workout->groups[0], $groupId );
 
-        if ( ( $workout = $this->model->loadWorkoutData( $workoutId ) ) ) {
+	    if ( $data ) {
 
-            dbg("e20rWorkout::add_new_exercise_group_callback() - Adding default group settings to new group");
-            $workout->groups[] = $this->model->defaultSettings();
-            $groupNo = count( $workout->groups );
+		    dbg( "e20rWorkout::add_new_exercise_group_callback() - New group table completed. Sending..." );
+		    dbg($data);
+		    wp_send_json_success( array( 'html' => $data ) );
+	    }
+	    else {
 
-            if ( $this->model->saveWorkout( $workout ) )  {
-                dbg("e20rWorkout::add_new_exercise_group_callback() - Saved the workout. - TODO!");
-
-            }
-
-            $data = $this->view->newExerciseGroup( $workout->groups[$groupNo], $groupNo );
-
-            dbg("e20rWorkout::add_new_exercise_group_callback() - Table row generation completed. Sending...");
-            wp_send_json_success( $data );
-        }
-
-        dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
-        wp_send_json_error( "Error: Unable to generate new group");
+		    dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
+		    wp_send_json_error( "Error: Unable to generate new group");
+	    }
     }
 } 
