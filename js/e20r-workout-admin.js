@@ -232,17 +232,18 @@ var e20rActivity = {
         var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + group + '"]').closest('.e20r-exercise-group');
         var exRow = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + order + '"]').closest('tr');
 
-        var remaining = exRow.closest('.e20r-exercise-list').find('tr');
-        exRow.remove();
+        var remaining = exRow.closest('table.e20r-exercise-list tbody tr');
 
-        console.log("# of exercises in list: ", remaining.length );
+        console.log("Exercises in list: ", remaining );
+
+        exRow.detach();
 
         if ( remaining == 0 ) {
             // Empty table! Add the default message.
             console.log("No rows in table. Adding the 'no data found' message");
         }
 
-        return false;
+        console.log("Rows remaining: ", remaining.size());
     },
     _sortTable: function(table, order, colNo ) {
 
