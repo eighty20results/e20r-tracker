@@ -164,7 +164,6 @@ class e20rArticleModel extends e20rSettingsModel {
 	private function loadForQuery( $args ) {
 
 		$articleList = array();
-		dbg( $args );
 
 		$query = new WP_Query( $args );
 
