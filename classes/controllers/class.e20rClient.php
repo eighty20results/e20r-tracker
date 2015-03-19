@@ -54,7 +54,8 @@ class e20rClient {
         if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
             dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
-            $nourish_levels = array( 16, 21, 22, 23, 18 );
+            // TODO: Fetch this from an option (multi-select on plugin settings page)
+	        $nourish_levels = array( 16, 21, 22, 23, 18 );
 
             if ( pmpro_hasMembershipLevel( $nourish_levels, $user_id ) ) {
 
