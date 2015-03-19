@@ -6,6 +6,13 @@
  *  the GPL v2 license(?)
  */
 
+var $body = jQuery("body");
+
+jQuery(document).on({
+    ajaxStart: function() { $body.addClass("loading");   },
+    ajaxStop: function() { $body.removeClass("loading"); }
+});
+
 var e20rActivity = {
     init: function() {
 
@@ -25,6 +32,8 @@ var e20rActivity = {
         });
 
         console.log("Loaded Activity class");
+
+        return self;
     },
     bindButtons: function( self ) {
 
@@ -93,12 +102,26 @@ var e20rActivity = {
                     grouping.find('.e20r-group-id').val( currentGroupNo );
                     grouping.find('.group-id').html( (currentGroupNo + 1) );
 
+                    self.removeBtns = self.activityForm.find('.e20r-remove-group.button');
+
+                    self.removeBtns.each(function(){
+
+                        var group = jQuery(this).closest('.e20r-exercise-group');
+                        var groupNo = group.find('input[type="hidden"][name^="e20r-group-id"]').val();
+                        console.log("Adding on-click event for button in group: ", groupNo );
+
+                        jQuery(this).unbind('click').on('click', function() {
+                            self.removeActivityGroup( groupNo, group );
+                        });
+
+                    });
+
                     self.bindButtons( self );
                 }
             },
             error: function(jqxhr, $errString, $errType){
                 // console.log("error() - Returned data: ", jqxhr );
-                console.log("Error String: " + $errString + " and errorType: " + $errType);
+                console.log("Error String: " + $errString + " and errogrouprType: " + $errType);
             }
         });
     },
@@ -118,20 +141,14 @@ var e20rActivity = {
 
         if ( $exerciseId == 0 ) {
 
-            var $alertMsg = e20r_tracker.lang.no_entry + ' an exercise';
-            alert( $alertMsg );
-
+            alert( e20r_tracker.lang.no_ex_entry );
             return false;
         }
 
-        if ( ( $exerciseId != 0 ) && ( $exOrder == '' ) ) {
-            console.log("No order - key - specified. Setting it to 1");
-            $exOrder = 1;
-        }
 
         // Disable save button
         $addBtn.attr('disabled', 'disabled');
-        $addBtn.html(e20r_tracker.lang.saving);
+        $addBtn.html(e20r_tracker.lang.adding);
 
         var groupIdElem = $addBtn.closest('.e20r-workout-exercise-group-data').siblings('.e20r-workout-exercise-group-header').find('.e20r-group-id');
         var resp = null;
@@ -152,49 +169,55 @@ var e20rActivity = {
                 var $exerciseList = $addBtn.closest('.e20r-list-exercises-for-group').find('table.e20r-exercise-list');
                 var $rowCount = $exerciseList.find("tbody > tr > td:contains('" + e20r_tracker.lang.empty + "')").length;
 
-                console.log("'Empty' string present in list? " + $rowCount);
+                if ( ( $exerciseId != 0 ) && ( $exOrder == '' ) ) {
+                    console.log("No order - key - specified. Setting it to 1");
+                    $exOrder = 1;
+                }
 
-                /*
-                 * TODO: Replace row if the $exOrder exists in the table already
-                 * var table = $addBtn.closest('div.postcustomstuff').siblings('table.e20r-exercise-list');
-                 *
-                 * if ( me._exists( table, 0, $exOrder ) == false ) {
-                 *
-                 * }
-                 */
+                console.log("'Empty' string present in list? " + $rowCount);
 
                 if (resp) {
 
                     console.log('Entry added to workout & refreshing metabox content', resp);
 
                     // var $newRow = "<tr>";
-                    var $newRow = '<td class="exercise-order" style="width: 15px;">' + $exOrder + '</td>';
-                    $newRow += '<td colspan="2">' + resp.title + '  ( ' + resp.shortcode + ' )</td>';
-                    $newRow += "<td>" + ( resp.type != null ? resp.type : e20r_tracker.lang.none ) + "</td>";
-                    $newRow += "<td>" + ( resp.reps != null ? resp.reps : e20r_tracker.lang.none ) + "</td>";
-                    $newRow += "<td>" + ( resp.rest != null ? resp.rest : e20r_tracker.lang.none );
-                    $newRow += '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' + resp.id + '" >';
-                    $newRow += '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' + $exOrder + '" >';
-                    $newRow += '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' + groupIdElem.val() + '" ></td>';
-                    $newRow += '<td><a href="javascript:e20rActivity.editExercise(' + groupIdElem.val() + ', ' + resp.id + ', ' + $exOrder + ')" class="e20r-exercise-edit">Edit</a></td>';
-                    $newRow += '<td><a href="javascript:e20rActivity.removeExercise(' + groupIdElem.val() + ', ' + resp.id + ', ' + $exOrder + ')" class="e20r-exercise-remove">Remove</a></td>';
+                    var $newRow = me._createExRow( resp, $exOrder, groupIdElem.val() );
                     // $newRow += '</tr>';
 
-                    var $row = $exerciseList.find('tr:last');
+                    var $last_row = $exerciseList.find('tr:last');
+                    var table = $addBtn.closest('div.postcustomstuff').siblings('table.e20r-exercise-list');
 
                     if ($rowCount == 1) {
-                        console.log("replacing dummy text..");
-                        $row.html($newRow);
+
+                        console.log("Empty list text found. Replacing with exercise.");
+                        $last_row.html($newRow);
                     }
                     else {
-                        console.log("Adding new exercise to list of exercises");
-                        $row.after('<tr>' + $newRow + '</tr>');
-                    }
 
+                        if (  me._exists( table, 0, $exOrder ) == false ) {
+
+                            console.log("Adding new exercise to list of exercises");
+                            $last_row.after('<tr>' + $newRow + '</tr>');
+                        }
+                        else {
+                            console.log("Have to replace existing row in table");
+
+                            var count = 1;
+
+                            var $tbl_row = table.find('tbody tr').filter( function () {
+                                return jQuery.trim( jQuery(this).find('td').eq(0).text() ) === $exOrder
+                            });
+
+                            console.log("Row containing exercise #" + $exOrder + ": ", $tbl_row );
+
+                            // Replace row data.
+                            var new_row = me._createExRow( resp, $exOrder, groupIdElem.val() );
+                            $tbl_row.html( new_row );
+                        }
+                    }
                 } else {
                     console.log('No exercise data found?');
                 }
-
             },
             error: function (jqxhr, $errString, $errType) {
                 // console.log("error() - Returned data: ", jqxhr );
@@ -210,37 +233,95 @@ var e20rActivity = {
                 me._sortTable(table, desc, 0);
 
                 // Re-enable save button
-                $addBtn.html('Add');
+                $addBtn.html(e20r_tracker.lang.add);
                 $addBtn.removeAttr('disabled');
 
             }
         });
 
     },
-    removeActivityGroup: function( id, self ) {
+    removeActivityGroup: function( id, group  ) {
 
-        console.log("Removing Group_id: " + id + " with jQuery object:", self );
+        console.log("Removing Group_id: " + id );
+        group.detach();
+
+        // Renumber the list of Groups
+        var groupNum = 0;
+        var groupList = jQuery('div#e20r-workout-add-groups').find('.e20r-exercise-group');
+        var groups = groupList.find('.e20r-group-header');
+
+        groups.each(function(){
+
+            jQuery(this).find('.e20r-group-id').val( groupNum );
+            jQuery(this).find('.group-id').text( groupNum + 1 );
+            jQuery(this).siblings('td').find('.group-id').text( groupNum + 1 );
+
+            // Process every row of the exercise list for the current group id.
+            jQuery(this).closest('.e20r-exercise-group').find('.e20r-exercise-list tbody tr').each(function(){
+
+                groupInfo = '\'group:' + groupNum + '\'';
+                row = jQuery(this);
+
+                ex_id = row.find('.e20r-workout-group_exercise_id').val();
+                ex_order = row.find('.e20r-workout-group_exercise_order').val();
+
+                if ( typeof(ex_id) != 'undefined') {
+
+                    console.log('this: ', row);
+                    console.log("ex_id:" + ex_id);
+                    console.log("ex_order: " + ex_order );
+
+                    var edit_lnk = 'javascript:e20rActivity.editExercise(' + groupInfo + ', ' + ex_id + ', ' + ex_order + ');';
+                    var remove_lnk = 'javascript:e20rActivity.removeExercise(' + groupInfo + ', ' + ex_id + ', ' + ex_order + ');';
+
+                    jQuery(this).find('input[name^="e20r-workout-group"]').val( groupNum );
+                    jQuery(this).find('a.e20r-exercise-edit').attr('href', edit_lnk );
+                    jQuery(this).find('a.e20r-exercise-remove').attr('href', edit_lnk );
+                }
+            });
+
+            groupNum++;
+        });
     },
-    editExercise: function( group, exId, order ) {
+    editExercise: function( groupStr, exId, order ) {
 
-        console.log("Editing exercise # " + exId + ' in group #' + group + ' with order #' + order );
+        var arr = groupStr.split(':');
+        var groupId = arr[1];
+
+        console.log("Editing exercise # " + exId + ' in group #' + groupId + ' with order #' + order );
+
+        var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + groupId + '"]').closest('.e20r-exercise-group');
+        var row = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + order + '"]').closest('tr');
+
+        // Put the order Id and exerciseId
+        var curr_order = row.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"]').val();
+        var curr_ex = row.find('input[type="hidden"][name^="e20r-workout-group_exercise_id"]').val();
+
+        console.log("Found exercise # " + curr_ex + ' with order ' + curr_order );
+
+        group.find('.e20r-workout-add-exercise-key').val( curr_order );
+        group.find('.e20r-workout-add-exercise-id').select2( 'val', curr_ex );
+        group.find('e20r-workout-add-exercise-save').html(e20r_tracker.lang.save);
     },
-    removeExercise: function( group, exId, order ) {
+    removeExercise: function( groupStr, exId, order ) {
 
-        console.log("Removing exercise # " + exId + ' in group #' + group + ' with order #' + order );
+        var arr = groupStr.split(':');
+        var groupId = arr[1];
 
-        var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + group + '"]').closest('.e20r-exercise-group');
+        console.log("Removing exercise # " + exId + ' in group #' + groupId + ' with order #' + order );
+
+        var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + groupId + '"]').closest('.e20r-exercise-group');
         var exRow = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + order + '"]').closest('tr');
 
-        var remaining = exRow.closest('table.e20r-exercise-list tbody tr');
-
-        console.log("Exercises in list: ", remaining );
-
+        // var exRow = me._findExerciseRow( group, order );
         exRow.detach();
+
+        var remaining = exRow.closest('table.e20r-exercise-list tbody tr');
 
         if ( remaining == 0 ) {
             // Empty table! Add the default message.
             console.log("No rows in table. Adding the 'no data found' message");
+            exRow.after('<tr><td colspan="8">' + e20r_tracker.lang.no_exercises + '</td></tr>');
         }
 
         console.log("Rows remaining: ", remaining.size());
@@ -278,12 +359,38 @@ var e20rActivity = {
     },
     _exists: function( table, field, value ) {
 
-        if ( table.children('td').eq(field).text() == value ) {
+        if ( table.find('td').eq(field).text() == value ) {
             console.log("Field #: " + field + " contains the value: " + value );
             return true;
         }
 
         return false;
+    },
+    _findExerciseRow: function( groupId, orderNo ) {
+
+        var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + groupId + '"]').closest('.e20r-exercise-group');
+        var row = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + orderNo + '"]').closest('tr');
+
+        return row;
+    },
+    _createExRow: function( obj, order, group ) {
+
+        var $row;
+        var groupInfo = '\'group:' + group + '\'';
+
+
+        $row = '<td class="exercise-order" style="width: 15px;">' + order + '</td>';
+        $row += '<td colspan="2">' + obj.title + '  ( ' + obj.shortcode + ' )</td>';
+        $row += "<td>" + ( obj.type != null ? obj.type : e20r_tracker.lang.none ) + "</td>";
+        $row += "<td>" + ( obj.reps != null ? obj.reps : e20r_tracker.lang.none ) + "</td>";
+        $row += "<td>" + ( obj.rest != null ? obj.rest : e20r_tracker.lang.none );
+        $row += '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' + obj.id + '" >';
+        $row += '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' + order + '" >';
+        $row += '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' + group + '" ></td>';
+        $row += '<td><a href="javascript:e20rActivity.editExercise(' + groupInfo + ', ' + obj.id + ', ' + order + ')" class="e20r-exercise-edit">' + e20r_tracker.lang.edit + '</a></td>';
+        $row += '<td><a href="javascript:e20rActivity.removeExercise(' + groupInfo + ', ' + obj.id + ', ' + order + ')" class="e20r-exercise-remove">' + e20r_tracker.lang.remove + '</a></td>';
+
+        return $row;
     }
 }
 
