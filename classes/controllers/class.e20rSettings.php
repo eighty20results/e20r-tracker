@@ -34,14 +34,14 @@ class e20rSettings {
 
         $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
 
-        dbg("e20r" . ucfirst($this->type) . "::init() - Loaded {$this->type} id: {$settingsId}");
-
         if ( $settingsId == false ) {
 
 	        $settingsId = $postId;
         }
 
-        if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
+	    dbg("e20r" . ucfirst($this->type) . "::init() - Loaded {$this->type} id: {$settingsId}");
+
+	    if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
 
             dbg("e20r" . ucfirst($this->type) . "::init() - FAILED to load settings for {$settingsId}");
             return false;
