@@ -239,7 +239,7 @@ class e20rMeasurementViews {
                         Need some help figuring out how to take your progress photos? Check out the
                         <a href="#load_help_photo" class="inline cboxElement">instructions</a>.
 <!--                        or download our comprehensive
-                        <a href="/protected-downloads/resources/Measurement-Guide-Nourish.pdf">Measurement Guide</a>
+                        <a href="/protected-downloads/resources/Measurement-Guide-Bit-Better.pdf">Measurement Guide</a>
                         in PDF format.
 -->
                     </div>
@@ -905,7 +905,7 @@ class e20rMeasurementViews {
                             </td>
                             <td class="content">
                                 <h4>Choose the body parts to record.</h4>
-                                As part of the Nourish Coaching program, we typically ask you to record girths for the following
+                                As part of the Bit Better Coaching program, we typically ask you to record girths for the following
                                 eight body parts:
                                 <ul>
                                     <li><strong>Neck girth</strong>: Measure just below the Adam’s apple and at the level of the 7th cervical vertebra.</li>
