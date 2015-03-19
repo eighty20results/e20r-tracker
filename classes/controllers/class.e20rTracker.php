@@ -732,6 +732,7 @@ class e20rTracker {
 
 	            case 'e20r_workout':
 
+		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
 		            $type = 'workout';
 					$deps = array( 'jquery', 'jquery-ui-core' );
 		            break;
@@ -758,6 +759,7 @@ class e20rTracker {
 					        'saving' => __( 'Saving...', 'e20rtracker' ),
 					        'save'   => __( 'Save', 'e20rtracker' ),
 					        'edit'   => __( 'Update', 'e20rtracker' ),
+					        'remove' => __( 'Remove', 'e20rtracker' ),
 					        'empty'  => __( 'No exercises found.', 'e20rtracker' ),
 					        'none'   => __( 'None', 'e20rtracker' ),
 					        'no_exercises'  => __( 'No exercises found', 'e20rtracker' ),
@@ -2300,22 +2302,18 @@ class e20rTracker {
 
     public function isActiveUser( $userId ) {
 
-        dbg("e20Tracker::isActiveUser() - Supplied User ID: {$userId}");
-
         if ( $userId == 0 ) {
             return false;
         }
 
         if ( function_exists('pmpro_hasMembershipLevel' ) ) {
 
-            dbg("e20Tracker::isActiveUser() - Using Paid Memberships Pro");
             $ud = get_user_by( 'id', $userId );
 
             $notFreeMember = (! pmpro_hasMembershipLevel( 13, $userId ) );
             $notDummyUser = (! $ud->has_cap('app_dmy_users') );
 
-            dbg("e20Tracker::isActiveUser() - Dummy User? ({$notDummyUser}). Not Free member? ($notFreeMember)");
-            return ( $notFreeMember && $notDummyUser );
+	        return ( $notFreeMember && $notDummyUser );
         }
 
         return false;
