@@ -751,12 +751,16 @@ class e20rTracker {
 			        array(
 				        'ajaxurl' => admin_url( 'admin-ajax.php' ),
 				        'lang'    => array(
-					        'no_entry' => __( 'Please select', 'e20rtracker'),
-					        'saving' => __( 'Adding...', 'e20rtracker' ),
-					        'save'   => __( 'Add', 'e20rtracker' ),
+					        'no_entry' => __( 'Please select', 'e20rtracker' ),
+					        'no_ex_entry' => __( 'Please select an exercise', 'e20rtracker' ),
+					        'adding' => __( 'Adding...', 'e20rtracker' ),
+					        'add'   => __( 'Add', 'e20rtracker' ),
+					        'saving' => __( 'Saving...', 'e20rtracker' ),
+					        'save'   => __( 'Save', 'e20rtracker' ),
 					        'edit'   => __( 'Update', 'e20rtracker' ),
-					        'empty'  => __( 'No exercises found.', 'e20rtracker'),
+					        'empty'  => __( 'No exercises found.', 'e20rtracker' ),
 					        'none'   => __( 'None', 'e20rtracker' ),
+					        'no_exercises'  => __( 'No exercises found', 'e20rtracker' ),
 				        ),
 			        )
 		        );
