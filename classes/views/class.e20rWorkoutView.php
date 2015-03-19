@@ -69,13 +69,14 @@ class e20rWorkoutView extends e20rSettingsView {
                                 </tr>
                                 <tr>
                                     <td class="select-input">
-                                        <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups" class="select2-container" multiple="multiple">
+                                        <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups[]" class="select2-container" multiple="multiple">
+	                                        <option id="-1">All Users</option>
                                             <?php
 
                                             $member_groups = $e20rWorkout->getMemberGroups();
 
                                             foreach ( $member_groups as $id => $name ) { ?>
-                                                <option value="<?php echo $id; ?>"<?php selected( $workoutData->assigned_usergroups, $id); ?>><?php echo $name; ?></option> <?php
+                                                <option value="<?php echo $id; ?>"<?php echo in_array( $id, $workoutData->assigned_usergroups) ? 'selected="selected"' : ''; ?>><?php echo $name; ?></option> <?php
                                             } ?>
 
                                         </select>
@@ -84,7 +85,8 @@ class e20rWorkoutView extends e20rSettingsView {
                                         or
                                     </td>
                                     <td class="select-input ">
-                                        <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id" class="select2-container" multiple="multiple">
+                                        <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id[]" class="select2-container" multiple="multiple">
+	                                        <option id="-1">All Users</option>
                                             <?php
 
                                             $memberArgs = array( 'orderby' => 'display_name' );
@@ -93,9 +95,10 @@ class e20rWorkoutView extends e20rSettingsView {
                                             foreach ( $members as $userData ) {
 
                                                 $active = $e20rTracker->isActiveUser( $userData->ID );
+
                                                 if ( $active ) { ?>
 
-                                                    <option value="<?php echo $userData->ID; ?>"<?php selected( $workoutData->assigned_user_id, $userData->ID ); ?>>
+                                                    <option value="<?php echo $userData->ID; ?>"<?php echo in_array( $userData->ID, $workoutData->assigned_user_id) ? 'selected="selected"' : ''; ?>>
                                                         <?php echo $userData->display_name; ?>
                                                     </option> <?php
                                                 }
@@ -170,7 +173,7 @@ class e20rWorkoutView extends e20rSettingsView {
 				    <h3>Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></h3>
 			    </td>
 			    <?php if ( $group_id != 0 ) : ?>
-				    <td style="text-align: right"><a href="javascript:e20rActivity.removeActivityGroup(<?php echo $group_id; ?>, jQuery('#e20r-workout-group_set_count-<?php echo $group_id; ?>') ); return false;" class="e20r-remove-group button" id="e20r-workout-group_set_count-<?php echo $group_id; ?>">Remove Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></a></td>
+				    <td style="text-align: right"><a href="javascript:" class="e20r-remove-group button" id="e20r-workout-group_set_count-<?php echo $group_id; ?>">Remove Group #<span class="group-id"><?php echo ($group_id + 1); ?></span></a></td>
 			    <?php endif; ?>
 		    </tr>
 		    <tr class="e20r-workout-exercise-group-data">
@@ -238,34 +241,34 @@ class e20rWorkoutView extends e20rSettingsView {
 			<tbody>
 			<?php
 
-			if ( ( $group->exercises[0] != 0 ) && ( count( $group->exercises ) > 0 ) ) {
+			if ( count( $group->exercises ) > 0 )  {
 				$count = 1;
 
 				foreach ( $group->exercises as $exId ) {
 
-					if ( $exId !== 0 ) {
+					$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
-						$exSettings = $e20rExercise->getExerciseSettings( $exId );
+					$type = $e20rExercise->getExerciseType( $exSettings->type );
 
-						echo "<tr>";
-						echo '<td class="exercise-order" style="width: 15px;">' . $count . '</td>';
-						echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
-						echo "<td>{$exSettings->type}</td>";
-						echo "<td>{$exSettings->reps}</td>";
-						echo "<td>{$exSettings->rest} ";
-				        echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
-						echo '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' . $count . '" >';
-						echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
-						echo "</td>";
+					$exSettings->reps = empty( $exSettings->reps ) ? __( "None", "e20rtracker" ) : $exSettings->reps;
+					$exSettings->rest = empty( $exSettings->rest ) ? __( "None", "e20rtracker" ) : $exSettings->rest;
 
-						// TODO: Won't work well if the plugin gets translated. Need to spell this out manually.
-						foreach ( array( __( 'Edit', 'e20rtracker' ), __( 'Remove', 'e20rtracker' ) ) as $btnName ) {
+					echo "<tr>";
+					echo '<td class="exercise-order" style="width: 15px;">' . $count . '</td>';
+					echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
+					echo "<td>{$type}</td>";
+					echo "<td>{$exSettings->reps}</td>";
+					echo "<td>{$exSettings->rest} ";
+			        echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
+					echo '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' . $count . '" >';
+					echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
+					echo "</td>";
+					echo '<td><a href="javascript:e20rActivity.editExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-edit">'. __( "Update", "e20rtracker" ) .'</a></td>';
+					echo '<td><a href="javascript:e20rActivity.removeExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-remove">' . __( "Remove", "e20rtracker" ) .'</a></td>';
+					echo "</tr>";
 
-							echo '<td><a href="javascript:e20rActivity.' . strtolower($btnName) . 'Exercise(' . $groupId . ', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-' . strtolower( $btnName ) . '">' . $btnName . '</a></td>';
-						}
-						echo "</tr>";
-						$count++;
-					}
+					$count++;
+					unset($exSettings);
 				}
 			}
 			else {

@@ -32,8 +32,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout = parent::defaultSettings();
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
-	    $workout->assigned_user_id = 0;
-	    $workout->assigned_usergroups = 0;
+	    $workout->assigned_user_id = array( -1 );
+	    $workout->assigned_usergroups = array( -1 );
 	    $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
 	    $workout->enddate = null;
 
@@ -56,8 +56,10 @@ class e20rWorkoutModel extends e20rSettingsModel {
 				$workoutId = $post->ID;
 			}
 		}
+		dbg("e20rWorkoutModel::init() - Loading workoutData for {$workoutId}");
+		$tmp = $this->loadWorkoutData( $workoutId );
 
-		$currentWorkout = $this->loadWorkoutData( $workoutId );
+		$currentWorkout = $tmp[$workoutId];
 	}
 
 
@@ -101,45 +103,42 @@ class e20rWorkoutModel extends e20rSettingsModel {
     public function loadWorkoutData( $id, $statuses = 'any' ) {
 
 	    global $post;
-	    global $currentWorkout;
 
 	    $savePost = $post;
 	    $workouts = array();
+
+	    dbg( "e20rWorkoutModel::loadWorkoutData() - Attempting to load workout settings for {$id}" );
 
 	    if ( $id === null ) {
 
 		    dbg( "e20rWorkoutModel::loadWorkoutData() - Warning: Unable to load workout data. No ID specified!" );
 
-		    return $this->meta;
+		    return $this->settings;
 	    } else {
 
 		    $query = array(
-			    'post_type'   => 'e20r_workouts',
+			    'post_type'   => 'e20r_workout',
 			    'post_status' => $statuses,
 			    'p'           => $id,
 		    );
 
-		    wp_reset_query();
-
 		    /* Fetch Workouts */
-		    $workout_list = new WP_Query( $query );
+		    $query = new WP_Query( $query );
 
-		    if ( empty( $workout_list ) ) {
-			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workouts found!" );
+		    if ( $query->post_count <= 0 ) {
+			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workout found!" );
 
-			    return $this->meta;
+			    return $this->settings;
 		    }
 
-		    while ( $workout_list->have_posts() ) {
+		    while ( $query->have_posts() ) {
 
-			    $workout_list->the_post();
+			    $query->the_post();
 
+			    dbg("e20rWorkoutModel::loadWorkoutData() - Received ID: " . get_the_ID() );
 			    $new = $this->loadSettings( get_the_ID() );
 
-			    $new->id         = get_the_ID();
-			    $new->item_text  = $query->post->post_excerpt;
-			    $new->short_name = $query->post->post_title;
-
+			    $new->id         = $id;
 			    $workouts[$new->id] = $new;
 		    }
 	    }
@@ -158,12 +157,10 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	    $workoutId = $settings->id;
 
-	    // TODO: Handle workout groupings
-	    // $new_groups = $this->processGroups( $settings->groups, $this->defaultSettings() );
-
 	    $defaults = $this->defaultSettings();
 
-	    dbg("e20rWorkoutModel::saveSettings() - Saving Activity metadata: " . print_r( $settings, true ) );
+	    dbg("e20rWorkoutModel::saveSettings() - Saving metadata for new activity: " );
+	    dbg($settings);
 
 	    $error = false;
 
@@ -202,23 +199,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
      */
 /*    public function loadSettings( $id ) {
 
-        $defaults = $this->defaultSettings();
+	    parent::loadSettings($id);
 
-        if ( false === ( $this->meta = get_post_meta( $id, 'e20r-workout-settings', true ) ) ) {
-
-            dbg("e20rWorkoutModel::loadSettings() - No settings found for workout with ID: {$id}");
-            $this->meta = $defaults;
-        }
-
-        dbg("Workout Meta: " . print_r( $this->meta, true ) );
-
-        $new_groups = $this->processGroups( $this->meta->groups, $defaults );
-
-        $this->meta = (object) array_replace( (array)$defaults, (array)$this->meta );
-
-        $this->meta->groups = $new_groups;
-
-        return $this->meta;
     }
 */
 	/*

@@ -20,7 +20,7 @@ class e20rWorkout extends e20rSettings {
 	    $this->model = new e20rWorkoutModel();
 	    $this->view = new e20rWorkoutView();
 
-	    parent::__construct( 'workout', 'e20r_workouts', $this->model, $this->view );
+	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
     }
 
 
@@ -28,10 +28,11 @@ class e20rWorkout extends e20rSettings {
 
 	    global $currentWorkout;
 
-	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id) && ($currentWorkout->id != $id ) ) ) {
+	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id ) && ($currentWorkout->id != $id ) ) ) {
+		    // dbg("e20rWorkout::init() - currentWorkout->id: {$currentWorkout->id} vs id: {$id}" );
 
-		    $currentWorkout = parent::init( $id );
-		    $this->model->init( $currentWorkout->id );
+		    // $currentWorkout = parent::init( $id );
+		    $this->model->init( $id );
 
 		    dbg("e20rWorkout::init() - Loaded settings for {$id}:");
 		    dbg($currentWorkout);
@@ -68,83 +69,108 @@ class e20rWorkout extends e20rSettings {
 		return false;
 	}
 
+	/**
+	 * Save the Workout Settings to the metadata table.
+	 *
+	 * @param $post_id (int) - ID of CPT settings for the specific article.
+	 *
+	 * @return bool - True if successful at updating article settings
+	 */
     public function saveSettings( $post_id ) {
 
-        global $post, $e20rTracker;
+        global $post;
+	    global $current_user;
+	    global $e20rTracker;
 
-        if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workouts' ) ) {
+        if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workout' ) ) {
+
+	        dbg( "e20rWorkout::saveSettings() - Not a e20r_workout CPT: " . $post->post_type );
             return $post_id;
         }
 
         if ( empty( $post_id ) ) {
+
             dbg("e20rWorkout::saveSettings() - No post ID supplied");
             return false;
         }
 
         if ( wp_is_post_revision( $post_id ) ) {
+
             return $post_id;
         }
 
         if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+
             return $post_id;
         }
 
-        dbg("e20rWorkout::saveSettings()  - Saving workout to database");
-        $this->init( $post_id );
+	    dbg("e20rWorkout::saveSettings()  - Saving workout to database. Data:");
 
-        $settings = $this->model->defaultSettings();
+	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array();
+	    $exData = isset( $_POST['e20r-workout-group_exercise_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_id'] ) : array();
+	    $orderData = isset( $_POST['e20r-workout-group_exercise_order'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_order'] ) : array();
+	    $groupSetData = isset( $_POST['e20r-workout-group_set_count'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_set_count'] ) : array();
+	    $tempoData = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
+		$restData  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
 
-        foreach( $settings as $key => $value ) {
+	    /**
+	     * The Workout group definition (example has two groups with two exercises defined for each group):
+	     * Array (
+				    [0] => 0
+				    [1] => 0
+				    [2] => 1
+				    [3] => 1
+			    )
+	     */
 
-            $settings->{$key} = isset( $_POST["e20r-workout-{$key}"] ) ? $e20rTracker->sanitize( $_POST["e20r-workout-{$key}"] ) : null;
-        }
+	    $groups = array();
+	    $workout = $this->model->loadSettings( $post_id );
 
-        dbg("e20rWorkout::saveSettings()  - Looped through and saving form input: " . print_r( $settings, true ) );
-        $settings->id = $post_id;
+	    $workout->workout_ident = isset( $_POST['e20r-workout-workout_ident'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-workout_ident'] ) : 'A';
+	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
+	    $workout->assigned_user_id = isset( $_POST['e20r-workout-assigned_user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_user_id'] ) : array( -1 ); // Default is "everybody"
+	    $workout->assigned_usergroups = isset( $_POST['e20r-workout-assigned_usergroups'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_usergroups'] ) : array( -1 ) ;
+	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : date( 'Y-m-d', current_time( 'timestamp' ) );
+	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
 
-        $this->model->saveSettings( $settings );
+	    if ( !empty( $exData ) ) {
+
+		    foreach ($groupData as $key => $groupNo ) {
+
+			    if ( ! isset( $groups[ $groupNo ]->exercises ) ) {
+
+				    dbg("e20rWorkout::saveSettings() - Creating and adding group data");
+				    $groups[ $groupNo ] = new stdClass();
+				    $groups[ $groupNo ]->exercises = array();
+				    $groups[ $groupNo ]->group_set_count = $groupSetData[ $groupNo ];
+				    $groups[ $groupNo ]->group_tempo = $tempoData[ $groupNo ];
+				    $groups[ $groupNo ]->group_rest = $restData[ $groupNo ];
+			    }
+
+			    dbg("e20rWorkout::saveSettings() - Adding Exercise group data");
+			    $groups[ $groupNo ]->exercises[ $orderData[ $key ] ] = $exData[ $key ];
+		    }
+	    }
+
+	    // Add workout group data/settings
+	    $workout->groups = $groups;
+
+	    dbg('e20rWorkout::saveSettings() - Workout data to save:');
+	    dbg($workout);
+
+	    if ( $this->model->saveSettings( $workout ) ) {
+
+		    dbg('e20rWorkout::saveSettings() - Saved settings/metadata for this e20r_workout CPT');
+		    return $post_id;
+	    }
+	    else {
+		    dbg('e20rWorkout::saveSettings() - Error saving settings/metadata for this e20r_workout CPT');
+		    return false;
+	    }
+
+
     }
 
-	/**
-	 * Save the Workout Settings to the metadata table.
-	 *
-	 * @param $settings - Array of settings for the specific article.
-	 *
-	 * @return bool - True if successful at updating article settings
-	 */
-/*	public function saveSettings( stdClass $settings ) {
-
-		$articleId = $settings->id;
-
-		$defaults = self::defaultSettings();
-
-		dbg("e20rWorkoutModel::saveSettings() - Saving workout Metadata: " . print_r( $settings, true ) );
-
-		$error = false;
-
-		foreach ( $defaults as $key => $value ) {
-
-			if ( in_array( $key, array( 'id' ) ) ) {
-				continue;
-			}
-
-			if ( $key == 'post_id' ) {
-
-				dbg("e20rWorkoutModel::saveSettings() - Saving the workout ID with the post ");
-				update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
-			}
-
-			if ( false === $this->settings( $articleId, 'update', $key, $settings->{$key} ) ) {
-
-				dbg( "e20rWorkoutModel::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for workout definition with ID: {$articleId}" );
-
-				$error = true;
-			}
-		}
-
-		return ( !$error ) ;
-	}
-*/
     public function getPeers( $workoutId = null ) {
 
         if ( is_null( $workoutId ) ) {
@@ -189,16 +215,20 @@ class e20rWorkout extends e20rSettings {
     public function addMeta_WorkoutSettings() {
 
         global $post;
+	    global $currentWorkout;
 
-        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page");
+        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page: " . $post->ID );
         $this->init( $post->ID );
 
-        $workout = $this->model->find( 'id', $post->ID );
+	    // $currentWorkout = $this->model->find( 'id', $post->ID );
 
-	    if ( !empty( $workout ) ) {
-		    echo $this->view->viewSettingsBox( $workout );
+	    if ( !empty( $currentWorkout ) ) {
+
+		    dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded a workout with settings...");
+		    echo $this->view->viewSettingsBox( $currentWorkout );
 	    }
 	    else {
+		    dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded an empty/defaul workout definition...");
 		    echo $this->view->viewSettingsBox( $this->model->defaultSettings() );
 	    }
 
@@ -223,7 +253,7 @@ class e20rWorkout extends e20rSettings {
 
     public function workout_attributes_dropdown_pages_args( $args, $post ) {
 
-        if ( 'e20r_workouts' == $post->post_type ) {
+        if ( 'e20r_workout' == $post->post_type ) {
             dbg('e20rWorkout::changeSetParentType()...');
             $args['post_type'] = 'e20r_workout';
         }
@@ -285,7 +315,6 @@ class e20rWorkout extends e20rSettings {
 	    if ( $data ) {
 
 		    dbg( "e20rWorkout::add_new_exercise_group_callback() - New group table completed. Sending..." );
-		    dbg($data);
 		    wp_send_json_success( array( 'html' => $data ) );
 	    }
 	    else {
