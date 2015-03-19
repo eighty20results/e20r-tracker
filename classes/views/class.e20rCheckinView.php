@@ -63,10 +63,10 @@ class e20rCheckinView extends e20rSettingsView {
                 <strong style="display: block; margin-bottom: 8px;">There's a little problem...</strong>
                 You are using a web browser that doesn't have JavaScript enabled! <br/><br/>
                 JavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
-                To get something useful from the Nourish Coaching platform, you will need to enable JavaScript.
+                To get something useful from the Bit Better Coaching platform, you will need to enable JavaScript.
                 Start by checking your browser's help pages or support forums or "the Google". You'll probably find
                 step by step instructions.<br/>
-                Or you can post a note in your Nourish Coaching forum and we'll help you.</div>
+                Or you can post a note in your Bit Better Coaching forum and we'll help you.</div>
         </noscript>
         <div class="clear-after"></div>
         <div id="e20r-checkin-daynav">
