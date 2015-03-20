@@ -231,6 +231,11 @@ class e20rExerciseModel extends e20rSettingsModel {
 			    continue;
 		    }
 
+		    if ( $key == 'video_link' ) {
+
+			    $settings->{$key} = esc_url( $settings->{$key} );
+		    }
+
 		    if ( false === parent::settings( $exerciseId, 'update', $key, $settings->{$key} ) ) {
 
 			    dbg("e20rExercise::saveSettings() - ERROR saving settings for exercise with ID: {$exerciseId}");
