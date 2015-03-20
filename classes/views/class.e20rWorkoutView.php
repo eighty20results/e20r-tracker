@@ -246,39 +246,42 @@ class e20rWorkoutView extends e20rSettingsView {
 
 				foreach ( $group->exercises as $exId ) {
 
-					$exSettings = $e20rExercise->getExerciseSettings( $exId );
+					if ( $exId !== 0 ) {
+						$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
-					$type = $e20rExercise->getExerciseType( $exSettings->type );
+						$type = $e20rExercise->getExerciseType( $exSettings->type );
 
-					$exSettings->reps = empty( $exSettings->reps ) ? __( "None", "e20rtracker" ) : $exSettings->reps;
-					$exSettings->rest = empty( $exSettings->rest ) ? __( "None", "e20rtracker" ) : $exSettings->rest;
+						$exSettings->reps = empty( $exSettings->reps ) ? __( "None", "e20rtracker" ) : $exSettings->reps;
+						$exSettings->rest = empty( $exSettings->rest ) ? __( "None", "e20rtracker" ) : $exSettings->rest;
 
-					echo "<tr>";
-					echo '<td class="exercise-order" style="width: 15px;">' . $count . '</td>';
-					echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
-					echo "<td>{$type}</td>";
-					echo "<td>{$exSettings->reps}</td>";
-					echo "<td>{$exSettings->rest} ";
-			        echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
-					echo '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' . $count . '" >';
-					echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
-					echo "</td>";
-					echo '<td><a href="javascript:e20rActivity.editExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-edit">'. __( "Update", "e20rtracker" ) .'</a></td>';
-					echo '<td><a href="javascript:e20rActivity.removeExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-remove">' . __( "Remove", "e20rtracker" ) .'</a></td>';
-					echo "</tr>";
+						echo "<tr>";
+						echo '<td class="exercise-order" style="width: 15px;">' . $count . '</td>';
+						echo "<td colspan='2'> {$exSettings->title}  ( {$exSettings->shortcode} )</td>";
+						echo "<td>{$type}</td>";
+						echo "<td>{$exSettings->reps}</td>";
+						echo "<td>{$exSettings->rest} ";
+						echo '<input type="hidden" class="e20r-workout-group_exercise_id" name="e20r-workout-group_exercise_id[]" value="' . $exSettings->id . '" >';
+						echo '<input type="hidden" class="e20r-workout-group_exercise_order" name="e20r-workout-group_exercise_order[]" value="' . $count . '" >';
+						echo '<input type="hidden" class="e20r-workout-group" name="e20r-workout-group[]" value="' . $groupId . '" >';
+						echo "</td>";
+						echo '<td><a href="javascript:e20rActivity.editExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-edit">' . __( "Update", "e20rtracker" ) . '</a></td>';
+						echo '<td><a href="javascript:e20rActivity.removeExercise( \'group:' . $groupId . '\', ' . $exSettings->id . ', ' . $count . ')" class="e20r-exercise-remove">' . __( "Remove", "e20rtracker" ) . '</a></td>';
+						echo "</tr>";
 
-					$count++;
-					unset($exSettings);
+						$count++;
+						unset( $exSettings );
+					}
+					else {
+						?>
+						<tr>
+							<td colspan="8">
+								<?php _e("No exercises found.", 'e20rtracker'); ?>
+							</td>
+						</tr>
+					<?php
+
+					}
 				}
-			}
-			else {
-				?>
-				<tr>
-					<td colspan="8">
-						<?php _e("No exercises found.", 'e20rtracker'); ?>
-					</td>
-				</tr>
-			<?php
 			}
 			?>
 			</tbody>
