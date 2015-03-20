@@ -16,6 +16,30 @@ class e20rExerciseView {
 
     }
 
+	public function printExercise() {
+		global $currentExercise;
+
+		ob_start();
+		?>
+		<div class="e20r-display-exercise-div">
+			<table class="e20r-exercise-detail">
+				<tbody>
+					<tr class="e20r-display-exercise-row">
+						<td rowspan="2" class="e20r-display-exercise-image">
+							<?php echo $currentExercise->image; ?>
+						</td>
+					</tr>
+					<tr class="e20r-display-exercise-row">
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<?php
+		$html = ob_get_clean();
+
+		return $html;
+	}
     public function viewSettingsBox( $exerciseData, $types ) {
 
         dbg( "e20rExerciseView::viewExerciseSettingsBox() - Supplied data: " );
