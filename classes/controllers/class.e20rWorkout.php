@@ -104,7 +104,10 @@ class e20rWorkout extends e20rSettings {
             return $post_id;
         }
 
-	    dbg("e20rWorkout::saveSettings()  - Saving workout to database. Data:");
+	    dbg("e20rWorkout::saveSettings()  - Saving workout to database.");
+
+	    $groups = array();
+	    $workout = $this->model->loadSettings( $post_id );
 
 	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array();
 	    $exData = isset( $_POST['e20r-workout-group_exercise_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_id'] ) : array();
@@ -113,19 +116,6 @@ class e20rWorkout extends e20rSettings {
 	    $tempoData = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
 		$restData  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
 
-	    /**
-	     * The Workout group definition (example has two groups with two exercises defined for each group):
-	     * Array (
-				    [0] => 0
-				    [1] => 0
-				    [2] => 1
-				    [3] => 1
-			    )
-	     */
-
-	    $groups = array();
-	    $workout = $this->model->loadSettings( $post_id );
-
 	    $workout->workout_ident = isset( $_POST['e20r-workout-workout_ident'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-workout_ident'] ) : 'A';
 	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
 	    $workout->assigned_user_id = isset( $_POST['e20r-workout-assigned_user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_user_id'] ) : array( -1 ); // Default is "everybody"
@@ -133,11 +123,13 @@ class e20rWorkout extends e20rSettings {
 	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : date( 'Y-m-d', current_time( 'timestamp' ) );
 	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
 
-	    if ( !empty( $exData ) ) {
+	    $test = (array)$exData;
+
+	    if ( !empty( $test ) ) {
 
 		    foreach ($groupData as $key => $groupNo ) {
 
-			    if ( ! isset( $groups[ $groupNo ]->exercises ) ) {
+			    if ( ( $workout->groups[$groupNo]->exercises[0] == 0 ) && ( ! isset( $groups[ $groupNo ]->exercises ) ) ) {
 
 				    dbg("e20rWorkout::saveSettings() - Creating and adding group data");
 				    $groups[ $groupNo ] = new stdClass();
@@ -150,6 +142,8 @@ class e20rWorkout extends e20rSettings {
 			    dbg("e20rWorkout::saveSettings() - Adding Exercise group data");
 			    $groups[ $groupNo ]->exercises[ $orderData[ $key ] ] = $exData[ $key ];
 		    }
+		    dbg("e20rWorkout::saveSettings() - Groups:");
+		    dbg($groups);
 	    }
 
 	    // Add workout group data/settings
