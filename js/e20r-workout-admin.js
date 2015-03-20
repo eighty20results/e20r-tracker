@@ -71,6 +71,18 @@ var e20rActivity = {
             });
         });
 
+        self.removeBtns = self.activityForm.find('.e20r-remove-group.button');
+
+        self.removeBtns.each(function(){
+
+            var group = jQuery(this).closest('.e20r-exercise-group');
+            var groupNo = group.find('input[type="hidden"][name^="e20r-group-id"]').val();
+            console.log("Adding on-click event for button in group: ", groupNo );
+
+            jQuery(this).unbind('click').on('click', function() {
+                self.removeActivityGroup( groupNo, group );
+            });
+        });
     },
     addNewActivityGroup: function( self ) {
 
@@ -101,20 +113,6 @@ var e20rActivity = {
                     grouping = self.activityForm.find('tr.e20r-exercise-group:last');
                     grouping.find('.e20r-group-id').val( currentGroupNo );
                     grouping.find('.group-id').html( (currentGroupNo + 1) );
-
-                    self.removeBtns = self.activityForm.find('.e20r-remove-group.button');
-
-                    self.removeBtns.each(function(){
-
-                        var group = jQuery(this).closest('.e20r-exercise-group');
-                        var groupNo = group.find('input[type="hidden"][name^="e20r-group-id"]').val();
-                        console.log("Adding on-click event for button in group: ", groupNo );
-
-                        jQuery(this).unbind('click').on('click', function() {
-                            self.removeActivityGroup( groupNo, group );
-                        });
-
-                    });
 
                     self.bindButtons( self );
                 }
@@ -274,7 +272,7 @@ var e20rActivity = {
                     var edit_lnk = 'javascript:e20rActivity.editExercise(' + groupInfo + ', ' + ex_id + ', ' + ex_order + ');';
                     var remove_lnk = 'javascript:e20rActivity.removeExercise(' + groupInfo + ', ' + ex_id + ', ' + ex_order + ');';
 
-                    jQuery(this).find('input[name^="e20r-workout-group"]').val( groupNum );
+                    jQuery(this).find('.e20r-workout-group').val( groupNum );
                     jQuery(this).find('a.e20r-exercise-edit').attr('href', edit_lnk );
                     jQuery(this).find('a.e20r-exercise-remove').attr('href', edit_lnk );
                 }
