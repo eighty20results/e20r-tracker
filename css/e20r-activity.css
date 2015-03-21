@@ -1,0 +1,22 @@
+div.e20r-display-exercise-div {
+    width: 100%;
+}
+/* Vertical tablets and smaller devices */
+@media screen and (max-width: 533px) {
+    .e20r-display-exercise-image > .wp-video-shortcode {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+
+}
+/* Any other device */
+@media screen and (min-width: 534px) {
+    .e20r-display-exercise-image > .wp-video-shortcode {
+        display: block;
+        margin: 0 auto;
+        max-width: 960px;
+        width: 100%;
+        min-width: 530px;
+    }
+}
