@@ -17,7 +17,18 @@ class e20rExerciseView {
     }
 
 	public function printExercise() {
+
 		global $currentExercise;
+		global $e20rExercise;
+
+		$type_label = '';
+
+		if ( $currentExercise->type == 1 ) {
+
+			$type_label = __('seconds', 'e20rtracker');
+		}
+
+		$display = null;
 
 		ob_start();
 		?>
@@ -25,12 +36,58 @@ class e20rExerciseView {
 			<table class="e20r-exercise-detail">
 				<tbody>
 					<tr class="e20r-display-exercise-row">
-						<td rowspan="2" class="e20r-display-exercise-image">
-							<?php echo $currentExercise->image; ?>
+						<td rowspan="5" class="e20r-display-exercise-image">
+							<?php
+
+							if ( ! empty( $currentExercise->image ) ) {
+
+								$display = $currentExercise->image;
+							}
+
+							if ( ! empty( $currentExercise->video_link )) {
+
+								$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+
+								$args = array(
+									'src'      => esc_url( $currentExercise->video_link ),
+									'width'    => 960,
+									'poster'   => ( !empty( $currentExercise->image ) ) ? $poster[0] : null,
+								);
+
+								$display = wp_video_shortcode( $args );
+							}
+
+							echo $display;
+							?>
 						</td>
 					</tr>
 					<tr class="e20r-display-exercise-row">
 						<td></td>
+					</tr>
+					<tr class="e20r-display-exercise-row">
+						<td class="e20r-exercise-rep-title"><?php $currentExercise->title; ?></td>
+					</tr>
+					<tr class="e20r-display-exercise-row">
+						<td class="e20r-exercise-reps">
+							<span class="e20r-exercise-label"><?php $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
+							<span class="e20r-exercise-value"><?php echo ( in_array( array( 0, 2), $currentExercise->type ) ? $currentExercise->reps . ' ' . $type_label : $currentExercise->reps ); ?></span>
+						</td>
+					</tr>
+					<tr class="e20r-display-exercise-row">
+						<td class="e20r-exercise-rest-time">
+							<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+							<?php
+							if ( ! empty( $currentExercise->rest ) ) { ?>
+								<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _('seconds', 'e20rtracker'); ?></span><?php
+							}
+							else { ?>
+								<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
+							}
+							?>
+						</td>
+					</tr>
+					<tr class="e20r-display-exercise-row">
+						<td colspan="2"><textarea class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></textarea></td>
 					</tr>
 				</tbody>
 			</table>
