@@ -86,15 +86,10 @@ class e20rTracker {
 
 
             /* Control access to the media uploader for Nourish users */
-            // add_action( 'parse_query', array( &$this, 'current_user_only' ) );
             add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
-            // add_filter( 'media_view_settings', array( &$this, 'media_view_settings'), 99 );
             add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
-
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
-
-            // add_filter( 'media_upload_default_tab', array( &$this, 'default_media_tab') );
 
             /* Load scripts & CSS */
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
@@ -1068,7 +1063,10 @@ class e20rTracker {
 	public function enqueue_frontend_css() {
 
 		wp_deregister_style("e20r-tracker");
+		wp_deregister_style("e20r-activity");
+
 		wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+		wp_enqueue_style( "e20r-tracker-activity", E20R_PLUGINS_URL . '/css/e20r-activity.css', false, '0.1' );
 
 	}
     /**
