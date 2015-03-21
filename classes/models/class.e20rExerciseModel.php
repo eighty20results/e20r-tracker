@@ -24,9 +24,9 @@ class e20rExerciseModel extends e20rSettingsModel {
 
 		$this->exercise_types = array(
 
-			0 => __('# of repetitions', "e20rtracker"),
-			1 => __('For time', 'e20rtracker'),
-			2 => __('A.M.R.A.P', 'e20rtracker'),
+			0 => __('Reps', "e20rtracker"),
+			1 => __('Time', 'e20rtracker'),
+			2 => __('AMRAP', 'e20rtracker'),
 		);
 	}
 
@@ -229,11 +229,6 @@ class e20rExerciseModel extends e20rSettingsModel {
 
 		    if ( in_array( $key, array( 'id', 'title', 'descr', 'image' ) ) ) {
 			    continue;
-		    }
-
-		    if ( $key == 'video_link' ) {
-
-			    $settings->{$key} = esc_url( $settings->{$key} );
 		    }
 
 		    if ( false === parent::settings( $exerciseId, 'update', $key, $settings->{$key} ) ) {
