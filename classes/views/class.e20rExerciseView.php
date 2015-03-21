@@ -16,6 +16,7 @@ class e20rExerciseView {
 
     }
 
+	// Display the exercise entry for an activity page
 	public function printExercise() {
 
 		global $currentExercise;
@@ -97,6 +98,7 @@ class e20rExerciseView {
 
 		return $html;
 	}
+
     public function viewSettingsBox( $exerciseData, $types ) {
 
         dbg( "e20rExerciseView::viewExerciseSettingsBox() - Supplied data: " );
