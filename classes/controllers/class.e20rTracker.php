@@ -184,9 +184,6 @@ class e20rTracker {
             add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
             add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
 
-            /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
-            add_action( 'gform_after_submission', array( &$this, 'gravityform_submission' ), 10, 2);
-
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
@@ -194,8 +191,18 @@ class e20rTracker {
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
             if ( function_exists( 'pmpro_activation' ) ) {
+
                 add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
             }
+
+	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
+	        add_action( 'gform_after_submission', array( &$this, 'e20r_gravityform_submission' ), 10, 2);
+	        add_filter( 'gform_pre_render', array( &$this, 'e20r_gravityform_preload' ) );
+	        add_filter( 'gform_pre_validation', array( &$this, 'e20r_gravityform_preload' ) );
+	        add_filter( 'gform_admin_pre_render', array( &$this, 'e20r_gravityform_preload' ) );
+	        add_filter( 'gform_pre_submission_filter', array( &$this, 'e20r_gravityform_preload' ) );
+
+	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
 
             dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
@@ -422,10 +429,8 @@ class e20rTracker {
 
         if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
 
-            dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine!");
-            throw new Exception( 'GDS Encryption Engine not found!');
-
-            return false;
+            dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
+            return base64_encode( $data );
         }
 
         return GDS_Encryption_Class::encrypt( $data );
@@ -434,19 +439,45 @@ class e20rTracker {
     public function decryptData( $encData ) {
 
         if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
-            dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine!");
-            throw new Exception( 'GDS Decryption Engine not found!');
-            return false;
+
+            dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
+            return base64_decode( $encData );
         }
 
         return GDS_Encryption_Class::decrypt( $encData );
     }
 
-    public function gravityform_submission( $submitted, $form ) {
+	public function e20r_gravityform_preload( $form ) {
+
+		dbg("e20rTracker::gravityform_preload() - Start" );
+
+		if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
+
+			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+			return $form;
+		}
+
+		dbg("e20rTracker::gravityform_preload() - Loading form data: ");
+		// dbg( "Form: " . print_r( $form, true) );
+
+		return $form;
+	}
+
+    public function e20r_gravityform_submission( $entry, $form ) {
 
         dbg("e20rTracker::gravityform_submission() - Start");
-        // dbg($form);
-        // dbg($submitted);
+
+	    if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
+
+		    dbg('e20rTracker::gravityform_submission()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+		    return;
+	    }
+
+	    dbg("e20rTracker::gravityform_submission() - Processing the Bit Better Interview form(s).");
+
+	    // dbg($form);
+
+	    //dbg($entry);
 
         global $e20rMeasurements;
         global $current_user;
@@ -457,8 +488,6 @@ class e20rTracker {
         $userProgramId = $e20rProgram->getProgramIdForUser( $userId );
         $userProgramStart = $e20rProgram->startdate( $userId );
 
-        dbg("e20rTracker::gravityform_submission() - Processing ");
-
         $db_Data = array(
             'user_id' => $userId,
             'program_id' => $userProgramId,
@@ -466,169 +495,169 @@ class e20rTracker {
             'program_photo_dir'=> 'e20r-pics/',
         );
 
-        if ( stripos( $form['title'], 'welcome' ) ) {
-            dbg("e20rTracker::gravityform_submission - Processing the Welcome Interview form");
+	    $fieldList = array( 'text', 'textarea', 'number', 'email' );
 
-            foreach( $form['fields'] as $item ) {
+        dbg("e20rTracker::gravityform_submission() - Processing the Welcome Interview form");
 
-                $skip = false;
+        foreach( $form['fields'] as $item ) {
 
-                if ( ! in_array( $item['type'], array( 'section' ) ) ) {
+            $skip = true;
 
-                    $fieldName = $item['label'];
+	        // dbg( "e20rTracker::gravityform_submission() - Submitted for item {$item['id']}: " . print_r( $entry[ $item['id'] ], true ) );
+
+            if ( ! in_array( $item['type'], array( 'section' ) ) ) {
+
+                $fieldName = $item['label'];
+                $subm_key = $item['id'];
+
+	            if ( in_array( $item['type'], $fieldList ) ) {
+
+		            $skip = false;
+	            }
+
+                if ( $item['type'] == 'checkbox' ) {
+
+	                $checked = array();
+
+                    foreach( $item['inputs'] as $k => $i ) {
+
+                        if ( !empty( $entry[ $i['id'] ] ) ) {
+
+	                        $checked[] = $i['label'];
+                        }
+                    }
+
+	                if ( ! empty( $checked ) ) {
+
+		                $db_Data[ $fieldName ] = $this->encryptData( join( ', ', $checked ) );
+
+	                }
+
+	                $skip = true;
+                }
+
+                if ( ( $fieldName == 'calculated_weight_lbs') && ( ! empty( $entry[ $item['id'] ] ) )  ) {
+
+	                dbg("e20rTracker::gravityform_submission() - Saving weight as LBS...");
+	                $skip = false;
+                    $e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
+                }
+
+                if ( ( $fieldName == 'calculated_weight_kg') && ( ! empty( $entry[$item['id']] ) )  ) {
+
+	                dbg("e20rTracker::gravityform_submission() - Saving weight as KG");
+	                $skip = false;
+                    $e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
+                }
+
+                if ( $item['type'] == 'survey' ) {
+
+                    $key = $entry[$item['id']];
                     $subm_key = $item['id'];
 
-                    if ( $item['type'] == 'checkbox' ) {
+                    if ( $item['inputType'] == 'likert' ) {
 
-                        foreach( $item['inputs'] as $k => $i ) {
+                        foreach( $item['choices'] as $k => $i ) {
 
-                            if ( !empty( $submitted[$i['id']] ) ) {
-                                $subm_key = $i['id'];
-                            }
+	                        foreach ( $i as $lk => $val ) {
+
+		                        if ( $entry[$subm_key] == $item['choices'][$k]['value'] ) {
+
+			                        $entry[$subm_key] = $item['choices'][$k]['score'];
+			                        $skip = false;
+		                        }
+	                        }
                         }
                     }
+                }
 
-                    if ( ( $item['label'] == 'calculated_weigth_lbs') && ( ! empty( $submitted[$item['id']] ) )  ) {
+                if ( $item['type'] == 'address' ) {
 
-                        $e20rMeasurements->saveMeasurement( 'weight', $submitted[$item['id']], -1, $userProgramId, $userProgramStart, $userId );
-                    }
+                    $key = $item['id'];
 
-                    if ( ( $item['label'] == 'calculated_weigth_kg') && ( ! empty( $submitted[$item['id']] ) )  ) {
+                    foreach( $item['inputs'] as $k => $aItem ) {
 
-                        $e20rMeasurements->saveMeasurement( 'weight', $submitted[$item['id']], -1, $userProgramId, $userProgramStart, $userId );
-                    }
+                        $splt = preg_split( "/\./", $aItem['id'] );
 
-                    if ( $item['type'] == 'survey' ) {
+                        switch ( $splt[1] ) {
+                            case '1':
+                                $fieldName = 'address_1';
+                                break;
 
-                        $key = $submitted[$item['id']];
-                        $subm_key = $item['id'];
+                            case '2':
+                                $fieldName = 'address_2';
+                                break;
 
-                        if ( $item['type'] == 'likert' ) {
+                            case '3':
+                                $fieldName = 'address_city';
+                                break;
 
-                            foreach( $item['choices'] as $k => $i ) {
+                            case '4':
+                                $fieldName = 'address_state';
+                                break;
 
-                                if ( $key == $i['value']) {
+                            case '5':
+                                $fieldName = 'address_zip';
+                                break;
 
-                                    $submitted[$subm_key] = $item['choices'][$k]['score'];
-                                }
-                            }
+                            case '6':
+                                $fieldName = 'address_country';
+                                break;
                         }
+
+	                    if ( !empty( $entry[$aItem['id']])) {
+
+		                    $db_Data[ $fieldName ] = $this->encryptData( $entry[ $aItem['id'] ] );
+	                    }
                     }
 
-                    if ( $item['type'] == 'address' ) {
+	                $skip = true;
+                }
 
-                        $key = $item['id'];
+	            if ( in_array( $item['type'], array( 'select', 'radio' ) ) ) {
 
-                        foreach( $item['inputs'] as $k => $aItem ) {
+	                foreach( $item['choices'] as $k => $v ) {
 
-                            $splt = preg_split( "/\./", $aItem['id'] );
+		                if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
 
-                            switch ( $splt[1] ) {
-                                case '1':
-                                    $fieldName = 'address_1';
-                                    break;
+			                $db_Data[ $fieldName ] = $this->encryptData( $item['choices'][$k]['text'] );
+			                $skip = true;
+		                }
+	                }
+                }
 
-                                case '2':
-                                    $fieldName = 'address_1';
-                                    break;
+                if ( ! $skip ) {
 
-                                case '3':
-                                    $fieldName = 'address_city';
-                                    break;
+	                if ( empty( $entry[ $subm_key ] ) ) {
 
-                                case '4':
-                                    $fieldName = 'address_state';
-                                    break;
+		                continue;
+	                }
 
-                                case '5':
-                                    $fieldName = 'address_zip';
-                                    break;
+	                $data = $entry[ $subm_key ];
+	                switch( $data ) {
+		                case 'Yes':
+			                $data = true;
+			                break;
+		                case 'No':
+			                $data = false;
+			                break;
 
-                                case '6':
-                                    $fieldName = 'address_country';
-                                    break;
-                            }
-
-                            $db_Data[$fieldName] = $submitted[$aItem['id']];
-                            $skip = true;
-                        }
-                    }
-
-                    // if ( $item['type'] == 'radio' ) {
-                        // TODO Grab $item['chocies'][0-N]['text'] when the $item['chocies'][0-N]['value'] == $submitted[$subm_key]
-                    //}
-                    if ( ! $skip ) {
-
-                        $db_Data[ $fieldName ] = $submitted[ $subm_key ];
-                    }
-
-                    dbg("{$fieldName} => {$submitted[$subm_key]}");
+	                }
+	                // Encrypt the data.
+	                $encData = $this->encryptData( $data );
+	                $db_Data[ $fieldName ] = $encData;
                 }
             }
-        }
+        } // End of foreach loop for submitted form
 
-        if ( stripos( $form['title'], 'assignment' ) ) {
-
-            foreach ( $submitted as $key => $entry ) {
-
-                if ( strpos( $form['fields'][$key]['label'], 'Day' ) ) {
-                    $assignmentDay = $entry;
-                }
-
-                if ( stripos($form['fields'][$key]['label'], 'date' ) ) {
-                    $assignmentDate = $entry;
-                }
-
-                if ( strpos( $form['fields'][$key]['label'], 'Assignment' ) ) {
-                    $answer = $entry;
-                }
-            }
-
-            dbg("e20rTracker::gravityform_submission - Processing Assignment form for day {$form['title']}");
-            dbg("e20rTracker::gravityform_submission - Day: {$assignmentDay}" );
-            dbg("e20rTracker::gravityform_submission - Date: {$assignmentDate}");
-            dbg("e20rTracker::gravityform_submission - Answer: {$answer}");
-        }
-
-        if ( stripos( $form['title'], 'Habit' ) ) {
-
-            foreach ( $submitted as $key => $entry ) {
-
-                if ( strpos( $form['fields'][$key]['label'], 'checkin_day' ) ) {
-                    $checkin_day = $entry;
-                }
-
-                if ( stripos($form['fields'][$key]['label'], 'date' ) ) {
-                    $checkin_date = $entry;
-                }
-
-                if ( strpos($form['fields'][$key]['label'], 'short_code' ) ) {
-                    $short_code = $entry;
-                }
-
-                if ( strpos( $form['fields'][$key]['label'], 'checkedin' ) ) {
-                    $checkedin = $entry;
-                }
-            }
-
-            dbg("e20rTracker::gravityform_submission - Processing Assignment form for day {$form['title']}");
-            dbg("e20rTracker::gravityform_submission - Day: {$checkin_day}" );
-            dbg("e20rTracker::gravityform_submission - Date: {$checkin_date}");
-            dbg("e20rTracker::gravityform_submission - Habit: {$short_code}");
-            dbg("e20rTracker::gravityform_submission - Status: {$checkedin}");
-        }
-
-        if ( ! empty( $db_Data['first_name'] ) ) {
-
-            if ( ! $e20rClient->saveInterviewData( $db_Data ) ) {
-                throw new Exception( "Unable to save the data from the Welcome Interview form" );
-            }
-        }
+	    dbg("e20rTracker::gravityforms_submission() - The current state of the data to feed to the DB: ");
+	    dbg($db_Data);
     }
 
     public function updateSetting( $name, $value ) {
 
         if ( array_key_exists( $name, $this->settings ) ) {
+
             $this->settings[ $name ] = $value;
             update_option( $this->setting_name, $this->settings);
             return true;
@@ -820,6 +849,7 @@ class e20rTracker {
 
     }
 
+	// TODO: Make this a program setting and not a global setting!
     public function render_lessons_select() {
 
         $options = get_option( $this->setting_name );
@@ -837,6 +867,7 @@ class e20rTracker {
         </select>
         <?php
     }
+
     public function render_delete_checkbox() {
 
         $options = get_option( $this->setting_name );
