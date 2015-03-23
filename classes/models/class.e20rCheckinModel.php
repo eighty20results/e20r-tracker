@@ -42,6 +42,9 @@ class e20rCheckinModel extends e20rSettingsModel {
     public function findActionByDate( $date, $programId ) {
 
         dbg("e20rCheckinModel::findActionByDate() - Searching by date: {$date}" );
+
+	    $actions = array();
+
         $args = array(
             'posts_per_page' => -1,
             'post_type' => 'e20r_checkins',
