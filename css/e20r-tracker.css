@@ -2130,3 +2130,163 @@ input[type=text].video_link {
 .new-exercises {
     width: 100%;
 }
+table.e20r-nourish-infobox td.infobox-td {
+    line-height: 20px;
+    font-size: 14px;
+    border-top: 0;
+}
+.e20r-nourish-surveys {
+    max-width: 750px;
+    width: 750px;
+    min-width: 450px;
+    margin: 0 auto;
+}
+.e20r-nourish-surveys div.gform_body li label.gfield_label {
+    display: none;
+}
+.e20r-nourish-surveys div.gfield_description {
+    padding: 0;
+}
+.e20r-nourish-surveys div.gfield_description > h4 {
+    line-height: 120%;
+    padding: 30px 0 0 0 !important;
+    /* color: rgba(156, 0, 0, 0.70); */
+    color: rgba(0, 77, 255, 0.7);
+}
+span.e20r-required {
+    color: #9C0000;
+}
+.e20r-radio div ul li label,
+.e20r-checkbox ul.gfield_checkbox > li label {
+    font-size: 0.8em;
+}
+.e20r-checkbox div > ul.gfield_checkbox,
+.e20r-radio div > ul {
+    padding: 0 0 0 20px !important;
+}
+.e20r-survey-input input[type="number"],
+.e20r-survey-input input[type="email"],
+.e20r-survey-input input[type="text"],
+.e20r-survey-input input[type="tel"],
+.e20r-checkbox input[type="text"],
+.e20r-radio input[type="text"] {
+    height: 30px;
+    vertical-align: baseline !important;
+}
+.e20r-nourish-surveys div.ginput_container > table {
+    width: 80%;
+    min-width: 450px;
+}
+.e20r-dropdown {
+    vertical-align: bottom !important;
+}
+.e20r-dropdown select {
+    height: 33px;
+    vertical-align: baseline !important;
+}
+.e20r-hr-medium {
+    max-width: 800px;
+    min-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+}
+.what-to-do-div {
+    background-color: #e6e6e6;
+    margin: 35px auto 35px auto;
+    max-width: 620px;
+    border: 3px solid #9C0000;
+}
+.what-to-do-table {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.nage-box {
+    max-width: 700px;
+    min-width: 400px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.nage-number {
+    max-width: 100px;
+    max-height: 50px;
+    margin: 3pt;
+}
+.nage-number-text {
+    position: relative;
+    top: 22px;
+    color: #c5c5c5;
+    font-weight: bold;
+    font-size: 60pt;
+    text-align: center;"
+}
+.nage-level-text {
+    color: #9c0000;
+    position: relative;
+    top: 4px;
+    margin-left: 4px;
+    z-index: 10;
+    font-size: 15pt;
+    text-align: center;"
+}
+.nage-text {
+    max-width: 500px;
+    text-align: left;
+    vertical-align: top;
+}
+.nage-text > div {
+    padding-bottom: 10px;
+}
+.new-habit-box {
+    border: 1pt dotted grey;
+    background-color: #ffcc66;
+    max-width: 500px;
+    margin: 0px auto 20px auto;
+    padding: 0px 25px 0px 25px;
+}
+blockquote {
+    border-right: 5px solid rgba(0, 77, 255, 0.35);
+    padding-right: 15px;
+    background-color: #fcfcfc;
+}
+blockquote > div {
+    font-size: 1em;
+    font-style: italic;
+    padding: 10px 10px 10px 30px;
+    color: #5C5C5C;
+    background-color: #fafafa;
+}
+blockquote > div:before {
+    content: "\2014 ";
+}
+blockquote:before {
+    font: bold 45px/1px Times, serif;
+    color: #004DFF;
+    position: absolute;
+}
+blockquote:before {
+    content: "\201C ";
+    margin: 15px 0 0 -25px;
+}
+.nourish_hide {
+    display: none !important;
+}
+.e20r-coaching-presale input.button {
+    width: 100%;
+    margin: 0 auto;
+    text-transform: none !important;
+    font-size: 150% !important;
+    background-image: -webkit-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
+    background-image: -moz-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
+    background-image: -o-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
+    background-image: linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
+    padding: 10px;
+}
+.e20r-coaching-presale p {
+    color: #5c5c5c !important;
+    font-style: italic;
+}
+.e20r-presale-table {
+    border: 1px solid #b5b5b5;
+}
