@@ -430,7 +430,8 @@ class e20rTracker {
         if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
 
             dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
-            return base64_encode( $data );
+            // return base64_encode( $data );
+	        return $data;
         }
 
         return GDS_Encryption_Class::encrypt( $data );
@@ -441,7 +442,8 @@ class e20rTracker {
         if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
 
             dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
-            return base64_decode( $encData );
+            // return base64_decode( $encData );
+	        return $encData;
         }
 
         return GDS_Encryption_Class::decrypt( $encData );
@@ -465,6 +467,11 @@ class e20rTracker {
 
     public function e20r_gravityform_submission( $entry, $form ) {
 
+	    global $e20rTracker;
+	    global $current_user;
+	    global $post;
+
+
         dbg("e20rTracker::gravityform_submission() - Start");
 
 	    if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
@@ -473,11 +480,19 @@ class e20rTracker {
 		    return;
 	    }
 
+	    if ( ! is_user_logged_in() ) {
+
+		    dbg("e20rTracker::gravityform_submission()  - User accessing form without being logged in.");
+		    return;
+	    }
+
+	    if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+
+		    dbg("e20rTracker::gravityform_submission()  - User doesn't have access to this form.");
+		    return false;
+	    }
+
 	    dbg("e20rTracker::gravityform_submission() - Processing the Bit Better Interview form(s).");
-
-	    // dbg($form);
-
-	    //dbg($entry);
 
         global $e20rMeasurements;
         global $current_user;
@@ -492,7 +507,8 @@ class e20rTracker {
             'user_id' => $userId,
             'program_id' => $userProgramId,
             'program_start' => $userProgramStart,
-            'program_photo_dir'=> 'e20r-pics/',
+//	        'user_enc_key' => $this->getUserKey( $user_id ),
+            'progress_photo_dir'=> 'e20r-pics/',
         );
 
 	    $fieldList = array( 'text', 'textarea', 'number', 'email' );
@@ -522,8 +538,8 @@ class e20rTracker {
                     foreach( $item['inputs'] as $k => $i ) {
 
                         if ( !empty( $entry[ $i['id'] ] ) ) {
-
-	                        $checked[] = $i['label'];
+	                        dbg($item);
+	                        $checked[] = $item['choices'][$k]['text'];
                         }
                     }
 
@@ -620,7 +636,7 @@ class e20rTracker {
 
 		                if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
 
-			                $db_Data[ $fieldName ] = $this->encryptData( $item['choices'][$k]['text'] );
+			                $db_Data[ $fieldName ] = $this->encryptData( $item['choices'][$k]['value'] );
 			                $skip = true;
 		                }
 	                }
@@ -633,15 +649,26 @@ class e20rTracker {
 		                continue;
 	                }
 
-	                $data = $entry[ $subm_key ];
+	                $data = trim($entry[ $subm_key ]);
+	                dbg("e20rTracker::gravityform_submission() - Data being stored: .{$data}.");
+
 	                switch( $data ) {
+
 		                case 'Yes':
-			                $data = true;
-			                break;
-		                case 'No':
-			                $data = false;
+			                $data = 1;
 			                break;
 
+		                case 'No':
+			                $data = 0;
+			                break;
+
+		                case 'Male':
+			                $data = 'm';
+			                break;
+
+		                case 'Female':
+			                $data = 'f';
+			                break;
 	                }
 	                // Encrypt the data.
 	                $encData = $this->encryptData( $data );
@@ -651,7 +678,13 @@ class e20rTracker {
         } // End of foreach loop for submitted form
 
 	    dbg("e20rTracker::gravityforms_submission() - The current state of the data to feed to the DB: ");
-	    dbg($db_Data);
+
+	    if ( $this->model->save_client_interview( $db_Data ) ) {
+
+		    dbg("e20rTracker::gravityforms_submission() - Saved data to the database ");
+	    }
+
+	    return false;
     }
 
     public function updateSetting( $name, $value ) {
@@ -1582,6 +1615,8 @@ class e20rTracker {
                     user_enc_key varchar(512) not null,
                     first_name varchar(20) null,
                     last_name varchar(50) null,
+                    gender varchar(2) null,
+                    email varchar(255) null,
                     phone varchar(18) null,
                     alt_phone varchar(18) null,
                     contact_method varchar(15) null,
@@ -1632,11 +1667,11 @@ class e20rTracker {
                     goal_achievement text null,
                     goal_reward text null,
                     regular_exercise tinyint not null default 0,
-                    exercise_hours_per_week varchar(3) not null default '0',
-                    regular_exercise_type varchar(10) not null default 'none',
+                    exercise_hours_per_week varchar(4) not null default '0',
+                    regular_exercise_type text not null default 'none',
                     other_exercise text null,
                     exercise_plan tinyint not null default 0,
-                    exercise_level varchar(20) default 'not-applicable',
+                    exercise_level varchar(255) default 'not-applicable',
                     competitive_sports tinyint null,
                     competitive_survey text null,
                     enjoyable_activities text null,
@@ -1644,28 +1679,29 @@ class e20rTracker {
                     chronic_pain tinyint not null default 0,
                     pain_symptoms text null,
                     limiting_injuries tinyint not null default 0,
-                    injury_summary varchar(11) not null default 'none',
+                    injury_summary varchar(512) not null default 'none',
                     other_injuries text null,
                     injury_details text null,
                     nutritional_challenge text null,
-                    buy_groceries varchar(6) null,
+                    buy_groceries varchar(50) null,
                     groceries_who varchar(255) null,
-                    cooking varchar(6) null,
+                    cooking varchar(50) null,
                     cooking_who varchar(255) null,
-                    eats_with varchar(8) null,
-                    meals_at_home varchar(4) null,
+                    eats_with varchar(100) null,
+                    meals_at_home varchar(8) null,
+                    meals_not_home varchar(8) null,
                     following_diet tinyint null default 0,
-                    diet_summary varchar(18) null default 'none',
+                    diet_summary varchar(512) null default 'none',
                     other_diet varchar(255) null,
                     diet_duration varchar(255) null,
                     food_allergies tinyint null default 0,
-                    food_allergy_summary varchar(15) null,
+                    food_allergy_summary text null,
                     food_allergy_other varchar(255) null,
                     food_sensitivity tinyint null default 0,
-                    sensitivity_summary varchar(15) null,
+                    sensitivity_summary varchar(512) null,
                     sensitivity_other varchar(255) null,
                     supplements tinyint null default 0,
-                    supplement_summary varchar(20) null default 'none',
+                    supplement_summary varchar(512) null default 'none',
                     other_vitamins varchar(255) null,
                     supplements_other varchar(255) null,
                     daily_water_servings varchar(4) null,
@@ -1675,7 +1711,7 @@ class e20rTracker {
                     diagnosed_medical_problems tinyint null default 0,
                     medical_issues text null,
                     on_prescriptions tinyint null default 0,
-                    prescription_summary varchar(20) null,
+                    prescription_summary text,
                     other_treatments tinyint null default 0,
                     treatment_summary text null,
                     working tinyint null default 0,
@@ -1688,7 +1724,7 @@ class e20rTracker {
                     student tinyint null default 0,
                     school_stress varchar(9) null,
                     caregiver tinyint null default 0,
-                    caregiver_for varchar(150) null,
+                    caregiver_for varchar(255) null,
                     caregiver_stress varchar(9) null,
                     committed_relationship tinyint null default 0,
                     partner varchar(50) null,
@@ -1704,13 +1740,13 @@ class e20rTracker {
                     hobbies text null,
                     alcohol varchar(15) null,
                     smoking varchar(10) null,
-                    non_prescriptiondrugs varchar(10) null,
+                    non_prescription_drugs varchar(10) null,
                     program_expectations text null,
                     coach_expectations text null,
                     more_info text null,
-                    photo_consent tinyint not null default 0,
-                    research_consent tinyint not null default 0,
-                    medical_release tinyint not null default 0,
+                    photo_consent varchar(3) not null default 'No',
+                    research_consent varchar(3) not null default 'No',
+                    medical_release varchar(3) not null defaul'No' 0,
                     primary key  (id),
                     key user_id  (user_id asc),
                     key programstart  (program_start asc)
@@ -2512,8 +2548,8 @@ class e20rTracker {
             }
             else {
 
-                dbg("e20rMeasurementModel::setFormatForRecord() - Invalid DB type for {$key}/{$val} pair");
-                throw new Exception( "The value submitted to the Database for {$key} is of an invalid/unknown type" );
+                dbg("e20rTracker::setFormatForRecord() - Invalid data type for {$key}/{$val} pair");
+                throw new Exception( "The value submitted for persistant storage as {$key} is of an invalid/unknown type" );
                 return false;
             }
         }
@@ -2558,18 +2594,19 @@ class e20rTracker {
         else {
             // dbg( "setFormat() - .{$value}. IS numeric" );
 
-            if ( is_float( $value + 1 ) ) {
-                // dbg( "setFormat() - {$value} is a float" );
-
+            if ( filter_var( $value, FILTER_VALIDATE_FLOAT) ) {
+                dbg( "setFormat() - {$value} is a float" );
                 return '%f';
             }
 
-            if ( is_int( $value + 1 ) ) {
-                // dbg( "setFormat() - {$value} is an integer" );
+            if ( filter_var( $value, FILTER_VALIDATE_INT ) ) {
+                dbg( "setFormat() - {$value} is an integer" );
                 return '%d';
             }
         }
-        return false;
+
+	    dbg("e20rTracker::setFormat() - Value: {$value} doesn't have a recognized format..? " . gettype($value) );
+        return '%s';
     }
 
     public function getCurrentPostType() {
