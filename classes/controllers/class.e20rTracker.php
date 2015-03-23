@@ -196,11 +196,11 @@ class e20rTracker {
             }
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
-	        add_action( 'gform_after_submission', array( &$this, 'e20r_gravityform_submission' ), 10, 2);
-	        add_filter( 'gform_pre_render', array( &$this, 'e20r_gravityform_preload' ) );
-	        add_filter( 'gform_pre_validation', array( &$this, 'e20r_gravityform_preload' ) );
-	        add_filter( 'gform_admin_pre_render', array( &$this, 'e20r_gravityform_preload' ) );
-	        add_filter( 'gform_pre_submission_filter', array( &$this, 'e20r_gravityform_preload' ) );
+	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
+	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
+	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
+	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
+	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
 
 	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
 
@@ -447,244 +447,6 @@ class e20rTracker {
         }
 
         return GDS_Encryption_Class::decrypt( $encData );
-    }
-
-	public function e20r_gravityform_preload( $form ) {
-
-		dbg("e20rTracker::gravityform_preload() - Start" );
-
-		if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
-
-			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form: ' . $form['cssClass']);
-			return $form;
-		}
-
-		dbg("e20rTracker::gravityform_preload() - Loading form data: ");
-		// dbg( "Form: " . print_r( $form, true) );
-
-		return $form;
-	}
-
-    public function e20r_gravityform_submission( $entry, $form ) {
-
-	    global $e20rTracker;
-	    global $current_user;
-	    global $post;
-
-
-        dbg("e20rTracker::gravityform_submission() - Start");
-
-	    if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
-
-		    dbg('e20rTracker::gravityform_submission()  - Not the BitBetter Interview form: ' . $form['cssClass']);
-		    return;
-	    }
-
-	    if ( ! is_user_logged_in() ) {
-
-		    dbg("e20rTracker::gravityform_submission()  - User accessing form without being logged in.");
-		    return;
-	    }
-
-	    if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
-
-		    dbg("e20rTracker::gravityform_submission()  - User doesn't have access to this form.");
-		    return false;
-	    }
-
-	    dbg("e20rTracker::gravityform_submission() - Processing the Bit Better Interview form(s).");
-
-        global $e20rMeasurements;
-        global $current_user;
-        global $e20rProgram;
-        global $e20rClient;
-
-        $userId = $current_user->ID;
-        $userProgramId = $e20rProgram->getProgramIdForUser( $userId );
-        $userProgramStart = $e20rProgram->startdate( $userId );
-
-        $db_Data = array(
-            'user_id' => $userId,
-            'program_id' => $userProgramId,
-            'program_start' => $userProgramStart,
-//	        'user_enc_key' => $this->getUserKey( $user_id ),
-            'progress_photo_dir'=> 'e20r-pics/',
-        );
-
-	    $fieldList = array( 'text', 'textarea', 'number', 'email' );
-
-        dbg("e20rTracker::gravityform_submission() - Processing the Welcome Interview form");
-
-        foreach( $form['fields'] as $item ) {
-
-            $skip = true;
-
-	        // dbg( "e20rTracker::gravityform_submission() - Submitted for item {$item['id']}: " . print_r( $entry[ $item['id'] ], true ) );
-
-            if ( ! in_array( $item['type'], array( 'section' ) ) ) {
-
-                $fieldName = $item['label'];
-                $subm_key = $item['id'];
-
-	            if ( in_array( $item['type'], $fieldList ) ) {
-
-		            $skip = false;
-	            }
-
-                if ( $item['type'] == 'checkbox' ) {
-
-	                $checked = array();
-
-                    foreach( $item['inputs'] as $k => $i ) {
-
-                        if ( !empty( $entry[ $i['id'] ] ) ) {
-	                        dbg($item);
-	                        $checked[] = $item['choices'][$k]['text'];
-                        }
-                    }
-
-	                if ( ! empty( $checked ) ) {
-
-		                $db_Data[ $fieldName ] = $this->encryptData( join( ', ', $checked ) );
-
-	                }
-
-	                $skip = true;
-                }
-
-                if ( ( $fieldName == 'calculated_weight_lbs') && ( ! empty( $entry[ $item['id'] ] ) )  ) {
-
-	                dbg("e20rTracker::gravityform_submission() - Saving weight as LBS...");
-	                $skip = false;
-                    $e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
-                }
-
-                if ( ( $fieldName == 'calculated_weight_kg') && ( ! empty( $entry[$item['id']] ) )  ) {
-
-	                dbg("e20rTracker::gravityform_submission() - Saving weight as KG");
-	                $skip = false;
-                    $e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
-                }
-
-                if ( $item['type'] == 'survey' ) {
-
-                    $key = $entry[$item['id']];
-                    $subm_key = $item['id'];
-
-                    if ( $item['inputType'] == 'likert' ) {
-
-                        foreach( $item['choices'] as $k => $i ) {
-
-	                        foreach ( $i as $lk => $val ) {
-
-		                        if ( $entry[$subm_key] == $item['choices'][$k]['value'] ) {
-
-			                        $entry[$subm_key] = $item['choices'][$k]['score'];
-			                        $skip = false;
-		                        }
-	                        }
-                        }
-                    }
-                }
-
-                if ( $item['type'] == 'address' ) {
-
-                    $key = $item['id'];
-
-                    foreach( $item['inputs'] as $k => $aItem ) {
-
-                        $splt = preg_split( "/\./", $aItem['id'] );
-
-                        switch ( $splt[1] ) {
-                            case '1':
-                                $fieldName = 'address_1';
-                                break;
-
-                            case '2':
-                                $fieldName = 'address_2';
-                                break;
-
-                            case '3':
-                                $fieldName = 'address_city';
-                                break;
-
-                            case '4':
-                                $fieldName = 'address_state';
-                                break;
-
-                            case '5':
-                                $fieldName = 'address_zip';
-                                break;
-
-                            case '6':
-                                $fieldName = 'address_country';
-                                break;
-                        }
-
-	                    if ( !empty( $entry[$aItem['id']])) {
-
-		                    $db_Data[ $fieldName ] = $this->encryptData( $entry[ $aItem['id'] ] );
-	                    }
-                    }
-
-	                $skip = true;
-                }
-
-	            if ( in_array( $item['type'], array( 'select', 'radio' ) ) ) {
-
-	                foreach( $item['choices'] as $k => $v ) {
-
-		                if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
-
-			                $db_Data[ $fieldName ] = $this->encryptData( $item['choices'][$k]['value'] );
-			                $skip = true;
-		                }
-	                }
-                }
-
-                if ( ! $skip ) {
-
-	                if ( empty( $entry[ $subm_key ] ) ) {
-
-		                continue;
-	                }
-
-	                $data = trim($entry[ $subm_key ]);
-	                dbg("e20rTracker::gravityform_submission() - Data being stored: .{$data}.");
-
-	                switch( $data ) {
-
-		                case 'Yes':
-			                $data = 1;
-			                break;
-
-		                case 'No':
-			                $data = 0;
-			                break;
-
-		                case 'Male':
-			                $data = 'm';
-			                break;
-
-		                case 'Female':
-			                $data = 'f';
-			                break;
-	                }
-	                // Encrypt the data.
-	                $encData = $this->encryptData( $data );
-	                $db_Data[ $fieldName ] = $encData;
-                }
-            }
-        } // End of foreach loop for submitted form
-
-	    dbg("e20rTracker::gravityforms_submission() - The current state of the data to feed to the DB: ");
-
-	    if ( $this->model->save_client_interview( $db_Data ) ) {
-
-		    dbg("e20rTracker::gravityforms_submission() - Saved data to the database ");
-	    }
-
-	    return false;
     }
 
     public function updateSetting( $name, $value ) {
@@ -1688,8 +1450,8 @@ class e20rTracker {
                     cooking varchar(50) null,
                     cooking_who varchar(255) null,
                     eats_with varchar(100) null,
-                    meals_at_home varchar(8) null,
-                    meals_not_home varchar(8) null,
+                    meals_at_home varchar(20) null,
+                    meals_not_home varchar(20) null,
                     following_diet tinyint null default 0,
                     diet_summary varchar(512) null default 'none',
                     other_diet varchar(255) null,
@@ -1704,9 +1466,9 @@ class e20rTracker {
                     supplement_summary varchar(512) null default 'none',
                     other_vitamins varchar(255) null,
                     supplements_other varchar(255) null,
-                    daily_water_servings varchar(4) null,
-                    daily_protein_servings varchar(4) null,
-                    daily_vegetable_servings varchar(4) null,
+                    daily_water_servings varchar(15) null,
+                    daily_protein_servings varchar(15) null,
+                    daily_vegetable_servings varchar(15) null,
                     nutritional_knowledge smallint null default 0,
                     diagnosed_medical_problems tinyint null default 0,
                     medical_issues text null,
@@ -1734,8 +1496,8 @@ class e20rTracker {
                     pets tinyint null default 0,
                     pet_count int null,
                     pet_names_types varchar(255) null,
-                    home_stress varchar(9) null,
-                    stress_coping varchar(15) null,
+                    home_stress varchar(255) null,
+                    stress_coping varchar(512) null,
                     vacations varchar(11) null,
                     hobbies text null,
                     alcohol varchar(15) null,
@@ -2540,7 +2302,16 @@ class e20rTracker {
 
         foreach( $record as $key => $val ) {
 
-            $varFormat = $this->setFormat( $val );
+	        if ( stripos( $key, 'zip' ) ) {
+
+		        dbg("e20rTracker::setFormatForRecord() - Field contains Zip...");
+
+		        $varFormat = '%s';
+	        }
+	        else {
+
+		        $varFormat = $this->setFormat( $val );
+	        }
 
             if ( $varFormat !== false ) {
 
@@ -2592,17 +2363,19 @@ class e20rTracker {
             }
         }
         else {
+
+	        if ( filter_var( $value, FILTER_VALIDATE_INT ) !== false ) {
+		        dbg( "setFormat() - {$value} is an integer" );
+		        return '%d';
+	        }
+
             // dbg( "setFormat() - .{$value}. IS numeric" );
 
-            if ( filter_var( $value, FILTER_VALIDATE_FLOAT) ) {
+            if ( filter_var( $value, FILTER_VALIDATE_FLOAT) !== false ) {
                 dbg( "setFormat() - {$value} is a float" );
                 return '%f';
             }
 
-            if ( filter_var( $value, FILTER_VALIDATE_INT ) ) {
-                dbg( "setFormat() - {$value} is an integer" );
-                return '%d';
-            }
         }
 
 	    dbg("e20rTracker::setFormat() - Value: {$value} doesn't have a recognized format..? " . gettype($value) );
