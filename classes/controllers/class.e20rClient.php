@@ -137,6 +137,268 @@ class e20rClient {
         return ( ! empty( $data ) ? true : false );
     }
 
+	public function load_interview( $form ) {
+
+		dbg("e20rTracker::gravityform_preload() - Start" );
+
+		if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
+
+			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+			return $form;
+		}
+
+		dbg("e20rTracker::gravityform_preload() - Loading form data: ");
+		// dbg( "Form: " . print_r( $form, true) );
+
+		return $form;
+	}
+
+	public function save_interview( $entry, $form ) {
+
+		global $e20rTracker;
+		global $current_user;
+		global $post;
+
+		dbg("e20rTracker::save_interview() - Start");
+
+		if ( stripos( $form['cssClass'], 'bitbetter-interview-identifier' ) === false ) {
+
+			dbg('e20rTracker::save_interview()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+
+			dbg("e20rTracker::save_interview()  - User accessing form without being logged in.");
+			return;
+		}
+
+		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+
+			dbg("e20rTracker::save_interview()  - User doesn't have access to this form.");
+			return false;
+		}
+
+		dbg("e20rTracker::save_interview() - Processing the Bit Better Interview form(s).");
+
+		global $e20rMeasurements;
+		global $current_user;
+		global $e20rProgram;
+		global $e20rTracker;
+
+		$userId = $current_user->ID;
+		$userProgramId = $e20rProgram->getProgramIdForUser( $userId );
+		$userProgramStart = $e20rProgram->startdate( $userId );
+
+		$db_Data = array(
+			'user_id' => $userId,
+			'program_id' => $userProgramId,
+			'program_start' => $userProgramStart,
+//	        'user_enc_key' => $this->getUserKey( $user_id ),
+			'progress_photo_dir'=> 'e20r-pics/',
+		);
+
+		$fieldList = array( 'text', 'textarea', 'number', 'email', 'phone' );
+
+		dbg("e20rClient::save_interview() - Processing the Welcome Interview form");
+
+		foreach( $form['fields'] as $item ) {
+
+			$skip = true;
+
+			dbg("e20rClient::save_interview() - Processing field type: {$item['type']}");
+
+			if ( $item['type'] != 'section' ) {
+
+				$fieldName = $item['label'];
+				$subm_key = $item['id'];
+
+				if ( in_array( $item['type'], $fieldList ) ) {
+
+					$skip = false;
+				}
+
+				if ( $item['type'] == 'date' ) {
+
+					$skip = true;
+					$db_Data[$fieldName] = date( 'Y-m-d', strtotime( $entry[ $item['id'] ] ) );
+				}
+
+				if ( $item['type'] == 'checkbox' ) {
+
+					$checked = array();
+
+					foreach( $item['inputs'] as $k => $i ) {
+
+						if ( !empty( $entry[ $i['id'] ] ) ) {
+							$checked[] = $item['choices'][$k]['text'];
+						}
+					}
+
+					if ( ! empty( $checked ) ) {
+
+						$db_Data[ $fieldName ] = $e20rTracker->encryptData( join( ', ', $checked ) );
+
+					}
+
+					$skip = true;
+				}
+
+				if ( ( $fieldName == 'calculated_weight_lbs') && ( ! empty( $entry[ $item['id'] ] ) )  ) {
+
+					dbg("e20rClient::save_interview() - Saving weight as LBS...");
+					$skip = false;
+					$e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
+				}
+
+				if ( ( $fieldName == 'calculated_weight_kg') && ( ! empty( $entry[$item['id']] ) )  ) {
+
+					dbg("e20rClient::save_interview() - Saving weight as KG");
+					$skip = false;
+					$e20rMeasurements->saveMeasurement( 'weight', $entry[ $item['id'] ], -1, $userProgramId, $userProgramStart, $userId );
+				}
+
+				if ( $item['type'] == 'survey' ) {
+
+					$key = $entry[$item['id']];
+					$subm_key = $item['id'];
+
+					if ( $item['inputType'] == 'likert' ) {
+
+						foreach( $item['choices'] as $k => $i ) {
+
+							foreach ( $i as $lk => $val ) {
+
+								if ( $entry[$subm_key] == $item['choices'][$k]['value'] ) {
+
+									$entry[$subm_key] = $item['choices'][$k]['score'];
+									$skip = false;
+								}
+							}
+						}
+					}
+				}
+
+				if ( $item['type'] == 'address' ) {
+
+					$key = $item['id'];
+
+					foreach( $item['inputs'] as $k => $aItem ) {
+
+						$splt = preg_split( "/\./", $aItem['id'] );
+
+						switch ( $splt[1] ) {
+							case '1':
+								$fieldName = 'address_1';
+								break;
+
+							case '2':
+								$fieldName = 'address_2';
+								break;
+
+							case '3':
+								$fieldName = 'address_city';
+								break;
+
+							case '4':
+								$fieldName = 'address_state';
+								break;
+
+							case '5':
+								$fieldName = 'address_zip';
+								break;
+
+							case '6':
+								$fieldName = 'address_country';
+								break;
+						}
+
+						if ( !empty( $entry[$aItem['id']])) {
+
+							$db_Data[ $fieldName ] = $e20rTracker->encryptData( $entry[ $aItem['id'] ] );
+						}
+					}
+
+					$skip = true;
+				}
+
+				if ( $item['type'] == 'select' ) {
+
+					if ( !empty( $entry[$subm_key] ) ) {
+
+						foreach ($item['choices'] as $k => $v ) {
+
+							dbg("e20rClient::save_interview() - Select item: Field: {$fieldName}, subm_key={$subm_key}, entryVal={$entry[$subm_key]}, item={$item['choices'][$k]['value']}");
+
+							if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
+
+								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $item['choices'][$k]['text'] );
+							}
+						}
+					}
+				}
+
+				if ( $item['type'] == 'radio' ) {
+
+					if ( !empty( $entry[$subm_key] ) ) {
+						foreach ( $item['choices'] as $k => $v ) {
+
+							if ( $item['choices'][ $k ]['value'] == $entry[ $subm_key ] ) {
+
+								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $item['choices'][ $k ]['value'] );
+								$skip                  = true;
+							}
+						}
+					}
+				}
+
+				if ( ! $skip ) {
+
+					if ( empty( $entry[ $subm_key ] ) ) {
+
+						continue;
+					}
+
+					$data = trim($entry[ $subm_key ]);
+					dbg("e20rClient::save_interview() - Data being stored: .{$data}.");
+
+					switch( $data ) {
+
+						case 'Yes':
+							$data = 1;
+							break;
+
+						case 'No':
+							$data = 0;
+							break;
+
+						case 'Male':
+							$data = 'm';
+							break;
+
+						case 'Female':
+							$data = 'f';
+							break;
+					}
+					// Encrypt the data.
+					$encData = $e20rTracker->encryptData( $data );
+					$db_Data[ $fieldName ] = $encData;
+				}
+				else {
+					dbg("e20rClient::save_interview() - Skipped field of type: {$item['type']} and with value: " . ( isset( $entry[ $item['id'] ] ) ? $entry[ $item['id'] ] : 'null' ) );
+				}
+			}
+		} // End of foreach loop for submitted form
+
+		dbg("e20rClient::save_interview() - The current state of the data to feed to the DB: ");
+
+		if ( $this->model->save_client_interview( $db_Data ) ) {
+
+			dbg("e20rClient::save_interview() - Saved data to the database ");
+		}
+
+		return false;
+	}
     /*
     public function saveNewUnit( $type, $unit ) {
 
