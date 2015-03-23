@@ -2169,9 +2169,17 @@ span.e20r-required {
 .e20r-survey-input input[type="text"],
 .e20r-survey-input input[type="tel"],
 .e20r-checkbox input[type="text"],
-.e20r-radio input[type="text"] {
-    height: 30px;
+.e20r-radio input[type="text"],
+.e20r-survey-input select {
+    height: 33px;
     vertical-align: baseline !important;
+    border: 2px solid rgba(0, 76, 255, 0.1);
+    padding: 0 !important;
+    margin: 0;
+}
+.e20r-nourish-surveys h4 {
+    text-shadow: none !important;
+    color: rgba(0, 77, 255, 0.5) !important;
 }
 .e20r-nourish-surveys div.ginput_container > table {
     width: 80%;
@@ -2181,6 +2189,9 @@ span.e20r-required {
     vertical-align: bottom !important;
 }
 .e20r-dropdown select {
+    border: 2px solid rgba(0, 76, 255, 0.1);
+    padding: 0 !important;
+    margin: 0;
     height: 33px;
     vertical-align: baseline !important;
 }
