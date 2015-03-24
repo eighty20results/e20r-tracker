@@ -195,7 +195,7 @@ class e20rTables {
             'user_id' => 'user_id',
             'program_id' => 'program_id',
             'program_start' => 'program_start',
-            'progress_photo_dir' => 'progress_photo_dir',
+            'program_photo_dir' => 'progress_photo_dir',
             'first_name' => 'first_name',
             'last_name' => 'last_name',
             'phone' => 'phone',
