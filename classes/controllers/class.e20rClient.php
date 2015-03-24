@@ -49,22 +49,28 @@ class e20rClient {
 
     public function isNourishClient( $user_id = 0 ) {
 
-        dbg("e20rClient::isNourishClient() - is user with id {$user_id} a nourish client?");
+	    global $e20r_isClient;
 
-        if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
+	    if ( is_null( $e20r_isClient ) ) {
 
-            dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
-            // TODO: Fetch this from an option (multi-select on plugin settings page)
-	        $nourish_levels = array( 16, 21, 22, 23, 18 );
+		    dbg("e20rClient::isNourishClient() - Is user with id {$user_id} a nourish client?");
+		    $e20rNourishClient = false;
 
-            if ( pmpro_hasMembershipLevel( $nourish_levels, $user_id ) ) {
+		    if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
-                dbg("e20rClient::isNourishClient() - User with id {$user_id} has a Nourish Coaching membership");
-                return true;
-            }
-        }
+			    dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
+			    // TODO: Fetch this from an option (multi-select on plugin settings page)
+			    $nourish_levels = array( 16, 21, 22, 23, 18 );
 
-        return false;
+			    if ( pmpro_hasMembershipLevel( $nourish_levels, $user_id ) ) {
+
+				    dbg("e20rClient::isNourishClient() - User with id {$user_id} has a Nourish Coaching membership");
+				    $e20r_isClient = true;
+			    }
+		    }
+	    }
+
+        return $e20r_isClient;
     }
 
     public function clientId() {
@@ -191,9 +197,10 @@ class e20rClient {
 		$userProgramStart = $e20rProgram->startdate( $userId );
 
 		$db_Data = array(
+			'id' => $userId,
 			'user_id' => $userId,
 			'program_id' => $userProgramId,
-			'program_start' => $userProgramStart,
+			'program_start' => date_i18n('Y-m-d',$userProgramStart ),
 //	        'user_enc_key' => $this->getUserKey( $user_id ),
 			'progress_photo_dir'=> 'e20r-pics/',
 		);
@@ -221,7 +228,7 @@ class e20rClient {
 				if ( $item['type'] == 'date' ) {
 
 					$skip = true;
-					$db_Data[$fieldName] = date( 'Y-m-d', strtotime( $entry[ $item['id'] ] ) );
+					$db_Data[$fieldName] = esc_sql( date( 'Y-m-d', strtotime( $this->filterResponse( $entry[ $item['id'] ] ) ) ) );
 				}
 
 				if ( $item['type'] == 'checkbox' ) {
@@ -237,7 +244,7 @@ class e20rClient {
 
 					if ( ! empty( $checked ) ) {
 
-						$db_Data[ $fieldName ] = $e20rTracker->encryptData( join( ', ', $checked ) );
+						$db_Data[ $fieldName ] = esc_sql( $e20rTracker->encryptData( join( ', ', $checked ) ) );
 
 					}
 
@@ -315,7 +322,7 @@ class e20rClient {
 
 						if ( !empty( $entry[$aItem['id']])) {
 
-							$db_Data[ $fieldName ] = $e20rTracker->encryptData( $entry[ $aItem['id'] ] );
+							$db_Data[ $fieldName ] = esc_sql( $e20rTracker->encryptData( $this->filterResponse( $entry[ $aItem['id'] ] ) ) );
 						}
 					}
 
@@ -332,7 +339,7 @@ class e20rClient {
 
 							if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
 
-								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $item['choices'][$k]['text'] );
+								$db_Data[ $fieldName ] = esc_sql( $e20rTracker->encryptData( $this->filterResponse( $item['choices'][$k]['text'] ) ) );
 							}
 						}
 					}
@@ -345,7 +352,7 @@ class e20rClient {
 
 							if ( $item['choices'][ $k ]['value'] == $entry[ $subm_key ] ) {
 
-								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $item['choices'][ $k ]['value'] );
+								$db_Data[ $fieldName ] = esc_sql( $e20rTracker->encryptData( $this->filterResponse( $item['choices'][ $k ]['value'] ) ) );
 								$skip                  = true;
 							}
 						}
@@ -359,30 +366,12 @@ class e20rClient {
 						continue;
 					}
 
-					$data = trim($entry[ $subm_key ]);
+					$data = trim( $entry[ $subm_key ] );
 					dbg("e20rClient::save_interview() - Data being stored: .{$data}.");
 
-					switch( $data ) {
-
-						case 'Yes':
-							$data = 1;
-							break;
-
-						case 'No':
-							$data = 0;
-							break;
-
-						case 'Male':
-							$data = 'm';
-							break;
-
-						case 'Female':
-							$data = 'f';
-							break;
-					}
 					// Encrypt the data.
-					$encData = $e20rTracker->encryptData( $data );
-					$db_Data[ $fieldName ] = $encData;
+					$encData = $e20rTracker->encryptData( $this->filterResponse( $data ) );
+					$db_Data[ $fieldName ] = esc_sql( $encData );
 				}
 				else {
 					dbg("e20rClient::save_interview() - Skipped field of type: {$item['type']} and with value: " . ( isset( $entry[ $item['id'] ] ) ? $entry[ $item['id'] ] : 'null' ) );
@@ -398,6 +387,30 @@ class e20rClient {
 		}
 
 		return false;
+	}
+
+	private function filterResponse( $data ) {
+
+		switch( $data ) {
+
+			case 'Yes':
+				$data = 1;
+				break;
+
+			case 'No':
+				$data = 0;
+				break;
+
+			case 'M':
+				$data = 'm';
+				break;
+
+			case 'F':
+				$data = 'f';
+				break;
+		}
+
+		return $data;
 	}
     /*
     public function saveNewUnit( $type, $unit ) {
