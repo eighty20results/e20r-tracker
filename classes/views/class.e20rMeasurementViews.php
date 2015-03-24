@@ -375,7 +375,7 @@ class e20rMeasurementViews {
                     <p style="clear: left;">
                         We will need your birth date to help us accurately calculate your body fat percentage. This is a one-time request.
                     </p>
-                    <select id="bdmonth" onchange="getBirthdate()" style="width: 130px;">
+                    <select id="bdmonth" onchange="setBirthdate()" style="width: 130px;">
                         <option></option> <?php
 
                         foreach ( range( 1, 12) as $month ) { ?>
@@ -383,7 +383,7 @@ class e20rMeasurementViews {
                         } ?>
 
                     </select>
-                    <select id="bdday" onchange="getBirthdate()" style="width: 70px;">
+                    <select id="bdday" onchange="setBirthdate()" style="width: 70px;">
                         <option></option> <?php
 
                         foreach ( range( 1, 31 ) as $day ) { ?>
@@ -391,7 +391,7 @@ class e20rMeasurementViews {
                         }
                         ?>
                     </select>
-                    <select id="bdyear" onchange="getBirthdate()" style="width: 80px;">
+                    <select id="bdyear" onchange="setBirthdate()" style="width: 80px;">
                         <option></option>
                         <?php
 
