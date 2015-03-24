@@ -37,7 +37,6 @@ class e20rMeasurementModel {
 
         $this->table = $e20rTables->getTable( 'measurements' );
         $this->fields = $e20rTables->getFields( 'measurements' );
-
     }
 
     public function checkCompletion( $articleId, $programId, $user_id, $date ) {
@@ -47,6 +46,7 @@ class e20rMeasurementModel {
         $nextDay = date( 'Y-m-d', strtotime( $date . '+ 1 day') );
 
         dbg( "e20rMeasurementModel::checkCompletion() - Day: {$date} -> next day: {$nextDay}");
+
         $sql = $wpdb->prepare(
             "SELECT id,
                 ( COUNT({$this->fields['girth_neck']}) +
@@ -74,9 +74,10 @@ class e20rMeasurementModel {
                 $nextDay
         );
 
+	    /*
         dbg("e20rMeasurementModel::checkCompletion() - SQL: ");
         dbg($sql);
-
+		*/
         $results = $wpdb->get_results( $sql );
 
         dbg("e20rMeasurementModel::checkCompletion() - Returned " . count( $results ) . " records");
@@ -86,6 +87,7 @@ class e20rMeasurementModel {
         $completionPct = 0;
 
         if ( is_wp_error( $results ) ) {
+
             dbg("e20rMeasurementModel::checkCompletion() - Error searching database: " . $wpdb->print_error() );
             throw new Exception( "Error searching database: " . $wpdb->print_error() );
             return false;
@@ -95,9 +97,10 @@ class e20rMeasurementModel {
 
             foreach( $results as $res ) {
 
+	            /*
                 dbg("e20rMeasurementModel::checkCompletion() - Returned Data: ");
                 dbg($res);
-
+				*/
                 if ( $res->completed >= TOTAL_GIRTH_MEASUREMENTS ) {
 
                     $girth_compl = true;
@@ -133,6 +136,12 @@ class e20rMeasurementModel {
      */
     public function getMeasurements() {
 
+	    if ( WP_DEBUG == true ) {
+
+		    dbg("e20rMeasurementModel::getMeasurements() - DEBUG is enabled. Clear transient data");
+		    $this->setFreshClientData();
+	    }
+
         try {
             $this->loadAll();
 
@@ -141,8 +150,6 @@ class e20rMeasurementModel {
             dbg("e20rMeasurementModel::getMeasurements() - Error loading all data: " . $e->getMessage() );
             return false;
         }
-
-        dbg("e20rMeasurementModel::getMeasurements() - Loaded " . count($this->all) . " records");
 
         return $this->all;
     }
@@ -153,6 +160,12 @@ class e20rMeasurementModel {
      * @return array|bool -- The measurement record for the specified date.
      */
     public function getByDate( $date = 'all' ) {
+
+	    if ( WP_DEBUG == true ) {
+
+		    dbg("e20rMeasurementModel::getMeasurements() - DEBUG is enabled. Clear transient data");
+		    $this->setFreshClientData();
+	    }
 
         dbg("e20rMeasurementModel::getByDate() - Fetching data for {$date}");
         $this->loadByDate( $date );
@@ -171,8 +184,6 @@ class e20rMeasurementModel {
     public function setByDate( $record, $date ) {
 
         $this->byDate[$date] = $record;
-
-
     }
 
     public function setUser( $userId ) {
@@ -181,12 +192,12 @@ class e20rMeasurementModel {
         global $e20rTables;
 
         $this->client_id = $userId;
-        $this->programId = $e20rProgram->getProgramIdForUser($this->client_id);
+        $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
 
         // Update tables (account for possible beta group data).
         $e20rTables->init( $this->client_id);
-        $this->table = $e20rTables->getTable( 'measurements', true);
-        $this->fields = $e20rTables->getFields('measurements', true);
+        $this->table = $e20rTables->getTable( 'measurements', true );
+        $this->fields = $e20rTables->getFields( 'measurements', true );
 
         try {
             $this->loadAll();
@@ -260,9 +271,11 @@ class e20rMeasurementModel {
     public function setFreshClientData() {
 
         global $e20rClient;
+
         // Make sure new data is accurately reflected to user(s).
         delete_transient("e20r_byDate_client_measurements_{$this->client_id}");
         delete_transient("e20r_all_client_measurements_{$this->client_id}");
+	    delete_transient("e20r_datelist_client_measurements_{$this->client_id}");
 
         $e20rClient->scriptsLoaded = false;
 
@@ -426,13 +439,16 @@ class e20rMeasurementModel {
 
         $retArr = array();
 
+	    dbg("e20rMeasurementModel::remap_fields() - Loading for fields:");
+	    dbg($this->fields);
+
         foreach ( $data as $record ) {
 
             $tmp = new stdClass();
             $tmp->id = $record->{$this->fields['id']};
             $tmp->user_id = $record->{$this->fields['user_id']};
             $tmp->article_id = $record->{$this->fields['article_id']};
-            $this->program_id = $record->{$this->fields['program_id']};
+            $tmp->program_id = $record->{$this->fields['program_id']};
             $tmp->recorded_date = $record->{$this->fields['recorded_date']};
             $tmp->weight = $record->{$this->fields['weight']};
             $tmp->neck = $record->{$this->fields['girth_neck']};
@@ -456,7 +472,6 @@ class e20rMeasurementModel {
             $this->byDate[$when] = $tmp;
 
             unset($tmp);
-
         }
 
         return $retArr;
@@ -464,70 +479,69 @@ class e20rMeasurementModel {
 
     private function loadByDate( $when ) {
 
-        global $e20rTracker;
-        global $e20rMeasurementDate;
+	    global $e20rTracker;
+	    global $e20rMeasurementDate;
 
-        if ( ( ! in_array( $when, array( 'current', 'last_week', 'next' ) ) ) &&
-             ( strtotime( $when ) !== false ) ) {
+	    if ( false === ( $this->all = get_transient( "e20r_datelist_client_measurements_{$this->client_id}" ) ) ) {
 
-            dbg("e20rMeasurementModel::loadByDate() - Specified an actual date value ({$when})");
-            $date = $when;
+		    if ( ( ! in_array( $when, array( 'current', 'last_week', 'next' ) ) ) &&
+		         ( strtotime( $when ) !== false ) ) {
+
+			    dbg( "e20rMeasurementModel::loadByDate() - Specified an actual date value ({$when})" );
+			    $date = $when;
+		    }
+		    elseif ( $when == 'all' ) {
+
+			    dbg( "e20rMeasurementModel::loadByDate() - Specified all" );
+			    $date = null;
+		    }
+		    else {
+
+			    dbg( "e20rMeasurements::loadByDate() - Specified an relative date value ({$when})" );
+
+			    $mDates = $e20rTracker->datesForMeasurements( $e20rMeasurementDate );
+			    $date   = $mDates[ $when ];
+		    }
+
+		    dbg( "MeasurementModel::loadByDate() - Loading fresh copy if byDate version of measurements" );
+
+		    global $wpdb;
+
+		    $sql = $wpdb->prepare(
+			    "
+	              SELECT *
+	                FROM {$this->table}
+	                WHERE {$this->fields['user_id']} = %d AND
+	                  {$this->fields['program_id']} = %d AND
+	                  {$this->fields['recorded_date']} LIKE %s
+	                ORDER BY {$this->fields['recorded_date']} ASC
+	            ",
+			    $this->client_id,
+			    $this->programId,
+			    $date . ' 00:00:00' );
+
+		    // dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
+
+		    $results = $wpdb->get_results( $sql );
+
+		    if ( is_wp_error( $results ) ) {
+
+			    dbg( "MeasurementModel::loadByDate() - Error loading from database: " . $wpdb->print_error() );
+			    throw new Exception( "Error loading by date: " . $wpdb->print_error() );
+
+			    return false;
+		    }
+
+		    dbg( "MeasurementModel::loadByDate() - loaded " . count( $results ) . " records" );
+
+		    foreach ( $results as $rec ) {
+			    $ts                                   = strtotime( $rec->{$this->fields['recorded_date']} );
+			    $this->byDate[ date( 'Y-m-d', $ts ) ] = $rec;
+		    }
+
+		    set_transient( "e20r_datelist_client_measurements_{$this->client_id}", $this->byDate, 120 );
         }
-        elseif ( $when == 'all' ) {
-            dbg("e20rMeasurementModel::loadByDate() - Specified all");
-            $date = null;
-        }
-        else {
 
-            dbg("e20rMeasurements::loadByDate() - Specified an relative date value ({$when})");
-
-            $mDates = $e20rTracker->datesForMeasurements( $e20rMeasurementDate) ;
-            $date = $mDates[$when];
-        }
-
-        dbg("MeasurementModel::loadByDate() - Loading fresh copy if byDate version of measurements");
-
-        global $wpdb;
-
-        $sql = $wpdb->prepare(
-            "
-              SELECT
-                {$this->fields['id']}, {$this->fields['user_id']},
-                {$this->fields['article_id']}, {$this->fields['recorded_date']},
-                {$this->fields['weight']}, {$this->fields['girth_neck']},
-                {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
-                {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
-                {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
-                {$this->fields['girth_calf']}, {$this->fields['girth']},
-                {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
-                {$this->fields['front_image']}, {$this->fields['side_image']},
-                {$this->fields['back_image']}, {$this->fields['program_id']}
-                FROM {$this->table}
-                WHERE {$this->fields['user_id']} = %d AND
-                  {$this->fields['program_id']} = %d AND
-                  {$this->fields['recorded_date']} LIKE %s
-
-                ORDER BY {$this->fields['recorded_date']} ASC
-            ",
-            $this->client_id,
-            $this->programId,
-            $date . ' 00:00:00');
-
-
-        // dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
-
-        $results = $wpdb->get_results( $sql );
-
-        if ( is_wp_error( $results ) ) {
-            dbg("MeasurementModel::loadByDate() - Error loading from database: " . $wpdb->print_error() );
-        }
-
-        dbg("MeasurementModel::loadByDate() - loaded " . count($results) . " records");
-
-        foreach( $results as $rec ) {
-            $ts = strtotime($rec->{$this->fields['recorded_date']});
-            $this->byDate[date('Y-m-d', $ts)] = $rec;
-        }
     }
 
     /**
@@ -535,27 +549,20 @@ class e20rMeasurementModel {
      */
     private function loadAll() {
 
+
         if ( false === ( $this->all = get_transient( "e20r_all_client_measurements_{$this->client_id}" ) ) ) {
 
             dbg("e20rMeasurementModel::loadAll() - Loading ALL client measurements for user_id {$this->client_id} from the database");
 
             // Not stored yet, so grab the data from the DB and store it.
             global $wpdb;
+
             if ( $this->programId === null  ) {
 
+	            dbg("e20rMeasurementModel::loadAll() - Not using Program ID to locate data: {$this->table}");
                 $sql = $wpdb->prepare(
                     "
-                      SELECT
-                        {$this->fields['id']}, {$this->fields['user_id']},
-                        {$this->fields['article_id']}, {$this->fields['recorded_date']},
-                        {$this->fields['weight']}, {$this->fields['girth_neck']},
-                        {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
-                        {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
-                        {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
-                        {$this->fields['girth_calf']}, {$this->fields['girth']},
-                        {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
-                        {$this->fields['front_image']}, {$this->fields['side_image']},
-                        {$this->fields['back_image']}, {$this->fields['program_id']}
+                      SELECT *
                         FROM {$this->table}
                         WHERE {$this->fields['user_id']} = %d
                         ORDER BY {$this->fields['recorded_date']} ASC
@@ -564,19 +571,11 @@ class e20rMeasurementModel {
                 );
             }
             else {
+
+	            dbg("e20rMeasurementModel::loadAll() - Using Program ID to identify data: {$this->table}");
                 $sql = $wpdb->prepare(
                     "
-                      SELECT
-                        {$this->fields['id']}, {$this->fields['user_id']},
-                        {$this->fields['article_id']}, {$this->fields['recorded_date']},
-                        {$this->fields['weight']}, {$this->fields['girth_neck']},
-                        {$this->fields['girth_shoulder']}, {$this->fields['girth_chest']},
-                        {$this->fields['girth_arm']}, {$this->fields['girth_waist']},
-                        {$this->fields['girth_hip']}, {$this->fields['girth_thigh']},
-                        {$this->fields['girth_calf']}, {$this->fields['girth']},
-                        {$this->fields['essay1']}, {$this->fields['behaviorprogress']},
-                        {$this->fields['front_image']}, {$this->fields['side_image']},
-                        {$this->fields['back_image']}, {$this->fields['program_id']}
+                      SELECT *
                         FROM {$this->table}
                         WHERE {$this->fields['user_id']} = %d AND
                               {$this->fields['program_id']} = %d
@@ -593,6 +592,13 @@ class e20rMeasurementModel {
 
             dbg("e20rMeasurementModel::loadAll() - loaded " . count($results) . " records");
 
+	        if ( is_wp_error( $results ) ) {
+
+		        dbg("e20rMeasurementModel::loadAll() - Error loading from database: " . $wpdb->print_error() );
+		        throw new Exception( "Error loading from database: " . $wpdb->print_error() );
+		        return false;
+	        }
+
             if ( ! empty( $results ) ) {
 
                 $this->all = $this->remap_fields( $results );
@@ -607,9 +613,9 @@ class e20rMeasurementModel {
 
     private function setTotalGirth( $recordId ) {
 
-        global $wpdb;
+	    global $wpdb;
 
-        $SQL = "SELECT
+	    $SQL = "SELECT
                   {$this->fields['girth_neck']} AS neck, {$this->fields['girth_shoulder']} AS shoulder,
                   {$this->fields['girth_chest']} AS chest, {$this->fields['girth_arm']} AS arm,
                   {$this->fields['girth_waist']} AS waist, {$this->fields['girth_hip']} AS hip,
@@ -617,18 +623,19 @@ class e20rMeasurementModel {
                 FROM {$this->table}
                 WHERE {$this->fields['id']} = {$recordId}";
 
-        $row = $wpdb->get_row( $SQL );
+	    $row = $wpdb->get_row( $SQL );
 
-        if ( ! empty($row) ) {
-            dbg("e20rMeasurementModel::setTotalGirth() - Updating the total GIRTH value in the database");
-            $wpdb->update(
-                $this->table,
-                array( $this->fields['girth'] => ( $row->neck + $row->shoulder + $row->chest + $row->arm + $row->waist + $row->hip + $row->thigh + $row->calf ) ),
-                array( $this->fields['id'] => $recordId ), array( '%f', ));
-        }
-        else {
-            dbg("e20rMeasurementModel::setTotalGirth() - This doesn't really make sense.. We've just inserted this record and now it's not here?!?");
-        }
+	    if ( ! empty( $row ) ) {
+		    dbg( "e20rMeasurementModel::setTotalGirth() - Updating the total GIRTH value in the database" );
+		    $wpdb->update(
+			    $this->table,
+			    array( $this->fields['girth'] => ( $row->neck + $row->shoulder + $row->chest + $row->arm + $row->waist + $row->hip + $row->thigh + $row->calf ) ),
+			    array( $this->fields['id'] => $recordId ), array( '%f', ) );
+
+	    } else {
+		    dbg( "e20rMeasurementModel::setTotalGirth() - This doesn't really make sense.. We've just inserted this record and now it's not here?!?" );
+	    }
+
     }
 
     private function loadNullMeasurement( $when ) {

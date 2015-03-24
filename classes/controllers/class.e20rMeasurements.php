@@ -456,6 +456,8 @@ class e20rMeasurements {
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data for {$this->id}");
         $e20rTables->init( $this->id );
 
+	    $this->model->setUser( $this->id );
+
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
         $this->model->setFreshClientData();
         $measurements = $this->getMeasurement( 'all', false );
@@ -528,6 +530,8 @@ class e20rMeasurements {
             dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
             return;
         }
+
+	    $this->model->setUser( $this->id );
 
         dbg("e20rMeasurements::shortcode_provressOverview() - Loading progress data...");
         $measurements = $this->getMeasurement( 'all', false );
