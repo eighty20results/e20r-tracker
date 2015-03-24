@@ -31,7 +31,7 @@ class e20rClientModel {
 		global $e20rTracker;
 
 
-		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'] ) !== FALSE ) ) {
+		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'] ) ) !== false ) {
 
 			dbg('e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing existing record.' );
 			$data['edited_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
@@ -161,6 +161,15 @@ class e20rClientModel {
 
     public function load() {
 
+	    global $current_user;
+
+	    if ( empty( $this->id ) ) {
+
+		    $this->id = $current_user->ID;
+	    }
+
+	    $this->setUser( $this->id );
+
         try {
             dbg("e20rClientModel::load() - Loading clientInfo for user {$this->id}");
 
@@ -179,7 +188,7 @@ class e20rClientModel {
 	            $this->data = $this->info;
             }
 
-            dbg("e20rClientModel::load() - Client info loaded: " . print_r( $this->data, true ) );
+            dbg("e20rClientModel::load() - Client info loaded" );
 
         } catch ( Exception $e ) {
 
@@ -296,32 +305,34 @@ class e20rClientModel {
 
     private function loadData( $clientId ) {
 
-        global $wpdb;
-        global $e20rProgram;
-        global $e20rTracker;
+	    global $wpdb;
+	    global $e20rProgram;
+	    global $e20rTracker;
 
-        $oldId = $this->id;
+	    $oldId = $this->id;
 
-        if ( $clientId != $this->id ) {
+	    if ( $clientId != $this->id ) {
 
-            dbg("e20rClientModel::loadClientData() - WARNING: Loading data for a different client/user. Was: {$this->id}, now: {$clientId}");
-            $this->id = $clientId;
-        }
+		    dbg( "e20rClientModel::loadClientData() - WARNING: Loading data for a different client/user. Was: {$this->id}, now: {$clientId}" );
+		    $this->id = $clientId;
+	    }
 
-        // Init the unencrypted structure and load defaults.
-        $clientData = new stdClass();
-        $clientData->user_id= $this->id;
-        $clientData->program_id = $this->program_id;
-        $clientData->program_start = $e20rProgram->startdate( $clientId, $this->program_id);
-        $clientData->program_photo_dir = "e20r_pics/client_{$this->program_id}_{$this->id}";
-        $clientData->gender = 'M';
-        $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
-        $clientData->first_name = null;
-        $clientData->birthdate = null;
-        $clientData->lengthunits = 'in';
-        $clientData->weightunits = 'lbs';
+	    $this->setUser( $this->id );
 
-        $excluded = array_keys( (array)$clientData );
+	    // Init the unencrypted structure and load defaults.
+	    $clientData                       = new stdClass();
+	    $clientData->user_id              = $this->id;
+	    $clientData->program_id           = $this->program_id;
+	    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
+	    $clientData->progress_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
+	    $clientData->gender               = 'm';
+	    $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
+	    $clientData->first_name           = null;
+	    $clientData->birthdate            = null;
+	    $clientData->lengthunits          = 'in';
+	    $clientData->weightunits          = 'lbs';
+
+	    $excluded = array_keys( (array) $clientData );
 
         $sql = $wpdb->prepare( "
                     SELECT *
@@ -341,7 +352,7 @@ class e20rClientModel {
             foreach( $result as $key => $val ) {
 
                 // Encrypted data gets decoded
-                if ( !in_array( $key, $excluded ) ) {
+                if ( ! in_array( $key, $excluded ) ) {
 
                     $clientData->{$key} = $e20rTracker->decryptData( $val );
                 }
