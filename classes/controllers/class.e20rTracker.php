@@ -60,6 +60,8 @@ class e20rTracker {
 
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
+	        $plugin = E20R_PLUGIN_NAME;
+
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 10 );
@@ -204,11 +206,20 @@ class e20rTracker {
 
 	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
 
-            dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
+	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
+
+	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
         $this->hooksLoaded = true;
     }
+
+	function plugin_add_settings_link( $links ) {
+
+		$settings_link = '<a href="options-general.php?page=e20r-tracker">' . __( 'Settings', 'e20rtracker' ) . '</a>';
+		array_push( $links, $settings_link );
+		return $links;
+	}
 
 	public function assignment_col_head( $defaults ) {
 
@@ -1430,7 +1441,7 @@ class e20rTracker {
                     goal_reward text null,
                     regular_exercise tinyint not null default 0,
                     exercise_hours_per_week varchar(4) not null default '0',
-                    regular_exercise_type text not null default 'none',
+                    regular_exercise_type text null,
                     other_exercise text null,
                     exercise_plan tinyint not null default 0,
                     exercise_level varchar(255) default 'not-applicable',
@@ -1492,7 +1503,7 @@ class e20rTracker {
                     partner varchar(50) null,
                     children tinyint null default 0,
                     children_count smallint null default 0,
-                    child_name_age text null,
+                    child_name_age varchar(512) null,
                     pets tinyint null default 0,
                     pet_count int null,
                     pet_names_types varchar(255) null,
@@ -1506,9 +1517,9 @@ class e20rTracker {
                     program_expectations text null,
                     coach_expectations text null,
                     more_info text null,
-                    photo_consent varchar(3) not null default 'No',
-                    research_consent varchar(3) not null default 'No',
-                    medical_release varchar(3) not null defaul'No' 0,
+                    photo_consent tinyint not null default 0,
+                    research_consent tinyint not null default 0,
+                    medical_release tinyint not null default 0,
                     primary key  (id),
                     key user_id  (user_id asc),
                     key programstart  (program_start asc)
@@ -2365,18 +2376,20 @@ class e20rTracker {
         else {
 
 	        if ( filter_var( $value, FILTER_VALIDATE_INT ) !== false ) {
-		        dbg( "setFormat() - {$value} is an integer" );
 		        return '%d';
 	        }
 
             // dbg( "setFormat() - .{$value}. IS numeric" );
 
             if ( filter_var( $value, FILTER_VALIDATE_FLOAT) !== false ) {
-                dbg( "setFormat() - {$value} is a float" );
                 return '%f';
             }
 
         }
+
+	    if ( is_bool( $value ) ) {
+		    return '%d';
+	    }
 
 	    dbg("e20rTracker::setFormat() - Value: {$value} doesn't have a recognized format..? " . gettype($value) );
         return '%s';
