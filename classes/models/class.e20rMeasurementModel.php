@@ -62,13 +62,12 @@ class e20rMeasurementModel {
                       {$this->fields['behaviorprogress']} AS behaviorprogress,
                       {$this->fields['essay1']} AS essay1
                 FROM {$this->table}
-                WHERE {$this->fields['article_id']} = %d AND
-                      {$this->fields['user_id']} = %d AND
-                      {$this->fields['program_id']} = %d AND
+                WHERE {$this->fields['user_id']} = %d AND " . ( $articleId != 0 ?
+                      "{$this->fields['article_id']} = " . esc_sql($articleId) . " AND " : '' ) .
+                      "{$this->fields['program_id']} = %d AND
                       ( ( {$this->fields['recorded_date']} >=  %s) AND ( {$this->fields['recorded_date']} <= %s ) )
                 ",
-                $articleId,
-                $user_id,
+	            $user_id,
                 $programId,
                 $date,
                 $nextDay
@@ -163,7 +162,7 @@ class e20rMeasurementModel {
 
 	    if ( WP_DEBUG == true ) {
 
-		    dbg("e20rMeasurementModel::getMeasurements() - DEBUG is enabled. Clear transient data");
+		    dbg("e20rMeasurementModel::getByDate() - DEBUG is enabled. Clear transient data");
 		    $this->setFreshClientData();
 	    }
 
@@ -196,9 +195,10 @@ class e20rMeasurementModel {
 
         // Update tables (account for possible beta group data).
         $e20rTables->init( $this->client_id);
+
         $this->table = $e20rTables->getTable( 'measurements', true );
         $this->fields = $e20rTables->getFields( 'measurements', true );
-
+/*
         try {
             $this->loadAll();
         }
@@ -207,6 +207,7 @@ class e20rMeasurementModel {
             dbg("e20rMeasurementModel::setUser() - Error loading all data for {$this->client_id}: " . $e->getMessage() );
             return;
         }
+*/
     }
 
     /**
@@ -368,7 +369,7 @@ class e20rMeasurementModel {
                 $this->fields['id']            => $existing->{$this->fields['id']},
                 $this->fields['user_id']       => $this->client_id,
                 $this->fields['program_id']    => ( empty($existing->{$this->fields['program_id']}) ? esc_sql($programId) : $existing->{$this->fields['program_id']}),
-                $this->fields['article_id']    => esc_sql($articleID),
+                $this->fields['article_id']    => ( empty($existing->{$this->fields['article_id']}) ? esc_sql( is_null( $articleID ) ? -1 : $articleID ) : $existing->{$this->fields['article_id']}),
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
             );
 
@@ -401,7 +402,7 @@ class e20rMeasurementModel {
         else {
             $data = array(
                 $this->fields['user_id']       => $this->client_id,
-                $this->fields['article_id']    => esc_sql($articleID),
+                $this->fields['article_id']    => esc_sql( is_null( $articleID ) ? -1 : $articleID ),
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
                 $this->fields['program_id']    => esc_sql($programId),
                 $this->fields[ $form_key ]     => esc_sql($value)
@@ -439,8 +440,8 @@ class e20rMeasurementModel {
 
         $retArr = array();
 
-	    dbg("e20rMeasurementModel::remap_fields() - Loading for fields:");
-	    dbg($this->fields);
+	    // dbg("e20rMeasurementModel::remap_fields() - Loading for fields:");
+	    // dbg($this->fields);
 
         foreach ( $data as $record ) {
 
