@@ -38,11 +38,11 @@ class e20rClient {
         dbg('e20rClient::init() - Running INIT for e20rClient Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
-        if ( $this->client_loaded !== TRUE ) {
+        if ( $this->client_loaded !== true ) {
 
             $this->model->setUser( $this->id );
             $this->model->load();
-            $this->client_loaded = TRUE;
+            $this->client_loaded = true;
         }
 
     }
@@ -116,7 +116,7 @@ class e20rClient {
         $this->model->setUser( $this->id );
     }
 
-    public function getData( $clientId ) {
+    public function getData( $clientId, $private = false ) {
 
         if ( ! $this->client_loaded ) {
 
@@ -125,22 +125,65 @@ class e20rClient {
         }
 
         $data = $this->model->getData( $this->id );
-        dbg("e20rClient::getData() - Returned data for {$this->id} from client_info table:");
+
+	    if ( $private ) {
+
+		    dbg("e20rClient::getData() - Removing private data");
+		    $data = $this->strip_private_data( $data );
+	    }
+
+	    dbg("e20rClient::getData() - Returned data for {$this->id} from client_info table:");
         dbg($data);
 
         return $data;
     }
 
-	public function getGender() {
+	private function strip_private_data( $cData ) {
 
-		return $this->model->getData( $this->id, 'gender');
+		$birthdateSet = false;
+		$genderSet = false;
+
+		$data = $cData;
+
+		$data->display_birthdate = 1;
+		$data->incomplete_interview = 1;
+
+		$include = array(
+			'id', 'birthdate', 'first_name', 'gender', 'lengthunits', 'weightunits', 'incomplete_interview',
+			'program_id', 'progress_photo_dir', 'program_start', 'user_id'
+		);
+
+		foreach ( $data as $field => $value ) {
+
+			if ( ! in_array( $field, $include ) ) {
+
+				unset($data->{$field} );
+			}
+		}
+
+		if ( strtotime( $data->birthdate ) ) {
+
+			$data->display_birthdate = 0;
+		}
+
+		if ( isset( $data->first_name ) && ( isset( $data->id ) ) && isset( $data->display_birthdate ) ) {
+
+			$data->incomplete_interview = 0;
+		}
+
+		return $data;
 	}
 
-    public function completedInterview( $userId ) {
+	public function getGender() {
 
-        $data = $this->model->getData( $userId, 'weight_loss');
+		return strtolower( $this->model->getData( $this->id, 'gender') );
+	}
 
-        return ( ! empty( $data ) ? true : false );
+    public function completeInterview( $userId ) {
+
+        $data = $this->model->getData( $userId, 'completed_date');
+
+        return ( empty($data) ? 0 : 1 );
     }
 
 	public function load_interview( $form ) {
@@ -202,7 +245,7 @@ class e20rClient {
 			'program_id' => $userProgramId,
 			'program_start' => date_i18n('Y-m-d',$userProgramStart ),
 //	        'user_enc_key' => $this->getUserKey( $user_id ),
-			'progress_photo_dir'=> 'e20r-pics/',
+			'program_photo_dir'=> "e20r_pics/client_{$userProgramId}_{$userId}"
 		);
 
 		$fieldList = array( 'text', 'textarea', 'number', 'email', 'phone' );

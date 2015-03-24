@@ -50,11 +50,13 @@ class e20rClientModel {
 		$format = $e20rTracker->setFormatForRecord( $data );
 
 		dbg("e20rTrackerModel::save_client_interview() - Format for the record: ");
-		dbg($format);
+		// dbg($format);
 
 		if ( $wpdb->replace( $this->table, $data, $format ) ) {
 
 			dbg("e20rTrackerModel::save_client_interview() - Data saved...");
+			$this->clearTransients();
+
 			return true;
 		}
 
@@ -92,27 +94,30 @@ class e20rClientModel {
     public function getData( $userId, $item = null ) {
 
         // No item specified, returning everything we have.
-        if ( $item == null ) {
+        if ( is_null( $item ) ) {
 
-            if ( empty( $this->data->gender ) ) {
+            if ( !isset( $this->data->weightunits) || empty( $this->data->weightunits ) ) {
 
-                dbg("e20rClientModel::getData() - Required data item not found. Reloading..");
+                dbg("e20rClientModel::getData() - Completed date for record not found. Reloading..");
                 $this->setUser( $userId );
                 $this->load();
             }
 
             // Return all of the data for this user.
             return $this->data;
+        } else {
+
+	        if ( ! isset( $this->data->{$item} ) ) {
+
+		        dbg( "e20rClientModel::getData() - Requested Item ({$item}) not found. Reloading.." );
+		        $this->load();
+	        }
+
+	        // Only return the specified item value.
+	        return ( empty( $this->data->{$item} ) ? false : $this->data->{$item} );
         }
 
-        if ( empty($this->data->{$item} ) ) {
-
-            dbg("e20rClientModel::getData() - Requested Item ({$item})not found. Reloading..");
-            $this->load();
-        }
-
-        // Only return the specified item value.
-        return ( empty( $this->data->{$item} ) ? false : $this->data->{$item} );
+	    return false;
     }
 
     public function saveData( $clientData ) {
@@ -151,15 +156,26 @@ class e20rClientModel {
         $format = $e20rTracker->setFormatForRecord( $encData );
 
         dbg("e20ClientModel::saveData() - Data: ");
+/*
         dbg($encData);
         dbg($format);
-        // $wpdb->replace( $table, $encData, $format );
+*/
+        if ( $wpdb->replace( $table, $encData, $format ) === false ) {
+	        dbg("e20rClientModel::saveData() - Unable to save the client data: " . $wpdb->print_error() );
+	        return false;
+        }
 
         $this->data = $clientData;
 
+	    $this->clearTransients();
     }
 
     public function load() {
+
+	    if ( WP_DEBUG === true ) {
+
+		    $this->clearTransients();
+	    }
 
 	    global $current_user;
 
@@ -219,10 +235,16 @@ class e20rClientModel {
             throw new Exception("Error updating weight/length units: " . $wpdb->print_error() );
         }
 
-        delete_transient("e20r_client_info_{$this->id}");
+        $this->clearTransients();
 
         return true;
     }
+
+	private function clearTransients() {
+
+		dbg("e20rClientModel::clearTransients() - Resetting cache & transiets");
+		delete_transient( "e20r_client_info_{$this->id}" );
+	}
 
     /**
      * @param $who - User ID
@@ -319,65 +341,73 @@ class e20rClientModel {
 
 	    $this->setUser( $this->id );
 
-	    // Init the unencrypted structure and load defaults.
-	    $clientData                       = new stdClass();
-	    $clientData->user_id              = $this->id;
-	    $clientData->program_id           = $this->program_id;
-	    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
-	    $clientData->progress_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
-	    $clientData->gender               = 'm';
-	    $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
-	    $clientData->first_name           = null;
-	    $clientData->birthdate            = null;
-	    $clientData->lengthunits          = 'in';
-	    $clientData->weightunits          = 'lbs';
+	    if ( WP_DEBUG === true ) {
 
-	    $excluded = array_keys( (array) $clientData );
+		    $this->clearTransients();
+	    }
 
-        $sql = $wpdb->prepare( "
-                    SELECT *
-                    FROM {$this->table}
-                    WHERE program_id = %d AND
-                    user_id = %d
-                    ORDER BY program_start DESC
-                    LIMIT 1",
-            $this->program_id,
-            $this->id
-        );
+	    if ( false === ( $clientData = get_transient( "e20r_client_info_{$this->id}" ) ) ) {
 
-        $result = $wpdb->get_row( $sql, ARRAY_A );
+		    // Init the unencrypted structure and load defaults.
+		    $clientData                       = new stdClass();
+		    $clientData->user_id              = $this->id;
+		    $clientData->program_id           = $this->program_id;
+		    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
+		    $clientData->program_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
+		    $clientData->gender               = 'm';
+		    $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
+		    $clientData->first_name           = null;
+		    $clientData->birthdate            = null;
+		    $clientData->lengthunits          = 'in';
+		    $clientData->weightunits          = 'lbs';
 
-        if ( ! empty( $result ) ) {
+		    $excluded = array_keys( (array) $clientData );
 
-            foreach( $result as $key => $val ) {
+		    $sql = $wpdb->prepare( "
+	                    SELECT *
+	                    FROM {$this->table}
+	                    WHERE program_id = %d AND
+	                    user_id = %d
+	                    ORDER BY program_start DESC
+	                    LIMIT 1",
+			    $this->program_id,
+			    $this->id
+		    );
 
-                // Encrypted data gets decoded
-                if ( ! in_array( $key, $excluded ) ) {
+		    $result = $wpdb->get_row( $sql, ARRAY_A );
 
-                    $clientData->{$key} = $e20rTracker->decryptData( $val );
-                }
-                else {
-                    // Unencrypted data is simply passed back.
-                    $clientData->{$key} = $val;
-                }
-            }
+		    if ( ! empty( $result ) ) {
 
-            // Clear the record from memory.
-            unset($result);
-        }
+			    foreach ( $result as $key => $val ) {
 
-        if (!empty($clientData->user_enc_key) ) {
-            unset( $clientData->user_enc_key );
-        }
+				    // Encrypted data gets decoded
+				    if ( ! in_array( $key, $excluded ) ) {
 
-        if ( !empty( $clientData->weight_loss ) ) {
+					    $clientData->{$key} = $e20rTracker->decryptData( $val );
+				    } else {
+					    // Unencrypted data is simply passed back.
+					    $clientData->{$key} = $val;
+				    }
+			    }
 
-            dbg("e20rClientModel::loadClientData() - Client interview has been completed.");
-            $clientData->incomplete_interview = false;
-        }
+			    // Clear the record from memory.
+			    unset( $result );
+		    }
 
-        // Restore the original User ID.
-        $this->id = $oldId;
+		    if ( ! isset( $clientData->user_enc_key ) && ( ! empty( $clientData->user_enc_key ) ) ) {
+			    unset( $clientData->user_enc_key );
+		    }
+
+		    if ( isset( $clientData->weight_loss ) && ( ! empty( $clientData->weight_loss ) ) ) {
+
+			    dbg( "e20rClientModel::loadClientData() - Client interview has been completed." );
+			    $clientData->incomplete_interview = false;
+		    }
+
+		    // Restore the original User ID.
+		    $this->id = $oldId;
+		    set_transient( "e20r_client_info_{$this->id}", $clientData, 3600 );
+	    }
 
         return $clientData;
     }
