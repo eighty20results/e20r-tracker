@@ -417,7 +417,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		    $post = get_post( $id );
 		    setup_postdata( $post );
-		    dbg( $post );
 
 		    if ( ! empty( $post->post_title ) ) {
 
