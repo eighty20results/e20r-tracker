@@ -320,6 +320,12 @@ class e20rCheckinView extends e20rSettingsView {
 		global $current_user;
 		global $e20rTracker;
 
+		$program_days = $achievements['program_days'];
+		$program_score = $achievements['program_score'];
+
+		unset($achievements['program_days']);
+		unset($achievements['program_score']);
+
 		ob_start();
 		?>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
