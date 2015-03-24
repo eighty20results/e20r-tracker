@@ -1071,7 +1071,7 @@ class e20rMeasurementViews {
 
 	    global $e20rClient;
 
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $e20rClient->getGender() == 'F' ? '-f.png");' : '-m.png");' );
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
     }
 
     private function prettyUnit( $type ) {
@@ -1150,7 +1150,6 @@ class e20rMeasurementViews {
 
         if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
 
-            dbg( "e20rMeasurementViews::loadImage() - No image ID saved. Loading placeholder" );
             $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
         }
 
