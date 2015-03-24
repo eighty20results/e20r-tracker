@@ -452,7 +452,7 @@ class e20rTracker {
 
         if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
 
-            dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
+            // dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
             // return base64_decode( $encData );
 	        return $encData;
         }
@@ -1106,15 +1106,23 @@ class e20rTracker {
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
             $lw_measurements = $e20rMeasurements->getMeasurement( 'last_week', true );
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Measurements from last week:");
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Measurements from last week loaded:");
 
             $bDay = $e20rClient->getBirthdate( $userId );
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
 
-            if ( $e20rClient->completedInterview( $userId, $programId) ) {
-                dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
-                /* TODO: Uncomment the redirect to the welcome questionnaire */
-                // wp_redirect( E20R_COACHING_URL . "/welcome-questionnaire/", 302 );
+            if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
+
+	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
+                $url = $this->loadOption( 'e20r_interview_page' );
+
+                if ( ! empty( $url ) ) {
+
+	                wp_redirect( $url, 302 );
+                }
+	            else {
+		            dbg("e20rTracker::has_weeklyProgress_shortcode() - No URL defined! Can't redirect.");
+	            }
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
@@ -1127,6 +1135,7 @@ class e20rTracker {
                         'article_id'        => $articleId,
                         'lengthunit'        => $e20rClient->getLengthUnit(),
                         'weightunit'        => $e20rClient->getWeightUnit(),
+	                    'interview_url'     => '', /* TODO - Use WP option to set this to a real value (or set it to a URL statically for now */
                         'imagepath'         => E20R_PLUGINS_URL . '/images/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
                         'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
@@ -1135,9 +1144,9 @@ class e20rTracker {
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->getData( $userId ), JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->getData( $userId, true ), JSON_NUMERIC_CHECK ),
 //                        'progress_pictures' => '',
-                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
+//                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
                     ),
                 )
@@ -1181,14 +1190,13 @@ class e20rTracker {
 
                 console.log("WP script for E20R Progress Update (client-side) loaded");
 
-                console.log("Loading user_info...");
-                console.dir( NourishUser );
-                console.log( "Loading Measurement data for last week" );
-                console.dir( LAST_WEEK_MEASUREMENTS );
+                console.log("Loading user_info: ", NourishUser );
+                console.log( "Loading Measurement data for last week", LAST_WEEK_MEASUREMENTS );
+                console.log( "Interview is incomplete: ", NourishUser.incomplete_interview );
 
-                if ( NourishUser.incomplete_interview ) {
+                if ( NourishUser.incomplete_interview == 1 ) {
                     console.log("Need to redirect this user to the Interview page!");
-                    console.log("location.href='/coaching-interview/?user_id=" + NourishUser.user_id + "'");
+                    location.href=e20r_progress.settings.interview_url;
                 }
 
                 setBirthday();
@@ -1206,6 +1214,16 @@ class e20rTracker {
 
     }
 
+	private function loadOption( $optionName ) {
+
+		$value = false;
+		// TODO: Implement loadOption() function
+		if ( $optionName == 'e20r_interview_page' ) {
+			$value = E20R_COACHING_URL . "/welcome-questionnaire/";
+		}
+
+		return $value;
+	}
     /**
      * Load the generic/general plugin javascript and localizations
      */
