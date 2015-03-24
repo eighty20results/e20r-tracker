@@ -681,7 +681,7 @@ class e20rMeasurements {
 */
     public function loadData( $when = 'all') {
 
-        dbg("Loading measurement data for {$when}");
+        dbg("e20rMeasurements::loadData() - Loading measurement data for {$when}");
 
         try {
             /*
@@ -745,6 +745,8 @@ class e20rMeasurements {
             // $this->model->getFields( $when );
         }
 
+	    dbg("e20rMeasurements::getMeasurement() - Starting load for {$when} and parsing for Javascript: " . ( $forJS ? 'true' : 'false' ) );
+
         $this->model->setUser( $this->id );
 
         $byDateArr = (array)$this->model->byDate;
@@ -753,12 +755,12 @@ class e20rMeasurements {
             dbg("e20rMeasurements::getMeasurement() - No data loaded yet...");
         }
 
-        if ( $when !== 'all' ) {
+        if ( $when != 'all' ) {
 
             dbg( "e20rMeasurements::getMeasurement({$when}, {$forJS}) was called by: " . $e20rTracker->whoCalledMe() );
             $date = $this->dates[$when];
 
-            dbg( "e20rMeasurements::getMeasurement() - {$when} week: " . $date );
+            dbg( "e20rMeasurements::getMeasurement() - {$when}: " . $date );
 
             $data = $this->model->getByDate( $date );
 
@@ -785,6 +787,11 @@ class e20rMeasurements {
         $retVal = array();
         $fields = $e20rTables->getFields('measurements');
 
+	    if ( ! is_array( $records ) ) {
+		    dbg("e20rMeasurements::transformForJS() - Convert to array of results");
+		    $records = array( $records );
+	    }
+
         $exclude = array(
             'id',
             'user_id',
@@ -798,10 +805,11 @@ class e20rMeasurements {
             'back_image',
         );
 
-        dbg("e20rMeasurements::transformForJS() - DB fields");
+        dbg("e20rMeasurements::transformForJS() - DB  data:");
+/*
         dbg( $fields );
         dbg( $records );
-
+*/
         foreach( $records as $data ) {
 
             foreach ( $data as $key => $value ) {
@@ -940,7 +948,7 @@ class e20rMeasurements {
         $measurementType = (isset( $_POST['measurement-type'] ) ? sanitize_text_field( trim($_POST['measurement-type']) ) : null );
         $measurementValue = (isset( $_POST['measurement-value'] ) ? sanitize_text_field( trim($_POST['measurement-value'])) : null );
         $user_id = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID );
-        $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
+        $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : -1 );
         $programId = ( isset( $_POST['program-id'] ) ? intval( $_POST['program-id'] ) : null );
         $post_date = ( isset( $_POST['date'] ) ? sanitize_text_field($_POST['date']) : null );
         $imageSide = ( isset( $_POST['view'] ) ? sanitize_text_field($_POST['view']) : null );
