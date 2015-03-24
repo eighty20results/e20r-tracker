@@ -12,6 +12,7 @@ License: GPL2
 
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
+define( 'E20R_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'E20R_QUESTIONS', 1 );
 define( 'E20R_ANSWERS', 1 );
 define( 'CONST_SATURDAY', 6 );
@@ -112,6 +113,7 @@ function loadTracker() {
         global $e20rWorkout;
         global $e20rCheckin;
         global $e20rAssignment;
+	    global $e20r_isClient;
 
         $e20rTables->init();
         // $e20rTracker->init();
