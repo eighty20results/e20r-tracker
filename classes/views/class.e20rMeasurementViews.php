@@ -676,20 +676,15 @@ class e20rMeasurementViews {
 
 							            $when     = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
 							            $showLink = ( $clientId == $current_user->ID ? true : false );
+
 							            ?>
 							            <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
 								            <td class="measurement-date">
 									            <div class="date">
 										            <form method="POST">
-											            <input type="hidden" name="date" id="date"
-											                   data-measurement-type="date"
-											                   value="<?php echo $when; ?>">
-											            <input type="hidden" name="article_id" id="article_id"
-											                   data-measurement-type="article_id"
-											                   value="<?php echo $measurement->article_id; ?>">
-											            <input type="hidden" name="program_id" id="program_id"
-											                   data-measurement-type="program_id"
-											                   value="<?php echo $measurement->program_id; ?>">
+											            <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
+											            <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
+											            <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
 										            </form>
 										            <!-- <span> -->
 										            <?php
@@ -1151,11 +1146,7 @@ class e20rMeasurementViews {
 
     private function loadImage( $side ) {
 
-        dbg( "e20rMeasurementViews::loadImage() - Looking for {$side} image..." );
-
         $id = ( isset( $this->data->{$this->fields[$side . "_image"]} ) ?  $this->data->{$this->fields[$side . "_image"]} : null );
-
-        dbg( "e20rMeasurementViews::loadImage() - Locate attachment ID {$id}..." );
 
         if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
 
@@ -1163,9 +1154,7 @@ class e20rMeasurementViews {
             $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
         }
 
-        dbg("e20rMeasurementviews::loadImage() - Loading: {$url}");
         return $url;
-
     }
 
     private function resizeImage( $size ) {
