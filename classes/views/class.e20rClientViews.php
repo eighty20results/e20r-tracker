@@ -193,7 +193,7 @@ class e20rClientViews {
         if ( empty( $clientId ) ) {
 
             global $current_user, $e20rTracker;
-            $clientId = $current_user->id;
+            $clientId = $current_user->ID;
 
             if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
                 $level_id = pmpro_getMembershipLevelForUser( $clientId );
