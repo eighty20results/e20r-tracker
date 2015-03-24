@@ -967,7 +967,10 @@ jQuery(function() {
 //    jQuery('#basic-photo-uploader-submit')
 //        .removeAttr('disabled');
 
-    if ( false === bool( e20r_progress.user_info.display_birthdate ) ) {
+    console.log( bool( NourishUser.display_birthdate ) );
+
+    if ( false === bool( NourishUser.display_birthdate ) ) {
+        console.log("Hiding the birthdate form.");
         jQuery('#birth-date').hide();
     }
 
