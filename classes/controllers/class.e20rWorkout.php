@@ -84,7 +84,7 @@ class e20rWorkout extends e20rSettings {
 
         if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workout' ) ) {
 
-	        dbg( "e20rWorkout::saveSettings() - Not a e20r_workout CPT: " . $post->post_type );
+	        dbg( "e20rWorkout::saveSettings() - Not a e20r_workout CPT: " );
             return $post_id;
         }
 
