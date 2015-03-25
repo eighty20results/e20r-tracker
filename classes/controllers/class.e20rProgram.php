@@ -139,30 +139,48 @@ class e20rProgram extends e20rSettings {
         return $list;
     }
 
+	public function get_welcomeSurveyLink( $userId ) {
+
+		global $currentProgram;
+
+		$this->loadProgram( $userId );
+
+		$link = get_permalink( $currentProgram->intake_form );
+
+		dbg("e20rProgram::get_welcomeSurveyLink(): Link: {$link}");
+
+		return $link;
+	}
     public function getProgramIdForUser( $userId, $articleId = null ) {
 
 	    global $currentProgram;
 
-	    if ( empty( $currentProgram ) ) {
-
-		    $programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
-
-		    if ( $programId === false ) {
-
-			    dbg( "e20rProgram::getProgramIdForUser() - No program set for user. Returning -1.");
-			    return -1;
-		    }
-		    else {
-
-			    $this->init( $programId );
-		    }
-
-		    dbg( "e20rProgram::getProgramIdForUser() - User's programID: {$currentProgram->id}" );
-	    }
+		$this->loadProgram( $userId );
 
 	    return $currentProgram->id;
     }
 
+	private function loadProgram( $userId ) {
+
+		global $currentProgram;
+
+		if ( empty( $currentProgram ) ) {
+
+			$programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
+
+			if ( $programId === false ) {
+
+				dbg( "e20rProgram::getProgramIdForUser() - No program set for user. Returning -1.");
+				return -1;
+			}
+			else {
+
+				$this->init( $programId );
+			}
+
+			dbg( "e20rProgram::getProgramIdForUser() - User's programID: {$currentProgram->id}" );
+		}
+	}
     /**
      * Action Hook to add the E20R Tracker user specific settings (like adding a program for the user)
      *
