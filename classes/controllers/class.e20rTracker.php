@@ -1115,7 +1115,7 @@ class e20rTracker {
             if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
 
 	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
-                $url = $this->loadOption( 'e20r_interview_page' );
+                $url = $e20rProgram->get_welcomeSurveyLink( $userId );
 
                 if ( ! empty( $url ) ) {
 
@@ -1136,7 +1136,7 @@ class e20rTracker {
                         'article_id'        => $articleId,
                         'lengthunit'        => $e20rClient->getLengthUnit(),
                         'weightunit'        => $e20rClient->getWeightUnit(),
-	                    'interview_url'     => '', /* TODO - Use WP option to set this to a real value (or set it to a URL statically for now */
+	                    'interview_url'     => $e20rProgram->get_welcomeSurveyLink($userId),
                         'imagepath'         => E20R_PLUGINS_URL . '/images/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
                         'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
