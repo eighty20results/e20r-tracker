@@ -54,13 +54,15 @@ class e20rProgramView {
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->id : 0 ); ?>">
-                <table id="e20r-program-settings">
+                <table id="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-startdate">Starts on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-enddate">Ends on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-levels">Member Levels</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-dripfeed">Drip Feed</label></th>
+                        <th class="e20r-label header"><label for="e20r-program-startdate"><?php _e("Starts on", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate"><?php _e("Ends on", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-levels"><?php _e("Member Levels", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><?php _e("Lesson feed", "e20rtracker"); ?></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><?php _e("Intake form", "e20rtracker"); ?></label></th>
+<!--	                    <th class="e20r-label header"><label for="e20r-program-activity_sequences"><?php _e("Activity feed", "e20rtracker"); ?></label></th> -->
                     </tr>
                     <tr>
                         <td colspan="5"><hr width="100%"/></td>
@@ -111,7 +113,6 @@ class e20rProgramView {
                                 <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
                                     <option value="0">Not configured</option>
                                     <?php
-
                                         foreach($feeds as $df) {
 
                                             $selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null ); ?>
@@ -121,11 +122,44 @@ class e20rProgramView {
                                 <style>
                                     .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
                                 </style>
-                                <script>
-                                    jQuery("#e20r-program-groups").select2();
-                                    jQuery('#e20r-program-sequences').select2();
-                                </script>
                             </td>
+	                        <td>
+		                        <select class="select2-container" id="e20r-program-intake_form" name="e20r-program-intake_form">
+			                        <option value="0">No intake form/page needed</option>
+			                        <?php
+
+			                        $pages = get_pages();
+			                        $posts = get_posts();
+
+			                        $list = array_merge( $pages, $posts );
+
+			                        foreach( $list as $p ) { ?>
+	                                    <option value="<?php echo $p->ID; ?>"<?php selected( $p->ID, $programData->intake_form );?>><?php echo $p->post_title; ?></option> <?php
+                                    } ?>
+		                        </select>
+	                        </td>
+
+	                        <!--	                        <td>
+									<select class="select2-container" id="e20r-program-activity_sequences" name="e20r-program-activity_sequences[]" multiple="multiple">
+										<option value="0">Not configured</option>
+										<?php
+
+										foreach($feeds as $df) {
+
+											$selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null ); ?>
+											<option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
+										<?php   } ?>
+									</select>
+									<style>
+										.select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+									</style>
+									<script>
+										jQuery("#e20r-program-groups").select2();
+										jQuery('#e20r-program-sequences').select2();
+										jQuery('#e20r-program-activity_sequences').select2();
+									</script>
+								</td>
+	-->
                         </tr>
                     </tbody>
                 </table>
