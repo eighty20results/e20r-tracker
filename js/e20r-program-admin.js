@@ -11,6 +11,7 @@ jQuery(document).ready( function(){
     jQuery("#e20r-program-groups").select2();
     jQuery('#e20r-program-sequences').select2();
     jQuery('#e20r-program-activity_sequences').select2();
+    jQuery('#e20r-program-intake_form').select2();
 });
 
 
