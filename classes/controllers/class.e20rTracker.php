@@ -1189,6 +1189,15 @@ class e20rTracker {
 
                 }
 
+                function getBirthday() {
+
+	                var bdate = jQuery('#bdyear').val() + '-' + jQuery('#bdmonth').val() + '-' + jQuery('#bdday').val();
+
+	                console.log("getBirthday() = ", bdate );
+
+	                // TODO: Send to backend for processing/to be added.
+                }
+
                 console.log("WP script for E20R Progress Update (client-side) loaded");
 
                 console.log("Loading user_info: ", NourishUser );
