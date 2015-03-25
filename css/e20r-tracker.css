@@ -1125,7 +1125,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 #photo-upload-table .delete-photo {
     font-size: 0.9em;
     font-weight: bold;
-    color: rgba( 156, 0, 0, 0.80);
+    color: rgba( 00, 72, 0, 0.80);
 }
 #photo-upload-table .photo-container {
     position: relative;
@@ -1307,7 +1307,7 @@ div.photo-overlay span.value {
     padding: 20px 20px 20px 10px;
 }
 .quick-nav a {
-    color: #9C0000;
+    color: #004C00;
     text-decoration: none;
     font-size: 0.6rem;
 }
@@ -1431,7 +1431,7 @@ td.e20r-group-header {
     font-size: 14px;
 }
 .colorbox-guide-container table.e20r-help-items td.content h4 {
-    color: #9C0000;
+    color: #004C00;
     font-variant: small-caps;
     font-size: 18px;
     margin-bottom: 4px;
@@ -1570,7 +1570,7 @@ td.e20r-group-header {
     text-transform: uppercase;
     font-weight: bold;
     font-family: "Lucida Grande", sans-serif;
-    color: rgba(152, 0, 0, 0.75);
+    color: rgba(0, 72, 0, 0.75);
     /* font-weight: normal; */
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend:after {
@@ -1614,7 +1614,7 @@ td.e20r-group-header {
     font-size: 13px;
     text-transform: uppercase;
     font-family: sans-serif;
-    color: rgba(152, 0, 0, 0.75);
+    color: rgba(0, 72, 0, 0.75);
     font-weight: normal;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
@@ -1969,7 +1969,7 @@ div#e20r-checkin-content {
     padding-left: 20px;
 }
 #e20r-checkin-activity {
-    border-right: 2px solid #9C0000;
+    border-right: 2px solid #004CFF;
     padding-right: 10px;
     padding-left: 20px;
 }
@@ -2073,7 +2073,7 @@ body.loading .modal {
 }
 .e20r-assignment-question {
     font-size: 130%;
-    color: #9C0000;
+    color: #004C00;
     font-weight: bold;
 }
 p.e20r-assignment-descr {
@@ -2154,7 +2154,7 @@ table.e20r-nourish-infobox td.infobox-td {
     color: rgba(0, 77, 255, 0.7);
 }
 span.e20r-required {
-    color: #9C0000;
+    color: #004C00;
 }
 .e20r-radio div ul li label,
 .e20r-checkbox ul.gfield_checkbox > li label {
@@ -2205,7 +2205,7 @@ span.e20r-required {
     background-color: #e6e6e6;
     margin: 35px auto 35px auto;
     max-width: 620px;
-    border: 3px solid #9C0000;
+    border: 3px solid #004C00;
 }
 .what-to-do-table {
     max-width: 600px;
@@ -2233,7 +2233,7 @@ span.e20r-required {
     text-align: center;"
 }
 .nage-level-text {
-    color: #9c0000;
+    color: #004C00;
     position: relative;
     top: 4px;
     margin-left: 4px;
