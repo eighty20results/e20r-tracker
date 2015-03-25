@@ -78,7 +78,8 @@ class e20rMeasurementViews {
                 <?php echo $this->loadHelp("photo"); ?>
             </div>
         </div>
-        <?php
+		<div class="modal"><!-- At end of form --></div>
+		<?php
         return ob_get_clean();
     }
 
