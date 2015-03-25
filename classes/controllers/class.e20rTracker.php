@@ -134,6 +134,7 @@ class e20rTracker {
             add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
             add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
+	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
             add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
