@@ -23,6 +23,13 @@ class e20rWorkoutView extends e20rSettingsView {
         global $post, $e20rWorkout, $e20rTracker;
 
         dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Supplied data: " . print_r($workoutData, true));
+
+	    if ( !isset( $workoutData->days ) || count( $workoutData->days ) == 0 ) {
+		    dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Days contains: ");
+		    dbg($workoutData->days);
+		    $workoutData->days = array();
+	    }
+
         ?>
         <style>
             .select2-container { min-width: 75px; max-width: 250px; width: 100%;}
@@ -39,6 +46,7 @@ class e20rWorkoutView extends e20rSettingsView {
                                 <tr>
                                     <th class="e20r-label header" style="width: 20%;"><label for="e20r-workout-workout_ident">Workout (A/B/C/D)</label></th>
                                     <th class="e20r-label header" style="width: 40%;"><label for="e20r-workout-phase">Phase (number)</label></th>
+	                                <th class="e20r-label header" style="width: 40%;">On what weekdays</th>
                                 </tr>
                                 <tr>
                                     <td class="select-input" style="width: 20%;">
@@ -52,6 +60,17 @@ class e20rWorkoutView extends e20rSettingsView {
                                     <td class="text-input" style="width: 40%;">
                                         <input type="number" id="e20r-workout-phase" name="e20r-workout-phase" value="<?php echo $workoutData->phase; ?>">
                                     </td>
+	                                <td class="select-input" style="width: 40%;">
+		                                <select id="e20r-workout-days" name="e20r-workout-days[]" class="select2-container" multiple="multiple">
+			                                <option value="0" <?php echo in_array(0, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Sunday", "e20rtracker");?></option>
+			                                <option value="1" <?php echo in_array(1, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Monday", "e20rtracker");?></option>
+			                                <option value="2" <?php echo in_array(2, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Tuesday", "e20rtracker");?></option>
+			                                <option value="3" <?php echo in_array(3, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Wednesday", "e20rtracker");?></option>
+			                                <option value="4" <?php echo in_array(4, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Thursday", "e20rtracker");?></option>
+			                                <option value="5" <?php echo in_array(5, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Friday", "e20rtracker");?></option>
+			                                <option value="6" <?php echo in_array(6, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Saturday", "e20rtracker");?></option>
+		                                </select>
+	                                </td>
                                 </tr>
                                 </tbody>
                             </table>

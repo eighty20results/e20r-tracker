@@ -30,6 +30,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $group->exercises[0] = 0;
 
 	    $workout = parent::defaultSettings();
+	    $workout->days = array();
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
 	    $workout->assigned_user_id = array( -1 );

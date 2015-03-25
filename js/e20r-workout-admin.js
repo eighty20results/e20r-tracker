@@ -57,6 +57,11 @@ var e20rActivity = {
             allowClear: true
         });
 
+        jQuery('select#e20r-workout-days').select2({
+            placeholder: "When to do this workout",
+            allowClear: true
+        });
+
         // Reload the settings for the new elements.
         self.lastGroupHeader = self.activityForm.find('tr.e20r-workout-exercise-group-header:last');
         self.lastGroupData = self.activityForm.find('tr.e20r-workout-exercise-group-data:last');
