@@ -109,7 +109,7 @@ class e20rCheckinView extends e20rSettingsView {
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $activity->id; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTIVITY; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $activity->checkin_short_name; ?>" />
-                            <ul style="max-width: 300px; width: 290px;">
+                            <ul> <!-- style="max-width: 300px; min-width: 200px; width: 290px;" -->
                                 <li>
                                     <input type="radio" value="1" <?php checked( $activity->checkedin, 1 ); ?> name="did-activity-today" id="did-activity-today-radio-1" />
                                     <label for="did-activity-today-radio-1"><?php _e("I did my activity", "e20rtracker"); ?></label>
@@ -133,7 +133,6 @@ class e20rCheckinView extends e20rSettingsView {
                         </div>
 
                     </fieldset><!--//left-->
-
                     <fieldset class="did-you habit">
                         <legend style="padding-bottom: 9px;"><?php _e("Did you complete your action today?", "e20rtracker"); ?></legend>
                         <div>
@@ -159,7 +158,7 @@ class e20rCheckinView extends e20rSettingsView {
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $action->id; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTION; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
-                            <ul style="width: 295px;">
+                            <ul> <!-- style="max-width: 300px; width: 285px;" -->
                                 <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 1 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="1" <?php checked( $action->checkedin, 1 ); ?> name="did-action-today" id="did-action-today-radio-1" /><label for="did-action-today-radio-1"><?php _e("Yes", "e20rtracker");?></label></li>
                                 <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 0 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="0" <?php checked( $action->checkedin, 0 ); ?> name="did-action-today" id="did-action-today-radio-2" /><label for="did-action-today-radio-2"><?php _e("No", "e20rtracker"); ?></label></li>
                             </ul>

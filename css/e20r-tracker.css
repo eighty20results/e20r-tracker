@@ -589,6 +589,9 @@
     td.e20r-tracker-score {
         white-space: nowrap;
     }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        padding-bottom: 25px;
+    }
 }
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
@@ -1580,7 +1583,11 @@ td.e20r-group-header {
     clear: both;
     visibility: hidden;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul { width: 96%; }
+#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+    max-width: 300px;
+    min-width: 235px;
+    width: 96%;
+}
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li.active {
     background: #fffdc0;
@@ -1619,10 +1626,11 @@ td.e20r-group-header {
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
     margin-bottom: 8px;
+    max-width: 616px;
     color: #333333;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-textarea {
-    width: 616px;
+    width: 100%;
     max-width: 616px;
     font-family: sans-serif;
     font-size: 16px;
