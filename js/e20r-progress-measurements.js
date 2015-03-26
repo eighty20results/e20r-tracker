@@ -44,7 +44,7 @@ var progMeasurements = {
             $class.$levelId = $class.$levelSelector.find('option:selected').val();
 
             $class.$memberSelect = jQuery("#e20r-selectMember");
-            $class.$memberSelector = $class.$memberSelect.find('select#e20r_members')
+            $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
             $class.$oldClientId = $class.$memberSelector.find('option:selected').val();
 
             $class.$spinner = jQuery('#spinner');
@@ -99,7 +99,9 @@ var progMeasurements = {
                     click: function(self, e) {
                         console.log("Admin clicked Measurements button");
                         self.$spinner.show();
-                        var $id = self.$memberSelector.find('option:selected').val();
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
                         self.adminLoadData( $id )
                     }
@@ -138,10 +140,17 @@ var progMeasurements = {
 
         }
 
+        $class.$body = jQuery("body");
+
+        jQuery(document).on({
+            ajaxStart: function() { $class.$body.addClass("loading");    },
+            ajaxStop: function() { $class.$body.removeClass("loading"); }
+        });
+
     },
     adminLoadData: function(id) {
 
-        console.log("in adminLoadData()");
+        console.log("in adminLoadData() for user with id: " + id);
 
         // $class.$memberSelect.prop("disabled", true);
 
@@ -400,7 +409,8 @@ var progMeasurements = {
             error: function (data, $errString, $errType) {
 
                 console.log($errString + ' error returned from get_memberlistForLevel action: ' + $errType );
-                alert($data.data);
+                console.log('Available data: ', data );
+                alert(data.data);
             },
             success: function ($data) {
 
