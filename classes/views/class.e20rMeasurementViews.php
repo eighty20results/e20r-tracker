@@ -437,7 +437,7 @@ class e20rMeasurementViews {
                 }
                 ?>
         </div> <!-- tabs div -->
-	    <div class="modal"></div>
+	    <div class="modal"><!-- At end of form --></div>
         <?php
     }
 
