@@ -648,7 +648,9 @@ public function loadClient( $id = null ) {
 
             $levels = $e20rTracker->getMembershipLevels( $levelId );
             // $this->load_levels( $levelObj->name );
-            dbg("e20rClient::getMemberListForLevel() - Loading members for {$levels->name}");
+            dbg("e20rClient::getMemberListForLevel() - Loading members:");
+	        dbg($levels);
+
             $data = $this->view->viewMemberSelect(  $levelId );
         }
         else {
