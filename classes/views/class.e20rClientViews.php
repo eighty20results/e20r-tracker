@@ -106,7 +106,7 @@ class e20rClientViews {
                             ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
                         } ?>
                         </select>
-                        <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span>
+                        <!-- <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span> -->
                         <input type="hidden" name="hidden_e20r_client_id" id="hidden_e20r_client_id" value="0" >
                     </div>
                 </form>
@@ -139,6 +139,9 @@ class e20rClientViews {
 
     public function viewClientAdminPage( $lvlName = '' ) {
 
+	    global $e20rCheckin;
+	    global $e20rAssignment;
+
         if ( is_admin() ) {
 
             add_thickbox();
@@ -165,26 +168,40 @@ class e20rClientViews {
                         <!--                            <td><a href="#" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-compliance" class="e20r-choice-button button" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-assignments" class="e20r-choice-button button" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td> -->
-                        <td><a href="#" id="e20r-client-measurements" class="e20r-choice-button button" ><?php _e('Measurements', 'e20r-tracker'); ?></a></td>
+                        <td><a href="#" id="e20r-client-load-measurements" class="e20r-choice-button button" ><?php _e('Load Information', 'e20r-tracker'); ?></a></td>
                     </tr>
                     </tbody>
                 </table>
             </form>
         </div>
         <hr class="e20r-admin-hr" />
-        <div id="e20r-progr-info">
-
-            <?php echo $this->viewClientDetail( $this->client_id ); ?>
-        </div>
-        <div id="e20r-progress-compliance">
-            <?php echo $this->viewCompliance( $this->client_id, null ); ?>
-        </div>
-        <div id="e20r-progress-assignment">
-            <?php echo $this->viewAssignments( $this->client_id ); ?>
-        </div>
-        <div id="e20r-progress-measurements">
-
-        </div>
+	    <div id="status-tabs" style="max-width: 800px; width: 100%;" class="startHidden">
+		    <ul>
+			    <li><a href="#tabs-1">Measurements</a></li>
+			    <li><a href="#tabs-2">Assignments</a></li>
+			    <li><a href="#tabs-3">Achievements</a></li>
+			    <li><a href="#tabs-4">Client info</a></li>
+		    </ul>
+	        <div id="tabs-1">
+		        <div id="e20r-progress-measurements">
+		        </div>
+	        </div>
+		    <div id="tabs-2">
+			    <div id="e20r-progress-assignments">
+				    <?php echo $e20rAssignment->listUserAssignments( $this->client_id ) ?>
+			    </div>
+		    </div>
+		    <div id="tabs-3">
+		        <div id="e20r-progress-accomplishments">
+			        <?php echo $e20rCheckin->listUserAccomplishments( $this->client_id ); ?>
+		        </div>
+		    </div>
+		    <div id="tabs-4">
+			    <div id="e20r-client-info">
+				    <?php echo $this->viewClientDetail( $this->client_id ); ?>
+			    </div>
+		    </div>
+	    </div>
 	    <div class="modal"><!-- At end of form --></div>
     <?php
     }
