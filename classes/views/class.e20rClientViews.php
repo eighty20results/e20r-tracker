@@ -185,6 +185,7 @@ class e20rClientViews {
         <div id="e20r-progress-measurements">
 
         </div>
+	    <div class="modal"><!-- At end of form --></div>
     <?php
     }
 
