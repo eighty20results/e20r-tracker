@@ -44,7 +44,7 @@ var progMeasurements = {
             $class.$levelId = $class.$levelSelector.find('option:selected').val();
 
             $class.$memberSelect = jQuery("#e20r-selectMember");
-            $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+            $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
             $class.$oldClientId = $class.$memberSelector.find('option:selected').val();
 
             $class.$spinner = jQuery('#spinner');
@@ -56,7 +56,7 @@ var progMeasurements = {
             $class.$detailBtn = jQuery("#e20r-client-info");
             $class.$complianceBtn = jQuery("#e20r-client-compliance");
             $class.$assignBtn = jQuery("#e20r-client-assignments");
-            $class.$measureBtn = jQuery("#e20r-client-measurements");
+            $class.$measureBtn = jQuery("#e20r-client-load-measurements");
 
             $class.$clientInfo = jQuery("#e20r-client-info");
 
@@ -64,12 +64,20 @@ var progMeasurements = {
 
             $class.$clientAssignments = jQuery("#e20r-client-assignments");
 
+            jQuery(function(){
+                console.log("Loading tabs for wp-admin page");
+                jQuery("#status-tabs").tabs({
+                    heightStyle: "content"
+                });
+            });
+
             /* Configure admin page events */
             jQuery.bindEvents({
                 self: $class,
                 elem: $class.$levelSelect,
                 events: {
                     change: function(self, e) {
+                        jQuery("div#status-tabs").addClass("startHidden");
                         self.loadMemberList();
                     }
                 }
@@ -77,12 +85,17 @@ var progMeasurements = {
 
             jQuery.bindEvents({
                 self: $class,
-                elem: $class.$memberSelector,
+                elem: jQuery('select#e20r_members'),
                 events: {
-                    click: $class.saveClientId,
+                    click: function(self) {
+                        // jQuery("div#status-tabs").addClass("startHidden");
+                        self.saveClientId();
+                    },
                     change: function(self, e) {
-                        console.log("Lading user data after drop-down change");
-                        self.$spinner.show();
+
+                        jQuery("div#status-tabs").addClass("startHidden");
+                        console.log("Loading user data after drop-down change");
+                        // self.$spinner.show();
 
                         var $id = self.$memberSelector.find('option:selected').val();
 
@@ -98,7 +111,7 @@ var progMeasurements = {
                 events: {
                     click: function(self, e) {
                         console.log("Admin clicked Measurements button");
-                        self.$spinner.show();
+                        //self.$spinner.show();
                         $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
                         console.log("Value: ",  $class.$memberSelector.find('option:selected') );
                         var $id = $class.$memberSelector.find('option:selected').val();
@@ -106,14 +119,15 @@ var progMeasurements = {
                         self.adminLoadData( $id )
                     }
                 }
-            })
+            });
+
             jQuery.bindEvents({
                 self: $class,
                 elem: $class.$adminLoadBtn,
                 events: {
                     click: function(self, e) {
                         console.log("Loading data");
-                        self.$spinner.show();
+                        // self.$spinner.show();
 
                         var $id = self.$memberSelector.find('option:selected').val();
 
@@ -122,12 +136,15 @@ var progMeasurements = {
                     }
                 }
             });
+
+            // TODO Bind click events to the assignments, etc. on the wp-admin page.
         }
         else {
             $class.$ajaxUrl = e20r_progress.ajaxurl;
             $class.$spinner = jQuery('#spinner');
 
-            $class.$spinner.show();
+            // $class.$spinner.show();
+
             jQuery(function(){
                 jQuery("#status-tabs").tabs({
                     heightStyle: "content"
@@ -155,6 +172,8 @@ var progMeasurements = {
         // $class.$memberSelect.prop("disabled", true);
 
         this.loadMeasurementData(id);
+
+        jQuery("div#status-tabs").removeClass("startHidden");
 
         // $class.$memberSelect.prop("disabled", false);
     },
