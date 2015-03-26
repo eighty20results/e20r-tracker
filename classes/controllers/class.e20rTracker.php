@@ -524,8 +524,8 @@ class e20rTracker {
             self::load_adminJS();
 
             $e20r_plot_jscript = true;
-            self::register_plotSW();
-            self::enqueue_plotSW();
+            self::register_plotSW( $hook );
+            self::enqueue_plotSW( $hook );
             $e20r_plot_jscript = false;
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
@@ -927,8 +927,10 @@ class e20rTracker {
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
 
             $e20r_plot_jscript = true;
+	        self::register_plotSW();
             self::enqueue_plotSW();
             $e20r_plot_jscript = false;
+
             wp_print_scripts( 'jquery-ui-tabs' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
@@ -1196,6 +1198,7 @@ class e20rTracker {
 	                console.log("getBirthday() = ", bdate );
 
 	                // TODO: Send to backend for processing/to be added.
+
                 }
 
                 console.log("WP script for E20R Progress Update (client-side) loaded");
@@ -1239,42 +1242,43 @@ class e20rTracker {
      */
 
     /* Prepare graphing scripts */
-    public function register_plotSW() {
+    public function register_plotSW( $hook = null ) {
 
         global $e20r_plot_jscript, $post;
+	    global $e20rAdminPage;
 
-        if ( $e20r_plot_jscript || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
+        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
-            wp_deregister_script( 'jqplot' );
+//            wp_deregister_script( 'jqplot' );
             wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_export' );
+//            wp_deregister_script( 'jqplot_export' );
             wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_pie' );
+//            wp_deregister_script( 'jqplot_pie' );
             wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_text' );
+//            wp_deregister_script( 'jqplot_text' );
             wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_mobile' );
+//            wp_deregister_script( 'jqplot_mobile' );
             wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_date' );
+//            wp_deregister_script( 'jqplot_date' );
             wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_label' );
+//            wp_deregister_script( 'jqplot_label' );
             wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_pntlabel' );
+//            wp_deregister_script( 'jqplot_pntlabel' );
             wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_script( 'jqplot_ticks' );
+//            wp_deregister_script( 'jqplot_ticks' );
             wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-            wp_deregister_style( 'jqplot' );
+//            wp_deregister_style( 'jqplot' );
             wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
         }
     }
@@ -1282,11 +1286,12 @@ class e20rTracker {
     /**
      * Load graphing scripts (if needed)
      */
-    private function enqueue_plotSW() {
+    private function enqueue_plotSW( $hook = null ) {
 
         global $e20r_plot_jscript, $post;
+	    global $e20rAdminPage;
 
-        if ( $e20r_plot_jscript || has_shortcode( $post->post_content, 'progress_overview' ) ) {
+        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
             dbg("e20rTracker::enqueue_plotSW() -- Loading javascript for graph generation");
             wp_print_scripts('jqplot');
