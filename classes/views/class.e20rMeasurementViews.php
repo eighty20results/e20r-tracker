@@ -425,7 +425,7 @@ class e20rMeasurementViews {
             }
         ?>
             </ul>
-            <div id="spinner" class="e20r-spinner"></div>
+            <!-- <div id="spinner" class="e20r-spinner"></div> -->
             <?php
                 $count = 1;
                 foreach( $progressEntries as $label => $contentHtml ) {
