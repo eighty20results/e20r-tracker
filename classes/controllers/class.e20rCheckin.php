@@ -489,9 +489,8 @@ class e20rCheckin extends e20rSettings {
 
                 dbg("e20rCheckin::dailyProgress() - Loading lesson & activity excerpts");
 
-                $config->lessonExcerpt = $e20rArticle->getLessonExcerpt( $config->articleId );
-	            // TODO: Load $config->activityExcerpt (first need to create Activity stuff)
-	            // $config->activityExcerpt = $e20rActivity->getExcerpt( $config->articleId );
+                $config->lessonExcerpt = $e20rArticle->getExcerpt( $config->articleId, 'action' );
+	            $config->activityExcerpt = $e20rArticle->getExcerpt( $config->articleId, 'activity' );
             }
 
             // Get the check-in id list for the specified article ID
