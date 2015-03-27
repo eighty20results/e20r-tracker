@@ -24,6 +24,7 @@ class e20rArticleModel extends e20rSettingsModel {
         $this->settings->id = null;
         $this->settings->programs = null;
         $this->settings->post_id = null;
+        $this->settings->activity_ids = array();
         $this->settings->release_day = null;
         $this->settings->release_date = null;
         $this->settings->assignments = null;
@@ -50,6 +51,7 @@ class e20rArticleModel extends e20rSettingsModel {
         // Combination of program from usermeta & the $settings-Programs;
     }
 */
+
 	public function findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' ) {
 
 		$args = array(
