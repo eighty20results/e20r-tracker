@@ -233,7 +233,8 @@ class e20rArticleView extends e20rSettingsView {
                     </tr>
                     <tr><td colspan="4"><hr width="100%" /></td></tr>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-checkins"><?php _e("Check-Ins", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkins"><?php _e("Actions", "e20rtracker"); ?></label></th>
+	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
                     </tr>
                     <tr>
                         <td>
@@ -261,18 +262,24 @@ class e20rArticleView extends e20rSettingsView {
                                 } ?>
                             </select>
                         </td>
-                    </tr>
-                    <tr>
-                        <th class="e20r-label header"><label for="e20r-article-activity_ids"><?php _e("Activities", "e20rtracker"); ?></label></th>
-                        <td>
-                            <select class="select2-container" id="e20r-article-activity_ids" name="e20r-article-activity_ids[]" multiple="multiple">
-                                <?php
-                                    global $e20rWorkout;
+	                    <td>
+		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id">
+			                    <option value="-1" <?php selected( -1, $settings->activity_id ); ?>>No defined activity</option>
+			                    <?php
+			                    global $e20rWorkout;
 
-                                    // If the date(s) are preconfigured for the article, only select activities for the article(s)
-                                ?>
-                            </select>
-                    ?>
+			                    dbg("e20rArticleView::viewArticleSettings() - There's load all defined activities");
+			                    $activities = $e20rWorkout->getActivities();
+
+			                    foreach( $activities as $activity ) {
+				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: ");
+				                    dbg($activity);
+				                    ?>
+				                    <option value="<?php echo $activity->id; ?>"<?php selected( $activity->id, $settings->activity_id ); ?>><?php echo $activity->title; ?></option><?php
+			                    }
+			                    ?>
+		                    </select>
+	                    </td>
                     </tr>
                     </tbody>
                 </table>
