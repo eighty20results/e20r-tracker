@@ -12,7 +12,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	public function e20rWorkoutModel() {
 
-		parent::__construct( 'workout', 'e20r_workouts' );
+		parent::__construct( 'workout', 'e20r_workout' );
 	}
 
     public function defaultSettings() {
@@ -52,7 +52,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 			global $post;
 
-			if ( isset( $post->post_type) && ( $post->post_type == 'e20r_workouts' ) ) {
+			if ( isset( $post->post_type) && ( $post->post_type == 'e20r_workout' ) ) {
 
 				$workoutId = $post->ID;
 			}
