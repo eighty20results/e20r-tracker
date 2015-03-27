@@ -259,6 +259,18 @@ class e20rSettingsModel {
 		return $this->cpt_slug;
 	}
 
+	/**
+	 * Load the CPT (with settings) for the e20rTracker type
+	 *
+	 * @param $key - The metadata key value we're searching for. Valid values are 'any' or a defined key in the 'e20r-CPT_type-[key] metadata description (see the defaultSettings() function)
+	 * @param $value - The value we're searching for.
+	 * @param string $dataType -- A viable WP_Query data type (for the query args)
+	 * @param int $programId -- The program ID
+	 * @param string $comp -- A valid WP_Query comparison operator
+	 * @param string $order -- The sort order for the result
+	 *
+	 * @return array|bool|mixed - An array of WP_Post objects for the query.
+	 */
 	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = '=', $order = 'DESC' ) {
 
 		global $e20rProgram;
@@ -266,7 +278,24 @@ class e20rSettingsModel {
 		$programKey = null;
 		$pArray = false;
 
-		if ( $key != 'id' ) {
+		if ( ( $key == 'id' ) && ( $value == 'any' ) ) {
+			$args = array(
+				'posts_per_page' => -1,
+				'post_type' => $this->cpt_slug,
+				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+				'order' => $order,
+			);
+		}
+        elseif ( ( $key == 'id') && (! is_array( $value ) ) ) {
+            $args = array(
+                'posts_per_page' => -1,
+                'post_type' => $this->cpt_slug,
+                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+                'post_id' => $value,
+                'order' => $order,
+            );
+        }
+		elseif ( $key != 'id' ) {
 			$args = array(
 				'posts_per_page' => -1,
 				'post_type' => $this->cpt_slug,
@@ -283,22 +312,13 @@ class e20rSettingsModel {
 				)
 			);
 		}
-        elseif (! is_array( $value ) ) {
-            $args = array(
-                'posts_per_page' => -1,
-                'post_type' => $this->cpt_slug,
-                'post_status' => 'publish',
-                'post_id' => $value,
-                'order' => 'DESC',
-            );
-        }
         else {
             $args = array(
                 'posts_per_page' => -1,
                 'post_type' => $this->cpt_slug,
-                'post_status' => 'publish',
+                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
                 'post__in' => $value,
-                'order' => 'DESC',
+                'order' => $order,
             );
         }
 
@@ -405,13 +425,7 @@ class e20rSettingsModel {
 			$new = $this->loadSettings( get_the_ID() );
 			$new->id = get_the_ID();
 
-			if ( $query->post_count > 1 ) {
-
-				$articleList[] = $new;
-			}
-			else {
-				$articleList = $new;
-			}
+			$articleList[] = $new;
 		}
 
 		return $articleList;
