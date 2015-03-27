@@ -229,10 +229,6 @@ class e20rArticleView extends e20rSettingsView {
                                     ?><option value="<?php echo $programs->post->ID; ?>" <?php echo $selected; ?>><?php echo $programs->post->post_title; ?></option><?php
                                 } ?>
                             </select>
-                            <script>
-                                jQuery('#e20r-article-programs').select2();
-                            </script>
-
                         </td>
                     </tr>
                     <tr><td colspan="4"><hr width="100%" /></td></tr>
@@ -264,10 +260,19 @@ class e20rArticleView extends e20rSettingsView {
                                     ?><option value="<?php echo $checkins->post->ID; ?>" <?php echo $selected; ?>><?php echo $checkins->post->post_title; ?></option><?php
                                 } ?>
                             </select>
-                            <script>
-                                jQuery('#e20r-article-checkins').select2();
-                            </script>
                         </td>
+                    </tr>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-article-activity_ids"><?php _e("Activities", "e20rtracker"); ?></label></th>
+                        <td>
+                            <select class="select2-container" id="e20r-article-activity_ids" name="e20r-article-activity_ids[]" multiple="multiple">
+                                <?php
+                                    global $e20rWorkout;
+
+                                    // If the date(s) are preconfigured for the article, only select activities for the article(s)
+                                ?>
+                            </select>
+                    ?>
                     </tr>
                     </tbody>
                 </table>
