@@ -229,6 +229,15 @@ class e20rWorkout extends e20rSettings {
 
     }
 
+    public function getActivities( $aIds ) {
+
+        $activities = $this->model->find( 'id', $aIds );
+        dbg("e20rWorkout::getActivities() - Returns activity definition objects for: ");
+        dbg($aIds);
+
+        return $activities;
+    }
+
     public function getMemberGroups() {
 
         $membersGroups = array();
