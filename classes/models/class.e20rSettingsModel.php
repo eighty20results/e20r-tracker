@@ -283,14 +283,24 @@ class e20rSettingsModel {
 				)
 			);
 		}
-		else {
-			$args = array(
-				'posts_per_page' => -1,
-				'post_type' => $this->cpt_slug,
-				'post_status' => 'publish',
-				'page_id' => $value,
-			);
-		}
+        elseif (! is_array( $value ) ) {
+            $args = array(
+                'posts_per_page' => -1,
+                'post_type' => $this->cpt_slug,
+                'post_status' => 'publish',
+                'post_id' => $value,
+                'order' => 'DESC',
+            );
+        }
+        else {
+            $args = array(
+                'posts_per_page' => -1,
+                'post_type' => $this->cpt_slug,
+                'post_status' => 'publish',
+                'post__in' => $value,
+                'order' => 'DESC',
+            );
+        }
 
 		$dataList = $this->loadForQuery( $args );
 
