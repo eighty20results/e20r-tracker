@@ -127,24 +127,72 @@ class e20rArticle extends e20rSettings {
         return ( empty($url) ? false : $url );
     }
 
-    public function getLessonExcerpt( $articleId ) {
+    /**
+     * Use the articleId to locate the
+     * @param $articleId - The ID of the article containing the workout/activity for this lesson.
+     *
+     */
+    public function getActivity( $articleId ) {
+
+        global $e20rArticle;
+        global $e20rWorkout;
+        global $e20rTracker;
+
+        $postId = null;
+
+        $excerpt = "We haven't found an activity for today";
+
+        $aIds = $this->model->getSetting( $articleId, 'activity_ids');
+        $delay = $this->model->getSetting( $articleId, 'release_day');
+
+        $activites = $e20rWorkout->getActivities( $aIds );
+
+        $art_day_no = date( 'N', strtotime( $e20rTracker->getDateForPost( $delay ) ) );
+        dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
+
+        // TODO: This doens't make sense since an article has a 1:1 relationship with the delay. I.e. if a workout has been defined for a delay
+
+        // Loop through all the defined activities for the $articleId
+        foreach( $activites as $a ) {
+
+            if ( in_array( $art_day_no, $a->days ) ) {
+                // The delay value for the $articleId releases the $articleId on one of the $activity days.
+                dbg("e20rArticle::getActivity() - ID for the correct Activity: {$a->id}");
+                $postId = $a->id;
+            }
+        }
+
+        return $postId;
+    }
+
+    public function getExcerpt( $articleId, $type = 'action' ) {
 
         global $post;
 
-        $postId = $this->model->getSetting( $articleId, 'post_id');
+        switch( $type ) {
+            case 'action':
+                $postId = $this->model->getSetting( $articleId, 'post_id');
+                break;
+            case 'activity':
+                $postId = $this->getActivity( $articleId );
+        }
+
+        if ( is_null( $postId ) ) {
+            return null;
+        }
 
         $articles = new WP_Query( array(
-            'post_type'           => apply_filters( 'e20r-tracker-lesson-type-filter', array( 'any' ) ),
+            'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
             'post_status'         => apply_filters( 'e20r-tracker-post-status-filter', array( 'publish' ) ),
             'posts_per_page'      => 1,
             'p'                   => $postId,
             'ignore_sticky_posts' => true,
         ) );
 
-        dbg( "e20rArticle::getLessonExcerpt() - Number of posts in {$articleId} is {$articles->found_posts}" );
+        dbg( "e20rArticle::getActionExcerpt() - Number of posts in {$articleId} is {$articles->found_posts}" );
 
         $prefix = $this->model->getSetting( $articleId, 'prefix' );
-        dbg( "e20rArticle::getLessonExcerpt() - Prefix for lesson: {$prefix}");
+        dbg( "e20rArticle::getActionExcerpt() - Prefix for lesson: {$prefix}");
 
         if ( $articles->found_posts > 0 ) {
 
@@ -159,7 +207,7 @@ class e20rArticle extends e20rSettings {
                 </h4>
                 <p class="e20r-descr"><?php echo $post->post_excerpt; ?></p>
                 <p class="e20r-descr"><a href="<?php echo get_permalink() ?>" title="<?php the_title(); ?>">
-                        <?php _e( 'Click to read lesson', 'e20tracker' ); ?>
+                        <?php _e( 'Click to read', 'e20tracker' ); ?>
                     </a>
                 </p>
             <?php
@@ -170,7 +218,7 @@ class e20rArticle extends e20rSettings {
             $html = ob_get_clean();
         }
         else {
-            dbg("e20rArticle::getLessonExcerpt() - No posts found. Returning null ");
+            dbg("e20rArticle::getActionExcerpt() - No posts found. Returning null ");
             $html = null;
         }
 
