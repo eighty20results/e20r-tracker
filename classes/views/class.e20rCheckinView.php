@@ -87,7 +87,7 @@ class e20rCheckinView extends e20rSettingsView {
                     <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">Activity</h4><p class="e20r-descr">No activity scheduled.</p>' : $config->activityExcerpt ); ?>
                 </td>
                 <td id="e20r-checkin-lesson" class="e20r-content-cell">
-                    <?php echo ( ! isset( $config->lessonExcerpt ) ? '<h4 class="e20r-checkin-header">Lesson</h4><p class="e20r-descr">No lesson scheduled.' : $config->lessonExcerpt ); ?>
+                    <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-checkin-header">Lesson</h4><p class="e20r-descr">No lesson scheduled.' : $config->actionExcerpt ); ?>
                 </td>
             </tr>
             </tbody>
