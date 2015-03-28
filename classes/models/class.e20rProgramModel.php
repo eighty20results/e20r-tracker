@@ -20,7 +20,7 @@ class e20rProgramModel extends e20rSettingsModel {
         global $post;
 
         $settings = parent::defaultSettings();
-
+	    $settings->id = -1;
         $settings->program_shortname = ( isset( $post->post_name ) ? $post->post_name : null );
         $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
         $settings->enddate = null;
