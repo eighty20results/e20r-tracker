@@ -151,6 +151,7 @@ class e20rProgram extends e20rSettings {
 
 		return $link;
 	}
+
     public function getProgramIdForUser( $userId, $articleId = null ) {
 
 	    global $currentProgram;
@@ -164,21 +165,19 @@ class e20rProgram extends e20rSettings {
 
 		global $currentProgram;
 
-		if ( empty( $currentProgram ) ) {
+		if ( empty( $currentProgram ) && ( $userId != 0) ) {
 
 			$programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-			if ( $programId === false ) {
-
-				dbg( "e20rProgram::getProgramIdForUser() - No program set for user. Returning -1.");
-				return -1;
-			}
-			else {
+			if ( $programId !== false ) {
 
 				$this->init( $programId );
 			}
 
 			dbg( "e20rProgram::getProgramIdForUser() - User's programID: {$currentProgram->id}" );
+		}
+		else {
+			$this->init();
 		}
 	}
     /**
