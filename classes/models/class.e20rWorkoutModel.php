@@ -17,9 +17,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
     public function defaultSettings() {
 
-	    global $e20rExercise;
-	    global $current_user;
-
 	    $group = new stdClass();
 	    $group->group_set_count = null;
 	    $group->group_tempo = null;
@@ -30,6 +27,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $group->exercises[0] = 0;
 
 	    $workout = parent::defaultSettings();
+	    $workout->excerpt = '';
+	    $workout->title = '';
 	    $workout->days = array();
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
@@ -64,8 +63,46 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	}
 
 
-	/**
-     * Returns an array of all programs merged with their associated settings.
+	public function loadSettings( $id ) {
+
+		global $post;
+		global $currentWorkout;
+
+		if ( ! empty( $currentWorkout ) && ( $currentWorkout->id == $id ) ) {
+
+			return $currentWorkout;
+		}
+
+		if ( $id == 0 ) {
+
+			$this->settings              = $this->defaultSettings( $id );
+			$this->settings->id          = $id;
+
+		} else {
+
+			$savePost = $post;
+
+			$this->settings = parent::loadSettings( $id );
+
+
+			$post = get_post( $id );
+			setup_postdata( $post );
+
+			if ( ! empty( $post->post_title ) ) {
+
+				$this->settings->excerpt       = $post->post_excerpt;
+				$this->settings->title    = $post->post_title;
+				$this->settings->id          = $id;
+			}
+
+			wp_reset_postdata();
+			$post = $savePost;
+		}
+
+		$currentWorkout = $this->settings;
+		return $this->settings;
+	}	/**
+     * Returns an array of all workouts merged with their associated settings.
      *
      * @param $statuses string|array - Statuses to return program data for.
      * @return mixed - Array of program objects
@@ -73,7 +110,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
     public function loadAllData( $statuses = 'any' ) {
 
         $query = array(
-            'post_type' => 'e20r_workouts',
+            'post_type' => 'e20r_workout',
             'post_status' => $statuses,
         );
 
@@ -118,7 +155,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    } else {
 
 		    $query = array(
-			    'post_type'   => 'e20r_workout',
+			    'post_type'   => $this->cpt_slug,
 			    'post_status' => $statuses,
 			    'p'           => $id,
 		    );

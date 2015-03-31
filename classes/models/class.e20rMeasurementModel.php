@@ -27,13 +27,17 @@ class e20rMeasurementModel {
 
         global $current_user;
 
-        if ( ( $user_id == null ) && ( $current_user->ID != 0 ) ) {
-            $user_id = $current_user->ID;
-        }
+	    if ( is_user_logged_in() ) {
 
-        $this->client_id = $user_id;
-        $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id);
-        dbg("e20rMeasurementModel::construct() - For user_id: {$user_id}");
+		    if ( ( $user_id == null ) && ( $current_user->ID != 0 ) ) {
+			    $user_id = $current_user->ID;
+		    }
+
+		    $this->client_id = $user_id;
+		    $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
+
+		    dbg( "e20rMeasurementModel::construct() - For user_id: {$user_id}" );
+	    }
 
         $this->table = $e20rTables->getTable( 'measurements' );
         $this->fields = $e20rTables->getFields( 'measurements' );

@@ -52,9 +52,9 @@ class e20rArticle extends e20rSettings {
             'private'
         );
 
-        // Query to load all available programs (used with check-in definition)
+        // Query to load all available settings (used with check-in definition)
         $query = array(
-            'post_type'   => apply_filters( 'e20r_tracker_article_types', array( 'page', 'post' ) ),
+            'post_type'   => apply_filters( 'e20r_tracker_article_types', array( $this->cpt_slug ) ),
             'post_status' => apply_filters( 'e20r_tracker_article_post_status', $def_status ),
             'posts_per_page' => -1,
         );
@@ -91,18 +91,22 @@ class e20rArticle extends e20rSettings {
 
 	    global $currentArticle;
 
-        if ( empty($currentArticle) || ( isset( $currentArticle->id) && ($currentArticle->id != $postId ) ) ) {
+        if ( !isset($currentArticle->id) || ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) ) {
 
 	        $currentArticle = parent::init( $postId );
             dbg("e20rArticle::init() - Loaded settings for {$postId}:");
-	        dbg($currentArticle);
+
+	        $this->articleId = ( ! isset($currentArticle->id) ? false : $currentArticle->id);
         }
+	    else {
+		    dbg("e20rArticle::init() - No need to load settings (previously loaded): ");
+		    dbg($currentArticle);
+	    }
 
-	    $this->articleId = ( ! isset($currentArticle->id) ? false : $currentArticle->id);
+        if ( ( $this->articleId  !== false ) && ( $currentArticle->post_id !== $postId ) ) {
 
-        if ( ! $this->articleId ) {
-
-            return false;
+	        dbg("e20rArticle::init() - No article defined for this postId ");
+            $this->articleId = false;
         }
 
         return $this->articleId;
@@ -132,7 +136,7 @@ class e20rArticle extends e20rSettings {
      * @param $articleId - The ID of the article containing the workout/activity for this lesson.
      *
      */
-    public function getActivity( $articleId ) {
+    public function getActivity( $articleId, $userId = null ) {
 
         global $e20rArticle;
         global $e20rWorkout;
@@ -142,44 +146,61 @@ class e20rArticle extends e20rSettings {
 
         $excerpt = "We haven't found an activity for today";
 
-        $aIds = $this->model->getSetting( $articleId, 'activity_ids');
+        $aId = $this->model->getSetting( $articleId, 'activity_id');
         $delay = $this->model->getSetting( $articleId, 'release_day');
 
-        $activites = $e20rWorkout->getActivities( $aIds );
+	    $mGroupId = $e20rTracker->getMembershipLevels();
+	    $activities = $e20rWorkout->getActivities( $aId );
 
         $art_day_no = date( 'N', strtotime( $e20rTracker->getDateForPost( $delay ) ) );
         dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
 
-        // TODO: This doens't make sense since an article has a 1:1 relationship with the delay. I.e. if a workout has been defined for a delay
-
         // Loop through all the defined activities for the $articleId
-        foreach( $activites as $a ) {
+        foreach( $activities as $a ) {
 
             if ( in_array( $art_day_no, $a->days ) ) {
                 // The delay value for the $articleId releases the $articleId on one of the $activity days.
                 dbg("e20rArticle::getActivity() - ID for the correct Activity: {$a->id}");
-                $postId = $a->id;
+	            $activity = $e20rWorkout->getActivity( $a->id );
+
+	            foreach ( $activity as $b ) {
+
+		            if ( in_array( $userId, $b->assigned_user_id ) || in_array( $mGroupId, $b->assigned_usergroups) ) {
+			            $postId = $b->id;
+		            }
+	            }
+
             }
         }
 
         return $postId;
     }
 
-    public function getExcerpt( $articleId, $type = 'action' ) {
+    public function getExcerpt( $articleId, $userId = null, $type = 'action' ) {
 
         global $post;
 
+	    $postId = null;
+
         switch( $type ) {
             case 'action':
-                $postId = $this->model->getSetting( $articleId, 'post_id');
+                $postId = $this->model->getSetting( $articleId, 'post_id' );
+	            $prefix = $this->model->getSetting( $articleId, 'prefix' );
+				dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the action in article {$articleId}");
                 break;
             case 'activity':
-                $postId = $this->getActivity( $articleId );
+                // $postId = $this->getActivity( $articleId );
+				$postId = $this->model->getSetting( $articleId, 'activity_id' );
+	            $prefix = null; // Using NULL prefix for activities
+	            dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
+		        break;
         }
 
         if ( is_null( $postId ) ) {
             return null;
         }
+
+	    dbg( "e20rArticle::getActionExcerpt() - Prefix for lesson: {$prefix}");
 
         $articles = new WP_Query( array(
             'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
@@ -189,10 +210,7 @@ class e20rArticle extends e20rSettings {
             'ignore_sticky_posts' => true,
         ) );
 
-        dbg( "e20rArticle::getActionExcerpt() - Number of posts in {$articleId} is {$articles->found_posts}" );
-
-        $prefix = $this->model->getSetting( $articleId, 'prefix' );
-        dbg( "e20rArticle::getActionExcerpt() - Prefix for lesson: {$prefix}");
+        dbg( "e20rArticle::getActionExcerpt() - Number of posts for ID {$postId} in {$articleId} is {$articles->found_posts}" );
 
         if ( $articles->found_posts > 0 ) {
 
@@ -315,7 +333,7 @@ class e20rArticle extends e20rSettings {
             return -1;
         }
 
-        $article = $this->model->findArticle('release_day', $delayVal, 'numeric', $programId );
+        $article = $this->model->findArticle( 'release_day', $delayVal, 'numeric', $programId );
 
         if ( count($article) == 1 ) {
 
@@ -346,6 +364,11 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
+	    if ( has_shortcode( $content, 'weekly_progress') || has_shortcode( $content, 'progress_overview' ) || has_shortcode( $content, 'daily_progress') ) {
+		    // Process in shortcode actions
+		    return $content;
+	    }
+
         global $post;
         global $current_user;
         global $e20rMeasurements;
@@ -354,10 +377,14 @@ class e20rArticle extends e20rSettings {
 	    global $e20rCheckin;
 	    global $currentArticle;
 
-        dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
-        $this->init( $post->ID );
+	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
+		    return $content;
+	    }
 
-        if ( empty( $this->articleId ) ) {
+        dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
+        $articleId = $this->init( $post->ID );
+
+        if ( $articleId == false ) {
 
             dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
             return $content;
@@ -642,14 +669,14 @@ class e20rArticle extends e20rSettings {
         // return ( is_null( $retVal ) ? false : true );
     }
 
-    public function getCheckins( $articleId ) {
+    public function getCheckins( $aConfig ) {
 
-        dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$articleId}");
+        dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$aConfig->articleId}");
 
-        $setting = $this->model->getSetting( $articleId, 'checkins' );
+        $setting = $this->model->getSetting( $aConfig->articleId, 'checkins' );
 
         if ( empty($setting)) {
-            dbg("e20rArticle::getCheckins() - NO checkin IDs found for this article ({$articleId})");
+            dbg("e20rArticle::getCheckins() - Zero checkin IDs found for this article ({$aConfig->articleId})");
             return false;
         }
 

@@ -39,6 +39,28 @@ class e20rWorkout extends e20rSettings {
 	    }
     }
 
+	public function getActivity( $identifier ) {
+
+		if ( !isset( $this->model ) ) {
+			$this->init();
+		}
+
+		$workout = array();
+
+		if ( is_numeric( $identifier ) ) {
+			// Given an ID
+			$workout = $this->model->loadWorkoutData( $identifier, 'any' );
+		}
+
+		if (is_string( $identifier ) ) {
+			// Given a short_name
+			$workout[] = $this->getWorkout( $identifier );
+		}
+
+		return $workout;
+
+	}
+
     public function getWorkout( $shortName ) {
 
         if ( ! isset( $this->model ) ) {
@@ -229,11 +251,18 @@ class e20rWorkout extends e20rSettings {
 
     }
 
-    public function getActivities( $aIds ) {
+    public function getActivities( $aIds  = null) {
 
-        $activities = $this->model->find( 'id', $aIds );
-        dbg("e20rWorkout::getActivities() - Returns activity definition objects for: ");
-        dbg($aIds);
+	    if ( empty( $aIds ) ) {
+		    dbg('e20rWorkout::getActivities() - Loading all activities from DB');
+		    $activities = $this->model->find( 'id', 'any' ); // Will return all of the defined activities
+	    }
+	    else {
+		    dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
+		    $activities = $this->model->find( 'id', $aIds );
+	    }
+
+        dbg("e20rWorkout::getActivities() - Found " . count($activities) . " activities.");
 
         return $activities;
     }

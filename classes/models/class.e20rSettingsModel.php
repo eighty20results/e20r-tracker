@@ -271,7 +271,7 @@ class e20rSettingsModel {
 	 *
 	 * @return array|bool|mixed - An array of WP_Post objects for the query.
 	 */
-	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = '=', $order = 'DESC' ) {
+	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC' ) {
 
 		global $e20rProgram;
 
@@ -321,6 +321,8 @@ class e20rSettingsModel {
                 'order' => $order,
             );
         }
+		dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
+		dbg($args);
 
 		$dataList = $this->loadForQuery( $args );
 
@@ -407,8 +409,7 @@ class e20rSettingsModel {
 
 	private function loadForQuery( $args ) {
 
-		$articleList = array();
-		dbg( $args );
+		$list = array();
 
 		$query = new WP_Query( $args );
 
@@ -416,7 +417,7 @@ class e20rSettingsModel {
 
 		if ( $query->post_count == 0 ) {
 
-			return $articleList;
+			return $list;
 		}
 		while ( $query->have_posts() ) {
 
@@ -425,10 +426,10 @@ class e20rSettingsModel {
 			$new = $this->loadSettings( get_the_ID() );
 			$new->id = get_the_ID();
 
-			$articleList[] = $new;
+			$list[] = $new;
 		}
 
-		return $articleList;
+		return $list;
 	}
 
     /**

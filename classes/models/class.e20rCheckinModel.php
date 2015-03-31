@@ -69,7 +69,8 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count}" );
+        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count} for query: " );
+	    dbg($args);
 
         while ( $query->have_posts() ) {
 
@@ -136,7 +137,8 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::getCheckins() - Returned checkins: {$query->post_count}" );
+        dbg("e20rCheckinModel::getCheckins() - Returned checkins: {$query->post_count} for query:" );
+	    dbg($args);
 
         while ( $query->have_posts() ) {
 
@@ -353,7 +355,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
 
-            dbg("e20rCheckinModel::loadCheckinData() - Using default values: ");
+            dbg("e20rCheckinModel::loadUserCheckin() - Using default values: ");
             dbg($result);
         }
 

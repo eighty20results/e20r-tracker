@@ -51,10 +51,16 @@ class e20rClient {
 
 	    global $e20r_isClient;
 
+	    if ( ! is_user_logged_in() ) {
+
+		    $e20r_isClient = false;
+		    return $e20r_isClient;
+	    }
+
 	    if ( is_null( $e20r_isClient ) ) {
 
 		    dbg("e20rClient::isNourishClient() - Is user with id {$user_id} a nourish client?");
-		    $e20rNourishClient = false;
+		    $e20r_isClient = false;
 
 		    if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 

@@ -30,7 +30,7 @@ class e20rSettings {
             return false;
         }
 
-	    dbg("e20r" . ucfirst($this->type) . "::init() - Loading {$this->type} for id: {$postId}");
+	    dbg("e20r" . ucfirst($this->type) . "::init() - Loading basic {$this->type} settings for id: {$postId}");
 
         $settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true);
 

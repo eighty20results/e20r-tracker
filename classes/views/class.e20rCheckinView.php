@@ -36,27 +36,27 @@ class e20rCheckinView extends e20rSettingsView {
 
         ob_start();
 
-        if ( ( $config->delay < $config->delay_byDate ) && ( is_null( $config->maxDelayFlag ) ) ){ ?>
+        if ( ( $config->delay < $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ){ ?>
             <div class="date-past-future notice">You are viewing a day in the past.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
             <?php
         }
 
-        if ( ( $config->delay > $config->delay_byDate ) && ( is_null( $config->maxDelayFlag ) ) ) { ?>
+        if ( ( $config->delay > $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ) { ?>
             <div class="date-past-future notice">You are viewing a day in the future.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
             <?php
         }
 
-        if ( $config->maxDelayFlag == CONST_MAXDAYS_FUTURE ) {
+        if ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) {
 
             // The user is attempting to view a day >2 days after today.
             ?>
             <div class="date-past-future orange-notice">
-                <h4>We love that you're interested</h4>
-                <p>However, we feel there's already plenty to keep yourself busy with for now. Please head on
-                    <a href="<?php echo $config->url; ?>">back to the dashboard for Today</a>.</p>
+                <h4>We love that you're interested!</h4>
+                <p>However, we feel there's already plenty to keep yourself busy with for now, so please return
+                    <a href="<?php echo $config->url; ?>">to the dashboard</a> for today's lesson.</p>
             </div><?php
         }
-        else {
+		else {
         ?>
         <noscript>
             <div class="red-notice" style="font-size: 18px; line-height: 22px;">
@@ -70,13 +70,15 @@ class e20rCheckinView extends e20rSettingsView {
         </noscript>
         <div class="clear-after"></div>
         <div id="e20r-checkin-daynav">
+	        <?php if ( $config->delay >= 1 ): ?>
                 <p class="e20r-checkin-yesterday-nav">
                     <a id="e20r-checkin-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
-                    <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
+                    <input type="hidden" name="e20r-checkin-day-yesterday" id="e20r-checkin-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
                 </p>
+			<?php endif; ?>
                 <p class="e20r-checkin-tomorrow-nav">
                     <a id="e20r-checkin-tomorrow-lnk" href="<?php echo $config->url; ?>"><?php echo $config->tomorrow; ?></a>
-                    <input type="hidden" name="e20r-checkin-day" id="e20r-checkin-tomorrow" value="<?php echo ( $config->next  ); ?>">
+                    <input type="hidden" name="e20r-checkin-day-tomorrow" id="e20r-checkin-tomorrow" value="<?php echo ( $config->next  ); ?>">
                 </p>
         </div>
         <div class="clear-after"></div>
@@ -199,11 +201,9 @@ class e20rCheckinView extends e20rSettingsView {
                     </div>
 
                 </fieldset><!--.notes-->
-
-
             </div><!--#e20r-daily-checkin-canvas-->
         </div><!--#e20r-daily-checkin-container-->
-    <?php } ?>
+	<?php } ?>
     <div class="modal"></div>
     <?php
         $html = ob_get_clean();

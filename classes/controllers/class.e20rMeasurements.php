@@ -496,6 +496,11 @@ class e20rMeasurements {
 
     public function shortcode_progressOverview( $attributes ) {
 
+	    if (! is_user_logged_in()) {
+
+		    auth_redirect();
+	    }
+
         global $e20r_plot_jscript;
         global $current_user;
         global $post;
@@ -589,6 +594,11 @@ class e20rMeasurements {
     }
 */
     public function shortcode_weeklyProgress( $attributes ) {
+
+	    if (! is_user_logged_in()) {
+
+		    auth_redirect();
+	    }
 
         global $e20r_plot_jscript;
         global $current_user;

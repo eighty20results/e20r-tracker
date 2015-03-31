@@ -8,11 +8,19 @@
 
 jQuery.noConflict();
 
+var $body = jQuery("body");
+
+jQuery(document).on({
+    ajaxStart: function() { $body.addClass("loading");   },
+    ajaxStop: function() { $body.removeClass("loading"); }
+});
+
 jQuery(document).ready(function() {
 
     var e20rCheckinEvent = {
         init: function() {
 
+            this.$body = jQuery("body");
             this.$checkinOptions = jQuery('#e20r-daily-checkin-canvas fieldset.did-you input:radio');
             this.$checkinDate = jQuery('#e20r-checkin-checkin_date').val();
             this.$checkedinDate = jQuery('#e20r-checkin-checkedin_date').val();
@@ -48,14 +56,20 @@ jQuery(document).ready(function() {
 
             jQuery(self.$tomorrowBtn).on('click', function() {
 
+                jQuery("body").addClass("loading");
+
                 event.preventDefault();
                 self.dayNav(self, this);
+
             });
 
             jQuery(self.$yesterdayBtn).on('click', function() {
 
+                jQuery("body").addClass("loading");
+
                 event.preventDefault();
                 self.dayNav(self, this);
+
             });
         },
         showBtn: function( self ) {
@@ -109,6 +123,8 @@ jQuery(document).ready(function() {
 //            console.log("Element is: ", elem );
 
 //            console.log("Type: ", jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first') );
+
+            jQuery('body').addClass("loading");
 
             var $data = {
                 action: 'saveCheckin',
@@ -222,6 +238,7 @@ jQuery(document).ready(function() {
 
             });
 
+            jQuery('body').removeClass("loading");
         },
         editCheckin: function( elem ) {
 
@@ -240,7 +257,9 @@ jQuery(document).ready(function() {
         },
         dayNav: function( self, elem ) {
 
-            var navDay = jQuery(elem).next("input[name='e20r-checkin-day']").val();
+            var navDay = jQuery(elem).next("input[name^='e20r-checkin-day']").val();
+
+            console.log("Day Nav value: ", navDay );
 
             var data = {
                 action: 'daynav',
@@ -253,7 +272,42 @@ jQuery(document).ready(function() {
 
             console.log("toNext data: ", data);
 
+            jQuery.ajax({
+                url: e20r_checkin.url,
+                type: 'POST',
+                timeout: 5000,
+                data: data,
+                success: function (response) {
+
+                    console.log("Response: ", response);
+                    jQuery('#e20r-daily-progress').html(response.data);
+
+                    self.bindProgressElements(self);
+                },
+                error: function (jqx, errno, errtype) {
+
+                    console.log("Error: ", jqx );
+
+                    var $string;
+                    $string = "An error occurred while trying to load the requested page. If you\'d like to try again, please reload ";
+                    $string += "this page, and click your selection once more. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using our Contact form ";
+                    $string += "at the top of this page.";
+
+                    alert($string);
+
+                    return;
+
+                },
+                complete: function () {
+                    jQuery("body").removeClass("loading");
+                }
+            });
+
+/*
             jQuery.post(e20r_checkin.url, data, function(response) {
+
+                console.log("Daily progress response: ", response );
 
                 if ( ! response.success ) {
 
@@ -275,6 +329,9 @@ jQuery(document).ready(function() {
 
                 }
             });
+
+            $body.removeClass("loading");
+            */
         }
     };
 

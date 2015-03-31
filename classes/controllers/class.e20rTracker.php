@@ -215,6 +215,16 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+	public function trackerCPTs() {
+		return array(
+			'e20r_workout',
+			'e20r_assignments',
+			'e20r_programs',
+			'e20r_articles',
+			'e20r_exercises',
+			'e20r_checkins'
+		);
+	}
 	function plugin_add_settings_link( $links ) {
 
 		$settings_link = '<a href="options-general.php?page=e20r-tracker">' . __( 'Settings', 'e20rtracker' ) . '</a>';
@@ -2192,30 +2202,65 @@ class e20rTracker {
         return false;
     }
 
-    public function getDelay( $delayVal, $userId = null ) {
+	/*
+	public function getDateFromDelay( $delay, $userId = null) {
+
+		global $e20rProgram;
+
+		dbg("e20rTracker::getDateFromDelay() - Delay value: {$delay} for user {$userId}");
+
+		$startDate = $e20rProgram->startdate( $userId );
+
+		$date = date_i18n('Y-m-d', strtotime( $startDate . " +{$delay} days" ) );
+
+		dbg("e20rTracker::getDateFromDelay() - {$date} is {$delay} days after {$startDate}" );
+
+		return $date;
+	}
+*/
+
+	public function validateDate($date)
+	{
+		$d = DateTime::createFromFormat('Y-m-d', $date);
+		return $d && ( $d->format('Y-m-d') == $date );
+	}
+
+    public function getDelay( $delayVal = 'now', $userId = null ) {
 
         global $current_user;
         global $e20rProgram;
 
         // We've been given a numeric value so assuming it's the delay.
         if ( is_numeric( $delayVal ) ) {
+
             dbg("e20rTracker::getDelay() - Numeric delay value specified. Returning: {$delayVal}");
             return $delayVal;
         }
 
-        if ( $delayVal == 'now' ) {
-            dbg("e20rTracker::getDelay() - Calculating delay since startdate...");
-            // Calculate the user's current "days in program".
-            if ( ! $userId ) {
+	    $startDate = $e20rProgram->startdate( $userId );
 
+	    dbg("e20rTracker::getDelay() - Based on startdate of {$startDate}...");
+
+	    if ( $this->validateDate( $delayVal ) ) {
+
+		    $delay = $this->daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
+
+		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$startDate}");
+		    return $delay;
+	    }
+
+
+        if ( $delayVal == 'now' ) {
+            dbg("e20rTracker::getDelay() - Calculating delay since startdate (given 'now')...");
+
+            // Calculate the user's current "days in program".
+            if ( is_null( $userId ) ) {
+
+	            dbg("e20rTracker::getDelay() - Using current_user->ID for userid: {$current_user->ID}");
                 $userId = $current_user->ID;
             }
 
-            $startDate = $e20rProgram->startdate( $userId );
-
-            dbg("e20rTracker::getDelay() - Based on startdate of {$startDate}...");
-
-            $delay = $this->daysBetween( $startDate );
+            $delay = $this->daysBetween( $startDate, current_time("timestamp") );
 
             dbg("e20rTracker::getDelay() - Days since startdate is: {$delay}...");
 
@@ -2256,7 +2301,7 @@ class e20rTracker {
 
         $startTS = $e20rProgram->startdate( $userId );
 
-        if ( empty( $delay ) || ( $delay == 'now' ) ) {
+        if ( ( $delay === 0 ) || ( $delay == 'now' ) ) {
 
             dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user");
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
@@ -2305,7 +2350,7 @@ class e20rTracker {
         }
 
         $startDate = date( 'Y-m-d', $startDateTS );
-        dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate}");
+        dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
 
         $releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +{$days} days") );
 
@@ -2512,6 +2557,8 @@ class e20rTracker {
         // Create two DateTime objects
         $dStart = new DateTime( date( 'Y-m-d', $startTS ), new DateTimeZone( $tz ) );
         $dEnd   = new DateTime( date( 'Y-m-d', $endTS ), new DateTimeZone( $tz ) );
+
+	    dbg("e20rTracker::daysBetween() - StartTS: {$startTS}, endTS: {$endTS} " );
 
         if ( version_compare( PHP_VERSION, "5.3", '>=' ) ) {
 

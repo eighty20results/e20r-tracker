@@ -24,7 +24,7 @@ class e20rArticleModel extends e20rSettingsModel {
         $this->settings->id = null;
         $this->settings->programs = null;
         $this->settings->post_id = null;
-        $this->settings->activity_ids = array();
+        $this->settings->activity_id = array();
         $this->settings->release_day = null;
         $this->settings->release_date = null;
         $this->settings->assignments = null;
@@ -106,6 +106,8 @@ class e20rArticleModel extends e20rSettingsModel {
 
     public function findArticle($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
+	    $article = null;
+
 	    if ( $key != 'id' ) {
 		    $args = array(
 			    'posts_per_page' => -1,
@@ -160,7 +162,22 @@ class e20rArticleModel extends e20rSettingsModel {
             }
         }
 */
-        return $this->loadForQuery( $args );
+        $list = $this->loadForQuery( $args );
+
+	    dbg("e20rArticleModel::findArticle() - Found " . count($list) . " articles");
+
+	    foreach ( $list as $a ) {
+
+		    foreach( $a->programs as $pId ) {
+
+			    if ( $pId == $programId ) {
+
+				    dbg("e20rArticleModel::findArticle() - Returned program ID == {$pId}");
+				    $article = $a;
+			    }
+		    }
+	    }
+	    return $article;
     }
 
 	private function loadForQuery( $args ) {
