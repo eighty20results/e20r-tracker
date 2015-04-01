@@ -138,6 +138,7 @@ class e20rWorkout extends e20rSettings {
 	    $tempoData = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
 		$restData  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
 
+	    $workout->programs = isset( $_POST['e20r-workout-programs'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-programs'] ) : array( 0 ) ;
 	    $workout->days = isset( $_POST['e20r-workout-days'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-days'] ) : array();
 	    $workout->workout_ident = isset( $_POST['e20r-workout-workout_ident'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-workout_ident'] ) : 'A';
 	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
@@ -266,6 +267,68 @@ class e20rWorkout extends e20rSettings {
 
         return $activities;
     }
+
+	public function shortcode_activity( $attributes = null ) {
+
+		dbg("e20rWorkout::shortcode_activity() - Loading shortcode data for the activity.");
+
+		if ( ! is_user_logged_in() ) {
+
+			auth_redirect();
+		}
+
+		global $e20rArticle;
+		global $e20rProgram;
+		global $e20rTracker;
+
+		global $current_user;
+		global $currentArticle;
+		global $post;
+
+		$config = new stdClass();
+		$tmp = array();
+
+		$tmp = shortcode_atts( array(
+			'type' => 'action',
+			'form_id' => null,
+		), $attributes );
+
+		foreach ( $tmp as $key => $val ) {
+
+			$config->{$key} = $val;
+		}
+
+		dbg( $config );
+
+		$config->userId = $current_user->ID;
+		$config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
+		$config->startTS = $e20rProgram->startdate( $config->userId );
+		$config->delay = $e20rTracker->getDelay( 'now' );
+		$config->date = $e20rTracker->getDateForPost( $config->delay );
+
+		dbg("e20rWorkout::shortcode_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
+
+		dbg("e20rWorkout::shortcode_activity() - Looking up article by delay value of {$config->delay} days");
+		$article = $e20rArticle->findArticle( 'release_day', $config->delay );
+
+		if ( isset( $article->activity_id ) ) {
+
+			dbg("e20rWorkout::shortcode_activity() - Activity is defined for article {$article->id} with activity ID {$article->activity_id}");
+			$workoutData = $this->model->find( 'id', $article->activity_id );
+		}
+		else {
+
+			$workoutData = $this->model->findActivity( $config->delay );
+			$workoutData['error'] = 'No Activity found';
+		}
+
+		ob_start();
+		?>
+		<div id="e20r-daily-activity-report">
+			<?php $this->view->displayWorkout( $workoutData ); ?>
+		</div>
+		<?php
+	}
 
     public function getMemberGroups() {
 
