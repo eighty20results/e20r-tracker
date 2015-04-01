@@ -286,7 +286,7 @@ class e20rWorkout extends e20rSettings {
 		global $post;
 
 		$config = new stdClass();
-		$tmp = array();
+		$workoutData = array();
 
 		$tmp = shortcode_atts( array(
 			'type' => 'action',
@@ -305,29 +305,81 @@ class e20rWorkout extends e20rSettings {
 		$config->startTS = $e20rProgram->startdate( $config->userId );
 		$config->delay = $e20rTracker->getDelay( 'now' );
 		$config->date = $e20rTracker->getDateForPost( $config->delay );
+		$config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
+
+		$config->dayNo = date_i18n( 'N', current_time('timestamp') );
 
 		dbg("e20rWorkout::shortcode_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
 
 		dbg("e20rWorkout::shortcode_activity() - Looking up article by delay value of {$config->delay} days");
 		$article = $e20rArticle->findArticle( 'release_day', $config->delay );
 
-		if ( isset( $article->activity_id ) ) {
+		if ( isset( $article->activity_id ) && isset( $article->id ) ) {
 
 			dbg("e20rWorkout::shortcode_activity() - Activity is defined for article {$article->id} with activity ID {$article->activity_id}");
 			$workoutData = $this->model->find( 'id', $article->activity_id );
 		}
 		else {
 
-			$workoutData = $this->model->findActivity( $config->delay );
-			$workoutData['error'] = 'No Activity found';
+			dbg( "e20rWorkout::shortcode_activity() - No Activity defined for article, searching by date of {$config->date}, aka delay {$config->delay}" );
+			$workoutIds = $this->model->findByDate( $config->date, $config->programId );
+
+			if ( ! empty( $workoutIds ) ) {
+
+				foreach ( $workoutIds as $wid ) {
+
+					dbg("e20rWorkout::shortcode_activity() - Loading activity data for {$wid}:");
+					$workoutData = $this->model->loadWorkoutData( $wid );
+
+					if ( ! in_array( $config->programId, $workoutData[$wid]->programs ) ) {
+
+						dbg( "e20rWorkout::shortcode_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
+						unset( $workoutData[ $wid ] );
+					}
+
+					if ( ! empty( $workoutData[$wid]->assigned_user_id ) || ! empty( $workoutData[$wid]->assigned_usergroups ) ) {
+
+						dbg( "e20rWorkout::shortcode_activity() - User Group or user list defined for this workout..." );
+
+						if ( ! ( in_array( $config->userId, $workoutData[$wid]->assigned_user_id ) ||
+						         in_array( $config->userGroup, $workoutData[$wid]->assigned_usergroups ) )
+						) {
+							dbg( "e20rWorkout::shortcode_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
+							dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user - {$config->userGroup}: " );
+
+							unset( $workoutData[ $wid ] );
+						}
+					}
+				}
+			} else {
+				$workoutData['error'] = 'No Activity found';
+			}
 		}
 
+		foreach ( $workoutData as $wid => $w ) {
+
+			if ( $wid !== 'error' ) {
+
+				if ( ( ! empty( $w->days ) ) && ( !in_array( $config->dayNo, $w->days ) ) ) {
+
+					dbg( "e20rWorkout::shortcode_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
+					dbg($w->days);
+					unset( $workoutData[ $wid ] );
+				}
+			}
+		}
+		/**
+		 * TODO: Check workoutData against $workoutData[programs and the users' current program ID
+		 */
 		ob_start();
 		?>
-		<div id="e20r-daily-activity-report">
-			<?php $this->view->displayWorkout( $workoutData ); ?>
+		<div id="e20r-daily-activity-page">
+			<?php $this->view->displayActivity( $workoutData ); ?>
 		</div>
 		<?php
+		$html = ob_get_clean();
+
+		echo $html;
 	}
 
     public function getMemberGroups() {
