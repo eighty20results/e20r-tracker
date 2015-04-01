@@ -240,15 +240,16 @@ class e20rSettingsModel {
         }
 
         dbg("e20r{$this->type}Model::load{$this->type}Data() - Loading {$this->type} settings for " . count( $sList ) . ' settings');
+
         $default = $this->defaultSettings();
 
         foreach( $sList as $key => $data ) {
 
-            $settings = self::loadSettings( $data->ID );
+            $settings = $this->loadSettings( $data->ID );
 
-            $loaded_settings = (object) array_replace( (array)$default, (array)$settings );
+            // $loaded_settings = (object) array_replace( (array)$default, (array)$settings );
 
-            $settings_list[$data->ID] = $loaded_settings;
+            $settings_list[$data->ID] = $settings;
         }
 
         return $settings_list;
@@ -257,6 +258,71 @@ class e20rSettingsModel {
 	public function get_slug() {
 
 		return $this->cpt_slug;
+	}
+
+	public function findByDate( $date, $programId ) {
+
+		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Searching by date: {$date}" );
+
+		$list = array();
+
+		$args = array(
+			'posts_per_page' => -1,
+			'post_type' => $this->cpt_slug,
+			'post_status' => 'publish',
+			'order_by' => 'meta_value',
+			'order' => 'DESC',
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key' => "_e20r-{$this->type}-startdate",
+					'value' => $date,
+					'compare' => '<=',
+					'type' => 'DATE',
+				),
+				array(
+					'key' => "_e20r-{$this->type}-enddate",
+					'value' => $date,
+					'compare' => '>=',
+					'type' => 'DATE',
+				),
+			)
+		);
+
+		$query = new WP_Query( $args );
+		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Returned actions: {$query->post_count} for query: " );
+		dbg($args);
+
+		while ( $query->have_posts() ) {
+
+			$query->the_post();
+
+			$id = get_the_ID();
+
+			dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Getting program info for action ID: {$id}");
+
+			switch ( $this->type ) {
+				case 'workout':
+					$tVar = 'programs';
+					break;
+				default:
+					$tVar = 'program_ids';
+			}
+
+			$programs = get_post_meta( $id, "_e20r-{$this->type}-{$tVar}", true);
+
+			dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Getting program info... ");
+
+			if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
+
+				$list[] = $id;
+			}
+		}
+
+		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Returning ids:");
+		dbg( $list );
+
+		return $list;
 	}
 
 	/**
