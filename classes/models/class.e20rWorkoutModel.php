@@ -30,6 +30,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout->excerpt = '';
 	    $workout->title = '';
 	    $workout->days = array();
+	    $workout->programs = array( 0 );
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
 	    $workout->assigned_user_id = array( -1 );
@@ -101,7 +102,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 		$currentWorkout = $this->settings;
 		return $this->settings;
-	}	/**
+	}
+
+	/**
      * Returns an array of all workouts merged with their associated settings.
      *
      * @param $statuses string|array - Statuses to return program data for.
