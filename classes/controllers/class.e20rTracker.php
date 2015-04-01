@@ -190,6 +190,7 @@ class e20rTracker {
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
+	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
