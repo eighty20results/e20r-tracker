@@ -18,6 +18,16 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+	public function displayActivity( $workoutData ) {
+
+		if ( ! is_user_logged_in() ) {
+			auth_redirect();
+		}
+
+		dbg("e20rWorkoutView::displayActivity() - Content of workoutData object: ");
+		dbg( $workoutData );
+	}
+
     public function viewSettingsBox( $workoutData ) {
 
         global $post;
