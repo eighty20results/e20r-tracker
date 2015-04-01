@@ -2136,6 +2136,29 @@ class e20rTracker {
         return $this->model->loadUsers( $levels );
     }
 
+	public function getGroupIdForUser( $userId = null ) {
+
+		$group_id = 0;
+
+		dbg("e20rTracker::getGroupIdForUser() - Get membership/group data for {$userId}");
+
+		if ( is_null( $userId ) ) {
+
+			global $current_user;
+			$userId = $current_user->ID;
+		}
+
+		if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
+
+			dbg("e20rTracker::getGroupIdForUser() - Using Paid Memberships Pro for group/level management for {$userId}");
+			$obj = pmpro_getMembershipLevelForUser( $userId );
+			$group_id = $obj->ID;
+			dbg("e20rTracker::getGroupIdForUser() - Returning group ID of {$group_id} for {$userId}");
+		}
+
+		return $group_id;
+	}
+
     public function getMembershipLevels( $level = null, $onlyVisible = false ) {
 
         if ( function_exists( 'pmpro_getAllLevels' ) ) {
