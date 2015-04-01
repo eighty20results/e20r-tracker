@@ -143,9 +143,13 @@ class e20rProgram extends e20rSettings {
 
     public function getProgramList() {
 
+	    global $post;
+
+	    /*
+	    $bPost = $post;
         $list = array();
 
-        $programs = new WP_Query( array(
+        $the_query = new WP_Query( array(
             'post_type' => 'e20r_programs',
             'posts_per_page' => -1,
             'post_status' => array( 'publish', 'private' ),
@@ -154,16 +158,28 @@ class e20rProgram extends e20rSettings {
             'fields' => 'ids',
         ) );
 
-        dbg("e20rProgram::getProgramList() - Loaded " . count($programs) . " program definitions from the DB");
+	    if ( $the_query->have_posts() ) {
 
-        while( $programs->have_posts() ) {
+            dbg("e20rProgram::getProgramList() - Loaded " . count($the_query->post_count) . " program definitions from the DB");
 
-            $programs->the_post();
-            dbg("e20rProgram::getProgramList() - Adding ". get_the_title());
-            $list[get_the_ID()] = get_the_title();
-        }
+            while( $the_query->have_posts() ) {
 
-        wp_reset_postdata();
+		        $the_query->the_post();
+
+		        dbg( "e20rProgram::getProgramList() - Adding " . get_the_title() );
+		        $list[ get_the_ID() ] = get_the_title();
+	        }
+	    }
+
+	    wp_reset_postdata();
+		*/
+
+	    $list = $this->model->loadAllSettings();
+
+	    dbg("e20rProgram::getProgramList() - Content of list: ");
+	    dbg($list);
+
+//	    $post = $bPost;
 
         return $list;
     }
