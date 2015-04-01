@@ -441,15 +441,12 @@ class e20rCheckin extends e20rSettings {
 
         global $e20rTracker;
         global $e20rArticle;
-	    global $e20rProgram;
-	    global $e20rWorkout;
 	    global $e20rAssignment;
 	    global $currentArticle;
 
         global $current_user;
-	    global $post;
 
-	    dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
+	    // dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
 
 	    if ( !isset( $currentArticle->post_id) || ( $config->articleId != $currentArticle->id ) ) {
 
