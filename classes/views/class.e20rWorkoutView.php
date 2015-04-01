@@ -20,9 +20,16 @@ class e20rWorkoutView extends e20rSettingsView {
 
     public function viewSettingsBox( $workoutData ) {
 
-        global $post, $e20rWorkout, $e20rTracker;
+        global $post;
+	    global $e20rWorkout;
+	    global $e20rTracker;
+	    global $e20rProgram;
 
-        dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Supplied data: " . print_r($workoutData, true));
+	    dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Loading program list for future use:");
+
+	    $programs = $e20rProgram->getProgramList();
+
+        // dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Supplied data: " . print_r($workoutData, true));
 
 	    if ( !isset( $workoutData->days ) || count( $workoutData->days ) == 0 ) {
 		    dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Days contains: ");
@@ -36,29 +43,30 @@ class e20rWorkoutView extends e20rSettingsView {
         </style>
         <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce'); ?>
         <div class="e20r-editform" style="width: 100%;">
-            <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-workout-id" value="<?php echo ( ( isset($workoutData->ID) ) ? $workoutData->ID : $post->ID ); ?>">
+            <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-workout-id" value="<?php echo ( ( isset($workoutData->id) ) ? $workoutData->id : $post->ID ); ?>">
             <table id="e20r-workout-settings" class="wp-list-table widefat fixed">
                 <tbody id="e20r-workout-tbody">
-                    <tr id="<?php echo $post->ID; ?>" class="workout-inputs">
+                    <tr id="<?php echo ( isset($workoutData->id) ) ? $workoutData->id : $post->ID; ?>" class="workout-inputs">
                         <td colspan="3">
                             <table class="sub-table wp-list-table widefat fixed">
                                 <tbody>
                                 <tr>
-                                    <th class="e20r-label header" style="width: 20%;"><label for="e20r-workout-workout_ident">Workout (A/B/C/D)</label></th>
-                                    <th class="e20r-label header" style="width: 40%;"><label for="e20r-workout-phase">Phase (number)</label></th>
-	                                <th class="e20r-label header" style="width: 40%;">On what weekdays</th>
+                                    <th class="e20r-label header" style="width: 10%;"><label for="e20r-workout-workout_ident">Workout</label></th>
+                                    <th class="e20r-label header" style="width: 10%;"><label for="e20r-workout-phase">Phase</label></th>
+	                                <th class="e20r-label header" style="width: 40%;"><?php _e("On what weekdays", "e20rtracker"); ?></th>
+	                                <th class="e20r-label header" style="width: 40%;"><?php _e("Programs", "e20rtracker"); ?></th>
                                 </tr>
                                 <tr>
-                                    <td class="select-input" style="width: 20%;">
-                                        <select id="e20r-workout-workout_ident" name="e20r-workout-workout_ident">
+                                    <td class="select-input" style="width: 10%;">
+                                        <select style="width: 95%;" id="e20r-workout-workout_ident" name="e20r-workout-workout_ident">
                                             <option value="A" <?php selected( $workoutData->workout_ident, 'A'); ?>>A</option>
                                             <option value="B" <?php selected( $workoutData->workout_ident, 'B'); ?>>B</option>
                                             <option value="C" <?php selected( $workoutData->workout_ident, 'C'); ?>>C</option>
                                             <option value="D" <?php selected( $workoutData->workout_ident, 'D'); ?>>D</option>
                                         </select>
                                     </td>
-                                    <td class="text-input" style="width: 40%;">
-                                        <input type="number" id="e20r-workout-phase" name="e20r-workout-phase" value="<?php echo $workoutData->phase; ?>">
+                                    <td class="text-input" style="width: 10%;">
+                                        <input style="width: 95%;" type="number" id="e20r-workout-phase" name="e20r-workout-phase" value="<?php echo $workoutData->phase; ?>">
                                     </td>
 	                                <td class="select-input" style="width: 40%;">
 		                                <select id="e20r-workout-days" name="e20r-workout-days[]" class="select2-container" multiple="multiple">
@@ -70,6 +78,35 @@ class e20rWorkoutView extends e20rSettingsView {
 			                                <option value="5" <?php echo in_array(5, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Friday", "e20rtracker");?></option>
 			                                <option value="6" <?php echo in_array(6, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Saturday", "e20rtracker");?></option>
 		                                </select>
+	                                </td>
+	                                <td class="select-input" style="width: 40%;">
+		                                <select class="select2-container" id="e20r-workout-programs" name="e20r-workout-programs[]" multiple="multiple">
+			                                <option value="0">Not configured</option>
+			                                <?php
+			                                foreach ( $programs as $pgm ) {
+
+				                                if ( !empty( $workoutData->programs ) ) {
+				                                    $selected = ( in_array( $pgm->id, $workoutData->programs ) ? ' selected="selected" ' : null);
+				                                }
+				                                else {
+					                                $selected = '';
+				                                }
+				                                ?>
+				                                <option value="<?php echo $pgm->id; ?>"<?php echo $selected; ?>>
+					                                <?php echo esc_textarea( $pgm->title ); ?> (#<?php echo $pgm->id; ?>)
+				                                </option>
+			                                <?php } ?>
+		                                </select>
+		                                <style>
+			                                #e20r-workout-programs {
+				                                min-width: 150px;
+				                                max-width: 300px;
+				                                width: 90%;
+			                                }
+		                                </style>
+		                                <script>
+
+		                                </script>
 	                                </td>
                                 </tr>
                                 </tbody>
@@ -94,8 +131,16 @@ class e20rWorkoutView extends e20rSettingsView {
 
                                             $member_groups = $e20rWorkout->getMemberGroups();
 
-                                            foreach ( $member_groups as $id => $name ) { ?>
-                                                <option value="<?php echo $id; ?>"<?php echo in_array( $id, $workoutData->assigned_usergroups) ? 'selected="selected"' : ''; ?>><?php echo $name; ?></option> <?php
+                                            foreach ( $member_groups as $id => $name ) {
+
+	                                            if ( !empty( $workoutData->assigned_usergroups ) ) {
+		                                            $selected = in_array( $id, $workoutData->assigned_usergroups ) ? 'selected="selected"' : null;
+	                                            }
+	                                            else {
+		                                            $selected = null;
+	                                            }
+	                                            ?>
+                                                <option value="<?php echo $id; ?>"<?php echo $selected; ?>><?php echo $name; ?></option> <?php
                                             } ?>
 
                                         </select>
