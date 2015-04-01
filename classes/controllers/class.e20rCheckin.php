@@ -870,7 +870,7 @@ class e20rCheckin extends e20rSettings {
 
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article ID is set to: {$config->articleId}" );
 
-        $config->programId = $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId );
+        // $config->programId = $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId );
 
         ob_start();
         ?>
