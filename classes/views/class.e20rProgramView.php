@@ -101,7 +101,14 @@ class e20rProgramView {
 
                                         foreach( $levels as $id => $name ) {
 
-                                            $selected = ( in_array( $id, $programData->groups ) ? ' selected="selected" ' : null ); ?>
+	                                        if ( ! empty( $programData->groups ) ) {
+
+                                                $selected = ( in_array( $id, $programData->groups ) ? ' selected="selected" ' : null );
+	                                        }
+	                                        else {
+		                                        $selected = null;
+	                                        }
+	                                        ?>
                                             <option value="<?php echo $id; ?>" <?php echo $selected; ?>><?php echo $name; ?></option>
                                             <?php
                                         }
@@ -115,7 +122,12 @@ class e20rProgramView {
                                     <?php
                                         foreach($feeds as $df) {
 
-                                            $selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null ); ?>
+	                                        if ( !empty( $programData->sequences ) ) {
+		                                        $selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null );
+	                                        }
+	                                        else {
+		                                        $selected = null;
+	                                        } ?>
                                             <option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
                                 <?php   } ?>
                                 </select>
