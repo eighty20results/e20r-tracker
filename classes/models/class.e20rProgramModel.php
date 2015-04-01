@@ -9,6 +9,8 @@
 
 class e20rProgramModel extends e20rSettingsModel {
 
+	protected $settings;
+
     public function e20rProgramModel() {
 
         parent::__construct( 'program', 'e20r_programs');
@@ -65,6 +67,46 @@ class e20rProgramModel extends e20rSettingsModel {
 
         return ( !$error ) ;
     }
+
+	public function loadSettings( $id ) {
+
+		global $post;
+		global $currentProgram;
+
+		if ( ! empty( $currentProgram ) && ( $currentProgram->id == $id ) ) {
+
+			return $currentProgram;
+		}
+
+		if ( $id == 0 ) {
+
+			$this->settings              = $this->defaultSettings( $id );
+			$this->settings->id          = $id;
+
+		} else {
+
+			$savePost = $post;
+
+			$this->settings = parent::loadSettings( $id );
+
+
+			$post = get_post( $id );
+			setup_postdata( $post );
+
+			if ( ! empty( $post->post_title ) ) {
+
+				$this->settings->excerpt       = $post->post_excerpt;
+				$this->settings->title    = $post->post_title;
+				$this->settings->id          = $id;
+			}
+
+			wp_reset_postdata();
+			$post = $savePost;
+		}
+
+		$currentProgram = $this->settings;
+		return $this->settings;
+	}
 
     /**
      * Save program settings to the post_meta table.
