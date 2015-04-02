@@ -314,10 +314,13 @@ class e20rWorkout extends e20rSettings {
 		dbg("e20rWorkout::shortcode_activity() - Looking up article by delay value of {$config->delay} days");
 		$article = $e20rArticle->findArticle( 'release_day', $config->delay );
 
-		if ( isset( $article->activity_id ) && isset( $article->id ) ) {
+		if ( isset( $article->id ) ) {
 
-			dbg("e20rWorkout::shortcode_activity() - Activity is defined for article {$article->id} with activity ID {$article->activity_id}");
-			$workoutData = $this->model->find( 'id', $article->activity_id );
+			if ( isset( $article->activity_id ) ) {
+
+				dbg( "e20rWorkout::shortcode_activity() - Activity is defined for article {$article->id} with activity ID {$article->activity_id}" );
+				$workoutData = $this->model->find( 'id', $article->activity_id );
+			}
 		}
 		else {
 
@@ -351,8 +354,6 @@ class e20rWorkout extends e20rSettings {
 						}
 					}
 				}
-			} else {
-				$workoutData['error'] = 'No Activity found';
 			}
 		}
 
@@ -368,13 +369,17 @@ class e20rWorkout extends e20rSettings {
 				}
 			}
 		}
+
+		if ( empty( $workoutData ) ) {
+			$workoutData['error'] = 'No Activity found';
+		}
 		/**
 		 * TODO: Check workoutData against $workoutData[programs and the users' current program ID
 		 */
 		ob_start();
 		?>
 		<div id="e20r-daily-activity-page">
-			<?php $this->view->displayActivity( $workoutData ); ?>
+			<?php echo $this->view->displayActivity( $workoutData ); ?>
 		</div>
 		<?php
 		$html = ob_get_clean();
