@@ -373,9 +373,7 @@ class e20rWorkout extends e20rSettings {
 		if ( empty( $workoutData ) ) {
 			$workoutData['error'] = 'No Activity found';
 		}
-		/**
-		 * TODO: Check workoutData against $workoutData[programs and the users' current program ID
-		 */
+
 		ob_start();
 		?>
 		<div id="e20r-daily-activity-page">
