@@ -168,15 +168,13 @@ class e20rArticleModel extends e20rSettingsModel {
 
 	    foreach ( $list as $a ) {
 
-		    foreach( $a->programs as $pId ) {
+		    if ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) {
 
-			    if ( $pId == $programId ) {
-
-				    dbg("e20rArticleModel::findArticle() - Returned program ID == {$pId}");
-				    $article = $a;
-			    }
+			    dbg( "e20rArticleModel::findArticle() - Returned program ID == {$programId}" );
+			    $article = $a;
 		    }
 	    }
+
 	    return $article;
     }
 
