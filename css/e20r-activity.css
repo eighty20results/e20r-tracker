@@ -1,22 +1,146 @@
 div.e20r-display-exercise-div {
     width: 100%;
 }
+.e20r-spacer-row {
+    height: 5px;
+}
+.e20r-activity-exercise-tracking {
+    border-left: 2px solid #0b181e;
+    padding-bottom: 5px;
+}
+.e20r-activity-table-header {
+    background-color: #f1f1f1;
+    border: 2px solid #f5f5f5;
+    padding: 0 20px 0 20px;
+}
+.e20r-activity-var {
+    font-weight: normal;
+    padding-left: 5px;
+    padding-right: 10px;
+    border-bottom: 1px solid #c0c0c0;
+}
+tbody.e20r-activity-table-body > tr > th {
+    background-color: #004C00;
+    color: #FFF;
+    border-bottom: 2px solid #5c5c5c;
+}
+@media print {
+    table.e20r-print-activity {
+        page-break-after: always;
+    }
+    div.e20r-activity-description {
+        page-break-after: always;
+        margin-left: 2cm;
+        margin-right: 2cm;
+    }
+}
 /* Vertical tablets and smaller devices */
 @media screen and (max-width: 533px) {
-    .e20r-display-exercise-image > .wp-video-shortcode {
+/*    .e20r-display-exercise-image > .wp-video-shortcode {
         display: block;
         margin: 0 auto;
         max-width: 100%;
-    }
-
+    }*/
 }
 /* Any other device */
 @media screen and (min-width: 534px) {
-    .e20r-display-exercise-image > .wp-video-shortcode {
+/*    .e20r-display-exercise-image > .wp-video-shortcode {
         display: block;
         margin: 0 auto;
         max-width: 960px;
         width: 100%;
         min-width: 530px;
+        min-height: 350px;
+        line-height: 2.5ex;
+        height: 15ex;
+    }
+    */
+}
+@media screen {
+     img.e20r-resize {
+         max-width: 350px;
+         height: auto;
+    }
+    .e20r-activity-table-body > tr {
+        height: 21px;
+        line-height: 100%;
+    }
+    .e20r-activity-overview {
+        margin-left: 20px;
+        margin-right: 20px;
+        width: 95%;
+        min-width: 380px;
+        max-width: 960px;
+        border: 1px solid #c5c5c5;
+    }
+    input[class^="e20r-activity-input"] {
+        width: 38%;
+        height: 25px;
+        border: 2px solid #666666;
+        margin-right: 5px;
+        float: left;
+    }
+    .e20r-two-col {
+        padding: 5px;
+        width: 100%;
+        min-width: 190px;
+        max-width: 480px;
+        margin: 10px auto;
+    }
+    .e20r-two-col > input {
+        width: 38%;
+        padding-right: 5px;
+    }
+    div[class^="e20r-activity-group-track"] {
+        width: 38%;
+        padding-right: 5px;
+        float: left;
+    }
+    .e20r-three-col {
+        padding: 5px;
+        width: 100%;
+        min-width: 125px;
+        max-width: 310px;
+        margin: 20px auto;
+    }
+    .e20r-2col-1 {
+        float: left;
+        width: auto;
+    }
+    .e20r-col-1,
+    .e20r-col-2,
+    .e20r-col-3,
+    .e20r-col-4{
+        width: 25%;
+        float: left;
+    }
+    .e20r-content {
+        float: left;
+        padding: 0 10px 0 10px;
+        width: auto;
+    }
+    .e20r-activity-exercise {
+        width: 66%;
+    }
+    .e20r-activity-exercise-tracking {
+        width: 34%;
+    }
+    .e20r-display-exercise-image {
+        width: 66%;
+        border: 1px solid #c0c0c0;
+    }
+    .e20r-display-exercise-descr-row {
+        width: 100%;
+        /* float: left; */
+    }
+    .e20r-exercise-description {
+        width: 100%;
+        padding-left: 4px;
+        text-align: left;
+        border: 2px solid #c0c0c0;
+        min-height: 2.5ex;
+        line-height: 2.5ex;
+        height: 7.5ex; /* 2.5ex for each visible line */
+        overflow: hidden;
     }
 }
