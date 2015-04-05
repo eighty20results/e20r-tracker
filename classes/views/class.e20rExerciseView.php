@@ -26,6 +26,7 @@ class e20rExerciseView {
 
 		if ( $currentExercise->type == 1 ) {
 
+			dbg("e20rExerciseView::printExercise() - Time is the selected exercise rep type");
 			$type_label = __('seconds', 'e20rtracker');
 		}
 
@@ -35,13 +36,16 @@ class e20rExerciseView {
 		?>
 		<div class="e20r-display-exercise-div">
 			<table class="e20r-exercise-detail">
+				<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
 				<tbody>
-					<tr class="e20r-display-exercise-row">
-						<td rowspan="5" class="e20r-display-exercise-image">
+				<tr class="e20r-display-exercise-row">
+						<td rowspan="4" class="e20r-display-exercise-image">
 							<?php
 
-							if ( ! empty( $currentExercise->image ) ) {
+							if ( empty( $currentExercise->video_link ) ) {
 
+								$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" height="221" width="393" alt="Exercise">';
 								$display = $currentExercise->image;
 							}
 
@@ -51,8 +55,9 @@ class e20rExerciseView {
 
 								$args = array(
 									'src'      => esc_url( $currentExercise->video_link ),
-									'width'    => 960,
-									'poster'   => ( !empty( $currentExercise->image ) ) ? $poster[0] : null,
+									'width'    => 393,
+									'height'    => 221,
+									'poster'   => ( empty( $currentExercise->image ) ) ? $poster[0] : null,
 								);
 
 								$display = wp_video_shortcode( $args );
@@ -62,33 +67,32 @@ class e20rExerciseView {
 							?>
 						</td>
 					</tr>
-					<tr class="e20r-display-exercise-row">
-						<td></td>
-					</tr>
-					<tr class="e20r-display-exercise-row">
-						<td class="e20r-exercise-rep-title"><?php $currentExercise->title; ?></td>
-					</tr>
-					<tr class="e20r-display-exercise-row">
+				<tr class="e20r-display-exercise-row">
+					<td class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
+				</tr>
+				<tr class="e20r-display-exercise-row">
 						<td class="e20r-exercise-reps">
-							<span class="e20r-exercise-label"><?php $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
-							<span class="e20r-exercise-value"><?php echo ( in_array( array( 0, 2), $currentExercise->type ) ? $currentExercise->reps . ' ' . $type_label : $currentExercise->reps ); ?></span>
+							<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
+							<span class="e20r-exercise-value"><h4><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span></h4>
 						</td>
 					</tr>
 					<tr class="e20r-display-exercise-row">
 						<td class="e20r-exercise-rest-time">
 							<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+							<h4>
 							<?php
 							if ( ! empty( $currentExercise->rest ) ) { ?>
-								<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _('seconds', 'e20rtracker'); ?></span><?php
+								<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
 							}
 							else { ?>
 								<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
 							}
 							?>
+							</h4>
 						</td>
 					</tr>
-					<tr class="e20r-display-exercise-row">
-						<td colspan="2"><textarea class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></textarea></td>
+					<tr class="e20r-display-exercise-descr-row">
+						<td colspan="2" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
 					</tr>
 				</tbody>
 			</table>
@@ -108,7 +112,7 @@ class e20rExerciseView {
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-exercise-settings'); ?>
             <div class="e20r-editform">
-                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-exercise-id" value="<?php echo ( ( ! empty($exerciseData) ) ? $exerciseData->id : 0 ); ?>">
+                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-exercise-id" value="<?php echo ( ( ! isset($exerciseData->id) ) ? $exerciseData->id : 0 ); ?>">
                 <table id="e20r-exercise-settings">
                     <thead>
 	                    <tr>
