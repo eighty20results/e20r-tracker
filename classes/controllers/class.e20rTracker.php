@@ -145,6 +145,7 @@ class e20rTracker {
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
 
             add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_assignment', array( &$e20rAssignment, 'editor_metabox_setup') );
@@ -207,7 +208,7 @@ class e20rTracker {
 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
 
 	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
-
+	        add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
 	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
@@ -1037,11 +1038,33 @@ class e20rTracker {
         return false;
     }
 
+	public function has_activity_shortcode() {
+
+		global $post;
+		global $pagenow;
+
+		if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+
+			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity form(s). ");
+
+			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery' ), '0.1', false );
+			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'e20r-tracker-js' ), '0.1', false );
+
+			wp_localize_script( 'e20r-workout-js', 'e20r_workout',
+				array(
+					'url' => admin_url('admin-ajax.php'),
+				)
+			);
+
+			wp_print_scripts( array( 'e20r-tracker-js', 'e20r-workout-js' ) );
+		}
+
+	}
+
     public function has_dailyProgress_shortcode() {
 
         global $post;
         global $pagenow;
-
 
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
@@ -1405,19 +1428,25 @@ class e20rTracker {
                 key programs ( program_id asc ) )
                 {$charset_collate}
         ";
-
-        $exercisesTableSql = "
-            CREATE TABLE {$wpdb->prefix}e20r_exercises (
+*/
+        $activityTable = "
+            CREATE TABLE {$wpdb->prefix}e20r_workout (
                 id int not null auto_increment,
-                exercise_name varchar(100) not null default '',
-                description mediumtext null,
-                repetitions int not null default 10,
-                duration int null,
-                ex_rest int not null default 30,
+				recorded timestamp not null default current_timestamp,
+				for_date datetime null,
+				user_id int not null,
+				program_id int not null,
+				activity_id int not null,
+				exercise_id int not null,
+				exercise_key tinyint not null,
+				group_no int not null,
+				set_no int not null,
+                reps int null,
+				weight decimal(5,2) null,
                 primary key (id) )
                 {$charset_collate}
         ";
-*/
+
         /**
          * Intake interview / exit interview data.
          */
@@ -1695,8 +1724,8 @@ class e20rTracker {
         dbDelta( $measurementTableSql );
         dbDelta( $intakeTableSql );
         dbDelta( $assignmentAsSql );
-/*        dbDelta( $assignmentQsSql );
-        dbDelta( $programsTableSql );
+        dbDelta( $activityTable );
+/*        dbDelta( $programsTableSql );
         dbDelta( $setsTableSql );
         dbDelta( $exercisesTableSql ); */
         dbDelta( $oldMeasurementTableSql );
@@ -1723,10 +1752,11 @@ class e20rTracker {
             $wpdb->prefix . 'e20r_assignments',
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
+            $wpdb->prefix . 'e20r_workouts',
+            $wpdb->prefix . 'e20r_articles',
 //            $wpdb->prefix . 'e20r_programs',
 //            $wpdb->prefix . 'e20r_sets',
-//            $wpdb->prefix . 'e20r_exercises',
-            $wpdb->prefix . 'e20r_articles',
+
         );
 
 
