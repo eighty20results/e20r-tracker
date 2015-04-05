@@ -176,8 +176,8 @@ class e20rProgram extends e20rSettings {
 
 	    $list = $this->model->loadAllSettings();
 
-	    dbg("e20rProgram::getProgramList() - Content of list: ");
-	    dbg($list);
+	    dbg("e20rProgram::getProgramList() - Content of list being returned ");
+	    // dbg($list);
 
 //	    $post = $bPost;
 
@@ -210,7 +210,7 @@ class e20rProgram extends e20rSettings {
 			    dbg("e20rProgram::getProgramIdForUser() - Loading program info from DB for user w/ID {$userId}");
 			    $this->loadProgram( $userId );
 			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId}");
-			    dbg($currentProgram);
+			    // dbg($currentProgram);
 		    }
 	    }
 	    else {
