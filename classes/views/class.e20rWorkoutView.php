@@ -18,14 +18,159 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
-	public function displayActivity( $workoutData ) {
+	public function displayActivity( $config, $workoutData ) {
 
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
 		}
 
+		global $current_user;
+		global $currentExercise;
+		global $e20rExercise;
+
 		dbg("e20rWorkoutView::displayActivity() - Content of workoutData object: ");
 		dbg( $workoutData );
+
+		if ( isset( $workoutData['error'] ) ) {
+			ob_start();
+
+			?>
+		<div class="red-notice">
+			<h3>No planned activity</h3>
+			<p>There is no scheduled/planned activity for your program on this day.</p>
+		</div>
+			<?php
+
+			return ob_get_clean();
+		}
+
+		ob_start();
+
+		foreach ( $workoutData as $w ) {
+
+			$groups = isset( $w->groups ) ? $w->groups : null;
+
+			?>
+			<h2><?php echo $w->title; ?></h2>
+			<div class="e20r-activity-description">
+				<h4><?php _e( "Summary", "e20rtracker" ); ?></h4>
+				<p><?php echo $w->excerpt; ?></p>
+			</div>
+			<form id="e20r-activity-input-form">
+				<?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
+				<table class="e20r-activity-overview e20r-print-activity e20r-screen">
+				<thead class="e20r-activity-table-header">
+				<tr>
+					<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" >
+					<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" >
+					<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" >
+					<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo $config->date; ?>" >
+					<th class="e20r-activity-info">
+						<div class="e20r-two-col">
+							<div class="e20r-2col-1 e20r-act-content">
+								<div class="e20r-content">
+									<?php _e( "Phase", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $w->phase; ?></span>
+								</div>
+								<div class="e20r-content">
+									<?php _e( "Workout", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $w->workout_ident; ?></span>
+								</div>
+							</div>
+						</div>
+					</th>
+					<th>
+						<div class="e20r-content">
+							<?php _e("Client", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $current_user->user_firstname; ?></span>
+						</div>
+					</th>
+				</tr>
+				</thead>
+				<tbody class="e20r-activity-table-body">
+				<?php
+				foreach ( $groups as $k => $g ) {
+
+					/**
+					 * sC = stdClass()
+					 *
+					 *              sC    array()                     sC
+					 * $recorded => $g->saved_data[$group_set_number]->weight
+					 * $recorded => $g->saved_data[$group_set_number]->reps
+					 *
+					 *                       $g     $k
+					 * $workoutData[$wid]->groups[$gid]->saved_data
+					 *
+					 * $recorded => $g->saved_data
+					 * $recorded[$i]->weight
+					 * $recorded[$i]->reps
+					 */
+					$recorded = isset( $g->saved_data ) ? $g->saved_data : array();
+					$gcount = $k + 1;
+
+					?>
+					<tr>
+						<th class="e20r-activity-group">
+							<div class="e20r-four-col">
+								<div class="e20r-col-1"><?php _e( "Group", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $gcount; ?></span></div>
+								<div class="e20r-col-2"><?php _e( "Sets", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_set_count; ?></span></div>
+								<div class="e20r-col-3"><?php _e( "Tempo", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_tempo; ?></span></div>
+								<div class="e20r-col-4"><?php _e( "Rest", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_rest; ?></span></div>
+							</div>
+						</th>
+						<th class="e20r-activity-group">
+							<div class="e20r-two-col">
+								<div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div>
+								<div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div>
+							</div>
+						</th>
+					</tr>
+					<?php
+						foreach( $g->exercises as $exKey => $exId ) {
+
+							$e20rExercise->set_currentExercise( $exId );
+							?>
+					<tr class="e20r-exercise-row">
+						<td class="e20r-activity-exercise"><?php echo $e20rExercise->print_exercise(); ?></td>
+						<td class="e20r-activity-exercise-tracking">
+							<input type="hidden" class="e20r-activity-input-set_count" name="e20r-activity-exercise-set_count[]" value="<?php echo $g->group_set_count; ?>" >
+							<input type="hidden" class="e20r-activity-input-group_no" name="e20r-activity-exercise-group_no[]" value="<?php echo $k; ?>" >
+						<?php
+							for ( $i = 1 ; $i <= $g->group_set_count ; $i++ ) {
+
+						?>
+							<div class="e20r-two-col">
+								<input class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php ?>" >
+								<input class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php ?>" >
+								<div class="e20r-two-col e20r-saved startHidden">
+									<span class="e20r-saved-label"><?php _e("W", "e20rtracker" );?>:</span> <span class="e20r-saved-weight-value"><?php echo (isset($recorded[$i]->weight) ? $recorded[$i]->weight : null ); ?></span>
+									<span class="e20r-saved-label"><?php _e("R", "e20rtracker" );?>:</span> <span class="e20r-saved-rep-value"><?php echo (isset($recorded[$i]->reps) ? $recorded[$i]->reps : null ); ?></span>
+								</div>
+							</div>
+
+						<?php } ?>
+						</td>
+					</tr>
+					<tr class="e20r-spacer-row"></tr>
+				<?php }
+				}
+				?>
+				</tbody>
+				<tfoot class="e20r-activity-table-footer">
+				<tr>
+					<td>
+
+					</td>
+					<td>
+						<button id="e20r-activity-input-button vt-align-right" class="e20r-button">Save activity</button>
+					</td>
+				</tr>
+				</tfoot>
+			</table>
+			</form>
+		<?php
+		}
+
+		$html = ob_get_clean();
+
+		return $html;
 	}
 
     public function viewSettingsBox( $workoutData ) {
@@ -80,13 +225,13 @@ class e20rWorkoutView extends e20rSettingsView {
                                     </td>
 	                                <td class="select-input" style="width: 40%;">
 		                                <select id="e20r-workout-days" name="e20r-workout-days[]" class="select2-container" multiple="multiple">
-			                                <option value="0" <?php echo in_array(0, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Sunday", "e20rtracker");?></option>
 			                                <option value="1" <?php echo in_array(1, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Monday", "e20rtracker");?></option>
 			                                <option value="2" <?php echo in_array(2, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Tuesday", "e20rtracker");?></option>
 			                                <option value="3" <?php echo in_array(3, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Wednesday", "e20rtracker");?></option>
 			                                <option value="4" <?php echo in_array(4, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Thursday", "e20rtracker");?></option>
 			                                <option value="5" <?php echo in_array(5, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Friday", "e20rtracker");?></option>
 			                                <option value="6" <?php echo in_array(6, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Saturday", "e20rtracker");?></option>
+			                                <option value="7" <?php echo in_array(7, $workoutData->days) ? 'selected="selected"' : ''; ?>><?php _e("Sunday", "e20rtracker");?></option>
 		                                </select>
 	                                </td>
 	                                <td class="select-input" style="width: 40%;">
