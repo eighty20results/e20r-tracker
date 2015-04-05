@@ -31,7 +31,11 @@ class e20rExercise extends e20rSettings {
 
 	public function getExerciseType( $typeId ) {
 
-		return $this->model->get_activity_type( $typeId );
+		$typeStr = $this->model->get_activity_type( $typeId );
+
+		dbg("e20rExercise::getExerciseType( {$typeId} ) - Returning type of: {$typeStr}" );
+
+		return $typeStr;
 	}
 	/**
 	 * @param $shortname string - The unique exercise shortname
@@ -45,16 +49,43 @@ class e20rExercise extends e20rSettings {
         return $ex; // Returns false if the exercise isn't found
     }
 
+	public function set_currentExercise( $id = -1 ) {
+
+		global $currentExercise;
+
+		if ( !isset( $currentExercise->id) || ( $currentExercise->id !== $id ) ) {
+
+			$arr = $this->model->findExercise( 'id', $id );
+
+			if ( is_array( $arr ) ) {
+
+				if ( count( $arr ) == 1 ) {
+					dbg("e20rExercise::set_currentExercise() - Loading new exercise definition.");
+					$currentExercise = $arr[0];
+				} else {
+					dbg( "e20rExercise::set_currentExercise() - Error: Incorrect number of exercises returned! " );
+					$currentExercise = null;
+				}
+			}
+		}
+	}
+
     public function getAllExercises() {
 
         return $this->model->loadAllData();
 
     }
+
     public function getExerciseSettings( $id ) {
 
         return $this->model->loadSettings( $id );
     }
 
+	public function print_exercise() {
+
+		return $this->view->printExercise();
+
+	}
     public function editor_metabox_setup( $post ) {
 
         add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_exercises', 'normal', 'high');
@@ -105,12 +136,32 @@ class e20rExercise extends e20rSettings {
 	    add_meta_box('postexcerpt', __('Exercise Summary'), 'post_excerpt_meta_box', 'e20r_exercises', 'normal', 'high');
 
 	    dbg("e20rExercise::addMeta_ExerciseSettings() - Loading settings metabox for exercise page");
-
-        echo $this->view->viewSettingsBox( $this->model->find( 'id', $post->ID ), $this->model->get_activity_types() );
+		$data = $this->model->find( 'id', $post->ID );
+        echo $this->view->viewSettingsBox( $data[0], $this->model->get_activity_types() );
 
     }
 
-    public function changeSetParentType( $args, $post ) {
+	public function responsive_wp_video_shortcode( $html, $atts, $video, $post_id, $library ) {
+		$replace_wvalue = array(
+			'width: ' . $atts['width'] . 'px'
+		);
+		$replace_w  = array(
+			'width: 100%'
+		);
+
+		$repl_hvalue = array(
+			'height: ' . $atts['height'] . 'px'
+		);
+
+		$repl_h = array(
+			'height: 100%'
+		);
+
+		$html = str_ireplace( $replace_wvalue, $replace_w, $html );
+		return str_ireplace( $repl_hvalue, $repl_h, $html );
+	}
+
+	public function changeSetParentType( $args, $post ) {
 
         if ( 'e20r_exercises' == $post->post_type ) {
 
