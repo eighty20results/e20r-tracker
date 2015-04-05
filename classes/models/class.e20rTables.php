@@ -50,12 +50,13 @@ class e20rTables {
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
-        $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
-        $this->tables->workout       = $wpdb->prefix . 'e20r_workouts';
+        $this->tables->workout       = $wpdb->prefix . 'e20r_workout';
         $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
+	    //        $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
 
 
-        if ( ( $this->inBeta ) ) {
+
+	    if ( ( $this->inBeta ) ) {
 
             dbg("User $user_id IS in the beta group");
             $this->tables->assignments  = "{$wpdb->prefix}s3f_nourishAssignments";
@@ -81,12 +82,18 @@ class e20rTables {
 
 		$this->fields['workout'] = array(
 			'id'            => 'id',
-			'assigned_user' => 'assigned_user',
+			'recorded'      => 'recorded',
+			'updated'       => 'updated',
+			'for_date'      => 'for_date',
+			'user_id'       => 'user_id',
 			'program_id'    => 'program_id',
-			'workout_id'    => 'workout_id',
-			'exercise_list' => 'exercise_list',
-			'completed'     => 'completed',
-			'notes'         => 'notes',
+			'activity_id'   => 'activity_id',
+			'exercise_id'   => 'exercise_id',
+			'exercise_key'  => 'exercise_key',
+			'group_no'      => 'group_no',
+			'set_no'        => 'set_no',
+			'reps'          => 'reps',
+			'weight'        => 'weight',
 		);
 	}
 
