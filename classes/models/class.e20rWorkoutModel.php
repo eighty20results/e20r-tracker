@@ -9,10 +9,23 @@
 class e20rWorkoutModel extends e20rSettingsModel {
 
 	protected $settings;
+	protected $types;
 
 	public function e20rWorkoutModel() {
 
 		parent::__construct( 'workout', 'e20r_workout' );
+
+		$this->types = array(
+			0 => '',
+			1 => __("Slow", "e20rtracker"),
+			2 => __("Normal", "e20rtracker"),
+			3 => __("Fast", "e20rtracker")
+		);
+	}
+
+	public function getType( $tId ) {
+
+		return $this->types[$tId];
 	}
 
     public function defaultSettings() {
@@ -102,6 +115,111 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 		$currentWorkout = $this->settings;
 		return $this->settings;
+	}
+
+	public function getRecordedActivity( $config, $id ) {
+
+		global $wpdb;
+		global $e20rTables;
+		global $e20rTracker;
+
+		$table = $e20rTables->getTable('workout');
+		$fields = $e20rTables->getFields('workout');
+
+		$sql = "SELECT
+					{$fields['set_no']}, {$fields['exercise_key']},
+					{$fields['recorded']}, {$fields['reps']},
+					{$fields['weight']}, {$fields['id']},
+					{$fields['exercise_id']}, {$fields['group_no']}
+				FROM {$table} WHERE (
+				 ( {$fields['for_date']} LIKE %s ) AND
+				  ( {$fields['user_id']} = %d ) AND
+				  ( {$fields['program_id']} = %d ) AND
+				  ( {$fields['activity_id']} = %d )
+				) ORDER BY {$fields['group_no']}, {$fields['set_no']}";
+
+		// $sql = $e20rTracker->prepare_in( $sql, $group->exercises );
+
+		$sql = $wpdb->prepare( $sql,
+			$config->date . '%',
+			$config->userId,
+			$config->programId,
+			$id
+		);
+
+		dbg("e20rWorkoutModel::getRecordedActivity() - After prepare() processing: {$sql}");
+
+		$records = $wpdb->get_results( $sql );
+
+		dbg("e20rWorkoutModel::getRecordedActivity() - Fetched " . count($records) . " records from DB");
+
+		$saved = array();
+
+		if ( !empty( $records ) ) {
+
+			foreach ( $records as $r ) {
+
+				if ( ! isset( $saved[ $r->group_no ] ) ) {
+
+					dbg("e20rWorkoutModel::getRecordedActivity() - Adding new saved data..");
+					$saved[ $r->group_no ] = new stdClass();
+				}
+
+				if ( !isset( $saved[ $r->group_no ]->saved_exercises ) ) {
+
+					dbg("e20rWorkoutModel::getRecordedActivity() - Adding new exercises array.");
+					$saved[ $r->group_no ]->saved_exercises = array();
+				}
+
+				if ( ! isset( $saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ] ) ) {
+
+					dbg("e20rWorkoutModel::getRecordedActivity() - Adding new class to store set information.");
+					$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ] = new stdClass();
+				}
+
+				if ( ! isset( $saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set ) ) {
+
+					dbg("e20rWorkoutModel::getRecordedActivity() - Adding new sets array.");
+					$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set = array();
+				}
+
+				if ( !isset($saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ] ) ) {
+
+					dbg("e20rWorkoutModel::getRecordedActivity() - Adding new data object for set.");
+					$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ] = new stdClass();
+				}
+
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->id       = $r->exercise_id;
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->recorded = $r->recorded;
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->weight   = $r->weight;
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->reps     = $r->reps;
+			}
+		}
+
+		dbg("e20rWorkoutModel::getRecordedActivity() - Returning: ");
+		dbg($saved);
+
+		return $saved;
+
+	}
+
+	public function save_recordedActivity( $activityObj ) {
+
+		$data = array();
+
+		foreach( $activityObj as $gId => $obj ) {
+
+			foreach( $obj->exercises as $exKey => $sets ) {
+
+				foreach( $sets->set as $sId => $set ) {
+
+					$array[] = array(
+
+						'program_id' => $set
+					);
+				}
+			}
+		}
 	}
 
 	/**
