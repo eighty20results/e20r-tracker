@@ -13,6 +13,9 @@ class e20rWorkout extends e20rSettings {
     public $model = null;
     public $view = null;
 
+	protected $table;
+	protected $fields;
+
     public function e20rWorkout() {
 
         dbg("e20rWorkout::__construct() - Initializing Workout class");
@@ -27,6 +30,10 @@ class e20rWorkout extends e20rSettings {
     public function init( $id = null ) {
 
 	    global $currentWorkout;
+	    global $e20rTables;
+
+	    $this->table = $e20rTables->getTable('workout');
+	    $this->fields = $e20rTables->getFields( 'workout' );
 
 	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id ) && ($currentWorkout->id != $id ) ) ) {
 		    // dbg("e20rWorkout::init() - currentWorkout->id: {$currentWorkout->id} vs id: {$id}" );
@@ -89,6 +96,12 @@ class e20rWorkout extends e20rSettings {
 	public function listUserActivities( $userId ) {
 
 		return false;
+	}
+
+	public function saveExData_callback() {
+
+		dbg("e20rWorkout::saveExData_callback() - ");
+
 	}
 
 	/**
@@ -347,6 +360,7 @@ class e20rWorkout extends e20rSettings {
 						if ( ! ( in_array( $config->userId, $workoutData[$wid]->assigned_user_id ) ||
 						         in_array( $config->userGroup, $workoutData[$wid]->assigned_usergroups ) )
 						) {
+
 							dbg( "e20rWorkout::shortcode_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
 							dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user - {$config->userGroup}: " );
 
@@ -357,15 +371,35 @@ class e20rWorkout extends e20rSettings {
 			}
 		}
 
+		$recorded = array();
+
+		dbg( "e20rWorkout::shortcode_activity() - WorkoutData prior to processing");
+		dbg($workoutData);
+
 		foreach ( $workoutData as $wid => $w ) {
 
 			if ( $wid !== 'error' ) {
 
-				if ( ( ! empty( $w->days ) ) && ( !in_array( $config->dayNo, $w->days ) ) ) {
+				$saved_data = $this->model->getRecordedActivity( $config, $wid );
+
+				if ( ( ! empty( $w->days ) ) && ( ! in_array( $config->dayNo, $w->days ) ) ) {
 
 					dbg( "e20rWorkout::shortcode_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
-					dbg($w->days);
+					dbg( $w->days );
 					unset( $workoutData[ $wid ] );
+				}
+				else {
+
+					foreach ( $w->groups as $gid => $g ) {
+
+						dbg("e20rWorkout::shortcode_activity() - Integrating saved data for group # {$gid}");
+						$workoutData[ $wid ]->groups[ $gid ]->saved_exercises = $saved_data[$gid]->saved_exercises;
+
+						if ( isset( $g->group_tempo ) ) {
+
+							$workoutData[ $wid ]->groups[ $gid ]->group_tempo = $this->model->getType( $g->group_tempo );
+						}
+					}
 				}
 			}
 		}
@@ -374,10 +408,11 @@ class e20rWorkout extends e20rSettings {
 			$workoutData['error'] = 'No Activity found';
 		}
 
+
 		ob_start();
 		?>
 		<div id="e20r-daily-activity-page">
-			<?php echo $this->view->displayActivity( $workoutData ); ?>
+			<?php echo $this->view->displayActivity( $config, $workoutData ); ?>
 		</div>
 		<?php
 		$html = ob_get_clean();
