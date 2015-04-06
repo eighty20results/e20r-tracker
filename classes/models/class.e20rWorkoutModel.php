@@ -189,7 +189,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 					$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ] = new stdClass();
 				}
 
-				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->id       = $r->exercise_id;
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->ex_id    = $r->exercise_id;
+				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->id       = $r->id;
 				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->recorded = $r->recorded;
 				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->weight   = $r->weight;
 				$saved[ $r->group_no ]->saved_exercises[ $r->exercise_key ]->set[ $r->set_no ]->reps     = $r->reps;
