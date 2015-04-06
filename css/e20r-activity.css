@@ -5,7 +5,10 @@ div.e20r-display-exercise-div {
     height: 5px;
 }
 .active {
-    background-color: #5ac940;
+    background-color: rgba( 90, 201, 64, 0.3 );
+}
+.edited {
+    background-color: rgba( 255, 153, 0, 0.5 );
 }
 .e20r-activity-exercise-tracking {
     border-left: 2px solid #0b181e;
