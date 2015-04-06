@@ -100,7 +100,19 @@ class e20rWorkout extends e20rSettings {
 
 	public function saveExData_callback() {
 
-		dbg("e20rWorkout::saveExData_callback() - ");
+		global $current_user;
+		global $e20rTracker;
+
+		check_ajax_referer('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce');
+
+		if ( ! $e20rTracker->userCanEdit( $current_user->ID ) ) {
+
+			wp_send_json_error( 'Incorrect privileges for this application');
+		}
+
+		dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
+		dbg($_POST);
+
 
 	}
 
@@ -392,8 +404,12 @@ class e20rWorkout extends e20rSettings {
 
 					foreach ( $w->groups as $gid => $g ) {
 
-						dbg("e20rWorkout::shortcode_activity() - Integrating saved data for group # {$gid}");
-						$workoutData[ $wid ]->groups[ $gid ]->saved_exercises = $saved_data[$gid]->saved_exercises;
+						if ( !empty( $saved_data ) ) {
+
+							dbg("e20rWorkout::shortcode_activity() - Integrating saved data for group # {$gid}");
+							$workoutData[ $wid ]->groups[ $gid ]->saved_exercises = $saved_data[$gid]->saved_exercises;
+						}
+
 
 						if ( isset( $g->group_tempo ) ) {
 
