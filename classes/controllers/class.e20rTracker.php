@@ -122,6 +122,7 @@ class e20rTracker {
 	        add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
 	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( $e20rWorkout, 'add_new_exercise_group_callback' ) );
 	        add_action( 'wp_ajax_e20r_add_exercise', array( $e20rWorkout, 'add_new_exercise_to_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_save_activity', array( $e20rWorkout, 'saveExData_callback' ) );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -178,6 +179,7 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_daynav', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
 
 
 	        // TODO: Investigate the need for this.
