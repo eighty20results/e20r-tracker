@@ -113,6 +113,24 @@ class e20rWorkout extends e20rSettings {
 		dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
 		dbg($_POST);
 
+		$data = array();
+		$single_fields = array(
+			'program_id', 'user_id', 'id', 'for_date', 'recorded'
+		);
+
+		foreach( $_POST as $k => $v ) {
+
+			if ( $k = 'recorded' ) {
+
+				dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
+				$data[$k] = date('Y-m-d h:m:i', $e20rTracker->sanitize($v ) );
+			}
+
+			if ( ! in_array( $k, $single_fields ) ) {
+
+			}
+		}
+
 
 	}
 

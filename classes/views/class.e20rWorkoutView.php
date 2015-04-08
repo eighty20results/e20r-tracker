@@ -132,7 +132,7 @@ class e20rWorkoutView extends e20rSettingsView {
 						<td class="e20r-activity-exercise-tracking">
 
 							<input type="hidden" class="e20r-activity-input-set_count" name="e20r-activity-exercise-set_count[]" value="<?php echo $g->group_set_count; ?>" >
-							<input type="hidden" class="e20r-activity-input-group_no" name="e20r-activity-exercise-group_no[]" value="<?php echo $k; ?>" >
+
 						<?php
 							for ( $i = 1 ; $i <= $g->group_set_count ; $i++ ) {
 
@@ -142,7 +142,8 @@ class e20rWorkoutView extends e20rSettingsView {
 								$ex_id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->ex_id : null;
 								$id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->id : null;
 								?>
-							<div class="e20r-two-col">
+							<div class="e20r-two-col e20r-edit">
+								<input type="hidden" class="e20r-activity-input-group_no" name="e20r-activity-exercise-group_no[]" value="<?php echo $k; ?>" >
 								<input type="hidden" class="e20r-activity-input-record_id" name="e20r-activity-exercise-record_id[]" value="<?php echo $id; ?>" >
 								<input type="hidden" class="e20r-activity-input-recorded" name="e20r-activity-exercise-recorded[]" value="<?php echo $when; ?>" >
 								<input type="hidden" class="e20r-activity-input-ex_id" name="e20r-activity-exercise-ex_id[]" value="<?php echo $ex_id; ?>" >
@@ -152,7 +153,7 @@ class e20rWorkoutView extends e20rSettingsView {
 							</div>
 							<div class="e20r-two-col e20r-saved startHidden">
 								<span class="e20r-saved-weight-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo $weight; ?></a></span>
-								<span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo $reps ; ?></a></span>
+								<span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-rep-value"><?php echo $reps ; ?></a></span>
 							</div>
 
 						<?php } ?>
