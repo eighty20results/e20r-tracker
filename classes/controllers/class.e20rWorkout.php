@@ -114,24 +114,37 @@ class e20rWorkout extends e20rSettings {
 		dbg($_POST);
 
 		$data = array();
-		$single_fields = array(
-			'program_id', 'user_id', 'id', 'for_date', 'recorded'
+		$skip = array(
+			'activity', 'e20r-tracker-activity-input-nonce'
 		);
 
 		foreach( $_POST as $k => $v ) {
 
-			if ( $k = 'recorded' ) {
+			if ( $k == 'recorded' ) {
 
 				dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
-				$data[$k] = date('Y-m-d h:m:i', $e20rTracker->sanitize($v ) );
+				$v = date('Y-m-d h:m:i', $e20rTracker->sanitize( $v ) );
 			}
 
-			if ( ! in_array( $k, $single_fields ) ) {
+            if ( !in_array( $k, $skip ) ) {
 
-			}
+                dbg("e20rWorkout::saveExData_callback() - Saving {$k} as {$v} for record.");
+                $data[$k] = $v;
+            }
 		}
 
+        dbg("e20rWorkout::saveExData_callback() - Data array to use");
+        dbg($data);
 
+        $format = $e20rTracker->setFormatForRecord( $data );
+        dbg($format);
+
+        if ( $this->model->save_userData( $data, $format ) === false ) {
+            dbg("e20rWorkout::saveExData_callback() - Error saving user data record!");
+            wp_send_json_error();
+        }
+
+        wp_send_json_success();
 	}
 
 	/**
