@@ -114,9 +114,7 @@ class e20rWorkout extends e20rSettings {
 		dbg($_POST);
 
 		$data = array();
-		$skip = array(
-			'activity', 'e20r-tracker-activity-input-nonce'
-		);
+		$skip = array( 'action', 'e20r-tracker-activity-input-nonce' );
 
 		foreach( $_POST as $k => $v ) {
 

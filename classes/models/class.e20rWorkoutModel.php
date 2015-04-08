@@ -10,10 +10,15 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	protected $settings;
 	protected $types;
+	protected $table;
 
 	public function e20rWorkoutModel() {
 
+		global $e20rTables;
+
 		parent::__construct( 'workout', 'e20r_workout' );
+
+		$this->table = $e20rTables->getTable('workout');
 
 		$this->types = array(
 			0 => '',
@@ -122,7 +127,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		global $e20rTables;
 		global $e20rTracker;
 
-		$table = $e20rTables->getTable('workout');
 		$fields = $e20rTables->getFields('workout');
 
 		$sql = "SELECT
@@ -130,7 +134,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 					{$fields['recorded']}, {$fields['reps']},
 					{$fields['weight']}, {$fields['id']},
 					{$fields['exercise_id']}, {$fields['group_no']}
-				FROM {$table} WHERE (
+				FROM {$this->table} WHERE (
 				 ( {$fields['for_date']} LIKE %s ) AND
 				  ( {$fields['user_id']} = %d ) AND
 				  ( {$fields['program_id']} = %d ) AND
@@ -226,6 +230,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         dbg("e20rWorkoutModel::save_userData() - Saving data: ");
         dbg($data);
+
+	    global $wpdb;
+
+	    if ( $wpdb->replace( $this->table, $data, $format ) !== false ) {
+		    return true;
+	    }
 
         return false;
     }
