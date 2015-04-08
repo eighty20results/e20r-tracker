@@ -76,7 +76,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		$currentWorkout = $tmp[$workoutId];
 	}
 
-
 	public function loadSettings( $id ) {
 
 		global $post;
@@ -203,7 +202,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		return $saved;
 
 	}
-
+/*
 	public function save_recordedActivity( $activityObj ) {
 
 		$data = array();
@@ -222,7 +221,14 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			}
 		}
 	}
+*/
+    public function save_userData( $data, $format ) {
 
+        dbg("e20rWorkoutModel::save_userData() - Saving data: ");
+        dbg($data);
+
+        return false;
+    }
 	/**
      * Returns an array of all workouts merged with their associated settings.
      *
