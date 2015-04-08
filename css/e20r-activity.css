@@ -10,6 +10,13 @@ div.e20r-display-exercise-div {
 .edited {
     background-color: rgba( 255, 153, 0, 0.5 );
 }
+.e20r-saved-set-number {
+    font-size: 1.3em;
+    color: #004C00;
+    font-weight: bold;
+    text-align: left;
+    float: left;
+}
 .e20r-activity-exercise-tracking {
     border-left: 2px solid #0b181e;
     padding-bottom: 5px;
