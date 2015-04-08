@@ -18,7 +18,7 @@ var e20rActivity = {
 
         this.$weight_fields = jQuery('.e20r-activity-input-weight');
         this.$rep_fields = jQuery('.e20r-activity-input-reps');
-        this.$rows = jQuery(".e20r-activity-exercise-tracking");
+        this.$rows = jQuery(".e20r-exercise-set-row");
         this.$nonce = jQuery('#e20r-tracker-activity-input-nonce').val();
         this.$saveBtn = jQuery('#e20r-activity-input-button');
         this.$userId = jQuery('#e20r-activity-input-user_id').val();
@@ -50,13 +50,13 @@ var e20rActivity = {
     bindInput: function (me, c_self) {
 
         // console.log("bindInput: " , me);
-        var $div = me.closest('e20r-activity-exercise-tracking');
+        var $div = me.closest('.e20r-exercise-set-row');
         var $edit_elem = $div.find('div.e20r-edit');
         var $show_elem = $div.find('div.e20r-saved');
 
         $show_elem.find('a.e20r-edit-weight-value').unbind('click').on('click', function(){
 
-            console.log('Edit based on weight entry');
+            console.log('Edit weight entry');
             c_self.show_hide( jQuery(this) );
 
         });
@@ -79,10 +79,8 @@ var e20rActivity = {
 
                 me.removeClass('active');
                 me.addClass('edited');
+                c_self.attemptSave( me, c_self );
             }
-
-            c_self.attemptSave( me );
-
         });
 
         me.keypress( function( event, self ) {
@@ -117,7 +115,7 @@ var e20rActivity = {
 
         console.log("Element is: ", me );
 
-        var $div = me.closest('e20r-activity-exercise-tracking');
+        var $div = me.closest('.e20r-exercise-set-row');
         var $edit = $div.find('div.e20r-edit')
         var $show = $div.find('div.e20r-saved');
 
@@ -146,15 +144,27 @@ var e20rActivity = {
 */
     },
     activate: function( self ) {
+
+        if ( ! ( self instanceof jQuery ) ) {
+
+            console.log("No a jquery object. Convert it.");
+            self = jQuery( self );
+        }
+
         console.log("Ready to activate/edit the field...", self);
 
         jQuery(self).addClass("active");
+
     },
-    attemptSave: function( inp ) {
+    attemptSave: function( inp, self ) {
 
         event.preventDefault();
 
         console.log("Getting ready to save data in the field...");
+
+        var $div = inp.closest('.e20r-exercise-set-row');
+        var $show = $div.find('div.e20r-saved');
+        var $edit = $div.find('div.e20r-edit');
 
         if ( ! ( inp instanceof jQuery ) ) {
 
@@ -172,51 +182,59 @@ var e20rActivity = {
         var $weight = null;
         var $reps = null;
 
+        if ( ! inp.hasClass('e20r-activity-input-reps' ) ) {
+
+            console.log("Attempting to save weight. Wait until the user attempts to edit/save reps." );
+
+            // Update value in show location
+            $show.find('a.e20r-edit-weight-value').text( inp.val() );
+        }
+
         // Check if both input boxes for this rep/weight row contains data. If so, save it.
-        if ( inp.hasClass('.e20r-activity-input-reps') &&
-            jQuery.isNumeric( inp.siblings('.e20r-activity-input-weight').val()) ) {
-
-            $weight = inp.siblings('.e20r-activity-input-weight').val();
-            $reps = inp.val();
-        }
-
         if ( inp.hasClass('e20r-activity-input-weight') &&
-            jQuery.isNumeric( inp.siblings('.e20r-activity-input-reps').val() ) ) {
+            jQuery.isNumeric( inp.siblings('.e20r-activity-input-reps').val()) ) {
 
-            $reps = inp.siblings('.e20r-activity-input-reps').val();
-            $weight = inp.val();
+            console.log("User editing the rep input");
+            $show.find('a.e20r-edit-rep-value').text( inp.val() );
         }
 
-        if ( ( $weight !== null ) && ( $reps !== null ) ) {
+        $reps = $edit.find('.e20r-activity-input-reps').val();
+        $weight = $edit.find('.e20r-activity-input-weight').val();
 
-            console.log("We're editing the reps input. And the weight input contains actual data.")
-            jQuery.ajax({
-                url: e20r_workout.url,
-                type: 'POST',
-                timeout: 7000,
-                data: {
-                    action: 'e20r_save_activity',
-                    'e20r-tracker-activity-input-nonce': this.$nonce,
-                    'user_id': this.$userId,
-                    'activity_id': this.$activityId,
-                    'program_id': this.$programId,
-                    'recorded': ( Math.floor(Date.now() / 1000) ),
-                    'id': inp.siblings('.e20r-activity-input-record_id').val(),
-                    'for_date': this.$forDate,
-                    'group_no': inp.siblings('.e20r-activity-input-group_no').val(),
-                    'exercise_id': inp.siblings('.e20r-activity-input-ex_id').val(),
-                    'exercise_key': inp.siblings('.e20r-activity-input-ex_key').val(),
-                    'weight': $weight,
-                    'reps': $reps
-                },
-                success: function (resp) {
-                    console.log("Data saved?");
-                },
-                error: function (xhdr, errstr, error) {
-                    console.log("Error saving data");
-                }
-            });
-        }; // End of if
+        console.log("We're editing the reps input. And the weight input contains actual data.")
+        jQuery.ajax({
+            url: e20r_workout.url,
+            type: 'POST',
+            timeout: 7000,
+            data: {
+                action: 'e20r_save_activity',
+                'e20r-tracker-activity-input-nonce': this.$nonce,
+                'user_id': this.$userId,
+                'activity_id': this.$activityId,
+                'program_id': this.$programId,
+                'recorded': ( Math.floor(Date.now() / 1000) ),
+                'id': inp.siblings('.e20r-activity-input-record_id').val(),
+                'for_date': this.$forDate,
+                'group_no': inp.siblings('.e20r-activity-input-group_no').val(),
+                'set_no': inp.siblings('.e20r-activity-input-set_no').val(),
+                'exercise_id': inp.siblings('.e20r-activity-input-ex_id').val(),
+                'exercise_key': inp.siblings('.e20r-activity-input-ex_key').val(),
+                'weight': ( $weight !== '' ? $weight : null ),
+                'reps': ( $reps !== '' ? $reps : null )
+            },
+            success: function (resp) {
+
+                console.log("Data saved!");
+                self.show_hide($div);
+
+            },
+            error: function (xhdr, errstr, error) {
+                console.log("Error saving data");
+            },
+            complete: function() {
+                console.log("Completed processing of activity set/rep update");
+            }
+        });
     },
     saveAll: function() {
 
