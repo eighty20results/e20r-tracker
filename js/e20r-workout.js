@@ -28,10 +28,10 @@ var e20rActivity = {
 
         var cls = this;
 
-        cls.$weight_fields.each(function () {
+/*        cls.$weight_fields.each(function () {
             cls.bindInput( jQuery(this), cls );
         });
-
+*/
         cls.$rep_fields.each(function () {
 
             cls.bindInput( jQuery(this), cls );
@@ -54,20 +54,20 @@ var e20rActivity = {
         var $edit_elem = $div.find('div.e20r-edit');
         var $show_elem = $div.find('div.e20r-saved');
 
-        $show_elem.find('a.e20r-edit-weight-value').unbind('click').on('click', function(){
+        $show_elem.find('a.e20r-edit-weight-value, a.e20r-edit-rep-value').unbind('click').on('click', function(){
 
             console.log('Edit weight entry');
             c_self.show_hide( jQuery(this) );
 
         });
 
-        $show_elem.find('a.e20r-edit-rep-value').unbind('click').on('click', function(){
+/*        $show_elem.find('a.e20r-edit-rep-value').unbind('click').on('click', function(){
 
             console.log('Edit based on rep entry');
             c_self.show_hide( jQuery(this) );
 
         });
-
+*/
         me.on('focus', function(){
 
             c_self.activate(this);
@@ -162,6 +162,8 @@ var e20rActivity = {
 
         console.log("Getting ready to save data in the field...");
 
+        // TODO: Compare hidden rep/weight fields with visible input (editable) ones before deciding to save.
+
         var $div = inp.closest('.e20r-exercise-set-row');
         var $show = $div.find('div.e20r-saved');
         var $edit = $div.find('div.e20r-edit');
@@ -224,7 +226,16 @@ var e20rActivity = {
             },
             success: function (resp) {
 
-                console.log("Data saved!");
+                console.log("Data saved!", resp );
+
+                var $id = resp.data.id;
+
+                // TODO: Set ID for $this entry/record.
+                $div.find('.e20r-activity-input-record_id').val( $id);
+
+                $show.find('a.e20r-edit-weight-value').text($weight) ;
+                $show.find('a.e20r-edit-rep-value').text( $reps );
+
                 self.show_hide($div);
 
             },

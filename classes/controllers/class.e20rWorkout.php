@@ -121,7 +121,7 @@ class e20rWorkout extends e20rSettings {
 			if ( $k == 'recorded' ) {
 
 				dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
-				$v = date('Y-m-d h:m:i', $e20rTracker->sanitize( $v ) );
+				$v = date_i18n('Y-m-d h:m:i', $e20rTracker->sanitize( $v ) );
 			}
 
             if ( !in_array( $k, $skip ) ) {
@@ -137,12 +137,12 @@ class e20rWorkout extends e20rSettings {
         $format = $e20rTracker->setFormatForRecord( $data );
         dbg($format);
 
-        if ( $this->model->save_userData( $data, $format ) === false ) {
+        if ( ( $id = $this->model->save_userData( $data, $format ) ) === false ) {
             dbg("e20rWorkout::saveExData_callback() - Error saving user data record!");
             wp_send_json_error();
         }
-
-        wp_send_json_success();
+        dbg("e20rWorkout::saveExData_callback() - Saved record with ID: {$id}");
+        wp_send_json_success( array( 'id' => $id ) );
 	}
 
 	/**

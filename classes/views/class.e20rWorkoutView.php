@@ -88,20 +88,6 @@ class e20rWorkoutView extends e20rSettingsView {
 				<?php
 				foreach ( $groups as $k => $g ) {
 
-					/**
-					 * sC = stdClass()
-					 *
-					 *              sC    array()                     sC
-					 * $recorded => $g->saved_data[$group_set_number]->weight
-					 * $recorded => $g->saved_data[$group_set_number]->reps
-					 *
-					 *                       $g     $k
-					 * $workoutData[$wid]->groups[$gid]->saved_data
-					 *
-					 * $recorded => $g->saved_data
-					 * $recorded[$i]->weight
-					 * $recorded[$i]->reps
-					 */
 					$recorded = isset( $g->saved_exercises ) ? $g->saved_exercises : array();
 					$gcount = $k + 1;
 
@@ -147,7 +133,9 @@ class e20rWorkoutView extends e20rSettingsView {
 									<input type="hidden" class="e20r-activity-input-recorded" name="e20r-activity-exercise-recorded[]" value="<?php echo $when; ?>" >
 									<input type="hidden" class="e20r-activity-input-ex_id" name="e20r-activity-exercise-ex_id[]" value="<?php echo $ex_id; ?>" >
 									<input type="hidden" class="e20r-activity-input-ex_key" name="e20r-activity-exercise-ex_key[]" value="<?php echo $exKey; ?>" >
-									<input type="number" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" >
+                                    <input type="hidden" class="e20r-activity-input-weight_h" name="e20r-activity-exercise-weight_h[]" value="<?php echo $weight; ?>" >
+                                    <input type="hidden" class="e20r-activity-input-reps_h" name="e20r-activity-exercise-reps_h[]" value="<?php echo $reps; ?>" >
+                                    <input type="number" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" >
 									<input type="number" class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php echo $reps; ?>" >
 								</div>
 								<div class="e20r-two-col e20r-saved startHidden">

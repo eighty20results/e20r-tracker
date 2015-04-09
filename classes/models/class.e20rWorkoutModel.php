@@ -234,7 +234,10 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    global $wpdb;
 
 	    if ( $wpdb->replace( $this->table, $data, $format ) !== false ) {
-		    return true;
+
+		    $id = $wpdb->insert_id;
+            dbg("e20rWorkoutModel::save_userData() - Replaced/Inserted ID: {$id}");
+            return $id;
 	    }
 
         return false;
