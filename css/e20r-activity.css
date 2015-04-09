@@ -10,6 +10,14 @@ div.e20r-display-exercise-div {
 .edited {
     background-color: rgba( 255, 153, 0, 0.5 );
 }
+.e20r-save-set-row {
+    height: 30px;
+    width: 30px;
+    font-size: 0.7em;
+    padding: 0;
+    vertical-align: middle;
+    margin: 0;
+}
 .e20r-saved-set-number {
     font-size: 1.3em;
     color: #004C00;
@@ -31,6 +39,13 @@ div.e20r-display-exercise-div {
     padding-left: 5px;
     padding-right: 10px;
     border-bottom: 1px solid #c0c0c0;
+}
+.e20r-edit-weight-value,
+.e20r-edit-rep-value {
+    color: #004CFF !important;
+    font-size: 0.9em !important;
+    text-decoration: dashed !important;
+    text-decoration-color: #004CFF !important;
 }
 tbody.e20r-activity-table-body > tr > th {
     background-color: #004C00;
@@ -106,6 +121,8 @@ tfoot.e20r-activity-table-footer {
         border: 2px solid #666666;
         margin-right: 5px;
         float: left;
+        padding: 0;
+        box-sizing: content-box;
     }
     .e20r-saved-weight-value,
     .e20r-saved-rep-value {
