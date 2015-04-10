@@ -26,9 +26,16 @@ div.e20r-display-exercise-div {
     float: left;
 }
 .e20r-td-input-activity {
-    min-width: 100px;
+    min-width: 75px;
     width: 38%;
-    max-width: 200px;
+    max-width: 180px;
+    padding: 0;
+    margin: 0;
+}
+.e20r-td-input-button {
+    width: 35px;
+    padding: 0;
+    margin: 0;
 }
 .e20r-activity-exercise-tracking {
     border-left: 2px solid #0b181e;
@@ -41,6 +48,7 @@ div.e20r-display-exercise-div {
 }
 .e20r-activity-var {
     font-weight: normal;
+    float: left;
     padding-left: 5px;
     padding-right: 10px;
     border-bottom: 1px solid #c0c0c0;
@@ -51,6 +59,10 @@ div.e20r-display-exercise-div {
     font-size: 0.9em !important;
     text-decoration: dashed !important;
     text-decoration-color: #004CFF !important;
+}
+.e20r-edit > table {
+    margin: 0;
+    padding: 0;
 }
 tbody.e20r-activity-table-body > tr > th {
     background-color: #004C00;
@@ -120,8 +132,14 @@ tfoot.e20r-activity-table-footer {
         max-width: 960px;
         border: 1px solid #c5c5c5;
     }
+    .e20r-activity-info,
+    .e20r-activity-group {
+        width: auto;
+        float: left;
+        /* margin: 10px; */
+    }
     input[class^="e20r-activity-input"] {
-        /* width: 38%; */
+        width: 100%;
         height: 25px;
         border: 2px solid #666666;
         margin-right: 5px;
@@ -138,11 +156,11 @@ tfoot.e20r-activity-table-footer {
         height: 25px;
     }
     .e20r-two-col {
-        padding: 5px;
+        /* padding: 5px; */
         width: 100%;
         min-width: 190px;
         max-width: 480px;
-        margin: 10px auto;
+        /* margin: 10px auto; */
     }
     .e20r-two-col > input {
         width: 38%;
@@ -174,10 +192,12 @@ tfoot.e20r-activity-table-footer {
     .e20r-content {
         float: left;
         padding: 0 10px 0 10px;
-        width: auto;
+        /* width: auto; */
     }
     .e20r-activity-exercise {
         width: 66%;
+        float: left;
+        margin: 10px;
     }
     .e20r-activity-exercise-tracking {
         width: 34%;

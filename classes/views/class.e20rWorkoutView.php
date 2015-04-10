@@ -77,7 +77,7 @@ class e20rWorkoutView extends e20rSettingsView {
 							</div>
 						</div>
 					</th>
-					<th>
+					<th class="e20r-activity-info">
 						<div class="e20r-content">
 							<?php _e("Client", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $current_user->user_firstname; ?></span>
 						</div>
@@ -93,18 +93,12 @@ class e20rWorkoutView extends e20rSettingsView {
 
 					?>
 					<tr>
-						<th class="e20r-activity-group">
+						<th colspan="2" class="e20r-activity-exercise" style="width: 100%;">
 							<div class="e20r-four-col">
-								<div class="e20r-col-1"><?php _e( "Group", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $gcount; ?></span></div>
-								<div class="e20r-col-2"><?php _e( "Sets", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_set_count; ?></span></div>
-								<div class="e20r-col-3"><?php _e( "Tempo", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_tempo; ?></span></div>
-								<div class="e20r-col-4"><?php _e( "Rest", "e20rtracker"); ?>: <span class="e20r-activity-var"><?php echo $g->group_rest; ?></span></div>
-							</div>
-						</th>
-						<th class="e20r-activity-group">
-							<div class="e20r-two-col">
-								<div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div>
-								<div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div>
+								<div class="e20r-col-1"><span><?php _e( "Group", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $gcount; ?></span></div>
+								<div class="e20r-col-2"><span><?php _e( "Sets", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_set_count; ?></span></div>
+								<div class="e20r-col-3"><span><?php _e( "Tempo", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_tempo; ?></span></div>
+								<div class="e20r-col-4"><span><?php _e( "Rest", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_rest; ?></span></div>
 							</div>
 						</th>
 					</tr>
@@ -116,6 +110,11 @@ class e20rWorkoutView extends e20rSettingsView {
 					<tr class="e20r-exercise-row">
 						<td class="e20r-activity-exercise"><?php echo $e20rExercise->print_exercise(); ?></td>
 						<td class="e20r-activity-exercise-tracking">
+							<div class="e20r-three-col">
+								<div class="e20r-activity-group-track-s e20r-activity-var"><?php _e("Set", "e20rtracker"); ?></div>
+								<div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div>
+								<div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div>
+							</div>
 						<?php
 							for ( $i = 1 ; $i <= $g->group_set_count ; $i++ ) {
 
@@ -126,7 +125,7 @@ class e20rWorkoutView extends e20rSettingsView {
 								$id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->id : null;
 								?>
 							<div class="e20r-exercise-set-row">
-								<div class="e20r-two-col e20r-edit">
+								<div class="e20r-edit">
 									<input type="hidden" class="e20r-activity-input-group_no" name="e20r-activity-exercise-group_no[]" value="<?php echo $k; ?>" >
 									<input type="hidden" class="e20r-activity-input-set_no" name="e20r-activity-exercise-set_no[]" value="<?php echo $i; ?>" >
 									<input type="hidden" class="e20r-activity-input-record_id" name="e20r-activity-exercise-record_id[]" value="<?php echo $id; ?>" >
@@ -139,14 +138,18 @@ class e20rWorkoutView extends e20rSettingsView {
                                         <tr>
                                         <td class="e20r-td-input-activity"><input type="text" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" ></td>
 									    <td class="e20r-td-input-activity"><input type="number" class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php echo $reps; ?>" ></td>
-									    <td class="e20r-td-input-activity"><button class="e20r-save-set-row alignright e20r-button<?php echo ( empty( $weight ) || empty($reps) ) ? '' : ' startHidden'; ?>">Save</button></td>
+									    <td class="e20r-td-input-button"><button class="e20r-save-set-row alignright e20r-button<?php echo ( empty( $weight ) || empty($reps) ) ? '' : ' startHidden'; ?>">Save</button></td>
                                         </tr>
                                     </table>
 								</div>
-								<div class="e20r-two-col e20r-saved startHidden">
-									<span class="e20r-saved-set-number"><?php echo $i; ?>:</span>
-									<span class="e20r-saved-weight-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : $weight; ?></a></span>
-									<span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : $reps; ?></a></span>
+								<div class="e20r-three-col e20r-saved startHidden">
+									<table>
+									<tr>
+										<td class="e20r-td-input-button"><span class="e20r-saved-set-number"><?php echo $i; ?>:</span></td>
+										<td class="e20r-td-input-activity"><span class="e20r-saved-weight-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : $weight; ?></a></span></td>
+										<td class="e20r-td-input-activity"><span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : $reps; ?></a></span></td>
+									</tr>
+									</table>
 									<br/>
 								</div>
 							</div>

@@ -142,9 +142,11 @@ class e20rExercise extends e20rSettings {
     }
 
 	public function responsive_wp_video_shortcode( $html, $atts, $video, $post_id, $library ) {
+
 		$replace_wvalue = array(
 			'width: ' . $atts['width'] . 'px'
 		);
+
 		$replace_w  = array(
 			'width: 100%'
 		);
