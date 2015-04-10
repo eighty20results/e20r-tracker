@@ -81,7 +81,7 @@ var e20rActivity = {
 
         me.on('blur', function() {
 
-            if ( this._complete() ) {
+            if ( c_self._complete() ) {
 
                 jQuery('#e20r-activity-input-button').removeClass('startHidden');
             }
@@ -253,26 +253,30 @@ var e20rActivity = {
             $reps = $edit.find('.e20r-activity-input-reps').val();
             $weight = $edit.find('.e20r-activity-input-weight').val();
 
+            var $data = {
+                action: 'e20r_save_activity',
+                'e20r-tracker-activity-input-nonce': this.$nonce,
+                'user_id': this.$userId,
+                'activity_id': this.$activityId,
+                'program_id': this.$programId,
+                'recorded': ( Math.floor(Date.now() / 1000) ),
+                'id': inp.siblings('.e20r-activity-input-record_id').val(),
+                'for_date': this.$forDate,
+                'group_no': inp.siblings('.e20r-activity-input-group_no').val(),
+                'set_no': inp.siblings('.e20r-activity-input-set_no').val(),
+                'exercise_id': inp.siblings('.e20r-activity-input-ex_id').val(),
+                'exercise_key': inp.siblings('.e20r-activity-input-ex_key').val(),
+                'weight': ( $weight !== '' ? $weight : null ),
+                'reps': ( $reps !== '' ? $reps : null )
+            };
+
+            console.log("Sending data: ", $data );
+
             jQuery.ajax({
                 url: e20r_workout.url,
                 type: 'POST',
                 timeout: 7000,
-                data: {
-                    action: 'e20r_save_activity',
-                    'e20r-tracker-activity-input-nonce': this.$nonce,
-                    'user_id': this.$userId,
-                    'activity_id': this.$activityId,
-                    'program_id': this.$programId,
-                    'recorded': ( Math.floor(Date.now() / 1000) ),
-                    'id': inp.siblings('.e20r-activity-input-record_id').val(),
-                    'for_date': this.$forDate,
-                    'group_no': inp.siblings('.e20r-activity-input-group_no').val(),
-                    'set_no': inp.siblings('.e20r-activity-input-set_no').val(),
-                    'exercise_id': inp.siblings('.e20r-activity-input-ex_id').val(),
-                    'exercise_key': inp.siblings('.e20r-activity-input-ex_key').val(),
-                    'weight': ( $weight !== '' ? $weight : null ),
-                    'reps': ( $reps !== '' ? $reps : null )
-                },
+                data: $data,
                 success: function (resp) {
 
                     console.log("Data saved!", resp);
