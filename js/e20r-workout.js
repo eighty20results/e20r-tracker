@@ -81,11 +81,36 @@ var e20rActivity = {
 
         me.on('blur', function() {
 
-            if ( ( $div.find('.e20r-activity-input-weight').val() != $div.find('.e20r-activity-input-weight_h').val() ) &&
-                ( $div.find('.e20r-activity-input-reps').val() != $div.find('.e20r-activity-input-reps_h').val() )){
+            if ( this._complete() ) {
+
+                jQuery('#e20r-activity-input-button').removeClass('startHidden');
+            }
+
+            var $w = $div.find('.e20r-activity-input-weight').val();
+            var $r = $div.find('.e20r-activity-input-reps').val();
+
+            var $hW = $div.find('.e20r-activity-input-weight_h').val();
+            var $hR = $div.find('.e20r-activity-input-reps_h').val();
+
+            if ( ( $w !=  $hW ) &&
+                ( $r != $hR )){
+
+                if ( $w == '' )  {
+
+                    $div.find('.e20r-activity-input-weight_h').val(0);
+                    $div.find('.e20r-activity-input-weight').val(0);
+                }
+
+                if ( $r == '' )  {
+
+                    $div.find('.e20r-activity-input-reps_h').val(0);
+                    $div.find('.e20r-activity-input-reps').val(0);
+                }
 
                 me.removeClass('active');
                 me.addClass('edited');
+
+
                 //c_self.attemptSave( me, c_self );
             }
         });
@@ -195,7 +220,7 @@ var e20rActivity = {
         }
 
         inp.removeClass("active");
-        $body.addClass("loading")
+        jQuery("body").addClass("loading");
 
 /*        if ( inp.val() != '' ) {
 
@@ -280,7 +305,7 @@ var e20rActivity = {
                 },
                 complete: function () {
                     console.log("Completed processing of activity set/rep update");
-                    $body.removeClass("loading")
+                    jQuery("body").removeClass("loading")
                 }
             });
         }
@@ -292,10 +317,41 @@ var e20rActivity = {
 
         event.preventDefault();
 
+        // TODO: Figure out whether there's data for all of the set entries. If yes then set activity to 'complete' and submit the form.
         var $data = jQuery("#e20r-activity-input-form").serialize();
 
+        if ( ! this._complete() ) {
+
+            console.log("Incomplete form...")
+        }
         console.log("Serialized form: ", $data );
 
+    },
+    _complete: function() {
+
+        var $total = this.$rows.length;
+        var $compl = 0;
+
+        this.$weight_fields.each(function() {
+
+            if ( jQuery(this).val() !== '' ) {
+                $compl++;
+            }
+        });
+
+        var $pct = $compl/$total;
+
+        console.log("Percent complete: " + $pct );
+
+        if ( $total == $compl ) {
+            return true;
+        }
+
+        if ( $pct > 0.89 ) {
+            return true;
+        }
+
+        return false;
     }
 };
 
