@@ -121,13 +121,19 @@ class e20rWorkout extends e20rSettings {
 			if ( $k == 'recorded' ) {
 
 				dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
-				$v = date_i18n('Y-m-d h:m:i', $e20rTracker->sanitize( $v ) );
+				$v = date_i18n('Y-m-d H:i:s', $e20rTracker->sanitize( $v ) );
 			}
 
+			if ( $k == 'for_date' ) {
+
+				dbg("e20rWorkout::saveExData_callback() - Saving date/time for when the record should have been recorded: {$v}.");
+				$v = date_i18n('Y-m-d H:i:s', strtotime( $e20rTracker->sanitize( $v ) ) );
+			}
             if ( !in_array( $k, $skip ) ) {
 
+
                 dbg("e20rWorkout::saveExData_callback() - Saving {$k} as {$v} for record.");
-                $data[$k] = $v;
+                $data[$k] = $e20rTracker->sanitize( $v );
             }
 		}
 
