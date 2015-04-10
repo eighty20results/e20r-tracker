@@ -25,6 +25,11 @@ div.e20r-display-exercise-div {
     text-align: left;
     float: left;
 }
+.e20r-td-input-activity {
+    min-width: 100px;
+    width: 38%;
+    max-width: 200px;
+}
 .e20r-activity-exercise-tracking {
     border-left: 2px solid #0b181e;
     padding-bottom: 5px;
@@ -116,7 +121,7 @@ tfoot.e20r-activity-table-footer {
         border: 1px solid #c5c5c5;
     }
     input[class^="e20r-activity-input"] {
-        width: 38%;
+        /* width: 38%; */
         height: 25px;
         border: 2px solid #666666;
         margin-right: 5px;
