@@ -176,6 +176,8 @@ tfoot.e20r-activity-table-footer {
     }
     .e20r-activity-exercise-tracking {
         width: 34%;
+        float: left;
+        margin: 10px;
     }
     .e20r-display-exercise-image {
         width: 66%;
