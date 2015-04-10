@@ -135,9 +135,13 @@ class e20rWorkoutView extends e20rSettingsView {
 									<input type="hidden" class="e20r-activity-input-ex_key" name="e20r-activity-exercise-ex_key[]" value="<?php echo $exKey; ?>" >
                                     <input type="hidden" class="e20r-activity-input-weight_h" name="e20r-activity-exercise-weight_h[]" value="<?php echo $weight; ?>" >
                                     <input type="hidden" class="e20r-activity-input-reps_h" name="e20r-activity-exercise-reps_h[]" value="<?php echo $reps; ?>" >
-                                    <input type="text" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" >
-									<input type="number" class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php echo $reps; ?>" >
-									<button class="e20r-save-set-row alignright e20r-button startHidden">Save</button>
+                                    <table>
+                                        <tr>
+                                        <td class="e20r-td-input-activity"><input type="text" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" ></td>
+									    <td class="e20r-td-input-activity"><input type="number" class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php echo $reps; ?>" ></td>
+									    <td class="e20r-td-input-activity"><button class="e20r-save-set-row alignright e20r-button<?php echo ( empty( $weight ) || empty($reps) ) ? '' : ' startHidden'; ?>">Save</button></td>
+                                        </tr>
+                                    </table>
 								</div>
 								<div class="e20r-two-col e20r-saved startHidden">
 									<span class="e20r-saved-set-number"><?php echo $i; ?>:</span>
@@ -160,7 +164,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
 					</td>
 					<td>
-						<button id="e20r-activity-input-button" class="e20r-button alignright"><?php _e("Click to complete", "e20rtracker" ); ?></button>
+						<button id="e20r-activity-input-button" class="e20r-button alignright startHidden"><?php _e("Click to complete", "e20rtracker" ); ?></button>
 					</td>
 				</tr>
 				</tfoot>
