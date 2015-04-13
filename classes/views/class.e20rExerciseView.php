@@ -40,6 +40,7 @@ class e20rExerciseView {
 				<tbody>
 				<tr class="e20r-display-exercise-row">
 						<td rowspan="4" class="e20r-display-exercise-image">
+							<div class="video">
 							<?php
 
 							if ( empty( $currentExercise->video_link ) ) {
@@ -65,6 +66,7 @@ class e20rExerciseView {
 
 							echo $display;
 							?>
+							</div>
 						</td>
 					</tr>
 				<tr class="e20r-display-exercise-row">

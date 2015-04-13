@@ -159,8 +159,9 @@ class e20rExercise extends e20rSettings {
 			'height: 100%'
 		);
 
-		$html = str_ireplace( $replace_wvalue, $replace_w, $html );
-		return str_ireplace( $repl_hvalue, $repl_h, $html );
+		/* $html = str_ireplace( $replace_wvalue, $replace_w, $html );
+		return str_ireplace( $repl_hvalue, $repl_h, $html ); */
+		return $html;
 	}
 
 	public function changeSetParentType( $args, $post ) {

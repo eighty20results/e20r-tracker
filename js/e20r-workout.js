@@ -359,6 +359,19 @@ var e20rActivity = {
     }
 };
 
+jQuery(function() {
+    jQuery('.mejs-overlay-loading').closest('.mejs-overlay').addClass('load'); //just a helper class
+
+    var $video = jQuery('div.video video');
+    var vidWidth = $video.attr('width');
+    var vidHeight = $video.attr('height');
+
+    jQuery(window).resize(function() {
+        var targetWidth = jQuery(this).width('400px'); //using window width here will proportion the video to be full screen; adjust as needed
+        jQuery('div.video, div.video .mejs-container').css('height', Math.ceil( vidHeight * ( targetWidth / vidWidth ) ) );
+    }).resize();
+});
+
 jQuery(document).ready( function(){
 
     console.log("Loaded user script for the workout tracking form");
