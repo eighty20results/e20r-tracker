@@ -36,6 +36,10 @@ div.e20r-display-exercise-div {
     width: 35px;
     padding: 0;
     margin: 0;
+    vertical-align: middle;
+}
+.e20r-int-table {
+    margin-bottom: 0;
 }
 .e20r-activity-exercise-tracking {
     border-left: 2px solid #0b181e;
@@ -71,6 +75,34 @@ tbody.e20r-activity-table-body > tr > th {
 }
 tfoot.e20r-activity-table-footer {
     border: 0 hidden;
+}
+.wp-video, video.wp-video-shortcode, .mejs-container, .mejs-overlay.load {
+    width: 100% !important;
+    height: 100% !important;
+}
+.wp-video, video.wp-video-shortcode {
+    max-width: 100% !important;
+}
+video.wp-video-shortcode {
+    position: relative;
+}
+.mejs-mediaelement {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.mejs-controls {
+    display: none;
+}
+.mejs-overlay-play {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto !important;
+    height: auto !important;
 }
 @media print {
     table.e20r-print-activity {
@@ -144,7 +176,8 @@ tfoot.e20r-activity-table-footer {
         border: 2px solid #666666;
         margin-right: 5px;
         float: left;
-        padding: 0;
+        padding-left: 5px;
+        padding-right: 5px;
         box-sizing: content-box;
     }
     .e20r-saved-weight-value,
@@ -197,12 +230,12 @@ tfoot.e20r-activity-table-footer {
     .e20r-activity-exercise {
         width: 66%;
         float: left;
-        margin: 10px;
+        /* margin: 10px; */
     }
     .e20r-activity-exercise-tracking {
         width: 34%;
         float: left;
-        margin: 10px;
+        /* margin: 10px; */
     }
     .e20r-display-exercise-image {
         width: 66%;
