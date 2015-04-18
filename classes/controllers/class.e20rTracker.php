@@ -1047,10 +1047,12 @@ class e20rTracker {
 
 		if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
 
-			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity form(s). ");
+			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
-			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery' ), '0.1', false );
-			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'e20r-tracker-js' ), '0.1', false );
+			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), '0.1', false );
+			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), '0.1', false );
+			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), '0.1', false );
+			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), '0.1', false );
 
 			wp_localize_script( 'e20r-workout-js', 'e20r_workout',
 				array(
@@ -1058,7 +1060,7 @@ class e20rTracker {
 				)
 			);
 
-			wp_print_scripts( array( 'e20r-tracker-js', 'e20r-workout-js' ) );
+			wp_print_scripts( array( 'fitvids', 'e20r-tracker-js', 'e20r-workout-js', 'e20r-exercise-js' ) );
 		}
 
 	}

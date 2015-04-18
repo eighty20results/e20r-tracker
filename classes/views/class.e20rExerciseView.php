@@ -40,33 +40,36 @@ class e20rExerciseView {
 				<tbody>
 				<tr class="e20r-display-exercise-row">
 						<td rowspan="4" class="e20r-display-exercise-image">
-							<div class="video">
 							<?php
 
 							if ( empty( $currentExercise->video_link ) ) {
 
 								$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" height="221" width="393" alt="Exercise">';
+								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="Exercise">';
 								$display = $currentExercise->image;
 							}
 
-							if ( ! empty( $currentExercise->video_link )) {
-
+							if ( ! empty( $currentExercise->video_link )) { ?>
+								<div class="exercise-video"><?php
+								if ( ! is_ssl() ) {
+									str_ireplace( 'https', 'http', $currentExercise->video_link );
+								}
 								$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
 
 								$args = array(
 									'src'      => esc_url( $currentExercise->video_link ),
-									'width'    => 393,
-									'height'    => 221,
+/*									'width'    => 393,
+									'height'    => 221, */
 									'poster'   => ( empty( $currentExercise->image ) ) ? $poster[0] : null,
 								);
 
-								$display = wp_video_shortcode( $args );
+								$display = wp_video_shortcode( $args ); ?>
+								</div><?php
 							}
 
 							echo $display;
 							?>
-							</div>
+
 						</td>
 					</tr>
 				<tr class="e20r-display-exercise-row">

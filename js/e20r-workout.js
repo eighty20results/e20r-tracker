@@ -358,7 +358,7 @@ var e20rActivity = {
         return false;
     }
 };
-
+/*
 jQuery(function() {
     jQuery('.mejs-overlay-loading').closest('.mejs-overlay').addClass('load'); //just a helper class
 
@@ -371,7 +371,7 @@ jQuery(function() {
         jQuery('div.video, div.video .mejs-container').css('height', Math.ceil( vidHeight * ( targetWidth / vidWidth ) ) );
     }).resize();
 });
-
+*/
 jQuery(document).ready( function(){
 
     console.log("Loaded user script for the workout tracking form");

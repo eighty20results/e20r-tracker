@@ -76,34 +76,6 @@ tbody.e20r-activity-table-body > tr > th {
 tfoot.e20r-activity-table-footer {
     border: 0 hidden;
 }
-.wp-video, video.wp-video-shortcode, .mejs-container, .mejs-overlay.load {
-    width: 100% !important;
-    height: 100% !important;
-}
-.wp-video, video.wp-video-shortcode {
-    max-width: 100% !important;
-}
-video.wp-video-shortcode {
-    position: relative;
-}
-.mejs-mediaelement {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-.mejs-controls {
-    display: none;
-}
-.mejs-overlay-play {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: auto !important;
-    height: auto !important;
-}
 @media print {
     table.e20r-print-activity {
         page-break-after: always;
@@ -238,7 +210,7 @@ video.wp-video-shortcode {
         /* margin: 10px; */
     }
     .e20r-display-exercise-image {
-        width: 66%;
+        /*width: 66%; */
         border: 1px solid #c0c0c0;
     }
     .e20r-display-exercise-descr-row {
