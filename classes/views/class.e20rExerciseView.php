@@ -36,10 +36,10 @@ class e20rExerciseView {
 		?>
 		<div class="e20r-display-exercise-div">
 			<table class="e20r-exercise-detail">
-				<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
 				<tbody>
-				<tr class="e20r-display-exercise-row">
-						<td rowspan="4" class="e20r-display-exercise-image">
+				<tr class="e20r-display-exercise-video-row">
+						<td colspan="3" class="e20r-display-exercise-image">
+							<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
 							<?php
 
 							if ( empty( $currentExercise->video_link ) ) {
@@ -74,30 +74,26 @@ class e20rExerciseView {
 					</tr>
 				<tr class="e20r-display-exercise-row">
 					<td class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
-				</tr>
-				<tr class="e20r-display-exercise-row">
-						<td class="e20r-exercise-reps">
-							<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
-							<span class="e20r-exercise-value"><h4><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span></h4>
-						</td>
-					</tr>
-					<tr class="e20r-display-exercise-row">
-						<td class="e20r-exercise-rest-time">
-							<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
-							<h4>
-							<?php
-							if ( ! empty( $currentExercise->rest ) ) { ?>
-								<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
-							}
-							else { ?>
-								<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
-							}
-							?>
-							</h4>
-						</td>
+					<td class="e20r-exercise-reps">
+						<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
+						<span class="e20r-exercise-value"><h4><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span></h4>
+					</td>
+					<td class="e20r-exercise-rest-time">
+						<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+						<h4>
+						<?php
+						if ( ! empty( $currentExercise->rest ) ) { ?>
+							<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
+						}
+						else { ?>
+							<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
+						}
+						?>
+						</h4>
+					</td>
 					</tr>
 					<tr class="e20r-display-exercise-descr-row">
-						<td colspan="2" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
+						<td colspan="3" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
 					</tr>
 				</tbody>
 			</table>
