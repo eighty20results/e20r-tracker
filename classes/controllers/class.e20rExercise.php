@@ -81,9 +81,9 @@ class e20rExercise extends e20rSettings {
         return $this->model->loadSettings( $id );
     }
 
-	public function print_exercise() {
+	public function print_exercise( $hidden = null ) {
 
-		return $this->view->printExercise();
+		return $this->view->printExercise( $hidden );
 
 	}
     public function editor_metabox_setup( $post ) {
