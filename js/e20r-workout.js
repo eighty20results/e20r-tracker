@@ -209,9 +209,9 @@ var e20rActivity = {
 
 //         console.log("Getting ready to save data in the field...");
 
-        var $div = inp.closest('.e20r-exercise-set-row');
-        var $show = $div.find('div.e20r-saved');
-        var $edit = $div.find('div.e20r-edit');
+        var $div = inp.closest('tr.e20r-exercise-tracking-row');
+        var $show = $div.find('tr.e20r-saved');
+        var $edit = $div.find('tr.e20r-edit');
 
         if ( ! ( inp instanceof jQuery ) ) {
 
@@ -234,7 +234,6 @@ var e20rActivity = {
 
             if (!inp.hasClass('e20r-activity-input-reps')) {
 
-                // console.log("Attempting to save weight. Wait until the user attempts to edit/save reps.");
                 // Update value in show location
                 $show.find('a.e20r-edit-weight-value').text(inp.val());
             }
@@ -243,7 +242,6 @@ var e20rActivity = {
             if (inp.hasClass('e20r-activity-input-weight') &&
                 jQuery.isNumeric(inp.siblings('.e20r-activity-input-reps').val())) {
 
-                // console.log("User editing the rep input");
                 $show.find('a.e20r-edit-rep-value').text(inp.val());
             }
 
@@ -260,12 +258,12 @@ var e20rActivity = {
                 'activity_id': this.$activityId,
                 'program_id': this.$programId,
                 'recorded': ( Math.floor(Date.now() / 1000) ),
-                'id': inp.siblings('.e20r-activity-input-record_id').val(),
+                'id': $edit.find('.e20r-activity-input-record_id').val(),
                 'for_date': this.$forDate,
-                'group_no': inp.siblings('.e20r-activity-input-group_no').val(),
-                'set_no': inp.siblings('.e20r-activity-input-set_no').val(),
-                'exercise_id': inp.siblings('.e20r-activity-input-ex_id').val(),
-                'exercise_key': inp.siblings('.e20r-activity-input-ex_key').val(),
+                'group_no': $edit.find('.e20r-activity-input-group_no').val(),
+                'set_no': $edit.find('.e20r-activity-input-set_no').val(),
+                'exercise_id': $edit.find('.e20r-activity-input-ex_id').val(),
+                'exercise_key': $edit.find('.e20r-activity-input-ex_key').val(),
                 'weight': ( $weight !== '' ? $weight : null ),
                 'reps': ( $reps !== '' ? $reps : null )
             };
