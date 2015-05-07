@@ -17,7 +17,7 @@ class e20rExerciseView {
     }
 
 	// Display the exercise entry for an activity page
-	public function printExercise() {
+	public function printExercise( $hide = false ) {
 
 		global $currentExercise;
 		global $e20rExercise;
@@ -36,21 +36,27 @@ class e20rExerciseView {
 		?>
 		<div class="e20r-display-exercise-div">
 			<table class="e20r-exercise-detail">
-				<tbody>
+				<thead>
+				<tr class="e20r-exercise-table-header">
+					<td colspan="2" class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
+				</tr>
+				</thead>
+				<tbody <?php echo $hide ? 'class="startHidden"' : null ?>>
 				<tr class="e20r-display-exercise-video-row">
-						<td colspan="3" class="e20r-display-exercise-image">
+						<td colspan="2" class="e20r-display-exercise-image">
 							<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
 							<?php
 
 							if ( empty( $currentExercise->video_link ) ) {
 
 								$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="Exercise">';
+								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="' . $currentExercise->title . '">';
 								$display = $currentExercise->image;
 							}
 
 							if ( ! empty( $currentExercise->video_link )) { ?>
-								<div class="exercise-video"><?php
+								<div class="e20r-exercise-video">
+								<?php
 								if ( ! is_ssl() ) {
 									str_ireplace( 'https', 'http', $currentExercise->video_link );
 								}
@@ -58,22 +64,18 @@ class e20rExerciseView {
 
 								$args = array(
 									'src'      => esc_url( $currentExercise->video_link ),
-/*									'width'    => 393,
-									'height'    => 221, */
 									'poster'   => ( empty( $currentExercise->image ) ) ? $poster[0] : null,
 								);
 
-								$display = wp_video_shortcode( $args ); ?>
-								</div><?php
-							}
+								$display = wp_video_shortcode( $args );
 
+							}
 							echo $display;
 							?>
-
+							</div>
 						</td>
 					</tr>
 				<tr class="e20r-display-exercise-row">
-					<td class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
 					<td class="e20r-exercise-reps">
 						<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
 						<span class="e20r-exercise-value"><h4><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span></h4>
@@ -93,7 +95,7 @@ class e20rExerciseView {
 					</td>
 					</tr>
 					<tr class="e20r-display-exercise-descr-row">
-						<td colspan="3" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
+						<td colspan="2" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
 					</tr>
 				</tbody>
 			</table>
