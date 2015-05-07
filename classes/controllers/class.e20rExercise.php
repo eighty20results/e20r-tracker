@@ -92,6 +92,55 @@ class e20rExercise extends e20rSettings {
 
     }
 
+	public function shortcode_exercise( $attributes = null ) {
+
+		dbg("e20rExercise::shortcode_exercise() - Loading shortcode data for the exercise.");
+
+		if ( ! is_user_logged_in() ) {
+
+			auth_redirect();
+		}
+
+		global $current_user;
+		global $post;
+
+		$config = new stdClass();
+
+		$tmp = shortcode_atts( array(
+			'id' => null,
+			'shortcode' => null,
+		), $attributes );
+
+		foreach ( $tmp as $key => $val ) {
+
+			$config->{$key} = $val;
+		}
+
+		if (isset( $config->id ) && ( !is_null( $config->id ) ) ) {
+			dbg("e20rExercise::shortcode_exercise() - Using ID to locate exercise: {$config->id}");
+			$exInfo = $this->model->findExercise( 'id', $config->id );
+		}
+
+		if (isset( $config->shortcode ) && ( !is_null( $config->shortcode ) ) ) {
+			dbg("e20rExercise::shortcode_exercise() - Using shortcode to locate exercise: {$config->shortcode}");
+			$exInfo = $this->model->findExercise( 'shortcode', $config->shortcode );
+		}
+
+		foreach( $exInfo as $ex ) {
+
+			if ( isset( $ex->id ) && ( !is_null( $ex->id ) ) ) {
+
+				dbg("e20rExercise::shortcode_exercise() - Loading exercise info: {$ex->id}");
+				$this->init( $ex->id );
+				echo $this->view->printExercise();
+			}
+			else {
+				dbg("e20rExercise::shortcode_exercise() - No exercise found to display!");
+				echo '';
+			}
+		}
+	}
+
 	/*
     public function saveSettings( $post_id ) {
 
@@ -141,29 +190,6 @@ class e20rExercise extends e20rSettings {
 
     }
 
-	public function responsive_wp_video_shortcode( $html, $atts, $video, $post_id, $library ) {
-
-		$replace_wvalue = array(
-			'width: ' . $atts['width'] . 'px'
-		);
-
-		$replace_w  = array(
-			'width: 100%'
-		);
-
-		$repl_hvalue = array(
-			'height: ' . $atts['height'] . 'px'
-		);
-
-		$repl_h = array(
-			'height: 100%'
-		);
-
-		/* $html = str_ireplace( $replace_wvalue, $replace_w, $html );
-		return str_ireplace( $repl_hvalue, $repl_h, $html ); */
-		return $html;
-	}
-
 	public function changeSetParentType( $args, $post ) {
 
         if ( 'e20r_exercises' == $post->post_type ) {
@@ -175,6 +201,10 @@ class e20rExercise extends e20rSettings {
         return $args;
     }
 
+	public function embed_default() {
+
+		return array( 'width' => 0, 'height' => 0 );
+	}
 	public function col_head( $defaults ) {
 
 		$defaults['ex_shortcode'] = 'Identifier';
