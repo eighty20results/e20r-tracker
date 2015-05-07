@@ -77,6 +77,8 @@ class e20rTracker {
 	        add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
 	        add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
 
+	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
+
 	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
             dbg("e20rTracker::loadAllHooks() - Pagenow = {$pagenow}" );
 
@@ -194,6 +196,7 @@ class e20rTracker {
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
+	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
@@ -210,7 +213,7 @@ class e20rTracker {
 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
 
 	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
-	        add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
+	        // add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
 	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
