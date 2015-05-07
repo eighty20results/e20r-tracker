@@ -301,8 +301,10 @@ class e20rCheckin extends e20rSettings {
 		// Get all articleIds to look for:
 		foreach( $art_list as $article ) {
 
-			$aIds[] = $article->id;
-			$delays[] = $article->release_day;
+			if ( isset( $article->id ) ) {
+				$aIds[]   = $article->id;
+				$delays[] = $article->release_day;
+			}
 		}
 
 		// Sort the delays (to find min/max delays)
