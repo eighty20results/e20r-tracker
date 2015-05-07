@@ -17,7 +17,7 @@ class e20rExerciseView {
     }
 
 	// Display the exercise entry for an activity page
-	public function printExercise( $hide = false ) {
+	public function printExercise( $hidden = null ) {
 
 		global $currentExercise;
 		global $e20rExercise;
@@ -30,6 +30,7 @@ class e20rExerciseView {
 			$type_label = __('seconds', 'e20rtracker');
 		}
 
+		dbg("e20rExerciseViews::printExercise() - Hidden status is: {$hidden}");
 		$display = null;
 
 		ob_start();
@@ -41,7 +42,7 @@ class e20rExerciseView {
 					<td colspan="2" class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
 				</tr>
 				</thead>
-				<tbody <?php echo $hide ? 'class="startHidden"' : null ?>>
+				<tbody class="e20r-exercise-table-body <?php echo is_null($hidden) ? "show" : "startHidden"; ?>">
 				<tr class="e20r-display-exercise-video-row">
 						<td colspan="2" class="e20r-display-exercise-image">
 							<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
@@ -58,18 +59,14 @@ class e20rExerciseView {
 								<div class="e20r-exercise-video">
 								<?php
 								if ( ! is_ssl() ) {
+
 									str_ireplace( 'https', 'http', $currentExercise->video_link );
 								}
+
 								$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-
-								$args = array(
-									'src'      => esc_url( $currentExercise->video_link ),
-									'poster'   => ( empty( $currentExercise->image ) ) ? $poster[0] : null,
-								);
-
-								$display = wp_video_shortcode( $args );
-
+								$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 ) ;
 							}
+
 							echo $display;
 							?>
 							</div>
@@ -106,6 +103,89 @@ class e20rExerciseView {
 		return $html;
 	}
 
+	/**
+	 * Returns the embedded video.
+	 *
+	 * This method is utilized by both shortcode and widget.
+	 *
+	 * @param string $url the URL of the video
+	 * @param string $align the alignment of the video
+	 * @param string $aspect the aspect ratio of the video
+	 * @param int $width the width of the video in percent
+	 * @param int $autoplay either 0 for autoplay off or 1 for autoplay on
+	 * @return string the whole HTML code with the embed and the containing divs
+	 * @since 1.2.0
+	 */
+	public function get_embed_video( $url, $align, $aspect, $width = null, $autoplay = 0 ) {
+
+		$code = $this->before_video( $align, $aspect, $width );
+		$code .= $this->embed_video( $url, $autoplay );
+		$code .= $this->after_video();
+
+		return $code;
+	}
+
+	/**
+	 * Returns content to be printed before the video.
+	 *
+	 * @param string $align the alignment of the video
+	 * @param string $aspect the aspect ratio of the video
+	 * @param int $width the width of the video in percent
+	 * @return string HTML code containing two divs with the necessary CSS classes attached
+	 * @since 1.0.0
+	 */
+	private function before_video( $align, $aspect, $width = null ) {
+
+		$code = '<div class="e20r-exercise-video-' . $align . '"';
+
+		if( isset ( $width ) ) {
+
+			$code .= ' style="width: ' . $width . '%;"';
+		}
+
+		$code .= '>';
+		$code .= '<div class="e20r-exercise-video-wrapper size-' . $aspect . '">';
+
+		return $code;
+	}
+
+	/**
+	 * Returns the output for the actual oEmbed media element.
+	 *
+	 * Width or height parameters in the oEmbed code are removed so that the element can size dynamically.
+	 *
+	 * @param string $url the URL of the video
+	 * @param int $autoplay either 0 for autoplay off or 1 for autoplay on
+	 * @return string HTML code containing the oEmbed
+	 * @since 1.0.0
+	 */
+	private function embed_video( $url, $autoplay = 0 ) {
+
+		$regex = "/ (width|height)=\"[0-9\%]*\"/";
+
+		$embed_code = wp_oembed_get( $url, array( 'width' => '100%', 'height' => '100%', 'autoplay' => $autoplay ) );
+
+		if( !$embed_code ) {
+
+			return '<strong>' . __('Error: Invalid URL!', 'respvid') . '</strong>';
+		}
+
+		return preg_replace( $regex, '', $embed_code );
+	}
+
+	/**
+	 * Returns content to be printed after the video.
+	 *
+	 * @return string HTML code containing two closing divs
+	 * @since 1.0.0
+	 */
+	private function after_video() {
+
+		$code = '</div>';
+		$code .= '</div>';
+
+		return $code;
+	}
     public function viewSettingsBox( $exerciseData, $types ) {
 
         dbg( "e20rExerciseView::viewExerciseSettingsBox() - Supplied data: " );
