@@ -290,6 +290,22 @@ class e20rCheckin extends e20rSettings {
 		$programId = $currentProgram->id;
 
 		$art_list = $e20rArticle->loadArticlesByMeta( 'release_day', $user_delay, 'numeric', $programId, '<=' );
+
+		dbg("e20rCheckin::listUserAccomplishments() - Article list:");
+		dbg($art_list);
+
+		if ( empty( $art_list ) || ( 0 == count( $art_list ) ) ) {
+
+			dbg("e20rCheckin::listUserAccomplishments() - No articles to check against.");
+
+			$results = array();
+
+			$results['program_days'] = 0; //$user_delay;
+			$results['program_score'] = 0;
+
+			return $this->view->view_user_achievements( $results );
+		}
+
 		dbg("e20rCheckin::listUserAccomplishments() - Loaded " . count( $art_list ) . " articles between start of program #{$programId} and day #{$user_delay}:");
 
 		$results = array();
@@ -302,17 +318,26 @@ class e20rCheckin extends e20rSettings {
 		foreach( $art_list as $article ) {
 
 			if ( isset( $article->id ) ) {
+
 				$aIds[]   = $article->id;
 				$delays[] = $article->release_day;
 			}
 		}
 
-		// Sort the delays (to find min/max delays)
-		sort($delays, SORT_NUMERIC );
+		if ( ! empty( $delays ) ) {
 
-		// dbg("e20rCheckin::getAllUserAccomplishments() - Loading user check-in for {$article->id} with delay value: {$article->release_day}");
-		$dates['min'] = $e20rTracker->getDateForPost( $delays[0] );
-		$dates['max'] = $e20rTracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ] );
+			// Sort the delays (to find min/max delays)
+			sort( $delays, SORT_NUMERIC );
+
+			// dbg("e20rCheckin::getAllUserAccomplishments() - Loading user check-in for {$article->id} with delay value: {$article->release_day}");
+
+			$dates['min'] = $e20rTracker->getDateForPost( $delays[0] );
+			$dates['max'] = $e20rTracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ] );
+		}
+		else {
+			$dates['min'] = date('Y-m-d', current_time('timestamp'));
+			$dates['max'] = date('Y-m-d', current_time('timestamp'));
+		}
 
 		dbg("e20rCheckin::listUserAccomplishments() - Dates between: {$dates['min']} and {$dates['max']}");
 
@@ -350,9 +375,11 @@ class e20rCheckin extends e20rSettings {
 		$results['program_days'] = 0; //$user_delay;
 		$results['program_score'] = 0;
 
-		dbg("e20rCheckin::listUserAccomplishments() - Loaded " . count($actions). " defined actions. I.e. all possible 'check-ins' for this program so far.");
-		$checkins = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, $cTypes, $dates );
-		$lessons = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, array( $this->types['assignment'] ), $dates );
+		if ( ! empty( $aIds ) ) {
+			dbg( "e20rCheckin::listUserAccomplishments() - Loaded " . count( $actions ) . " defined actions. I.e. all possible 'check-ins' for this program so far." );
+			$checkins = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, $cTypes, $dates );
+			$lessons  = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, array( $this->types['assignment'] ), $dates );
+		}
 
 		foreach( $actions as $type => $a_list ) {
 
@@ -422,7 +449,6 @@ class e20rCheckin extends e20rSettings {
 
 				// Set the overall program score for this user.
 				$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
-
 			}
 		}
 
