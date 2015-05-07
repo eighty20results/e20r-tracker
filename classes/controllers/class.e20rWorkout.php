@@ -442,7 +442,7 @@ class e20rWorkout extends e20rSettings {
 						if ( !empty( $saved_data ) ) {
 
 							dbg("e20rWorkout::shortcode_activity() - Integrating saved data for group # {$gid}");
-							$workoutData[ $wid ]->groups[ $gid ]->saved_exercises = $saved_data[$gid]->saved_exercises;
+							$workoutData[ $wid ]->groups[ $gid ]->saved_exercises = isset( $saved_data[$gid]->saved_exercises ) ? $saved_data[$gid]->saved_exercises : array();
 						}
 
 
@@ -458,7 +458,6 @@ class e20rWorkout extends e20rSettings {
 		if ( empty( $workoutData ) ) {
 			$workoutData['error'] = 'No Activity found';
 		}
-
 
 		ob_start();
 		?>
