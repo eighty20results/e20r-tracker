@@ -104,7 +104,7 @@ div.e20r-display-exercise-div {
     width: 100%;
 }
 .e20r-spacer-row {
-    height: 30px;
+    height: 2px;
 }
 .e20r-exercise-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
 .e20r-exercise-video iframe, .e20r-exercise-video object, .e20r-exercise-video embed, .e20r-exercise-video video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
