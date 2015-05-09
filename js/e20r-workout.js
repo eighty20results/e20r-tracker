@@ -92,10 +92,12 @@ var e20rActivity = {
             var $hW = $div.find('.e20r-activity-input-weight_h').val();
             var $hR = $div.find('.e20r-activity-input-reps_h').val();
 
-            if ( ( $w !=  $hW ) &&
+            console.log("W: " + $w + " R: " + $r + " hW: " + $hW + " hR: " + $hR );
+
+            if ( ( $w !=  $hW ) ||
                 ( $r != $hR )){
 
-                if ( $w == '' )  {
+/*                if ( $w == '' )  {
 
                     $div.find('.e20r-activity-input-weight_h').val(0);
                     $div.find('.e20r-activity-input-weight').val(0);
@@ -106,13 +108,15 @@ var e20rActivity = {
                     $div.find('.e20r-activity-input-reps_h').val(0);
                     $div.find('.e20r-activity-input-reps').val(0);
                 }
-
+*/
                 me.removeClass('active');
                 me.addClass('edited');
 
-
                 //c_self.attemptSave( me, c_self );
             }
+
+            console.log("Element being blurred: ", me);
+
         });
 
         me.keypress( function( event, self ) {
