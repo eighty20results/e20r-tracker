@@ -126,6 +126,10 @@ class e20rExercise extends e20rSettings {
 			$exInfo = $this->model->findExercise( 'shortcode', $config->shortcode );
 		}
 
+        if ( empty( $exInfo ) ) {
+            return __('The administrator did not indicate which exercise to show', 'e20rtracker');
+        }
+
 		foreach( $exInfo as $ex ) {
 
 			if ( isset( $ex->id ) && ( !is_null( $ex->id ) ) ) {
