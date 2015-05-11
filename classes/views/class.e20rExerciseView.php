@@ -33,70 +33,75 @@ class e20rExerciseView {
 		dbg("e20rExerciseViews::printExercise() - Hidden status is: {$hidden}");
 		$display = null;
 
+		if ( empty( $currentExercise->video_link ) ) {
+
+			$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+			$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="' . $currentExercise->title . '">';
+			$display = $currentExercise->image;
+		}
+
+		if ( ! empty( $currentExercise->video_link )) { ?>
+			<?php
+			if ( ! is_ssl() ) {
+
+				str_ireplace( 'https', 'http', $currentExercise->video_link );
+			}
+
+			$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+			$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 ) ;
+		}
+
 		ob_start();
 		?>
-		<div class="e20r-display-exercise-div">
-			<table class="e20r-exercise-detail">
-				<thead>
-				<tr class="e20r-exercise-table-header">
-					<td colspan="2" class="e20r-exercise-title"><h4><?php echo $currentExercise->title; ?></h4></td>
-				</tr>
-				</thead>
-				<tbody class="e20r-exercise-table-body <?php echo is_null($hidden) ? "show" : "startHidden"; ?>">
-				<tr class="e20r-display-exercise-video-row">
-						<td colspan="2" class="e20r-display-exercise-image">
-							<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
-							<?php
-
-							if ( empty( $currentExercise->video_link ) ) {
-
-								$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-								$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="' . $currentExercise->title . '">';
-								$display = $currentExercise->image;
-							}
-
-							if ( ! empty( $currentExercise->video_link )) { ?>
-								<div class="e20r-exercise-video">
-								<?php
-								if ( ! is_ssl() ) {
-
-									str_ireplace( 'https', 'http', $currentExercise->video_link );
-								}
-
-								$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-								$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 ) ;
-							}
-
-							echo $display;
-							?>
-							</div>
-						</td>
-					</tr>
-				<tr class="e20r-display-exercise-row">
-					<td class="e20r-exercise-reps">
+<!--		<div class="e20r-display-exercise-div"> -->
+		<div class="e20r-exercise-table e20r-exercise-detail">
+			<div class="spacer">&nbsp;</div>
+			<div class="e20r-exercise-table-header e20r-exercise-detail-row">
+				<!-- <div class="e20r-exercise-detail-row"> -->
+				<div class="e20r-exercise-table-column first-column e20r-exercise-title">
+					<h4 class="e20r-tracker-detail-h4"><?php echo $currentExercise->title; ?></h4>
+				</div>
+				<!-- </div> -->
+			</div>
+			<div class="spacer">&nbsp;</div>
+			<div class="e20r-exercise-detail-row<?php echo is_null($hidden) ? " show" : " startHidden"; ?>">
+				<div class="e20r-exercise-table-column">
+					<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
+					<div class="e20r-exercise-video">
+						<?php echo $display; ?>
+					</div>
+				</div>
+			</div>
+			<div class="spacer">&nbsp;</div>
+			<div class="e20r-exercise-detail-row">
+				<div class="e20r-exercise-table-column first-column e20r-exercise-reps">
+					<p class="e20r-exercise-description">
 						<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
-						<span class="e20r-exercise-value"><h4><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span></h4>
-					</td>
-					<td class="e20r-exercise-rest-time">
-						<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
-						<h4>
-						<?php
+						<span class="e20r-exercise-value"><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span>
+					</p>
+				</div>
+				<div class="e20r-exercise-table-column second-column e20r-exercise-rest-time">
+					<p class="e20r-exercise-description">
+					<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+					<?php
 						if ( ! empty( $currentExercise->rest ) ) { ?>
 							<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
 						}
 						else { ?>
 							<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
-						}
-						?>
-						</h4>
-					</td>
-					</tr>
-					<tr class="e20r-display-exercise-descr-row">
-						<td colspan="2" style="padding-left: 0;"><div class="e20r-exercise-description"><?php echo $currentExercise->descr ; ?></div></td>
-					</tr>
-				</tbody>
-			</table>
+						} ?>
+					</p>
+				</div>
+			</div>
+			<div class="spacer">&nbsp;</div>
+			<div class="e20r-exercise-detail-row">
+				<div class="e20r-exercise-table-column first-column e20r-exercise-description">
+					<p><?php echo $currentExercise->descr ; ?></p>
+				</div>
+			</div>
+			<div class="spacer">&nbsp;</div>
 		</div>
+		<!-- </div> -->
 		<?php
 		$html = ob_get_clean();
 

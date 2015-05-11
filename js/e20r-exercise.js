@@ -7,11 +7,11 @@
  */
 jQuery(document).ready( function(){
     console.log("Load fitVids library");
-    jQuery('div.e20r-exercise-video').fitVids();
+    jQuery('.e20r-exercise-video').fitVids();
 
     setRespTable();
 
-    jQuery('.e20r-exercise-title > h4').on('click', function(){
+    jQuery('.e20r-tracker-detail-h4').on('click', function(){
 
         console.log("User clicked on the title of the exercise. We should toggle something.");
 

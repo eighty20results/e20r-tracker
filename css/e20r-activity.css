@@ -1,3 +1,87 @@
+/** CSS definition for the ExerciseView display **/
+div.e20r-exercise-table {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #bbb;
+    background-color: #fcfcfc;
+}
+div.spacer {
+    clear: both;
+}
+div.e20r-exercise-table-header,
+div.e20r-exercise-table-body {
+    text-align: center;
+}
+div.e20r-exercise-table-header p.e20r-first-column {
+    text-align: center;
+}
+div.e20r-exercise-detail-row {
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    padding: 4px;
+}
+div.e20r-exercise-title {
+    cursor: pointer;
+    padding: 0 8px 0 8px;
+    margin-bottom: 0;
+    font-size: 5vmin;
+}
+h4.e20r-tracker-detail-h4 {
+    font-size: 5vmin !important;
+    font-weight: bold;
+    color: #004CFF;
+}
+div.e20r-display-exercise-image {
+    width: 100%;
+    height: auto;
+}
+div.e20r-exercise-table-column {
+    float: left;
+}
+div.e20r-exercise-description {
+    padding: 4px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    font-size: 1vw;
+    background-color: #fff;
+    border: 2px solid #c0c0c0;
+    min-height: 7.5ex;
+    line-height: 2.5ex;
+    overflow: hidden;
+}
+div.first-column {
+    float: left;
+    text-align: right;
+}
+div.second-column {
+    float: right;
+    text-align: left;
+}
+div.e20r-exercise-description p {
+    padding-left: 5px;
+    text-align: left;
+}
+.e20r-exercise-label {
+    font-size: 4.0vmin;
+    font-style: italic;
+    color: #004C00;
+    padding-left: 10px;
+}
+.e20r-exercise-value {
+    color: rgba(0, 76, 255, 0.9);
+    font-size: 3.75vmin;
+    padding-left: 8px;
+    padding-right: 10px;
+}
+
 table.e20r-resp-table {
     border-collapse: collapse;
     border-spacing: 0;
@@ -8,7 +92,7 @@ table.e20r-resp-table {
     padding: 4px 8px;
 }
 .e20r-resp-table th {background-color:rgba( 92, 92, 92, 0.3 );font-weight:bold;color:#004CFF;}
-. e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee; }
+.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee; }
 @media screen and (max-width: 600px) {
     table.e20r-resp-table {width:100%;}
     .e20r-resp-table. thead {display: none;}
@@ -93,12 +177,6 @@ th.e20r-activity-exercise {
 /*    float: left;
     margin: 5px;
     */
-}
-td.e20r-exercise-title {
-    cursor: pointer;
-    padding: 0 8px 0 8px;
-    margin-bottom: 0;
-    font-size: 200%;
 }
 div.e20r-display-exercise-div {
     width: 100%;
@@ -205,14 +283,6 @@ tfoot.e20r-activity-table-footer {
      max-width: 350px;
      height: auto;
 }
-.e20r-exercise-label {
-    font-size: 0.8em;
-    font-style: italic;
-    color: #004C00;
-}
-.e20r-exercise-value {
-    color: rgba(0, 76, 255, 0.9);
-}
 .e20r-saved-weight-value,
 .e20r-saved-rep-value {
 /*    width: 38%; */
@@ -263,19 +333,9 @@ div[class^="e20r-activity-group-track"] {
 }
 .e20r-display-exercise-image {
     width: 100%;
+    margin: 0 5px 0 5px;
 }
 .e20r-display-exercise-descr-row {
     width: 100%;
     /* float: left; */
-}
-.e20r-exercise-description {
-    width: 100%;
-    padding-left: 4px;
-    text-align: left;
-    font-size: 0.85em;
-    border: 2px solid #c0c0c0;
-    min-height: 2.5ex;
-    line-height: 2.5ex;
-    height: 7.5ex; /* 2.5ex for each visible line */
-    /* overflow: hidden; */
 }
