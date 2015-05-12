@@ -13,7 +13,7 @@ jQuery(document).ready( function(){
 
     jQuery('.e20r-tracker-detail-h4').on('click', function(){
 
-        console.log("User clicked on the title of the exercise. We should toggle something.");
+        console.log("User clicked on the title of the exercise.");
 
         var elem = jQuery(this);
         var exInfo = elem.closest('.e20r-exercise-detail').find('.e20r-exercise-table-body');
