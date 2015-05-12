@@ -162,9 +162,10 @@ class e20rWorkoutView extends e20rSettingsView {
 							</table>
 						</td>
 					</tr>
-					<tr class="e20r-spacer-row">
+<!-- 					<tr class="e20r-spacer-row">
 						<td colspan="2"></td>
 					</tr>
+					-->
 				<?php }
 				}
 				?>
