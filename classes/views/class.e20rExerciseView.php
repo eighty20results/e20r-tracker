@@ -47,9 +47,11 @@ class e20rExerciseView {
 				str_ireplace( 'https', 'http', $currentExercise->video_link );
 			}
 
-			$poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+			// $poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
 			$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 ) ;
 		}
+
+		dbg("e20rExerciseView::printExercise() - Display: {$display}");
 
 		ob_start();
 		?>
@@ -57,49 +59,49 @@ class e20rExerciseView {
 		<div class="e20r-exercise-table e20r-exercise-detail">
 			<div class="spacer">&nbsp;</div>
 			<div class="e20r-exercise-table-header e20r-exercise-detail-row">
-				<!-- <div class="e20r-exercise-detail-row"> -->
 				<div class="e20r-exercise-table-column first-column e20r-exercise-title">
 					<h4 class="e20r-tracker-detail-h4"><?php echo $currentExercise->title; ?></h4>
 				</div>
-				<!-- </div> -->
 			</div>
 			<div class="spacer">&nbsp;</div>
-			<div class="e20r-exercise-detail-row<?php echo is_null($hidden) ? " show" : " startHidden"; ?>">
-				<div class="e20r-exercise-table-column">
-					<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" >
-					<div class="e20r-exercise-video">
-						<?php echo $display; ?>
+			<div class="e20r-exercise-table-body<?php echo is_null($hidden) ? " show" : " startHidden"; ?>">
+				<div class="e20r-exercise-detail-row e20r-video">
+					<div class="e20r-exercise-table-column">
+						<div class="e20r-exercise-video">
+							<?php echo (!empty($display) ? $display : ''); ?>
+						</div>
+						<input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>" />
 					</div>
 				</div>
-			</div>
-			<div class="spacer">&nbsp;</div>
-			<div class="e20r-exercise-detail-row">
-				<div class="e20r-exercise-table-column first-column e20r-exercise-reps">
-					<p class="e20r-exercise-description">
-						<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
-						<span class="e20r-exercise-value"><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span>
-					</p>
+				<div class="spacer">&nbsp;</div>
+				<div class="e20r-exercise-detail-row">
+					<div class="e20r-exercise-table-column first-column e20r-exercise-reps">
+						<p class="e20r-exercise-description">
+							<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
+							<span class="e20r-exercise-value"><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span>
+						</p>
+					</div>
+					<div class="e20r-exercise-table-column second-column e20r-exercise-rest-time">
+						<p class="e20r-exercise-description">
+						<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+						<?php
+							if ( ! empty( $currentExercise->rest ) ) { ?>
+								<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
+							}
+							else { ?>
+								<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
+							} ?>
+						</p>
+					</div>
 				</div>
-				<div class="e20r-exercise-table-column second-column e20r-exercise-rest-time">
-					<p class="e20r-exercise-description">
-					<span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
-					<?php
-						if ( ! empty( $currentExercise->rest ) ) { ?>
-							<span class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
-						}
-						else { ?>
-							<span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
-						} ?>
-					</p>
+				<div class="spacer">&nbsp;</div>
+				<div class="e20r-exercise-detail-row">
+					<div class="e20r-exercise-table-column first-column e20r-exercise-description">
+						<p><?php echo $currentExercise->descr ; ?></p>
+					</div>
 				</div>
+				<div class="spacer">&nbsp;</div>
 			</div>
-			<div class="spacer">&nbsp;</div>
-			<div class="e20r-exercise-detail-row">
-				<div class="e20r-exercise-table-column first-column e20r-exercise-description">
-					<p><?php echo $currentExercise->descr ; ?></p>
-				</div>
-			</div>
-			<div class="spacer">&nbsp;</div>
 		</div>
 		<!-- </div> -->
 		<?php
@@ -168,11 +170,11 @@ class e20rExerciseView {
 
 		$regex = "/ (width|height)=\"[0-9\%]*\"/";
 
-		$embed_code = wp_oembed_get( $url, array( 'width' => '100%', 'height' => '100%', 'autoplay' => $autoplay ) );
+		$embed_code = wp_oembed_get( $url, array( 'width' => '100%', 'height' => '100%', 'autoplay' => $autoplay, 'rel' => 0 ) );
 
 		if( !$embed_code ) {
 
-			return '<strong>' . __('Error: Invalid URL!', 'respvid') . '</strong>';
+			return '<strong>' . __('Error: Unsupported video host/service', 'e20rtracker') . '</strong>';
 		}
 
 		return preg_replace( $regex, '', $embed_code );
