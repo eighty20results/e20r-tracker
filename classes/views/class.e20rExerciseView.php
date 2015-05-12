@@ -47,11 +47,22 @@ class e20rExerciseView {
 				str_ireplace( 'https', 'http', $currentExercise->video_link );
 			}
 
-			// $poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-			$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 ) ;
+			if ( stripos( $currentExercise->video_link, 'youtube' ) == false ) {
+				// $poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
+				$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 );
+			}
+			else {
+				ob_start(); ?>
+
+				<div class="e20r-youtube-container">
+					<div class="youtube-player" data-id="<?php echo $this->extract_youtube_id( $currentExercise->video_link ); ?>" ></div>
+				</div><?php
+
+				$display = ob_get_clean();
+			}
 		}
 
-		dbg("e20rExerciseView::printExercise() - Display: {$display}");
+		// dbg("e20rExerciseView::printExercise() - Display: {$display}");
 
 		ob_start();
 		?>
@@ -156,6 +167,16 @@ class e20rExerciseView {
 		return $code;
 	}
 
+	private function extract_youtube_id( $url ) {
+
+		$video_id = null;
+
+		if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
+			$video_id = $match[1];
+		}
+
+		return $video_id;
+	}
 	/**
 	 * Returns the output for the actual oEmbed media element.
 	 *
