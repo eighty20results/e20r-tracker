@@ -6,8 +6,24 @@
  *  the GPL v2 license(?)
  */
 jQuery(document).ready( function(){
+
     console.log("Load fitVids library");
     jQuery('.e20r-exercise-video').fitVids();
+
+    var v = document.getElementsByClassName("youtube-player");
+
+    for (var n = 0; n < v.length; n++) {
+
+        var p = document.createElement("div");
+        p.innerHTML = e20rThumb(v[n].dataset.id);
+        p.onclick = e20rIframe;
+        v[n].appendChild(p);
+
+    }
+
+    jQuery(document).bind("contextmenu",function(e){
+        return false;
+    });
 
     setRespTable();
 
@@ -27,6 +43,21 @@ jQuery(document).ready( function(){
 
     });
 });
+
+function e20rThumb(id) {
+    return '<img class="youtube-thumb" src="//i.ytimg.com/vi/' + id + '/hqdefault.jpg"><div class="play-button"></div>';
+}
+
+function e20rIframe() {
+
+    var iframe = document.createElement("iframe");
+
+    iframe.setAttribute("src", "//www.youtube.com/embed/" + this.parentNode.dataset.id + "?autoplay=1&autohide=2&border=0&wmode=opaque&enablejsapi=1&controls=0&showinfo=0");
+
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("id", "youtube-iframe");
+    this.parentNode.replaceChild(iframe, this);
+}
 
 function setRespTable() {
     var headertext = [];
