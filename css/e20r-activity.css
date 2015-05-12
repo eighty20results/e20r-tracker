@@ -9,10 +9,11 @@ div.e20r-exercise-table {
 }
 div.spacer {
     clear: both;
+    height: 1px;
 }
 div.e20r-exercise-table-header,
 div.e20r-exercise-table-body {
-    text-align: center;
+    width: 100%;
 }
 div.e20r-exercise-table-header p.e20r-first-column {
     text-align: center;
@@ -34,13 +35,21 @@ h4.e20r-tracker-detail-h4 {
     font-size: 5vmin !important;
     font-weight: bold;
     color: #004CFF;
+    margin: 0;
 }
 div.e20r-display-exercise-image {
     width: 100%;
     height: auto;
 }
+.e20r-video {
+    width: 100%;
+    /* display: inline-block; */
+}
 div.e20r-exercise-table-column {
-    float: left;
+    /* float: left; */
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 div.e20r-exercise-description {
     padding: 4px;
@@ -73,7 +82,7 @@ div.e20r-exercise-description p {
     font-size: 4.0vmin;
     font-style: italic;
     color: #004C00;
-    padding-left: 10px;
+    padding-left: 5px;
 }
 .e20r-exercise-value {
     color: rgba(0, 76, 255, 0.9);
