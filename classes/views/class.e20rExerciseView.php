@@ -47,7 +47,7 @@ class e20rExerciseView {
 				str_ireplace( 'https', 'http', $currentExercise->video_link );
 			}
 
-			if ( stripos( $currentExercise->video_link, 'youtube' ) == false ) {
+			if ( ($yID = $this->extract_youtube_id( $currentExercise->video_link ) ) === null ) {
 				// $poster = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
 				$display = $this->get_embed_video( $currentExercise->video_link, 'center', '16:9', '100', 0 );
 			}
@@ -55,7 +55,7 @@ class e20rExerciseView {
 				ob_start(); ?>
 
 				<div class="e20r-youtube-container">
-					<div class="youtube-player" data-id="<?php echo $this->extract_youtube_id( $currentExercise->video_link ); ?>" ></div>
+					<div class="youtube-player" data-id="<?php echo $yID; ?>" ></div>
 				</div><?php
 
 				$display = ob_get_clean();
