@@ -990,10 +990,11 @@ class e20rTracker {
 
         wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
+	    wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
         wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
-        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery' ), '0.1', true );
+	    wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery', 'jquery.touchpunch'), '1.11.2', true);
+        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery.touchpuch' ), '0.1', true );
         wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), '0.1', true );
-        wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
 
         wp_localize_script( 'e20r-progress-measurements', 'e20r_progress',
             array(
@@ -1004,6 +1005,7 @@ class e20rTracker {
 
         // wp_print_scripts( 'e20r-jquery-json' );
         wp_print_scripts( 'jquery-ui-tabs' );
+	    wp_print_scripts( 'jquery.touchpunch' );
         wp_print_scripts( 'jquery.timeago' );
         $this->enqueue_plotSW();
         wp_print_scripts( 'e20r-tracker' );
