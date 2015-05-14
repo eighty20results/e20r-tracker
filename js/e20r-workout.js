@@ -188,7 +188,6 @@ var e20rActivity = {
 */
         if ( ( $hWeight == $weight ) && ( $hReps == $reps ) ) {
 
-            console.log("No need to save: ", $elem );
             return false;
         }
 
