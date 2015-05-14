@@ -37,11 +37,8 @@ var e20rActivity = {
             cls.bindInput( jQuery(this), cls );
         });
 
-        console.log("Loaded Activity class");
-
         this.$rows.each( function(){
 
-            console.log("Processing exercise row for show/hide");
             cls.show_hide( jQuery(this) );
         })
 
@@ -138,7 +135,7 @@ var e20rActivity = {
             var $edit = $r;
             var $show = $r.next('.e20r-saved');
 
-            console.log("Show: ", $show);
+            // console.log("Show: ", $show);
 
             if ( ( self._hasData( $r.find('.e20r-activity-input-weight') ) ||
                 self._hasData( $r.find('.e20r-activity-input-reps') ) ) &&
@@ -150,7 +147,7 @@ var e20rActivity = {
             }
             else if ( $edit.hasClass('startHidden') ) {
                 console.log("A 'show' element was clicked. Switch to edit mode." );
-                console.log($show);
+                // console.log($show);
                 $show.addClass("startHidden");
                 $edit.removeClass("startHidden");
                 $edit.find('button.e20r-button').removeClass('startHidden');
