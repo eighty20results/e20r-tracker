@@ -181,6 +181,7 @@ class e20rWorkoutView extends e20rSettingsView {
 											<td data-th="Set" class="e20r-td-input-count"><span class="e20r-saved-set-number"><?php echo $i; ?>:</span></td>
 											<td data-th="Weight" class="e20r-td-input-activity"><span class="e20r-saved-weight-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : $weight; ?></a></span></td>
 											<td data-th="Reps" class="e20r-td-input-activity"><span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : $reps; ?></a></span></td>
+											<td data-th="" class="e20r-td-input-button"></td>
 										</tr>
 									<?php } ?>
 									</tbody>
