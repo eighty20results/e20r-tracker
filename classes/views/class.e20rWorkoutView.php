@@ -59,7 +59,6 @@ class e20rWorkoutView extends e20rSettingsView {
 			<form id="e20r-activity-input-form">
 				<?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
 				<div class="e20r-activity-overview-table e20r-print-activity e20r-screen">
-					<!-- <div class="spacer">&nbsp;</div> -->
 					<div class="e20r-activity-table-header">
 						<div class="e20r-exercise-row">
 							<div class="e20r-activity-info-col">
@@ -123,11 +122,11 @@ class e20rWorkoutView extends e20rSettingsView {
 											<span class="e20r-activity-label"><?php _e( "Rest", "e20rtracker"); ?>: </span>
 											<span class="e20r-activity-var"><?php echo $g->group_rest; ?></span>
 										</p>
-									</div>
-								</div> <!-- End of e20r-int-table -->
-							</div>
-							<!-- <div class="spacer">&nbsp;</div> -->
-						</div> <!-- end of exercise-row -->
+										<div class="spacer">&nbsp;</div>
+									</div><!-- e20r-act-content-row -->
+								</div><!-- End of e20r-int-table -->
+							</div> <!-- End of info-col -->
+						</div> <!-- End of exercise-row -->
 						<div class="spacer">&nbsp;</div>
 						<?php
 							foreach( $g->exercises as $exKey => $exId ) {
@@ -136,24 +135,23 @@ class e20rWorkoutView extends e20rSettingsView {
 								?>
 						<div class="e20r-exercise-row">
 							<div class="e20r-activity-info-col">
-								<div class="e20r-activity-exercise"><?php echo $e20rExercise->print_exercise( true ); ?></div>
-							</div>
-							<!-- <div class="spacer">&nbsp;</div> -->
-						</div><!-- end of exercise-row -->
+								<?php echo $e20rExercise->print_exercise( true ); ?>
+							</div> <!-- End of info-col -->
+						</div><!-- End of exercise-row -->
 						<div class="spacer">&nbsp;</div>
 						<div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
 							<div class="e20r-activity-info-col">
 								<div class="e20r-activity-exercise-tracking">
-								<table class="e20r-resp-table">
-									<thead class="e20r-resp-table-header">
-									<tr>
-										<td class="e20r-td-input-count"><div class="e20r-activity-group-track-s e20r-activity-var"><?php _e("Set", "e20rtracker"); ?></div></td>
-										<td class="e20r-td-input-activity"><div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div></td>
-										<td class="e20r-td-input-activity"><div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div></td>
-										<td></td>
-									</tr>
-									</thead>
-									<tbody class="e20r-resp-table-body">
+									<table class="e20r-resp-table">
+										<thead class="e20r-resp-table-header">
+										<tr>
+											<th class="e20r-td-input-count"><div class="e20r-activity-group-track-s e20r-activity-var"><?php _e("Set", "e20rtracker"); ?></div></th>
+											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div></th>
+											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div></th>
+											<th></th>
+										</tr>
+										</thead>
+										<tbody class="e20r-resp-table-body">
 									<?php
 										for ( $i = 1 ; $i <= $g->group_set_count ; $i++ ) {
 
@@ -186,25 +184,27 @@ class e20rWorkoutView extends e20rSettingsView {
 										</tr>
 									<?php } ?>
 									</tbody>
-								</table>
-								<div class="spacer">&nbsp;</div>
-							</div>
-							</div>
+									</table>
+								</div> <!-- end of activity-exercise-tracking -->
+							</div> <!-- End of info-col -->
 						</div> <!-- end of exercise tracking row -->
 						<div class="spacer">&nbsp;</div>
-					<?php }
-					} ?>
-					</div>
+					<?php } // End of for loop for exercise list
+					} // End of loop for Groups ?>
+					</div> <!-- End of table-body -->
 					<div class="spacer">&nbsp;</div>
 					<div class="e20r-activity-table-footer">
-						<div class="e20r-activity-exercise-row">
-							<button id="e20r-activity-input-button" class="e20r-button alignright startHidden"><?php _e("Click to complete", "e20rtracker" ); ?></button>
-						</div>
-						<div class="spacer">&nbsp;</div>
-					</div>
+						<div class="e20r-exercise-row">
+							<div class="e20r-activity-info-col">
+								<p class="e20r-content-col alignright">
+									<button id="e20r-activity-input-button" class="e20r-button alignright startHidden"><?php _e("Click to complete", "e20rtracker" ); ?></button>
+								</p>
+							</div> <!-- End of info-col -->
+						</div> <!-- End of exercise-row -->
+					</div><!-- end of table-footer -->
 					<div class="spacer">&nbsp;</div>
 			</div>
-			<div class="modal"><!-- At end of form --></div>
+				<div class="modal"><!-- At end of form --></div>
 			</form>
 		<?php
 		}
