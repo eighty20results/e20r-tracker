@@ -32,8 +32,9 @@ jQuery(document).ready( function(){
         console.log("User clicked on the title of the exercise.");
 
         var elem = jQuery(this);
-        var exInfo = elem.closest('.e20r-exercise-detail').find('.e20r-exercise-table-body');
-        var exTrack = elem.closest('.e20r-exercise-row').next('.e20r-exercise-tracking-row');
+
+        var exInfo = elem.closest('div.e20r-exercise-detail').find('div.e20r-exercise-table-body');
+        var exTrack = elem.closest('div.e20r-exercise-row').next().next('.e20r-exercise-row.e20r-exercise-tracking-row');
 
         exInfo.fadeToggle();
 
