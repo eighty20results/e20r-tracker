@@ -66,7 +66,6 @@ class e20rExerciseView {
 
 		ob_start();
 		?>
-<!--		<div class="e20r-display-exercise-div"> -->
 		<div class="e20r-exercise-table e20r-exercise-detail">
 			<div class="spacer">&nbsp;</div>
 			<div class="e20r-exercise-table-header e20r-exercise-detail-row">
@@ -114,7 +113,6 @@ class e20rExerciseView {
 				<div class="spacer">&nbsp;</div>
 			</div>
 		</div>
-		<!-- </div> -->
 		<?php
 		$html = ob_get_clean();
 
