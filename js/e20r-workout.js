@@ -220,13 +220,13 @@ var e20rActivity = {
             inp = jQuery( inp );
         }
 
-        var $track_row = inp.closest('tr.e20r-exercise-tracking-row');
-        var $ex_def = inp.closest('tr.e20r-exercise-tracking-row').prev('.e20r-exercise-row');
+        var $track_row = inp.closest('.e20r-exercise-tracking-row');
+        var $ex_def = inp.closest('.e20r-exercise-tracking-row').prev('.e20r-exercise-row');
 
         console.log("Exercise Row: ", $ex_def);
 
-        var $show = $track_row.find('tr.e20r-saved');
-        var $edit = $track_row.find('tr.e20r-edit');
+        var $show = $track_row.find('.e20r-saved');
+        var $edit = $track_row.find('.e20r-edit');
 
         inp.removeClass("active");
         jQuery("body").addClass("loading");
