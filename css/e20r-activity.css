@@ -137,7 +137,7 @@ div.e20r-activity-table-body {
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
 }
-div.e20r-exercise-row > div.e20r-int-table {
+div.exercise-header {
     background-color: #004C00;
     color: #FFF !important;
     border-bottom: 2px solid #5c5c5c;
@@ -169,10 +169,10 @@ div.e20r-activity-table-body > div.e20r-exercise-row {
 div.e20r-act-content-row {
     width: 100%;
 }
-.e20r-content-col {
+p.e20r-content-col {
     float: left;
-    padding: 0 10px 0 10px;
-    /* width: auto; */
+    padding: 5px 10px 0 10px;
+    margin: 0 !important;
 }
 span.e20r-activity-label {
     font-weight: bold;

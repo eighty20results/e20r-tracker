@@ -59,14 +59,14 @@ class e20rWorkoutView extends e20rSettingsView {
 			<form id="e20r-activity-input-form">
 				<?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
 				<div class="e20r-activity-overview-table e20r-print-activity e20r-screen">
-					<div class="spacer">&nbsp;</div>
+					<!-- <div class="spacer">&nbsp;</div> -->
 					<div class="e20r-activity-table-header">
 						<div class="e20r-exercise-row">
 							<div class="e20r-activity-info-col">
-								<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" >
-								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" >
-								<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" >
-								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo $config->date; ?>" >
+								<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" />
+								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" />
+								<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" />
+								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo $config->date; ?>" />
 								<div class="e20r-int-table">
 									<div class="e20r-act-content-row">
 										<p class="e20r-content-col">
@@ -80,14 +80,20 @@ class e20rWorkoutView extends e20rSettingsView {
 									</div>
 								</div> <!-- End of e20r-int-table -->
 							</div>
-							<p class="e20r-activity-info-col alignright">
-								<span class="e20r-exercise-label"><?php _e("Client", "e20rtracker"); ?>: </span>
-								<span class="e20r-exercise-value"><?php echo $current_user->user_firstname; ?></span>
-							</p>
-							<div class="spacer">&nbsp;</div>
+							<div class="e20r-activity-info-col alignright">
+								<div class="e20r-int-table">
+									<div class="e20r-act-content-row">
+										<p class="e20r-content-col">
+											<span class="e20r-exercise-label"><?php _e("Client", "e20rtracker"); ?>: </span>
+											<span class="e20r-exercise-value"><?php echo $current_user->user_firstname; ?></span>
+										</p>
+									</div>
+								</div>
+							</div>
+							<!-- <div class="spacer">&nbsp;</div> -->
 						</div><!-- end of e20r-exercise-row -->
 						<div class="spacer">&nbsp;</div>
-					</div>
+					</div><!-- COMPLETE: end of table header -->
 					<div class="spacer">&nbsp;</div>
 					<div class="e20r-activity-table-body">
 					<?php
@@ -98,17 +104,29 @@ class e20rWorkoutView extends e20rSettingsView {
 
 						?>
 						<div class="e20r-exercise-row">
-							<div class="e20r-int-table">
-								<div class="e20r-act-content-row">
-									<p class="e20r-content-col"><span class="e20r-activity-label"><?php _e( "Group", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $gcount; ?></span></p>
-									<p class="e20r-content-col"><span class="e20r-activity-label"><?php _e( "Sets", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_set_count; ?></span></p>
-									<p class="e20r-content-col"><span class="e20r-activity-label"><?php _e( "Tempo", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_tempo; ?></span></p>
-									<p class="e20r-content-col"><span class="e20r-activity-label"><?php _e( "Rest", "e20rtracker"); ?>: </span><span class="e20r-activity-var"><?php echo $g->group_rest; ?></span></p>
-									<div class="spacer">&nbsp;</div>
-								</div>
-								<div class="spacer">&nbsp;</div>
+							<div class="e20r-activity-info-col">
+								<div class="e20r-int-table exercise-header">
+									<div class="e20r-act-content-row">
+										<p class="e20r-content-col">
+											<span class="e20r-activity-label"><?php _e( "Group", "e20rtracker"); ?>: </span>
+											<span class="e20r-activity-var"><?php echo $gcount; ?></span>
+										</p>
+										<p class="e20r-content-col">
+											<span class="e20r-activity-label"><?php _e( "Sets", "e20rtracker"); ?>: </span>
+											<span class="e20r-activity-var"><?php echo $g->group_set_count; ?></span>
+										</p>
+										<p class="e20r-content-col">
+											<span class="e20r-activity-label"><?php _e( "Tempo", "e20rtracker"); ?>: </span>
+											<span class="e20r-activity-var"><?php echo $g->group_tempo; ?></span>
+										</p>
+										<p class="e20r-content-col">
+											<span class="e20r-activity-label"><?php _e( "Rest", "e20rtracker"); ?>: </span>
+											<span class="e20r-activity-var"><?php echo $g->group_rest; ?></span>
+										</p>
+									</div>
+								</div> <!-- End of e20r-int-table -->
 							</div>
-							<div class="spacer">&nbsp;</div>
+							<!-- <div class="spacer">&nbsp;</div> -->
 						</div> <!-- end of exercise-row -->
 						<div class="spacer">&nbsp;</div>
 						<?php
@@ -117,12 +135,15 @@ class e20rWorkoutView extends e20rSettingsView {
 								$e20rExercise->set_currentExercise( $exId );
 								?>
 						<div class="e20r-exercise-row">
-							<div class="e20r-activity-exercise"><?php echo $e20rExercise->print_exercise( true ); ?></div>
-							<div class="spacer">&nbsp;</div>
+							<div class="e20r-activity-info-col">
+								<div class="e20r-activity-exercise"><?php echo $e20rExercise->print_exercise( true ); ?></div>
+							</div>
+							<!-- <div class="spacer">&nbsp;</div> -->
 						</div><!-- end of exercise-row -->
 						<div class="spacer">&nbsp;</div>
-						<div class="e20r-exercise-tracking-row startHidden">
-							<div class="e20r-activity-exercise-tracking">
+						<div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
+							<div class="e20r-activity-info-col">
+								<div class="e20r-activity-exercise-tracking">
 								<table class="e20r-resp-table">
 									<thead class="e20r-resp-table-header">
 									<tr>
@@ -167,6 +188,7 @@ class e20rWorkoutView extends e20rSettingsView {
 									</tbody>
 								</table>
 								<div class="spacer">&nbsp;</div>
+							</div>
 							</div>
 						</div> <!-- end of exercise tracking row -->
 						<div class="spacer">&nbsp;</div>
