@@ -51,8 +51,8 @@ var e20rActivity = {
 
         // console.log("bindInput: " , me);
         var $div = me.closest('.e20r-activity-exercise-tracking');
-        var $edit_elem = $div.find('tr.e20r-edit');
-        var $show_elem = $div.find('tr.e20r-saved');
+        var $edit_elem = $div.find('div.e20r-edit');
+        var $show_elem = $div.find('div.e20r-saved');
 
         $show_elem.find('a.e20r-edit-weight-value, a.e20r-edit-rep-value').unbind('click').on('click', function(){
 
@@ -151,7 +151,7 @@ var e20rActivity = {
 
         console.log("Element is: ", me );
 
-        var $div = me.find('table.e20r-resp-table');
+        var $div = me.find('.e20r-resp-table');
         var $edit = $div.find('.e20r-edit')
         var $show = $div.find('.e20r-saved');
 

@@ -104,30 +104,55 @@ table.e20r-resp-table {
 .e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee; }
 @media screen and (max-width: 600px) {
     table.e20r-resp-table {width:100%;}
-    .e20r-resp-table. thead {display: none;}
-    .e20r-resp-table. tr:nth-of-type(2n) {background-color: inherit;}
-    .e20r-resp-table. tr td:first-child {background: #f0f0f0; font-weight:bold;font-size:1.3em;}
-    .e20r-resp-table.tbody td {display: block;  text-align:center;}
-    .e20r-resp-table.tbody td:before {
+    .e20r-resp-table thead {display: none;}
+    .e20r-resp-table tr:nth-of-type(2n) {background-color: inherit;}
+    .e20r-resp-table tr td:first-child {background: #f0f0f0; font-weight:bold;font-size:1.3em;}
+    .e20r-resp-table tbody td {display: block;  text-align:center;}
+    .e20r-resp-table tbody td:before {
         content: attr(data-th);
         display: block;
         text-align:center;
     }
 }
-table.e20r-activity-overview {
+.e20r-activity-overview-table {
     margin-left: 20px;
     margin-right: 20px;
     width: 95%;
     border: 1px solid #c5c5c5;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
-thead.e20r-activity-table-header {
+.e20r-activity-table-header {
     background-color: #f1f1f1;
     border: 2px solid #f5f5f5;
     width:100%;
     padding: 0 20px 0 20px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
-tr.e20r-exercise-row {
+div.e20r-activity-table-body {
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+div.e20r-exercise-row > div.e20r-int-table {
+    background-color: #004C00;
+    color: #FFF !important;
+    border-bottom: 2px solid #5c5c5c;
+    padding: 4px;
+}
+div.e20r-activity-table-body > div.e20r-exercise-row {
+    height: 21px;
+    line-height: 100%;
+}
+
+.e20r-exercise-row {
     width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 .e20r-activity-group {
     width: 100%;
@@ -137,11 +162,14 @@ tr.e20r-exercise-row {
 .e20r-int-table {
     width: 100%;
     margin-bottom: 0;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
-tr.e20r-act-content {
+div.e20r-act-content-row {
     width: 100%;
 }
-td.e20r-content {
+.e20r-content-col {
     float: left;
     padding: 0 10px 0 10px;
     /* width: auto; */
@@ -159,16 +187,6 @@ span.e20r-activity-var {
     padding-right: 10px;
     border-bottom: 1px solid #c0c0c0;
 }
-tbody.e20r-activity-table-body > tr > th {
-    background-color: #004C00;
-    color: #FFF;
-    border-bottom: 2px solid #5c5c5c;
-    padding: 4px;
-}
-tbody.e20r-activity-table-body > tr {
-    height: 21px;
-    line-height: 100%;
-}
 input[class^="e20r-activity-input"] {
     width: 95%;
     height: 25px;
@@ -180,7 +198,7 @@ input[class^="e20r-activity-input"] {
     padding-right: 5px;
     box-sizing: content-box;
 }
-th.e20r-activity-exercise {
+div.e20r-activity-exercise {
     width: 100%;
 /*    float: left;
     margin: 5px;
@@ -237,6 +255,9 @@ div.e20r-display-exercise-div {
 .e20r-activity-exercise-tracking {
     /* border-left: 2px solid #0b181e; */
     padding-bottom: 5px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
 }
 .e20r-edit-weight-value,
 .e20r-edit-rep-value {

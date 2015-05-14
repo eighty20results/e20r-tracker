@@ -21,10 +21,10 @@ jQuery(document).ready( function(){
 
     }
 
-    jQuery(document).bind("contextmenu",function(e){
+/*    jQuery(document).bind("contextmenu",function(e){
         return false;
     });
-
+*/
     setRespTable();
 
     jQuery('.e20r-tracker-detail-h4').on('click', function(){
