@@ -145,7 +145,7 @@ class e20rWorkoutView extends e20rSettingsView {
 									<table class="e20r-resp-table">
 										<thead class="e20r-resp-table-header">
 										<tr>
-											<th class="e20r-td-input-count"><div class="e20r-activity-group-track-s e20r-activity-var"><?php _e("Set", "e20rtracker"); ?></div></th>
+											<th class="e20r-td-input-count"><!-- div class="e20r-activity-group-track-s e20r-activity-var">--><?php _e("Set", "e20rtracker"); ?><!-- </div> --></th>
 											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div></th>
 											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div></th>
 											<th></th>
@@ -171,17 +171,21 @@ class e20rWorkoutView extends e20rSettingsView {
 												<input type="hidden" class="e20r-activity-input-ex_key" name="e20r-activity-exercise-ex_key[]" value="<?php echo $exKey; ?>" >
 												<input type="hidden" class="e20r-activity-input-weight_h" name="e20r-activity-exercise-weight_h[]" value="<?php echo $weight; ?>" >
 												<input type="hidden" class="e20r-activity-input-reps_h" name="e20r-activity-exercise-reps_h[]" value="<?php echo $reps; ?>" >
-												<span class="e20r-saved-set-number"><?php echo $i; ?>:</span>
+												<!-- <span class="e20r-saved-set-number">--><?php echo $i; ?><!--</span>-->
 											</td>
 	                                        <td data-th="Weight" class="e20r-td-input-activity"><input type="text" class="e20r-activity-input-weight" name="e20r-activity-exercise-weight[]" value="<?php echo $weight; ?>" ></td>
 									        <td data-th="Reps" class="e20r-td-input-activity"><input type="number" class="e20r-activity-input-reps" name="e20r-activity-exercise-reps[]" value="<?php echo $reps; ?>" ></td>
 									        <td data-th="" class="e20r-td-input-button"><button class="e20r-save-set-row alignright e20r-button<?php echo ( empty( $weight ) || empty($reps) ) ? '' : ' startHidden'; ?>">Save</button></td>
 	                                    </tr>
 										<tr class="e20r-saved startHidden">
-											<td data-th="Set" class="e20r-td-input-count"><span class="e20r-saved-set-number"><?php echo $i; ?>:</span></td>
-											<td data-th="Weight" class="e20r-td-input-activity"><span class="e20r-saved-weight-value"><a href="javascript:" class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : $weight; ?></a></span></td>
-											<td data-th="Reps" class="e20r-td-input-activity"><span class="e20r-saved-rep-value"><a href="javascript:" class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : $reps; ?></a></span></td>
-											<td data-th="" class="e20r-td-input-button"></td>
+											<td data-th="Set" class="e20r-td-input-count">
+												<!--<span class="e20r-saved-set-number">--><?php echo $i; ?><!--</span>-->
+											</td>
+											<td data-th="Weight" class="e20r-td-input-activity">
+												<!-- <span class="e20r-saved-weight-value">--><a href="javascript:" class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : $weight; ?></a><!--</span>-->
+											</td>
+											<td data-th="Reps" class="e20r-td-input-activity"><!-- <span class="e20r-saved-rep-value">--><a href="javascript:" class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : $reps; ?></a><!--</span>--></td>
+											<td class="e20r-td-input-hidden"></td>
 										</tr>
 									<?php } ?>
 									</tbody>
