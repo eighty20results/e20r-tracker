@@ -19,6 +19,7 @@ var e20rActivity = {
         this.$weight_fields = jQuery('.e20r-activity-input-weight');
         this.$rep_fields = jQuery('.e20r-activity-input-reps');
         this.$rows = jQuery(".e20r-exercise-tracking-row");
+        this.$tracked = jQuery(".e20r-exercise-set-row");
         this.$nonce = jQuery('#e20r-tracker-activity-input-nonce').val();
         this.$saveBtn = jQuery('#e20r-activity-input-button');
         this.$userId = jQuery('#e20r-activity-input-user_id').val();
@@ -26,87 +27,94 @@ var e20rActivity = {
         this.$activityId = jQuery('#e20r-activity-input-activity_id').val();
         this.$forDate = jQuery('#e20r-activity-input-for_date').val();
 
-        var cls = this;
+        var activity = this;
 
-        cls.$weight_fields.each(function () {
-            cls.bindInput( jQuery(this), cls );
-        });
+        activity.$rows.each(function() {
 
-        cls.$rep_fields.each(function () {
-
-            cls.bindInput( jQuery(this), cls );
-        });
-
-        this.$rows.each( function(){
-
-            cls.show_hide( jQuery(this) );
-        })
-
-        return cls;
-    },
-    bindInput: function (me, c_self) {
-
-        var $div = me.closest('.e20r-activity-exercise-tracking');
-        var $edit_elem = $div.find('.e20r-edit');
-        var $show_elem = $div.find('.e20r-saved');
-
-        $show_elem.find('a.e20r-edit-weight-value, a.e20r-edit-rep-value').unbind('click').on('click', function(){
-
-            console.log('Edit weight entry');
-            c_self.show_hide( jQuery(this).closest('.e20r-exercise-tracking-row') );
+            var row = jQuery(this);
+            activity.bindInput( row, activity );
 
         });
 
-        $div.find('.e20r-save-set-row').unbind('click').on('click', function(){
+        activity.$tracked.each( function(){
 
-            console.log("Save button for edit of set row");
-            c_self.attemptSave( me, c_self );
-
+            activity.hide( jQuery(this) );
         });
 
-        me.on('focus', function(){
-
-            c_self.activate(me);
-        });
-
-        me.on('blur', function() {
-
-            if ( c_self._complete() ) {
-
-                jQuery('#e20r-activity-input-button').removeClass('startHidden');
-            }
-
-            var $w = $div.find('.e20r-activity-input-weight').val();
-            var $r = $div.find('.e20r-activity-input-reps').val();
-
-            var $hW = $div.find('.e20r-activity-input-weight_h').val();
-            var $hR = $div.find('.e20r-activity-input-reps_h').val();
-
-            if ( ( $w !=  $hW ) ||
-                ( $r != $hR )){
-
-                me.removeClass('active');
-                me.addClass('edited');
-
-                //c_self.attemptSave( me, c_self );
-            }
-
-            // console.log("Element being blurred: ", me);
-
-        });
-
-        me.keypress( function( event, self ) {
-
-            if ( event.which == 13 ) {
-                me.trigger('blur');
-            }
-        });
-
-        c_self.$saveBtn.unbind('click').on('click', function(){
+        activity.$saveBtn.unbind('click').on('click', function(){
 
 //            console.log("Save button clicked.");
-            c_self.saveAll();
+            activity.saveAll();
         });
+
+        return activity;
+    },
+    bindInput: function (me, activity) {
+
+        var $eRow = me.find('.e20r-exercise-set-row');
+        var $sRow = me.find('.e20r-saved');
+
+        $sRow.find('a.e20r-edit-weight-value, a.e20r-edit-rep-value').unbind('click').on('click', function(){
+
+            console.log('Edit weight or rep entry');
+            activity.hide( jQuery(this).closest('.e20r-saved').prev() );
+        });
+
+        $eRow.find('.e20r-save-set-row').unbind('click').on('click', function(){
+
+            var $save_btn = jQuery(this);
+
+//            console.log("Save button for edit of set row");
+            activity.attemptSave( $save_btn, activity );
+
+        });
+
+        /** Set focus and blur functionality for the input elements **/
+        $eRow.find('input.e20r-activity-input-weight, input.e20r-activity-input-reps').each(function(){
+
+            var inp = jQuery(this);
+
+            inp.on('focus', function(){
+
+                activity.activate(inp);
+            });
+
+            inp.on('blur', function() {
+
+                if ( activity._complete() ) {
+
+                    jQuery('#e20r-activity-input-button').removeClass('startHidden');
+                }
+
+                var $w = $eRow.find('.e20r-activity-input-weight').val();
+                var $r = $eRow.find('.e20r-activity-input-reps').val();
+
+                var $hW = $eRow.find('.e20r-activity-input-weight_h').val();
+                var $hR = $eRow.find('.e20r-activity-input-reps_h').val();
+
+                if ( ( $w !=  $hW ) ||
+                    ( $r != $hR )){
+
+                    inp.removeClass('active');
+                    inp.addClass('edited');
+
+                    //activity.attemptSave( inp, activity );
+                }
+
+                // console.log("Element being blurred: ", inp);
+
+            });
+
+            // Trap the 'enter key' event (and trigger a blur action)
+            inp.keypress( function( event, self ) {
+
+                if ( event.which == 13 ) {
+
+                    inp.trigger('blur');
+                }
+            });
+        });
+
     },
     _hasData: function( elem ) {
 
@@ -116,51 +124,37 @@ var e20rActivity = {
             elem = jQuery( elem );
         }
 
-        // console.log("hasData for: ", elem);
+        console.log("hasData for: ", elem);
         var $value = elem.val();
 
         if ( $value ) {
+            console.log("Value: " + $value);
             return true;
         }
 
         return false;
     },
-    show_hide: function(me) {
+    hide: function( element ) {
 
-        var self = this;
+        var eRow = element;
+        var sRow = element.next();
 
-        me.find('.e20r-exercise-set-row').each(function() {
+        if ( ( this._hasData( eRow.find('input.e20r-activity-input-weight') ) ||
+            this._hasData( eRow.find('input.e20r-activity-input-reps') ) ) &&
+            sRow.hasClass('startHidden') )
+        {
 
-            var $r = jQuery(this);
-            var $edit = $r;
-            var $show = $r.next('.e20r-saved');
-
-            // console.log("Show: ", $show);
-
-            if ( ( self._hasData( $r.find('.e20r-activity-input-weight') ) ||
-                self._hasData( $r.find('.e20r-activity-input-reps') ) ) &&
-                ( $show.hasClass('startHidden') ) ) {
-
-                console.log("The 'show' element is hidden and shouldn't be 'cause there's data entered" );
-                $show.removeClass("startHidden");
-                $edit.addClass("startHidden");
-            }
-            else if ( $edit.hasClass('startHidden') ) {
-                console.log("A 'show' element was clicked. Switch to edit mode." );
-                // console.log($show);
-                $show.addClass("startHidden");
-                $edit.removeClass("startHidden");
-                $edit.find('button.e20r-button').removeClass('startHidden');
-            }
-        });
-
-/*        if ( $edit.hasClass('startHidden') ) {
-
-            console.log("The 'edit' element is hidden...");
-            $edit.removeClass("startHidden");
-            $show.addClass("startHidden");
+            console.log("The display element is hidden and should not be - we've got new data");
+            sRow.removeClass('startHidden');
+            eRow.addClass('startHidden');
         }
-*/
+        else if ( eRow.hasClass('startHidden') ) {
+
+            console.log("User may want to edit (they clicked) the data");
+            sRow.addClass('startHidden');
+            eRow.removeClass('startHidden');
+            eRow.find('button.e20r-button').removeClass('startHidden');
+        }
     },
     activate: function( self ) {
 
@@ -177,43 +171,49 @@ var e20rActivity = {
     },
     _needToSave: function( $elem ) {
 
+        // console.log("Element to save?", $elem);
+
         var $hWeight = $elem.find('.e20r-activity-input-weight_h').val();
         var $hReps = $elem.find('.e20r-activity-input-reps_h').val();
 
-        var $reps = $elem.find('.e20r-activity-input-reps').val();
         var $weight = $elem.find('.e20r-activity-input-weight').val();
-/*
-        console.log("Reps: " + $reps + " hReps: " + $hReps);
-        console.log("Weight: " + $weight + " hWeight: " + $hWeight);
-*/
-        if ( ( $hWeight == $weight ) && ( $hReps == $reps ) ) {
+        var $reps = $elem.find('.e20r-activity-input-reps').val();
 
-            return false;
+        if ( ( $hWeight != $weight ) || ( $hReps != $reps ) ) {
+/*
+            console.log("Need to save data...");
+            console.log("Reps: " + $reps + " hReps: " + $hReps);
+            console.log("Weight: " + $weight + " hWeight: " + $hWeight);
+*/
+            return true;
         }
 
-        return true;
+        return false;
     },
-    attemptSave: function( inp, self ) {
+    attemptSave: function( $btn, activity ) {
 
         event.preventDefault();
 
-         console.log("Getting ready to save data in the field...");
+//        console.log("Getting ready to save data in the field...");
 
-        if ( ! ( inp instanceof jQuery ) ) {
+        if ( ! ( $btn instanceof jQuery ) ) {
 
 //            console.log("inp isn't a jquery object. Converting.");
-            inp = jQuery( inp );
+            $btn = jQuery( $btn );
         }
+        // console.log("Activity causing save: ", $btn );
 
-        var $track_row = inp.closest('.e20r-exercise-set-row');
-        var $ex_def = inp.closest('.e20r-exercise-tracking-row').prev().prev('.e20r-exercise-row');
+        var $edit = $btn.closest('.e20r-edit');
+        var $show = $edit.next('.e20r-saved');
+        var $rInput = $edit.find('input.e20r-activity-input-reps');
+        var $wInput = $edit.find('input.e20r-activity-input-weight');
+        var $ex_def = $edit.closest('.e20r-exercise-tracking-row').prev().prev();
 
         // console.log("Exercise Row: ", $ex_def);
 
-        var $show = $track_row.find('.e20r-saved');
-        var $edit = $track_row;
+        $rInput.removeClass("active");
+        $wInput.removeClass("active");
 
-        inp.removeClass("active");
         jQuery("body").addClass("loading");
 
         /*
@@ -222,29 +222,25 @@ var e20rActivity = {
             console.log("Data: ", inp.val());
         }
         */
-        if ( self._needToSave( $track_row ) ) {
+        if ( activity._needToSave( $edit ) ) {
 
             var $weight = null;
             var $reps = null;
 
-            if (!inp.hasClass('e20r-activity-input-reps')) {
-
-                // Update value in show location
-                $show.find('a.e20r-edit-weight-value').text(inp.val());
-            }
+           // Update value in show location
+            $show.find('a.e20r-edit-weight-value').text($rInput.val());
 
             // Check if both input boxes for this rep/weight row contains data. If so, save it.
-            if (inp.hasClass('e20r-activity-input-weight') &&
-                jQuery.isNumeric(inp.siblings('.e20r-activity-input-reps').val())) {
+            if ($wInput.val() && jQuery.isNumeric( $rInput.val() ) ) {
 
-                $show.find('a.e20r-edit-rep-value').text(inp.val());
+                $show.find('a.e20r-edit-rep-value').text($rInput.val());
             }
 
-            var $hWeight = $track_row.find('.e20r-activity-input-weight_h').val();
-            var $hReps = $track_row.find('.e20r-activity-input-reps_h').val();
+            var $hWeight = $edit.find('.e20r-activity-input-weight_h').val();
+            var $hReps = $edit.find('.e20r-activity-input-reps_h').val();
 
-            $reps = $edit.find('.e20r-activity-input-reps').val();
-            $weight = $edit.find('.e20r-activity-input-weight').val();
+            $reps = $rInput.val();
+            $weight = $wInput.val();
 
             var $data = {
                 action: 'e20r_save_activity',
@@ -263,7 +259,7 @@ var e20rActivity = {
                 'reps': ( $reps !== '' ? $reps : null )
             };
 
-            console.log("Sending data: ", $data );
+            // console.log("Sending data: ", $data );
 
             jQuery.ajax({
                 url: e20r_workout.url,
@@ -274,25 +270,26 @@ var e20rActivity = {
 
                     var $id = resp.data.id;
 
-                    $track_row.find('.e20r-activity-input-record_id').val($id);
+                    $edit.find('input.e20r-activity-input-record_id').val($id);
 
-                    $track_row.find('.e20r-activity-input-reps').val($reps);
-                    $track_row.find('.e20r-activity-input-reps_h').val($reps);
+                    $edit.find('input.e20r-activity-input-reps').val($reps);
+                    $edit.find('input.e20r-activity-input-reps_h').val($reps);
 
-                    $track_row.find('.e20r-activity-input-weight').val($weight);
-                    $track_row.find('.e20r-activity-input-weight_h').val($weight);
+                    $edit.find('input.e20r-activity-input-weight').val($weight);
+                    $edit.find('input.e20r-activity-input-weight_h').val($weight);
 
                     $show.find('a.e20r-edit-rep-value').text($reps);
                     $show.find('a.e20r-edit-weight-value').text($weight);
 
-                    self.show_hide($track_row);
+                    // console.log("Save Row: ", $edit);
+                    activity.hide($edit);
 
                 },
                 error: function (xhdr, errstr, error) {
                     console.log("Error saving data");
 
-                    $track_row.find('.e20r-activity-input-reps').val($hReps);
-                    $track_row.find('.e20r-activity-input-weight').val($hWeight);
+                    $rInput.val($hReps);
+                    $wInput.val($hWeight);
 
                     $show.find('a.e20r-edit-rep-value').text($hReps);
                     $show.find('a.e20r-edit-weight-value').text($hWeight);
@@ -304,10 +301,10 @@ var e20rActivity = {
             });
         }
         else {
-            self.show_hide($track_row.closest('.e20r-resp-table'));
+            activity.hide($edit);
         }
 
-        this._clearLoading();
+        activity._clearLoading();
     },
     saveAll: function() {
 
