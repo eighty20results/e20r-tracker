@@ -101,17 +101,27 @@ table.e20r-resp-table {
     padding: 4px 8px;
 }
 table.e20r-resp-table th {background-color:rgba( 92, 92, 92, 0.3 );font-weight:bold;color:#004CFF;}
-table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee; }
+table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
 @media screen and (max-width: 600px) {
     table.e20r-resp-table {width:100%;}
     .e20r-resp-table thead {display: none;}
     .e20r-resp-table tr:nth-of-type(2n) {background-color: inherit;}
     .e20r-resp-table tr td:first-child {background: #f0f0f0; font-weight:bold;font-size:1.3em;}
     .e20r-resp-table tbody td {display: block;  text-align:center;}
+    .e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
+    .e20r-resp-table tbody td.e20r-td-input-hidden { display: none; }
     .e20r-resp-table tbody td:before {
         content: attr(data-th);
         display: block;
         text-align:center;
+    }
+    .e20r-resp-table .td-input-button {
+        padding-top: 10px;
+    }
+    .e20r-resp-table tr.e20r-saved td.e20r-td-input-activity { background-color: #FFF; }
+    .e20r-resp-table div.e20r-activity-var { color: #004C00; font-weight: bold; font-variant: small-caps; }
+    .e20r-exercise-value {
+        padding: 0;
     }
 }
 .e20r-activity-overview-table {
@@ -194,7 +204,7 @@ input[class^="e20r-activity-input"] {
     height: 25px;
     border: 2px solid #666666;
     margin-right: 5px;
-    float: left;
+    /* float: left; */
     padding: 0;
     padding-left: 5px;
     padding-right: 5px;
@@ -233,9 +243,10 @@ div.e20r-display-exercise-div {
     float: left;
 }
 .e20r-td-input-activity {
-    min-width: 75px;
-    /* width: 38%; */
+/*    min-width: 75px;
+    width: 38%;
     max-width: 180px;
+    */
     padding: 0;
     margin: 0;
 }
@@ -255,20 +266,6 @@ div.e20r-display-exercise-div {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
-}
-.ex-head {
-    border-top: 2px solid #004C00;
-    border-left: 2px solid #004C00;
-    border-right: 2px solid #004C00;
-}
-.ex-body {
-    border-left: 2px solid #004C00;
-    border-right: 2px solid #004C00;
-}
-.ex-footer {
-    border-left: 2px solid #004C00;
-    border-right: 2px solid #004C00;
-    border-bottom: 2px solid #004C00;
 }
 .e20r-edit-weight-value,
 .e20r-edit-rep-value {
