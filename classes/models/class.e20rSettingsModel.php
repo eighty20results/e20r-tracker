@@ -357,7 +357,7 @@ class e20rSettingsModel {
                 'posts_per_page' => -1,
                 'post_type' => $this->cpt_slug,
                 'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
-                'post_id' => $value,
+                'p' => $value,
                 'order' => $order,
             );
         }
@@ -480,6 +480,8 @@ class e20rSettingsModel {
 		$query = new WP_Query( $args );
 
 		dbg("e20r" . ucfirst($this->type) ."Model::loadForQuery() - Returned {$this->type}s: {$query->post_count}" );
+
+		dbg( $query );
 
 		if ( $query->post_count == 0 ) {
 
