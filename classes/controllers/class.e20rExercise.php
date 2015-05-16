@@ -209,6 +209,7 @@ class e20rExercise extends e20rSettings {
 
 		return array( 'width' => 0, 'height' => 0 );
 	}
+
 	public function col_head( $defaults ) {
 
 		$defaults['ex_shortcode'] = 'Identifier';
