@@ -88,7 +88,7 @@ class e20rExerciseView {
 					<div class="e20r-exercise-table-column first-column e20r-exercise-reps">
 						<p class="e20r-exercise-description">
 							<span class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType( $currentExercise->type ); ?>:</span>
-							<span class="e20r-exercise-value"><?php echo ( !in_array( $currentExercise->type, array( 0, 2 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span>
+							<span class="e20r-exercise-value"><?php echo ( !in_array( $currentExercise->type, array( 1, 3 ) ) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}" ); ?></span>
 						</p>
 					</div>
 					<div class="e20r-exercise-table-column second-column e20r-exercise-rest-time">
@@ -221,7 +221,7 @@ class e20rExerciseView {
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-exercise-settings'); ?>
             <div class="e20r-editform">
-                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-exercise-id" value="<?php echo ( ( ! isset($exerciseData->id) ) ? $exerciseData->id : 0 ); ?>">
+                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-exercise-id" value="<?php echo ( ( isset($exerciseData->id) ) ? $exerciseData->id : 0 ); ?>">
                 <table id="e20r-exercise-settings">
                     <thead>
 	                    <tr>
