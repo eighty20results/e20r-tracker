@@ -392,6 +392,12 @@ class e20rSettingsModel {
 
 		$dataList = $this->loadForQuery( $args );
 
+		if ( empty( $dataList ) && $key == 'id' )  {
+
+			dbg("e20r" . ucfirst($this->type) . "Model::find() - Loading default settings... ");
+			$dataList[] = $this->defaultSettings();
+		}
+
 		dbg("e20r" . ucfirst($this->type) ."Model::find() - List of data: " );
 		dbg( $dataList );
 
@@ -480,8 +486,6 @@ class e20rSettingsModel {
 		$query = new WP_Query( $args );
 
 		dbg("e20r" . ucfirst($this->type) ."Model::loadForQuery() - Returned {$this->type}s: {$query->post_count}" );
-
-		dbg( $query );
 
 		if ( $query->post_count == 0 ) {
 
