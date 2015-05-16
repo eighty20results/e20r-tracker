@@ -174,7 +174,6 @@ class e20rSettings {
 
         foreach( $settings as $field => $setting ) {
 
-
 	        $tmp = isset( $_POST["e20r-{$this->type}-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-{$this->type}-{$field}"] ) : null;
 
             dbg( "e20r" . ucfirst( $this->type ) . "::saveSettings() - Page data : {$field} -> " );
