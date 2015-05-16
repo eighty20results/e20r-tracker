@@ -13,9 +13,9 @@ class e20rExerciseModel extends e20rSettingsModel {
 	private $exercise_types = null;
 
 	private $type_map = array(
-		'reps' => 0,
-		'time' => 1,
-		'amrap'=> 2
+		'reps' => 1,
+		'time' => 2,
+		'amrap'=> 3
 	);
 
 	public function e20rExerciseModel() {
@@ -24,9 +24,9 @@ class e20rExerciseModel extends e20rSettingsModel {
 
 		$this->exercise_types = array(
 
-			0 => __('Reps', "e20rtracker"),
-			1 => __('Time', 'e20rtracker'),
-			2 => __('AMRAP', 'e20rtracker'),
+			1 => __('Reps', "e20rtracker"),
+			2 => __('Time', 'e20rtracker'),
+			3 => __('AMRAP', 'e20rtracker'),
 		);
 	}
 
