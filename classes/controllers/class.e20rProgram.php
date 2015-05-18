@@ -212,6 +212,9 @@ class e20rProgram extends e20rSettings {
 			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId}");
 			    // dbg($currentProgram);
 		    }
+		    else {
+			    $this->init();
+		    }
 	    }
 	    else {
 
@@ -223,7 +226,7 @@ class e20rProgram extends e20rSettings {
 		    }
 	    }
 
-	    return $currentProgram->id;
+	    return ( isset( $currentProgram->id ) ? $currentProgram->id : false );
     }
 
 	private function loadProgram( $userId = 0 ) {
