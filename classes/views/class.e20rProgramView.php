@@ -18,6 +18,10 @@ class e20rProgramView {
 
     public function view_userProfile( $programList, $activePgm ) {
 
+	    if ( empty( $programList ) ) {
+		    $programList = array();
+	    }
+
         ob_start();
         ?>
         <h3><?php _e("E20R Tracker Settings", "e20rtracker"); ?></h3>
