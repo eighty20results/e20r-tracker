@@ -42,7 +42,21 @@ class e20rTracker {
 
     }
 
-    public function loadAllHooks() {
+	// Load the auto-update class
+	public function activate_autoUpdate()
+	{
+		require_once ( E20R_PLUGIN_DIR . '/classes/controllers/class.autoupdate.php' );
+
+		$plugin_current_version = '0.5.1';
+		$plugin_remote_path = plugin_dir_url( __FILE__ ) . 'update.php';
+		$plugin_slug = plugin_basename( __FILE__ );
+		$license_user = 'thomas';
+		$license_key = 'abcd';
+
+		new wp_auto_update ( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
+	}
+
+	public function loadAllHooks() {
 
         global $current_user;
         global $pagenow;
@@ -63,6 +77,7 @@ class e20rTracker {
 	        $plugin = E20R_PLUGIN_NAME;
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
+	        add_action( 'init', array( &$this, "activate_autoUpdate" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
@@ -1817,7 +1832,7 @@ class e20rTracker {
         delete_option( $this->setting_name );
     }
 
-    public function e20r_tracker_assignmentsCPT() {
+	public function e20r_tracker_assignmentsCPT() {
 
         $labels =  array(
             'name' => __( 'Assignments', 'e20rtracker'  ),
