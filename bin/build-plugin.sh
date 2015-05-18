@@ -5,9 +5,11 @@ short_name="e20r-tracker"
 plugin_path="${short_name}"
 version=$(egrep "^Version:" ../${short_name}.php | awk '{print $2}')
 src_path="../"
-dst_path="../build/${plugin_path}/"
+dst_path="../build/${plugin_path}"
 kit_path="../build/kits"
-kit_name="${kit_path}/${short_name}-${version}.zip"
+kit_name="${kit_path}/${short_name}-${version}"
+
+echo "Building kit for version ${version}"
 
 mkdir -p ${kit_path}
 mkdir -p ${dst_path}
@@ -24,6 +26,5 @@ for p in ${include[@]}; do
 done
 
 cd ${dst_path}/..
-zip -r ${kit_name} ${short_name}-${version}
+zip -r ${kit_name}.zip ${plugin_path}
 rm -rf ${dst_path}
-
