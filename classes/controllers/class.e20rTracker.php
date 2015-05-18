@@ -1708,8 +1708,7 @@ class e20rTracker {
                     field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button' ),
                     primary key  (id),
                      key articles (article_id asc),
-                     key user_id ( user_id asc ),
-                     key questions ( question_id asc )
+                     key user_id ( user_id asc )
                      )
                     {$charset_collate}
         ";
