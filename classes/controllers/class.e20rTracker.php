@@ -45,7 +45,7 @@ class e20rTracker {
 	// Load the auto-update class
 	public function activate_autoUpdate()
 	{
-		require_once ( E20R_PLUGIN_DIR . '/classes/controllers/class.autoupdate.php' );
+		require_once ( E20R_PLUGIN_DIR . '/classes/controllers/class.wp_auto_update.php' );
 
 		$plugin_current_version = '0.5.1';
 		$plugin_remote_path = plugin_dir_url( __FILE__ ) . 'update.php';
@@ -53,7 +53,7 @@ class e20rTracker {
 		$license_user = 'thomas';
 		$license_key = 'abcd';
 
-		new wp_auto_update ( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
+		new WP_AutoUpdate( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
 	}
 
 	public function loadAllHooks() {
@@ -380,11 +380,11 @@ class e20rTracker {
         if ( ( ! class_exists( 'PrsoGformsAdvUploader' ) ) || ( ! class_exists('PMProSequence')) ) {
 
             ?>
-            <div class="error">
-            <?php if ( ! class_exists('PrsoGformsAdvUploader') ): ?>
-                <?php dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed"); ?>
-                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
-            <?php endif; ?>
+<!--            <div class="error">
+            <?php // if ( ! class_exists('PrsoGformsAdvUploader') ): ?>
+                <?php//  dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed"); ?>
+                <p><?php // _e( "Eighty / 20 Tracker - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
+            <?php // endif; ?> -->
             <?php if ( ! class_exists('PMProSequence') ): ?>
                 <?php dbg("e20rTracker::Error -  The PMPro Sequence plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: PMPro Sequence plugin", 'e20rtracker' ); ?></p>
@@ -2578,7 +2578,7 @@ class e20rTracker {
         return '%s';
     }
 
-    public function getCurrentPostType() {
+    public static function getCurrentPostType() {
 
         global $post, $typenow, $current_screen;
 
