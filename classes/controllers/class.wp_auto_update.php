@@ -1,6 +1,6 @@
 <?php
 
-class WP_AutoUpdate 
+class WP_AutoUpdate
 {
 	/**
 	 * The plugin current version
