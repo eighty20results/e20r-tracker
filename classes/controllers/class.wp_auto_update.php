@@ -81,6 +81,11 @@ class WP_AutoUpdate
 		// Get the remote version
 		$remote_version = $this->getRemote_version();
 
+		if (! isset( $remote_version->new_version ) ) {
+
+			return $transient;
+		}
+
 		// If a newer version is available, add the update
 		if ( version_compare( $this->current_version, $remote_version->new_version, '<' ) ) {
 			$obj = new stdClass();
