@@ -13,7 +13,7 @@ $obj = new stdClass();
 $obj->slug = 'e20r-tracker.php';
 $obj->name = 'Eighty/20 Tracker';
 $obj->plugin_name = 'e20r-tracker.php';
-$obj->new_version = '0.5.1-beta';
+$obj->new_version = '0.5.1';
 // the url for the plugin homepage
 $obj->url = 'http://www.eighty20results.com/plugins/e20r-tracker';
 //the download location for the plugin zip file (can be any internet host)
