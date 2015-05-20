@@ -180,9 +180,22 @@ class e20rMeasurements {
         global $pagenow;
         global $post;
 
+	    $imageFormats = array(
+            'image/bmp',
+		    'image/gif',
+		    'image/jpeg',
+		    'image/png',
+		    'image/tiff'
+	    );
+
         dbg("e20rMeasurements::setFilenameForClientUpload() - Data: ");
         dbg( $file );
         dbg( $_REQUEST );
+
+	    /* Skip non-image uploads. */
+	    if ( ! in_array( $file['type'], $imageFormats ) ) {
+		    return $file;
+	    }
 
         if ( ( $this->id == 0 ) || ( $this->id === null ) ) {
 
