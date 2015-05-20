@@ -155,8 +155,14 @@ class e20rAssignmentView extends e20rSettingsView {
 
                             dbg("e20rAssignmentView::viewArticle_Assignments() - Loaded " . count($all) . ' assignments');
 
-                            foreach( $all as $id => $assignment ) { ?>
-                                <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay})"; ?></option><?php
+                            foreach( $all as $id => $assignment ) {
+
+	                            if ( $id != 0 ) { ?>
+		                            <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay})"; ?></option><?php
+	                            }
+	                            else { ?>
+		                            <option value="0">No defined Assignments</option><?php
+	                            }
                             } ?>
                         </select>
                     </td>
