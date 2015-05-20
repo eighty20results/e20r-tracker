@@ -18,7 +18,7 @@ $obj->new_version = '0.5.1';
 $obj->url = 'http://www.eighty20results.com/plugins/e20r-tracker';
 //the download location for the plugin zip file (can be any internet host)
 // $obj->package = 'http://eighty20results.s3.amazonaws.com/plugin/e20r-tracker.zip';
-$obj->package = 'https://eighty20results.com/protected-downloads/e20r-tracker/e20r-tracker.zip';
+$obj->package = 'https://eighty20results.com/protected-content/e20r-tracker/e20r-tracker.zip';
 
 switch ( $_POST['action'] ) {
 
