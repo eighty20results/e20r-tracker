@@ -286,8 +286,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
         global $post;
 
 
+	    $assignments = parent::loadAllSettings( 'publish' );
 
-	    if ( empty( $assignments = parent::loadAllSettings( 'publish' ) ) ) {
+	    if ( empty( $assignments ) ) {
 
 		    $assignments[0] = $this->defaultSettings();
 	    }
