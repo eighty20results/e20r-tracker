@@ -30,7 +30,7 @@ class e20rAssignmentView extends e20rSettingsView {
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-settings' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-assignment-id" id="hidden-e20r-assignment-id"
-                       value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->ID : 0 ); ?>">
+                       value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->id : 0 ); ?>">
                 <table id="e20r-assignment-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
@@ -45,7 +45,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="<?php echo $assignmentData->ID; ?>" class="assignment-inputs">
+                    <tr id="<?php echo $assignmentData->id; ?>" class="assignment-inputs">
                         <td class="text-input">
                             <input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num" value="<?php echo ( ! isset( $assignmentData->order_num ) ? 1 : $assignmentData->order_num ); ?>">
                         </td>
