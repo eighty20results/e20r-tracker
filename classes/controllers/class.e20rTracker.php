@@ -167,7 +167,7 @@ class e20rTracker {
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
 
             add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_assignment', array( &$e20rAssignment, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
@@ -1712,7 +1712,7 @@ class e20rTracker {
          * Uses the post->ID of the e20r_assignments CPT for it's unique ID.
          */
         $assignmentAsSql =
-            "CREATE TABLE {$wpdb->prefix}e20r_assignment (
+            "CREATE TABLE {$wpdb->prefix}e20r_assignments (
                     id int not null,
                     article_id int not null,
                     program_id int not null,
@@ -1837,7 +1837,7 @@ class e20rTracker {
         $labels =  array(
             'name' => __( 'Assignments', 'e20rtracker'  ),
             'singular_name' => __( 'Assignment', 'e20rtracker' ),
-            'slug' => 'e20r_assignment',
+            'slug' => 'e20r_assignments',
             'add_new' => __( 'New Assignment', 'e20rtracker' ),
             'add_new_item' => __( 'New Assignment', 'e20rtracker' ),
             'edit' => __( 'Edit assignments', 'e20rtracker' ),
@@ -1851,7 +1851,7 @@ class e20rTracker {
         );
 
         $error = register_post_type('e20r_assignments',
-            array( 'labels' => apply_filters( 'e20r-tracker-assignment-cpt-labels', $labels ),
+            array( 'labels' => apply_filters( 'e20r-tracker-assignments-cpt-labels', $labels ),
                    'public' => false,
                    'show_ui' => true,
                    'show_in_menu' => true,
@@ -1862,10 +1862,10 @@ class e20rTracker {
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker',
                    'rewrite' => array(
-                       'slug' => apply_filters('e20r-tracker-assignment-cpt-slug', 'tracker-assignments'),
+                       'slug' => apply_filters('e20r-tracker-assignments-cpt-slug', 'tracker-assignments'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-assignment-cpt-archive-slug', 'tracker-assignments')
+                   'has_archive' => apply_filters('e20r-tracker-assignments-cpt-archive-slug', 'tracker-assignments')
             )
         );
 
