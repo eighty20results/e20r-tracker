@@ -2231,7 +2231,9 @@ class e20rTracker {
 
 			dbg("e20rTracker::getGroupIdForUser() - Using Paid Memberships Pro for group/level management for {$userId}");
 			$obj = pmpro_getMembershipLevelForUser( $userId );
-			$group_id = $obj->ID;
+
+			$group_id = isset( $obj->ID ) ? $obj->ID : 0;
+
 			dbg("e20rTracker::getGroupIdForUser() - Returning group ID of {$group_id} for {$userId}");
 		}
 
