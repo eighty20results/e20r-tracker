@@ -278,7 +278,7 @@ class e20rProgram extends e20rSettings {
 
 	    global $currentProgram;
 
-        if ( ( $currentProgram->id === false ) || ( $program_id != $currentProgram->id ) ) {
+        if ( isset( $currentProgram->id ) && ( ( $currentProgram->id === false ) || ( $program_id != $currentProgram->id ) ) ) {
 
 	        if ( $program_id == null ) {
 
