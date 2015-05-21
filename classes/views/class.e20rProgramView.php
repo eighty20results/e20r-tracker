@@ -33,8 +33,8 @@ class e20rProgramView {
                         <option value="0" <?php selected( $activePgm, 0 ) ?>>Not Applicable</option>
                         <?php
 
-                        foreach( $programList as $id => $name ) {
-                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $activePgm, $id ); ?>><?php echo esc_attr($name); ?></option> <?php
+                        foreach( $programList as $id => $obj ) {
+                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $activePgm, $id ); ?>><?php echo esc_attr($obj->title); ?></option> <?php
                         }
 
                         ?>
