@@ -142,6 +142,10 @@ class e20rArticleView extends e20rSettingsView {
             return false;
         }
 
+	    if ( ( !isset( $settings->programs ) ) || ( $settings->programs == null ) ) {
+		    $settings->programs = array();
+	    }
+
         ?>
         <form action="" method="post">
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' ); ?>
@@ -213,9 +217,10 @@ class e20rArticleView extends e20rSettingsView {
                                 $programs = new WP_Query( array(
                                     'post_type' => 'e20r_programs',
                                     'posts_per_page' => -1,
+	                                'post_status' => 'publish',
                                     'order_by' => 'title',
                                     'order' => 'ASC',
-                                    'fields' => array( 'ids', 'title')
+                                    'fields' => array( 'ID', 'title')
                                 ));
 
                                 // $programs = $e20rTracker->getMembershipLevels();
@@ -246,13 +251,15 @@ class e20rArticleView extends e20rSettingsView {
                                     'post_type' => 'e20r_checkins',
                                     'posts_per_page' => -1,
                                     'order_by' => 'title',
+	                                'post_status' => 'publish',
                                     'order' => 'ASC',
                                     'fields' => array( 'id', 'title')
                                 ));
 
                                 // $programs = $e20rTracker->getMembershipLevels();
-                                dbg("e20rArticleView::viewArticleSettings() - Grabbed " . count( $checkins ) . " checkin options");
-                                // dbg("e20rArticleView::viewArticleSettings() - " . print_r( $programs, true));
+                                dbg("e20rArticleView::viewArticleSettings() - Grabbed " .$checkins->post_count . " checkin options");
+                                // dbg("e20rArticleView::viewArticleSettings() - " . print_r( $checkins, true));
+
                                 while ( $checkins->have_posts() ) {
 
                                     $checkins->the_post();
@@ -268,7 +275,7 @@ class e20rArticleView extends e20rSettingsView {
 			                    <?php
 			                    global $e20rWorkout;
 
-			                    dbg("e20rArticleView::viewArticleSettings() - There's load all defined activities");
+			                    dbg("e20rArticleView::viewArticleSettings() - Load all defined activities");
 			                    $activities = $e20rWorkout->getActivities();
 
 			                    foreach( $activities as $activity ) {
