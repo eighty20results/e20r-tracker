@@ -19,7 +19,7 @@
     /* font-variant: small-caps; */
     text-align: center;
     text-decoration: none;
-    /* box-shadow: 1px 1px 4px #999; */
+    box-shadow: none;
     /* background: #666; */
     background-image: -webkit-linear-gradient(#FFF, #E5E5E5);
     background-image: -moz-linear-gradient(#FFF, #E5E5E5);
@@ -30,6 +30,7 @@
 }
 .e20r-button:hover {
     color: #FFF;
+    box-shadow: none;
     /* background: #000; */
     background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
     background-image: -moz-linear-gradient(#E5E5E5, #004CFF);
