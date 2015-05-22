@@ -161,8 +161,8 @@ class e20rArticleModel extends e20rSettingsModel {
 		    $args = array(
 			    'posts_per_page' => -1,
 			    'post_type' => 'e20r_articles',
-			    'post_status' => 'publish',
-			    'page_id' => $value,
+			    /* 'post_status' => 'publish', */
+			    'p' => $value,
 		    );
 	    }
 
@@ -195,14 +195,14 @@ class e20rArticleModel extends e20rSettingsModel {
 
 	    foreach ( $list as $a ) {
 
-		    if ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) {
+		    if ( ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) {
 
 			    dbg( "e20rArticleModel::findArticle() - Returned program ID == {$programId}" );
 			    $article = $a;
 		    }
 	    }
 
-	    return $article;
+	    return is_null( $article ) ? $list : $article;
     }
 
 	private function loadForQuery( $args ) {
@@ -220,13 +220,15 @@ class e20rArticleModel extends e20rSettingsModel {
 			$new = $this->loadSettings( get_the_ID() );
 			$new->id = get_the_ID();
 
-			if ( $query->post_count > 1 ) {
+/* 			if ( $query->post_count > 1 ) {
 
 				$articleList[] = $new;
 			}
 			else {
 				$articleList = $new;
 			}
+*/
+			$articleList[] = $new;
 		}
 
 		return $articleList;
