@@ -155,7 +155,7 @@ class e20rArticleView extends e20rSettingsView {
                 <table id="e20r-article-settings" class="wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Article", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Post/Page", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-release_day"><?php _e("Delay", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20rtracker"); ?></label></th>
