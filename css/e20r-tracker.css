@@ -2088,8 +2088,8 @@ body.loading .modal {
 p.e20r-assignment-descr {
     padding-top: 10px;
     padding-bottom: 10px;
-    paddin-left: 20px;
-    font-size: 0.8rem !important;
+    padding-left: 12px;
+    font-size: 0.9rem !important;
     font-style: italic;
 }
 #e20r-assignment-complete button {
@@ -2354,3 +2354,20 @@ blockquote:before {
 .e20r-presale-table {
     border: 1px solid #b5b5b5;
 }
+::-webkit-input-placeholder {
+    color:    #b5b5b5;
+    opacity:  1;
+}
+:-moz-placeholder {
+    color:    #b5b5b5;
+    opacity:  1;
+}
+::-moz-placeholder {
+    color:    #b5b5b5;
+    opacity:  1;
+}
+:-ms-input-placeholder {
+    color:    #b5b5b5;
+    opacity:  1;
+}
+
