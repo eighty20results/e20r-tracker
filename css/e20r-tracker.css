@@ -2225,6 +2225,17 @@ span.e20r-required {
     text-align: center;
     padding-top: 3%;
 }
+.what-to-do-number {
+    vertical-align: text-top;
+    font-size: 30pt;
+    text-align: left;
+    color: #808080;
+}
+.what-to-do-number span.what-to-do-span {
+    padding-right: 10px;
+    border-right: 2px solid #F5F5F5 !important;
+}
+
 .what-to-do-table tbody,
 .what-to-do-table tr,
 .what-to-do-table td {
@@ -2243,16 +2254,6 @@ tr.what-to-do-row {
 }
 .what-to-do-textcell > table > tbody > tr> td > strong {
     font-size: 1.15rem;
-}
-.what-to-do-number {
-    vertical-align: text-top;
-}
-.what-to-do-number > span {
-    font-size: 30pt;
-    text-align: left;
-    color: #808080;
-    padding-right: 5px;
-    border-right: 2px solid #F5F5F5;
 }
 .nage-box {
     max-width: 700px;
