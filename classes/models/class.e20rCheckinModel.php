@@ -412,6 +412,11 @@ class e20rCheckinModel extends e20rSettingsModel {
         $this->settings->item_text = $pst->post_excerpt;
         $this->settings->short_name = $pst->post_title;
 
+	    if ( empty( $this->settings->program_ids ) ) {
+
+		    $this->settings->program_ids = array();
+	    }
+
         return $this->settings;
     }
 
