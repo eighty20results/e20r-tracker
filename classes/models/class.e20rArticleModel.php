@@ -37,20 +37,47 @@ class e20rArticleModel extends e20rSettingsModel {
         return $this->settings;
     }
 
-/*    public function getProgramID() {
+	public function loadSettings( $id ) {
 
-        global $current_user;
-	    global $currentProgram;
+		$this->settings = parent::loadSettings($id);
 
-        $userPrograms = get_user_meta( $current_user->ID, '_e20r-user-programs' );
+		if ( empty( $this->settings->programs ) ) {
 
-        if ( $userPrograms == false ) {
-            return false;
-        }
+			$this->settings->programs = array();
+		}
 
-        // Combination of program from usermeta & the $settings-Programs;
-    }
-*/
+		if ( empty( $this->settings->activity_id ) ) {
+
+			$this->settings->activity_id = array();
+		}
+
+		if ( empty( $this->settings->assignments ) ) {
+
+			$this->settings->assignments = array();
+		}
+
+		if ( empty( $this->settings->checkins ) ) {
+
+			$this->settings->checkins = array();
+		}
+
+		return $this->settings;
+	}
+
+	/*    public function getProgramID() {
+
+			global $current_user;
+			global $currentProgram;
+
+			$userPrograms = get_user_meta( $current_user->ID, '_e20r-user-programs' );
+
+			if ( $userPrograms == false ) {
+				return false;
+			}
+
+			// Combination of program from usermeta & the $settings-Programs;
+		}
+	*/
 
 	public function findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' ) {
 
