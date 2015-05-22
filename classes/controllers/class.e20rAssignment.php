@@ -268,29 +268,33 @@ class e20rAssignment extends e20rSettings {
         global $e20rTracker;
         global $post;
 
+	    if ( empty( $post_id ) ) {
+		    dbg("e20re20rAssignment::saveSettings() - No post ID supplied");
+		    return false;
+	    }
+
+	    if ( !isset( $post->post_type ) ) {
+		    return $post_id;
+	    }
+
+	    if ( 'e20r_assignments' != $post->post_type ) {
+		    dbg("e20rAssignment::saveSettings() - Incorrect type!");
+		    return $post_id;
+	    }
+
+	    if ( wp_is_post_revision( $post_id ) ) {
+		    return $post_id;
+	    }
+
+	    if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+		    return $post_id;
+	    }
+
         $savePost = $post;
 
         if ( empty( $settings ) ) {
 
             dbg( "e20rAssignment::saveSettings()  - Saving metadata from edit.php page, related to the e20rAssignment post_type" );
-
-            if ( $post->post_type != 'e20r_assignments' ) {
-                dbg("e20rAssignment::saveSettings() - Incorrect type! {$post->post_type}");
-                return $post_id;
-            }
-
-            if ( empty( $post_id ) ) {
-                dbg("e20re20rAssignment::saveSettings() - No post ID supplied");
-                return false;
-            }
-
-            if ( wp_is_post_revision( $post_id ) ) {
-                return $post_id;
-            }
-
-            if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
-                return $post_id;
-            }
 
             $this->model->init( $post_id );
 
