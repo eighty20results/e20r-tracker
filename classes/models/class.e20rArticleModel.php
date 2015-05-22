@@ -22,13 +22,13 @@ class e20rArticleModel extends e20rSettingsModel {
         $this->settings = parent::defaultSettings();
 
         $this->settings->id = null;
-        $this->settings->programs = null;
+        $this->settings->programs = array();
         $this->settings->post_id = null;
         $this->settings->activity_id = array();
         $this->settings->release_day = null;
         $this->settings->release_date = null;
-        $this->settings->assignments = null;
-        $this->settings->checkins = null;
+        $this->settings->assignments = array();
+        $this->settings->checkins = array();
         $this->settings->measurement_day = false;
         $this->settings->photo_day = false;
         $this->settings->prefix = "Lesson";
