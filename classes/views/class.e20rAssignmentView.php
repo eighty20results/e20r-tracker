@@ -289,7 +289,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( ! empty( $assignment->descr ) ) { ?>
 				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
 			}?>
-			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="Your response, please..."><?php
+			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="Type your response and click 'Complete', please..."><?php
 				if ( ! empty( $assignment->answer ) ) {
 					dbg("e20rAssignmentView::showAssignmentParagraph() - Loading actual answer...");
 					echo trim(stripslashes($assignment->answer));
