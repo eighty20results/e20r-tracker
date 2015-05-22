@@ -2220,6 +2220,39 @@ span.e20r-required {
     margin-left: auto;
     margin-right: auto;
 }
+.what-to-do-div > h3 {
+    text-align: center;
+    padding-top: 3%;
+}
+.what-to-do-table tbody,
+.what-to-do-table tr,
+.what-to-do-table td {
+    border: 0;
+}
+tr.what-to-do-row {
+    border-bottom: 2px solid #C5C5C5;
+}
+
+.what-to-do-textcell {
+    vertical-align: text-top;
+    padding-left: 20px;
+}
+.what-to-do-textcell > table {
+    margin-bottom: 0;
+}
+.what-to-do-textcell > table > tbody > tr> td > strong {
+    font-size: 1.15rem;
+}
+.what-to-do-number {
+    vertical-align: text-top;
+}
+.what-to-do-number > span {
+    font-size: 30pt;
+    text-align: left;
+    color: #808080;
+    padding-right: 5px;
+    border-right: 2px solid #F5F5F5;
+}
 .nage-box {
     max-width: 700px;
     min-width: 400px;
@@ -2260,9 +2293,19 @@ span.e20r-required {
 .new-habit-box {
     border: 1pt dotted grey;
     background-color: #ffcc66;
-    max-width: 500px;
+    max-width: 600px;
+    width: 80%;
     margin: 0px auto 20px auto;
     padding: 0px 25px 0px 25px;
+}
+.new-habit-box > h4 {
+    padding-top: 10px !important;
+    padding-left: 15px !important;
+    border-bottom: 2px solid #9C0000 !important;
+}
+.new-habit-box > p {
+    text-align: left;
+    padding-left: 30px;
 }
 blockquote {
     border-right: 5px solid rgba(0, 77, 255, 0.35);
