@@ -871,12 +871,12 @@ class e20rCheckin extends e20rSettings {
 	    if ( $config->type == 'assignment' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
-		    $article = $e20rArticle->findArticle( 'post_id', $post->ID );
+		    $article = $e20rArticle->findArticle( 'post_id', $post->ID, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'action' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by delay value of {$config->delay} days");
-		    $article = $e20rArticle->findArticle( 'release_day', $config->delay );
+		    $article = $e20rArticle->findArticle( 'release_day', $config->delay, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'show_assignments' ) {
 
