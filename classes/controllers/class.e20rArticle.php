@@ -54,7 +54,7 @@ class e20rArticle extends e20rSettings {
 
         // Query to load all available settings (used with check-in definition)
         $query = array(
-            'post_type'   => apply_filters( 'e20r_tracker_article_types', array( $this->cpt_slug ) ),
+            'post_type'   => apply_filters( 'e20r_tracker_article_types', array( 'post', 'page' ) ),
             'post_status' => apply_filters( 'e20r_tracker_article_post_status', $def_status ),
             'posts_per_page' => -1,
         );
@@ -91,7 +91,7 @@ class e20rArticle extends e20rSettings {
 
 	    global $currentArticle;
 
-        if ( !isset($currentArticle->id) || ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) ) {
+        if ( ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) || !isset($currentArticle->id) ) {
 
 	        $currentArticle = parent::init( $postId );
             dbg("e20rArticle::init() - Loaded settings for {$postId}:");
@@ -730,8 +730,8 @@ class e20rArticle extends e20rSettings {
         return $this->post_id;
     }
 
-    public function findArticle( $type = 'id', $val = null ) {
+    public function findArticle( $key = 'id', $val = null, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
-        return $this->model->findArticle( $type, $val );
+        return $this->model->findArticle( $key, $val, $type, $programId, $comp );
     }
 } 
