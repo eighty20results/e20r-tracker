@@ -34,7 +34,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $settings->startdate = null;
         $settings->enddate = null;
         $settings->maxcount = 0;
-        $settings->program_ids = null;
+        $settings->program_ids = array();
 
         return $settings;
     }
