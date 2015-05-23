@@ -72,6 +72,23 @@ class e20rArticleModel extends e20rSettingsModel {
 			$this->settings->checkins = array();
 		}
 
+		// Check if the post_id has defined excerpt we can use for this article.
+		if ( isset( $this->settings->post_id ) && ( ! empty($this->settings->post_id ) ) ) {
+
+			$post = get_post( $this->settings->post_id );
+			setup_postdata( $post );
+
+			$article = get_post( $this->settings->id );
+			setup_postdata( $article );
+
+			if ( ! empty( $post->post_excerpt ) && ( empty( $article->post_excerpt ) ) ) {
+
+				$article->post_excerpt = $post->post_excerpt;
+				wp_update_post( $article );
+			}
+
+		}
+
 		return $this->settings;
 	}
 
