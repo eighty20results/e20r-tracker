@@ -377,14 +377,10 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ( ! class_exists( 'PrsoGformsAdvUploader' ) ) || ( ! class_exists('PMProSequence')) ) {
+        if ( ! class_exists('PMProSequence') ) {
 
             ?>
-<!--            <div class="error">
-            <?php // if ( ! class_exists('PrsoGformsAdvUploader') ): ?>
-                <?php//  dbg("e20rTracker::Error -  The Gravity Forms Advanced Uploader plugin is not installed"); ?>
-                <p><?php // _e( "Eighty / 20 Tracker - Missing dependency: Gravity Forms Advanced Uploader plugin", 'e20rtracker' ); ?></p>
-            <?php // endif; ?> -->
+            <div class="error">
             <?php if ( ! class_exists('PMProSequence') ): ?>
                 <?php dbg("e20rTracker::Error -  The PMPro Sequence plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: PMPro Sequence plugin", 'e20rtracker' ); ?></p>
