@@ -161,7 +161,7 @@ class e20rSettings {
             return $post_id;
         }
 
-        dbg("e20r" . ucfirst($this->type) . "::saveSettings()  - Saving metadata for the {$this->type} post_type");
+        dbg("e20r" . ucfirst($this->type) . "::saveSettings()  - Saving metadata for the {$this->type} post type");
         $this->model->init( $post_id );
 
         $settings = $this->model->loadSettings( $post_id );
@@ -169,6 +169,7 @@ class e20rSettings {
 
         if ( ! $settings ) {
 
+	        dbg("e20r" . ucfirst($this->type) . "::saveSettings()  - No previous settings found. Using defaults!");
             $settings = $defaults;
         }
 
@@ -176,7 +177,7 @@ class e20rSettings {
 
 	        $tmp = isset( $_POST["e20r-{$this->type}-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-{$this->type}-{$field}"] ) : null;
 
-            dbg( "e20r" . ucfirst( $this->type ) . "::saveSettings() - Page data : {$field} -> " );
+            dbg( "e20r" . ucfirst( $this->type ) . "::saveSettings() - Being saved : {$field} -> " );
 	        dbg($tmp);
 
             if ( empty( $tmp ) ) {
