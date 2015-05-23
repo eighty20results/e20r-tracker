@@ -269,9 +269,18 @@ class e20rArticleView extends e20rSettingsView {
                                 } ?>
                             </select>
                         </td>
-	                    <td>
+	                    <td><?php
+		                    if ( is_array( $settings->activity_id ) ) {
+
+			                    $selected = in_array( -1, $settings->activity_id ) ? 'selected="selected"' : null;
+		                    }
+		                    else {
+
+			                    $selected = ( -1 == $settings->activity_id ? 'selected="selected"' : null );
+		                    }
+		                    ?>
 		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id">
-			                    <option value="-1" <?php selected( -1, $settings->activity_id ); ?>>No defined activity</option>
+			                    <option value="-1" <?php echo $selected ?>>No defined activity</option>
 			                    <?php
 			                    global $e20rWorkout;
 
@@ -281,8 +290,18 @@ class e20rArticleView extends e20rSettingsView {
 			                    foreach( $activities as $activity ) {
 				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: ");
 				                    dbg($activity);
+
+				                    if ( is_array( $settings->activity_id ) ) {
+
+					                    $selected = in_array( $activity->id, $settings->activity_id ) ? 'selected="selected"' : null;
+				                    }
+				                    else {
+
+					                    $selected = ( $activity->id == $settings->activity_id ? 'selected="selected"' : null );
+				                    }
+
 				                    ?>
-				                    <option value="<?php echo $activity->id; ?>"<?php selected( $activity->id, $settings->activity_id ); ?>><?php echo $activity->title; ?></option><?php
+				                    <option value="<?php echo $activity->id; ?>"<?php echo $selected; ?>><?php echo $activity->title; ?></option><?php
 			                    }
 			                    ?>
 		                    </select>
