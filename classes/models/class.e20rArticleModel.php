@@ -55,6 +55,17 @@ class e20rArticleModel extends e20rSettingsModel {
 
 			$this->settings->assignments = array();
 		}
+		else {
+			foreach( $this->settings->assignments as $k => $assignmentId ) {
+
+				if ( empty( $assignmentId ) ) {
+
+					dbg("e20rArticleModel::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $assignmentId ) ? 'null' : $assignmentId );
+					unset( $this->settings->assignments[$k] );
+				}
+			}
+
+		}
 
 		if ( empty( $this->settings->checkins ) ) {
 
@@ -262,11 +273,23 @@ class e20rArticleModel extends e20rSettingsModel {
                 continue;
             }
 
-            if ( $key == 'post_id' ) {
+            if ( 'post_id' == $key ) {
 
                 dbg("e20rArticleModel::saveSettings() - Saving the article ID with the post ");
                 update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
             }
+
+	        if ( 'assignments' == $key ) {
+
+		        foreach( $value as $k => $assignmentId ) {
+
+			        if ( empty( $assignmentId ) ) {
+
+				        dbg("e20rArticleModel::saveSettings() - Removing empty assignment key #{$k} with value {$assignmentId}");
+				        unset( $value[$k] );
+			        }
+		        }
+	        }
 
             if ( false === $this->settings( $articleId, 'update', $key, $settings->{$key} ) ) {
 
