@@ -76,7 +76,7 @@ class e20rAssignment extends e20rSettings {
         global $e20rArticle;
     }
 
-    public function configureArticleMetabox( $articleId ) {
+    public function configureArticleMetabox( $articleId, $ajax = false ) {
 
         dbg("e20rAssignment::configureArticleMetabox() - For article {$articleId}");
 
@@ -96,13 +96,18 @@ class e20rAssignment extends e20rSettings {
         }
 
         ob_start();
-        ?>
-        <div id="e20r-assignment-settings">
-            <?php echo $this->view->viewArticle_Assignments( $articleId, $assignments, $answerDefs ); ?>
-        </div>
+        if (false === $ajax) {
+          ?>
+	        <div id="e20r-assignment-settings"> <?php
+        } ?>
+        <?php echo $this->view->viewArticle_Assignments( $articleId, $assignments, $answerDefs );
+	    if ( false === $ajax) {
+	        ?>
+            </div>
     <?php
+	    }
+
         $html = ob_get_clean();
-        ob_end_flush();
 
         return $html;
     }
@@ -263,31 +268,14 @@ class e20rAssignment extends e20rSettings {
         echo $this->view->viewSettingsBox( $assignmentData, $this->model->getAnswerDescriptions() );
     }
 
-    public function saveSettings( $post_id, $settings = null ) {
+    public function saveSettings( $assignmentId, $settings = null ) {
 
         global $e20rTracker;
         global $post;
 
-	    if ( empty( $post_id ) ) {
-		    dbg("e20re20rAssignment::saveSettings() - No post ID supplied");
+	    if ( empty( $assignmentId ) ) {
+		    dbg("e20rAssignment::saveSettings() - No Assignment ID supplied");
 		    return false;
-	    }
-
-	    if ( !isset( $post->post_type ) ) {
-		    return $post_id;
-	    }
-
-	    if ( 'e20r_assignments' != $post->post_type ) {
-		    dbg("e20rAssignment::saveSettings() - Incorrect type!");
-		    return $post_id;
-	    }
-
-	    if ( wp_is_post_revision( $post_id ) ) {
-		    return $post_id;
-	    }
-
-	    if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
-		    return $post_id;
 	    }
 
         $savePost = $post;
@@ -296,9 +284,9 @@ class e20rAssignment extends e20rSettings {
 
             dbg( "e20rAssignment::saveSettings()  - Saving metadata from edit.php page, related to the e20rAssignment post_type" );
 
-            $this->model->init( $post_id );
+            $this->model->init( $assignmentId );
 
-            $settings = $this->model->loadSettings( $post_id );
+            $settings = $this->model->loadSettings( $assignmentId );
             $defaults = $this->model->defaultSettings();
 
             if ( ! $settings ) {
@@ -310,7 +298,8 @@ class e20rAssignment extends e20rSettings {
 
                 $tmp = isset( $_POST["e20r-assignment-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-assignment-{$field}"] ) : null;
 
-                dbg( "e20rAssignment::saveSettings() - Page data : {$field} -> {$tmp}" );
+                dbg( "e20rAssignment::saveSettings() - Page data : {$field} -> " );
+	            dbg($tmp);
 
                 if ( is_null( $tmp ) ) {
 
@@ -341,7 +330,7 @@ class e20rAssignment extends e20rSettings {
                 dbg( "e20rAssignment::saveSettings() - Error saving settings!" );
             }
 
-            $post = get_post( $post_id );
+            $post = get_post( $assignmentId );
 
             setup_postdata( $post );
 
