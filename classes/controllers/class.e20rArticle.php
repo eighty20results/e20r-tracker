@@ -105,7 +105,7 @@ class e20rArticle extends e20rSettings {
 
         if ( ( $this->articleId  !== false ) && ( $currentArticle->post_id !== $postId ) ) {
 
-	        dbg("e20rArticle::init() - No article defined for this postId ");
+	        dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->post_id} & {$postId}");
             $this->articleId = false;
         }
 
@@ -512,19 +512,23 @@ class e20rArticle extends e20rSettings {
     public function add_assignment_callback() {
 
         global $e20rAssignment;
+	    global $e20rTracker;
 
         dbg("e20rArticle::add_assignment_callback().");
         check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
-        dbg("e20rArticle::add_assignment_callback() - Saving new assignment for article.");
 
-        $articleId = isset($_POST['e20r-article-id']) ? intval( $_POST['e20r-article-id']) : null;
-        $assignmentId = isset($_POST['e20r-assignment-id']) ? intval( $_POST['e20r-assignment-id']) : null;
-        $assignment_orderNum = isset($_POST['e20r-assignment-order_num']) ? intval( $_POST['e20r-assignment-order_num'] ) : null;
+        dbg("e20rArticle::add_assignment_callback() - Saving new assignment for article.");
+	    // dbg($_POST);
+
+        $articleId = isset($_POST['e20r-article-id']) ? $e20rTracker->sanitize( $_POST['e20r-article-id']) : null;
+	    $postId = isset($_POST['e20r-assignment-post_id']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-post_id']) : null;
+        $assignmentId = isset($_POST['e20r-assignment-id']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id']) : null;
+        $assignment_orderNum = isset($_POST['e20r-assignment-order_num']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-order_num'] ) : null;
 
         dbg("e20rArticle::add_assignment_callback() - Article: {$articleId}, Assignment: {$assignmentId}, Assignment Order#: {$assignment_orderNum}");
 
         $this->articleId = $articleId;
-        $this->init( $this->articleId );
+        $this->init( $postId );
 
         $artSettings = $this->model->getSettings();
 	    dbg("e20rArticle::add_assignment_callback() - Article settings for ({$articleId}): ");
@@ -532,44 +536,49 @@ class e20rArticle extends e20rSettings {
 
         $assignment = $e20rAssignment->loadAssignment( $assignmentId );
 
-        dbg("e20rArticle::add_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
+	    dbg("e20rArticle::add_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
         $assignment->order_num = $assignment_orderNum;
         $assignment->article_id = $articleId;
 
-        dbg("e20rArticle::add_assignment_callback() - Assignment settings for ({$assignmentId}): ");
-        $e20rAssignment->saveSettings( $articleId, $assignment );
+	    dbg("e20rArticle::add_assignment_callback() - Assignment settings for ({$assignmentId}): ");
+	    dbg($assignment);
 
-        dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
+	    dbg("e20rArticle::add_assignment_callback() - Saving Assignment settings for ({$assignmentId}): ");
+	    $e20rAssignment->saveSettings( $assignmentId, $assignment );
+
+	    dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
         if ( empty( $artSettings->assignments) ) {
 
-            $artSettings->assignments = array( $assignmentId );
+            $artSettings->assignments = ( $assignmentId !== null || $assignmentId !== -1 )? array( $assignmentId ) : array() ;
         }
-        else {
-	        if ( ! in_array( $assignmentId, $artSettings->assignments ) ) {
+        elseif ( ( ( -1 != $assignmentId ) || !empty($assignmentId ) ) && ( ! in_array( $assignmentId, $artSettings->assignments ) ) ) {
+
 		        $artSettings->assignments[] = $assignmentId;
-	        }
         }
 
-        dbg($artSettings);
+	    dbg("e20rArticle::add_assignment_callback() - Saving Article settings for ({$articleId}): ");
+	    dbg($artSettings);
 
-        $this->model->set( 'assignments', $artSettings->assignments, $articleId );
+        $this->saveSettings( $articleId, $artSettings );
 
         dbg("e20rArticle::add_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
 
-	    $toBrowser = array(
-	        'success' => true,
-	        'data' => $e20rAssignment->configureArticleMetabox( $articleId ),
-        );
+	    $html = $e20rAssignment->configureArticleMetabox( $articleId, true );
 
-        if ( ! empty( $toBrowser['data'] ) ) {
+/*	    $toBrowser = array(
+	        'success' => true,
+	        'data' => array( 'data' => $html ),
+        );
+*/
+/*         if ( ! empty( $toBrowser['data'] ) ) { */
 
             dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
-            // wp_send_json_success( $html );
+            wp_send_json_success( $html );
 
             // dbg($html);
-            echo json_encode( $toBrowser );
+/*            echo json_encode( $toBrowser );
             wp_die();
-        }
+        }*/
 
         dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
         wp_send_json_error( "No assignments found for this article!" );
