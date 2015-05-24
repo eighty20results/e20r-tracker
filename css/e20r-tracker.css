@@ -2074,8 +2074,9 @@ body.loading .modal {
     font-family: Tahoma, sans-serif;
 }
 .e20r-assignment-paragraph input {
-    width: 600px;
-    height: 20px;
+    max-width: 600px;
+    width: 100%;
+    height: 30px;
     border: 3px solid #cccccc;
     padding: 5px;
     font-family: Tahoma, sans-serif;
@@ -2257,8 +2258,9 @@ tr.what-to-do-row {
 }
 .nage-box {
     max-width: 700px;
-    min-width: 400px;
+    min-width: 310px;
     width: 80%;
+    line-height: 1;
     margin-left: auto;
     margin-right: auto;
 }
@@ -2267,30 +2269,39 @@ tr.what-to-do-row {
     max-height: 50px;
     margin: 3pt;
 }
+.nage-number > p {
+    margin: 0;
+}
 .nage-number-text {
+    height: 90px;
     position: relative;
-    top: 22px;
+    /* top: 0px; */
     color: #c5c5c5;
     font-weight: bold;
-    font-size: 60pt;
-    text-align: center;"
+    font-size: 80px;
+    text-align: center;
+    border-right: 2px solid #F5F5F5;
 }
 .nage-level-text {
     color: #004C00;
     position: relative;
-    top: 4px;
-    margin-left: 4px;
+    top: -70px;
+    margin-left: 11px;
     z-index: 10;
     font-size: 15pt;
-    text-align: center;"
+    text-align: center;
+    height: 1px;
 }
 .nage-text {
     max-width: 500px;
     text-align: left;
     vertical-align: top;
+    padding-bottom: 0;
+    padding-left: 15px;
 }
-.nage-text > div {
+.nage-text > p {
     padding-bottom: 10px;
+    margin: 10px;
 }
 .new-habit-box {
     border: 1pt dotted grey;
@@ -2311,7 +2322,7 @@ tr.what-to-do-row {
 }
 blockquote {
     border-right: 5px solid rgba(0, 77, 255, 0.35);
-    padding-right: 15px;
+    padding: 5px 15px 5px 15px;
     background-color: #fcfcfc;
 }
 blockquote > div {
