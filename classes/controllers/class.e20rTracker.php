@@ -56,6 +56,20 @@ class e20rTracker {
 		new WP_AutoUpdate( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
 	}
 
+	/*
+    Give admin members access to everything.
+    Add this to your active theme's functions.php or a custom plugin.
+	*/
+	public function admin_access_filter($access, $post, $user) {
+
+		if ( ( !empty($user->membership_level) && $user->membership_level->ID == 2 ) || ( current_user_can('administrator') ) ) {
+			dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
+			return true;    //level 2 (and administrator) ALWAYS has access
+		}
+
+		return $access;
+	}
+
 	public function loadAllHooks() {
 
         global $current_user;
@@ -85,6 +99,8 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_activitiesCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_actionCPT"), 10 );
+
+	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
 	        add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
 	        add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
