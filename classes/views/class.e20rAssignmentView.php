@@ -267,7 +267,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
-			if ( isset( $assignment->descr ) ) { ?>
+			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
 				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
 			}?>
 			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo trim(stripslashes($assignment->answer)); ?>" name="e20r-assignment-answer[]" />
