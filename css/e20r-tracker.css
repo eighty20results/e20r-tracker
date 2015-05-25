@@ -2241,6 +2241,7 @@ span.e20r-required {
 .what-to-do-table tr,
 .what-to-do-table td {
     border: 0;
+    padding-right: 10px;
 }
 tr.what-to-do-row {
     border-bottom: 2px solid #C5C5C5;
