@@ -125,7 +125,7 @@ class e20rMeasurementViews {
                                     <div class="label-container">
                                         <label>Enter <?php echo ucfirst($girth->type)?> Girth</label>
                                     </div>
-                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} ) ? 'value=""' : 'value="' . $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="<?php echo 'girth_' . strtolower($girth->type); ?>" style="width: 70px; font-size: 20px; text-align: center;">
+                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} ) ? 'value=""' : 'value="' . $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="<?php echo 'girth_' . strtolower($girth->type); ?>" style="width: 85px; font-size: 20px; text-align: center;">
                                     <span class="unit length"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
                                 </div>
                                 <div class="measurement-saved-container">
@@ -171,7 +171,7 @@ class e20rMeasurementViews {
                         Other Indicators of Progress I'm Tracking
                     </legend>
                     <div>
-                        <textarea name="essay1" id="essay1" data-measurement-type="essay1" class=".e20r-assignment-paragraph e20r-textarea e20r-note"><?php echo $note; ?></textarea>
+                        <textarea name="essay1" id="essay1" data-measurement-type="essay1" class="e20r-assignment-paragraph e20r-textarea e20r-note"><?php echo $note; ?></textarea>
                     </div>
                 </fieldset>
             </td>
@@ -345,7 +345,7 @@ class e20rMeasurementViews {
                         <div class="label-container">
                             <label>Enter Current Body Weight</label>
                         </div>
-                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value=""' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 70px; font-size: 20px; text-align: center;">
+                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value=""' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 85px; font-size: 20px; text-align: center;">
                         <span class="unit weight"><?php echo $this->prettyUnit( $e20rClient->getWeightUnit() ); ?></span>
                     </div>
                     <div class="measurement-saved-container">
