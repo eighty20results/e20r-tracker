@@ -240,9 +240,10 @@ class e20rTracker {
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
 	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
-	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
-	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
-	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
+ 	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
+	        add_filter( 'gform_field_value', array( &$e20rClient, 'process_gf_fields'), 10, 3);
+//	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
+// 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
 
 	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
 	        // add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
@@ -482,28 +483,125 @@ class e20rTracker {
         return $tabName;
     }
 
-    public function encryptData( $data ) {
+	public function getUserKey( $userId = null ) {
 
-        if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
+		global $e20rTracker;
+		global $post;
+
+		if ( ! is_user_logged_in() ) {
+
+			return null;
+		}
+
+		if ( $userId === null ) {
+
+			global $current_user;
+
+			$userId = $current_user->ID;
+		}
+
+		if ( WP_DEBUG == true ) {
+
+			return null;
+		}
+
+		if ( $e20rTracker->hasAccess( $userId, $post->ID ) ) {
+			dbg('e20rClient::getUserKey() - User is permitted to access their AES key.');
+
+			$key = get_user_option( '_e20r_user_key', $userId );
+
+			if ( empty( $key ) ) {
+
+				try {
+					require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypt.php" );
+
+					$key = Crypto::CreateNewRandomKey();
+					// WARNING: Do NOT encode $key with bin2hex() or base64_encode(),
+					// they may leak the key to the attacker through side channels.
+					update_user_option( $userId, '_e20r_user_key', $key );
+				}
+				catch (CryptoTestFailedException $ex) {
+
+					wp_die('Cannot safely create your encryption key');
+				}
+				catch (CannotPerformOperationException $ex) {
+
+					wp_die('Cannot safely create an encryption key on your behalf');
+				}
+			}
+		}
+		else {
+			return null;
+		}
+
+		return null;
+	}
+
+    public function encryptData( $data, $key ) {
+
+        if ( ! class_exists( 'Crypto' ) ) {
 
             dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
             // return base64_encode( $data );
 	        return $data;
         }
 
-        return GDS_Encryption_Class::encrypt( $data );
+	    if ( $key === null ) {
+
+		    return $data;
+	    }
+
+	    try {
+
+		    $ciphertext = Crypto::Encrypt($data, $key);
+	    }
+	    catch (CryptoTestFailedException $ex) {
+
+		    wp_die('Cannot safely perform encryption');
+	    }
+	    catch (CannotPerformOperationException $ex) {
+		    wp_die('Cannot safely perform decryption');
+	    }
+
+	    return $ciphertext;
     }
 
-    public function decryptData( $encData ) {
+    public function decryptData( $encData, $key ) {
 
-        if ( ! class_exists( 'GDS_Encryption_Class' ) ) {
+	    if ( $key === null ) {
+
+		    return $encData;
+	    }
+
+	    if ( ! class_exists( 'Crypto' ) ) {
 
             // dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
             // return base64_decode( $encData );
 	        return $encData;
         }
 
-        return GDS_Encryption_Class::decrypt( $encData );
+	    try {
+
+		    $decrypted = Crypto::Decrypt($encData, $key);
+	    }
+	    catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
+		    // Either:
+		    //   1. The ciphertext was modified by the attacker,
+		    //   2. The key is wrong, or
+		    //   3. $ciphertext is not a valid ciphertext or was corrupted.
+		    // Assume the worst.
+		    wp_die('DANGER! DANGER! The encrypted text has been tampered with during transmission/load');
+	    }
+	    catch (CryptoTestFailedException $ex) {
+
+		    wp_die('Cannot safely perform encryption');
+	    }
+	    catch (CannotPerformOperationException $ex) {
+
+		    wp_die('Cannot safely perform decryption');
+	    }
+
+	    return $decrypted;
     }
 
     public function updateSetting( $name, $value ) {
@@ -1169,6 +1267,8 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
 
+	        $this->register_plotSW();
+
             // Get the requested Measurement date & article ID (passed from the "Need your measuresments today" form.)
             $measurementDate = isset( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null;
             $articleId = isset( $_POST['e20r-progress-form-article']) ? intval( $_POST['e20r-progress-form-article']) : null;
@@ -1349,34 +1449,34 @@ class e20rTracker {
 
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
-//            wp_deregister_script( 'jqplot' );
+            wp_deregister_script( 'jqplot' );
             wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_export' );
+            wp_deregister_script( 'jqplot_export' );
             wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_pie' );
+            wp_deregister_script( 'jqplot_pie' );
             wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_text' );
+            wp_deregister_script( 'jqplot_text' );
             wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_mobile' );
+            wp_deregister_script( 'jqplot_mobile' );
             wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_date' );
+            wp_deregister_script( 'jqplot_date' );
             wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_label' );
+            wp_deregister_script( 'jqplot_label' );
             wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_pntlabel' );
+            wp_deregister_script( 'jqplot_pntlabel' );
             wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_script( 'jqplot_ticks' );
+            wp_deregister_script( 'jqplot_ticks' );
             wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), '0.1' );
 
-//            wp_deregister_style( 'jqplot' );
+            wp_deregister_style( 'jqplot' );
             wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
         }
     }
@@ -1514,7 +1614,7 @@ class e20rTracker {
          */
         $intakeTableSql =
             "CREATE TABLE {$wpdb->prefix}e20r_client_info (
-                    id int not null,
+                    id int not null auto_increment,
                     user_id int not null,
                     started_date timestamp default current_timestamp,
                     edited_date timestamp null,
@@ -1627,11 +1727,12 @@ class e20rTracker {
                     working tinyint null default 0,
                     work_type varchar(150) null,
                     working_when varchar(10) null,
-                    typical_hours_worked varchar(6) null,
+                    typical_hours_worked varchar(15) null,
                     work_activity_level varchar(12) null,
                     work_stress varchar(9) null,
                     work_travel varchar(11) null,
                     student tinyint null default 0,
+                    school varchar(150) null,
                     school_stress varchar(9) null,
                     caregiver tinyint null default 0,
                     caregiver_for varchar(255) null,

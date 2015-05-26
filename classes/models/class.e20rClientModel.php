@@ -27,9 +27,13 @@ class e20rClientModel {
 	public function save_client_interview( $data ) {
 
 		global $wpdb;
-		global $e20rTables;
+		// global $e20rTables;
 		global $e20rTracker;
 
+		$data['completed_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
+		// $id = false;
+
+		dbg("e20rClientModel::save_client_interview() - Saving data to {$this->table}");
 
 		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'] ) ) !== false ) {
 
@@ -37,31 +41,54 @@ class e20rClientModel {
 			$data['edited_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
 			$data['id'] = $id;
 		}
-		else {
-			dbg('e20rTrackerModel::save_client_interview() - User/Program does NOT exist in the client info table. Adding record.' );
-			$data['started_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
+
+		if ( isset( $data['started_date'] ) ) {
+
+			unset($data['started_date'] ); // $data['started_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
 		}
-
-		$data['completed_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
-
-		dbg($data);
 
 		// Generate format array.
 		$format = $e20rTracker->setFormatForRecord( $data );
 
-		dbg("e20rTrackerModel::save_client_interview() - Format for the record: ");
+		dbg("e20rClientModel::save_client_interview() - Format for the record: ");
 		// dbg($format);
+		dbg("e20rClientModel::save_client_interview() - The record to insert: ");
+		// dbg($data);
 
-		if ( $wpdb->replace( $this->table, $data, $format ) ) {
+		// $wpdb->show_errors();
 
-			dbg("e20rTrackerModel::save_client_interview() - Data saved...");
-			$this->clearTransients();
+		// if ( $id === false ) {
 
-			return true;
+			if ( false === $wpdb->replace( $this->table, $data, $format ) ) {
+
+				global $EZSQL_ERROR;
+				dbg($EZSQL_ERROR);
+
+				dbg( "e20rTrackerModel::save_client_interview() - Error inserting form data: " . $wpdb->print_error() );
+				dbg( "e20rTrackerModel::save_client_interview() - Query: " . print_r( $wpdb->last_query, true ) );
+
+				return false;
+			}
+/* 		}
+		else {
+
+			$data['id'] = $id;
+
+			if ( false === $wpdb->update( $this->table, $data, array( 'id' => $id ), $format, array( '%d' ) ) ) {
+
+				dbg( "e20rTrackerModel::save_client_interview() - Error updating data: " . $wpdb->print_error() );
+				dbg( "e20rTrackerModel::save_client_interview() - Query: " . print_r( $wpdb->last_query, true ) );
+
+				return false;
+			}
 		}
+*/
+		// $wpdb->hide_errors();
 
-		dbg("e20rTrackerModel::save_client_interview() - Error saving data: " . $wpdb->last_error );
-		return false;
+		dbg("e20rTrackerModel::save_client_interview() - Data saved...");
+		$this->clearTransients();
+
+		return true;
 	}
 
 	private function recordExists( $userId, $programId ) {
@@ -133,7 +160,7 @@ class e20rClientModel {
         $encData['user_id'] = $clientData['user_id'];
         $encData['program_id'] = $clientData['program_id'];
         $encData['program_start'] = $clientData['program_start'];
-        $encData['program_photo_dir'] = $clientData['program_photo_dir'];
+        $encData['progress_photo_dir'] = $clientData['progress_photo_dir'];
         $encData['first_name'] = $clientData['first_name'];
         $encData['birthdate'] = $clientData['birthdate'];
         $encData['gender'] = $clientData['gender'];
@@ -161,7 +188,8 @@ class e20rClientModel {
         dbg($format);
 */
         if ( $wpdb->replace( $table, $encData, $format ) === false ) {
-	        dbg("e20rClientModel::saveData() - Unable to save the client data: " . $wpdb->print_error() );
+
+	        dbg("e20rClientModel::saveData() - Unable to save the client data: " . print_r( $wpdb->last_query, true ) );
 	        return false;
         }
 
@@ -341,6 +369,8 @@ class e20rClientModel {
 
 	    $this->setUser( $this->id );
 
+	    $key = $e20rTracker->getUserKey( $clientId );
+
 	    if ( WP_DEBUG === true ) {
 
 		    $this->clearTransients();
@@ -353,7 +383,7 @@ class e20rClientModel {
 		    $clientData->user_id              = $this->id;
 		    $clientData->program_id           = $this->program_id;
 		    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
-		    $clientData->program_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
+		    $clientData->progress_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
 		    $clientData->gender               = 'm';
 		    $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
 		    $clientData->first_name           = null;
@@ -383,7 +413,7 @@ class e20rClientModel {
 				    // Encrypted data gets decoded
 				    if ( ! in_array( $key, $excluded ) ) {
 
-					    $clientData->{$key} = $e20rTracker->decryptData( $val );
+					    $clientData->{$key} = $e20rTracker->decryptData( $val, $key );
 				    } else {
 					    // Unencrypted data is simply passed back.
 					    $clientData->{$key} = $val;
