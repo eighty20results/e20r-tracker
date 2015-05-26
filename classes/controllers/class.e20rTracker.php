@@ -513,7 +513,7 @@ class e20rTracker {
 			if ( empty( $key ) ) {
 
 				try {
-					require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypt.php" );
+					require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypto.php" );
 
 					$key = Crypto::CreateNewRandomKey();
 					// WARNING: Do NOT encode $key with bin2hex() or base64_encode(),
