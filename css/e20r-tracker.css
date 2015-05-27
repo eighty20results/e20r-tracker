@@ -451,9 +451,113 @@
 .e20r-progress-form fieldset {
     border: none;
 }
+.colorbox-guide-container {
+    border-left: 3px solid #004CFF;
+    border-right: 3px solid #004CFF;
+    border-bottom: 3px solid #004CFF;
+}
 /** The actual weekly progress measurement page container **/
 @media screen and (max-width: 533px) {
+    #colorbox #cboxClose {
+        top: 0;
+        right: 0;
+        padding: 0;
+        margin: 0 5px 0 5px;
+        border: none;
+        box-shadow: none;
+        position: absolute;
+        width: 35px;
+        height: auto;
+        /*    border-radius: 50%; */
+        font-size: 10px;
+    }
+    #cboxLoadedContent {
+        margin-top:28px;
+        margin-bottom:0;
+    }
+    .colorbox-guide-container {
+        background-color: #fdfdfd;
+        /* border: 3px solid #C5C5C5; */
+    }
+    .colorbox-guide-container h3 {
+        -moz-border-radius-topleft: 6px;
+        -moz-border-radius-topright: 6px;
+        -webkit-border-top-left-radius: 6px;
+        -webkit-border-top-right-radius: 6px;
+        padding: 0 16px;
+        padding-bottom: 0;
+        font-size: 14px;
+        height: 25px;
+        line-height: 26px;
+        color: #FFF;
+        background: #004CFF;
+        border-bottom: 1px solid #cccccc;
+    }
+    /* .colorbox-guide-container table.e20r-help-items {
+        background-color: #FFF;
+    }*/
+    .colorbox-guide-container table.e20r-help-items { clear: both; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
+    .colorbox-guide-container table.e20r-help-items td {
+        vertical-align: top;
+        padding: 4px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e1e4e5;
+        padding-top: 22px;
+    }
+    .colorbox-guide-container table li {
+        padding-bottom: 20px;
+        padding-left: 10px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content {
+        vertical-align: top;
+        padding-left: 16px;
+        font-size: 14px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content h4 {
+        color: #004C00;
+        font-variant: small-caps;
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
+    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
+        width: 20px;
+        border-right: 1px solid #d1b8b6;
+        text-align: center;
+        color: #4b4a4a;
+        padding-top: 2px;
+        font-size: 30px;
+        line-height: 32px;
+    }
+    .colorbox-guide-container .close { float: right; }
+    .site-inner {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    h1.entry-title {
+        font-size: 23px !important;
+    }
+    #birth-date {
+        font-size: 0.85rem;
+    }
+    #birth-date select#bdmonth {
+        width: 80px;
+        font-size: 0.8rem;
+    }
+    #birth-date select#bdday {
+        width: 40px;
+        font-size: 0.8rem;
+    }
+    #birth-date select#bdyear {
+        width: 60px;
+        font-size: 0.8rem;
+    }
     #saturday-progress-container #e20r-progress-canvas {
+        float: none;
         -moz-border-radius: 6px;
         -webkit-border-radius: 6px;
         background: #FFF;
@@ -467,16 +571,17 @@
         background: rgba( 0, 76, 255, 0.95 );
         border: 1px solid rgb( 0, 76, 255);
         padding: 14px;
-        max-width: 95%;
-        width: 330px;
+        /* max-width: 95%; */
+        width: 100%;
         margin-left: auto;
         margin-right: auto;
     }
     #saturday-progress-container.progress-container table.e20r-progress-form {
-        width: 300px;
+        width: 100%;
     }
     table.e20r-progress-form div.e20r-measurement-setting {
         font-size: 80%;
+        padding-right: 20px;
     }
     table.e20r-progress-form div.e20r-measurement-setting > select {
         font-size: 80%;
@@ -484,13 +589,13 @@
     }
     table.e20r-progress-form td.content {
         padding-left: 16px;
-        width: 320px;
+        width: 100%;
     }
     #saturday-progress-container .girth-row-container .girth-descript-container {
-        width: 267px;
+        width: 100%;
     }
     #saturday-progress-container .girth-row-container .girth-descript-container.active {
-        width: 237px;
+        width: 100%;
     }
     #saturday-progress-container .girth-image { display: none; }
     #saturday-progress-container .girth-image.active { display: none; }
@@ -508,7 +613,7 @@
     }
     table.e20r-progress-form textarea.e20r-note {
         margin: 0px;
-        width: 264px;
+        width: 90%;
         height: 122px;
         border: 2px solid #C5C5C5;
     }
@@ -541,6 +646,30 @@
         line-height: 18px;
         margin-bottom: 12px;
         color: #000;
+    }
+    .weight-style {
+        width: 80px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .girth-style {
+        width: 80px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .measurement-saved-container {
+        width: 100%;
+    }
+    .measurement-field-container {
+        width: 100%;
+    }
+    .measurement-saved-container button.edit {
+        cursor: default;
+        line-height: normal;
+        font-size: 0.5rem;
+        float: left;
+        margin-left: 12px;
+        margin-bottom: 5px;
     }
     .measurement-field-container label {
         -moz-border-radius: 3px;
@@ -680,10 +809,102 @@
 }
 #saturday-progress-container .girth-row-container p {
     display: none;
-    font-size: 0.8em !important;
+    font-size: 0.8rem !important;
+    line-height: 1.5;
 }
 #saturday-progress-container .girth-row-container.active { padding-top: 6px; }
 @media screen and (min-width: 534px) {
+    #colorbox #cboxClose {
+        top: 0;
+        right: 0;
+        padding: 0;
+        margin: 0 5px 0 5px;
+        border: none;
+        box-shadow: none;
+        position: absolute;
+        width: 70px;
+        height: auto;
+        /*    border-radius: 50%; */
+        font-size: 20px;
+    }
+    #cboxLoadedContent {
+        margin-top:28px;
+        margin-bottom:0;
+    }
+    .colorbox-guide-container {
+        background-color: #fdfdfd;
+        /* border: 3px solid #C5C5C5; */
+    }
+    .colorbox-guide-container h3 {
+        -moz-border-radius-topleft: 6px;
+        -moz-border-radius-topright: 6px;
+        -webkit-border-top-left-radius: 6px;
+        -webkit-border-top-right-radius: 6px;
+        padding: 0 16px;
+        padding-bottom: 0;
+        font-size: 22px;
+        height: 38px;
+        line-height: 40px;
+        color: #FFF;
+        background: #004CFF;
+        border-bottom: 1px solid #cccccc;
+    }
+    /* .colorbox-guide-container table.e20r-help-items {
+        background-color: #FFF;
+    }*/
+    .colorbox-guide-container table.e20r-help-items { clear: both; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
+    .colorbox-guide-container table.e20r-help-items td {
+        vertical-align: top;
+        padding: 4px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e1e4e5;
+        padding-top: 22px;
+    }
+    .colorbox-guide-container table li {
+        padding-bottom: 20px;
+        padding-left: 10px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content {
+        vertical-align: top;
+        padding-left: 16px;
+        font-size: 14px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content h4 {
+        color: #004C00;
+        font-variant: small-caps;
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
+    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
+        width: 62px;
+        border-right: 1px solid #d1b8b6;
+        text-align: center;
+        color: #4b4a4a;
+        padding-top: 4px;
+        font-size: 58px;
+        line-height: 50px;
+    }
+    .colorbox-guide-container .close { float: right; }
+    #birth-date {
+        font-size: 1rem;
+    }
+    #birth-date select#bdmonth {
+        width: 120px;
+        font-size: 1rem;
+    }
+    #birth-date select#bdday {
+        width: 70px;
+        font-size: 1rem;
+    }
+    #birth-date select#bdyear {
+        width: 80px;
+        font-size: 1rem;
+    }
     #saturday-progress-container #e20r-progress-canvas {
         -moz-border-radius: 6px;
         -webkit-border-radius: 6px;
@@ -711,9 +932,9 @@
         margin-top: 8px;
     }
     #saturday-progress-container .girth-row-container .girth-descript-container {
-        width: 362px;
+        max-width: 362px;
+        width: 66%;
         float: left;
-        /* vertical-align: baseline; */
     }
     table.e20r-progress-form textarea.e20r-note {
         margin: 0px;
@@ -733,7 +954,16 @@
         float: left;
         margin-right: 8px;
     }
-
+    .weight-style {
+        width: 120px;
+        font-size: 20px;
+        text-align: center;
+    }
+    .girth-style {
+        width: 120px;
+        font-size: 20px;
+        text-align: center;
+    }
     #saturday-progress-container .girth-image.active {
         background-size: 145px 138px;
         width: 144px;
@@ -907,7 +1137,7 @@
     margin-right: 0;
     font-weight: bold;
     margin-left: 20px;
-    font-size: 28px;
+    font-size: 22px;
     line-height: 26px;
 }
 .measurement-saved-container span.unit {
@@ -1059,7 +1289,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     max-font-size: 14px;
 }
 #homeLesson .content-container blockquote.inspirational {
-    margin: 1.2em auto;
+    margin: 1.2rem auto;
     text-align: center;
     color: #666666;
     border-top: 1px solid #aec9b2;
@@ -1074,7 +1304,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
 }
 #homeLesson .content-container blockquote.inspirational:first-child { margin-top: 0; }
 #homeLesson .content-container div.blockquote-inspirational {
-    margin: 1.2em auto;
+    margin: 1.2rem auto;
     text-align: center;
     color: #666666;
     border-top: 1px solid #aec9b2;
@@ -1410,60 +1640,7 @@ td.e20r-group-header {
     color: #004CFF;
     font-variant: small-caps;
 }
-
-.colorbox-guide-container h3 {
-    -moz-border-radius-topleft: 6px;
-    -moz-border-radius-topright: 6px;
-    -webkit-border-top-left-radius: 6px;
-    -webkit-border-top-right-radius: 6px;
-    padding: 0 16px;
-    padding-bottom: 0;
-    font-size: 22px;
-    height: 38px;
-    line-height: 40px;
-    color: #FFF;
-    background: #004CFF;
-    border-bottom: 1px solid #cccccc;
-}
-.colorbox-guide-container table.e20r-help-items { clear: both; }
-.colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
-.colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
-.colorbox-guide-container table.e20r-help-items td {
-    vertical-align: top;
-    padding: 4px;
-    padding-bottom: 22px;
-    border-bottom: 1px solid #e1e4e5;
-    padding-top: 22px;
-}
-.colorbox-guide-container table li {
-    padding-bottom: 20px;
-    padding-left: 10px;
-}
-.colorbox-guide-container table.e20r-help-items td.content {
-    vertical-align: top;
-    padding-left: 16px;
-    font-size: 14px;
-}
-.colorbox-guide-container table.e20r-help-items td.content h4 {
-    color: #004C00;
-    font-variant: small-caps;
-    font-size: 18px;
-    margin-bottom: 4px;
-}
-.colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
-.colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
-.colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
-.colorbox-guide-container table.e20r-help-items .e20r-number-col {
-    width: 62px;
-    border-right: 1px solid #d1b8b6;
-    text-align: center;
-    color: #4b4a4a;
-    padding-top: 4px;
-    font-size: 58px;
-    line-height: 50px;
-}
-.colorbox-guide-container .close { float: right; }
-
+/* To change position of close button to Top Right Corner */
 /**************************** TODO: Clean up this CSS ************************/
 .progress-container {
     -moz-border-radius: 6px;
@@ -1996,7 +2173,7 @@ div#e20r-checkin-content {
     padding-left: 20px;
 }
 .e20r-checkin-header {}
-.e20r-descr { font-size: 0.9em !important;}
+.e20r-descr { font-size: 0.9rem !important;}
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
    with position:fixed. Width, height, top and left speak
