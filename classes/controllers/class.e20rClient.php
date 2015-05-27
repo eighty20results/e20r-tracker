@@ -367,9 +367,9 @@ class e20rClient {
 		global $current_user;
 		global $post;
 
-		if ( '1' == $entry['id'] ) {
+		if ( ! in_array( $entry['id'], array( '1' ) ) ) {
 
-			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form! ');
+			dbg("e20rTracker::gravityform_preload()  - Not the BitBetter Interview form!");
 			return;
 		}
 
