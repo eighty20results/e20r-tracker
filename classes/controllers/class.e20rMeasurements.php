@@ -853,7 +853,7 @@ class e20rMeasurements {
         return ( empty( $retVal ) ? $data : $retVal );
     }
 
-    private function load_EditProgress( $articleId = null ) {
+    private function load_EditProgress( $articleId = CONST_NULL_ARTICLE ) {
 
         global $e20rTracker;
         global $current_user;
@@ -865,6 +865,11 @@ class e20rMeasurements {
         dbg("e20rMeasurements::load_EditProgress() - Date supplied is: {$this->measurementDate}. " . $e20rTracker->whoCalledMe() );
         $count = 1;
 
+	    if ( is_null( $articleId ) ) {
+
+		    dbg("e20rMeasurements::load_EditProgress() - No article ID specified. Setting the ID to the NULL article");
+		    $articleId = CONST_NULL_ARTICLE;
+	    }
         $programId = $e20rProgram->getProgramIdForUser( $current_user->ID,  $articleId );
         $img = $e20rArticle->isPhotoDay( $articleId );
 
