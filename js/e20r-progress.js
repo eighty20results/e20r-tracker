@@ -204,8 +204,8 @@ jQuery(function() {
                     self.$girthImage.addClass('active');
                 }
 
-                self.$girthRowContainer.addClass('active');
-                self.$description.parent().addClass('active'); // need to fix the para thing
+                // self.$girthRowContainer.addClass('active');
+                // self.$description.parent().addClass('active'); // need to fix the para thing
 
                 self.$description.show();
             });
