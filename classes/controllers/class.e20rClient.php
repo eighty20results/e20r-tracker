@@ -355,6 +355,66 @@ class e20rClient {
 		return $form;
 	}
 
+	/**
+	 * Prevents Gravity Form entries from being stored in the database.
+	 *
+	 * @global object $wpdb The WP database object.
+	 * @param array $entry  Array of entry data.
+	 */
+	public function remove_survey_form_entry( $entry ) {
+
+		global $e20rTracker;
+		global $current_user;
+		global $post;
+
+		if ( '1' == $entry['id'] ) {
+
+			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form! ');
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+
+			dbg("e20rTracker::save_interview()  - User accessing form without being logged in.");
+			return;
+		}
+
+		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+
+			dbg("e20rTracker::save_interview()  - User doesn't have access to this form.");
+			return false;
+		}
+
+		global $wpdb;
+
+		// Prepare variables.
+		$lead_id                = $entry['id'];
+		$lead_table             = RGFormsModel::get_lead_table_name();
+		$lead_notes_table       = RGFormsModel::get_lead_notes_table_name();
+		$lead_detail_table      = RGFormsModel::get_lead_details_table_name();
+		$lead_detail_long_table = RGFormsModel::get_lead_details_long_table_name();
+
+		// Delete from lead detail long.
+		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_long_table WHERE lead_detail_id IN(SELECT id FROM $lead_detail_table WHERE lead_id = %d)", $lead_id );
+		$wpdb->query( $sql );
+
+		// Delete from lead details.
+		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_table WHERE lead_id = %d", $lead_id );
+		$wpdb->query( $sql );
+
+		// Delete from lead notes.
+		$sql = $wpdb->prepare( "DELETE FROM $lead_notes_table WHERE lead_id = %d", $lead_id );
+		$wpdb->query( $sql );
+
+		// Delete from lead.
+		$sql = $wpdb->prepare( "DELETE FROM $lead_table WHERE id = %d", $lead_id );
+		$wpdb->query( $sql );
+
+		// Finally, ensure everything is deleted (like stuff from Addons).
+		GFAPI::delete_entry( $lead_id );
+
+	}
+
 	public function save_interview( $entry, $form ) {
 
 		global $e20rTracker;
@@ -590,7 +650,13 @@ class e20rClient {
 			}
 		} // End of foreach loop for submitted form
 
-		dbg("e20rClient::save_interview() - The current state of the data to feed to the DB: ");
+		if ( ! WP_DEBUG ) {
+
+			dbg("e20rClient::save_interview() - Removing any GF entry data from database.");
+			$this->remove_survey_form_entry( $entry );
+		}
+
+		dbg("e20rClient::save_interview() - Saving the client interview data to the DB. ");
 
 		if ( $this->model->save_client_interview( $db_Data ) ) {
 
