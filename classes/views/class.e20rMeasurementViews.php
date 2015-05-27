@@ -125,7 +125,7 @@ class e20rMeasurementViews {
                                     <div class="label-container">
                                         <label>Enter <?php echo ucfirst($girth->type)?> Girth</label>
                                     </div>
-                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} ) ? 'value=""' : 'value="' . $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="<?php echo 'girth_' . strtolower($girth->type); ?>" style="width: 85px; font-size: 20px; text-align: center;">
+                                    <input type="text" <?php echo ( empty( $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} ) ? 'value=""' : 'value="' . $this->data->{$this->fields[ 'girth_' . strtolower( $girth->type ) ]} . '"' ); ?> class="highlight-handle measurement-input girth-style" data-measurement-type="<?php echo 'girth_' . strtolower($girth->type); ?>">
                                     <span class="unit length"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
                                 </div>
                                 <div class="measurement-saved-container">
@@ -345,7 +345,7 @@ class e20rMeasurementViews {
                         <div class="label-container">
                             <label>Enter Current Body Weight</label>
                         </div>
-                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value=""' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input" data-measurement-type="weight" style="width: 85px; font-size: 20px; text-align: center;">
+                        <input type="text" <?php echo ( empty( $this->data->weight ) ? 'value=""' : 'value="' . $this->data->weight . '"' ); ?> class="highlight-handle measurement-input weight-style" data-measurement-type="weight">
                         <span class="unit weight"><?php echo $this->prettyUnit( $e20rClient->getWeightUnit() ); ?></span>
                     </div>
                     <div class="measurement-saved-container">
@@ -376,7 +376,7 @@ class e20rMeasurementViews {
                     <p style="clear: left;">
                         We will need your birth date to help us accurately calculate your body fat percentage. This is a one-time request.
                     </p>
-                    <select id="bdmonth" onchange="setBirthdate()" style="width: 130px;">
+                    <select id="bdmonth" onchange="setBirthdate()">
                         <option></option> <?php
 
                         foreach ( range( 1, 12) as $month ) { ?>
@@ -384,7 +384,7 @@ class e20rMeasurementViews {
                         } ?>
 
                     </select>
-                    <select id="bdday" onchange="setBirthdate()" style="width: 70px;">
+                    <select id="bdday" onchange="setBirthdate()">
                         <option></option> <?php
 
                         foreach ( range( 1, 31 ) as $day ) { ?>
@@ -392,7 +392,7 @@ class e20rMeasurementViews {
                         }
                         ?>
                     </select>
-                    <select id="bdyear" onchange="setBirthdate()" style="width: 80px;">
+                    <select id="bdyear" onchange="setBirthdate()">
                         <option></option>
                         <?php
 
