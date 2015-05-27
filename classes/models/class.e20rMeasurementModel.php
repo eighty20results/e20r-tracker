@@ -383,7 +383,7 @@ class e20rMeasurementModel {
 
                 dbg("e20rMeasurementModel::saveField() - Key: {$key} => Val: {$val}");
 
-                if ( $key != $form_key ) {
+                if ( $key != $this->fields[ $form_key ]) {
 
                     if ( ( $key != 'essay1' ) && ( $val === null ) ) {
                         // dbg("Skipping {$key}");
@@ -394,8 +394,8 @@ class e20rMeasurementModel {
                 }
                 else {
 
-                    dbg("e20rMeasurementModel::saveField - Updating {$form_key} data in Database: " . $value );
-                    $data = array_merge( $data, array( $form_key => ( empty($value) ? '' : $value ) ) );
+                    dbg("e20rMeasurementModel::saveField - Updating {$this->fields[$form_key]} entry in DB: " . $value );
+                    $data = array_merge( $data, array( $this->fields[ $form_key ] => ( !empty($value) ? $value : '' ) ) );
 
                 }
 
