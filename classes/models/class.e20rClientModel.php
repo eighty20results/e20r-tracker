@@ -35,7 +35,7 @@ class e20rClientModel {
 
 		dbg("e20rClientModel::save_client_interview() - Saving data to {$this->table}");
 
-		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'] ) ) !== false ) {
+		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'], $data['page_id'] ) ) !== false ) {
 
 			dbg('e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing existing record.' );
 			$data['edited_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
@@ -91,7 +91,7 @@ class e20rClientModel {
 		return true;
 	}
 
-	private function recordExists( $userId, $programId ) {
+	private function recordExists( $userId, $programId, $pageId ) {
 
 		global $wpdb;
 		global $e20rTables;
@@ -101,10 +101,11 @@ class e20rClientModel {
 		$sql = $wpdb->prepare("
 			SELECT id
 			FROM $cTable
-			WHERE user_id = %d AND program_id = %d
+			WHERE user_id = %d AND program_id = %d AND page_id = %d
 		",
 			$userId,
-			$programId
+			$programId,
+			$pageId
 		);
 
 		$exists = $wpdb->get_var( $sql );
@@ -159,6 +160,7 @@ class e20rClientModel {
         $encData = array();
         $encData['user_id'] = $clientData['user_id'];
         $encData['program_id'] = $clientData['program_id'];
+	    $encData['page_id'] = $clientData['page_id'];
         $encData['program_start'] = $clientData['program_start'];
         $encData['progress_photo_dir'] = $clientData['progress_photo_dir'];
         $encData['first_name'] = $clientData['first_name'];
@@ -175,7 +177,7 @@ class e20rClientModel {
 
             if ( !in_array( $key, $exclude ) ) {
 
-                $encData[$key] = $e20rTracker->encryptData( $value );
+                $encData[$key] = $value;
             }
         }
 
@@ -356,6 +358,7 @@ class e20rClientModel {
     private function loadData( $clientId ) {
 
 	    global $wpdb;
+	    global $post;
 	    global $e20rProgram;
 	    global $e20rTracker;
 
@@ -382,6 +385,7 @@ class e20rClientModel {
 		    $clientData                       = new stdClass();
 		    $clientData->user_id              = $this->id;
 		    $clientData->program_id           = $this->program_id;
+		    $clientData->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
 		    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
 		    $clientData->progress_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
 		    $clientData->gender               = 'm';
