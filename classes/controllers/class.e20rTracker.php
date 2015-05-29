@@ -1209,7 +1209,11 @@ class e20rTracker {
 		global $post;
 		global $pagenow;
 
-		if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+        if ( ! isset( $post->content ) ) {
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
 
 			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
