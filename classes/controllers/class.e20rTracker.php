@@ -1090,6 +1090,10 @@ class e20rTracker {
         global $e20rArticle;
         global $e20rClient;
 
+        if ( ! isset( $post->content ) ) {
+            return;
+        }
+
         if ( has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
             $e20rArticle->setId( $post->ID );
@@ -1175,7 +1179,11 @@ class e20rTracker {
 
 		global $post;
 
-		if ( has_shortcode( $post->post_content, 'e20r_exercise' ) ) {
+        if ( ! isset( $post->content ) ) {
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'e20r_exercise' ) ) {
 
 			dbg("e20rTracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
 
@@ -1226,6 +1234,10 @@ class e20rTracker {
         global $post;
         global $pagenow;
 
+        if ( ! isset( $post->content ) ) {
+            return;
+        }
+
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting user javascripts. ");
@@ -1260,6 +1272,10 @@ class e20rTracker {
         global $post;
         global $current_user;
 	    global $currentArticle;
+
+        if ( ! isset( $post->content ) ) {
+            return;
+        }
 
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- pagenow is '{$pagenow}'. ");
 
