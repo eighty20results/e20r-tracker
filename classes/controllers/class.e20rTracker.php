@@ -1636,6 +1636,7 @@ class e20rTracker {
                     edited_date timestamp null,
                     completed_date timestamp null,
                     program_id int not null,
+                    page_id int not null,
                     program_start date not null,
                     progress_photo_dir varchar(255) not null default 'e20r-pics/',
                     user_enc_key varchar(512) not null,
