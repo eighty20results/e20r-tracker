@@ -89,7 +89,7 @@ if ( ! function_exists( 'dbg' ) ):
 
             $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
             $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp')) . "-{$tid}) -- " .
-                ((is_array($msg) || (is_object($msg))) ? print_r($msg, true) : $msg);
+                ((is_array($msg) || (is_object($msg))) ? print_r($msg, true) : $msg) . "\n";
 
             add_log_text($dbgMsg, $dbgFile);
         }
