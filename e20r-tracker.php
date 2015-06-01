@@ -69,40 +69,72 @@ if ( ! function_exists( 'dbg' ) ):
 	    // $dbgRoot = "${plugin}/";
 	    $dbgPath = "${dbgRoot}/debug";
 
-        if (WP_DEBUG === true)
-        {
-	        if (!  file_exists( $dbgPath )) {
+        if (WP_DEBUG === true) {
 
-		        error_log("E20R Track: Creating root directory for debug logging: ${dbgPath}");
+            if (!file_exists($dbgPath)) {
 
-		        // Create the debug logging directory
-		        wp_mkdir_p( $dbgPath, 0750 );
+                error_log("E20R Track: Creating root directory for debug logging: ${dbgPath}");
 
-		        if (! is_writable( $dbgRoot )) {
+                // Create the debug logging directory
+                wp_mkdir_p($dbgPath, 0750);
 
-			        error_log('E20R Track: Debug log directory is not writable. exiting.');
-			        return;
-		        }
-	        }
+                if (!is_writable($dbgRoot)) {
 
-            $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log-' . date('Y-m-d', current_time('timestamp') ) . '.txt';
-
-            if ( ($fh = fopen($dbgFile, 'a')) !== false ) {
-
-                // Format the debug log message
-                $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
-                $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp' ) ) . "-{$tid}) -- ".
-                          ( ( is_array( $msg ) || ( is_object( $msg ) ) ) ? print_r( $msg, true ) : $msg );
-
-                // Write it to the debug log file
-                fwrite( $fh, $dbgMsg . "\r\n" );
-                fclose( $fh );
+                    error_log('E20R Track: Debug log directory is not writable. exiting.');
+                    return;
+                }
             }
-            else
-                error_log('E20R Track: Unable to open debug log');
+
+            $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log-' . date('Y-m-d', current_time('timestamp')) . '.txt';
+
+            $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
+            $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp')) . "-{$tid}) -- " .
+                ((is_array($msg) || (is_object($msg))) ? print_r($msg, true) : $msg);
+
+            add_log_text($dbgMsg, $dbgFile);
         }
     }
 endif;
+
+function add_log_text($text, $filename) {
+
+    if ( !file_exists($filename) ) {
+
+        touch( $filename );
+        chmod( $filename, 0640 );
+    }
+
+    if ( filesize( $filename ) > 3*1024*1024) {
+
+        $filename2 = "$filename.old";
+
+        if ( file_exists( $filename2 ) ) {
+
+            unlink($filename2);
+        }
+
+        rename($filename, $filename2);
+        touch($filename);
+        chmod($filename,0640);
+    }
+
+    if ( !is_writable( $filename ) ) {
+
+        error_log( "Unable to open debug log file ($filename)" );
+    }
+
+    if ( !$handle = fopen( $filename, 'a' ) ) {
+
+        error_log("Unable to open debug log file ($filename)");
+    }
+
+    if ( fwrite( $handle, $text ) === FALSE ) {
+
+        error_log("Unable to write to debug log file ($filename)");
+    }
+
+    fclose($handle);
+}
 
 function loadTracker() {
 
