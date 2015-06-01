@@ -360,6 +360,8 @@ class e20rClient {
 	 *
 	 * @global object $wpdb The WP database object.
 	 * @param array $entry  Array of entry data.
+     *
+     * @return bool - False or nothing if error/nothing to do.
 	 */
 	public function remove_survey_form_entry( $entry ) {
 
@@ -415,6 +417,11 @@ class e20rClient {
 
 	}
 
+    /**
+     * @param $entry -- Survey entry (gravity forms entry object)
+     * @param $form -- Form object
+     * @return bool -- True/False
+     */
 	public function save_interview( $entry, $form ) {
 
 		global $e20rTracker;
@@ -447,6 +454,7 @@ class e20rClient {
 		global $current_user;
 		global $e20rProgram;
 		global $e20rTracker;
+        global $page;
 
 		$userId = $current_user->ID;
 		$userProgramId = $e20rProgram->getProgramIdForUser( $userId );
@@ -457,6 +465,7 @@ class e20rClient {
 			// 'id' => $userId,
 			'user_id' => $userId,
 			'program_id' => $userProgramId,
+            'page_id' => $page->ID,
 			'program_start' => date_i18n('Y-m-d', $userProgramStart ),
 	        'user_enc_key' => $eKey,
 			'progress_photo_dir'=> "e20r_pics/client_{$userProgramId}_{$userId}"
