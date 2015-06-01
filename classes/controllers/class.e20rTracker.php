@@ -1090,7 +1090,7 @@ class e20rTracker {
         global $e20rArticle;
         global $e20rClient;
 
-        if ( ! isset( $post->content ) ) {
+        if ( ! isset( $post->ID ) ) {
             return;
         }
 
@@ -1179,7 +1179,7 @@ class e20rTracker {
 
 		global $post;
 
-        if ( ! isset( $post->content ) ) {
+        if ( ! isset( $post->ID ) ) {
             return;
         }
 
@@ -1238,7 +1238,7 @@ class e20rTracker {
         global $post;
         global $pagenow;
 
-        if ( ! isset( $post->content ) ) {
+        if ( ! isset( $post->ID ) ) {
             return;
         }
 
