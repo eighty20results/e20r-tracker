@@ -143,6 +143,11 @@ class e20rSettingsModel {
     public function set( $fieldName, $fieldValue, $post_id = null ) {
 
         if ( ! $post_id ) {
+
+            if ( empty( $this->settings ) ) {
+                $this->settings = $this->defaultSettings();
+            }
+
             $this->settings->{$fieldName} = $fieldValue;
             return true;
         }
