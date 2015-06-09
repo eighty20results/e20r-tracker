@@ -27,12 +27,20 @@ class e20rCheckinView extends e20rSettingsView {
         global $e20rTracker;
         global $e20rArticle;
 
+        $skipYN = false;
+
         if ( ! is_array( $action ) ) {
             $this->setError("No check-in recorded");
         }
 
         $trackerOpts = get_option('e20r-tracker');
         $article = $e20rArticle->getSettings($config->articleId);
+
+        if ( $habitEntries[0]->short_name == 'null_action') {
+
+            dbg("e20rCheckinView::view_actionAndActivityCheckin() - Have a null action, so skip Yes/No radio buttons");
+            $skipYN = true;
+        }
 
         ob_start();
 
@@ -105,6 +113,7 @@ class e20rCheckinView extends e20rSettingsView {
 	            <input type="hidden" name="e20r-checkin-checkedin_date" id="e20r-checkin-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo isset( $action->program_id ) ? $action->program_id : -1 ; ?>" />
                 <div class="clear-after">
+                    <div class="action-activity-row">
                     <fieldset class="did-you workout">
                         <legend><?php _e("Did you complete your activity today?", "e20rtracker"); ?></legend>
                         <div>
@@ -160,16 +169,18 @@ class e20rCheckinView extends e20rSettingsView {
                             <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $action->id; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_ACTION; ?>" />
                             <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
+                            <?php if ( ! $skipYN ): ?>
                             <ul> <!-- style="max-width: 300px; width: 285px;" -->
                                 <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 1 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="1" <?php checked( $action->checkedin, 1 ); ?> name="did-action-today" id="did-action-today-radio-1" /><label for="did-action-today-radio-1"><?php _e("Yes", "e20rtracker");?></label></li>
                                 <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 0 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="0" <?php checked( $action->checkedin, 0 ); ?> name="did-action-today" id="did-action-today-radio-2" /><label for="did-action-today-radio-2"><?php _e("No", "e20rtracker"); ?></label></li>
                             </ul>
-
+                            <?php endif; ?>
                             <div class="notification-entry-saved" style="width: 295px; display:none;">
                                 <div><?php _e("Action check-in saved", "e20rtracker"); ?></div>
                             </div>
                         </div>
                     </fieldset><!--.did-you //right-->
+                    </div> <!--Action/Activity row -->
                 </div><!--.clear-after-->
 
                 <hr />
