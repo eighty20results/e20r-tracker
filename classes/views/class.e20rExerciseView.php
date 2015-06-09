@@ -22,6 +22,7 @@ class e20rExerciseView {
 		global $currentExercise;
 		global $e20rExercise;
 
+        $display = null;
 		$type_label = '';
 
 		if ( $currentExercise->type == 1 ) {
@@ -61,6 +62,13 @@ class e20rExerciseView {
 				$display = ob_get_clean();
 			}
 		}
+
+        // No featured image specified and no video link included.
+        if ( empty( $display ) ) {
+
+            dbg("e20rExerciseViews::printExercise() - Using default placeholder image...");
+            $display = '<img class="e20r-resize" src="/images/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
+        }
 
 		// dbg("e20rExerciseView::printExercise() - Display: {$display}");
 
