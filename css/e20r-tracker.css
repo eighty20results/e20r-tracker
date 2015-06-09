@@ -1743,27 +1743,72 @@ td.e20r-group-header {
     min-height: 300px;
     padding: 10px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
-    width: 48%;
-    margin-right: 2%;
-    height: 184px;
-    font-size: 0.8em;
+@media screen and (min-width: 961px) {
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+        zoom: 1;
+        padding-bottom: 12px;
+        font-size: 13px !important;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-family: "Lucida Grande", sans-serif;
+        color: rgba(0, 72, 0, 0.75);
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+        max-width: 300px;
+        min-width: 235px;
+        width: 96%;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        width: 48%;
+        margin-right: 2%;
+        height: 184px;
+        font-size: 0.8rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+        font-size: 0.8rem;
+        width: 48%;
+        height: 184px;
+    }
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
-    font-size: 0.8em;
-    width: 48%;
+@media screen and (max-width: 960px) {
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+        max-width: 300px;
+        min-width: 96%;
+        width: 96%;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+        zoom: 1;
+        padding-bottom: 12px;
+        text-transform: uppercase;
+        font-weight: normal;
+        font-family: "Lucida Grande", sans-serif;
+        color: rgba(0, 72, 0, 0.75);
+        /* font-weight: normal; */
+        font-size: 11px !important;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        width: 100%;
+        margin-right: 2%;
+        height: 184px;
+        font-size: 0.8rem;
+        min-width: 260px;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+        font-size: 0.8rem;
+        width: 100%;
+        height: 184px;
+        min-width: 260px;
+    }
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you { float: left; }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
-    zoom: 1;
-    padding-bottom: 12px;
-    font-size: 13px !important;
-    text-transform: uppercase;
-    font-weight: bold;
-    font-family: "Lucida Grande", sans-serif;
-    color: rgba(0, 72, 0, 0.75);
-    /* font-weight: normal; */
+
+.action-activity-row {
+    /* display: inline-block; */
 }
+#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {  float: left; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend:after {
     content: ".";
     display: block;
@@ -1771,10 +1816,8 @@ td.e20r-group-header {
     clear: both;
     visibility: hidden;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
-    max-width: 300px;
-    min-width: 235px;
-    width: 96%;
+#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li {
+    white-space: nowrap;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li.active {
@@ -1817,6 +1860,7 @@ td.e20r-group-header {
     max-width: 616px;
     color: #333333;
 }
+
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-textarea {
     width: 100%;
     max-width: 616px;
