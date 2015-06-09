@@ -597,7 +597,7 @@ class e20rCheckin extends e20rSettings {
                         break;
 
                     case $this->types['note']:
-                        // TODO: Decide.. Do we handler this in the action check-in?
+                        // We handle this in the action check-in.
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity note(s)" );
                         break;
 
@@ -608,8 +608,11 @@ class e20rCheckin extends e20rSettings {
                         $checkin = null;
 
                 }
+            }
 
-	            // Reset the value to true Y-m-d format
+            if ( !empty( $checkin ) ) {
+
+                // Reset the value to true Y-m-d format
                 $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
                 $this->checkin[ $settings->checkin_type ] = $checkin;
             }
