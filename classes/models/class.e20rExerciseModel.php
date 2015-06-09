@@ -142,6 +142,7 @@ class e20rExerciseModel extends e20rSettingsModel {
     public function loadAllData( $statuses = 'any' ) {
 
         $query = array(
+            'posts_per_page' => -1,
             'post_type' => 'e20r_exercises',
             'post_status' => $statuses,
         );
