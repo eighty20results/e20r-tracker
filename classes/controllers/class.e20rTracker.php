@@ -1091,6 +1091,8 @@ class e20rTracker {
         global $e20rClient;
 
         if ( ! isset( $post->ID ) ) {
+
+            dbg("e20rTracker::has_measurementprogress_shortcode() - No post ID present?");
             return;
         }
 
@@ -1277,7 +1279,7 @@ class e20rTracker {
         global $current_user;
 	    global $currentArticle;
 
-        if ( ! isset( $post->content ) ) {
+        if ( ! isset( $post->ID ) ) {
             return;
         }
 
