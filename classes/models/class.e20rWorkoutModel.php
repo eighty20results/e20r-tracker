@@ -33,16 +33,21 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		return $this->types[$tId];
 	}
 
+    private function defaultGroup() {
+
+        $group = new stdClass();
+        $group->group_set_count = null;
+        $group->group_tempo = null;
+        $group->group_rest = null;
+
+        // Key for the exercises array is the exercise id value (i.e. the post id)
+        $group->exercises = array();
+        $group->exercises[0] = 0;
+
+        return $group;
+    }
+
     public function defaultSettings() {
-
-	    $group = new stdClass();
-	    $group->group_set_count = null;
-	    $group->group_tempo = null;
-	    $group->group_rest = null;
-
-	    // Key for the exercises array is the exercise id value (i.e. the post id)
-	    $group->exercises = array();
-	    $group->exercises[0] = 0;
 
 	    $workout = parent::defaultSettings();
 	    $workout->excerpt = '';
@@ -57,7 +62,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout->enddate = null;
 
 	    $workout->groups = array();
-	    $workout->groups[0] = $group;
+	    $workout->groups[0] = $this->defaultGroup();
 
 	    return $workout;
     }
@@ -102,7 +107,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 			$this->settings = parent::loadSettings( $id );
 
-
 			$post = get_post( $id );
 			setup_postdata( $post );
 
@@ -116,6 +120,13 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			wp_reset_postdata();
 			$post = $savePost;
 		}
+
+        // Test whether an exercise group is defined or not.
+        if ( ! is_array( $this->settings->groups )  && ( !isset( $this->settings->groups[0]) ) ) {
+
+            $this->settings->groups = array();
+            $this->settings->groups[0] = $this->defaultGroup();
+        }
 
 		$currentWorkout = $this->settings;
 		return $this->settings;
