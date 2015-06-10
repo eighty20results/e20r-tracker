@@ -36,7 +36,7 @@ class e20rWorkout extends e20rSettings {
 	    $this->fields = $e20rTables->getFields( 'workout' );
 
 	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id ) && ($currentWorkout->id != $id ) ) ) {
-		    // dbg("e20rWorkout::init() - currentWorkout->id: {$currentWorkout->id} vs id: {$id}" );
+		    dbg("e20rWorkout::init() - received id value: {$id}" );
 
 		    // $currentWorkout = parent::init( $id );
 		    $this->model->init( $id );
@@ -88,6 +88,14 @@ class e20rWorkout extends e20rSettings {
     }
 
     public function editor_metabox_setup( $post ) {
+
+        global $post;
+        global $currentWorkout;
+
+        dbg("e20rWorkout::editor_metabox_setup() - Loading settings for workout page: " . $post->ID );
+        $this->init( $post->ID );
+
+        // $currentWorkout = $this->model->find( 'id', $post->ID );
 
         add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array( &$this, "addMeta_WorkoutSettings" ), 'e20r_workout', 'normal', 'core');
 
@@ -306,6 +314,7 @@ class e20rWorkout extends e20rSettings {
 		    echo $this->view->viewSettingsBox( $currentWorkout );
 	    }
 	    else {
+
 		    dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded an empty/defaul workout definition...");
 		    echo $this->view->viewSettingsBox( $this->model->defaultSettings() );
 	    }
