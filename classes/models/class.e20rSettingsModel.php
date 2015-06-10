@@ -169,9 +169,9 @@ class e20rSettingsModel {
 	    $typeVar = 'current' . ucfirst($this->type);
 	    global ${$typeVar};
 
-	    if ( ! empty( ${$typeVar} ) && ( ${$typeVar}->id == $id )) {
+	    if ( isset( ${$typeVar}->id ) && ( ${$typeVar}->id == $id )) {
 
-		    dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Already loaded settings ({$id})");
+		    dbg("e20r" . ucfirst($this->type) ."Model::loadSettings() - Settings for {$this->type} are already loaded ({$id})");
 		    return ${$typeVar};
 	    }
 
