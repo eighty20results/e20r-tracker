@@ -226,17 +226,22 @@ class e20rWorkoutView extends e20rSettingsView {
 	    global $e20rTracker;
 	    global $e20rProgram;
 
-	    dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Loading program list for future use:");
+	    dbg("e20rWorkoutView::viewSettingsBox() - Loading program list for future use:");
 
 	    $programs = $e20rProgram->getProgramList();
 
-        // dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Supplied data: " . print_r($workoutData, true));
+        dbg("e20rWorkoutView::viewSettingsBox() - Supplied data: " . print_r($workoutData, true));
 
-	    if ( !isset( $workoutData->days ) || count( $workoutData->days ) == 0 ) {
-		    dbg("e20rWorkoutView::viewWorkoutSettingsBox() - Days contains: ");
-		    dbg($workoutData->days);
+	    if ( isset( $workoutData->days ) && empty( $workoutData->days ) ) {
+
+		    dbg("e20rWorkoutView::viewSettingsBox() - Days contains: ");
+		    dbg($workoutData);
 		    $workoutData->days = array();
 	    }
+        elseif ( !isset( $workoutData->days ) ) {
+            dbg("e20rWorkoutView::viewSettingsBox() - No 'days' defined??");
+        }
+
 
         ?>
         <style>
@@ -327,7 +332,7 @@ class e20rWorkoutView extends e20rSettingsView {
                                 <tr>
                                     <td class="select-input">
                                         <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups[]" class="select2-container" multiple="multiple">
-	                                        <option id="-1">All Users</option>
+	                                        <option value="-1"<?php echo in_array( -1, $workoutData->assigned_usergroups ) ? 'selected="selected"' : null; ?>>All Users</option>
                                             <?php
 
                                             $member_groups = $e20rWorkout->getMemberGroups();
