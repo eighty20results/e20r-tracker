@@ -99,7 +99,7 @@ var e20rActivity = {
         event.preventDefault();
 
         var grouping = self.activityForm.find('.e20r-exercise-group:last');
-        var currentGroupNo = parseInt(grouping.find('.e20r-group-id').val()) + 1; // Increment for next group
+        var currentGroupNo = parseInt( grouping.find('.e20r-group-id').val() ) + 1; // Increment for next group
 
         wp.ajax.send({
             url: e20r_tracker.ajaxurl,
