@@ -145,7 +145,7 @@ class e20rArticle extends e20rSettings {
 
         $postId = null;
 
-        $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
+        // $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
 
         $aId = $this->model->getSetting( $articleId, 'activity_id');
         $delay = $this->model->getSetting( $articleId, 'release_day');
@@ -729,16 +729,12 @@ class e20rArticle extends e20rSettings {
 
         dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$aConfig->articleId}");
 
-        $action = $this->model->getSetting( $aConfig->articleId, 'checkins' );
+        $checkin = $this->model->getSetting( $aConfig->articleId, 'checkins' );
         // $activity = $this->model->getSetting( $aConfig->articleId, 'activity_id' );
 
-        if ( is_array( $action ) ) {
-            // $setting = array_merge( $action, array( $activity ) );
-            $setting = $action;
-        }
-        else {
-            // $setting = array_merge( array( $action ), array( $activity ) );
-            $setting = array( $action );
+        if ( ! is_array( $checkin ) ) {
+            // $setting = array_merge( array( $checkin ), array( $activity ) );
+            $checkin = array( $checkin );
         }
 
         if ( empty( $setting ) /* && is_null( $activity ) */ ) {
@@ -746,7 +742,7 @@ class e20rArticle extends e20rSettings {
             return false;
         }
 
-        return $setting;
+        return $checkin;
     }
 
     public function setId( $id = null ) {
