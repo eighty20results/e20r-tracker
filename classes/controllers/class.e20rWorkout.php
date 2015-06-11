@@ -89,8 +89,7 @@ class e20rWorkout extends e20rSettings {
 
     public function editor_metabox_setup( $post ) {
 
-        global $post;
-        global $currentWorkout;
+        // global $currentWorkout;
 
         dbg("e20rWorkout::editor_metabox_setup() - Loading settings for workout page: " . $post->ID );
         $this->init( $post->ID );
@@ -202,9 +201,9 @@ class e20rWorkout extends e20rSettings {
 	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array();
 	    $exData = isset( $_POST['e20r-workout-group_exercise_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_id'] ) : array();
 	    $orderData = isset( $_POST['e20r-workout-group_exercise_order'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_order'] ) : array();
-	    $groupSetData = isset( $_POST['e20r-workout-group_set_count'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_set_count'] ) : array();
-	    $tempoData = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
-		$restData  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
+	    $groupSetCount = isset( $_POST['e20r-workout-group_set_count'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_set_count'] ) : array();
+	    $groupSetTempo = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
+		$groupSetRest  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
 
 	    $workout->programs = isset( $_POST['e20r-workout-programs'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-programs'] ) : array( 0 ) ;
 	    $workout->days = isset( $_POST['e20r-workout-days'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-days'] ) : array();
@@ -215,25 +214,31 @@ class e20rWorkout extends e20rSettings {
 	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : date( 'Y-m-d', current_time( 'timestamp' ) );
 	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
 
+        dbg($exData);
+
 	    $test = (array)$exData;
 
 	    if ( !empty( $test ) ) {
 
 		    foreach ($groupData as $key => $groupNo ) {
 
-			    if ( ( $workout->groups[$groupNo]->exercises[0] == 0 ) && ( ! isset( $groups[ $groupNo ]->exercises ) ) ) {
+                $groups[ $groupNo ]->group_set_count = $groupSetCount[ $groupNo ];
+                $groups[ $groupNo ]->group_tempo = $groupSetTempo[ $groupNo ];
+                $groups[ $groupNo ]->group_rest = $groupSetRest[ $groupNo ];
 
-				    dbg("e20rWorkout::saveSettings() - Creating and adding group data");
-				    $groups[ $groupNo ] = new stdClass();
-				    $groups[ $groupNo ]->exercises = array();
-				    $groups[ $groupNo ]->group_set_count = $groupSetData[ $groupNo ];
-				    $groups[ $groupNo ]->group_tempo = $tempoData[ $groupNo ];
-				    $groups[ $groupNo ]->group_rest = $restData[ $groupNo ];
+                if ( isset( $exData[$key] ) ) {
+                    dbg("e20rWorkout::saveSettings() - Adding exercise data from new definition");
+				    $groups[ $groupNo ]->exercises[ $orderData[ $key ] ] = $exData[$key];
 			    }
 
-			    dbg("e20rWorkout::saveSettings() - Adding Exercise group data");
-			    $groups[ $groupNo ]->exercises[ $orderData[ $key ] ] = $exData[ $key ];
-		    }
+                if (  ( count( $workout->groups[$groupNo]->exercises ) > 1 ) &&
+                    ( isset( $workout->groups[$groupNo]->exercises[0] ) ) ) {
+
+                    dbg("e20rWorkout::saveSettings() - Clearing data we don't need");
+                    unset($groups[$groupNo]->exercises[$orderData[$key]][0]);
+                }
+
+            }
 		    dbg("e20rWorkout::saveSettings() - Groups:");
 		    dbg($groups);
 	    }
@@ -300,12 +305,11 @@ class e20rWorkout extends e20rSettings {
 
     public function addMeta_WorkoutSettings() {
 
-        global $post;
+        // global $post;
 	    global $currentWorkout;
 
-        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page: " . $post->ID );
-        $this->init( $post->ID );
-
+        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page: " . $currentWorkout->id );
+        // $this->init( $post->ID );
 	    // $currentWorkout = $this->model->find( 'id', $post->ID );
 
 	    if ( !empty( $currentWorkout ) ) {

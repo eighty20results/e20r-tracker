@@ -406,6 +406,8 @@ class e20rWorkoutView extends e20rSettingsView {
 	                        <div id="e20r-workout-add-groups">
 		                        <?php
 		                        dbg("e20rWorkoutView::viewSettingsBox() - Loading " . count($workoutData->groups) . " groups of exercises");
+                                dbg( $workoutData->groups );
+
 		                        foreach( $workoutData->groups as $key => $group ) {
 
 			                        dbg("e20rWorkoutView::viewSettingsBox() - Group # {$key} for workout {$workoutData->id}");

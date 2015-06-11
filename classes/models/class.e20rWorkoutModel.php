@@ -26,6 +26,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			2 => __("Normal", "e20rtracker"),
 			3 => __("Fast", "e20rtracker")
 		);
+
+        $this->settings = new stdClass();
 	}
 
 	public function getType( $tId ) {
@@ -33,7 +35,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		return $this->types[$tId];
 	}
 
-    private function defaultGroup() {
+    public function defaultGroup() {
 
         $group = new stdClass();
         $group->group_set_count = null;
@@ -116,6 +118,42 @@ class e20rWorkoutModel extends e20rSettingsModel {
 				$this->settings->title    = $post->post_title;
 				$this->settings->id          = $id;
 			}
+
+            dbg("e20rWorkoutModel::loadSettings() - Analyzing group content");
+
+            $ex = array();
+            $g_def = $this->defaultGroup();
+
+            foreach( $this->settings->groups as $i => $g ) {
+
+                dbg("e20rWorkoutModel::loadSettings() - Analyzing group #{$i}");
+
+                if ( ! isset( $g->group_set_count ) || is_null( $g->group_set_count ) ) {
+
+                    dbg("e20rWorkoutModel::loadSettings() - Adding default set count info");
+                    $g->group_set_count = $g_def->group_set_count;
+                }
+
+                if ( ! isset( $g->group_tempo ) || is_null( $g->group_tempo ) ) {
+
+                    dbg("e20rWorkoutModel::loadSettings() - Adding default set tempo");
+                    $g->group_tempo = $g_def->group_tempo;
+                }
+
+                if ( ! isset( $g->group_rest ) || is_null( $g->group_rest ) ) {
+
+                    dbg("e20rWorkoutModel::loadSettings() - Adding default set rest");
+                    $g->group_rest = $g_def->group_rest;
+                }
+
+                if ( ! isset( $g->exercises[1] ) || is_null( $g->exercises[1] ) ) {
+
+                    dbg("e20rWorkoutModel::loadSettings() - Adding default exercise array");
+                    $g->exercises = $g_def->exercises;
+                }
+
+                $this->settings->groups[$i] = $g;
+            }
 
 			wp_reset_postdata();
 			$post = $savePost;
@@ -253,6 +291,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         return false;
     }
+
 	/**
      * Returns an array of all workouts merged with their associated settings.
      *
@@ -303,8 +342,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 		    dbg( "e20rWorkoutModel::loadWorkoutData() - Warning: Unable to load workout data. No ID specified!" );
 
-		    return $this->settings;
-	    } else {
+		    return $this->defaultSettings();
+	    }
+        else {
 
 		    $query = array(
 			    'post_type'   => $this->cpt_slug,
@@ -318,14 +358,14 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		    if ( $query->post_count <= 0 ) {
 			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workout found!" );
 
-			    return $this->settings;
+			    return $this->defaultSettings();
 		    }
 
 		    while ( $query->have_posts() ) {
 
 			    $query->the_post();
 
-			    dbg("e20rWorkoutModel::loadWorkoutData() - Received ID: " . get_the_ID() );
+			    dbg("e20rWorkoutModel::loadWorkoutData() - For Workout id: " . get_the_ID() );
 			    $new = $this->loadSettings( get_the_ID() );
 
 			    $new->id         = $id;

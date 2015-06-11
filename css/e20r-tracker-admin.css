@@ -29,3 +29,9 @@ input[type=text].video_link {
 .new-exercises {
     width: 100%;
 }
+.e20r-exercise-list thead tr {
+    background-color: #d5d5d5;
+}
+.new-exercises tbody tr {
+    background-color: lightgoldenrodyellow;
+}
