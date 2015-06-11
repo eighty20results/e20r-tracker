@@ -249,6 +249,13 @@ class e20rTracker {
 	        // add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
 	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
+            // Custom columns
+            add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rCheckin, 'set_custom_edit_columns' ) );
+            add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rCheckin, 'custom_column'), 10, 2 );
+            add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rCheckin, 'sortable_column' ) );
+
+            add_post_type_support( 'page', 'excerpt' );
+
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -2223,19 +2230,19 @@ class e20rTracker {
 	public function e20r_tracker_actionCPT() {
 
         $labels =  array(
-            'name' => __( 'Actions', 'e20rtracker'  ),
-            'singular_name' => __( 'Action', 'e20rtracker' ),
+            'name' => __( 'Check-ins', 'e20rtracker'  ),
+            'singular_name' => __( 'Check-In', 'e20rtracker' ),
             'slug' => 'e20r_checkins',
-            'add_new' => __( 'New Action', 'e20rtracker' ),
-            'add_new_item' => __( 'New Action', 'e20rtracker' ),
-            'edit' => __( 'Edit Action', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Action', 'e20rtracker'),
+            'add_new' => __( 'New Check-In', 'e20rtracker' ),
+            'add_new_item' => __( 'New Check-In', 'e20rtracker' ),
+            'edit' => __( 'Edit Check-In', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Check-In', 'e20rtracker'),
             'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Action', 'e20rtracker' ),
-            'view_item' => __( 'View This Action', 'e20rtracker' ),
-            'search_items' => __( 'Search Actions', 'e20rtracker' ),
-            'not_found' => __( 'No Actions Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Actions Found In Trash', 'e20rtracker' )
+            'view' => __( 'View Check-In', 'e20rtracker' ),
+            'view_item' => __( 'View This Check-Ins', 'e20rtracker' ),
+            'search_items' => __( 'Search Check-Ins', 'e20rtracker' ),
+            'not_found' => __( 'No Check-Ins Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Check-Ins Found In Trash', 'e20rtracker' )
         );
 
         $error = register_post_type('e20r_checkins',
