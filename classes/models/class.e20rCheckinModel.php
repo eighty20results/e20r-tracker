@@ -111,7 +111,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $start_date = $this->getSetting( $id, 'startdate' );
         $checkins = array();
 
-        dbg("e20rCheckinModel::getCheckins() - Loaded startdate: {$start_date}");
+        dbg("e20rCheckinModel::getActions() - Loaded startdate: {$start_date}");
 
         $args = array(
             'posts_per_page' => $numBack,
@@ -137,7 +137,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::getCheckins() - Returned checkins: {$query->post_count} for query..." );
+        dbg("e20rCheckinModel::getActions() - Returned checkins: {$query->post_count}" );
 	    // dbg($args);
 
         while ( $query->have_posts() ) {
@@ -337,7 +337,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 			        if ($n_type == $type ) {
 
-				        dbg('e20rCheckinModel::loadUserCheckin() - Default action: the type settings are correct. Saving...');
+				        dbg('e20rCheckinModel::loadUserCheckin() - Default action: the type settings are correct. Using it...');
 				        $result->id = $i;
 				        break;
 			        }
@@ -357,8 +357,8 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
 
-            dbg("e20rCheckinModel::loadUserCheckin() - Default action: No record found, using defaults instead: ");
-            dbg($result);
+            dbg("e20rCheckinModel::loadUserCheckin() - Default action: No user record found");
+            // dbg($result);
         }
 
         return $result;
