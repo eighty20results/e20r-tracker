@@ -278,6 +278,28 @@ class e20rAssignment extends e20rSettings {
 		    return false;
 	    }
 
+        if ( ( !isset($post->post_type) ) || ( $post->post_type !== 'e20r_assignments' ) ) {
+
+            dbg( "e20rAssignment::saveSettings() - Not an assignment. " );
+            return $assignmentId;
+        }
+
+        if ( empty( $assignmentId ) ) {
+
+            dbg("e20rAssignment::saveSettings() - No post ID supplied");
+            return false;
+        }
+
+        if ( wp_is_post_revision( $assignmentId ) ) {
+
+            return $post_id;
+        }
+
+        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+
+            return $assignmentId;
+        }
+
         $savePost = $post;
 
         if ( empty( $settings ) ) {
