@@ -29,6 +29,13 @@ var e20rActivity = {
 
         var activity = this;
 
+        jQuery(".e20r-exercise-description > p").each( function() {
+
+            var $txt = jQuery(this).text().replace( /\n/g, "<br/>" );
+
+            jQuery(this).html($txt);
+        });
+
         activity.$rows.each(function() {
 
             var row = jQuery(this);
@@ -124,7 +131,7 @@ var e20rActivity = {
             elem = jQuery( elem );
         }
 
-        console.log("hasData for: ", elem);
+        // console.log("hasData for: ", elem);
         var $value = elem.val();
 
         if ( $value ) {
