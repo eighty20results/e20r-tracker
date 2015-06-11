@@ -135,6 +135,7 @@ class e20rArticle extends e20rSettings {
      * Use the articleId to locate the
      * @param $articleId - The ID of the article containing the workout/activity for this lesson.
      *
+     * @returns int - The post ID for the activity/workout.
      */
     public function getActivity( $articleId, $userId = null ) {
 
@@ -144,7 +145,7 @@ class e20rArticle extends e20rSettings {
 
         $postId = null;
 
-        $excerpt = "We haven't found an activity for today";
+        $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
 
         $aId = $this->model->getSetting( $articleId, 'activity_id');
         $delay = $this->model->getSetting( $articleId, 'release_day');
@@ -200,7 +201,7 @@ class e20rArticle extends e20rSettings {
             return null;
         }
 
-	    dbg( "e20rArticle::getActionExcerpt() - Prefix for lesson: {$prefix}");
+	    dbg( "e20rArticle::getExcerpt() - Prefix for lesson: {$prefix}");
 
         $articles = new WP_Query( array(
             'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
@@ -210,7 +211,7 @@ class e20rArticle extends e20rSettings {
             'ignore_sticky_posts' => true,
         ) );
 
-        dbg( "e20rArticle::getActionExcerpt() - Number of posts for ID {$postId} in {$articleId} is {$articles->found_posts}" );
+        dbg( "e20rArticle::getExcerpt() - Number of posts for ID {$postId} in {$articleId} is {$articles->found_posts}" );
 
         if ( $articles->found_posts > 0 ) {
 
@@ -236,7 +237,7 @@ class e20rArticle extends e20rSettings {
             $html = ob_get_clean();
         }
         else {
-            dbg("e20rArticle::getActionExcerpt() - No posts found. Returning null ");
+            dbg("e20rArticle::getExcerpt() - No posts found. Returning null for the excerpt");
             $html = null;
         }
 
@@ -682,10 +683,20 @@ class e20rArticle extends e20rSettings {
 
         dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$aConfig->articleId}");
 
-        $setting = $this->model->getSetting( $aConfig->articleId, 'checkins' );
+        $action = $this->model->getSetting( $aConfig->articleId, 'checkins' );
+        // $activity = $this->model->getSetting( $aConfig->articleId, 'activity_id' );
 
-        if ( empty($setting)) {
-            dbg("e20rArticle::getCheckins() - Zero checkin IDs found for this article ({$aConfig->articleId})");
+        if ( is_array( $action ) ) {
+            // $setting = array_merge( $action, array( $activity ) );
+            $setting = $action;
+        }
+        else {
+            // $setting = array_merge( array( $action ), array( $activity ) );
+            $setting = array( $action );
+        }
+
+        if ( empty( $setting ) /* && is_null( $activity ) */ ) {
+            dbg("e20rArticle::getCheckins() - No check-in IDs found for this article ({$aConfig->articleId})");
             return false;
         }
 
