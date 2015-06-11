@@ -30,7 +30,9 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->groups = array();
         $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
         $settings->sequences = array();
-
+        $settings->title = null;
+        $settings->excerpt = null;
+        
         return $settings;
     }
 
