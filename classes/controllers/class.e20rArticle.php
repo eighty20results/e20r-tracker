@@ -167,7 +167,7 @@ class e20rArticle extends e20rSettings {
 
 	            foreach ( $activity as $b ) {
 
-		            if ( true === $this->allowedAccess( $b, $userId, $mGroupId ) ) {
+		            if ( true === $e20rTracker->allowedActivityAccess( $b, $userId, $mGroupId ) ) {
 
                         dbg( "e20rArticle::getActivity() - User has permission to see activity #{$a->id}" );
 			            $postId = $b->id;
@@ -179,53 +179,10 @@ class e20rArticle extends e20rSettings {
         return $postId;
     }
 
-    private function allowedAccess( $activity, $uId, $grpId ) {
-
-        $retval = false;
-
-        if  ( ! is_array( $grpId ) ) {
-
-            $grpId = array( $grpId );
-        }
-
-        // Loop through any list of groups the user belongs to
-        foreach( $grpId as $gid => $desc ) {
-
-            // No group ID assigned to activity and the group is set to "All users"
-            if ( !in_array( $gid, $activity->assigned_usergroups ) &&
-                ( in_array( -1, $activity->assigned_usergroups ) ) ) {
-
-                $retval = true;
-            }
-
-            // User is a member of the group that the activity has been assigned to
-            if ( in_array( $gid, $activity->assigned_usergroups) ) {
-
-                $retval = true;
-            }
-
-        }
-
-        // No user ID assigned to activity and it's set to "All users"
-        if ( !in_array( $uId, $activity->assigned_user_id ) &&
-            ( in_array( -1, $activity->assigned_user_id ) ) ) {
-
-            $retval = true;
-        }
-
-        // User is a listed member for the activity
-        if ( in_array( $uId, $activity->assigned_user_id ) ) {
-
-            $retval = true;
-        }
-
-        // Default is to deny access.
-        return $retval;
-    }
-
     public function getExcerpt( $articleId, $userId = null, $type = 'action' ) {
 
         global $post;
+        global $e20rTracker;
 
 	    $postId = null;
 
@@ -235,6 +192,7 @@ class e20rArticle extends e20rSettings {
 	            $prefix = $this->model->getSetting( $articleId, 'prefix' );
 				dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the action in article {$articleId}");
                 break;
+
             case 'activity':
                 // $postId = $this->getActivity( $articleId );
 				$postId = $this->model->getSetting( $articleId, 'activity_id' );
@@ -247,7 +205,7 @@ class e20rArticle extends e20rSettings {
             return null;
         }
 
-	    dbg( "e20rArticle::getExcerpt() - Prefix for lesson: {$prefix}");
+	    dbg( "e20rArticle::getExcerpt() - Prefix for {$type}: {$prefix}");
 
         $articles = new WP_Query( array(
             'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
@@ -270,12 +228,40 @@ class e20rArticle extends e20rSettings {
                 <h4>
                     <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
                 </h4>
-                <p class="e20r-descr"><?php echo $post->post_excerpt; ?></p>
-                <p class="e20r-descr"><a href="<?php echo get_permalink() ?>" title="<?php the_title(); ?>">
-                        <?php _e( 'Click to read', 'e20tracker' ); ?>
+                <p class="e20r-descr"><?php echo $post->post_excerpt; ?></p> <?php
+
+                if ( $type == 'action' ) { ?>
+
+                <p class="e20r-descr"><a href="<?php echo get_permalink() ?>" title="<?php get_the_title(); ?>">
+                    <?php _e( 'Click to read', 'e20tracker' ); ?>
                     </a>
-                </p>
-            <?php
+                </p> <?php
+
+                }
+                else if ($type == 'activity' ) {
+
+                    $url = null;
+
+                    dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
+                    $urls = $e20rTracker->getURLToPageWithShortcode( "e20r_activity" );
+
+                    if (!empty($urls)) {
+
+                        if (count($urls) > 1) {
+                            dbg("e20rArticle::getExcerpt() - ERROR: More than a single page containing the 'e20r_activity' short code! List follows: ");
+                            dbg($urls);
+                        }
+
+                        $url = array_pop($urls); ?>
+                        <p class="e20r-descr"><a href="<?php echo $url; ?>" title="<?php get_the_title(); ?>">
+                                <?php _e('Click to read', 'e20tracker'); ?>
+                            </a>
+                        </p> <?php
+                    } else {
+                        dbg("e20rArticle::getExcerpt() - No page with 'e20r_activity' short code has been found! Returning nothing...");
+                        ?><p class="e20r-descr"></p><?php
+                    }
+                }
             endwhile;
 
             wp_reset_postdata();

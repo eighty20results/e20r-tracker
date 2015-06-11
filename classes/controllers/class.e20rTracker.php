@@ -160,6 +160,7 @@ class e20rTracker {
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
 
+            add_action( 'save_post', array( &$this, 'shortcode_check' ), 10, 2 );
             add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
             add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
             add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
@@ -168,6 +169,7 @@ class e20rTracker {
             add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
             add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
+            add_action( 'post_updated', array( &$this, 'shortcode_check' ), 10, 2 );
 	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
             add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
@@ -262,6 +264,142 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+    public function shortcode_check( $post_id ) {
+
+        global $post;
+
+        if ( ( !isset($post->post_type) ) || !in_array( $post->post_type, array( 'post', 'page' ) ) ) {
+
+            dbg( "e20rTracker::shortcode_check() - Not a post/page: " );
+            return $post_id;
+        }
+
+        if ( empty( $post_id ) ) {
+
+            dbg("e20rTracker::shortcode_check() - No post ID supplied");
+            return false;
+        }
+
+        if ( wp_is_post_revision( $post_id ) ) {
+
+            return $post_id;
+        }
+
+        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+
+            return $post_id;
+        }
+
+        dbg("e20rTracker::shortcode_check() - Processing post/page for check against the e20r_activity short code");
+        dbg( $post->post_content );
+
+        if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+
+            dbg("e20rTracker::shortcode_check() - Found the activity shortcode. Save the ID ({$post_id}) for it!");
+            $ePostId = $this->loadOption('e20r_activity_post');
+
+            if ( ( $ePostId != $post_id ) || ( false == $ePostId ) ) {
+
+                $this->settings['e20r_activity_post'] = $post_id;
+                $this->updateSetting( 'e20r_activity_post', $post_id );
+                return $post_id;
+            }
+        }
+    }
+
+    public function allowedActivityAccess( $activity, $uId, $grpId ) {
+
+        $retval = false;
+
+        if  ( ! is_array( $grpId ) ) {
+
+            $grpId = array( $grpId );
+        }
+
+        // Loop through any list of groups the user belongs to
+        foreach( $grpId as $gid => $desc ) {
+
+            // No group ID assigned to activity and the group is set to "All users"
+            if ( !in_array( $gid, $activity->assigned_usergroups ) &&
+                ( in_array( -1, $activity->assigned_usergroups ) ) ) {
+
+                $retval = true;
+            }
+
+            // User is a member of the group that the activity has been assigned to
+            if ( in_array( $gid, $activity->assigned_usergroups) ) {
+
+                $retval = true;
+            }
+
+        }
+
+        // No user ID assigned to activity and it's set to "All users"
+        if ( !in_array( $uId, $activity->assigned_user_id ) &&
+            ( in_array( -1, $activity->assigned_user_id ) ) ) {
+
+            $retval = true;
+        }
+
+        // User is a listed member for the activity
+        if ( in_array( $uId, $activity->assigned_user_id ) ) {
+
+            $retval = true;
+        }
+
+        // Default is to deny access.
+        return $retval;
+    }
+
+    public function getURLToPageWithShortcode( $short_code = '' ) {
+
+        $urls = array();
+
+        switch ( $short_code ) {
+
+            case 'e20r_activity':
+
+                $id = $this->loadOption( 'e20r_activity_post' );
+
+                if ( $id ) {
+                    $urls[ $id ] = get_permalink( $id );
+                }
+                break;
+        }
+        /*
+        if ( '' == $short_code ) {
+
+            return null;
+        }
+
+        $args = array(
+            's' => $short_code,
+        );
+
+        $the_query = new WP_Query( $args );
+
+        if ( $the_query->have_posts() ) {
+
+            while ( $the_query->have_posts() ) {
+
+                $the_query->the_post();
+                $urls[ the_ID() ] = the_permalink();
+
+            }
+        }
+        else {
+            dbg("e20rTracker::getURLToPageWithShortcode() - No page(s) with the short code '{$short_code}' was found!");
+            return null;
+        }
+
+        wp_reset_postdata();
+*/
+        dbg("e20rTracker::getURLToPageWithShortcode() - Short code: {$short_code} -> Url(s): ");
+        dbg($urls);
+
+        return $urls;
+    }
+
 	public function trackerCPTs() {
 		return array(
 			'e20r_workout',
@@ -272,6 +410,7 @@ class e20rTracker {
 			'e20r_checkins'
 		);
 	}
+
 	function plugin_add_settings_link( $links ) {
 
 		$settings_link = '<a href="options-general.php?page=e20r-tracker">' . __( 'Settings', 'e20rtracker' ) . '</a>';
@@ -613,17 +752,10 @@ class e20rTracker {
 
     public function updateSetting( $name, $value ) {
 
-        if ( array_key_exists( $name, $this->settings ) ) {
-
-            $this->settings[ $name ] = $value;
-            update_option( $this->setting_name, $this->settings);
-            return true;
-        }
-        else {
-            dbg("Error: The {$name} setting does not exist!");
-        }
-
-        return false;
+        dbg("e20rTracker::updateSetting() - Adding/updating setting: {$name} = {$value}");
+        $this->settings[$name] = $value;
+        update_option( $this->setting_name, $this->settings);
+        return true;
     }
 
     public function save_girthtype_order( $post_id ) {
@@ -1218,7 +1350,7 @@ class e20rTracker {
 		global $post;
 		global $pagenow;
 
-        if ( ! isset( $post->content ) ) {
+        if ( ! isset( $post->ID ) ) {
             return;
         }
 
@@ -1457,12 +1589,32 @@ class e20rTracker {
 	private function loadOption( $optionName ) {
 
 		$value = false;
-		// TODO: Implement loadOption() function
-		if ( $optionName == 'e20r_interview_page' ) {
-			$value = E20R_COACHING_URL . "/welcome-questionnaire/";
-		}
 
-		return $value;
+        dbg("e20rTracker::loadOption() - Looking for option with name: {$optionName}");
+        $options = get_option( $this->setting_name );
+
+        if ( empty( $options ) ) {
+
+            dbg("e20rTracker::loadOption() - No options defined at all!");
+            return false;
+        }
+
+        if ( empty( $options[$optionName] ) ) {
+            dbg("e20rTracker::loadOption() - Option {$optionName} exists but contains no data!");
+            return false;
+        }
+        else {
+            dbg("e20rTracker::loadOption() - Option {$optionName} exists...");
+
+            if ( 'e20r_interview_page' == $optionName ) {
+                return E20R_COACHING_URL . "/welcome-questionnaire/";
+            }
+
+            return $options[$optionName];
+        }
+
+
+		return false;
 	}
     /**
      * Load the generic/general plugin javascript and localizations
