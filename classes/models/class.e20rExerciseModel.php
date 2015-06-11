@@ -90,7 +90,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 				$dType = 'char';
 		}
 
-		return parent::find( $type, $value, $dType, $e20rProgram->getProgramIdForUser( $current_user->ID) );
+		return parent::find( $type, $value, $dType );
 	}
 
 	public function loadSettings( $id = null ) {
