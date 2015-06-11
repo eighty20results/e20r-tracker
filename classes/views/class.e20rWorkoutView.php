@@ -356,7 +356,7 @@ class e20rWorkoutView extends e20rSettingsView {
                                     </td>
                                     <td class="select-input ">
                                         <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id[]" class="select2-container" multiple="multiple">
-	                                        <option id="-1">All Users</option>
+	                                        <option id="-1" <?php echo in_array( -1, $workoutData->assigned_user_id ) ? 'selected="selected"' : null; ?>>All Users</option>
                                             <?php
 
                                             $memberArgs = array( 'orderby' => 'display_name' );
