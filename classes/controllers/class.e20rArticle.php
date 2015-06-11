@@ -160,21 +160,67 @@ class e20rArticle extends e20rSettings {
         foreach( $activities as $a ) {
 
             if ( in_array( $art_day_no, $a->days ) ) {
+
                 // The delay value for the $articleId releases the $articleId on one of the $activity days.
                 dbg("e20rArticle::getActivity() - ID for the correct Activity: {$a->id}");
 	            $activity = $e20rWorkout->getActivity( $a->id );
 
 	            foreach ( $activity as $b ) {
 
-		            if ( in_array( $userId, $b->assigned_user_id ) || in_array( $mGroupId, $b->assigned_usergroups) ) {
+		            if ( true === $this->allowedAccess( $b, $userId, $mGroupId ) ) {
+
+                        dbg( "e20rArticle::getActivity() - User has permission to see activity #{$a->id}" );
 			            $postId = $b->id;
 		            }
 	            }
-
             }
         }
 
         return $postId;
+    }
+
+    private function allowedAccess( $activity, $uId, $grpId ) {
+
+        $retval = false;
+
+        if  ( ! is_array( $grpId ) ) {
+
+            $grpId = array( $grpId );
+        }
+
+        // Loop through any list of groups the user belongs to
+        foreach( $grpId as $gid => $desc ) {
+
+            // No group ID assigned to activity and the group is set to "All users"
+            if ( !in_array( $gid, $activity->assigned_usergroups ) &&
+                ( in_array( -1, $activity->assigned_usergroups ) ) ) {
+
+                $retval = true;
+            }
+
+            // User is a member of the group that the activity has been assigned to
+            if ( in_array( $gid, $activity->assigned_usergroups) ) {
+
+                $retval = true;
+            }
+
+        }
+
+        // No user ID assigned to activity and it's set to "All users"
+        if ( !in_array( $uId, $activity->assigned_user_id ) &&
+            ( in_array( -1, $activity->assigned_user_id ) ) ) {
+
+            $retval = true;
+        }
+
+        // User is a listed member for the activity
+        if ( in_array( $uId, $activity->assigned_user_id ) ) {
+
+            $retval = true;
+        }
+
+        // Default is to deny access.
+        return $retval;
     }
 
     public function getExcerpt( $articleId, $userId = null, $type = 'action' ) {
