@@ -1505,6 +1505,12 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     font-weight: bold;
     font-size: 14px;
 }
+p#habit-names span.faded {
+    font-size: 100%;
+}
+p#habit-names strong {
+    font-size: 120%;
+}
 div.photo-overlay {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
@@ -1757,6 +1763,8 @@ td.e20r-group-header {
         max-width: 300px;
         min-width: 235px;
         width: 96%;
+        margin-bottom: 0;
+        margin-left: 0;
     }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
         width: 48%;
@@ -1779,6 +1787,8 @@ td.e20r-group-header {
         max-width: 300px;
         min-width: 96%;
         width: 96%;
+        margin-bottom: 0;
+        margin-left: 0;
     }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
         zoom: 1;
@@ -1832,6 +1842,7 @@ td.e20r-group-header {
     border-top: 1px solid transparent;
     width: 100%;
     list-style-type: none;
+    margin-left: 20px;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li label {
     float: left;
@@ -1843,8 +1854,9 @@ td.e20r-group-header {
     margin-left: 6px;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you .edit-selection {
-    margin: 8px 4px 0 40px;
+    margin: 8px 4px 0 -35px;
     padding: 4px 4px;
+    font-size: 0.75rem;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes { padding: 0 4px; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes legend {
