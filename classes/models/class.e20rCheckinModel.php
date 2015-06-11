@@ -69,8 +69,8 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count} for query: " );
-	    dbg($args);
+        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count} for query... " );
+	    // dbg($args);
 
         while ( $query->have_posts() ) {
 
@@ -90,8 +90,8 @@ class e20rCheckinModel extends e20rSettingsModel {
             }
         }
 
-	    dbg("e20rCheckinModel::findActionByDate() - Returning ids:");
-	    dbg( $actions );
+	    dbg("e20rCheckinModel::findActionByDate() - Returning " . count($actions) . " action ids");
+	    // dbg( $actions );
 
         return $actions;
     }
@@ -137,8 +137,8 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::getCheckins() - Returned checkins: {$query->post_count} for query:" );
-	    dbg($args);
+        dbg("e20rCheckinModel::getCheckins() - Returned checkins: {$query->post_count} for query..." );
+	    // dbg($args);
 
         while ( $query->have_posts() ) {
 
@@ -299,19 +299,21 @@ class e20rCheckinModel extends e20rSettingsModel {
             );
         }
 
-        dbg("e20rCheckinModel::loadUserCheckin() - SQL: {$sql}");
+        // dbg("e20rCheckinModel::loadUserCheckin() - SQL: {$sql}");
 
         $result = $wpdb->get_row( $sql );
 
         if ( $result === false ) {
 
-            dbg("e20rCheckinModel::loadUserCheckin() - Error loading checkin: " . $wpdb->last_error );
-            return false;
+            dbg("e20rCheckinModel::loadUserCheckin() - Error loading check-in: " . $wpdb->last_error );
+            return null;
         }
 
-        dbg("e20rCheckinModel::loadUserCheckin() - Loaded " . count($result) . " check-in records");
+        dbg("e20rCheckinModel::loadUserCheckin() - Loaded {$wpdb->num_rows} check-in records");
 
         if ( empty( $result ) ) {
+
+            dbg( "e20rCheckinModel::loadUserCheckin() - No check-in records found for this user (ID: {$current_user->ID})");
 
             /*
             if ( empty( $this->settings ) ) {
@@ -325,27 +327,27 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 	        if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
 
-		        dbg( "e20rCheckinModel::loadUserCheckin() - Found one or more ids");
+		        dbg( "e20rCheckinModel::loadUserCheckin() - Default action: Found one or more ids");
 
 		        foreach ( $a as $i ) {
 
 			        $n_type = $this->getSetting( $i, 'checkin_type' );
 
-			        dbg( "e20rCheckinModel::loadUserCheckin() - Type settings for {$i}: {$n_type}");
+			        dbg( "e20rCheckinModel::loadUserCheckin() - Default action: Type settings for {$i}: {$n_type}");
 
 			        if ($n_type == $type ) {
 
-				        dbg('e20rCheckinModel::loadUserCheckin() - the type settings are correct. Saving...');
+				        dbg('e20rCheckinModel::loadUserCheckin() - Default action: the type settings are correct. Saving...');
 				        $result->id = $i;
 				        break;
 			        }
 
-			        dbg("e20rCheckinModel::loadUserCheckin() - the type mismatch {$n_type} != {$type}. Looping again.");
+			        dbg("e20rCheckinModel::loadUserCheckin() - Default action: the type mismatch {$n_type} != {$type}. Looping again.");
 		        }
 
 	        }
 
-            $result->descr_id = $short_name;
+            // $result->descr_id = $short_name;
             $result->user_id = $current_user->ID;
             $result->program_id = $programId;
             $result->article_id = $config->articleId;
@@ -355,7 +357,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
 
-            dbg("e20rCheckinModel::loadUserCheckin() - Using default values: ");
+            dbg("e20rCheckinModel::loadUserCheckin() - Default action: No record found, using defaults instead: ");
             dbg($result);
         }
 
