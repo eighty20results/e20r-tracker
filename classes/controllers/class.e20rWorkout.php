@@ -214,8 +214,6 @@ class e20rWorkout extends e20rSettings {
 	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : date( 'Y-m-d', current_time( 'timestamp' ) );
 	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
 
-        dbg($exData);
-
 	    $test = (array)$exData;
 
 	    if ( !empty( $test ) ) {
