@@ -26,7 +26,6 @@ class e20rWorkout extends e20rSettings {
 	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
     }
 
-
     public function init( $id = null ) {
 
 	    global $currentWorkout;
