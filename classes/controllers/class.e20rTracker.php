@@ -688,8 +688,15 @@ class e20rTracker {
         if ( ! class_exists( 'Crypto' ) ) {
 
             dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
-            // return base64_encode( $data );
-	        return $data;
+
+            if ( ! WP_DEBUG ) {
+
+                return base64_encode($data);
+            }
+            else {
+                return $data;
+            }
+
         }
 
 	    if ( $key === null ) {
@@ -697,19 +704,24 @@ class e20rTracker {
 		    return $data;
 	    }
 
-	    try {
+        if ( ! WP_DEBUG ) {
 
-		    $ciphertext = Crypto::Encrypt($data, $key);
-	    }
-	    catch (CryptoTestFailedException $ex) {
+            try {
 
-		    wp_die('Cannot safely perform encryption');
-	    }
-	    catch (CannotPerformOperationException $ex) {
-		    wp_die('Cannot safely perform decryption');
-	    }
+                $ciphertext = Crypto::Encrypt($data, $key);
+                return $ciphertext;
+            }
+            catch (CryptoTestFailedException $ex) {
 
-	    return $ciphertext;
+                wp_die('Cannot safely perform encryption');
+            }
+            catch (CannotPerformOperationException $ex) {
+                wp_die('Cannot safely perform decryption');
+            }
+        }
+        else {
+            return $data;
+        }
     }
 
     public function decryptData( $encData, $key ) {
@@ -721,33 +733,41 @@ class e20rTracker {
 
 	    if ( ! class_exists( 'Crypto' ) ) {
 
-            // dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
-            // return base64_decode( $encData );
-	        return $encData;
+            if ( ! WP_DEBUG ) {
+
+                dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
+                return base64_decode( $encData );
+            }
+            else {
+                return $encData;
+            }
         }
 
-	    try {
+        if ( ! WP_DEBUG ) {
 
-		    $decrypted = Crypto::Decrypt($encData, $key);
-	    }
-	    catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
-		    // Either:
-		    //   1. The ciphertext was modified by the attacker,
-		    //   2. The key is wrong, or
-		    //   3. $ciphertext is not a valid ciphertext or was corrupted.
-		    // Assume the worst.
-		    wp_die('DANGER! DANGER! The encrypted text has been tampered with during transmission/load');
-	    }
-	    catch (CryptoTestFailedException $ex) {
+            try {
 
-		    wp_die('Cannot safely perform encryption');
-	    }
-	    catch (CannotPerformOperationException $ex) {
+		        $decrypted = Crypto::Decrypt($encData, $key);
+                return $decrypted;
+            }
+            catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
+                // Either:
+                //   1. The ciphertext was modified by the attacker,
+                //   2. The key is wrong, or
+                //   3. $ciphertext is not a valid ciphertext or was corrupted.
+                // Assume the worst.
+                wp_die('DANGER! DANGER! The encrypted text has been tampered with during transmission/load');
+            }
+            catch (CryptoTestFailedException $ex) {
 
-		    wp_die('Cannot safely perform decryption');
-	    }
+                wp_die('Cannot safely perform encryption');
+            }
+            catch (CannotPerformOperationException $ex) {
 
-	    return $decrypted;
+                wp_die('Cannot safely perform decryption');
+            }
+        }
+
     }
 
     public function updateSetting( $name, $value ) {
