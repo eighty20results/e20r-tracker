@@ -314,7 +314,7 @@ tfoot.e20r-activity-table-footer {
     */
 }
  img.e20r-resize {
-     max-width: 350px;
+     max-width: 100%;
      height: auto;
 }
 .e20r-saved-weight-value,
