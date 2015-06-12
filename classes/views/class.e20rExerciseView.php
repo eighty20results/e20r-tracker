@@ -37,7 +37,18 @@ class e20rExerciseView {
 		if ( empty( $currentExercise->video_link ) ) {
 
 			$data = wp_get_attachment_image_src( get_post_thumbnail_id( $currentExercise->id), 'single-post-thumbnail' );
-			$currentExercise->image = '<img class="e20r-resize" src="' . $data[0] .'" alt="' . $currentExercise->title . '">';
+
+            // No featured image specified and no video link included.
+            if ( is_null( $data[0] ) && empty( $currentExercise->video_link ) ) {
+
+                dbg("e20rExerciseViews::printExercise() - Using default placeholder image...");
+                $currentExercise->image = '<img class="e20r-resize" src="'. E20R_PLUGINS_URL . '/images/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
+            }
+            else {
+
+                $currentExercise->image = '<img class="e20r-resize" src="' . $data[0] . '" alt="' . $currentExercise->title . '">';
+            }
+
 			$display = $currentExercise->image;
 		}
 
@@ -62,13 +73,6 @@ class e20rExerciseView {
 				$display = ob_get_clean();
 			}
 		}
-
-        // No featured image specified and no video link included.
-        if ( empty( $display ) ) {
-
-            dbg("e20rExerciseViews::printExercise() - Using default placeholder image...");
-            $display = '<img class="e20r-resize" src="/images/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
-        }
 
 		// dbg("e20rExerciseView::printExercise() - Display: {$display}");
 
