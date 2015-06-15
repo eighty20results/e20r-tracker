@@ -145,9 +145,9 @@ class e20rWorkoutView extends e20rSettingsView {
 									<table class="e20r-resp-table">
 										<thead class="e20r-resp-table-header">
 										<tr>
-											<th class="e20r-td-input-count"><!-- div class="e20r-activity-group-track-s e20r-activity-var">--><?php _e("Set", "e20rtracker"); ?><!-- </div> --></th>
-											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-l e20r-activity-var"><?php _e("Weight", "e20rtracker"); ?></div></th>
-											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-r e20r-activity-var"><?php _e("Reps", "e20rtracker"); ?></div></th>
+                                            <th class="e20r-td-input-count"><!-- div class="e20r-activity-group-track-s e20r-activity-var">--><?php _e("Set", "e20rtracker"); ?><!-- </div> --></th>
+											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-l e20r-activity-var"><?php echo ( $currentExercise->type ==  1 ) ? __("Weight", "e20rtracker") : __("Time", "e20rtracker"); ?></div></th>
+											<th class="e20r-td-input-activity"><div class="e20r-activity-group-track-r e20r-activity-var"><?php echo ( $currentExercise->type != 1 ) ? __("Reps (click to edit)", "e20rtracker") : __("Reps", "e20rtracker"); ?></div></th>
 											<th></th>
 										</tr>
 										</thead>
@@ -155,11 +155,21 @@ class e20rWorkoutView extends e20rSettingsView {
 									<?php
 										for ( $i = 1 ; $i <= $g->group_set_count ; $i++ ) {
 
-											$weight = isset($recorded[$exKey]->set[$i]->weight) ? $recorded[$exKey]->set[$i]->weight : null;
+                                            if ( $currentExercise->type == 2 ) {
+
+                                                dbg("e20rWorkoutView::displayActivity() - Time/Reps type of exercise");
+                                                $weight = $currentExercise->reps;
+                                            }
+                                            else {
+                                                dbg("e20rWorkoutView::displayActivity() - Weight/Reps type of exercise");
+                                                $weight = isset($recorded[$exKey]->set[$i]->weight) ? $recorded[$exKey]->set[$i]->weight : null;
+                                            }
+
 											$reps = isset($recorded[$exKey]->set[$i]->reps) ? $recorded[$exKey]->set[$i]->reps : null;
 											$when= isset($recorded[$exKey]->set[$i]->recorded) ? $recorded[$exKey]->set[$i]->recorded : null;
 											$ex_id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->ex_id : null;
 											$id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->id : null;
+
 											?>
 										<tr class="e20r-edit e20r-exercise-set-row">
 											<td data-th="Set" class="e20r-td-input-count">
