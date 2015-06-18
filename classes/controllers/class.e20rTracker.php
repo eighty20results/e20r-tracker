@@ -102,30 +102,42 @@ class e20rTracker {
 
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
-	        add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
-	        add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
-
-	        add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
-	        add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
-
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
 
 	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
             dbg("e20rTracker::loadAllHooks() - Pagenow = {$pagenow}" );
 
-            if ( ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php') )  {
-                dbg("e20rTracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
-                // add_filter( 'media-view-strings', array( &$e20rMeasurements, 'clientMediaUploader' ) );
-                add_filter( 'upload_dir', array( &$e20rMeasurements, 'set_progress_upload_dir' ) );
+            $post_id =  ( !empty( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : null );
+
+            if ( ( ! empty( $post_id ) ) && ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php') ) {
+
+                $parent = get_post($post_id)->post_parent;
+
+                if (has_shortcode(get_post($post_id)->post_content, 'weekly_progress') ||
+                    (!(('post' == get_post_type($post_id)) || ('page' == get_post_type($post_id))))
+                ) {
+
+
+                    dbg("e20rTracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
+                    add_filter('media_view_strings', array(&$e20rMeasurements, 'clientMediaUploader'), 10);
+
+                    dbg("e20rTracker::loadAllHooks() - Loaded filter to change the Media Library settings for client uploads");
+                    add_filter("wp_handle_upload_prefilter", array(&$this, "pre_upload"));
+                    add_filter("wp_handle_upload", array(&$this, "post_upload"));
+                    dbg("e20rTracker::loadAllHooks() - Loaded filter to change the upload directory for Nourish clients");
+
+                    dbg("e20rTracker::loadAllHooks() - Control Access to media uploader for e20rTracker users");
+                    /* Control access to the media uploader for Nourish users */
+                    add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
+                    add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
+
+                }
             }
 
-
-            /* Control access to the media uploader for Nourish users */
-            add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
-            add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
 
+            dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
             /* Load scripts & CSS */
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
             add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
@@ -226,6 +238,7 @@ class e20rTracker {
             add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
             add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
 
+            dbg("e20rTracker::loadAllHooks() - Short Codes");
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
@@ -254,7 +267,14 @@ class e20rTracker {
             // Custom columns
             add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rCheckin, 'set_custom_edit_columns' ) );
             add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rCheckin, 'custom_column'), 10, 2 );
+
             add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rCheckin, 'sortable_column' ) );
+
+            add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
+            add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
+
+            add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
+            add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
 
             add_post_type_support( 'page', 'excerpt' );
 
@@ -262,6 +282,65 @@ class e20rTracker {
         }
 
         $this->hooksLoaded = true;
+    }
+
+    public function pre_upload( $file ) {
+
+        dbg("e20rTracker::pre_upload() -- Set upload directory path for the progress photos.");
+        add_filter( 'upload_dir', array( &$this, "e20r_set_upload_dir" ) );
+        // add_filter( 'upload_dir', "e20r_set_upload_dir" );
+
+        dbg("e20rTracker::pre_upload() -- New upload directory path for the progress photos has been configured.");
+
+        return $file;
+    }
+
+    public function post_upload( $fileinfo ) {
+
+        dbg("e20rTracker::post_upload() -- Removing upload directory path hook.");
+        remove_filter( "upload_dir", array( &$this, "e20r_set_upload_dir") );
+        return $fileinfo;
+    }
+
+    public function e20r_set_upload_dir( $param ) {
+
+        global $e20rClient;
+        global $current_user;
+        global $post;
+
+        dbg("e20rTracker::set_progress_upload_dir() - Do we need to modify the upload directory?");
+        dbg("Post ID: {$post->ID}" );
+        /*
+                if ( ! class_exists( "e20rClient" ) ) {
+
+                    dbg("e20rTracker::set_progress_upload_dir() - No client class defined?!??");
+                    return $param;
+                }
+
+                if ( ! isset( $post->ID ) ) {
+
+                    dbg("e20rTracker::set_progress_upload_dir() - No page ID defined...");
+                    return $param;
+                }
+
+
+                if ( ! $e20rClient->client_loaded ) {
+
+                    dbg("e20rTracker::set_progress_upload_dir() - Need to load the Client information/settings...");
+                    dbg("e20rTracker::set_progress_upload_dir() - Set ID for client info");
+                    $e20rClient->setClient( $current_user->ID );
+                    dbg("e20rTracker::set_progress_upload_dir() - Load default Client info");
+                    $e20rClient->init();
+                }
+
+                dbg("e20rTracker::set_progress_upload_dir() - Fetching the upload path for client ID: " . $e20rClient->clientId());
+                $path = $e20rClient->getUploadPath( $e20rClient->clientId() );
+
+                $param['path'] = $param['basedir'] . "/{$path}";
+                $param['url'] = $param['baseurl'] . "/{$path}";
+                */
+        dbg("e20rTracker::set_progress_upload_dir() - Directory: {$param['path']}");
+        return $param;
     }
 
     public function shortcode_check( $post_id ) {
@@ -305,6 +384,8 @@ class e20rTracker {
                 return $post_id;
             }
         }
+
+        return;
     }
 
     public function allowedActivityAccess( $activity, $uId, $grpId ) {
@@ -571,6 +652,8 @@ class e20rTracker {
 
         global $current_user, $pagenow;
 
+        dbg("e20rTracker::restrict_media_library() - Check whether to restrict access to the media library...");
+
         if ( !is_a( $current_user, "WP_User") ) {
 
             return;
@@ -581,6 +664,8 @@ class e20rTracker {
         }
 
         if( ! current_user_can( 'manage_media_library') ) {
+
+            dbg("e20rTracker::restrict_media_library() - User {$current_user->ID} is an author or better and has access to managing the media library");
             $wp_query_obj->set( 'author', $current_user->ID );
         }
 

@@ -152,27 +152,6 @@ class e20rMeasurements {
         return true;
     }
 
-    public function set_progress_upload_dir( $upload ) {
-
-        global $e20rClient;
-        global $current_user;
-
-        if ( ! $e20rClient->client_loaded ) {
-
-            dbg("e20rMeasurements::set_progress_upload_dir() - Need to load the Client class");
-            $e20rClient->setClient( $current_user->ID );
-            $e20rClient->init();
-        }
-
-        $path = $e20rClient->getUploadPath( $current_user->ID );
-
-        $upload['path'] = $upload['basedir'] . "/{$path}";
-        $upload['url'] = $upload['baseurl'] . "/{$path}";
-
-        dbg("e20rMeasurements::set_progress_upload_dir() - Directory: {$upload['path']}");
-        return $upload;
-    }
-
     public function setFilenameForClientUpload( $file ) {
 
         global $current_user;
@@ -247,7 +226,9 @@ class e20rMeasurements {
 
         global $current_user;
 
-        if ( in_array( 'admin', $current_user->roles ) ) {
+        dbg("e20rMeasurements::clientMediaUploader() -- Do we remove tab(s) from teh media uploader?");
+
+        if ( current_user_can('edit_posts') ) {
 
             dbg("e20rMeasurements::clientMediaUploader() -- User is an administrator so don't remove anything.");
             return $strings;
@@ -259,6 +240,7 @@ class e20rMeasurements {
         unset( $strings['setFeaturedImageTitle'] ); //Set Featured Image
 
         unset( $strings['insertFromUrlTitle'] ); //Insert from URL
+
         return $strings;
     }
 
