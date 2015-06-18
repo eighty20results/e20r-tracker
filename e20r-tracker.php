@@ -13,6 +13,7 @@ License: GPL2
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
 define( 'E20R_PLUGIN_NAME', plugin_basename( __FILE__ ) );
+define( 'E20R_MAX_LOG_SIZE', 3*1024*1024 );
 define( 'E20R_QUESTIONS', 1 );
 define( 'E20R_ANSWERS', 1 );
 define( 'CONST_SATURDAY', 6 );
@@ -89,6 +90,7 @@ if ( ! function_exists( 'dbg' ) ):
             $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log.txt';
 
             $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
+
             $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp')) . "-{$tid}) -- " .
                 ((is_array($msg) || (is_object($msg))) ? print_r($msg, true) : $msg) . "\n";
 
@@ -105,7 +107,7 @@ function add_log_text($text, $filename) {
         chmod( $filename, 0640 );
     }
 
-    if ( filesize( $filename ) > 3*1024*1024) {
+    if ( filesize( $filename ) > E20R_MAX_LOG_SIZE ) {
 
         $filename2 = "$filename.old";
 
