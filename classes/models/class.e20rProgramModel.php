@@ -17,6 +17,45 @@ class e20rProgramModel extends e20rSettingsModel {
 
     }
 
+    public function findByMembershipId( $mID ) {
+
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type' => $this->cpt_slug,
+            'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+            'order_by' => 'meta_value',
+            'meta_query' => array(
+                array(
+                    'key' => "_e20r_program-groups",
+                    'value' => $mID,
+                    'compare' => 'IN',
+                ),
+            )
+        );
+
+        $query = new WP_Query( $args );
+
+        dbg("e20rProgramModel::findByMembershipId() - Returned: {$query->post_count} programs for group w/ID: {$mID}" );
+
+        if ( $query->post_count == 0 ) {
+
+            return false;
+        }
+        while ( $query->have_posts() ) {
+
+            $query->the_post();
+
+            $pId = get_the_ID();
+
+            // $new = $this->loadSettings( get_the_ID() );
+            // $new->id = get_the_ID();
+
+            // $pList[] = $new;
+        }
+
+        return $pId;
+    }
+
     public function defaultSettings() {
 
         global $post;
@@ -55,10 +94,24 @@ class e20rProgramModel extends e20rSettingsModel {
 
         foreach ( $defaults as $key => $value ) {
 
-            if ( in_array( $key, array( 'id', 'program_shortname' ) ) ) {
+            if ( in_array( $key, array( 'id', 'program_shortname', 'title', 'excerpt' ) ) ) {
                 continue;
             }
 
+            /*
+            if ( in_array( $key, array( 'groups', 'sequences', 'users' ) ) ) {
+
+                dbg("e20rProgramModel::saveSettings() - Processing {$key}");
+
+                foreach( $settings->{$key} as $k => $pId ) {
+
+                    if ( ( -1 == $pId ) || ( 0 == $pId ) ) {
+
+                        unset( $settings->{$key}[$k] );
+                    }
+                }
+            }
+            */
             if ( false === $this->settings( $programId, 'update', $key, $settings->{$key} ) ) {
 
                 dbg( "e20rProgram::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for program definition with ID: {$programId}" );

@@ -229,7 +229,24 @@ class e20rProgram extends e20rSettings {
 	    return ( isset( $currentProgram->id ) ? $currentProgram->id : false );
     }
 
-	private function loadProgram( $userId = 0 ) {
+    public function setProgramForUser( $user_id, $membership_id ) {
+
+        $pIds = $this->model->findByMembershipId( $membership_id );
+
+        dbg("e20rProgram::setProgramForUser() - Returned groups/membership IDs: ");
+        dbg($pIds);
+
+        if ( ! is_array( $pIds ) ) {
+
+            // Convert the single value.
+            $pIds = array( $pIds );
+        }
+
+
+
+    }
+
+    private function loadProgram( $userId = 0 ) {
 
 		global $currentProgram;
 
