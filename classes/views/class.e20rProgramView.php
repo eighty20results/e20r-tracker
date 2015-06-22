@@ -63,7 +63,7 @@ class e20rProgramView {
                     <tr>
                         <th class="e20r-label header"><label for="e20r-program-startdate"><?php _e("Starts on", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-program-enddate"><?php _e("Ends on", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-program-levels"><?php _e("Member Levels", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-group"><?php _e("Membership Level", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-program-dripfeed"><?php _e("Lesson feed", "e20rtracker"); ?></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><?php _e("Intake form", "e20rtracker"); ?></label></th>
 <!--	                    <th class="e20r-label header"><label for="e20r-program-activity_sequences"><?php _e("Activity feed", "e20rtracker"); ?></label></th> -->
@@ -98,23 +98,14 @@ class e20rProgramView {
                                 <input type="date" id="e20r-program-enddate" name="e20r-program-enddate" value="<?php echo $end; ?>">
                             </td>
                             <td>
-                                <select class="select2-container" id="e20r-program-groups" name="e20r-program-groups[]" multiple="multiple">
-                                    <option value="0"><?php _e("Not Applicable", "e20rtracker"); ?></option>
+                                <select class="select2-container" id="e20r-program-group" name="e20r-program-group">
+                                    <option value="-1" <?php selected( $programData->group, 0 ); ?>><?php _e("Not Applicable", "e20rtracker"); ?></option>
                                     <?php
                                         $levels = $e20rTracker->getMembershipLevels( null, true );
 
-                                        foreach( $levels as $id => $name ) {
+                                        foreach( $levels as $id => $name ) { ?>
 
-	                                        if ( ! empty( $programData->groups ) ) {
-
-                                                $selected = ( in_array( $id, $programData->groups ) ? ' selected="selected" ' : null );
-	                                        }
-	                                        else {
-		                                        $selected = null;
-	                                        }
-	                                        ?>
-                                            <option value="<?php echo $id; ?>" <?php echo $selected; ?>><?php echo $name; ?></option>
-                                            <?php
+                                            <option value="<?php echo $id; ?>" <?php echo selected( $programData->group, $id ); ?>><?php echo $name; ?></option> <?php
                                         }
                                     ?>
                                 </select>
@@ -122,7 +113,7 @@ class e20rProgramView {
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
-                                    <option value="0">Not configured</option>
+                                    <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>>Not configured</option>
                                     <?php
                                         foreach($feeds as $df) {
 
@@ -141,7 +132,7 @@ class e20rProgramView {
                             </td>
 	                        <td>
 		                        <select class="select2-container" id="e20r-program-intake_form" name="e20r-program-intake_form">
-			                        <option value="0">No intake form/page needed</option>
+			                        <option value="-1" <?php selected( -1, $programData->intake_form) ?>>No intake form/page needed</option>
 			                        <?php
 
 			                        $pages = get_pages();
