@@ -231,19 +231,58 @@ class e20rProgram extends e20rSettings {
 
     public function setProgramForUser( $user_id, $membership_id ) {
 
-        $pIds = $this->model->findByMembershipId( $membership_id );
+        dbg("e20rProgram::setProgramForuser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}}");
 
-        dbg("e20rProgram::setProgramForUser() - Returned groups/membership IDs: ");
-        dbg($pIds);
+        if ( false === ( $pId = $this->model->findByMembershipId( $membership_id ) ) ) {
 
-        if ( ! is_array( $pIds ) ) {
+            dbg("e20rProgram::setProgramForUser() - ERROR: No program IDs returned!");
 
-            // Convert the single value.
-            $pIds = array( $pIds );
+            $addr = get_option( 'admin_email' );
+
+            $subj = "Error: Cannot locate program definition for {$membership_id}";
+
+            $msg = "Membership Level {$membership_id} isn't associated with a published program ID.\n";
+            $msg .= "Please correct the program definitions for the {$membership_id} membership level\n";
+
+            wp_mail( $addr, $subj, $msg);
+
         }
 
+        dbg("e20rProgram::setProgramForUser() - Returned groups/membership IDs: ");
+        dbg($pId);
 
+        if ( is_array( $pId ) ) {
 
+            dbg("e20rProgram::setProgramForUser() - ERROR: More than one program ID associated with membership!");
+            $addr = get_option( 'admin_email' );
+
+            $subj = "Error: Unexpected program definition(s)";
+
+            $msg = "Membership Level {$membership_id} is associated with more than a single program ID.\n";
+            $msg .= "Please correct the program definitions for the following programs:\n\n";
+
+            foreach ( $pId as $id ) {
+
+                $msg .= get_the_title($id) . "({$id})\n";
+            }
+
+            wp_mail( $addr, $subj, $msg);
+            return;
+        }
+
+        if ( false === update_user_meta( $user_id, 'e20r-tracker-program-id', $pId ) ) {
+
+            $addr = get_option( 'admin_email' );
+
+            $subj = "Error: Unable to set program for user ID";
+
+            $msg = "Membership Level {$membership_id} could not be configured for user ID {$user_id}.\n";
+            $msg .= "Please update the profile for user with ID {$user_id} in the admin panel.\n";
+
+            wp_mail( $addr, $subj, $msg);
+        }
+
+        return;
     }
 
     private function loadProgram( $userId = 0 ) {
