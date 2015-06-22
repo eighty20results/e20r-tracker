@@ -92,13 +92,14 @@ class e20rTracker {
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
 	        add_action( 'init', array( &$this, "activate_autoUpdate" ), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 10 );
+            add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_activitiesCPT"), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_actionCPT"), 10 );
+            add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 11 );
+            add_action( "init", array( &$this, "e20r_tracker_actionCPT"), 12 );
+            add_action( "init", array( &$this, "e20r_tracker_activitiesCPT"), 13 );
+            add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 14 );
+            add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
+            add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
@@ -1130,9 +1131,15 @@ class e20rTracker {
 
         dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
 
-        $e20rAdminPage = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r-tracker', __( 'Client Data','e20r_tracker'), __( 'Client Data','e20r_tracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
+        $e20rAdminPage = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        add_submenu_page( 'e20r-tracker', __( 'Client Data','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
 
+        $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20rtracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
+
+        $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20rtracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
+        $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20rtracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
+
+        // add_submenu_page( 'edit.php?post_type=e20r_workout', __('Exercises', 'e20rtracker' ), __('Exercises', 'e20rtracker' ), 'manage_options', 'e20r-activity-submenu' );
 //        add_submenu_page( 'e20r-tracker', __( 'Check-in Item','e20r_tracker'), __('Check-in Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$e20rCheckin, 'render_submenu_page'));
 //        add_submenu_page( 'e20r-tracker', __( 'Program','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$e20rProgram, 'render_submenu_page'));
 //        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$e20rArticle,'render_submenu_page') );
@@ -2232,7 +2239,28 @@ class e20rTracker {
         delete_option( $this->setting_name );
     }
 
-	public function e20r_tracker_assignmentsCPT() {
+    public function e20r_program_taxonomy() {
+
+        register_taxonomy(
+            'programs',
+            'e20r_program',
+            array(
+                'label' => __( 'Programs', 'e20rtracker' ),
+                'rewrite' => array( 'slug' => 'programs' ),
+                'public' => false,
+                'show_tagcloud' => false,
+                'show_in_quick_edit' => false,
+                'hierarchical' => true,
+                'capabilities' => array(
+                    'assign_terms' => 'edit_posts',
+                    'edit_terms' => 'manage_categories'
+                )
+            )
+        );
+    }
+
+
+    public function e20r_tracker_assignmentsCPT() {
 
         $labels =  array(
             'name' => __( 'Assignments', 'e20rtracker'  ),
@@ -2260,7 +2288,7 @@ class e20rTracker {
                    'supports' => array('title', 'excerpt'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-assignments-cpt-slug', 'tracker-assignments'),
                        'with_front' => false
@@ -2302,7 +2330,7 @@ class e20rTracker {
                    'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-programs',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-program-cpt-slug', 'tracker-programs'),
                        'with_front' => false
@@ -2338,13 +2366,13 @@ class e20rTracker {
             array( 'labels' => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
-                   'show_in_menu' => true,
+                   // 'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title', 'excerpt'),
                    'can_export' => true,
-                   'show_in_nav_menus' => true,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_nav_menus' => false,
+                   'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-article-cpt-slug', 'tracker-articles'),
                        'with_front' => false
@@ -2428,7 +2456,7 @@ class e20rTracker {
                    'supports' => array('title','editor','excerpt','thumbnail', 'page-attributes'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-activities',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-exercise-cpt-slug', 'tracker-exercise'),
                        'with_front' => false
@@ -2470,7 +2498,7 @@ class e20rTracker {
                    'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-workout-cpt-slug', 'tracker-activity'),
                        'with_front' => false
@@ -2512,7 +2540,7 @@ class e20rTracker {
                    'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-checkin-cpt-slug', 'tracker-action'),
                        'with_front' => false
