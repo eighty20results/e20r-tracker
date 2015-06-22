@@ -358,7 +358,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		    if ( $query->post_count <= 0 ) {
 			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workout found!" );
 
-			    return $this->defaultSettings();
+			    return array( $post->ID => $this->defaultSettings() );
 		    }
 
 		    while ( $query->have_posts() ) {
