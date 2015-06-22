@@ -26,9 +26,9 @@ class e20rProgramModel extends e20rSettingsModel {
             'order_by' => 'meta_value',
             'meta_query' => array(
                 array(
-                    'key' => "_e20r_program-groups",
+                    'key' => "_e20r_program-group",
                     'value' => $mID,
-                    'compare' => 'IN',
+                    'compare' => '=',
                 ),
             )
         );
@@ -36,11 +36,19 @@ class e20rProgramModel extends e20rSettingsModel {
         $query = new WP_Query( $args );
 
         dbg("e20rProgramModel::findByMembershipId() - Returned: {$query->post_count} programs for group w/ID: {$mID}" );
+        dbg($query);
 
         if ( $query->post_count == 0 ) {
 
+            dbg("e20rProgramModel::findByMembershipId() - Error: No program IDs returned?!?" );
             return false;
         }
+
+        if ( $query->post_count > 1 ) {
+            dbg("e20rProgramModel::findByMembershipId() - Error: Incorrect program/membership definition! More than one entry was returned" );
+            return false;
+        }
+
         while ( $query->have_posts() ) {
 
             $query->the_post();
@@ -53,6 +61,7 @@ class e20rProgramModel extends e20rSettingsModel {
             // $pList[] = $new;
         }
 
+        dbg("e20rProgramModel::findByMembershipId() - Located program # {$pId}" );
         return $pId;
     }
 
@@ -66,7 +75,7 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
         $settings->enddate = null;
 	    $settings->intake_form = null;
-        $settings->groups = array();
+        $settings->group = -1;
         $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
         $settings->sequences = array();
         $settings->title = null;
@@ -99,7 +108,7 @@ class e20rProgramModel extends e20rSettingsModel {
             }
 
             /*
-            if ( in_array( $key, array( 'groups', 'sequences', 'users' ) ) ) {
+            if ( in_array( $key, array( 'group', 'sequences', 'users' ) ) ) {
 
                 dbg("e20rProgramModel::saveSettings() - Processing {$key}");
 
