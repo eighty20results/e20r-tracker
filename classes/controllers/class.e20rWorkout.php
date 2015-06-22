@@ -197,7 +197,7 @@ class e20rWorkout extends e20rSettings {
 	    $groups = array();
 	    $workout = $this->model->loadSettings( $post_id );
 
-	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array();
+	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array( $post_id => $this->model->defaultGroup() );
 	    $exData = isset( $_POST['e20r-workout-group_exercise_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_id'] ) : array();
 	    $orderData = isset( $_POST['e20r-workout-group_exercise_order'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_order'] ) : array();
 	    $groupSetCount = isset( $_POST['e20r-workout-group_set_count'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_set_count'] ) : array();
