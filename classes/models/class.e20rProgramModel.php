@@ -26,7 +26,7 @@ class e20rProgramModel extends e20rSettingsModel {
             'order_by' => 'meta_value',
             'meta_query' => array(
                 array(
-                    'key' => "_e20r_program-group",
+                    'key' => "_e20r-program-group",
                     'value' => $mID,
                     'compare' => '=',
                 ),
@@ -36,7 +36,7 @@ class e20rProgramModel extends e20rSettingsModel {
         $query = new WP_Query( $args );
 
         dbg("e20rProgramModel::findByMembershipId() - Returned: {$query->post_count} programs for group w/ID: {$mID}" );
-        dbg($query);
+        // dbg($query);
 
         if ( $query->post_count == 0 ) {
 
@@ -62,6 +62,7 @@ class e20rProgramModel extends e20rSettingsModel {
         }
 
         dbg("e20rProgramModel::findByMembershipId() - Located program # {$pId}" );
+
         return $pId;
     }
 
