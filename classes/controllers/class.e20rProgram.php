@@ -231,7 +231,7 @@ class e20rProgram extends e20rSettings {
 
     public function setProgramForUser( $user_id, $membership_id ) {
 
-        dbg("e20rProgram::setProgramForuser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}}");
+        dbg("e20rProgram::setProgramForuser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}");
 
         if ( false === ( $pId = $this->model->findByMembershipId( $membership_id ) ) ) {
 
@@ -270,7 +270,9 @@ class e20rProgram extends e20rSettings {
             return;
         }
 
-        if ( false === update_user_meta( $user_id, 'e20r-tracker-program-id', $pId ) ) {
+        update_user_meta( $user_id, 'e20r-tracker-program-id', $pId );
+
+        if ( $pId ===  get_user_meta( $user_id, 'e20r-tracker-program-id', true ) ) {
 
             $addr = get_option( 'admin_email' );
 
