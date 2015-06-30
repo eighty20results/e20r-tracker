@@ -28,3 +28,4 @@ done
 cd ${dst_path}/..
 zip -r ${kit_name}.zip ${plugin_path}
 rm -rf ${dst_path}
+scp ${dst_path} siteground-e20r:./www/protected-content/e20r-tracker/
