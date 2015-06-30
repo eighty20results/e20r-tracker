@@ -14,7 +14,7 @@ echo "Building kit for version ${version}"
 mkdir -p ${kit_path}
 mkdir -p ${dst_path}
 
-if [ -f  ${kit_name} ]
+if [[ -f  ${kit_name} ]]
 then
     echo "Kit is already present. Cleaning up"
     rm -rf ${dst_path}
