@@ -37,7 +37,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			?>
 		<div class="red-notice">
 			<h3><?php _e( "No planned activity", "e20rtracker" ); ?></h3>
-			<p><?php _e( "There are no scheduled/planned activities for your coaching program, but don't let that stop you from enjoying nature!", "e20rtracker" ); ?></p>
+			<p><?php _e( "There are no scheduled/planned activities for your coaching program today, but don't let that stop you from enjoying nature!", "e20rtracker" ); ?></p>
 		</div>
 			<?php
 
