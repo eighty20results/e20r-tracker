@@ -360,12 +360,14 @@ class e20rWorkout extends e20rSettings {
 
 		$tmp = shortcode_atts( array(
 			'type' => 'action',
-			'form_id' => null,
+			'activity_id' => null,
 		), $attributes );
 
 		foreach ( $tmp as $key => $val ) {
 
-			$config->{$key} = $val;
+            if ( !empty( $val ) ) {
+                $config->{$key} = $val;
+            }
 		}
 
 		dbg( $config );
@@ -384,15 +386,33 @@ class e20rWorkout extends e20rSettings {
 		dbg("e20rWorkout::shortcode_activity() - Looking up article by delay value of {$config->delay} days");
 		$article = $e20rArticle->findArticle( 'release_day', $config->delay );
 
-		if ( isset( $article->id ) ) {
+        if ( empty( $article ) ) {
+            dbg("e20rWorkout::shortcode_activity() - No article found!");
+            $article = $currentArticle;
+        }
 
-			if ( isset( $article->activity_id ) ) {
+        if ( isset( $config->activity_id ) && ( $config->activity_id !== null ) ) {
 
-				dbg( "e20rWorkout::shortcode_activity() - Activity is defined for article {$article->id} with activity ID {$article->activity_id}" );
-				$workoutData = $this->model->find( 'id', $article->activity_id );
-			}
-		}
-		else {
+            if ( ! isset($article->activity_id)  || ( $article->article_id != $config->activity_id ) ) {
+
+                dbg("e20rWorkout::shortcode_activity() - Admin specified activity ID of {$config->activity_id}" );
+
+                if ( !is_object( $article ) ) {
+
+                    $article = new stdClass();
+                }
+
+                $article->activity_id = $config->activity_id;
+            }
+        }
+
+        if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
+
+            dbg( "e20rWorkout::shortcode_activity() - Activity is defined for article: " . isset($article->activity_id) ? $article->activity_id : "(no activity)" );
+            $workoutData = $this->model->find( 'id', $article->activity_id );
+        }
+
+        if ( !isset( $article->id ) ) {
 
 			dbg( "e20rWorkout::shortcode_activity() - No Activity defined for article, searching by date of {$config->date}, aka delay {$config->delay}" );
 			$workoutIds = $this->model->findByDate( $config->date, $config->programId );
@@ -427,7 +447,7 @@ class e20rWorkout extends e20rSettings {
 			}
 		}
 
-		$recorded = array();
+        $recorded = array();
 
 		dbg( "e20rWorkout::shortcode_activity() - WorkoutData prior to processing");
 		dbg($workoutData);
