@@ -438,7 +438,7 @@ class e20rWorkout extends e20rSettings {
 						if ( !$e20rTracker->allowedActivityAccess( $workoutData[$wid], $config->userId, $config->userGroup ) ) {
 
 							dbg( "e20rWorkout::shortcode_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
-							dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user - {$config->userGroup}: " );
+							dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: " );
 
 							unset( $workoutData[ $wid ] );
 						}
