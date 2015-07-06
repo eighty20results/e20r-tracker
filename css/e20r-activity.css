@@ -68,7 +68,7 @@ div.e20r-exercise-description {
 }
 div.first-column {
     float: left;
-    text-align: right;
+    /* text-align: right; */
 }
 div.second-column {
     float: right;
