@@ -236,6 +236,7 @@ class e20rTracker {
 
             /* Allow admin to set the program ID for the user in their profile(s) */
             add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
+            add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
             add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
             add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
 
@@ -248,10 +249,10 @@ class e20rTracker {
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
-            if ( function_exists( 'pmpro_activation' ) ) {
+            // if ( function_exists( 'pmpro_activation' ) ) {
 
                 add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
-            }
+            // }
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
@@ -389,48 +390,101 @@ class e20rTracker {
         return;
     }
 
+    private function inGroup( $id, $grpList ) {
+
+        if ( in_array( 0, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Admin has set 'Not Applicable' for group. Returning false");
+            return false;
+        }
+
+        if ( in_array( -1, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Admin has set 'All Groups'. Returning true");
+            return true;
+        }
+
+        if ( in_array( $id, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Group ID {$id} is in the group list. Returning true");
+            return true;
+        }
+
+        dbg("e20rTracker::inGroup() - None of the tests returned true. Default is 'No access!'");
+        return false;
+    }
+
+    private function inUserList( $id, $userList ) {
+
+        if ( in_array( 0, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - Admin has set 'Not Applicable' for user list. Returning false");
+            return false;
+        }
+
+        if ( in_array( -1, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - Admin has set 'All Users'. Returning true");
+            return true;
+        }
+
+        if ( in_array( $id, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - User ID {$id} is in the list of users. Returning true");
+            return true;
+        }
+
+        dbg("e20rTracker::inUserList() - None of the tests returned true. Default is 'No access!'");
+        return false;
+
+    }
+
+    /**
+     * Check whether the user belongs to a group (membership level) or the user is directly specified in the list of users for the activity.
+     * @param $activity - The Activity object
+     * @param $uId - The user ID (or array of user IDs)
+     * @param $grpId - The group ID (or array of group IDs)
+     * @return bool - True if the user is in the group list or user list for the activity
+     *
+     */
     public function allowedActivityAccess( $activity, $uId, $grpId ) {
 
         $retval = false;
+
+        $grpRet = false;
+        $usrRet = false;
+
+        dbg("e20rTracker::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 
         if  ( ! is_array( $grpId ) ) {
 
             $grpId = array( $grpId );
         }
 
+        if ( ! is_array( $uId ) ) {
+
+            $uId = array( $uId );
+        }
+
+        // Check against group list(s) first.
         // Loop through any list of groups the user belongs to
-        foreach( $grpId as $gid => $desc ) {
+        foreach( $grpId as $gid ) {
 
-            // No group ID assigned to activity and the group is set to "All users"
-            if ( !in_array( $gid, $activity->assigned_usergroups ) &&
-                ( in_array( -1, $activity->assigned_usergroups ) ) ) {
+            dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$gid}");
 
-                $retval = true;
-            }
-
-            // User is a member of the group that the activity has been assigned to
-            if ( in_array( $gid, $activity->assigned_usergroups) ) {
-
-                $retval = true;
-            }
-
+            $grpRet = $this->inGroup( $gid, $activity->assigned_usergroups );
         }
 
-        // No user ID assigned to activity and it's set to "All users"
-        if ( !in_array( $uId, $activity->assigned_user_id ) &&
-            ( in_array( -1, $activity->assigned_user_id ) ) ) {
+        // Then check against list of users.
+        foreach ( $uId as $id ) {
 
-            $retval = true;
+            dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$id}");
+
+            $usrRet = $this->inUserList( $id, $activity->assigned_user_id );
         }
 
-        // User is a listed member for the activity
-        if ( in_array( $uId, $activity->assigned_user_id ) ) {
-
-            $retval = true;
-        }
-
-        // Default is to deny access.
-        return $retval;
+        // Return true if either user or group access is true.
+        return ( $usrRet || $grpRet );
     }
 
     public function getURLToPageWithShortcode( $short_code = '' ) {
@@ -2795,6 +2849,8 @@ class e20rTracker {
 
             $delay = $this->daysBetween( $startDate, current_time("timestamp") );
 
+            // $delay = ($delay == 0 ? 1 : $delay);
+
             dbg("e20rTracker::getDelay() - Days since startdate is: {$delay}...");
 
             return $delay;
@@ -2803,13 +2859,26 @@ class e20rTracker {
         return false;
     }
 
-    public function setUserProgramStart( $levelId, $userId ) {
+    public function setUserProgramStart( $levelId, $userId = null ) {
 
         global $e20rProgram;
 
+        dbg("e20rTracker::setUserProgramStart() - Called from: " . $this->whoCalledMe() );
+        dbg("e20rTracker::setUserProgramStart() - levelId: {$levelId} and userId: {$userId}" );
+
         $levels = $this->coachingLevels();
 
+        dbg("e20rTracker::setUserProgramStart() - Loaded level information" );
+        dbg($levels);
+
         if ( in_array( $levelId, $levels) ) {
+
+            if ( $userId == null ) {
+
+                global $current_user;
+                $userId = ( !is_null( $current_user->ID ) ) ? $current_user->ID : false;
+                dbg("e20rTracker::setUserProgramStart() - User id wasn't received?? Set to: {$userId}");
+            }
 
             $startDate = $e20rProgram->startdate( $userId );
             dbg( "e20rTracker::setuserProgramStart() - Received startdate of: {$startDate} aka " . date( 'Y-m-d', $startDate ) );
