@@ -31,6 +31,8 @@ class e20rTracker {
                             'purge_tables' => false,
                             'measurement_day' => CONST_SATURDAY,
                             'lesson_source' => null,
+                            'auth_timeout' => 3600*3,
+                            'remember_me_auth_timeout' => 3600*24,
             )
         );
 
@@ -280,10 +282,43 @@ class e20rTracker {
 
             add_post_type_support( 'page', 'excerpt' );
 
+            add_filter('auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3);
+
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
         $this->hooksLoaded = true;
+    }
+
+    public function login_timeout( $seconds, $user_id, $remember ) {
+
+        $expire_in = 0;
+
+        /* "remember me" is checked */
+        if ( $remember ) {
+
+            $expire_in = intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+
+            if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
+
+            dbg("e20rTracker::login_timeout() - Setting session timeout for user with 'Remember me' checked to: {$expire_in}");
+
+        } else {
+
+            $expire_in = intval( $this->loadOption( 'auth_timeout' ) );
+
+            if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
+
+            dbg("e20rTracker::login_timeout() - Setting session timeout for user to: {$expire_in}");
+        }
+
+        // check for Year 2038 problem - http://en.wikipedia.org/wiki/Year_2038_problem
+        if ( PHP_INT_MAX - time() < $expire_in ) {
+
+            $expire_in =  PHP_INT_MAX - time() - 5;
+        }
+
+        return $expire_in;
     }
 
     public function pre_upload( $file ) {
@@ -1084,13 +1119,18 @@ class e20rTracker {
         // Register any global settings for the Plugin
         register_setting( 'e20r_options', $this->setting_name, array( $this, 'validate' ) );
 
-        add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_section_text' ), 'e20r_tracker_opt_page' );
-
         /* Add fields for the settings */
+        add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+
+        add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+
+        add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
         // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
@@ -1098,7 +1138,31 @@ class e20rTracker {
 
     }
 
-	// TODO: Make this a program setting and not a global setting!
+    public function render_remembermetimeout_select() {
+
+        $timeout = $this->loadOption( 'remember_me_auth_timeout' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[remember_me_auth_timeout]" id="<?php echo $this->setting_name; ?>_remember_me_auth_timeout"> <?php
+        foreach ( range( 1, 14 ) as $days ) { ?>
+            <option value="<?php echo $days; ?>" <?php selected($days, $timeout); ?>><?php echo $days . ($days <= 1 ? " day" : " days") ?></option>
+        <?php
+        }
+
+
+    }
+
+    public function render_logintimeout_select() {
+
+        $timeout = $this->loadOption( 'auth_timeout' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[auth_timeout]" id="<?php echo $this->setting_name; ?>_auth_timeout"> <?php
+        foreach ( range( 1, 12 ) as $hrs ) { ?>
+            <option value="<?php echo $hrs; ?>" <?php selected($hrs, $timeout); ?>><?php echo $hrs . ($hrs <= 1 ? " hour" : " hours") ?></option>
+        <?php
+        }
+    }
+
+    // TODO: Make this a program setting and not a global setting!
     public function render_lessons_select() {
 
         $options = get_option( $this->setting_name );
@@ -1119,9 +1183,11 @@ class e20rTracker {
 
     public function render_delete_checkbox() {
 
+
         $options = get_option( $this->setting_name );
+        $dVal = isset( $options['delete_tables'] ) ? $options['delete_tables'] : false;
         ?>
-        <input type="checkbox" name="<?php echo $this->setting_name; ?>[delete_tables]" value="1" <?php checked( 1, $options['delete_tables'] ) ?> >
+        <input type="checkbox" name="<?php echo $this->setting_name; ?>[delete_tables]" value="1" <?php checked( 1, $dVal ) ?> >
         <?php
     }
 
@@ -1129,8 +1195,9 @@ class e20rTracker {
 
 
         $options = get_option( $this->setting_name );
+        $pVal = isset( $options['purge_tables'] ) ? $options['purge_tables'] : false;
         ?>
-        <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $options['purge_tables'] ) ?> >
+        <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $pVal ) ?> >
     <?php
     }
 
@@ -1149,11 +1216,19 @@ class e20rTracker {
         <?php
     }
 
-    public function render_section_text() {
+    public function render_login_section_text() {
 
-        $html = "<p>These settings will determine the behavior of the plugin during deactivation.</p>";
+        echo "<p>Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.</p><hr/>";
+    }
 
-        echo $html;
+    public function render_program_section_text() {
+
+        echo "<p>Configure global Eighty / 20 Tracker settings.</p><hr/>";
+    }
+
+    public function render_deactivation_section_text() {
+
+        echo "<p>Configure the behavior of the plugin when it gets deactivated.</p><hr/>";
     }
 
     public function render_settings_page() {
