@@ -294,10 +294,13 @@ class e20rTracker {
 
         $expire_in = 0;
 
+        dbg("e20rTracker::login_timeout() - Length requested: {$seconds}, User: {$user_id}, Remember: {$remember}");
+
         /* "remember me" is checked */
         if ( $remember ) {
 
-            $expire_in = intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+            dbg( "e20rTracker::login_timeout() - Remember me value: " . $this->loadOption('remember_me_auth_timeout') );
+            $expire_in = 60 * 60 * 24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
 
@@ -305,7 +308,8 @@ class e20rTracker {
 
         } else {
 
-            $expire_in = intval( $this->loadOption( 'auth_timeout' ) );
+            dbg( "e20rTracker::login_timeout() - Timeout value: " . $this->loadOption('auth_timeout') );
+            $expire_in = 60 * 60 * intval( $this->loadOption( 'auth_timeout' ) );
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
 
@@ -584,7 +588,7 @@ class e20rTracker {
 
 	function plugin_add_settings_link( $links ) {
 
-		$settings_link = '<a href="options-general.php?page=e20r-tracker">' . __( 'Settings', 'e20rtracker' ) . '</a>';
+		$settings_link = '<a href="options-general.php?page=e20r_tracker_opt_page">' . __( 'Settings', 'e20rtracker' ) . '</a>';
 		array_push( $links, $settings_link );
 		return $links;
 	}
