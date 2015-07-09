@@ -14,7 +14,7 @@ echo "Building kit for version ${version}"
 mkdir -p ${kit_path}
 mkdir -p ${dst_path}
 
-if [ -f  ${kit_name} ]
+if [[ -f  ${kit_name} ]]
 then
     echo "Kit is already present. Cleaning up"
     rm -rf ${dst_path}
@@ -27,5 +27,5 @@ done
 
 cd ${dst_path}/..
 zip -r ${kit_name}.zip ${plugin_path}
-scp ${dst_path} siteground-e20r:./www/protected-content/e20r-tracker/
+scp ${kit_name}.zip siteground-e20r:./www/protected-content/e20r-tracker/
 rm -rf ${dst_path}

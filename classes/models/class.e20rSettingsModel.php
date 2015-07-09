@@ -353,7 +353,7 @@ class e20rSettingsModel {
 			$args = array(
 				'posts_per_page' => -1,
 				'post_type' => $this->cpt_slug,
-				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish', 'draft', 'future' )),
 				'order' => $order,
 			);
 		}
@@ -361,7 +361,7 @@ class e20rSettingsModel {
             $args = array(
                 'posts_per_page' => -1,
                 'post_type' => $this->cpt_slug,
-                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish', 'draft', 'future' )),
                 'p' => $value,
                 'order' => $order,
             );
@@ -370,7 +370,7 @@ class e20rSettingsModel {
 			$args = array(
 				'posts_per_page' => -1,
 				'post_type' => $this->cpt_slug,
-				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish', 'draft', 'future' )),
 				'order_by' => 'meta_value',
 				'order' => $order,
 				'meta_query' => array(
@@ -387,7 +387,7 @@ class e20rSettingsModel {
             $args = array(
                 'posts_per_page' => -1,
                 'post_type' => $this->cpt_slug,
-                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish' )),
+                'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish', 'draft', 'future' )),
                 'post__in' => $value,
                 'order' => $order,
             );

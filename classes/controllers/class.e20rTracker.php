@@ -31,6 +31,8 @@ class e20rTracker {
                             'purge_tables' => false,
                             'measurement_day' => CONST_SATURDAY,
                             'lesson_source' => null,
+                            'auth_timeout' => 3600*3,
+                            'remember_me_auth_timeout' => 3600*24,
             )
         );
 
@@ -236,6 +238,7 @@ class e20rTracker {
 
             /* Allow admin to set the program ID for the user in their profile(s) */
             add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
+            add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
             add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
             add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
 
@@ -248,10 +251,10 @@ class e20rTracker {
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
-            if ( function_exists( 'pmpro_activation' ) ) {
+            // if ( function_exists( 'pmpro_activation' ) ) {
 
                 add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
-            }
+            // }
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
@@ -279,10 +282,47 @@ class e20rTracker {
 
             add_post_type_support( 'page', 'excerpt' );
 
+            add_filter('auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3);
+
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
         $this->hooksLoaded = true;
+    }
+
+    public function login_timeout( $seconds, $user_id, $remember ) {
+
+        $expire_in = 0;
+
+        dbg("e20rTracker::login_timeout() - Length requested: {$seconds}, User: {$user_id}, Remember: {$remember}");
+
+        /* "remember me" is checked */
+        if ( $remember ) {
+
+            dbg( "e20rTracker::login_timeout() - Remember me value: " . $this->loadOption('remember_me_auth_timeout') );
+            $expire_in = 60 * 60 * 24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+
+            if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
+
+            dbg("e20rTracker::login_timeout() - Setting session timeout for user with 'Remember me' checked to: {$expire_in}");
+
+        } else {
+
+            dbg( "e20rTracker::login_timeout() - Timeout value: " . $this->loadOption('auth_timeout') );
+            $expire_in = 60 * 60 * intval( $this->loadOption( 'auth_timeout' ) );
+
+            if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
+
+            dbg("e20rTracker::login_timeout() - Setting session timeout for user to: {$expire_in}");
+        }
+
+        // check for Year 2038 problem - http://en.wikipedia.org/wiki/Year_2038_problem
+        if ( PHP_INT_MAX - time() < $expire_in ) {
+
+            $expire_in =  PHP_INT_MAX - time() - 5;
+        }
+
+        return $expire_in;
     }
 
     public function pre_upload( $file ) {
@@ -389,48 +429,101 @@ class e20rTracker {
         return;
     }
 
+    private function inGroup( $id, $grpList ) {
+
+        if ( in_array( 0, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Admin has set 'Not Applicable' for group. Returning false");
+            return false;
+        }
+
+        if ( in_array( -1, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Admin has set 'All Groups'. Returning true");
+            return true;
+        }
+
+        if ( in_array( $id, $grpList ) ) {
+
+            dbg("e20rTracker::inGroup() - Group ID {$id} is in the group list. Returning true");
+            return true;
+        }
+
+        dbg("e20rTracker::inGroup() - None of the tests returned true. Default is 'No access!'");
+        return false;
+    }
+
+    private function inUserList( $id, $userList ) {
+
+        if ( in_array( 0, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - Admin has set 'Not Applicable' for user list. Returning false");
+            return false;
+        }
+
+        if ( in_array( -1, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - Admin has set 'All Users'. Returning true");
+            return true;
+        }
+
+        if ( in_array( $id, $userList ) ) {
+
+            dbg("e20rTracker::inUserList() - User ID {$id} is in the list of users. Returning true");
+            return true;
+        }
+
+        dbg("e20rTracker::inUserList() - None of the tests returned true. Default is 'No access!'");
+        return false;
+
+    }
+
+    /**
+     * Check whether the user belongs to a group (membership level) or the user is directly specified in the list of users for the activity.
+     * @param $activity - The Activity object
+     * @param $uId - The user ID (or array of user IDs)
+     * @param $grpId - The group ID (or array of group IDs)
+     * @return bool - True if the user is in the group list or user list for the activity
+     *
+     */
     public function allowedActivityAccess( $activity, $uId, $grpId ) {
 
         $retval = false;
+
+        $grpRet = false;
+        $usrRet = false;
+
+        dbg("e20rTracker::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 
         if  ( ! is_array( $grpId ) ) {
 
             $grpId = array( $grpId );
         }
 
+        if ( ! is_array( $uId ) ) {
+
+            $uId = array( $uId );
+        }
+
+        // Check against group list(s) first.
         // Loop through any list of groups the user belongs to
-        foreach( $grpId as $gid => $desc ) {
+        foreach( $grpId as $gid ) {
 
-            // No group ID assigned to activity and the group is set to "All users"
-            if ( !in_array( $gid, $activity->assigned_usergroups ) &&
-                ( in_array( -1, $activity->assigned_usergroups ) ) ) {
+            dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$gid}");
 
-                $retval = true;
-            }
-
-            // User is a member of the group that the activity has been assigned to
-            if ( in_array( $gid, $activity->assigned_usergroups) ) {
-
-                $retval = true;
-            }
-
+            $grpRet = $this->inGroup( $gid, $activity->assigned_usergroups );
         }
 
-        // No user ID assigned to activity and it's set to "All users"
-        if ( !in_array( $uId, $activity->assigned_user_id ) &&
-            ( in_array( -1, $activity->assigned_user_id ) ) ) {
+        // Then check against list of users.
+        foreach ( $uId as $id ) {
 
-            $retval = true;
+            dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$id}");
+
+            $usrRet = $this->inUserList( $id, $activity->assigned_user_id );
         }
 
-        // User is a listed member for the activity
-        if ( in_array( $uId, $activity->assigned_user_id ) ) {
-
-            $retval = true;
-        }
-
-        // Default is to deny access.
-        return $retval;
+        // Return true if either user or group access is true.
+        return ( $usrRet || $grpRet );
     }
 
     public function getURLToPageWithShortcode( $short_code = '' ) {
@@ -495,7 +588,7 @@ class e20rTracker {
 
 	function plugin_add_settings_link( $links ) {
 
-		$settings_link = '<a href="options-general.php?page=e20r-tracker">' . __( 'Settings', 'e20rtracker' ) . '</a>';
+		$settings_link = '<a href="options-general.php?page=e20r_tracker_opt_page">' . __( 'Settings', 'e20rtracker' ) . '</a>';
 		array_push( $links, $settings_link );
 		return $links;
 	}
@@ -1030,13 +1123,18 @@ class e20rTracker {
         // Register any global settings for the Plugin
         register_setting( 'e20r_options', $this->setting_name, array( $this, 'validate' ) );
 
-        add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_section_text' ), 'e20r_tracker_opt_page' );
-
         /* Add fields for the settings */
+        add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+
+        add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+
+        add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
         add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
         // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
@@ -1044,7 +1142,31 @@ class e20rTracker {
 
     }
 
-	// TODO: Make this a program setting and not a global setting!
+    public function render_remembermetimeout_select() {
+
+        $timeout = $this->loadOption( 'remember_me_auth_timeout' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[remember_me_auth_timeout]" id="<?php echo $this->setting_name; ?>_remember_me_auth_timeout"> <?php
+        foreach ( range( 1, 14 ) as $days ) { ?>
+            <option value="<?php echo $days; ?>" <?php selected($days, $timeout); ?>><?php echo $days . ($days <= 1 ? " day" : " days") ?></option>
+        <?php
+        }
+
+
+    }
+
+    public function render_logintimeout_select() {
+
+        $timeout = $this->loadOption( 'auth_timeout' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[auth_timeout]" id="<?php echo $this->setting_name; ?>_auth_timeout"> <?php
+        foreach ( range( 1, 12 ) as $hrs ) { ?>
+            <option value="<?php echo $hrs; ?>" <?php selected($hrs, $timeout); ?>><?php echo $hrs . ($hrs <= 1 ? " hour" : " hours") ?></option>
+        <?php
+        }
+    }
+
+    // TODO: Make this a program setting and not a global setting!
     public function render_lessons_select() {
 
         $options = get_option( $this->setting_name );
@@ -1065,9 +1187,11 @@ class e20rTracker {
 
     public function render_delete_checkbox() {
 
+
         $options = get_option( $this->setting_name );
+        $dVal = isset( $options['delete_tables'] ) ? $options['delete_tables'] : false;
         ?>
-        <input type="checkbox" name="<?php echo $this->setting_name; ?>[delete_tables]" value="1" <?php checked( 1, $options['delete_tables'] ) ?> >
+        <input type="checkbox" name="<?php echo $this->setting_name; ?>[delete_tables]" value="1" <?php checked( 1, $dVal ) ?> >
         <?php
     }
 
@@ -1075,8 +1199,9 @@ class e20rTracker {
 
 
         $options = get_option( $this->setting_name );
+        $pVal = isset( $options['purge_tables'] ) ? $options['purge_tables'] : false;
         ?>
-        <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $options['purge_tables'] ) ?> >
+        <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $pVal ) ?> >
     <?php
     }
 
@@ -1095,11 +1220,19 @@ class e20rTracker {
         <?php
     }
 
-    public function render_section_text() {
+    public function render_login_section_text() {
 
-        $html = "<p>These settings will determine the behavior of the plugin during deactivation.</p>";
+        echo "<p>Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.</p><hr/>";
+    }
 
-        echo $html;
+    public function render_program_section_text() {
+
+        echo "<p>Configure global Eighty / 20 Tracker settings.</p><hr/>";
+    }
+
+    public function render_deactivation_section_text() {
+
+        echo "<p>Configure the behavior of the plugin when it gets deactivated.</p><hr/>";
     }
 
     public function render_settings_page() {
@@ -2795,6 +2928,8 @@ class e20rTracker {
 
             $delay = $this->daysBetween( $startDate, current_time("timestamp") );
 
+            // $delay = ($delay == 0 ? 1 : $delay);
+
             dbg("e20rTracker::getDelay() - Days since startdate is: {$delay}...");
 
             return $delay;
@@ -2803,13 +2938,26 @@ class e20rTracker {
         return false;
     }
 
-    public function setUserProgramStart( $levelId, $userId ) {
+    public function setUserProgramStart( $levelId, $userId = null ) {
 
         global $e20rProgram;
 
+        dbg("e20rTracker::setUserProgramStart() - Called from: " . $this->whoCalledMe() );
+        dbg("e20rTracker::setUserProgramStart() - levelId: {$levelId} and userId: {$userId}" );
+
         $levels = $this->coachingLevels();
 
+        dbg("e20rTracker::setUserProgramStart() - Loaded level information" );
+        dbg($levels);
+
         if ( in_array( $levelId, $levels) ) {
+
+            if ( $userId == null ) {
+
+                global $current_user;
+                $userId = ( !is_null( $current_user->ID ) ) ? $current_user->ID : false;
+                dbg("e20rTracker::setUserProgramStart() - User id wasn't received?? Set to: {$userId}");
+            }
 
             $startDate = $e20rProgram->startdate( $userId );
             dbg( "e20rTracker::setuserProgramStart() - Received startdate of: {$startDate} aka " . date( 'Y-m-d', $startDate ) );

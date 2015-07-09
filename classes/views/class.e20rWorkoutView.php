@@ -37,7 +37,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			?>
 		<div class="red-notice">
 			<h3><?php _e( "No planned activity", "e20rtracker" ); ?></h3>
-			<p><?php _e( "There are no scheduled/planned activities for your coaching program, but don't let that stop you from enjoying nature!", "e20rtracker" ); ?></p>
+			<p><?php _e( "There are no scheduled/planned activities for your coaching program today, but don't let that stop you from enjoying nature!", "e20rtracker" ); ?></p>
 		</div>
 			<?php
 
@@ -342,7 +342,8 @@ class e20rWorkoutView extends e20rSettingsView {
                                 <tr>
                                     <td class="select-input">
                                         <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups[]" class="select2-container" multiple="multiple">
-	                                        <option value="-1"<?php echo in_array( -1, $workoutData->assigned_usergroups ) ? 'selected="selected"' : null; ?>>All Users</option>
+                                            <option value="0"<?php echo in_array( 0, $workoutData->assigned_usergroups ) ? 'selected="selected"' : null; ?>>Not Applicable</option>
+                                            <option value="-1"<?php echo in_array( -1, $workoutData->assigned_usergroups ) ? 'selected="selected"' : null; ?>>All Users</option>
                                             <?php
 
                                             $member_groups = $e20rWorkout->getMemberGroups();
@@ -366,7 +367,8 @@ class e20rWorkoutView extends e20rSettingsView {
                                     </td>
                                     <td class="select-input ">
                                         <select id="e20r-workout-assigned_user_id" name="e20r-workout-assigned_user_id[]" class="select2-container" multiple="multiple">
-	                                        <option id="-1" <?php echo in_array( -1, $workoutData->assigned_user_id ) ? 'selected="selected"' : null; ?>>All Users</option>
+                                            <option value="0" <?php echo in_array( 0, $workoutData->assigned_user_id ) ? 'selected="selected"' : null; ?>>Not Applicable</option>
+	                                        <option value="-1" <?php echo in_array( -1, $workoutData->assigned_user_id ) ? 'selected="selected"' : null; ?>>All Users</option>
                                             <?php
 
                                             $memberArgs = array( 'orderby' => 'display_name' );

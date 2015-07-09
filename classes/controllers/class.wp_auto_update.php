@@ -110,9 +110,11 @@ class WP_AutoUpdate
 	public function check_info($false, $action, $arg)
 	{
 		if (isset($arg->slug) && $arg->slug === $this->slug) {
+
 			$information = $this->getRemote_information();
 			return $information;
 		}
+
 		return false;
 	}
 
@@ -134,7 +136,8 @@ class WP_AutoUpdate
 		if ( $request['response']['code'] != '404' ) {
 
 			if ( ! is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) === 200 ) {
-				return unserialize( $request['body'] );
+
+				return isset( $request['body'] ) ? unserialize( base64_decode( $request['body'] ) ) : false;
 			}
 		}
 
@@ -154,12 +157,13 @@ class WP_AutoUpdate
 				'license_key' => $this->license_key,
 			),
 		);
+
 		$request = wp_remote_post( $this->update_path, $params );
 
 		if ( $request['response']['code'] != '404' ) {
 
 			if ( ! is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) === 200 ) {
-				return unserialize( $request['body'] );
+				return isset( $request['body'] ) ? unserialize( base64_decode( $request['body'] ) ) : false;
 			}
 		}
 
@@ -170,8 +174,8 @@ class WP_AutoUpdate
 	 * Return the status of the plugin licensing
 	 * @return boolean $remote_license
 	 */
-	public function getRemote_license()
-	{
+	public function getRemote_license() {
+
 		$params = array(
 			'body' => array(
 				'action' => 'license',
@@ -179,10 +183,14 @@ class WP_AutoUpdate
 				'license_key' => $this->license_key,
 			),
 		);
+
 		$request = wp_remote_post( $this->update_path, $params );
+
 		if ( !is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) === 200 ) {
-			return unserialize( $request['body'] );
+
+			return isset( $request['body'] ) ? unserialize( base64_decode( $request['body'] ) ) : false;
 		}
+
 		return false;
 	}
 }

@@ -220,6 +220,8 @@ class e20rProgram extends e20rSettings {
 
 		    dbg("e20rProgram::getProgramIdForUser() - currentProgram has been loaded.");
 
+            $this->loadProgram( $userId );
+
 		    if ( $currentProgram->id === false ) {
 			    dbg("e20rProgram::getProgramIdForUser() - currentProgram getting set to default values");
 			    $this->init();
@@ -231,7 +233,10 @@ class e20rProgram extends e20rSettings {
 
     public function setProgramForUser( $user_id, $membership_id ) {
 
-        dbg("e20rProgram::setProgramForuser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}");
+        global $e20rTracker;
+
+        dbg("e20rTracker::setProgramForUser() - Called from: " . $e20rTracker->whoCalledMe() );
+        dbg("e20rProgram::setProgramForUser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}");
 
         if ( false === ( $pId = $this->model->findByMembershipId( $membership_id ) ) ) {
 
@@ -291,7 +296,7 @@ class e20rProgram extends e20rSettings {
 
 		global $currentProgram;
 
-		if ( isset( $currentProgram->id ) && ( $currentProgram->id === false ) ) {
+//		if ( isset( $currentProgram->id ) && ( $currentProgram->id === false ) ) {
 
 			if ( is_user_logged_in() && ( $userId != 0 ) ) {
 
@@ -303,10 +308,12 @@ class e20rProgram extends e20rSettings {
 				}
 			}
 			dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
-		}
+/*		}
 		else {
+
 			$this->init();
 		}
+*/
 	}
     /**
      * Action Hook to add the E20R Tracker user specific settings (like adding a program for the user)
@@ -315,8 +322,12 @@ class e20rProgram extends e20rSettings {
      */
     public function selectProgramForUser( $user ) {
 
+        dbg("e20rProgram::selectProgramForUser() - user: {$user->ID}");
+
         $programlist = $this->getProgramList();
         $activeProgram = $this->getProgramIdForUser( $user->ID, null );
+
+        dbg("e20rProgram::selectProgramForUser() - Active Program: {$activeProgram}");
 
         echo $this->view->view_userProfile( $programlist, $activeProgram );
     }
@@ -382,9 +393,9 @@ class e20rProgram extends e20rSettings {
             return false;
         }
 
-        dbg("e20rProgram::updateProgramForUser() - Setting program ID for user with ID of {$userId}");
-
         $programId = isset( $_POST['e20r-tracker-user-program'] ) ? intval( $_POST['e20r-tracker-user-program'] ) : 0;
+
+        dbg("e20rProgram::updateProgramForUser() - Setting program ID = {$programId} for user with ID of {$userId}");
 
         if ( $programId != 0 ) {
 

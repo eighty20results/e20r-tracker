@@ -154,6 +154,11 @@ class e20rProgramModel extends e20rSettingsModel {
 
 			$this->settings = parent::loadSettings( $id );
 
+            if ( ! is_array( $this->settings->sequences ) ) {
+                $this->settings->sequences = array(
+                    !empty( $this->settings->sequences ) ? array( $this->settings->sequences ) : array()
+                );
+            }
 
 			$post = get_post( $id );
 			setup_postdata( $post );

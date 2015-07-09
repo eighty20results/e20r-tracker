@@ -188,7 +188,7 @@ class e20rExercise extends e20rSettings {
 
 	    add_meta_box('postexcerpt', __('Exercise Summary'), 'post_excerpt_meta_box', 'e20r_exercises', 'normal', 'high');
 
-	    dbg("e20rExercise::addMeta_ExerciseSettings() - Loading settings metabox for exercise page");
+	    dbg("e20rExercise::addMeta_Settings() - Loading settings metabox for exercise page");
 		$data = $this->model->find( 'id', $post->ID );
         echo $this->view->viewSettingsBox( $data[0], $this->model->get_activity_types() );
 

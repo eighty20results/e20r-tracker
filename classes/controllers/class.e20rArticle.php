@@ -357,16 +357,17 @@ class e20rArticle extends e20rSettings {
     public function findArticleByDelay( $delayVal ) {
 
         global $e20rProgram;
+        global $currentProgram;
         global $current_user;
 
-        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        // $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
 
-        if ( $programId == -1 ) {
+        if ( $currentProgram->id == -1 ) {
             // No article either.
-            return -1;
+            return false;
         }
 
-        $article = $this->model->findArticle( 'release_day', $delayVal, 'numeric', $programId );
+        $article = $this->model->findArticle( 'release_day', $delayVal, 'numeric', $currentProgram->id );
 
         if ( count($article) == 1 ) {
 
@@ -765,7 +766,8 @@ class e20rArticle extends e20rSettings {
 
     public function getArticle( $id ) {
 
-        if ( $key = $this->findArticle( $id ) !== false ) {
+        if ( $key = $this->findArticle( 'id', $id ) !== false ) {
+
             return $this->article_list[$key];
         }
 

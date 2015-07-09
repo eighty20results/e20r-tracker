@@ -93,7 +93,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		global $post;
 		global $currentWorkout;
 
-		if ( ! empty( $currentWorkout ) && ( $currentWorkout->id == $id ) ) {
+		if ( isset( $currentWorkout->id ) && ( $currentWorkout->id == $id ) ) {
 
 			return $currentWorkout;
 		}
@@ -123,6 +123,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
             $ex = array();
             $g_def = $this->defaultGroup();
+
+            if ( !is_array( $this->settings->groups ) ) {
+
+                $this->settings->groups = array();
+                $this->settings->groups[] = $g_def;
+            }
 
             foreach( $this->settings->groups as $i => $g ) {
 

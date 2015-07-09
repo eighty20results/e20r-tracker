@@ -22,24 +22,24 @@ $obj->package = 'https://eighty20results.com/protected-content/e20r-tracker/e20r
 
 switch ( $_POST['action'] ) {
 
-case 'version':  
-	echo serialize( $obj );
-	break;  
-case 'info':   
-	$obj->requires = '4.2';
-	$obj->tested = '4.2';
-	$obj->downloaded = 12540;  
-	$obj->last_updated = '2015-05-18';
-	$obj->sections = array(  
-		'description' => 'Fitness and habit tracking plugin',
-		'another_section' => 'Create, access and track habit based programs',
-		'changelog' => '0.5.1-beta: Use default values when no program has been defined for the user.'
-	);
-	$obj->download_link = $obj->package;  
-	echo serialize($obj);  
-case 'license':  
-	echo serialize( $obj );  
-	break;  
-}  
+    case 'version':
+        echo base64_encode ( serialize( $obj ) );
+        break;
+    case 'info':
+        $obj->requires = '4.2';
+        $obj->tested = '4.2';
+        $obj->downloaded = 12540;
+        $obj->last_updated = '2015-05-18';
+        $obj->sections = array(
+            'description' => 'Fitness and habit tracking plugin',
+            'another_section' => 'Create habit / action based programs',
+            'changelog' => '0.5.1-beta: Use default values when no program has been defined for the user.'
+        );
+        $obj->download_link = $obj->package;
+        echo base64_encode( serialize($obj) );
+    case 'license':
+        echo  base64_encode( serialize( $obj ) );
+        break;
+}
 
 ?>
