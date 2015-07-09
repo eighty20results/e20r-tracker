@@ -359,7 +359,7 @@ class e20rWorkout extends e20rSettings {
 		$workoutData = array();
 
 		$tmp = shortcode_atts( array(
-			'type' => 'action',
+			'type' => 'activity',
 			'activity_id' => null,
 		), $attributes );
 
@@ -370,7 +370,7 @@ class e20rWorkout extends e20rSettings {
             }
 		}
 
-		dbg( $config );
+        // TODO: If the activity ID is set, don't worry about anything but loading that activity (assuming it's permitted).
 
 		$config->userId = $current_user->ID;
 		$config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
@@ -381,37 +381,66 @@ class e20rWorkout extends e20rSettings {
 
 		$config->dayNo = date_i18n( 'N', current_time('timestamp') );
 
+        dbg( $config );
+
 		dbg("e20rWorkout::shortcode_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
-
-		dbg("e20rWorkout::shortcode_activity() - Looking up article by delay value of {$config->delay} days");
-		$article = $e20rArticle->findArticle( 'release_day', $config->delay );
-
-        if ( empty( $article ) ) {
-            dbg("e20rWorkout::shortcode_activity() - No article found!");
-            $article = $currentArticle;
-        }
 
         if ( isset( $config->activity_id ) && ( $config->activity_id !== null ) ) {
 
-            if ( ! isset($article->activity_id)  || ( $article->article_id != $config->activity_id ) ) {
+            dbg("e20rWorkout::shortcode_activity() - Admin specified activity ID of {$config->activity_id}" );
+            $article = $e20rArticle->loadArticlesByMeta( 'activity_id', $config->activity_id, 'numeric', $config->programId );
 
-                dbg("e20rWorkout::shortcode_activity() - Admin specified activity ID of {$config->activity_id}" );
+        }
+        else {
 
-                if ( !is_object( $article ) ) {
+            dbg("e20rWorkout::shortcode_activity() - Attempting to locate article by configured delay value: {$config->delay}" );
+            $articleId = $e20rArticle->findArticleByDelay($config->delay);
 
-                    $article = new stdClass();
-                }
+            if ( false !== $articleId ) {
 
-                $article->activity_id = $config->activity_id;
+                dbg("e20rWorkout::shortcode_activity() - Found the article ID {$articleId} based on the delay value: {$config->delay}" );
+                $article = $e20rArticle->findArticle('id', $articleId);
             }
+
+        }
+
+        dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
+        dbg($article);
+
+
+        if ( !isset( $article->id ) ) {
+            dbg("e20rWorkout::shortcode_activity() - No article found!");
+            $article = $currentArticle;
         }
 
         if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
 
             dbg( "e20rWorkout::shortcode_activity() - Activity is defined for article: " . isset($article->activity_id) ? $article->activity_id : "(no activity)" );
             $workoutData = $this->model->find( 'id', $article->activity_id );
-        }
 
+            foreach ( $workoutData as $wid => $workout ) {
+
+                if ( ! in_array( $config->programId, $workoutData[$wid]->programs ) ) {
+
+                    dbg( "e20rWorkout::shortcode_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
+                    unset( $workoutData[ $wid ] );
+                }
+
+                if ( ! empty( $workoutData[$wid]->assigned_user_id ) || ! empty( $workoutData[$wid]->assigned_usergroups ) ) {
+
+                    dbg( "e20rWorkout::shortcode_activity() - User Group or user list defined for this workout..." );
+
+                    if ( !$e20rTracker->allowedActivityAccess( $workoutData[$wid], $config->userId, $config->userGroup ) ) {
+
+                        dbg( "e20rWorkout::shortcode_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
+                        dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: " );
+
+                        unset( $workoutData[ $wid ] );
+                    }
+                }
+            }
+        }
+/*
         if ( !isset( $article->id ) ) {
 
 			dbg( "e20rWorkout::shortcode_activity() - No Activity defined for article, searching by date of {$config->date}, aka delay {$config->delay}" );
@@ -446,7 +475,7 @@ class e20rWorkout extends e20rSettings {
 				}
 			}
 		}
-
+*/
         $recorded = array();
 
 		dbg( "e20rWorkout::shortcode_activity() - WorkoutData prior to processing");
