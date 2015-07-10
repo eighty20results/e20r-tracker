@@ -478,7 +478,12 @@ class e20rArticle extends e20rSettings {
 
 	public function loadArticlesByMeta($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
-		dbg("e20rArticle::loadArticlesByMeta() - {$key}, {$value}, {$type}, {$programId}, {$comp}");
+		if (is_array( $value ) ) {
+            dbg("e20rArticle::loadArticlesByMeta() - {$key}, " . print_r( $value, true ) . ", {$type}, {$programId}, {$comp}");
+        }
+        else {
+            dbg("e20rArticle::loadArticlesByMeta() - {$key}, {$value}, {$type}, {$programId}, {$comp}");
+        }
 		return $this->model->findArticle($key, $value, $type, $programId, $comp );
 	}
 
