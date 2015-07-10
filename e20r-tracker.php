@@ -4,7 +4,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 0.6.2
+Version: 0.7.0
 Author: Thomas Sjolshagen <thomas@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 License: GPL2
@@ -158,6 +158,13 @@ function loadTracker() {
         global $e20rAssignment;
 	    global $e20r_isClient;
 
+
+        $e20rUpdateChecker = PucFactory::buildUpdateChecker(
+            'https://eighty20results.com/protected-content/e20r-tracker/metadata.json',
+            __FILE__,
+            'e20r-tracker'
+        );
+
         $e20rTables->init();
         // $e20rTracker->init();
 
@@ -257,6 +264,8 @@ endif;
 if ( ! class_exists( 'e20rTracker' ) ):
 
     try {
+
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/plugin-updates/plugin-update-checker.php" );
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
 
