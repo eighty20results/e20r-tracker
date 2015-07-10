@@ -343,27 +343,32 @@ class e20rProgram extends e20rSettings {
      *
      * @return int|mixed - Timestamp (seconds since UNIX epoch
      */
-    public function startdate( $userId, $program_id = null ) {
+    public function startdate( $userId, $program_id = null, $membership = false ) {
 
 	    global $currentProgram;
 
-        if ( isset( $currentProgram->id ) && ( ( $currentProgram->id === false ) || ( $program_id != $currentProgram->id ) ) ) {
+        if ( ( !is_null( $program_id ) && isset( $currentProgram->id ) && ( $currentProgram->id === false ) ) ||
+                ( (!is_null( $program_id ) ) && ( $program_id != $currentProgram->id ) ) ) {
 
-	        if ( $program_id == null ) {
+            $this->model->loadSettings( $program_id );
+        }
 
-		        $program_id = get_user_meta( $userId, 'e20r-tracker-program-id', true );
-	        }
+        if ( ( false === $membership ) && ( $program_id == null ) ) {
+
+            dbg( "e20rProgram::startdate() - Loading usermeta to get Program for user with ID: {$userId}" );
+            $program_id = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
             if ( $program_id !== false ) {
 
-		        dbg( "e20rProgram::startdate() - Loading settings for Program ID: {$program_id}" );
-		        $this->model->loadSettings( $program_id );
-		    }
+                dbg( "e20rProgram::startdate() - User program not set! Loading settings by passed Program ID: {$program_id}" );
+                $this->model->loadSettings( $program_id );
+            }
         }
 
-        if ( !isset( $currentProgram->startdate ) ) {
 
-	        dbg( "e20rProgram::startdate() - NO valid program start date found for user with ID {$userId}" );
+        if ( ( true === $membership ) || ( !isset( $currentProgram->startdate ) ) ) {
+
+	        dbg( "e20rProgram::startdate() - Forcing check by membership plugin, or no valid program start date found for user with ID {$userId}" );
 
 	        // No program setting was configured so we'll use the start date for the users active membership level.
 	        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
