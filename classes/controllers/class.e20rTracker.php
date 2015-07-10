@@ -44,20 +44,6 @@ class e20rTracker {
 
     }
 
-	// Load the auto-update class
-	public function activate_autoUpdate()
-	{
-		require_once ( E20R_PLUGIN_DIR . '/classes/controllers/class.wp_auto_update.php' );
-
-		$plugin_current_version = '0.5.1';
-		$plugin_remote_path = plugin_dir_url( __FILE__ ) . 'update.php';
-		$plugin_slug = plugin_basename( __FILE__ );
-		$license_user = 'thomas';
-		$license_key = 'abcd';
-
-		new WP_AutoUpdate( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
-	}
-
 	/*
     Give admin members access to everything.
     Add this to your active theme's functions.php or a custom plugin.
@@ -93,7 +79,6 @@ class e20rTracker {
 	        $plugin = E20R_PLUGIN_NAME;
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
-	        add_action( 'init', array( &$this, "activate_autoUpdate" ), 10 );
             add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 11 );
