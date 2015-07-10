@@ -259,6 +259,78 @@ class e20rWorkout extends e20rSettings {
 
     }
 
+	public function getActivityArchive( $userId, $programId, $period = E20R_UPCOMING_WEEK ) {
+
+        global $e20rProgram;
+        global $e20rTracker;
+        global $e20rArticle;
+
+        $startedTS = $e20rProgram->startdate( $userId, $programId, true );
+        $started = date('Y-m-d H:i:s', $startedTS);
+        $currentDay = $e20rTracker->getDelay('now', $userId );
+        $currentDate = date('Y-m-d', current_time(timestamp) );
+
+
+        dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
+
+        // Calculate days of sequence for the $period
+        switch ( $period ) {
+
+            case E20R_UPCOMING_WEEK:
+
+                $mondayTS = strtotime( "next monday {$currentDate} " );
+                $fridayTS = strtotime( "next friday {$currentDate}" );
+
+                $startDelay = $e20rTracker->daysBetween( current_time('timestamp' ), $mondayTS );
+                $endDelay = $e20rTracker->daysBetween( current_time( 'timestamp' ), $fridayTS );
+
+                $period_string = "Activities during next week";
+                break;
+
+            case E20R_PREVIOUS_WEEK:
+
+                $mondayTS = strtotime( "last monday {$currentDate}");
+                $fridayTS = strtotime( "last friday {$currentDate}" );
+
+                $startDelay = $e20rTracker->daysBetween( $mondayTS, current_time('timestamp' ) );
+                $endDelay = $e20rTracker->daysBetween( $fridayTS, current_time( 'timestamp' ) );
+
+                $period_string = "Activities during last week";
+                break;
+
+            default:
+                return null;
+        }
+
+        dbg("e20rWorkout::getActivityArchive() - Delay values -- Start: {$startDelay}, end: {$endDelay}");
+
+        // Load articles in the program that have delay values between the start/end delay values we calculated.
+        $articles = $e20rArticle->findArticle( 'delay', array( $startDelay, $endDelay ), 'numeric', $programId, 'BETWEEN' );
+
+        dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
+
+        $activities = array( 'period' => $period_string );
+
+        // Pull out all activities for the sequence list
+        foreach( $articles as $id => $article ) {
+
+            $dayCnt = $currentDay - $startDelay;
+            $dStr = ( $dayCnt >= 0 ? "+ {$dayCnt}" : "{$dayCnt}" );
+
+            if ( 0 == $dayCnt ) {
+                $day = date('l', strtotime( 'now' ) );
+            }
+            else {
+                $day = date( 'l', strtotime( "today {$dayCnt} days" ) );
+            }
+            // Save activity list as a hash w/weekday => workout )
+            $activities[$day] = $this->getActivities( $article->activity_id );
+        }
+
+        // Return the hash of activities to the calling function.
+        return $activities;
+    }
+
     public function getPeers( $workoutId = null ) {
 
         if ( is_null( $workoutId ) ) {
@@ -324,10 +396,16 @@ class e20rWorkout extends e20rSettings {
 
     public function getActivities( $aIds  = null) {
 
+//        global $currentProgram;
+
 	    if ( empty( $aIds ) ) {
 		    dbg('e20rWorkout::getActivities() - Loading all activities from DB');
 		    $activities = $this->model->find( 'id', 'any' ); // Will return all of the defined activities
 	    }
+/*        elseif ( is_array( $aIds ) ) {
+            dbg("e20rWorkout::getActivities() - Supplied list of activity IDs, using 'IN' search");
+            $activities = $this->model->find( 'delay', $aIds, 'numeric', $currentProgram->id, 'IN' );
+        } */
 	    else {
 		    dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
 		    $activities = $this->model->find( 'id', $aIds );
