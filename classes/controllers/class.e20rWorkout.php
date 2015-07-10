@@ -404,8 +404,8 @@ class e20rWorkout extends e20rSettings {
 
         }
 
-        dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
-        dbg($article);
+        // dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
+        // dbg($article);
 
 
         if ( !isset( $article->id ) ) {
