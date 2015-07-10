@@ -3,6 +3,7 @@
 include=(classes css images js languages e20r-tracker.php README.txt)
 short_name="e20r-tracker"
 plugin_path="${short_name}"
+metadata="../metadata.json"
 version=$(egrep "^Version:" ../${short_name}.php | awk '{print $2}')
 src_path="../"
 dst_path="../build/${plugin_path}"
@@ -28,4 +29,5 @@ done
 cd ${dst_path}/..
 zip -r ${kit_name}.zip ${plugin_path}
 scp ${kit_name}.zip siteground-e20r:./www/protected-content/e20r-tracker/
+scp ${metadata} siteground-e20r:./www/protected-content/e20r-tracker/
 rm -rf ${dst_path}
