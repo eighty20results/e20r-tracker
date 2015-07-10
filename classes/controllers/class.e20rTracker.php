@@ -232,6 +232,7 @@ class e20rTracker {
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
+	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
@@ -3256,6 +3257,7 @@ class e20rTracker {
                 $days = 0 - $days;
         }
 
+        dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
     }
 }
