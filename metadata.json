@@ -9,6 +9,6 @@
   "homepage": "https://eighty20results.com/e20r-tracker",
   "sections" : {
     "description" : "Plugin platform for managing fitness and nutrition coaching content.<br/><br/>We recommend using this plugin in conjunction with the <a href='http://paidmembershipspro.com' target='_blank'>Paid Memberships Pro</a> plugin, and the <a href='https://eighty20results.com/pmpro-sequence/' target='_blank'>PMPro Sequences</a> plugin.",
-    "changelog": "<ol><li>0.7.1 - Bumped to test auto-update</li><li>0.7.0 - Added automatic update functionality</li></ol>"
+    "changelog": "<h2>Change Log</h2><ol><li>0.7.1 - Bumped to test auto-update</li><li>0.7.0 - Added automatic update functionality</li></ol>"
   }
 }
