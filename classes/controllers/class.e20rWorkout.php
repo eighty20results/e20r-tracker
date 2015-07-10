@@ -263,10 +263,14 @@ class e20rWorkout extends e20rSettings {
     }
 
     /**
+     *
+     * Returns an archive of activities based on the requested period.
+     * Currently supports previous, current and next week constants.
+     *
      * @param int $userId -- User's Id
      * @param int $programId -- Program to process for
      * @param int $period -- The period (
-     * @return array - List
+     * @return array - list of activities keyed by day id (day 1 - 7, 1 == Monday)
      */
 	public function getActivityArchive( $userId, $programId, $period = E20R_CURRENT_WEEK ) {
 
@@ -380,6 +384,9 @@ class e20rWorkout extends e20rSettings {
                 $activities[$dNo] = $activity;
             }
         }
+
+        // Sort based on day id
+        ksort( $activities );
 
         // Return the hash of activities to the calling function.
         return $activities;
