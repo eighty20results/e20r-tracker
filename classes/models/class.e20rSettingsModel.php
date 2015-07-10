@@ -403,8 +403,8 @@ class e20rSettingsModel {
 			$dataList[] = $this->defaultSettings();
 		}
 
-		dbg("e20r" . ucfirst($this->type) ."Model::find() - List of data: " );
-		dbg( $dataList );
+		dbg("e20r" . ucfirst($this->type) ."Model::find() - Found " . count( $dataList ) . " records" );
+		// dbg( $dataList );
 
 		if ( is_array( $dataList ) && ( ! empty( $dataList ) ) ) {
 
