@@ -13,3 +13,29 @@ The plugin is designed to coach clients through various change processes, whethe
 
 We developed the plugin to meet our own specific coaching platform needs which revolved around a year long nutrition coaching approach.
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
+
+== ChangeLog ==
+
+= 0.7.1 =
+* Version bump to test auto-update.
+
+= 0.7.0 =
+* Adding README / documentation. Deleted obsolete update functionality
+* Fix: Author URL
+* Enh: Add automatic update support & bump version number
+* Enh: Add metadata.json for automatic update support
+* Fix: Add metadata.json handling for auto update
+* Fix: Remove defunct auto update
+* Fix: Remove debug output
+
+= 0.6.2 =
+* Bumped version number
+* Fix: e20r_activitiy shortcode didn't respect specified activity_id
+* Fix: e20r_activity shortcode didn't always load the right activity in default mode.
+
+= 0.6.1 =
+* Bumped version number
+
+= 0.6.0 =
+* Fix: Timeout needs to be in seconds
+* Fix: Correct link to settings page
