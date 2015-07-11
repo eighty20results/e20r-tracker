@@ -1585,7 +1585,7 @@ class e20rTracker {
             return;
         }
 
-        if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+        if ( ( has_shortcode( $post->post_content, 'e20r_activity' ) || ( has_shortcode( $post->post_content, 'e20r_activity_archive' ) ) ) ) {
 
 			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
@@ -3259,5 +3259,47 @@ class e20rTracker {
 
         dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
+    }
+
+    /**
+     * @param $dayNo -- The day number (1 == Monday)
+     * @return string - The day name
+     */
+    public function displayWeekdayName( $dayNo ) {
+
+        $retVal = '';
+
+        switch ( $dayNo ) {
+            case 1:
+                // Monday
+                $retVal = "Monday";
+                break;
+
+            case 2:
+                $retVal = "Tuesday";
+                break;
+
+            case 3:
+                $retVal = "Wednesday";
+                break;
+
+            case 4:
+                $retVal = "Thursday";
+                break;
+
+            case 5:
+                $retVal = "Friday";
+                break;
+
+            case 6:
+                $retVal = "Saturday";
+                break;
+
+            case 7:
+                $retVal = "Sunday";
+                break;
+        }
+
+        return $retVal;
     }
 }
