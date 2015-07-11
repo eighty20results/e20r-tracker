@@ -16,6 +16,9 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.0 =
+* Added e20r_activity_archive short code (param: 'period="current|previous|next"')
+
 = 0.7.1 =
 * Version bump to test auto-update.
 
