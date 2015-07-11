@@ -173,7 +173,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         }
 
 		$currentWorkout = $this->settings;
-		return $this->settings;
+		return $currentWorkout;
 	}
 
 	public function getRecordedActivity( $config, $id ) {

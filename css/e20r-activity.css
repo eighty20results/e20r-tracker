@@ -344,3 +344,108 @@ div.play-button { height: 72px; width: 72px; left: 50%; top: 50%; margin-left: -
 @media print {
     div.play-button { display: none; }
 }
+/* For the Archive/FAQ entries */
+div {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+}
+.e20r-row {
+    max-width: 1080px;
+    width: 97%;
+    margin: 0 auto;
+    padding: 30px 0 0 0;
+    position: relative;
+}
+.e20r-column {
+    float: left;
+    margin-right: 10px;
+}
+.e20r-column_1_2 {
+    width: 45%;
+}
+.e20r-column_2_2 {
+    width: 45%;
+    margin: 0;
+}
+.e20r-row,
+.e20r-column:last-child {
+    margin-right: 0;
+}
+@media only screen and (max-width: 1200px) {
+    .e20r-column {
+        padding-bottom: 30px;
+    }
+    .e20r-column_1_2, .e20r-column_2_2 {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+@media only screen and (max-width: 960px) {
+    .e20r-row {
+        max-width: 690px;
+    }
+    .e20r-column_1_2,
+    .e20r-column_2_2 {
+        width: 100%;
+        margin-right: 0;
+    }
+    .e20r-column {
+        padding-bottom: 30px;
+    }
+}
+/** FAQ Entries **/
+.e20r-faq-container {
+    border: 1px solid #d9d9d9;
+    margin-bottom: 30px;
+}
+h3.e20r-faq-question {
+    cursor: pointer;
+    position: relative;
+    padding: 0 30px 0 0;
+}
+.e20r-faq-question:before {
+    font-family: 'ElegantIcons';
+    /* speak: none; */
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.e20r-faq-question:before {
+    content: "\e050";
+    position: absolute;
+    right: 0px;
+    font-size: 16px;
+    color: #ccc;
+}
+.e20r-toggle-open .e20r-faq-question:before {
+    content: "\e04f";
+}
+/* .e20r-faq-answer-container {
+    display: none;
+    height: auto;
+    overflow: hidden;
+    padding-top: 20px;
+}*/
+.e20r-toggle-open {
+    padding: 20px;
+    background: #FFF;
+}
+.e20r-toggle-close {
+    background-color: #f4f4f4;
+    padding: 20px 10px 0 10px;
+}
+.e20r-toggle-close h3.e20r-faq-question {
+    color: #666;
+}
+.e20r-toggle-close .e20r-faq-answer-container {
+    display: none;
+}

@@ -18,6 +18,38 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+	public function displayArchive( $activityList, $config ) {
+
+        global $e20rTracker;
+        if ( ! is_user_logged_in() ) {
+            auth_redirect();
+        }
+
+        dbg("e20rWorkoutView::displayArchive() - Content of workoutData object: ");
+
+        ob_start();
+
+        foreach( $activityList as $day => $activity ) {
+            if ( $day == 'period' ) { ?>
+            <h2 class="e20r-faq-headline"><?php echo $activity; ?></h2>
+            <hr/><?php
+            }
+            else { ?>
+            <div class="e20r-faq-container e20r-toggle-close">
+                <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
+                <div class="e20r-faq-answer-container clearfix">
+                    <?php echo $this->displayActivity($config, array( $activity ) ); ?>
+                </div>
+            </div><?php
+            }
+        }
+
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
+
 	public function displayActivity( $config, $workoutData ) {
 
 		if ( ! is_user_logged_in() ) {
@@ -135,7 +167,7 @@ class e20rWorkoutView extends e20rSettingsView {
 								?>
 						<div class="e20r-exercise-row">
 							<div class="e20r-activity-info-col">
-								<?php echo $e20rExercise->print_exercise( true ); ?>
+								<?php echo $e20rExercise->print_exercise( $config->withInput ); ?>
 							</div> <!-- End of info-col -->
 						</div><!-- End of exercise-row -->
 						<div class="spacer">&nbsp;</div>

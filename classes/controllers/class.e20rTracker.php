@@ -44,20 +44,6 @@ class e20rTracker {
 
     }
 
-	// Load the auto-update class
-	public function activate_autoUpdate()
-	{
-		require_once ( E20R_PLUGIN_DIR . '/classes/controllers/class.wp_auto_update.php' );
-
-		$plugin_current_version = '0.5.1';
-		$plugin_remote_path = plugin_dir_url( __FILE__ ) . 'update.php';
-		$plugin_slug = plugin_basename( __FILE__ );
-		$license_user = 'thomas';
-		$license_key = 'abcd';
-
-		new WP_AutoUpdate( $plugin_current_version, $plugin_remote_path, $plugin_slug, $license_user, $license_key );
-	}
-
 	/*
     Give admin members access to everything.
     Add this to your active theme's functions.php or a custom plugin.
@@ -93,7 +79,6 @@ class e20rTracker {
 	        $plugin = E20R_PLUGIN_NAME;
 
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
-	        add_action( 'init', array( &$this, "activate_autoUpdate" ), 10 );
             add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
             add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 11 );
@@ -247,6 +232,7 @@ class e20rTracker {
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
+	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
 
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
@@ -1599,7 +1585,7 @@ class e20rTracker {
             return;
         }
 
-        if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+        if ( ( has_shortcode( $post->post_content, 'e20r_activity' ) || ( has_shortcode( $post->post_content, 'e20r_activity_archive' ) ) ) ) {
 
 			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
@@ -3271,6 +3257,49 @@ class e20rTracker {
                 $days = 0 - $days;
         }
 
+        dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
+    }
+
+    /**
+     * @param $dayNo -- The day number (1 == Monday)
+     * @return string - The day name
+     */
+    public function displayWeekdayName( $dayNo ) {
+
+        $retVal = '';
+
+        switch ( $dayNo ) {
+            case 1:
+                // Monday
+                $retVal = "Monday";
+                break;
+
+            case 2:
+                $retVal = "Tuesday";
+                break;
+
+            case 3:
+                $retVal = "Wednesday";
+                break;
+
+            case 4:
+                $retVal = "Thursday";
+                break;
+
+            case 5:
+                $retVal = "Friday";
+                break;
+
+            case 6:
+                $retVal = "Saturday";
+                break;
+
+            case 7:
+                $retVal = "Sunday";
+                break;
+        }
+
+        return $retVal;
     }
 }

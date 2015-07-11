@@ -364,3 +364,28 @@ jQuery(document).ready( function(){
     e20rActivity.init();
 
 });
+jQuery(document).ready(function($) {
+
+    $('.e20r-faq-question').click( function(){
+
+        var $this_heading = $(this);
+        var $module = $this_heading.closest('.e20r-faq-container');
+        var $content = $module.find('.e20r-faq-answer-container');
+
+        if ( $content.is( ':animated' ) ) {
+            return;
+        }
+
+        $content.slideToggle( 700, function() {
+
+            if ( $module.hasClass('e20r-toggle-close') ) {
+
+                $module.removeClass('e20r-toggle-close').addClass('e20r-toggle-open');
+            }
+            else {
+
+                $module.removeClass('e20r-toggle-open').addClass('e20r-toggle-close');
+            }
+        });
+    });
+});

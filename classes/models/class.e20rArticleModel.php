@@ -159,7 +159,7 @@ class e20rArticleModel extends e20rSettingsModel {
 		return $a_list;
 	}
 
-    public function findArticle($key, $value, $type = 'numeric', $programId = -1, $comp = '=' ) {
+    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $multi = NULL ) {
 
 	    $article = null;
 
@@ -219,18 +219,30 @@ class e20rArticleModel extends e20rSettingsModel {
 */
         $list = $this->loadForQuery( $args );
 
-	    dbg("e20rArticleModel::findArticle() - Found " . count($list) . " articles");
+	    dbg("e20rArticleModel::findArticle() - Loaded " . count($list) . " articles");
 
 	    foreach ( $list as $a ) {
 
 		    if ( ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) {
 
-			    dbg( "e20rArticleModel::findArticle() - Returned program ID == {$programId}" );
-			    $article = $a;
+			    dbg( "e20rArticleModel::findArticle() - Returning {$a->id} because it matches program ID {$programId}" );
+			    $article[] = $a;
 		    }
+
+/*            if ( ( !is_null( $multi ) ) &&
+				( ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) ) {
+
+				dbg( "e20rArticleModel::findArticle() - Returning more than one article for program ID == {$programId}" );
+				$article[] = $a;
+			}
+*/
 	    }
 
-	    return is_null( $article ) ? $list : $article;
+        if ( count( $article) == 1 ) {
+            $article = array_pop( $article );
+        }
+
+	    return empty( $article ) ? $list : $article;
     }
 
 	private function loadForQuery( $args ) {

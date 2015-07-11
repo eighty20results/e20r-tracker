@@ -41,11 +41,13 @@ class e20rWorkout extends e20rSettings {
 		    $this->model->init( $id );
 
 		    dbg("e20rWorkout::init() - Loaded settings for {$id}:");
-		    dbg($currentWorkout);
+		    // dbg($currentWorkout);
 	    }
     }
 
 	public function getActivity( $identifier ) {
+
+        dbg("e20rWorkout::getActivity() - Loading Activity data for {$identifier}");
 
 		if ( !isset( $this->model ) ) {
 			$this->init();
@@ -58,11 +60,12 @@ class e20rWorkout extends e20rSettings {
 			$workout = $this->model->loadWorkoutData( $identifier, 'any' );
 		}
 
-		if (is_string( $identifier ) ) {
+/*		if (is_string( $identifier ) ) {
 			// Given a short_name
 			$workout[] = $this->getWorkout( $identifier );
 		}
-
+*/
+        dbg("e20rWorkout::getActivity() - Returning Activity data for {$identifier}");
 		return $workout;
 
 	}
@@ -73,7 +76,7 @@ class e20rWorkout extends e20rSettings {
             $this->init();
         }
 
-        $pgmList = $this->model->loadAllWorkouts( 'any' );
+        $pgmList = $this->model->loadAllData( 'any' );
 
         foreach ($pgmList as $pgm ) {
             if ( $pgm->shortname == $shortName ) {
@@ -259,6 +262,136 @@ class e20rWorkout extends e20rSettings {
 
     }
 
+    /**
+     *
+     * Returns an archive of activities based on the requested period.
+     * Currently supports previous, current and next week constants.
+     *
+     * @param int $userId -- User's Id
+     * @param int $programId -- Program to process for
+     * @param int $period -- The period (
+     * @return array - list of activities keyed by day id (day 1 - 7, 1 == Monday)
+     */
+	public function getActivityArchive( $userId, $programId, $period = E20R_CURRENT_WEEK ) {
+
+        global $e20rProgram;
+        global $e20rTracker;
+        global $e20rArticle;
+
+        $startedTS = $e20rProgram->startdate( $userId, $programId, true );
+        $started = date('Y-m-d H:i:s', $startedTS);
+        $currentDay = $e20rTracker->getDelay('now', $userId );
+        $currentDate = date('Y-m-d', current_time( 'timestamp' ) );
+
+        dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
+
+        // Calculate release_days to include for the $period
+        switch ( $period ) {
+
+            case E20R_UPCOMING_WEEK:
+                dbg("e20rWorkout::getActivityArchive() - For the upcoming (current) week");
+                $mondayTS = strtotime( "monday next week {$currentDate} " );
+                $sundayTS = strtotime( "sunday next week {$currentDate}" );
+
+                $period_string = "Activities next week";
+                break;
+
+            case E20R_PREVIOUS_WEEK:
+
+                dbg("e20rWorkout::getActivityArchive() - For last week");
+                $mondayTS = strtotime( "monday last week {$currentDate}");
+                $sundayTS = strtotime( "sunday last week {$currentDate}" );
+
+                $period_string = "Activities previous week";
+                break;
+
+            case E20R_CURRENT_WEEK:
+
+                dbg("e20rWorkout::getActivityArchive() - For the current week");
+
+                $sundayTS = strtotime( "next sunday {$currentDate}" );
+
+                if ( date('N') == 1 ) {
+                    // It's monday
+                    $mondayTS = strtotime( "{$currentDate}");
+                }
+                else {
+                    $mondayTS = strtotime( "last monday {$currentDate}");
+                }
+
+                $period_string = "Activities this week";
+                break;
+
+            default:
+                return null;
+        }
+
+//        $startDelay = ($startDelay + $currentDay);
+//        $endDelay = ( $endDelay + $currentDay );
+
+        dbg( "e20rWorkout::getActivityArchive() - Monday TS: {$mondayTS}, Sunday TS: {$sundayTS}");
+        $startDelay = $e20rTracker->daysBetween( $startedTS, $mondayTS, get_option('timezone_string') );
+        $endDelay = $e20rTracker->daysBetween( $startedTS, $sundayTS, get_option('timezone_string') );
+
+        if ( $startDelay < 0 ) {
+            $startDelay = 1;
+        }
+
+        if ( $endDelay <= 0 ) {
+            $endDelay = 6;
+        }
+
+
+        dbg("e20rWorkout::getActivityArchive() - Delay values -- start: {$startDelay}, end: {$endDelay}");
+        $val = array( $startDelay, $endDelay );
+
+        // Load articles in the program that have a release day value between the start/end delay values we calculated.
+        $articles = $e20rArticle->loadArticlesByMeta( 'release_day', $val, 'numeric', $programId, 'BETWEEN' );
+
+        dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
+        // dbg($articles);
+
+        $activities = array( 'period' => $period_string );
+        $unsorted = array();
+
+        // Pull out all activities for the sequence list
+        if ( is_array( $articles ) ) {
+
+            foreach ($articles as $id => $article) {
+
+                // Save activity list as a hash w/weekday => workout )
+                dbg("e20rWorkout::getActivityArchive() - Getting activity {$article->activity_id} for article ID: {$article->id}");
+                $act = $this->getActivity( $article->activity_id );
+                $unsorted[] = array_pop( $act );
+            }
+        }
+        else {
+            dbg("e20rWorkout::getActivityArchive() - Single Article, activity ID: {$articles->activity_id}");
+            $unsorted = $this->getActivity( $articles->activity_id );
+        }
+
+        // Save activities in an hash keyed on the weekday the activity is scheduled for.
+        foreach( $unsorted as $activity ) {
+
+            $mon = date('l', strtotime('monday'));
+
+            foreach( $activity->days as $dayNo ) {
+
+                $dNo = $dayNo;
+                $day = date( 'l', strtotime( "monday + " . ($dNo - 1) ." days" ) );
+                dbg("e20rWorkout::getActivityArchive() - Saving workout for weekday: {$day}");
+
+                $activities[$dNo] = $activity;
+            }
+        }
+
+        // Sort based on day id
+        ksort( $activities );
+
+        // Return the hash of activities to the calling function.
+        return $activities;
+    }
+
     public function getPeers( $workoutId = null ) {
 
         if ( is_null( $workoutId ) ) {
@@ -324,10 +457,16 @@ class e20rWorkout extends e20rSettings {
 
     public function getActivities( $aIds  = null) {
 
+//        global $currentProgram;
+
 	    if ( empty( $aIds ) ) {
 		    dbg('e20rWorkout::getActivities() - Loading all activities from DB');
 		    $activities = $this->model->find( 'id', 'any' ); // Will return all of the defined activities
 	    }
+/*        elseif ( is_array( $aIds ) ) {
+            dbg("e20rWorkout::getActivities() - Supplied list of activity IDs, using 'IN' search");
+            $activities = $this->model->find( 'delay', $aIds, 'numeric', $currentProgram->id, 'IN' );
+        } */
 	    else {
 		    dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
 		    $activities = $this->model->find( 'id', $aIds );
@@ -336,6 +475,66 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::getActivities() - Found " . count($activities) . " activities.");
 
         return $activities;
+    }
+
+    /**
+     * For the e20r_activity_archive shortcode.
+     *
+     * @param null $attributes
+     *
+     * @since 0.8.0
+     */
+    public function shortcode_act_archive( $attributes = null ) {
+
+        dbg("e20rWorkout::shortcode_act_archive() - Loading shortcode data for the activity archive.");
+
+        global $current_user;
+        global $currentProgram;
+
+        if ( ! is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
+        $config = new stdClass();
+        $config->userId = $current_user->ID;
+        $config->programId = $currentProgram->id;
+        $config->withInput = false;
+
+        $workoutData = array();
+
+        $tmp = shortcode_atts( array(
+            'period' => 'current',
+        ), $attributes );
+
+        foreach ( $tmp as $key => $val ) {
+
+            if ( !empty( $val ) ) {
+                $config->{$key} = $val;
+            }
+        }
+
+        if ( 'current' == $config->period ) {
+            $period = E20R_CURRENT_WEEK;
+        }
+
+        if ('previous' == $config->period ) {
+            $period = E20R_PREVIOUS_WEEK;
+        }
+
+        if ( 'next' == $config->period ) {
+            $period = E20R_UPCOMING_WEEK;
+        }
+
+        dbg("e20rWorkout::shortcode_act_archive() - Period set to {$config->period}.");
+
+        $activities = $this->getActivityArchive( $current_user->ID, $currentProgram->id, $period );
+
+        dbg("e20rWorkout::shortcode_act_archive() - Grabbed activity count: " . count( $activities ) );
+
+        echo $this->view->displayArchive( $activities, $config );
+        // dbg($activities);
+
     }
 
 	public function shortcode_activity( $attributes = null ) {
@@ -378,6 +577,7 @@ class e20rWorkout extends e20rSettings {
 		$config->delay = $e20rTracker->getDelay( 'now' );
 		$config->date = $e20rTracker->getDateForPost( $config->delay );
 		$config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
+        $config->withInput = true;
 
 		$config->dayNo = date_i18n( 'N', current_time('timestamp') );
 
@@ -404,8 +604,8 @@ class e20rWorkout extends e20rSettings {
 
         }
 
-        dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
-        dbg($article);
+        // dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
+        // dbg($article);
 
 
         if ( !isset( $article->id ) ) {
