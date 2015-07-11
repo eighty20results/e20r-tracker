@@ -298,7 +298,7 @@ class e20rWorkout extends e20rSettings {
 
             case E20R_PREVIOUS_WEEK:
 
-                dbg("e20rWorkout::getActivityArchive() - For the upcoming (current) week");
+                dbg("e20rWorkout::getActivityArchive() - For last week");
                 $mondayTS = strtotime( "monday last week {$currentDate}");
                 $sundayTS = strtotime( "sunday last week {$currentDate}" );
 
@@ -497,6 +497,10 @@ class e20rWorkout extends e20rSettings {
         }
 
         $config = new stdClass();
+        $config->userId = $current_user->ID;
+        $config->programId = $currentProgram->id;
+        $config->withInput = false;
+
         $workoutData = array();
 
         $tmp = shortcode_atts( array(
@@ -527,7 +531,9 @@ class e20rWorkout extends e20rSettings {
         $activities = $this->getActivityArchive( $current_user->ID, $currentProgram->id, $period );
 
         dbg("e20rWorkout::shortcode_act_archive() - Grabbed activity count: " . count( $activities ) );
-        dbg($activities);
+
+        echo $this->view->displayArchive( $activities, $config );
+        // dbg($activities);
 
     }
 
@@ -571,6 +577,7 @@ class e20rWorkout extends e20rSettings {
 		$config->delay = $e20rTracker->getDelay( 'now' );
 		$config->date = $e20rTracker->getDateForPost( $config->delay );
 		$config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
+        $config->withInput = true;
 
 		$config->dayNo = date_i18n( 'N', current_time('timestamp') );
 
