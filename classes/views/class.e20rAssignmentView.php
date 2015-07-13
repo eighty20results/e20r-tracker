@@ -304,7 +304,9 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
-		<button id="e20r-lesson-complete" class="e20r-button assignment-btn">I have read this lesson</button>
+		<div class="e20r-lesson-highlight <?php echo ( true === $article->completed ) ? 'lesson-completed' : null; ?>">
+			<button id="e20r-lesson-complete" class="e20r-button assignment-btn">I have read this lesson</button>
+		</div>
 		<?php
 		if ( isset( $article->completed ) && ( $article->completed == true ) ) { ?>
 		<div id="e20r-assignment-complete">
