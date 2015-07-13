@@ -2,13 +2,15 @@
   "name" : "E20R Tracker",
   "slug" : "e20r-tracker",
   "download_url" : "https://eighty20results.com/protected-content/e20r-tracker/e20r-tracker-0.8.0.zip",
-  "version" : "0.8.0",
+  "version" : "0.8.1",
+  "tested": "4.2.2",
+  "requires": "4.0",
   "author" : "Thomas Sjolshagen",
   "author_homepage": "https://eighty20results.com/thomas-sjolshagen",
   "last_updated": "2015-07-10 07:30:00",
   "homepage": "https://eighty20results.com/e20r-tracker",
   "sections" : {
     "description" : "Plugin platform for managing fitness and nutrition coaching content.<br/><br/>We recommend using this plugin in conjunction with the <a href='http://paidmembershipspro.com' target='_blank'>Paid Memberships Pro</a> plugin, and the <a href='https://eighty20results.com/pmpro-sequence/' target='_blank'>PMPro Sequences</a> plugin.",
-    "changelog": "<h2>Change Log</h2><ol><li>0.8.0 - Enh: e20r_activity_archive shortcode support</li><li>0.7.1 - Bumped to test auto-update</li><li>0.7.0 - Added automatic update functionality</li></ol>"
+    "changelog": "<h2>Change Log</h2><ol><li>0.8.1 - Fix: Correctly handle next weeks activity archive.</li><li>0.8.0 - Enh: e20r_activity_archive shortcode support</li><li>0.7.1 - Bumped to test auto-update</li><li>0.7.0 - Added automatic update functionality</li></ol>"
   }
 }
