@@ -449,3 +449,12 @@ h3.e20r-faq-question {
 .e20r-toggle-close .e20r-faq-answer-container {
     display: none;
 }
+.e20r-lesson-highlight {
+    border: 1px solid #c5c5c5;
+    padding: 10px;
+    text-align: center;
+    background-color: rgba(255, 0, 0, 0.5);
+}
+.e20r-lesson-highlight.lesson-completed {
+    background-color: rgba(0, 255, 0, 0.5);
+}
