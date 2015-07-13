@@ -24,6 +24,20 @@ class e20rAssignment extends e20rSettings {
         parent::__construct( 'assignment', 'e20r_assignment', $this->model, $this->view );
     }
 
+    public function createDefaultAssignment( $article ) {
+
+        dbg( "e20rAssignment::createDefaultAssignment() - Loading a dummy title based on the article ID ");
+
+        $title = get_the_title( $article->id );
+
+        if ( false !== ( $assignmentId = $this->model->createDefaultAssignment( $article, $title ) ) ) {
+
+            dbg("e20rAssignment::createDefaultAssignment() - Created new default assignment with ID: {$assignmentId} ");
+        }
+
+        return $assignmentId;
+    }
+
 	public function getInputType( $id ) {
 
 		return $this->model->getInputType( $id );
@@ -148,7 +162,6 @@ class e20rAssignment extends e20rSettings {
         global $current_user;
 
         dbg("e20rAssignment::saveAssignment_callback() - Content of POST variable:");
-        dbg($_POST);
 
         $data = array(
             'user_id' => $current_user->ID,
@@ -160,6 +173,9 @@ class e20rAssignment extends e20rSettings {
             'assignment_short_name' => isset( $_POST['assignment-short-name']) ? sanitize_text_field( $_POST['assignment-short-name'] ) : null,
             'checkedin' => (isset( $_POST['checkedin']) ? intval( $_POST['checkedin'] ) : null),
         );
+
+        dbg("e20rAssignment::saveAssignment_callback() - Saving assignment data: ");
+        dbg($data);
 
         if ( ! $this->model->setAssignment( $data ) ) {
 
@@ -292,7 +308,7 @@ class e20rAssignment extends e20rSettings {
 
         if ( wp_is_post_revision( $assignmentId ) ) {
 
-            return $post_id;
+            return $assignmentId;
         }
 
         if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
