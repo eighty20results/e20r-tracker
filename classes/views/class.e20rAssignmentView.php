@@ -111,7 +111,7 @@ class e20rAssignmentView extends e20rSettingsView {
                             dbg("e20rAssignmentView::viewArticle_Assignments() - field type = {$a->field_type}");
                             if ( $answerDefs !== null ) {
 
-                                echo $answerDefs[ $a->field_type ];
+                                echo $answerDefs[ isset( $a->field_type ) ? $a->field_type : 0 ];
                             }
                             else {
                                 echo $answerDefs[0];
@@ -303,9 +303,10 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id" class="e20r-assignment-id" />
-		<div class="e20r-lesson-highlight <?php echo ( true === $article->completed ) ? 'lesson-completed' : null; ?>">
-			<button id="e20r-lesson-complete" class="e20r-button assignment-btn">I have read this</button>
+		<input type="hidden" value="<?php echo ( $assignment->question_id == 0 ? CONST_DEFAULT_ASSIGNMENT : $assignment->question_id ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
+		<input type="hidden" value="<?php echo ( $assignment->question_id == 0 ? CONST_DEFAULT_ASSIGNMENT : $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+		<div class="e20r-lesson-highlight <?php echo ( !isset( $article->completed ) || ( false === $article->completed ) ) ? null : 'lesson-completed'; ?>">
+			<button id="e20r-lesson-complete" class="e20r-button assignment-btn"><?php _e("I have read this", "e20rtracker"); ?></button>
 		</div>
 		<?php
 		if ( isset( $article->completed ) && ( $article->completed == true ) ) { ?>
