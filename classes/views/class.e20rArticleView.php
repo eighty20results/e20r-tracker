@@ -289,7 +289,7 @@ class e20rArticleView extends e20rSettingsView {
 
 			                    foreach( $activities as $activity ) {
 				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: ");
-				                    dbg($activity);
+				                    // dbg($activity);
 
 				                    if ( is_array( $settings->activity_id ) ) {
 
