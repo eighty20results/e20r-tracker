@@ -18,6 +18,15 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+    /**
+     * Displays the html for the e20r_activity_archive short code
+     *
+     * @param $activityList - Associative list of activities (sorted by day)
+     * @param $config - Configuration data to display activity archive
+     * @return mixed - HTML of archive.
+     *
+     * @since v0.8.0
+     */
 	public function displayArchive( $activityList, $config ) {
 
         global $e20rTracker;
@@ -55,7 +64,15 @@ class e20rWorkoutView extends e20rSettingsView {
         return $html;
     }
 
-
+    /**
+     * Generates the HTML for the activity. Typically used by the activity short code or the activity archive short code.
+     *
+     * @param $config -- Configuration data to facilitate display of the activity
+     * @param $workoutData -- The activity definition (array)
+     * @return mixed - The HTML of the activity to display.
+     *
+     * @since v0.5.0
+     */
 	public function displayActivity( $config, $workoutData ) {
 
 		if ( ! is_user_logged_in() ) {
