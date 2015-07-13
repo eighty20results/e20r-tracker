@@ -784,7 +784,6 @@ class e20rArticle extends e20rSettings {
         return false;
     }
 
-
     public function getID() {
 
         return $this->post_id;
@@ -793,5 +792,135 @@ class e20rArticle extends e20rSettings {
     public function findArticle( $key = 'id', $val = null, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
         return $this->model->findArticle( $key, $val, $type, $programId, $comp );
+    }
+
+    /**
+     * Save the Article Settings to the metadata table.
+     *
+     * @param $settings - Array of settings for the specific article.
+     *
+     * @return bool - True if successful at updating article settings
+     */
+    public function saveSettings( $articleId, $settings = null ) {
+
+        global $e20rAssignment;
+
+        global $e20rTracker;
+        global $post;
+
+        if ( empty( $articleId ) ) {
+
+            dbg("e20rArticle::saveSettings() - No article ID supplied");
+            return false;
+        }
+
+        if ( ( !isset($post->post_type) ) || ( $post->post_type !== $this->cpt_slug ) ) {
+
+            dbg( "e20rArticle::saveSettings() - Not an article. " );
+            return $articleId;
+        }
+
+        if ( empty( $articleId ) ) {
+
+            dbg("e20rArticle::saveSettings() - No post ID supplied");
+            return false;
+        }
+
+        if ( wp_is_post_revision( $articleId ) ) {
+
+            return $articleId;
+        }
+
+        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+
+            return $articleId;
+        }
+
+        $savePost = $post;
+
+        if ( empty( $settings ) ) {
+
+            dbg( "e20rArticle::saveSettings()  - Saving metadata from edit.php page, related to the e20rArticle post_type" );
+
+            $this->model->init( $articleId );
+
+            $settings = $this->model->loadSettings( $articleId );
+            $defaults = $this->model->defaultSettings();
+
+            if ( ! $settings ) {
+
+                $settings = $defaults;
+            }
+
+            foreach ( $settings as $field => $setting ) {
+
+                $tmp = isset( $_POST["e20r-article-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-article-{$field}"] ) : null;
+
+                dbg( "e20rArticle::saveSettings() - Page data : ..{$field}.. -> " );
+                dbg($tmp);
+
+                if ( 'assignments' == $field ) {
+
+                    dbg("e20rArticle::saveSettings() - Process the assignments array");
+                    dbg($settings->{$field});
+
+                    foreach( $tmp as $k => $assignmentId ) {
+
+                        dbg("e20rArticle::saveSettings() - Assignments Array: Setting key {$k} has value {$assignmentId}");
+
+                        if ( CONST_DEFAULT_ASSIGNMENT == $assignmentId ) {
+
+                            dbg("e20rArticle() - Create a new default assignment for this article ID: {$settings->id}");
+
+                            //Generate a default assignment for this article.
+                            $assignmentId = $e20rAssignment->createDefaultAssignment( $settings );
+
+                            dbg("e20rArticle::saveSettings() - Replacing empty assignment key #{$k} with value {$assignmentId}");
+                            $settings->{$field}[$k] = $assignmentId;
+                        }
+                    }
+                }
+            }
+
+            if ( empty( $tmp ) ) {
+
+                $tmp = $defaults->{$field};
+                $settings->{$field} = $tmp;
+            }
+
+            // Add post ID (article ID)
+            $settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
+
+            dbg( "e20rArticle::saveSettings() - Saving: " );
+            dbg( $settings );
+
+            if ( ! $this->model->saveSettings( $settings ) ) {
+
+                dbg( "e20rArticle::saveSettings() - Error saving settings!" );
+            }
+
+        }
+        elseif ( get_class( $settings ) != 'WP_Post' ) {
+
+            dbg("e20rArticle::saveSettings() - Received settings from calling function.");
+
+            if ( ! $this->model->saveSettings( $settings ) ) {
+
+                dbg( "e20rArticle::saveSettings() - Error saving settings!" );
+            }
+
+            $post = get_post( $articleId );
+
+            setup_postdata( $post );
+
+            $this->model->set( 'question', get_the_title() );
+            $this->model->set( 'descr', get_the_excerpt() );
+
+            wp_reset_postdata();
+
+        }
+
+        $post = $savePost;
+
     }
 } 
