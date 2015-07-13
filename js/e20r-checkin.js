@@ -381,6 +381,7 @@ jQuery(document).ready(function() {
                 success: function( $response ) {
 
                     jQuery('#e20r-lesson-complete').hide();
+                    jQuery(".e20r-lesson-highlight").hide();
                     jQuery('#e20r-assignment-complete').each(function() {
                         jQuery(this).show();
                     });
