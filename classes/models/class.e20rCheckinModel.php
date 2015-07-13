@@ -108,6 +108,8 @@ class e20rCheckinModel extends e20rSettingsModel {
 
     public function getActions( $id, $type = 1, $numBack = -1 ) {
 
+        global $currentProgram;
+
         $start_date = $this->getSetting( $id, 'startdate' );
         $checkins = array();
 
@@ -146,6 +148,10 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $new = $this->loadSettings( get_the_ID() );
 
+            if ( ! in_array( $currentProgram->id, $new->program_ids ) ) {
+                dbg( "e20rCheckinModel::getActions() - {$new->id} not part of program {$currentProgram->id}");
+                continue;
+            }
             $new->id = get_the_ID();
             $new->item_text = $query->post->post_excerpt;
             $new->short_name = $query->post->post_title;
