@@ -94,16 +94,17 @@ class e20rArticle extends e20rSettings {
         if ( ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) || !isset($currentArticle->id) ) {
 
 	        $currentArticle = parent::init( $postId );
-            dbg("e20rArticle::init() - Loaded settings for {$postId}:");
+            dbg("e20rArticle::init() - Loaded settings for post ID {$postId}:");
 
 	        $this->articleId = ( ! isset($currentArticle->id) ? false : $currentArticle->id);
+            dbg("e20rArticle::init() -  Loaded global currentArticle and set it for article ID {$this->articleId}");
         }
 	    else {
 		    dbg("e20rArticle::init() - No need to load settings (previously loaded): ");
 		    dbg($currentArticle);
 	    }
 
-        if ( ( $this->articleId  !== false ) && ( $currentArticle->post_id !== $postId ) ) {
+        if ( ( $this->articleId  !== false ) && ( $currentArticle->post_id != $postId ) ) {
 
 	        dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->post_id} & {$postId}");
             $this->articleId = false;
@@ -324,6 +325,7 @@ class e20rArticle extends e20rSettings {
         $currentDelay = $e20rTracker->daysBetween( $startTS );
 
     }
+
     /**
      * Get the 'prefix' setting for the specified articleId
      *
@@ -398,7 +400,10 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
-	    if ( has_shortcode( $content, 'weekly_progress') || has_shortcode( $content, 'progress_overview' ) || has_shortcode( $content, 'daily_progress') ) {
+	    if ( has_shortcode( $content, 'weekly_progress') ||
+            has_shortcode( $content, 'progress_overview' ) ||
+            has_shortcode( $content, 'daily_progress') ||
+            has_shortcode( $content, 'e20r_activity_archive') ) {
 		    // Process in shortcode actions
 		    return $content;
 	    }
@@ -415,7 +420,7 @@ class e20rArticle extends e20rSettings {
 		    return $content;
 	    }
 
-        dbg("e20rArticle::contentFilter() - loading article settings for page {$post->ID}");
+        dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articleId = $this->init( $post->ID );
 
         if ( $articleId == false ) {
