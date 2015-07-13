@@ -524,20 +524,21 @@ class e20rCheckin extends e20rSettings {
 		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
 		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
 		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
-		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array() );
-		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array() );
+		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
+		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
 		$fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
 		$answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
 
 		$programId = $e20rProgram->getProgramIdForUser( $userId, $articleId );
 
-		if ( ! $articleId  && ( $articleId == CONST_NULL_ARTICLE ) && $userId && $answerDate && $delay ) {
-			wp_send_json_error( "Unable to save your answer. Please contact technical support!" );
+		if ( ( CONST_NULL_ARTICLE === $articleId ) && ( is_null( $userId ) || is_null($answerDate) || is_null($delay) ) ) {
+			dbg("e20rCheckin::dailyProgress_callback() - Can't save assignment info!");
+			wp_send_json_error( __( "Unable to save your answer. Please contact technical support!", "e20rtracker" ) );
 		}
 
 		if ( count( $questionIds ) != count( $answers ) ) {
 			dbg("e20rCheckin::dailyProgress_callback() - Mismatch for # of questions and # of answers provided/supplied. ");
-			wp_send_json_error( "You didn't answer all of the questions we had for you. We're saving what we got.");
+			// wp_send_json_error( __( "You didn't answer all of the questions we had for you. We're saving what we received.", "e20rtracker" ) );
 		}
 
 		if ( ( count( $answerIds ) == 1 ) && ( $fieldTypes[0]) == 0 ) {
@@ -556,6 +557,8 @@ class e20rCheckin extends e20rSettings {
 			);
 		}
 		else {
+
+			dbg("e20rCheckin::dailyProgress_callback() - Have an array of answers to process..");
 
 			// Build answer objects to save to database
 			foreach ( $answerIds as $key => $id ) {
@@ -627,7 +630,30 @@ class e20rCheckin extends e20rSettings {
 			auth_redirect();
 		}
 
-	}
+        global $e20rTracker;
+        global $e20rProgram;
+        global $e20rArticle;
+        global $e20rAssignment;
+
+        $articleId = ( isset( $_POST['e20r-article-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-id'] ) : null );
+        $userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
+        $delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
+        $answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
+        $answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
+        $questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
+        $fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
+        $answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
+
+        $programId = $e20rProgram->getProgramIdForUser( $userId, $articleId );
+
+        if ( ( CONST_NULL_ARTICLE === $articleId ) && ( is_null( $userId ) || is_null($answerDate) || is_null($delay) ) ) {
+
+            dbg("e20rCheckin::dailyProgress_callback() - Can't save assignment info!");
+            wp_send_json_error( __("Unable to save your confirmation. Please contact technical support!", "e20rtracker" ) );
+        }
+
+
+    }
 
     public function nextCheckin_callback() {
 
@@ -735,8 +761,8 @@ class e20rCheckin extends e20rSettings {
         dbg("e20rCheckin::dailyProgress() - Config settings: ");
         dbg($config);
 
-        dbg("e20rCheckin::dailyProgress() - currentArticle settings: ");
-        dbg($currentArticle);
+        dbg("e20rCheckin::dailyProgress() - currentArticle is {$currentArticle->id} ");
+        // dbg($currentArticle);
 
         $config->complete = $this->hasCompletedLesson( $config->articleId, $currentArticle->post_id, $config->userId );
 
