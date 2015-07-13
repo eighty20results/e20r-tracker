@@ -26,8 +26,8 @@ class e20rProgram extends e20rSettings {
 
 	    if ( is_user_logged_in() ) {
 
-		    if ( ( ! isset( $currentProgram->id ) && !is_null( $programId ) ) ||
-		         ( !is_null( $programId ) && ( $currentProgram->id != $programId ) ) ){
+		    if ( ( !isset( $currentProgram->id) ||
+                ( !is_null( $programId ) && ( $currentProgram->id != $programId ) ) ) ) {
 
 			    dbg("e20rProgram::init() - Loading program settings for {$programId}.");
 			    $currentProgram = parent::init( $programId );
@@ -49,7 +49,7 @@ class e20rProgram extends e20rSettings {
 			    }
 		    }
 
-		    if ( isset( $currentProgram->id ) ) {
+		    if ( isset( $currentProgram->id ) && ( $currentProgram->id == $programId ) ) {
 
 			    $this->programTree = $this->getPeerPrograms( $currentProgram->id );
 		    }
@@ -300,10 +300,12 @@ class e20rProgram extends e20rSettings {
 
 			if ( is_user_logged_in() && ( $userId != 0 ) ) {
 
+                dbg( "e20rProgram::loadProgram() - Loading usermeta for ID {$userId}");
 				$programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-				if ( $programId !== false ) {
+				if ( false !== $programId ) {
 
+                    dbg( "e20rProgram::loadProgram() - Need to init the program object");
 					$this->init( $programId );
 				}
 			}
