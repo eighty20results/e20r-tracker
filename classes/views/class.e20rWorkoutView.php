@@ -25,23 +25,29 @@ class e20rWorkoutView extends e20rSettingsView {
             auth_redirect();
         }
 
-        dbg("e20rWorkoutView::displayArchive() - Content of workoutData object: ");
+        dbg("e20rWorkoutView::displayArchive() - Content of workoutData object ");
 
-        ob_start();
+        $activityHeader = $activityList['header'];
+        unset( $activityList['header'] );
+        ob_start(); ?>
 
-        foreach( $activityList as $day => $activity ) {
-            if ( $day == 'period' ) { ?>
-            <h2 class="e20r-faq-headline"><?php echo $activity; ?></h2>
-            <hr/><?php
+        <h2 class="e20r-faq-headline"><?php echo $activityHeader; ?></h2>
+        <hr/><?php
+
+        if ( empty( $activityList ) ) { ?>
+            <div class="red-notice">
+                <h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date('l', current_time('timestamp')) ); ?></h3>
+                <p><?php _e( "Sorry, we're not quite ready to share activities for this week.<br/>But maybe if you come back later in the week..? (Sunday)", "e20rtracker" ); ?></p>
+            </div><?
             }
-            else { ?>
-            <div class="e20r-faq-container e20r-toggle-close">
-                <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
-                <div class="e20r-faq-answer-container clearfix">
-                    <?php echo $this->displayActivity($config, array( $activity ) ); ?>
-                </div>
-            </div><?php
-            }
+        foreach( $activityList as $day => $activity ) { ?>
+
+        <div class="e20r-faq-container e20r-toggle-close">
+            <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
+            <div class="e20r-faq-answer-container clearfix">
+                <?php echo $this->displayActivity($config, array( $activity ) ); ?>
+            </div>
+        </div><?php
         }
 
         $html = ob_get_clean();
@@ -61,7 +67,7 @@ class e20rWorkoutView extends e20rSettingsView {
 		global $e20rExercise;
 
 		dbg("e20rWorkoutView::displayActivity() - Content of workoutData object: ");
-		dbg( $workoutData );
+		// dbg( $workoutData );
 
 		if ( isset( $workoutData['error'] ) ) {
 			ob_start();

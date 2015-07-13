@@ -351,7 +351,7 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
         // dbg($articles);
 
-        $activities = array( 'period' => $period_string );
+        $activities = array( 'header' => $period_string );
         $unsorted = array();
 
         // Pull out all activities for the sequence list
@@ -362,12 +362,15 @@ class e20rWorkout extends e20rSettings {
                 // Save activity list as a hash w/weekday => workout )
                 dbg("e20rWorkout::getActivityArchive() - Getting activity {$article->activity_id} for article ID: {$article->id}");
                 $act = $this->getActivity( $article->activity_id );
-                $unsorted[] = array_pop( $act );
+
+                if ( -1 !== $act ) {
+                    $unsorted[] = array_pop($act);
+                }
             }
         }
         else {
             dbg("e20rWorkout::getActivityArchive() - Single Article, activity ID: {$articles->activity_id}");
-            $unsorted = $this->getActivity( $articles->activity_id );
+            $unsorted[] = $this->getActivity( $articles->activity_id );
         }
 
         // Save activities in an hash keyed on the weekday the activity is scheduled for.
@@ -379,7 +382,7 @@ class e20rWorkout extends e20rSettings {
 
                 $dNo = $dayNo;
                 $day = date( 'l', strtotime( "monday + " . ($dNo - 1) ." days" ) );
-                dbg("e20rWorkout::getActivityArchive() - Saving workout for weekday: {$day}");
+                dbg("e20rWorkout::getActivityArchive() - Saving workout for weekday: {$day} -> ID: {$activity->id}");
 
                 $activities[$dNo] = $activity;
             }

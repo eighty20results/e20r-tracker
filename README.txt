@@ -4,7 +4,8 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.4
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.7.0
+Requires: 4.0
+Stable tag: 0.8.1
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -15,6 +16,9 @@ We developed the plugin to meet our own specific coaching platform needs which r
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
 
 == ChangeLog ==
+
+= 0.8.1 =
+* Fix: Handle next week correctly in e20r_activity_archive.
 
 = 0.8.0 =
 * Added e20r_activity_archive short code (param: 'period="current|previous|next"')
