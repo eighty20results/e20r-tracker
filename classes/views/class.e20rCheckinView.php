@@ -127,7 +127,7 @@ class e20rCheckinView extends e20rSettingsView {
                                 </li>
                                 <li>
                                     <input type="radio" value="2" <?php checked( $activity->checkedin, 2 ); ?> name="did-activity-today" id="did-activity-today-radio-2" />
-                                    <label for="did-activity-today-radio-2"><?php _e("I was active but activity isn't complete", "e20rtracker"); ?></label>
+                                    <label for="did-activity-today-radio-2"><?php _e("I was active, but activity isn't complete", "e20rtracker"); ?></label>
                                 </li>
                                 <li>
                                     <input type="radio" value="0" <?php checked( $activity->checkedin, 0 ); ?> name="did-activity-today" id="did-activity-today-radio-3" />
