@@ -1621,7 +1621,7 @@ class e20rTracker {
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), '0.1', false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.1', false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.5', false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
