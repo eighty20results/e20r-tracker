@@ -1529,7 +1529,7 @@ class e20rTracker {
 
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
-            dbg("Post #{$postId} is a preview for {$userId}");
+            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}");
             return true;
         }
 
