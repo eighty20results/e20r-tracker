@@ -51,7 +51,7 @@ class e20rTracker {
 	public function admin_access_filter($access, $post, $user) {
 
 		if ( ( !empty($user->membership_level) && $user->membership_level->ID == 2 ) || ( current_user_can('administrator') ) ) {
-			dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
+			// dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
 			return true;    //level 2 (and administrator) ALWAYS has access
 		}
 
@@ -152,7 +152,7 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
 	        add_action( 'wp_ajax_save_daily_progress', array( $e20rCheckin, 'dailyProgress_callback' ) );
-	        add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
+	        // add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
 	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( $e20rWorkout, 'add_new_exercise_group_callback' ) );
 	        add_action( 'wp_ajax_e20r_add_exercise', array( $e20rWorkout, 'add_new_exercise_to_group_callback' ) );
 	        add_action( 'wp_ajax_e20r_save_activity', array( $e20rWorkout, 'saveExData_callback' ) );
@@ -1621,7 +1621,7 @@ class e20rTracker {
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), '0.1', false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.5', false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.5.1', false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
@@ -2239,9 +2239,10 @@ class e20rTracker {
          */
         $assignmentAsSql =
             "CREATE TABLE {$wpdb->prefix}e20r_assignments (
-                    id int not null,
+                    id int not null auto_increment,
                     article_id int not null,
                     program_id int not null,
+                    question_id int not null,
                     delay int not null,
                     user_id int not null,
                     answer_date datetime null,
@@ -2249,6 +2250,7 @@ class e20rTracker {
                     field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button' ),
                     primary key  (id),
                      key articles (article_id asc),
+                     key questions (question_id asc),
                      key user_id ( user_id asc )
                      )
                     {$charset_collate}

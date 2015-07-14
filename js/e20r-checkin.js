@@ -377,7 +377,8 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: e20r_checkin.url,
                 type: 'POST',
-                data: 'action=save_daily_checkin&' + self.$answerForm.serialize(),
+                /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
+                data: 'action=save_daily_progress&' + self.$answerForm.serialize(),
                 success: function( $response ) {
 
                     jQuery('#e20r-lesson-complete').hide();

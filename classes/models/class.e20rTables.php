@@ -102,7 +102,7 @@ class e20rTables {
         $this->fields['assignments'] = array(
             'id'            => 'id',
             'article_id'    => 'article_id',
-            'id'   => 'question_id',
+            'question_id'   => 'question_id',
             'user_id'       => 'user_id',
             'answer_date'   => 'answer_date',
             'answer'        => 'answer',

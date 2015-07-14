@@ -201,11 +201,13 @@ class e20rProgram extends e20rSettings {
 
 	    global $currentProgram;
 
-	    if ( ! isset( $currentProgram->id ) || ( $currentProgram->id === false ) ) {
+        $uPgmId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
+
+	    if ( !isset( $currentProgram->id ) || ( $currentProgram->id === false ) ) {
 
 		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id is false or not set yet.");
 
-		    if ( $userId != 0 ) {
+		    if ( $userId != 0 )  {
 
 			    dbg("e20rProgram::getProgramIdForUser() - Loading program info from DB for user w/ID {$userId}");
 			    $this->loadProgram( $userId );
@@ -218,13 +220,16 @@ class e20rProgram extends e20rSettings {
 	    }
 	    else {
 
-		    dbg("e20rProgram::getProgramIdForUser() - currentProgram has been loaded.");
+		    dbg("e20rProgram::getProgramIdForUser() - currentProgram is already loaded & configured.");
 
-            $this->loadProgram( $userId );
+            if ( ( $uPgmId != $currentProgram->id ) && ( ! in_array( $userId, $currentProgram->users ) ) ) {
+                $this->loadProgram($userId);
+            }
 
 		    if ( $currentProgram->id === false ) {
+
 			    dbg("e20rProgram::getProgramIdForUser() - currentProgram getting set to default values");
-			    $this->init();
+			    $this->init( $uPgmId );
 		    }
 	    }
 
@@ -234,6 +239,7 @@ class e20rProgram extends e20rSettings {
     public function setProgramForUser( $user_id, $membership_id ) {
 
         global $e20rTracker;
+        global $currentProgram;
 
         dbg("e20rTracker::setProgramForUser() - Called from: " . $e20rTracker->whoCalledMe() );
         dbg("e20rProgram::setProgramForUser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}");
@@ -289,6 +295,21 @@ class e20rProgram extends e20rSettings {
             wp_mail( $addr, $subj, $msg);
         }
 
+        dbg("e20rProgram::setProgramForUser() - Testing whether to add user to program list");
+
+        if ( !isset( $currentProgram->id ) || ( $pId != $currentProgram->id ) ) {
+
+            $this->init($pId);
+        }
+
+        $currentProgram->users[] = $user_id;
+
+        if ( !in_array( $user_id, $currentProgram->users ) ) {
+
+            dbg("e20rProgram::setProgramForUser() - Adding user to the program 'users' list");
+            $this->model->set('users', $currentProgram->users, $currentProgram->id);
+        }
+
         return;
     }
 
@@ -296,26 +317,27 @@ class e20rProgram extends e20rSettings {
 
 		global $currentProgram;
 
-//		if ( isset( $currentProgram->id ) && ( $currentProgram->id === false ) ) {
+		if ( !isset( $currentProgram->id ) || ( ! in_array( $userId, $currentProgram->users ) ) ) {
 
 			if ( is_user_logged_in() && ( $userId != 0 ) ) {
 
                 dbg( "e20rProgram::loadProgram() - Loading usermeta for ID {$userId}");
 				$programId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-				if ( false !== $programId ) {
+				if ( ( false !== $programId ) &&
+                    ( !isset( $currentProgram->id) || ( $currentProgram->id !== $programId ) ) ) {
 
                     dbg( "e20rProgram::loadProgram() - Need to init the program object");
-					$this->init( $programId );
+                    $this->init($programId);
 				}
 			}
-			dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
-/*		}
-		else {
+		}
+/*		else {
 
 			$this->init();
 		}
 */
+        dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
 	}
     /**
      * Action Hook to add the E20R Tracker user specific settings (like adding a program for the user)
@@ -360,7 +382,7 @@ class e20rProgram extends e20rSettings {
             dbg( "e20rProgram::startdate() - Loading usermeta to get Program for user with ID: {$userId}" );
             $program_id = get_user_meta( $userId, 'e20r-tracker-program-id', true );
 
-            if ( $program_id !== false ) {
+            if ( ( $currentProgram->id != $program_id ) && ( $program_id !== false ) ) {
 
                 dbg( "e20rProgram::startdate() - User program not set! Loading settings by passed Program ID: {$program_id}" );
                 $this->model->loadSettings( $program_id );
@@ -396,6 +418,8 @@ class e20rProgram extends e20rSettings {
      */
     public function updateProgramForUser( $userId ) {
 
+        global $currentProgram;
+
         if ( ! current_user_can( 'edit_user', $userId ) ) {
             return false;
         }
@@ -411,6 +435,20 @@ class e20rProgram extends e20rSettings {
             if ( get_user_meta( $userId, 'e20r-tracker-program-id', true ) != $programId ) {
 
                 wp_die( 'Unable to save the program for this user' );
+            }
+
+            dbg("e20rProgram::updateProgramForUser() - Testing whether to add user to program list");
+
+            if ( !isset( $currentProgram->id ) || ( $programId != $currentProgram->id ) ) {
+
+                $this->init($programId);
+            }
+
+            $currentProgram->users[] = $userId;
+
+            if ( !in_array( $userId, $currentProgram->users ) ) {
+                dbg("e20rProgram::updateProgramForUser() - Adding user to the program 'users' list");
+                $this->model->set('users', $currentProgram->users, $currentProgram->id);
             }
         }
     }

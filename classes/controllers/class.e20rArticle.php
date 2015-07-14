@@ -284,15 +284,29 @@ class e20rArticle extends e20rSettings {
 
 		dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
 
-		$this->init( $articleId );
-		$articleSettings = $this->model->loadSettings( $this->articleId );
+		if ( $currentArticle->id != $articleId ) {
 
-		dbg($articleSettings);
+            dbg("e20rArticle::getAssignments() - Need to load settings for {$articleId}");
+            $this->init( $articleId );
+            $articleSettings = $this->model->loadSettings( $this->articleId );
+        }
+        else {
+            $articleSettings = $currentArticle;
+        }
+
+		// $articleSettings = $this->model->loadSettings( $this->articleId );
+
+		// dbg($articleSettings);
 
 		$assignments = array();
 
 		if ( ! empty( $articleSettings->assignments ) ) {
+
+            dbg("e20rArticle::getAssignments() - Have predefined assignments for article");
+
 			foreach ( $articleSettings->assignments as $assignmentId ) {
+
+                dbg("e20rArticle::getAssignments() - Loading assignment {$assignmentId} for article");
 
 				// Load the user specific assignment data (if available. If not, load default data)
 				$tmp                               = $e20rAssignment->load_userAssignment( $articleId, $assignmentId, $userId );
@@ -300,7 +314,7 @@ class e20rArticle extends e20rSettings {
 			}
 		}
 		else {
-
+            dbg("e20rArticle::getAssignments() - No defined explicit assignments for this article.");
 			$assignments[0] = $e20rAssignment->loadAssignment( 0 );
 		}
 
@@ -686,7 +700,7 @@ class e20rArticle extends e20rSettings {
 
         dbg( "e20rArticle::releaseDate: {$release_date}" );
 
-        return ( !$release_date ? false : $release_date );
+        return ( empty($release_date) ? false : $release_date );
     }
 
 	public function releaseDay( $articleId ) {

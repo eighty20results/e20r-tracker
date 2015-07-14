@@ -185,9 +185,16 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		global $currentArticle;
 
+        $articleComplete = false;
 		$html = null;
 
 		ob_start();
+
+        if ( isset( $currentArticle->complete ) && ( true == $currentArticle->complete ) )  {
+            $articleComplete = true;
+        }
+
+
 		?>
 		<div id="e20r-article-assignment">
 			<form id="e20r-assignment-answers">
@@ -197,24 +204,25 @@ class e20rAssignmentView extends e20rSettingsView {
 				<input type="hidden" value="<?php echo $currentArticle->release_day; ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
 				<input type="hidden" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
 		<?php
-		$html = ob_get_clean();
 
 		dbg("e20rAssignmentView::viewAssignment() - Processing for " . count($assignmentData) . " assignments");
-		foreach( $assignmentData as $orderId => $assignment ) {
+		foreach( $assignmentData as $orderId => $assignment ) { ?>
+
+                <input type="hidden" value="<?php echo ( isset( $assignment->id ) ? $assignment->id : null ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
+
+            if ( ( $assignment->field_type  == 0 ) && ( isset( $assignment->id ) || !is_null( $assignment->id ) ) ) {
+                $articleComplete = true;
+            }
 
 			switch ( $assignment->field_type ) {
-				case 0: // Button "Assignment read"
-
-					$html .= $this->showAssignmentButton( $assignment, $articleConfig );
-					break;
 
 				case 1: // <input>
-					$html .= $this->showAssignmentInput( $assignment );
+					echo $this->showAssignmentInput( $assignment );
 					break;
 
 				case 2: // <textbox>
 
-					$html .= $this->showAssignmentParagraph( $assignment );
+					echo $this->showAssignmentParagraph( $assignment );
 					break;
 
 				case 3: // Checkbox ( array ?)
@@ -224,38 +232,52 @@ class e20rAssignmentView extends e20rSettingsView {
 				case 4: // Mulitple choice (radio buttons) (array?)
 
 					break;
-			}
+
+                default: // Button "Assignment read"
+                    dbg("e20rAssignmentView::viewAssignment() - Default field_type value. Using showAssignmentButton()");
+                    echo $this->showAssignmentButton( $assignment, $articleComplete );
+
+            }
 		}
 
-		ob_start();
 		dbg("e20rAssignmentView::viewAssignment() - Assignments: " . count($assignmentData) . " and last field type: {$assignment->field_type}");
-		// dbg("e20rAssignmentView::viewAssignment() - Config for completed article: {$articleConfig->completed}");
+		dbg("e20rAssignmentView::viewAssignment() - Is article assignment/check-in complete: {$articleComplete}");
+
+        $currentArticle->complete = $articleComplete;
 
 		if ( ( count($assignmentData) >= 1 )  && ($assignment->field_type != 0 ) ) {
 
-			if ( isset( $articleConfig->completed ) && ( $articleConfig->completed != true ) ) {
-			?>
-				<div id="e20r-assignment-save-btn">
-			<?php } else { ?>
-				<div id="e20r-assignment-save-btn" style="display:none;">
-			<?php } ?>
-					<button id="e20r-assignment-save" class="e20r-button"><?php _e("Completed", 'e20rtracker'); ?></button>
-				</div>
-			<?php
-			if ( isset( $articleConfig->completed ) && ( $articleConfig->completed == true ) ) {
-			?>
-				<div id="e20r-assignment-complete">
-			<?php } else { ?>
-				<div id="e20r-assignment-complete" style="display: none;">
-			<?php } ?>
-					<?php echo $this->assignmentComplete() ;?>
-				</div>
-		<?php } ?>
+            dbg("e20rAssignmentView::viewAssignment() -  Have assignment data to process.");
+
+			if ( $articleComplete != true ) { ?>
+				<div id="e20r-assignment-save-btn"><?php
+			}
+			else { ?>
+				<div id="e20r-assignment-save-btn" style="display:none;"><?php
+            } ?>
+				    <button id="e20r-assignment-save" class="e20r-button"><?php _e("Completed", 'e20rtracker'); ?></button>
+				</div><?php
+		}
+
+        dbg("e20rAssignmentView::viewAssignment() - Config for article: ");
+        dbg($currentArticle);
+
+        if ( true == $articleComplete ) { ?>
+
+                <div id="e20r-assignment-complete"><?php
+        }
+        else {
+            dbg("e20rAssignmentView::viewAssignment() -  Assignment isn't complete: " . ($articleComplete ? 'Yes' : 'No'));?>
+
+                <div id="e20r-assignment-complete" style="display: none;"><?php
+        }
+                    echo $this->assignmentComplete() ;?>
+                </div>
 			</form>
 		</div>
 		<?php
 		$html .= ob_get_clean();
-
+        dbg("e20rAssignmentView::viewAssignment() -  Returning HTML");
 		return $html;
 	}
 
@@ -263,7 +285,6 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
 			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -282,7 +303,6 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
 			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -299,17 +319,19 @@ class e20rAssignmentView extends e20rSettingsView {
 		return ob_get_clean();
 	}
 
-	private function showAssignmentButton( $assignment, $article ) {
+	private function showAssignmentButton( $assignment, $isComplete = false ) {
+
+        dbg("e20rAssignmentView::showAssignmentButton() - Using assignment configuration: ");
 
 		ob_start();
 		?>
-		<input type="hidden" value="<?php echo ( $assignment->question_id == 0 ? CONST_DEFAULT_ASSIGNMENT : $assignment->question_id ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" />
 		<input type="hidden" value="<?php echo ( $assignment->question_id == 0 ? CONST_DEFAULT_ASSIGNMENT : $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
-		<div class="e20r-lesson-highlight <?php echo ( !isset( $article->completed ) || ( false === $article->completed ) ) ? null : 'lesson-completed'; ?>">
+		<input type="hidden" value="0" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+		<div class="e20r-lesson-highlight <?php echo ( $isComplete ? 'lesson-completed startHidden' : null ); ?>">
 			<button id="e20r-lesson-complete" class="e20r-button assignment-btn"><?php _e("I have read this", "e20rtracker"); ?></button>
 		</div>
 		<?php
-		if ( isset( $article->completed ) && ( $article->completed == true ) ) { ?>
+/*		if ( isset( $article->completed ) && ( $article->complete == true ) ) { ?>
 		<div id="e20r-assignment-complete">
   <?php }
 		else { ?>
@@ -317,7 +339,7 @@ class e20rAssignmentView extends e20rSettingsView {
   <?php } ?>
 		<?php echo $this->assignmentComplete() ;?>
 		</div><?php
-
+*/
 		$html = ob_get_clean();
 
 		return $html;
