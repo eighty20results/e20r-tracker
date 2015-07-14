@@ -452,12 +452,17 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	        if (  CONST_DEFAULT_ASSIGNMENT != $assignmentId ) {
 
                 dbg("e20rAssignmentModel::loadUserAssignment() - Loading settings ({$assignmentId})");
-                $records = array( 0 => $this->loadSettings( $assignmentId ) );
+                $assignment = $this->loadSettings( $assignmentId );
 	        }
-	        else {
-                $records = array( 0 => $this->defaultSettings() );
-                dbg("e20rAssignmentModel::loadUserAssignment() - Using default values. ");
-	        }
+
+            if ( !isset( $assignment->question_id ) ) {
+                dbg("e20rAssignmentModel::loadUserAssignment() - Loading default settings");
+                $assignment = $this->defaultSettings();
+            }
+
+            unset($assignment->id);
+            $records = array( 0 => $assignment );
+
         }
 
         // Restore
