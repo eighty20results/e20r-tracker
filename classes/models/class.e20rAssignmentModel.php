@@ -130,25 +130,25 @@ class e20rAssignmentModel extends e20rSettingsModel {
             'ping_status' => 'closed',
         );
 
-        $settings = $this->defaultSettings();
-        $settings->id = wp_insert_post( $postDef );
+        $assignment = $this->defaultSettings();
+        $assignment->id = wp_insert_post( $postDef );
 
-        if ( 0 != $settings->id ) {
+        if ( 0 != $assignment->id ) {
 
-            $settings->question_id = $settings->id;
-            $settings->order_num = 1;
-            $settings->field_type = 0; // Lesson complete button
-            $settings->article_id = $article->id;
-            $settings->delay = $article->release_day;
+            $assignment->question_id = $assignment->id;
+            $assignment->order_num = 1;
+            $assignment->field_type = 0; // Lesson complete button
+            $assignment->article_id = $article->id;
+            $assignment->delay = $article->release_day;
 
-            if ( ! $this->saveSettings( $settings ) ) {
+            if ( ! $this->saveSettings( $assignment ) ) {
 
-                dbg("e20rAssignmentModel::createDefaultAssignment() - Error saving assignment settings ({$settings->id}) for Article # {$article->id}");
+                dbg("e20rAssignmentModel::createDefaultAssignment() - Error saving assignment settings ({$assignment->id}) for Article # {$article->id}");
                 return false;
             }
 
-            dbg("e20rAssignmentModel::createDefaultAssignment() - Saved new assignment Article # {$article->id}: {$settings->id}");
-            return $settings->id; // Return the new assignment ID.
+            dbg("e20rAssignmentModel::createDefaultAssignment() - Saved new assignment Article # {$article->id}: {$assignment->id}");
+            return $assignment->id; // Return the new assignment ID.
         }
 
         dbg("e20rAssignmentModel::createDefaultAssignment() - Error adding post (assignment) for article # {$article->id}");
@@ -170,8 +170,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->delay = null;
         $settings->field_type = 0;
         $settings->article_id = null;
-        $settings->user_id = $current_user->ID;
-	    $settings->program_id = $e20rProgram->getProgramIdForUser( $settings->user_id );
+        // $settings->user_id = $current_user->ID;
+	    // $settings->program_id = null;
         $settings->answer_date = null;
         $settings->answer = null;
 
@@ -247,12 +247,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			$id = get_the_ID();
 
             $new = $this->loadSettings( $id );
-
-            $new->id = ( $id == 0 ? CONST_DEFAULT_ASSIGNMENT : get_the_ID() );
+            // $new->id = $id;
 
             $new->descr = $query->post->post_excerpt;
             $new->question = $query->post->post_title;
-            $new->article_id = $articleId;
+            // $new->article_id = $articleId;
             $assignments[] = $new;
         }
 
@@ -283,13 +282,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
 					'compare' => $comp,
 					'type' => $type,
 				),
-				array(
+/*				array(
 					'key' => "_e20r-assignments-program_id",
 					'value' => $programId,
 					'compare' => '=',
 					'type' => 'numeric',
 				),
-
+*/
 			)
 		);
 
@@ -373,15 +372,21 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $this->fields['article_id'],
         );
 
-        $programId = $e20rProgram->getProgramIdForUser( $userId );
-
         // Preserve
         $save_post = $post;
 
-        dbg("e20rAssignmentModel::loadUserAssignment() - date for article # {$articleId} in program {$programId} for user {$userId}: {$delay}");
+        if ( is_null( $userId ) ) {
 
-        $sql = $wpdb->prepare(
-            "SELECT {$this->fields['id']},
+            $result = array();
+        }
+        else {
+
+            $programId = $e20rProgram->getProgramIdForUser($userId);
+
+            dbg("e20rAssignmentModel::loadUserAssignment() - date for article # {$articleId} in program {$programId} for user {$userId}: {$delay}");
+
+            $sql = $wpdb->prepare(
+                "SELECT {$this->fields['id']},
                     {$this->fields['answer_date']},
                     {$this->fields['answer']},
                     {$this->fields['user_id']},
@@ -390,18 +395,19 @@ class e20rAssignmentModel extends e20rSettingsModel {
              WHERE ( ( a.{$this->fields['user_id']} = %d ) AND
               ( a.{$this->fields['question_id']} = %d ) AND
               ( a.{$this->fields['program_id']} = %d ) AND " .
-              ( ! is_null( $delay ) ? "( a.{$this->fields['delay']} = " . intval( $delay ) . " ) AND " : null ) .
-             "( a.{$this->fields['article_id']} = %d ) )
+                (!is_null($delay) ? "( a.{$this->fields['delay']} = " . intval($delay) . " ) AND " : null) .
+                "( a.{$this->fields['article_id']} = %d ) )
               ORDER BY a.{$this->fields['id']} ",
-            $userId,
-            $assignmentId,
-            $programId,
-            $articleId
-        );
+                $userId,
+                $assignmentId,
+                $programId,
+                $articleId
+            );
 
-        dbg("e20rAssignmentModel::loadUserAssignment() - SQL: {$sql}");
+            dbg("e20rAssignmentModel::loadUserAssignment() - SQL: {$sql}");
 
-        $result = $wpdb->get_results( $sql );
+            $result = $wpdb->get_results($sql);
+        }
 
         dbg("e20rAssignmentModel::loadUserAssignment() - Loaded " . count($result) . " check-in records");
 
@@ -440,7 +446,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
             }
         }
         else {
-	        dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned: {$wpdb->last_error}");
+	        // dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned. {$wpdb->last_error}");
+            dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned.");
 
 	        if (  CONST_DEFAULT_ASSIGNMENT != $assignmentId ) {
 
@@ -456,7 +463,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
         // Restore
         $post = $save_post;
 
-        dbg( $records );
         return $records;
     }
 
@@ -470,13 +476,16 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    return $currentAssignment;
 	    }
 
-	    if ( is_null( $id ) ) {
+	    if ( 0 == $id ) {
 
 		    $this->settings              = $this->defaultSettings( $id );
+            $this->settings->question    = "Lesson complete (default)";
 		    // $this->settings->id          = $id;
 	    } else {
 
 		    $savePost = $post;
+
+            dbg("e20rAssignmentModel::loadSettings() - Loading settings for {$id}");
 
 		    $this->settings = parent::loadSettings( $id );
 

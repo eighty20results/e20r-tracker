@@ -185,16 +185,10 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		global $currentArticle;
 
-        $articleComplete = false;
+        $articleComplete = $articleConfig->complete;
 		$html = null;
 
 		ob_start();
-
-        if ( !isset( $currentArticle->complete ) )  {
-
-            dbg("e20rAssignmentView::viewAssignment() - Forcing complete setting to false for currentArticle");
-            $currentArticle->complete = false;
-        }
 
 		?>
 		<div id="e20r-article-assignment">
@@ -217,7 +211,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 ( !is_null( $assignment->id ) && ( 0 != $assignment->id ) ) ) {
 
                 dbg("e20rAssignmentView::viewAssignment() - Forcing 'complete' to true since there's a non-zero/non-null assignment Id configured");
-                $currentArticle->complete = true;
+                $articleConfig->complete = true;
             }
 
 			switch ( $assignment->field_type ) {
@@ -241,21 +235,19 @@ class e20rAssignmentView extends e20rSettingsView {
 
                 default: // Button "Assignment read"
                     dbg("e20rAssignmentView::viewAssignment() - Default field_type value. Using showAssignmentButton()");
-                    echo $this->showAssignmentButton( $assignment, $articleComplete );
+                    echo $this->showAssignmentButton( $assignment, $articleConfig->complete );
 
             }
 		}
 
 		dbg("e20rAssignmentView::viewAssignment() - Assignments: " . count($assignmentData) . " and last field type: {$assignment->field_type}");
-		dbg("e20rAssignmentView::viewAssignment() - Is article assignment/check-in complete: {$articleComplete}");
-
-        $currentArticle->complete = $articleComplete;
+		dbg("e20rAssignmentView::viewAssignment() - Is article assignment/check-in complete: {$articleConfig->complete}");
 
 		if ( ( count($assignmentData) >= 1 )  && ($assignment->field_type != 0 ) ) {
 
             dbg("e20rAssignmentView::viewAssignment() -  Have assignment data to process.");
 
-			if ( $articleComplete != true ) { ?>
+			if ( true != $articleConfig->complete ) { ?>
 				<div id="e20r-assignment-save-btn"><?php
 			}
 			else { ?>
@@ -266,14 +258,14 @@ class e20rAssignmentView extends e20rSettingsView {
 		}
 
         dbg("e20rAssignmentView::viewAssignment() - Config for article: ");
-        dbg($currentArticle);
+        dbg($articleConfig);
 
-        if ( true == $articleComplete ) { ?>
+        if ( true == $articleConfig->complete ) { ?>
 
                 <div id="e20r-assignment-complete"><?php
         }
         else {
-            dbg("e20rAssignmentView::viewAssignment() -  Assignment isn't complete: " . ($articleComplete ? 'Yes' : 'No'));?>
+            dbg("e20rAssignmentView::viewAssignment() -  Assignment isn't complete: " . ($articleConfig->complete ? 'Yes' : 'No'));?>
 
                 <div id="e20r-assignment-complete" style="display: none;"><?php
         }

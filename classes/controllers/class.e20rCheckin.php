@@ -954,6 +954,7 @@ class e20rCheckin extends e20rSettings {
         $config->maxDelayFlag = null;
         $config->url = URL_TO_CHECKIN_FORM;
 
+        $config->complete = false;
         $config->userId = $current_user->ID;
 	    $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
         $config->startTS = $e20rProgram->startdate( $config->userId );

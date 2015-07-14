@@ -252,7 +252,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         global $e20rArticle;
         global $e20rTracker;
 
-	    dbg("e20rCheckinModel::loadUserCheckin() - Loading {$type} check-ins for user {$userId}");
+	    dbg("e20rCheckinModel::loadUserCheckin() - Loading type {$type} check-ins for user {$userId}");
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 

@@ -33,11 +33,13 @@ class e20rArticleModel extends e20rSettingsModel {
         $this->settings->photo_day = false;
         $this->settings->prefix = "Lesson";
 
-        dbg("e20rArticleModel::defaultSettings() - Defaults loaded");
+        // dbg("e20rArticleModel::defaultSettings() - Defaults loaded");
         return $this->settings;
     }
 
 	public function loadSettings( $id ) {
+
+        global $currentArticle;
 
 		$this->settings = parent::loadSettings($id);
 
@@ -56,6 +58,7 @@ class e20rArticleModel extends e20rSettingsModel {
 			$this->settings->assignments = array();
 		}
 		else {
+            dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
 			foreach( $this->settings->assignments as $k => $assignmentId ) {
 
 				if ( empty( $assignmentId ) ) {
@@ -89,7 +92,11 @@ class e20rArticleModel extends e20rSettingsModel {
 
 		}
 
-		return $this->settings;
+        if ( isset( $currentArticle->id ) && ( !is_null( $currentArticle->id )) ) {
+            $currentArticle = $this->settings;
+        }
+        dbg( $currentArticle );
+		return $currentArticle;
 	}
 
 	/*    public function getProgramID() {

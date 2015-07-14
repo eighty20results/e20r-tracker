@@ -282,23 +282,17 @@ class e20rArticle extends e20rSettings {
 		global $e20rAssignment;
 		global $currentArticle;
 
-		dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
-
-		if ( $currentArticle->id != $articleId ) {
-
-            dbg("e20rArticle::getAssignments() - Need to load settings for {$articleId}");
-            $this->init( $articleId );
-            $articleSettings = $this->model->loadSettings( $this->articleId );
-        }
-        else {
-            $articleSettings = $currentArticle;
-        }
+        dbg("e20rArticle::getAssignments() - Need to load settings for {$articleId}");
+        // $this->init( $articleId );
+        $articleSettings = $this->model->loadSettings( $articleId );
 
 		// $articleSettings = $this->model->loadSettings( $this->articleId );
 
 		// dbg($articleSettings);
 
 		$assignments = array();
+
+        dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
 
 		if ( ! empty( $articleSettings->assignments ) ) {
 
@@ -315,7 +309,7 @@ class e20rArticle extends e20rSettings {
 		}
 		else {
             dbg("e20rArticle::getAssignments() - No defined explicit assignments for this article.");
-			$assignments[0] = $e20rAssignment->loadAssignment( 0 );
+			$assignments[0] = $e20rAssignment->loadAssignment( );
 		}
 
 		dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
@@ -818,7 +812,7 @@ class e20rArticle extends e20rSettings {
     public function saveSettings( $articleId, $settings = null ) {
 
         global $e20rAssignment;
-
+        global $currentArticle;
         global $e20rTracker;
         global $post;
 
@@ -854,12 +848,14 @@ class e20rArticle extends e20rSettings {
 
         if ( empty( $settings ) ) {
 
-            dbg( "e20rArticle::saveSettings()  - Saving metadata from edit.php page, related to the e20rArticle post_type" );
+            dbg( "e20rArticle::saveSettings()  - Saving metadata from edit.php page, related to the {$this->type} post_type" );
 
-            $this->model->init( $articleId );
+            // $this->model->init( $articleId );
 
             $settings = $this->model->loadSettings( $articleId );
             $defaults = $this->model->defaultSettings();
+
+            dbg($settings);
 
             if ( ! $settings ) {
 
@@ -870,36 +866,52 @@ class e20rArticle extends e20rSettings {
 
                 $tmp = isset( $_POST["e20r-article-{$field}"] ) ? $e20rTracker->sanitize( $_POST["e20r-article-{$field}"] ) : null;
 
-                dbg( "e20rArticle::saveSettings() - Page data : ..{$field}.. -> " );
+                dbg( "e20rArticle::saveSettings() - Page data : {$field}->" );
                 dbg($tmp);
 
                 if ( 'assignments' == $field ) {
 
+                    $assignments = array();
+
                     dbg("e20rArticle::saveSettings() - Process the assignments array");
-                    dbg($settings->{$field});
 
-                    foreach( $tmp as $k => $assignmentId ) {
+                    if ( empty( $tmp[0] ) ) {
 
-                        dbg("e20rArticle::saveSettings() - Assignments Array: Setting key {$k} has value {$assignmentId}");
+                        dbg("e20rArticle::saveSettings() - Assignments Array: The assignments key contains no data");
+                        dbg("e20rArticle::saveSettings() - Create a new default assignment for the article ID: {$currentArticle->id}");
 
-                        if ( CONST_DEFAULT_ASSIGNMENT == $assignmentId ) {
+                        //Generate a default assignment for this article.
+                        $tmp[0] = $e20rAssignment->createDefaultAssignment( $currentArticle );
+                    }
+                    else {
 
-                            dbg("e20rArticle() - Create a new default assignment for this article ID: {$settings->id}");
+                        foreach ($tmp as $k => $assignmentId) {
 
-                            //Generate a default assignment for this article.
-                            $assignmentId = $e20rAssignment->createDefaultAssignment( $settings );
+                            if (is_null($assignmentId)) {
 
-                            dbg("e20rArticle::saveSettings() - Replacing empty assignment key #{$k} with value {$assignmentId}");
-                            $settings->{$field}[$k] = $assignmentId;
+                                dbg("e20rArticle::saveSettings() - Assignments Array: Setting key {$k} has no ID}");
+                                dbg("e20rArticle() - Create a new default assignment for this article ID: {$settings->id}");
+
+                                //Generate a default assignment for this article.
+                                $assignmentId = $e20rAssignment->createDefaultAssignment($settings);
+
+                                dbg("e20rArticle::saveSettings() - Replacing empty assignment key #{$k} with value {$assignmentId}");
+                            }
+
+                            $tmp[$k] = $assignmentId;
                         }
                     }
                 }
-            }
 
-            if ( empty( $tmp ) ) {
+                if ( empty( $tmp ) ) {
 
-                $tmp = $defaults->{$field};
-                $settings->{$field} = $tmp;
+                    $tmp = $defaults->{$field};
+                    $settings->{$field} = $tmp;
+                }
+                else {
+
+                    $settings->{$field} = $tmp;
+                }
             }
 
             // Add post ID (article ID)

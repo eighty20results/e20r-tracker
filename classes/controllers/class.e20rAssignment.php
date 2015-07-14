@@ -38,6 +38,11 @@ class e20rAssignment extends e20rSettings {
         return $assignmentId;
     }
 
+    public function getAssignmentsByArticleId( $articleId ) {
+
+        return $this->model->getArticleAssignments( $articleId );
+    }
+
 	public function getInputType( $id ) {
 
 		return $this->model->getInputType( $id );
@@ -48,11 +53,11 @@ class e20rAssignment extends e20rSettings {
 		return $this->model->getSetting( $assignmentId, 'delay' );
 	}
 
-	public function loadAssignment( $assignmentId ) {
+	public function loadAssignment( $assignmentId = null ) {
 
 	    global $currentAssignment;
 
-	    if ( is_null( $currentAssignment ) || ( $currentAssignment->id != $assignmentId ) ) {
+	    if ( !isset( $currentAssignment->id ) || ( $currentAssignment->id != $assignmentId ) ) {
 
 		    $currentAssignment = $this->model->loadSettings( $assignmentId );
 		    $currentAssignment->id = $assignmentId;
@@ -93,9 +98,13 @@ class e20rAssignment extends e20rSettings {
     public function configureArticleMetabox( $articleId, $ajax = false ) {
 
         dbg("e20rAssignment::configureArticleMetabox() - For article {$articleId}");
+        global $e20rArticle;
 
-        $assignments = $this->model->getArticleAssignments( $articleId );
+        $assignments = array();
+
+        $assignments = $e20rArticle->getAssignments( $articleId );
         $answerDefs = $this->model->getAnswerDescriptions();
+
 
         if ( count( $assignments ) < 1 ) {
 
@@ -294,7 +303,7 @@ class e20rAssignment extends e20rSettings {
 		    return false;
 	    }
 
-        if ( ( !isset($post->post_type) ) || ( $post->post_type !== 'e20r_assignments' ) ) {
+        if ( ( !isset($post->post_type) ) || ( $post->post_type !== 'e20r_assignment' ) ) {
 
             dbg( "e20rAssignment::saveSettings() - Not an assignment. " );
             return $assignmentId;
