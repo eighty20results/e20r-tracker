@@ -822,11 +822,11 @@ class e20rCheckin extends e20rSettings {
                 dbg("e20rCheckin::dailyProgress() - No check-in ids stored for this user/article Id...");
 
                 // Set default checkin data (to ensure rendering of form).
-                $this->checkin[ CHECKIN_ACTION ] = $this->model->loadUserCheckin( $config, $current_user->ID, CHECKIN_ACTION );
+                $this->checkin[ CHECKIN_ACTION ] = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_ACTION );
                 $this->checkin[ CHECKIN_ACTION ]->actionList = array();
                 $this->checkin[ CHECKIN_ACTION ]->actionList[] = $this->model->defaultAction();
 
-                $this->checkin[ CHECKIN_ACTIVITY ] = $this->model->loadUserCheckin( $config, $current_user->ID, CHECKIN_ACTIVITY );
+                $this->checkin[ CHECKIN_ACTIVITY ] = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_ACTIVITY );
 
                 $config->post_date = $e20rTracker->getDateForPost( $config->delay );
                 $checkinIds = $this->model->findActionByDate( $config->post_date , $config->programId );
@@ -841,9 +841,8 @@ class e20rCheckin extends e20rSettings {
 
             foreach ( $checkinIds as $id ) {
 
+                dbg("e20rCheckin::dailyProgress() - Processing checkin ID {$id}");
                 $settings = $this->model->loadSettings( $id );
-
-                dbg( $settings );
 
                 switch ( $settings->checkin_type ) {
 
@@ -862,9 +861,9 @@ class e20rCheckin extends e20rSettings {
 
                     case $this->types['action']:
 
-                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in" );
+                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in & action list" );
 
-                        $checkin            = $this->model->loadUserCheckin( $config, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        $checkin            = $this->model->loadUserCheckin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
                         $checkin->actionList = $this->model->getActions( $id, $settings->checkin_type, -3 );
 
                         break;
@@ -872,7 +871,7 @@ class e20rCheckin extends e20rSettings {
                     case $this->types['activity']:
 
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity check-in" );
-                        $checkin = $this->model->loadUserCheckin( $config, $current_user->ID, $settings->checkin_type, $settings->short_name );
+                        $checkin = $this->model->loadUserCheckin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
                         break;
 
                     case $this->types['note']:
@@ -886,18 +885,20 @@ class e20rCheckin extends e20rSettings {
                         dbg( "e20rCheckin::dailyProgress() - No default action to load!" );
                         $checkin = null;
                 }
+
+                if ( !empty( $checkin ) ) {
+
+                    // Reset the value to true Y-m-d format
+                    $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
+                    $this->checkin[ $settings->checkin_type ] = $checkin;
+                }
+
             } // End of foreach()
 
 
-            if ( !empty( $checkin ) ) {
 
-                // Reset the value to true Y-m-d format
-                $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
-                $this->checkin[ $settings->checkin_type ] = $checkin;
-            }
-
-            dbg( "e20rCheckin::dailyProgress() - Loading checkin for user and delay {$config->delay}.." );
-            // dbg( $this->checkin );
+            dbg( "e20rCheckin::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}.." );
+            dbg( $this->checkin );
 
             return $this->load_UserCheckin( $config, $this->checkin );
         }
