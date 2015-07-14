@@ -160,7 +160,7 @@ class e20rTracker {
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
 
-            add_action( 'save_post', array( &$this, 'shortcode_check' ), 10, 2 );
+            // add_action( 'save_post', array( &$this, 'shortcode_check' ), 10, 2 );
             add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
             add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
             add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
@@ -169,7 +169,7 @@ class e20rTracker {
             add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
             add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
-            add_action( 'post_updated', array( &$this, 'shortcode_check' ), 10, 2 );
+            // add_action( 'post_updated', array( &$this, 'shortcode_check' ), 10, 2 );
 	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
             add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
             add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
@@ -404,15 +404,15 @@ class e20rTracker {
             dbg("e20rTracker::shortcode_check() - Found the activity shortcode. Save the ID ({$post_id}) for it!");
             $ePostId = $this->loadOption('e20r_activity_post');
 
-            if ( ( $ePostId != $post_id ) || ( false == $ePostId ) ) {
+            // if ( ( $ePostId != $post_id ) || ( false == $ePostId ) ) {
 
                 $this->settings['e20r_activity_post'] = $post_id;
                 $this->updateSetting( 'e20r_activity_post', $post_id );
                 return $post_id;
-            }
+            // }
         }
 
-        return;
+        return $post_id;
     }
 
     private function inGroup( $id, $grpList ) {
