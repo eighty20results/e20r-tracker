@@ -171,7 +171,7 @@ class e20rProgramModel extends e20rSettingsModel {
 				$this->settings->id          = $id;
 			}
 
-            if ( !isset( $this->settings->users ) || is_null( $this->settings->users ) ) {
+            if ( !isset( $this->settings->users ) || empty( $this->settings->users ) ) {
 
                 $this->settings->users = array();
             }
