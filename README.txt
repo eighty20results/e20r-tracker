@@ -16,6 +16,16 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.5 =
+* Fix: Height of the date navigator in the daily_progress shortcode output
+* Fix: Layout of program definition settings in wp-admin
+* Fix: Set default $users setting for program on load.
+* Fix: Make definition of e20r_activity page more robust for a program
+* Fix: Didn't always load an appropriate length excerpt Fix: Didn't always select the url to the page containing the defined activity Fix: Didn't always add a "Click to read" link Fix: Didn't load check-ins from article definition in getCheckins()
+* Add debug for getActions()
+* Fix: Loading of check-ins, actions & activity display.
+* Add config setting for a program activity_page_id
+
 = 0.8.4 =
 * Fix: Didn't always add a new default assignment for the article.
 * Fix: Didn't always load the correct status for the assignment.
