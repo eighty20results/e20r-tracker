@@ -184,6 +184,7 @@ class e20rArticle extends e20rSettings {
 
         global $post;
         global $e20rTracker;
+        global $currentProgram;
 
 	    $postId = null;
 
@@ -216,7 +217,7 @@ class e20rArticle extends e20rSettings {
             'ignore_sticky_posts' => true,
         ) );
 
-        dbg( "e20rArticle::getExcerpt() - Number of posts for ID {$postId} in {$articleId} is {$articles->found_posts}" );
+        dbg( "e20rArticle::getExcerpt() - Number of posts for ID {$postId} in article {$articleId} is {$articles->found_posts}" );
 
         if ( $articles->found_posts > 0 ) {
 
@@ -225,26 +226,39 @@ class e20rArticle extends e20rSettings {
             while ( $articles->have_posts() ) : $articles->the_post();
 
                 $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID, 'pmpro_seq_recentpost_widget_size' ) : '<div class="noThumb"></div>' );
+
+
+                if ( !empty( $post->post_excerpt ) ) {
+
+                    $pExcerpt = $post->post_excerpt;
+                }
+                else {
+                    $pExcerpt = $post->post_content;
+                }
+
+                $pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
+                $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt );
+
                 ?>
                 <h4>
                     <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
                 </h4>
-                <p class="e20r-descr"><?php echo $post->post_excerpt; ?></p> <?php
+                <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
 
-                if ( $type == 'action' ) { ?>
+                if ( $type == 'action' ) {
 
-                <p class="e20r-descr"><a href="<?php echo get_permalink() ?>" title="<?php get_the_title(); ?>">
-                    <?php _e( 'Click to read', 'e20tracker' ); ?>
-                    </a>
-                </p> <?php
-
+                    $url = get_permalink();
                 }
                 else if ($type == 'activity' ) {
 
                     $url = null;
 
                     dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
-                    $urls = $e20rTracker->getURLToPageWithShortcode( "e20r_activity" );
+
+                    $url = get_permalink( $currentProgram->activity_page_id );
+                    dbg("e20rArticle::getExcerpt() - URL is: {$url}");
+
+/*                     $urls = $e20rTracker->getURLToPageWithShortcode( "e20r_activity" );
 
                     if (!empty($urls)) {
 
@@ -253,16 +267,19 @@ class e20rArticle extends e20rSettings {
                             dbg($urls);
                         }
 
-                        $url = array_pop($urls); ?>
-                        <p class="e20r-descr"><a href="<?php echo $url; ?>" title="<?php get_the_title(); ?>">
-                                <?php _e('Click to read', 'e20tracker'); ?>
-                            </a>
-                        </p> <?php
-                    } else {
+                        $url = array_pop($urls);
+
+                    }
+                    else {
                         dbg("e20rArticle::getExcerpt() - No page with 'e20r_activity' short code has been found! Returning nothing...");
                         ?><p class="e20r-descr"></p><?php
                     }
-                }
+                    */
+                }?>
+                <p class="e20r-descr"><a href="<?php echo $url; ?>" title="<?php get_the_title(); ?>">
+                        <?php _e('Click to read', 'e20tracker'); ?>
+                    </a>
+                </p><?php
             endwhile;
 
             wp_reset_postdata();
@@ -742,7 +759,7 @@ class e20rArticle extends e20rSettings {
             $checkin = array( $checkin );
         }
 
-        if ( empty( $setting ) /* && is_null( $activity ) */ ) {
+        if ( empty( $checkin ) /* && is_null( $activity ) */ ) {
             dbg("e20rArticle::getCheckins() - No check-in IDs found for this article ({$aConfig->articleId})");
             return false;
         }
