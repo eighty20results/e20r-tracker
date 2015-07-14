@@ -110,10 +110,12 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $currentProgram;
 
+        dbg("e20rCheckinModel::getActions() - id: {$id}, type: {$type}, records: {$numBack}");
+
         $start_date = $this->getSetting( $id, 'startdate' );
         $checkins = array();
 
-        dbg("e20rCheckinModel::getActions() - Loaded startdate: {$start_date}");
+        dbg("e20rCheckinModel::getActions() - Loaded startdate: {$start_date} for id {$id}");
 
         $args = array(
             'posts_per_page' => $numBack,
