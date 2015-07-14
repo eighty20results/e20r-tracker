@@ -99,7 +99,7 @@ class e20rAssignmentView extends e20rSettingsView {
             dbg("e20rAssignmentView::viewArticle_Assignments() - Processing previously defined assignment definitions.");
 
             foreach ( $assignments as $a ) {
-                dbg("e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->id}");
+                dbg("e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->question_id}");
                 dbg( $a );
                 ?>
 
@@ -120,12 +120,12 @@ class e20rAssignmentView extends e20rSettingsView {
                         <input type="hidden" class="e20r-assignment-type" name="e20r-assignment-field_type[]" value="<?php echo $a->field_type; ?>" />
                     </td>
                     <td class="e20r-assignment-buttons">
-                        <a class="e20r-assignment-edit" href="javascript:e20r_assignmentEdit(<?php echo $a->id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
+                        <a class="e20r-assignment-edit" href="javascript:e20r_assignmentEdit(<?php echo $a->question_id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e("Edit", "e20rtracker"); ?></a>
                     </td>
                     <td class="e20r-assignment-buttons">
-                        <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a->id; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
-                        <input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]" value="<?php echo $a->id ?>" />
-	                    <input type="hidden" class="e20r-article-assignments" name="e20r-article-assignments[]" value="<?php echo $a->id ?>" />
+                        <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a->question_id; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
+                        <input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]" value="<?php echo $a->question_id ?>" />
+	                    <input type="hidden" class="e20r-article-assignments" name="e20r-article-assignments[]" value="<?php echo $a->question_id ?>" />
                     </td>
                 </tr><?php
             } ?>
@@ -190,10 +190,11 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 
-        if ( isset( $currentArticle->complete ) && ( true == $currentArticle->complete ) )  {
-            $articleComplete = true;
-        }
+        if ( !isset( $currentArticle->complete ) )  {
 
+            dbg("e20rAssignmentView::viewAssignment() - Forcing complete setting to false for currentArticle");
+            $currentArticle->complete = false;
+        }
 
 		?>
 		<div id="e20r-article-assignment">
@@ -208,10 +209,15 @@ class e20rAssignmentView extends e20rSettingsView {
 		dbg("e20rAssignmentView::viewAssignment() - Processing for " . count($assignmentData) . " assignments");
 		foreach( $assignmentData as $orderId => $assignment ) { ?>
 
-                <input type="hidden" value="<?php echo ( isset( $assignment->id ) ? $assignment->id : null ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
+                <input type="hidden" value="<?php echo ( isset( $assignment->id ) && ( 0 != $assignment->id ) ? $assignment->id : null ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
 
-            if ( ( $assignment->field_type  == 0 ) && ( isset( $assignment->id ) || !is_null( $assignment->id ) ) ) {
-                $articleComplete = true;
+            dbg($assignment);
+
+            if ( ( $assignment->field_type  == 0 ) && ( isset( $assignment->id ) ) &&
+                ( !is_null( $assignment->id ) && ( 0 != $assignment->id ) ) ) {
+
+                dbg("e20rAssignmentView::viewAssignment() - Forcing 'complete' to true since there's a non-zero/non-null assignment Id configured");
+                $currentArticle->complete = true;
             }
 
 			switch ( $assignment->field_type ) {
