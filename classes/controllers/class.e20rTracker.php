@@ -1547,6 +1547,26 @@ class e20rTracker {
         return false;
     }
 
+    public function isActiveClient( $clientId ) {
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        $retVal = false;
+
+        dbg("e20rTracker::isActiveClient() - Run checks to see if the client is an active member of the site");
+
+        $programId = $e20rProgram->getProgramIdForUser( $clientId );
+
+        if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
+
+            dbg("e20rTracker::isActiveClient() - Check whether the user {$clientId} belongs to (one of) the program group(s)");
+            $retVal = ( pmpro_hasMembershipLevel( $currentProgram->group, $clientId ) || $retVal );
+        }
+
+        return $retVal;
+    }
+
 	public function has_exercise_shortcode() {
 
 		global $post;
