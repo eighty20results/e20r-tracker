@@ -16,6 +16,11 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.6 =
+* Fix: Didn't always load the user's previously saved data when loading workout definition.
+* Fix: Make sure user is logged in before accepting AJAX save of workout data.
+* Fix: Simplified userCanEdit()
+
 = 0.8.5 =
 * Fix: Height of the date navigator in the daily_progress shortcode output
 * Fix: Layout of program definition settings in wp-admin
