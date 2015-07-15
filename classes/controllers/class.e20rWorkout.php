@@ -575,7 +575,7 @@ class e20rWorkout extends e20rSettings {
 		$config->userId = $current_user->ID;
 		// $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
         $config->programId = $currentProgram->id;
-        $config->startTS = $currentProgram->startdate;
+        $config->startTS = strtotime( $currentProgram->startdate );
 		// $config->startTS = $e20rProgram->startdate( $config->userId );
 		$config->delay = $e20rTracker->getDelay( 'now' );
 		$config->date = $e20rTracker->getDateForPost( $config->delay );
