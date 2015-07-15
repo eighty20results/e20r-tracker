@@ -997,6 +997,7 @@ public function loadClient( $id = null ) {
     public function validateAccess( $clientId ) {
 
         global $current_user;
+		global $e20rTracker;
 
         dbg("e20rClient::validateAccess() - Client being validated: " . $clientId );
 
@@ -1005,7 +1006,7 @@ public function loadClient( $id = null ) {
             dbg("Real user Id provided ");
             $client = get_user_by("id", $clientId );
 
-            if ( ($current_user->ID != $clientId ) &&  ( $current_user->membership_level->id == 18 ) ) {
+            if ( ($current_user->ID != $clientId ) &&  ( $e20rTracker->isActiveClient( $clientId )  ) ) {
                 return true;
             }
             elseif ( $current_user->ID == $clientId ) {
