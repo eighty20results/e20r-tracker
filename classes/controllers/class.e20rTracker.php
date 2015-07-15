@@ -1941,8 +1941,9 @@ class e20rTracker {
                 $perm = false;
             }
 
-            $permitted = ( $permitted || $perm ) ? true : false;
+            $permitted = ( $permitted || $perm );
         }
+
 
         if ( $permitted ) {
             dbg( "e20rTracker::userCanEdit() - User id ({$user_id}) has permission" );
