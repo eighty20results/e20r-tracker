@@ -1,7 +1,10 @@
 
 == List of issues that need fixing ==
+
 07/16/2015:
 
-Enh: When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
-Fix: The Assignment list is does not display correctly on the post/page with the [daily_progress type="assignment"] when non-default assignments should be listed.
-Consider: Should we add a "program_list" for the assignment definition?
+Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
+Enh: (P2) Show progress for workouts
+
+Fix: (P1) The Assignment list is does not display correctly on the post/page with the [daily_progress type="assignment"] when non-default assignments should be listed.
+Fix: (P3) Add a "program_list" for the assignment definition (take under consideration).
