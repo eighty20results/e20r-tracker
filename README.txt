@@ -16,6 +16,9 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.7 =
+* Fix: Wouldn't save assignment settings
+
 = 0.8.6 =
 * Fix: Didn't always load the user's previously saved data when loading workout definition.
 * Fix: Make sure user is logged in before accepting AJAX save of workout data.
