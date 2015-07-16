@@ -359,6 +359,7 @@ class e20rAssignment extends e20rSettings {
 
             // Add post ID (checkin ID)
             $settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
+            $settings->question_id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
 
             dbg( "e20rAssignment::saveSettings() - Saving: " . print_r( $settings, true ) );
 
