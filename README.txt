@@ -18,6 +18,7 @@ During its development, we discovered a side-benefit which also allows us to man
 
 = 0.8.7 =
 * Fix: Wouldn't save assignment settings
+* Fix: Didn't always set the correct assignment ID
 
 = 0.8.6 =
 * Fix: Didn't always load the user's previously saved data when loading workout definition.
