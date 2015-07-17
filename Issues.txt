@@ -3,10 +3,20 @@
 
 07/16/2015:
 
-Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
-Enh: (P2) Show progress for workouts
-
-Fix: (P1) The Assignment list is does not display correctly on the post/page with the [daily_progress type="assignment"] when non-default assignments should be listed.
+Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
 Fix: (P3) Add a "program_list" for the assignment definition (take under consideration).
 
-07/17/2015
+
+07/17/2015:
+
+Enh: (P1) When user changes the release_day field, save the article as a draft & reload the page.
+
+Fix: (P1) Problems adding assignments to article (nonn-default ones).
+Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
+
+== Completed / Fixed ==
+
+Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
+
+Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
+Enh: Prevent the daily assignment short code from bleeding into the actual post/page.
