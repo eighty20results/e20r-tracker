@@ -73,6 +73,7 @@ class e20rAssignmentView extends e20rSettingsView {
     public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments, $answerDefs = null  ) {
 
         global $e20rAssignment;
+		global $currentArticle;
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -137,7 +138,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 <thead>
                 <tr>
                     <th id="new-assigment-header-order"><label for="e20r-add-assignment-order_num"><?php _e('Order', 'e20rtracker'); ?></label></th>
-                    <th id="new-assignment-header-id"><label for="e20r-add-assignment-id"><?php _e('Assignment', 'e20rtracker'); ?></label></th>
+                    <th id="new-assignment-header-id"><label for="e20r-add-assignment-id"><?php _e('Select assignment', 'e20rtracker'); ?></label></th>
                     <th></th>
                 </tr>
                 </thead>
@@ -148,7 +149,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     </td>
                     <td>
                         <select class="e20r-select2-container select2" id="e20r-add-assignment-id" name="e20r-assignment-id">
-	                        <option value="0"></option><?php
+							<option value="0">No defined Assignments</option><?php
                             dbg("e20rAssignmentView::viewArticle_Assignments() - Loading all possible assignments");
 
                             $all = $e20rAssignment->getAllAssignments();
@@ -157,12 +158,10 @@ class e20rAssignmentView extends e20rSettingsView {
 
                             foreach( $all as $id => $assignment ) {
 
-	                            if ( $id != 0 ) { ?>
+	                            if ( ( $id != 0 ) && ( $assignment->delay == $currentArticle->release_day ) ) { ?>
 		                            <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay})"; ?></option><?php
 	                            }
-	                            else { ?>
-		                            <option value="0">No defined Assignments</option><?php
-	                            }
+
                             } ?>
                         </select>
                     </td>
@@ -191,6 +190,8 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 
 		?>
+		<hr class="e20r-assignment-separator"/>
+		<h2 class="e20r-daily-assignment-headline"><?php _e("Your Daily Assignment", "e20rtracker"); ?></h2>
 		<div id="e20r-article-assignment">
 			<form id="e20r-assignment-answers">
 				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' ); ?>
@@ -273,6 +274,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 </div>
 			</form>
 		</div>
+		<hr class="e20r-assignment-separator"/>
 		<?php
 		$html .= ob_get_clean();
         dbg("e20rAssignmentView::viewAssignment() -  Returning HTML");
@@ -287,7 +289,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
 			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
-				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
+				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
 			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo trim(stripslashes($assignment->answer)); ?>" name="e20r-assignment-answer[]" />
 		</div>
@@ -305,7 +307,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
 			if ( ! empty( $assignment->descr ) ) { ?>
-				<p class="e20r-assignment-descr"><?php echo $assignment->descr; ?></p><?php
+				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
 			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="Type your response and click 'Complete', please..."><?php
 				if ( ! empty( $assignment->answer ) ) {
