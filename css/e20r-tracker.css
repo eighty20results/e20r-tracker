@@ -2329,13 +2329,15 @@ body.loading .modal {
     font-size: 130%;
     color: #004C00;
     font-weight: bold;
+    border-bottom: 1px solid #004c00;
 }
-p.e20r-assignment-descr {
+div.e20r-assignment-descr {
     padding-top: 10px;
     padding-bottom: 10px;
     padding-left: 12px;
+    color: rgba( 0, 0, 0, 0.65);
     font-size: 0.9rem !important;
-    font-style: italic;
+    font-style: normal;
 }
 #e20r-assignment-complete button {
     text-align: left;
@@ -2626,4 +2628,20 @@ blockquote:before {
     color:    #b5b5b5;
     opacity:  1;
 }
-
+div#e20r-article-assignment {
+    margin-left: 15px;
+}
+hr.e20r-assignment-separator {
+    width: 100%;
+    border: none;
+    margin-left: auto;
+    margin-right: auto;
+    height: 3px;
+    background-color: #5c5c5c;
+}
+h2.e20r-daily-assignment-headline {
+    font-size: 25px;
+    width: 300px;
+    border-bottom: 2px solid #c5c5c5;
+    margin-bottom: 30px;
+}
