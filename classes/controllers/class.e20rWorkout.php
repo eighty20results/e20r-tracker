@@ -159,6 +159,10 @@ class e20rWorkout extends e20rSettings {
         wp_send_json_success( array( 'id' => $id ) );
 	}
 
+    public function loadUserData( $userId, $start = 'start', $end = 'end', $programId = null, $fields = null ) {
+
+        return $this->model->load_userData( $userId, $start, $end, $programId, $fields );
+    }
 	/**
 	 * Save the Workout Settings to the metadata table.
 	 *
