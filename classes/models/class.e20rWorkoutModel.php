@@ -298,6 +298,168 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return false;
     }
 
+	public function load_userData( $userId, $start = 'start', $end = 'end', $programId = null, $fields = null ) {
+
+        global $wpdb;
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        $result = array();
+        $result['workout'] = array();
+
+        // Set/get the correct program ID (and configure the $currentProgram global).
+        if ( is_null( $programId ) ) {
+
+            $programId = $e20rProgram->getProgramIdForUser( $userId );
+        }
+        else {
+
+            if ( $programId != $currentProgram->id ) {
+                dbg("e20rWorkoutModel::load_userData() - Loading new program config for program with ID: {$programId}");
+                $e20rProgram->getProgram( $programId );
+            }
+        }
+
+        // Make sure the $from_when time is a valid time/date value
+        if ( !is_null( $start ) && ( false === ( $fromTS = strtotime( $start ) ) ) ) {
+
+            dbg("e20rWorkoutModel::load_userData() - Error: Invalid date/time in 'from' value" );
+            return false;
+        }
+
+        if ( !is_null( $end ) && ( false === ( $toTS = strtotime( $end ) ) ) ) {
+
+            dbg("e20rWorkoutModel::load_userData() - Error: Invalid date/time in 'to' value. Setting to default ('now')");
+            $toTS = strtotime( 'now' );
+        }
+
+        $period = null;
+
+        if ( 'start' == $start ) {
+
+            // We're starting from the beginning of the specified programId
+            $from = date( 'Y-m-d', strtotime( $currentProgram->startdate ) );
+        }
+        else {
+            $from = date( 'Y-m-d', $fromTS );
+        }
+
+        if ( 'end' == $end ) {
+            // We're starting from the beginning of the specified programId
+            $to = date( 'Y-m-d', strtotime( $currentProgram->enddate ) );
+        }
+        else {
+            $to = date( 'Y-m-d', strtotime( $toTS ) );
+        }
+
+        if ( !( ( 'all' == $start ) && ( 'all' == $end ) ) ) {
+            // We're not being asked to return all records.
+            $period = "( ( {$this->fields['for_date']} >= '{$from} 00:00:00' ) AND ( {$this->fields['for_date']} <= '{$to} 23:59:59' ) )";
+        }
+        else {
+            $period = null;
+        }
+
+
+        if (is_array( $fields ) ) {
+            $selected = join( ',', $fields );
+        }
+        elseif ( is_string( $fields ) ) {
+            $selected = $fields;
+        }
+        else {
+            $selected = "*";
+        }
+
+        $sql = $wpdb->prepare( "SELECT {$selected}
+                FROM {$this->table}
+                WHERE {$this->fields['user_id']} = %d AND
+                ( {$this->fields['program_id']} = %d )" .
+            ( is_null( $period ) ? null : " AND {$period}" ) .
+            " ORDER BY {$this->fields['for_date']} DESC",
+            $userId,
+            $currentProgram->id
+        );
+
+        dbg("e20rWorkoutModel::load_userData() - SQL: {$sql}");
+
+        $records = $wpdb->get_results( $sql );
+
+        if ( !empty( $records ) ) {
+
+            dbg("e20rWorkoutModel::load_userData() - Located " . count( $records ) . " records in DB for user {$userId} related to program {$currentProgram->id}");
+
+            /**
+             * Array to construct for the workout records for a user:
+             *
+             * $programId = array(
+             *      'workout' => array(
+             *          'date' => array(
+             *              $activity_id => array(
+             *                  $exercise_id' => array (
+             *                      $exercise_key => array(
+             *                          $group_no => array(
+             *                              $set_no => stdClass(
+             *                                  'reps' = $r['reps'],
+             *                                  'weight' = $r['weight'],
+             *                              ),
+             *                         ),
+             *                      ),
+             *                  ),
+             *              ),
+             *          ),
+             *      ),
+             */
+            foreach( $records as $r ) {
+
+                if ( !isset( $result['workout'][$r['{$this->fields["for_date"]}'] ] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"]] = array();
+                }
+
+                if ( !isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] = array();
+                }
+
+                if ( !isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] = array();
+                }
+
+                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] = array();
+                }
+
+                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] = array();
+                }
+
+                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] ) ) {
+
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] = new stdClass();
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps;
+                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight;
+                }
+
+                $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps = $r["{$this->fields['reps']}"];
+                $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight = $r["{$this->fields['weight']}"];
+
+            }
+
+            dbg("e20rWorkoutModel::load_userData() - Loaded and formatted " . count( $result ) . " records for user {$userId} in program {$currentProgram->id} between {$start} and {$end}");
+        }
+        else {
+            dbg("e20rWorkoutModel::load_userData() - No records found when specifying user: {$userId}, start: {$start}, end: {$end}, program: {$currentProgram->id}, SELECT {$selected}");
+            dbg("e20rWorkoutModel::load_userData() - Error? {$wpdb->last_error}");
+        }
+
+        return $result;
+	}
+
 	/**
      * Returns an array of all workouts merged with their associated settings.
      *
