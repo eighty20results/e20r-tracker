@@ -16,6 +16,10 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.8 =
+* Fix: Prevent the daily assignment short code from bleeding into the actual post/page.
+* Fix: Only list assignments with a delay value == release_day for the article.
+
 = 0.8.7 =
 * Fix: Wouldn't save assignment settings
 * Fix: Didn't always set the correct assignment ID
