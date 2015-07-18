@@ -325,6 +325,8 @@ class e20rAssignmentView extends e20rSettingsView {
     }
 
     private function showYesNoQuestion( $assignment ) {
+
+        ob_start();
         ?>
         <div class="e20r-assignment-survey">
             <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
