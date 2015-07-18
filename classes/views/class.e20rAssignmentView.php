@@ -234,6 +234,11 @@ class e20rAssignmentView extends e20rSettingsView {
 
 					break;
 
+                case 5: // Likert/Survey (1 - 10)
+
+                    echo $this->showAssignmentSurvey( $assignment );
+                    break;
+
                 default: // Button "Assignment read"
                     dbg("e20rAssignmentView::viewAssignment() - Default field_type value. Using showAssignmentButton()");
                     echo $this->showAssignmentButton( $assignment, $articleConfig->complete );
@@ -281,7 +286,41 @@ class e20rAssignmentView extends e20rSettingsView {
 		return $html;
 	}
 
-	private function showAssignmentInput( $assignment ) {
+    private function showAssignmentSurvey( $assignment ) {
+
+        ob_start();
+        ?>
+        <div class="e20r-assignment-survey">
+            <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+            <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+            <h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+
+            if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
+                <div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
+            }?>
+            <table class="e20r-assignment-survey-question">
+                <tbody>
+                <tr><?php
+                    foreach( range(1, 10) as $cnt ) { ?>
+                        <td class="e20r-assignment-survey-question-choice-label"><?php echo $cnt; ?></td><?php
+                    }?>
+                </tr>
+                <tr><?php
+                    foreach( range(1, 10) as $cnt ) {?>
+                        <td class="e20r-assignment-survey-question-choice">
+                        <input name="e20r-assignment-answer[]" type="radio" value="<?php echo $cnt; ?>" id="e20r-assignment-survey-choice_<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>">
+                        </td><?php
+                    }?>
+                </tr>
+                </tbody>
+            </table>
+        </div><?php
+
+        return ob_get_clean();
+    }
+
+
+    private function showAssignmentInput( $assignment ) {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
@@ -291,7 +330,6 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
-			<input type="text" placeholder="Your response, please..." id="<?php echo $assignment->question_id; ?>" class="e20r-assignment-response e20r-input" value="<?php echo trim(stripslashes($assignment->answer)); ?>" name="e20r-assignment-answer[]" />
 		</div>
 		<?php
 		return ob_get_clean();

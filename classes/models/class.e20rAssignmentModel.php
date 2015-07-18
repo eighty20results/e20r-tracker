@@ -24,7 +24,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    1 => 'input',
 		    2 => 'textbox',
 		    3 => 'radio',
-		    4 => 'checkbox'
+		    4 => 'checkbox',
+            5 => 'survey',
 	    );
 
 	    $this->answerTypes = array(
@@ -32,7 +33,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    1 => __("Line of text (input)", "e20rtracker"),
 		    2 => __("Paragraph of text (textbox)", "e20rtracker"),
 		    3 => __("Checkbox", "e20rtracker"),
-		    4 => __("Multiple Choice", "e20rtracker"),
+		    4 => __("Multiple choice", "e20rtracker"),
+            5 => __("Survey rating", "e20rtracker"),
 	    );
 
         $this->table = $e20rTables->getTable('assignments');
