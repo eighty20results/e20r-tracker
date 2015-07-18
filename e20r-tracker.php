@@ -4,12 +4,13 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 0.8.8
+Version: 0.8.9
 Author: Thomas Sjolshagen <thomas@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 License: GPL2
 */
 
+define( 'E20R_VERSION', '0.8.9' );
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
 define( 'E20R_PLUGIN_NAME', plugin_basename( __FILE__ ) );
@@ -25,7 +26,7 @@ define( 'CONST_MONDAY', 1 );
 define( 'GF_PHOTOFORM_ID', 45 );
 
 // define( 'URL_TO_PROGRESS_FORM', site_url('/coaching/progress-update/'));
-define( 'E20R_COACHING_URL' , site_url( '/nutrition-coaching/' ) );
+define( 'E20R_COACHING_URL' , site_url( '/coaching/' ) );
 define( 'URL_TO_PROGRESS_FORM', E20R_COACHING_URL. 'weekly-progress/');
 define( 'URL_TO_CHECKIN_FORM', site_url('/coaching/home') );
 
