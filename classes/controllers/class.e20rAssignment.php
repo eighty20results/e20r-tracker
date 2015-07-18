@@ -303,7 +303,7 @@ class e20rAssignment extends e20rSettings {
 		    return false;
 	    }
 
-        if ( ( !isset($post->post_type) ) || ( $post->post_type !== 'e20r_assignments' ) ) {
+        if ( is_null($settings) && ( ( !isset($post->post_type) ) || ( $post->post_type !== 'e20r_assignments' ) ) ) {
 
             dbg( "e20rAssignment::saveSettings() - Not an assignment. " );
             return $assignmentId;
