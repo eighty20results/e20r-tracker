@@ -16,6 +16,9 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.12 =
+* Buffer output in showYesNoQuestion()
+
 = 0.8.11 =
 * Clean up CSS for lesson button
 
