@@ -145,16 +145,22 @@ function e20r_assignmentSave() {
         success: function( resp ){
             console.log("success() - Returned data: ", resp );
 
-            if (resp != '') {
-                // console.log('Entry added to sequence & refreshing metabox content');
+            if ( resp.reload == true ) {
 
-                var mBox = jQuery('#e20r-assignment-settings');
-                // console.log(mBox);
-                mBox.empty().append(resp);
-            } else {
-                console.log('No HTML returned???');
+                location.reload();
             }
+            else {
 
+                if (resp.html != '') {
+                    // console.log('Entry added to sequence & refreshing metabox content');
+
+                    var mBox = jQuery('#e20r-assignment-settings');
+                    // console.log(mBox);
+                    mBox.empty().append(resp.html);
+                } else {
+                    console.log('No HTML returned???');
+                }
+            }
         },
         error: function(jqxhr, $errString, $errType){
             console.log("error() - Returned data: ", jqxhr );

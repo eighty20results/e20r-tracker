@@ -995,7 +995,7 @@ class e20rTracker {
             self::enqueue_plotSW( $hook );
             $e20r_plot_jscript = false;
 
-            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
+            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
             wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
@@ -1043,7 +1043,7 @@ class e20rTracker {
 
 	        if ( $type !== null ) {
 
-		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, '1.0', true );
+		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, E20R_VERSION, true );
 
 		        /* Localize ajax script */
 		        wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
@@ -1416,8 +1416,8 @@ class e20rTracker {
 		wp_deregister_style("e20r-tracker");
 		wp_deregister_style("e20r-activity");
 
-		wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
-		wp_enqueue_style( "e20r-tracker-activity", E20R_PLUGINS_URL . '/css/e20r-activity.css', false, '0.1' );
+		wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
+		wp_enqueue_style( "e20r-tracker-activity", E20R_PLUGINS_URL . '/css/e20r-activity.css', false, E20R_VERSION );
 
 	}
     /**
@@ -1437,9 +1437,9 @@ class e20rTracker {
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
-            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), '0.1', false); // true == in footer of body.
-            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), '0.1', false); // true == in footer of body.
-            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
+            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), E20R_VERSION, true);
 
             $e20r_plot_jscript = true;
 	        self::register_plotSW();
@@ -1494,8 +1494,8 @@ class e20rTracker {
 	    wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
         wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
 	    wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery', 'jquery.touchpunch'), '1.11.2', true);
-        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery.touchpuch' ), '0.1', true );
-        wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), '0.1', true );
+        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery.touchpuch' ), E20R_VERSION, true );
+        wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), E20R_VERSION, true );
 
         wp_localize_script( 'e20r-progress-measurements', 'e20r_progress',
             array(
@@ -1518,7 +1518,7 @@ class e20rTracker {
 
             dbg("e20rTracker::loadUserScripts() - Need to load CSS for e20rTracker.");
             wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
         }
 
     }
@@ -1579,10 +1579,10 @@ class e20rTracker {
 
 			dbg("e20rTracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
 
-			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), '0.1', false );
-			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), '0.1', false );
-		// wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), '0.1', false );
+			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), E20R_VERSION, false );
+			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), E20R_VERSION, false );
+			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), E20R_VERSION, false );
+		// wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), E20R_VERSION, false );
 
 /*			wp_localize_script( 'e20r-exercise-js', 'e20r_workout',
 				array(
@@ -1609,10 +1609,10 @@ class e20rTracker {
 
 			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
-			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), '0.1', false );
-			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), '0.1', false );
+			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), E20R_VERSION, false );
+			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), E20R_VERSION, false );
+			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), E20R_VERSION, false );
+			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), E20R_VERSION, false );
 
 			wp_localize_script( 'e20r-workout-js', 'e20r_workout',
 				array(
@@ -1636,12 +1636,14 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
-            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting user javascripts. ");
+            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+            wp_register_style( 'e20r-assignments', E20R_PLUGINS_URL . '/css/e20r-assignments.css', false, E20R_VERSION );
 
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), '0.1', false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.5.1', false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-assignments-js', E20R_PLUGINS_URL . '/js/e20r-assignments.js', array( 'jquery', 'e20r-checkin-js'), E20R_VERSION, false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
@@ -1649,7 +1651,11 @@ class e20rTracker {
                 )
             );
 
-            wp_print_scripts( array( 'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js' ) );
+            wp_enqueue_style( 'e20r-assignments');
+            wp_print_scripts( array(
+                'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
+                ) );
+
         }
     }
 
@@ -1712,9 +1718,9 @@ class e20rTracker {
             $this->enqueue_plotSW();
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
             wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', false );
-            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', false );
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
@@ -1832,7 +1838,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
             wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
+            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
         }
 
     }
@@ -1882,34 +1888,34 @@ class e20rTracker {
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
             wp_deregister_script( 'jqplot' );
-            wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), '0.1' );
+            wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_export' );
-            wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_pie' );
-            wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_text' );
-            wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_mobile' );
-            wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_date' );
-            wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_label' );
-            wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_pntlabel' );
-            wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_script( 'jqplot_ticks' );
-            wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), '0.1' );
+            wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
 
             wp_deregister_style( 'jqplot' );
-            wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
+            wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, E20R_VERSION );
         }
     }
 

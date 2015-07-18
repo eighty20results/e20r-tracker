@@ -1,0 +1,149 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * License Information:
+ *  the GPL v2 license(?)
+ *
+ * Purpose: CSS to display e20r-assignments CPTs in the [daily_progress] short code
+ * @since: 0.8.9
+ */
+.e20r-assignment-paragraph {
+    width: 80%;
+    padding-bottom: 20px;
+}
+.e20r-assignment-paragraph textarea {
+    max-width: 600px;
+    width: 100%;
+    height: 120px;
+    border: 3px solid #cccccc;
+    padding: 5px;
+    font-family: Tahoma, sans-serif;
+}
+.e20r-assignment-paragraph input {
+    max-width: 600px;
+    width: 100%;
+    height: 30px;
+    border: 3px solid #cccccc;
+    padding: 5px;
+    font-family: Tahoma, sans-serif;
+}
+.e20r-assignment-question {
+    font-size: 130%;
+    color: #004C00;
+    font-weight: bold;
+    border-bottom: 1px solid #004c00;
+}
+div.e20r-assignment-descr {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 12px;
+    color: rgba( 0, 0, 0, 0.65);
+    font-size: 0.9rem !important;
+    font-style: normal;
+}
+#e20r-assignment-complete button {
+    text-align: left;
+    margin-left: 30px;
+}
+.assignment-btn {
+    right: 0px;
+    width: 50%;
+}
+.e20r-assignments-question {
+    font-size: 1.05em;
+    font-weight: bold;
+    border-bottom: 1px solid white;
+}
+.e20r-assignments-answer {
+    font-size: 0.95em;
+    font-style: italic;
+}
+.button-container .e20r-assignment-complete-text {
+    display: none;
+    text-align: center;
+    font-color: #000;
+    font-weight: bold;
+    vertical-align: middle;
+}
+div#e20r-article-assignment {
+    margin-left: 15px;
+}
+hr.e20r-assignment-separator {
+    width: 100%;
+    border: none;
+    margin-left: auto;
+    margin-right: auto;
+    height: 3px;
+    background-color: #5c5c5c;
+}
+h2.e20r-daily-assignment-headline{
+    font-size: 25px;
+    width: 300px;
+    border-bottom: 2px solid #c5c5c5;
+    margin-bottom: 30px;
+}
+/** Survey questions (likert style) **/
+table.e20r-assignment-survey-question{
+    width:100%;
+    table-layout: fixed;
+    border-spacing: 0;
+    border-bottom:1px solid silver;
+}
+table.e20r-assignment-survey-question td{
+    text-align:center;
+    vertical-align:middle;
+    border:1px solid silver;
+    overflow:hidden;
+    padding:3px;
+    border:0;
+    position: relative;
+}
+table.e20r-assignment-survey-question tr td:first-child{
+    border-left:1px solid silver
+}
+table.e20r-assignment-survey-question tr td{
+    border-right:1px solid silver;
+    border-top:1px solid silver
+}
+
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice-label{
+    background-color:#eee;
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice:hover {
+    background-color:#DFEFFF;
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice:focus {
+    background-color: #d2e8fc !important;
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-hover {
+    background-color:#DFEFFF;
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-focus {
+    background-color: #d2e8fc !important;
+}
+table.e20r-assignment-survey-question td input{
+    /*visibility:hidden;*/
+    position: absolute;
+    top: 0;
+    left: -999em;
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice{
+    background-image:url(../images/inactive.png);
+    background-repeat:no-repeat;
+    background-position:center center;
+    height:26px
+}
+table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-selected{
+    background-image:url(../images/active.png);
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-color:#DFEFFF;
+}
+.e20r-lesson-highlight {
+    padding: 10px;
+    text-align: center;
+}
+.e20r-lesson-highlight.lesson-completed {
+    background-color: rgba(0, 255, 0, 0.5);
+}

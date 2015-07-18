@@ -583,74 +583,172 @@ class e20rArticle extends e20rSettings {
         global $e20rAssignment;
 	    global $e20rTracker;
 
+        global $currentArticle;
+
+        $reloadPage = false;
+
         dbg("e20rArticle::add_assignment_callback().");
         check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
 
         dbg("e20rArticle::add_assignment_callback() - Saving new assignment for article.");
-	    // dbg($_POST);
+	    dbg($_POST);
 
         $articleId = isset($_POST['e20r-article-id']) ? $e20rTracker->sanitize( $_POST['e20r-article-id']) : null;
 	    $postId = isset($_POST['e20r-assignment-post_id']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-post_id']) : null;
         $assignmentId = isset($_POST['e20r-assignment-id']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id']) : null;
-        $assignment_orderNum = isset($_POST['e20r-assignment-order_num']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-order_num'] ) : null;
+        $new_order_num = isset($_POST['e20r-assignment-order_num']) ? $e20rTracker->sanitize( $_POST['e20r-assignment-order_num'] ) : null;
 
-        dbg("e20rArticle::add_assignment_callback() - Article: {$articleId}, Assignment: {$assignmentId}, Assignment Order#: {$assignment_orderNum}");
+        if ( $new_order_num <= 0 ) {
+
+            dbg("e20rArticle::add_assignment_callback() - Resetting the requested order number to a valid value ( >0 ).");
+            $new_order_num = 1;
+        }
+
+        dbg("e20rArticle::add_assignment_callback() - Article: {$articleId}, Assignment: {$assignmentId}, Assignment Order#: {$new_order_num}");
 
         $this->articleId = $articleId;
-        $this->init( $postId );
 
-        $artSettings = $this->model->getSettings();
+        $post = get_post( $articleId );
+        setup_postdata( $post );
+
+
+        // Just in case we're working on a brand new article
+        if ( 'auto-draft' == $post->post_status ) {
+
+            if ( empty( $post->post_title ) ) {
+
+                $post->post_title = "Please update this title before updating";
+            }
+
+            $articleId = wp_insert_post( $post );
+            $reloadPage = true;
+        }
+
+        wp_reset_postdata();
+
+        $this->model->loadSettings( $articleId );
+
+        // $artSettings = $this->model->getSettings();
 	    dbg("e20rArticle::add_assignment_callback() - Article settings for ({$articleId}): ");
-	    dbg($artSettings);
+	    dbg($currentArticle);
 
         $assignment = $e20rAssignment->loadAssignment( $assignmentId );
+        $assignment->order_num = $new_order_num;
+        $assignment->article_id = null;
 
-	    dbg("e20rArticle::add_assignment_callback() - Updating Assignment ({$assignmentId}) settings & saving.");
-        $assignment->order_num = $assignment_orderNum;
-        $assignment->article_id = $articleId;
+        dbg("e20rArticle::add_assignment_callback() - Updating assignment settings for ({$assignmentId}), with new order {$new_order_num}");
+        $e20rAssignment->saveSettings( $assignmentId, $assignment );
 
-	    dbg("e20rArticle::add_assignment_callback() - Assignment settings for ({$assignmentId}): ");
-	    dbg($assignment);
+        $ordered = array();
+        $orig = $currentArticle->assignments;
+        $new = array();
 
-	    dbg("e20rArticle::add_assignment_callback() - Saving Assignment settings for ({$assignmentId}): ");
-	    $e20rAssignment->saveSettings( $assignmentId, $assignment );
+        // Load assignments so we can sort (if needed)
+        foreach( $currentArticle->assignments as $aId ) {
+
+            $a = $e20rAssignment->loadAssignment( $aId );
+
+            $ordered[ ($a->order_num - 1 )] = $a;
+        }
+
+        // Sort by order number.
+        ksort( $ordered );
+        $orig = $ordered;
+
+        dbg("e20rArticle::add_assignment_callback() - Sorted previously saved assignments:");
+        dbg($ordered);
+
+        // Are we asking to reorder the assignment?
+        if ( ( isset($ordered[$new_order_num]) ) && ( $assignmentId != $ordered[$new_order_num]->id ) ) {
+
+            dbg("e20rArticle::add_assignment_callback() - Re-sorting list of assignments:");
+            reset( $ordered );
+            $first = key($ordered);
+
+            for( $i = $first; $i < $new_order_num ; $i++ ) {
+
+                if ( isset( $ordered[$i]) ) {
+                    dbg("e20rArticle::add_assignment_callback() - Sorting assignment {$ordered[$i]->id} to position {$ordered[$i]->order_num}");
+                    $ordered[$i]->order_num ==  $new_order_num;
+                    $new[$i] = $ordered[$i];
+                }
+            }
+
+            $new[$new_order_num] = $assignment;
+
+            end($orig);
+            $last = key($orig);
+
+            for( $i = $new_order_num ; $i <= $last ; $i++ ) {
+
+                if ( isset( $orig[$i]) ) {
+
+                    dbg("e20rArticle::add_assignment_callback() - Sorting assignment {$orig[($i)]->id} to position " . ($orig[$i]->order_num + 1) );
+                    $orig[$i]->order_num = $orig[$i]->order_num + 1;
+                    $new[($i+1)] = $orig[$i];
+                    $e20rAssignment->saveSettings( $new[($i+1)]->id, $new[($i+1)] );
+                }
+            }
+
+            $ordered = $new;
+        }
+        else {
+
+
+            dbg("e20rArticle::add_assignment_callback() - Adding {$assignment->id} to the list of assignments");
+            if (! isset( $ordered[$assignment->order_num] ) ) {
+                dbg("e20rArticle::add_assignment_callback() - Using position {$assignment->order_num}");
+                $ordered[$assignment->order_num] = $assignment;
+            }
+            else {
+
+                $ordered[] = $assignment;
+                end($ordered);
+                $new_order = key($ordered);
+                $ordered[$new_order]->order_num = ($new_order + 1);
+
+                dbg("e20rArticle::add_assignment_callback() - Using position {$ordered[$new_order]->order_num }");
+                $e20rAssignment->saveSettings( $ordered[$new_order]->id, $ordered[$new_order]);
+            }
+
+        }
+
+        dbg("e20rArticle::add_assignment_callback() - Sorted all of the assignments:");
+        dbg($ordered);
+
+        $new = array();
+
+        foreach( $ordered as $a ) {
+
+            $new[] = $a->id;
+        }
+
+        if ( empty( $new ) && ( !is_null( $assignmentId ) ) ) {
+
+            dbg("e20rArticle::add_assignment_callback() - No previously defined assignments. Adding the new one");
+            $new = array( $assignmentId );
+        }
+
+        dbg("e20rArticle::add_assignment_callback() - Assignment list to be used by {$articleId}:");
+        dbg($new);
 
 	    dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
-        if ( empty( $artSettings->assignments) ) {
-
-            $artSettings->assignments = ( $assignmentId !== null || $assignmentId !== -1 )? array( $assignmentId ) : array() ;
-        }
-        elseif ( ( ( -1 != $assignmentId ) || !empty($assignmentId ) ) && ( ! in_array( $assignmentId, $artSettings->assignments ) ) ) {
-
-		        $artSettings->assignments[] = $assignmentId;
-        }
+        $currentArticle->assignments = $new;
 
 	    dbg("e20rArticle::add_assignment_callback() - Saving Article settings for ({$articleId}): ");
-	    dbg($artSettings);
+	    dbg($currentArticle);
 
-        $this->saveSettings( $articleId, $artSettings );
+        $this->saveSettings( $articleId, $currentArticle );
 
         dbg("e20rArticle::add_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
 
 	    $html = $e20rAssignment->configureArticleMetabox( $articleId, true );
 
-/*	    $toBrowser = array(
-	        'success' => true,
-	        'data' => array( 'data' => $html ),
-        );
-*/
-/*         if ( ! empty( $toBrowser['data'] ) ) { */
+        dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
+        wp_send_json_success( array( 'html' => $html, 'reload' => $reloadPage ) );
 
-            dbg("e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox");
-            wp_send_json_success( $html );
-
-            // dbg($html);
-/*            echo json_encode( $toBrowser );
-            wp_die();
-        }*/
-
-        dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
-        wp_send_json_error( "No assignments found for this article!" );
+        // dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
+        // wp_send_json_error( "No assignments found for this article!" );
     }
 
     public function getDelayValue_callback() {
@@ -839,7 +937,7 @@ class e20rArticle extends e20rSettings {
             return false;
         }
 
-        if ( ( !isset($post->post_type) ) || ( $post->post_type !== $this->cpt_slug ) ) {
+        if ( is_null($settings) && ( ( !isset($post->post_type) ) || ( $post->post_type !== $this->cpt_slug ) ) ) {
 
             dbg( "e20rArticle::saveSettings() - Not an article. " );
             return $articleId;
