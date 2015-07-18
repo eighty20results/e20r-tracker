@@ -16,6 +16,9 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.11 =
+* Clean up CSS for lesson button
+
 = 0.8.10 =
 * Add support for survey ranking field responses to assignments
 * Add support for Yes/No check box responses to assignments
