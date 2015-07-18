@@ -16,6 +16,10 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.9 =
+* Add survey rank fields to assignments
+* Use E20R_VERSION constant to version JavaScript and CSS files
+
 = 0.8.8 =
 * Fix: Prevent the daily assignment short code from bleeding into the actual post/page.
 * Fix: Only list assignments with a delay value == release_day for the article.
