@@ -690,6 +690,8 @@ class e20rCheckin extends e20rSettings {
         global $e20rProgram;
         global $e20rTracker;
 
+        global $currentProgram;
+
         global $current_user;
         global $post;
 
@@ -702,14 +704,12 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        $config->startTS = $e20rProgram->startdate( $config->userId );
-        $config->url = URL_TO_CHECKIN_FORM;
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        $config->startTS = strtotime( $currentProgram->startdate );
 
         $config->articleId = ( ! isset( $_POST['article-id'] ) ? null : intval($_POST['article-id']) );
 
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
-
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
 
         $pdate = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
 
@@ -722,11 +722,17 @@ class e20rCheckin extends e20rSettings {
         // $config->delay_byDate = $e20rTracker->daysBetween( $config->startTS, ( $config->startTS + ( $config->delay * ( 3600*24 ) ) ) );
 	    $config->delay_byDate = $e20rTracker->getDelay( 'now' );
 
+        $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
+        $config->url =  $dashboard;
+
+
+        // $config->url = URL_TO_CHECKIN_FORM;
+        dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
         dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
 
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
-            dbg("e20rCheckin::nextCheckin() - Sending new dailyProgress data (html)");
+            dbg("e20rCheckin::nextCheckin_callback() - Sending new dailyProgress data (html)");
 	        dbg($html);
             wp_send_json_success( $html );
         }
@@ -938,6 +944,7 @@ class e20rCheckin extends e20rSettings {
 
         global $current_user;
 	    global $currentArticle;
+        global $currentProgram;
         global $post;
 
         dbg("e20rCheckin::shortcode_dailyProgress() - Processing the daily_process short code");
@@ -953,12 +960,15 @@ class e20rCheckin extends e20rSettings {
         $config->survey_id = null;
         $config->post_date = null;
         $config->maxDelayFlag = null;
-        $config->url = URL_TO_CHECKIN_FORM;
 
         $config->complete = false;
         $config->userId = $current_user->ID;
 	    $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
-        $config->startTS = $e20rProgram->startdate( $config->userId );
+
+        $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
+        $config->url =  $dashboard;
+
+        $config->startTS = strtotime( $currentProgram->startdate );
         $config->delay = $e20rTracker->getDelay( 'now', $config->userId );
         $config->delay_byDate = $config->delay;
 
