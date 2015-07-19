@@ -190,12 +190,12 @@ class e20rProgramView {
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->id : 0 ); ?>">
-                <table id="e20r-program-settings wp-list-table widefat fixed">
+                <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-startdate"><?php _e("Starts on", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-program-enddate"><?php _e("Ends on", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-program-group"><?php _e("Membership Level", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-startdate"><strong><?php _e("Starts on", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate"><strong><?php _e("Ends on", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership Level", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="3"><hr width="100%"/></td>
@@ -242,19 +242,18 @@ class e20rProgramView {
                         </tr>
                     </tbody>
                 </table>
-                <table id="e20r-program-settings wp-list-table widefat fixed">
+                <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><?php _e("Lesson feed", "e20rtracker"); ?></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><?php _e("Intake form", "e20rtracker"); ?></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-activity_page_id"><?php _e("Activity Page", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson feed", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="3"><hr width="100%"/></td>
+                        <td colspan="2"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
-                        <tr id="<?php echo $programData->id; ?>" class="program-inputs">
+                        <tr class="program-inputs">
                             <td>
                                 <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
                                     <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>>Not configured</option>
@@ -283,6 +282,21 @@ class e20rProgramView {
                                     } ?>
 		                        </select>
 	                        </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-activity_page_id"><strong><?php _e("Activity Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Dashboard Page", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
 	                        <td>
                                 <select class="select2-container" id="e20r-program-activity_page_id" name="e20r-program-activity_page_id">
                                     <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>>No Activity Page defined</option><?php
@@ -295,11 +309,25 @@ class e20rProgramView {
                                     .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
                                 </style>
                                 <script>
-                                    jQuery("#e20r-program-groups").select2();
-                                    jQuery('#e20r-program-sequences').select2();
                                     jQuery('#e20r-program-activity_page_id').select2();
                                 </script>
                             </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-dashboard_page_id" name="e20r-program-dashboard_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>>No Dashboard Page defined</option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->dashboard_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                                <style>
+                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+                                </style>
+                                <script>
+                                    jQuery('#e20r-program-dashboard_page_id').select2();
+                                </script>
+                            </td>
+
                         </tr>
                     </tbody>
                 </table>
