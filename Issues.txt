@@ -11,12 +11,21 @@ Fix: (P3) Add a "program_list" for the assignment definition (take under conside
 
 Enh: (P1) When user changes the release_day field, save the article as a draft & reload the page.
 
-Fix: (P1) Problems adding assignments to article (nonn-default ones).
 Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
+
+07/18/2015
+
+Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
+
+07/19/2015
+
+Fix: (P1) Need to be able to specify "Day number" for start/end of activity.
 
 == Completed / Fixed ==
 
 Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
+Fix: (P0) Sorting the new assignments for the articles (by order number)
+Fix: (P1) Problems adding assignments to article (non-default ones).
 
 Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
 Enh: Prevent the daily assignment short code from bleeding into the actual post/page.
