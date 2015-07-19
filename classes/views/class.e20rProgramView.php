@@ -245,7 +245,7 @@ class e20rProgramView {
                 <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson feed", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson/Reminder feed", "e20rtracker"); ?></strong></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
@@ -290,16 +290,17 @@ class e20rProgramView {
                     <tr>
 	                    <th class="e20r-label header"><label for="e20r-program-activity_page_id"><strong><?php _e("Activity Page", "e20rtracker"); ?></strong></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Dashboard Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Progress Page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="2"><hr width="100%"/></td>
+                        <td colspan="3"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
                         <tr class="program-inputs">
 	                        <td>
                                 <select class="select2-container" id="e20r-program-activity_page_id" name="e20r-program-activity_page_id">
-                                    <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>>No Activity Page defined</option><?php
+                                    <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>><?php _e("No Activity page defined", "e20rtracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->activity_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
@@ -314,7 +315,7 @@ class e20rProgramView {
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-dashboard_page_id" name="e20r-program-dashboard_page_id">
-                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>>No Dashboard Page defined</option><?php
+                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>><?php _e("No Dashboard page defined", "e20rtracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->dashboard_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
@@ -325,6 +326,21 @@ class e20rProgramView {
                                 </style>
                                 <script>
                                     jQuery('#e20r-program-dashboard_page_id').select2();
+                                </script>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-progress_page_id" name="e20r-program-progress_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->progress_page_id) ?>><?php _e("No Progress page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->progress_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                                <style>
+                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+                                </style>
+                                <script>
+                                    jQuery('#e20r-program-progress_page_id').select2();
                                 </script>
                             </td>
 
