@@ -1017,6 +1017,7 @@ class e20rTracker {
 
                 case 'e20r_programs':
 
+                    wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
 	                $type = 'program';
 					$deps = array('jquery', 'jquery-ui-core');
                     break;
