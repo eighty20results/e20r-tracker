@@ -35,3 +35,6 @@ input[type=text].video_link {
 .new-exercises tbody tr {
     background-color: lightgoldenrodyellow;
 }
+table.e20r-program-settings th.e20r-label {
+    background-color: #eee;
+}
