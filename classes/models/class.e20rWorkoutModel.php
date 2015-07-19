@@ -321,6 +321,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
             }
         }
 
+        // TODO: Have to handle the 'all' to/from date/time.
+
         // Make sure the $from_when time is a valid time/date value
         if ( !is_null( $start ) && ( false === ( $fromTS = strtotime( $start ) ) ) ) {
 
@@ -394,7 +396,6 @@ class e20rWorkoutModel extends e20rSettingsModel {
              * Array to construct for the workout records for a user:
              *
              * $programId = array(
-             *      'workout' => array(
              *          'date' => array(
              *              $activity_id => array(
              *                  $exercise_id' => array (
@@ -408,45 +409,44 @@ class e20rWorkoutModel extends e20rSettingsModel {
              *                      ),
              *                  ),
              *              ),
-             *          ),
-             *      ),
+             *          );
              */
             foreach( $records as $r ) {
 
-                if ( !isset( $result['workout'][$r['{$this->fields["for_date"]}'] ] ) ) {
+                if ( !isset( $result[$r['{$this->fields["for_date"]}'] ] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"]] = array();
+                    $result[$r["{$this->fields['for_date']}"]] = array();
                 }
 
-                if ( !isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] ) ) {
+                if ( !isset( $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] = array();
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}" ] ] = array();
                 }
 
-                if ( !isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] ) ) {
+                if ( !isset( $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] = array();
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]] = array();
                 }
 
-                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] ) ) {
+                if ( isset( $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] = array();
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]] = array();
                 }
 
-                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] ) ) {
+                if ( isset( $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] = array();
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]] = array();
                 }
 
-                if ( isset( $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] ) ) {
+                if ( isset( $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] ) ) {
 
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] = new stdClass();
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps;
-                    $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight;
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]] = new stdClass();
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps;
+                    $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight;
                 }
 
-                $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps = $r["{$this->fields['reps']}"];
-                $result['workout'][$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight = $r["{$this->fields['weight']}"];
+                $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->reps = $r["{$this->fields['reps']}"];
+                $result[$r["{$this->fields['for_date']}"] ][$r["{$this->fields['activity_id']}"]][$r["{$this->fields['exercise_id']}"]][$r["{$this->fields['exercise_key']}"]][$r["{$this->fields['group_no']}"]][$r["{$this->fields['set_no']}"]]->weight = $r["{$this->fields['weight']}"];
 
             }
 
