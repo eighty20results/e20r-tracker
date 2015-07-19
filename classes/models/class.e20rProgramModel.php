@@ -77,6 +77,8 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->enddate = null;
 	    $settings->intake_form = null;
         $settings->activity_page_id = null;
+        $settings->dashboard_page_id = null;
+        $settings->progress_page_id = null;
         $settings->group = -1;
         $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
         $settings->sequences = array();
