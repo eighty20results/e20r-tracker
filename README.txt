@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.8.15
+Stable tag: 0.8.16
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -16,11 +16,14 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.16 =
+* Updated e20r_assignments table definition
+
 = 0.8.15 =
-Enh: Let the admin specify a "# of days since start of membership" for when the activity/workout is scheduled to become available/unavailable for the client.
-Fix: Format exercise settings window in backend
-Fix: Reformat layout of activity/workout settings in backend.
-Fix: Correctly return the found article ID if a single article was located.
+* Let the admin specify a "# of days since start of membership" for when the activity/workout is scheduled to become available/unavailable for the client.
+* Format exercise settings window in backend
+* Reformat layout of activity/workout settings in backend.
+* Correctly return the found article ID if a single article was located.
 
 = 0.8.14 =
 * Allow user to save whenever they update a response/answer.
