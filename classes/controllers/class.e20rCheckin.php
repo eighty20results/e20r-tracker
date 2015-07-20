@@ -698,6 +698,7 @@ class e20rCheckin extends e20rSettings {
         global $e20rTracker;
 
         global $currentProgram;
+        global $currentArticle;
 
         global $current_user;
         global $post;
@@ -711,18 +712,18 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        // $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : intval( $_POST['program-id'] ) );
         $config->startTS = strtotime( $currentProgram->startdate );
 
         $config->articleId = ( ! isset( $_POST['article-id'] ) ? null : intval($_POST['article-id']) );
-
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
 
         $pdate = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
 
 	    dbg("e20rCheckin::nextCheckin_callback() - Expected delay info: {$pdate} from {$_POST['e20r-checkin-day']}");
 
-	    $config->delay = $e20rTracker->getDelay( $pdate, $config->userId );
+        $config->delay = $e20rTracker->getDelay( $pdate, $config->userId );
 
 	    dbg("e20rCheckin::nextCheckin_callback() - using delay info: {$config->delay} from {$_POST['e20r-checkin-day']}");
 
@@ -732,6 +733,30 @@ class e20rCheckin extends e20rSettings {
         $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
         $config->url =  $dashboard;
 
+        if ( $pdate != $currentArticle->release_day ) {
+
+            dbg("e20rCheckin::nextCheckin_callback() - Need to load a new article (by delay)");
+
+            $articles = $e20rArticle->findArticle( 'release_day', $pdate, 'numeric', $config->programId );
+            dbg("e20rCheckin::nextCheckin_callback() - Found " . count($articles) . " articles for program {$config->programId} and with a release day of {$pdate}");
+
+            if ( is_object($articles ) ) {
+                // Single article returned.
+
+                dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
+                $access = $e20rTracker->hasAccess( $config->userId, $articles->post_id );
+
+                dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
+
+                if ( false == $access  ) {
+                    dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " . get_the_title( $articles->post_id ) );
+                    wp_send_json_error( array( 'ecode' => 1 ) );
+                }
+
+                $config->articleId = $articles->id;
+            }
+        }
+
 
         // $config->url = URL_TO_CHECKIN_FORM;
         dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
@@ -740,7 +765,7 @@ class e20rCheckin extends e20rSettings {
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
             dbg("e20rCheckin::nextCheckin_callback() - Sending new dailyProgress data (html)");
-	        dbg($html);
+	        // dbg($html);
             wp_send_json_success( $html );
         }
 
