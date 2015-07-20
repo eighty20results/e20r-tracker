@@ -16,6 +16,12 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.8.15 =
+Enh: Let the admin specify a "# of days since start of membership" for when the activity/workout is scheduled to become available/unavailable for the client.
+Fix: Format exercise settings window in backend
+Fix: Reformat layout of activity/workout settings in backend.
+Fix: Correctly return the found article ID if a single article was located.
+
 = 0.8.14 =
 * Allow user to save whenever they update a response/answer.
 * Didn't always reflect prior answers given. Fix: Didn't handle Yes/No answers correctly
