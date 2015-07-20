@@ -48,9 +48,9 @@ class e20rTracker {
     Give admin members access to everything.
     Add this to your active theme's functions.php or a custom plugin.
 	*/
-	public function admin_access_filter($access, $post, $user) {
+	public function admin_access_filter($access, $post, $user ) {
 
-		if ( ( !empty($user->membership_level) && $user->membership_level->ID == 2 ) || ( current_user_can('administrator') ) ) {
+		if ( ( current_user_can('administrator') ) ) {
 			// dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
 			return true;    //level 2 (and administrator) ALWAYS has access
 		}
@@ -1530,19 +1530,25 @@ class e20rTracker {
 
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
-            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}");
+            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to teh preview");
             return true;
         }
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
 
-            $results = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+            $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
 
-            if ( $results[0] === true ) { // First item in results array == true if user has access
+            if ( $result[0] ) {
 
-                dbg( "e20rTracker::hasAccess() - User {$userId} has access to this post" );
-                return true;
+                dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . $result[0]);
+                // $flt_access = apply_filters('pmpro_has_membership_access_filter', $result[0], $myPost, $myUser, $levels );
+
             }
+
+            return $result[0];
+        }
+        else {
+            dbg("e20rTracker::hasAccess() - No membership access function found!");
         }
 
         return false;
