@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.8.12
+Stable tag: 0.8.14
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -15,6 +15,18 @@ We developed the plugin to meet our own specific coaching platform needs which r
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
 
 == ChangeLog ==
+
+= 0.8.15 =
+Enh: Let the admin specify a "# of days since start of membership" for when the activity/workout is scheduled to become available/unavailable for the client.
+Fix: Format exercise settings window in backend
+Fix: Reformat layout of activity/workout settings in backend.
+Fix: Correctly return the found article ID if a single article was located.
+
+= 0.8.14 =
+* Allow user to save whenever they update a response/answer.
+* Didn't always reflect prior answers given. Fix: Didn't handle Yes/No answers correctly
+* Support updates to survey and yes/no fields
+* Handle previously given answers for a daily assignment.
 
 = 0.8.12 =
 * Buffer output in showYesNoQuestion()

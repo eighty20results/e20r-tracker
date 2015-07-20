@@ -319,14 +319,16 @@ class e20rWorkoutView extends e20rSettingsView {
                 <tbody id="e20r-workout-tbody">
                     <tr id="<?php echo ( isset($workoutData->id) ) ? $workoutData->id : $post->ID; ?>" class="workout-inputs">
                         <td colspan="3">
-                            <table class="sub-table wp-list-table widefat fixed">
-                                <tbody>
+                            <table class="e20r-workout-settings sub-table wp-list-table widefat fixed">
+                                <thead>
                                 <tr>
                                     <th class="e20r-label header" style="width: 10%;"><label for="e20r-workout-workout_ident">Workout</label></th>
                                     <th class="e20r-label header" style="width: 10%;"><label for="e20r-workout-phase">Phase</label></th>
 	                                <th class="e20r-label header" style="width: 40%;"><?php _e("On what weekdays", "e20rtracker"); ?></th>
 	                                <th class="e20r-label header" style="width: 40%;"><?php _e("Programs", "e20rtracker"); ?></th>
                                 </tr>
+                                </thead>
+                                <tbody>
                                 <tr>
                                     <td class="select-input" style="width: 10%;">
                                         <select style="width: 95%;" id="e20r-workout-workout_ident" name="e20r-workout-workout_ident">
@@ -388,12 +390,14 @@ class e20rWorkoutView extends e20rSettingsView {
                     <tr>
                         <td colspan="3">
                             <table class="sub-table wp-list-table widefat fixed">
-                                <tbody>
+                                <thead>
                                 <tr>
                                     <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_usergroups">Client Group(s)</label></th>
                                     <th style="width: 20%;"></th>
                                     <th class="e20r-label header" style="width: 40%; vertical-align: top; text-align: left;"><label for="e20r-workout-assigned_user_id">Client(s)</label></th>
                                 </tr>
+                                </thead>
+                                <tbody>
                                 <tr>
                                     <td class="select-input">
                                         <select id="e20r-workout-assigned_usergroups" name="e20r-workout-assigned_usergroups[]" class="select2-container" multiple="multiple">
@@ -449,25 +453,58 @@ class e20rWorkoutView extends e20rSettingsView {
                     </tr>
                     <tr><td colspan="3"><hr width="100%"/></td></tr>
                     <tr>
+                        <td colspan="3" style="background-color: #C5C5C5;"><?php
+                            $text = "<p style='font-size: 1.1em;'>The <em><strong>date values will take precedence over day number configurations</strong></em>. If you want to use day numbers, you <strong>have to clear the dates</strong> for the 'First workout (date)' or 'Last workout (date)' fields, <strong>before saving this workout/activity.</strong></p>";
+                            $text .="<p style='font-size: 1.1em;'>If you use the '(day number)' to indicate delay for a workout, we will use the start date value for the clients membership as day 1. Then we will add the startday/endday values to the start date when verifying the clients access to the activity/workout.</p>";
+                            _e( $text, "e20rtracker" );
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
                         <td colspan="3">
                             <table class="sub-table wp-list-table widefat fixed">
-                                <tbody>
+                                <thead>
                                 <tr>
                                     <th class="e20r-label header indent"><?php _e( "First workout (date)", "e20rtracker" ); ?></th>
                                     <th class="e20r-label header indent"><?php _e( "Last workout (date)", "e20rtracker" ); ?></th>
                                 </tr>
+                                </thead>
+                                <tbody>
                                 <tr>
                                     <td class="text-input">
-                                        <input type="date" id="e20r-workout-startdate" name="e20r-workout-startdate" value="<?php echo $workoutData->startdate; ?>">
+                                        <input type="date" id="e20r-workout-startdate" name="e20r-workout-startdate" value="<?php echo empty( $workoutData->startdate ) ? '' : $workoutData->startdate; ?>">
                                     </td>
                                     <td class="text-input">
-                                        <input type="date" id="e20r-workout-enddate" name="e20r-workout-enddate" value="<?php echo $workoutData->enddate; ?>">
+                                        <input type="date" id="e20r-workout-enddate" name="e20r-workout-enddate" value="<?php echo empty( $workoutData->enddate ) ? '' : $workoutData->enddate; ?>">
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
                         </td>
                     </tr>
+					<tr>
+						<td colspan="3">
+							<table class="sub-table wp-list-table widefat fixed">
+								<thead>
+								<tr>
+									<th class="e20r-label header indent"><?php _e( "First workout (day number)", "e20rtracker" ); ?></th>
+									<th class="e20r-label header indent"><?php _e( "Last workout (day number)", "e20rtracker" ); ?></th>
+								</tr>
+                                </thead>
+                                <tbody>
+								<tr>
+									<td class="text-input">
+										<input type="number" id="e20r-workout-startday" name="e20r-workout-startday" value="<?php echo $workoutData->startday; ?>">
+									</td>
+									<td class="text-input">
+										<input type="number" id="e20r-workout-endday" name="e20r-workout-endday" value="<?php echo $workoutData->endday; ?>">
+									</td>
+								</tr>
+								</tbody>
+							</table>
+						</td>
+
+					</tr>
                     <tr>
                         <td colspan="3">
 	                        <div id="e20r-workout-add-groups">

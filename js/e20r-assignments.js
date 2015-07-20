@@ -15,6 +15,19 @@ function e20rAssignmentsConfigureSurveyFields(){
     console.log("Do nothing...");
 }
 
+function setSurveyState( me ) {
+    var elem = jQuery( me ),
+        input = elem.is( 'td.e20r-assignment-survey-question-choice' ) ? elem.find( 'input' ) : elem;
+
+    if( input.is( ':disabled' ) )
+        return false;
+
+    input.prop( 'checked', true );
+    input.closest( 'tr' ).find( '.e20r-assignment-survey-question-choice-selected' ).removeClass( 'e20r-assignment-survey-question-choice-selected' );
+    input.parent().addClass( 'e20r-assignment-survey-question-choice-selected' );
+    input.focus().change();
+}
+
 jQuery(document).ready(function() {
 
     console.log("Loading Assignment Survey processing");
@@ -23,10 +36,24 @@ jQuery(document).ready(function() {
 
         console.log("Found a survey question in the assignment");
 
-        jQuery( "table.e20r-assignment-survey-question" ).find( 'td.e20r-assignment-survey-question-choice, input[type="radio"]' ).on('click', function(e) {
+        console.log("Processing checkboxes and radio inputs");
+
+        jQuery('td.e20r-assignment-survey-question-choice').find('input[type="radio"], input[type="checkbox"]').each(function() {
+
+            var $elem = jQuery(this);
+
+            if ( $elem.is(':checked') ) {
+                $elem.parent().addClass( 'e20r-assignment-survey-question-choice-selected' );
+            }
+
+        });
+
+        jQuery( "table.e20r-assignment-survey-question" ).find( 'td.e20r-assignment-survey-question-choice, input[type="radio"], input[type="checkbox"]' ).on('click', function(e) {
 
             console.log("Found a survey choice in the survey question");
 
+            setSurveyState( this );
+            /*
             var elem = jQuery( this ),
                 input = elem.is( 'td.e20r-assignment-survey-question-choice' ) ? elem.find( 'input' ) : elem;
 
@@ -37,7 +64,7 @@ jQuery(document).ready(function() {
             input.closest( 'tr' ).find( '.e20r-assignment-survey-question-choice-selected' ).removeClass( 'e20r-assignment-survey-question-choice-selected' );
             input.parent().addClass( 'e20r-assignment-survey-question-choice-selected' );
             input.focus().change();
-
+            */
         });
 
         // add a hover state
@@ -60,7 +87,7 @@ jQuery(document).ready(function() {
 
         });
 
-        jQuery( 'table.e20r-assignment-survey-question-choice input[type="radio"]' ).on( 'focus', function() {
+        jQuery( 'table.e20r-assignment-survey-question-choice input[type="radio"], input[type="checkbox"]' ).on( 'focus', function() {
             jQuery( this ).parent().addClass( 'e20r-assignment-survey-question-choice-hover' );
         } ).on( 'blur', function() {
             jQuery( this ).parent().removeClass( 'e20r-assignment-survey-question-choice-hover' );

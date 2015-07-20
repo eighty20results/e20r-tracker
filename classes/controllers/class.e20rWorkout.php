@@ -216,8 +216,10 @@ class e20rWorkout extends e20rSettings {
 	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
 	    $workout->assigned_user_id = isset( $_POST['e20r-workout-assigned_user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_user_id'] ) : array( -1 ); // Default is "everybody"
 	    $workout->assigned_usergroups = isset( $_POST['e20r-workout-assigned_usergroups'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_usergroups'] ) : array( -1 ) ;
-	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : date( 'Y-m-d', current_time( 'timestamp' ) );
+	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : null;
 	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
+        $workout->startday = isset( $_POST['e20r-workout-startday'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startday'] ) : null;
+        $workout->endday = isset( $_POST['e20r-workout-endday'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-endday'] ) : null;
 
 	    $test = (array)$exData;
 
@@ -281,8 +283,12 @@ class e20rWorkout extends e20rSettings {
         global $e20rTracker;
         global $e20rArticle;
 
+        global $currentProgram;
+
         $startedTS = $e20rProgram->startdate( $userId, $programId, true );
         $started = date('Y-m-d H:i:s', $startedTS);
+        // $started = $currentProgram->startdate;
+
         $currentDay = $e20rTracker->getDelay('now', $userId );
         $currentDate = date('Y-m-d', current_time( 'timestamp' ) );
 

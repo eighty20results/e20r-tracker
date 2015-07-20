@@ -345,6 +345,7 @@ jQuery(document).ready(function() {
             this.$answerForm = this.$assignment.find("form#e20r-assignment-answers");
             this.$checkinBtn = this.$assignment.find("button#e20r-lesson-complete");
             this.$inputs = this.$answerForm.find('.e20r-assignment-response');
+            this.$choices = this.$answerForm.find( 'td.e20r-assignment-survey-question-choice, input[type="radio"], input[type="checkbox"]' );
 
             var self = this;
 
@@ -358,6 +359,7 @@ jQuery(document).ready(function() {
                 self.lessonComplete( self );
             })
 
+
             this.$inputs.each(function() {
                 console.log("Working through response fields");
 
@@ -368,6 +370,15 @@ jQuery(document).ready(function() {
                     jQuery('#e20r-assignment-complete').hide();
                 })
             })
+
+            this.$choices.each(function() {
+                jQuery(this).on('click', function(){
+
+                    console.log("Gave focus to", this);
+                    jQuery('#e20r-assignment-save-btn').show();
+                    jQuery('#e20r-assignment-complete').hide();
+                })
+            });
         },
         lessonComplete: function( self ) {
 

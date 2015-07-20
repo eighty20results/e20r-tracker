@@ -296,6 +296,7 @@ class e20rAssignmentView extends e20rSettingsView {
         ob_start();
         ?>
         <div class="e20r-assignment-survey">
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
             <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
             <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
             <h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -313,7 +314,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 <tr><?php
                     foreach( range(1, 10) as $cnt ) {?>
                         <td class="e20r-assignment-survey-question-choice">
-                        <input name="e20r-assignment-answer[]" type="radio" value="<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>">
+                        <input name="e20r-assignment-answer[]" type="radio" value="<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>" <?php checked( $assignment->answer, $cnt); ?>>
                         </td><?php
                     }?>
                 </tr>
@@ -329,6 +330,7 @@ class e20rAssignmentView extends e20rSettingsView {
         ob_start();
         ?>
         <div class="e20r-assignment-survey">
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
             <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
             <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
             <h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -344,10 +346,10 @@ class e20rAssignmentView extends e20rSettingsView {
                 </tr>
                 <tr>
                     <td class="e20r-assignment-survey-question-choice">
-                        <input name="e20r-assignment-answer[]" type="checkbox" value="yes">
+                        <input name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' );?>>
                     </td>
                     <td class="e20r-assignment-survey-question-choice">
-                        <input name="e20r-assignment-answer[]" type="checkbox" value="no">
+                        <input name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' );?>>
                     </td>
                 </tr>
                 </tbody>
@@ -362,6 +364,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
 			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -379,6 +382,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
 			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
@@ -401,6 +405,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 		?>
+        <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
 		<input type="hidden" value="<?php echo ( $assignment->question_id == 0 ? CONST_DEFAULT_ASSIGNMENT : $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
 		<input type="hidden" value="0" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
 		<div class="e20r-lesson-highlight <?php echo ( $isComplete ? 'lesson-completed startHidden' : null ); ?>">

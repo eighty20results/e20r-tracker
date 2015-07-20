@@ -29,7 +29,9 @@ input[type=text].video_link {
 .new-exercises {
     width: 100%;
 }
-.e20r-exercise-list thead tr {
+.e20r-exercise-list thead tr,
+.e20r-workout-settings > thead > tr,
+.e20r-exercise-settings > thead > tr {
     background-color: #d5d5d5;
 }
 .new-exercises tbody tr {
