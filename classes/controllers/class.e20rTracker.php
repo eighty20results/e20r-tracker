@@ -2275,7 +2275,7 @@ class e20rTracker {
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
-                    field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button' ),
+                    field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button', 'yesno', 'survey' ),
                     primary key  (id),
                      key articles (article_id asc),
                      key questions (question_id asc),
