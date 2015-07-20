@@ -396,10 +396,10 @@ class e20rArticle extends e20rSettings {
 
         $article = $this->model->findArticle( 'release_day', $delayVal, 'numeric', $currentProgram->id );
 
-        if ( count($article) == 1 ) {
+        if ( ( false != $article ) && ( count($article) == 1 ) ) {
 
-            dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article->id}");
-            return $article->id;
+            dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article[0]->id}");
+            return $article[0]->id;
         }
         elseif ( count($article) > 1 ) {
             // TODO: Won't return all of the articles defined for this program!
