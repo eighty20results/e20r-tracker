@@ -280,9 +280,29 @@ jQuery(document).ready(function() {
                 success: function (response) {
 
                     console.log("Response: ", response);
-                    jQuery('#e20r-daily-progress').html(response.data);
 
-                    self.bindProgressElements(self);
+                    if ( response.success ) {
+
+                        jQuery('#e20r-daily-progress').html(response.data);
+
+                        self.bindProgressElements(self);
+                        return;
+                    }
+                    else {
+                        console.log("success == false returned from AJAX call");
+                        if ( 1 == response.data.ecode ) {
+
+                            console.log("Give the user an error message");
+
+                            var $string;
+
+                            $string = "Sorry, we're not quite ready to show you that yet...\n\n";
+                            $string += "If you want see what tomorrow\'s workout is, ";
+                            $string  += "head over to the Archives.";
+
+                            alert( $string );
+                        }
+                    }
                 },
                 error: function (jqx, errno, errtype) {
 
