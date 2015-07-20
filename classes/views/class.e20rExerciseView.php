@@ -234,7 +234,7 @@ class e20rExerciseView {
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-exercise-settings'); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-exercise-id" value="<?php echo ( ( isset($exerciseData->id) ) ? $exerciseData->id : 0 ); ?>">
-                <table id="e20r-exercise-settings">
+                <table id="e20r-exercise-settings" class="e20r-exercise-settings wp-list-table widefat fixed">
                     <thead>
 	                    <tr>
 		                    <th class="e20r-label header"><label for="e20r-exercise-type"><?php _e("Type", "e20rtracker");?></label></th>
