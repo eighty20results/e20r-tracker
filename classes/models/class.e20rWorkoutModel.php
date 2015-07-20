@@ -60,8 +60,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout->phase = null;
 	    $workout->assigned_user_id = array( -1 );
 	    $workout->assigned_usergroups = array( -1 );
-	    $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
+	    // $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
+		$workout->startdate = null;
 	    $workout->enddate = null;
+		$workout->startday = null;
+		$workout->endday = null;
+
 
 	    $workout->groups = array();
 	    $workout->groups[0] = $this->defaultGroup();
@@ -91,7 +95,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	public function loadSettings( $id ) {
 
 		global $post;
+		global $current_user;
+
 		global $currentWorkout;
+
+		global $e20rProgram;
+        global $e20rTracker;
 
 		if ( isset( $currentWorkout->id ) && ( $currentWorkout->id == $id ) ) {
 
@@ -170,6 +179,47 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
             $this->settings->groups = array();
             $this->settings->groups[0] = $this->defaultGroup();
+        }
+
+
+        if ( !is_admin() ) {
+
+            if (empty($this->settings->startdate) || empty($this->settings->enddate)) {
+
+                dbg("e20rWorkoutModel::loadSettings() - The startdate or enddate settings contain no data...");
+                // Grab membership start date for the current user.
+                $startTS = $e20rProgram->startdate($current_user->ID, null, true);
+
+                $userStarted = date_i18n('Y-m-d', $startTS);
+                dbg("e20rWorkoutModel::loadSettings() - The start Timestamp for use {$current_user->ID}: {$startTS} gives a start date of {$userStarted}");
+            }
+
+            if (empty($this->settings->startdate) && !empty($this->settings->startday) && isset($current_user->ID)) {
+                dbg("e20rWorkoutModel::loadSettings() - Calculate the startdate based on the startday number");
+
+                $this->settings->startdate = date_i18n('Y-m-d', strtotime("{$userStarted} +{$this->settings->startday} days"));
+
+                dbg("e20rWorkoutModel::loadSettings() - Result: start day number {$this->settings->startday} gives a workout start date of {$this->settings->startdate}");
+            }
+
+            if (empty($this->settings->enddate) && (!empty($this->settings->endday))) {
+                dbg("e20rWorkoutModel::loadSettings() - Calculate the enddate based on the endday number");
+
+                $this->settings->enddate = date_i18n('Y-m-d', strtotime("{$userStarted} +{$this->settings->endday} days"));
+
+                dbg("e20rWorkoutModel::loadSettings() - Result: end day number {$this->settings->endday} gives a workout end date of {$this->settings->enddate}");
+            }
+
+            if ( empty($this->settings->enddate) && empty( $this->settings->endday) ) {
+                dbg("e20rWorkoutModel::loadSettings() - No defined date/or day for the end of the workout");
+                $this->settings->enddate = '2038-01-01';
+            }
+
+            if ( empty($this->settings->startdate) && empty( $this->settings->startdate) ) {
+                dbg("e20rWorkoutModel::loadSettings() - No defined date/or day for the end of the workout");
+                $this->settings->startdate = '2014-01-01';
+            }
+
         }
 
 		$currentWorkout = $this->settings;
