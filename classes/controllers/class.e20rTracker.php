@@ -996,6 +996,7 @@ class e20rTracker {
             $e20r_plot_jscript = false;
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
+            wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
             wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
