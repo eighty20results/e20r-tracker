@@ -525,7 +525,8 @@ class e20rCheckin extends e20rSettings {
 		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
 		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
 		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
-		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
+		$recordIds = ( isset( $_POST['e20r-assignment-record_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-record_id'] ) : array() );
+        $answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
 		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
 		$fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
 		$answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
@@ -602,15 +603,21 @@ class e20rCheckin extends e20rSettings {
 					'question_id' => $questionIds[$key],
 					'user_id' => $userId,
 					'answer_date' => $answerDate,
-					'answer' => ( !empty( $answers ) ? $answers[$key] : null ),
+					'answer' => ( isset( $answers[$key] ) ? $answers[$key] : null ),
 					'field_type' => $e20rAssignment->getInputType( $fieldTypes[ $key ] ),
 				);
+
+                if ( -1 != $recordIds[$key] ) {
+
+                    $answer['id'] = $recordIds[$key];
+                }
 
 				dbg('e20rCheckin::dailyProgress_callback() - Answer Provided: ');
 				dbg($answer);
 
 				dbg("e20rCheckin::dailyProgress_callback() - Saving answer to question # {$answer['question_id']}" );
-				$success = ( $success || $e20rAssignment->saveAssignment( $answer ) );
+				$new = $e20rAssignment->saveAssignment( $answer );
+                $success = ( $success && $new );
 			}
 /*		} */
 
