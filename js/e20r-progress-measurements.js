@@ -59,7 +59,9 @@ var progMeasurements = {
             $class.$measureBtn = jQuery("#e20r-client-load-measurements");
 
             $class.$clientInfo = jQuery("#e20r-client-info");
+            $class.clientMsgForm = jQuery("div#e20r-client-contact");
 
+            $class.$clientMessageTab = jQuery("#ui-id-5");
             $class.$clientCompliance = jQuery("#e20r-client-compliance");
 
             $class.$clientAssignments = jQuery("#e20r-client-assignments");
@@ -123,6 +125,38 @@ var progMeasurements = {
 
             jQuery.bindEvents({
                 self: $class,
+                elem: $class.$detailBtn,
+                events: {
+                    click: function(self, e) {
+                        console.log("Admin clicked Client Info button");
+                        //self.$spinner.show();
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        var $id = $class.$memberSelector.find('option:selected').val();
+                        self.saveClientId(self);
+                        self.adminLoadData( $id )
+                    }
+                }
+            });
+
+            jQuery.bindEvents({
+                self: $class,
+                elem: $class.$clientMessageTab,
+                events: {
+                    click: function(self, e) {
+                        console.log("Admin clicked Client Messages button");
+                        //self.$spinner.show();
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        var $id = $class.$memberSelector.find('option:selected').val();
+                        self.saveClientId(self);
+                        self.loadClientMessages( $id )
+                    }
+                }
+            });
+
+            jQuery.bindEvents({
+                self: $class,
                 elem: $class.$adminLoadBtn,
                 events: {
                     click: function(self, e) {
@@ -172,6 +206,8 @@ var progMeasurements = {
         // $class.$memberSelect.prop("disabled", true);
 
         this.loadMeasurementData(id);
+        this.loadClientInfo(id);
+        this.loadClientMessages(id);
 
         jQuery("div#status-tabs").removeClass("startHidden");
 
@@ -185,8 +221,169 @@ var progMeasurements = {
 
         console.log("Loading the Client assignment data");
     },
-    loadClientInfo: function(self) {
+    get_tinymce_content: function() {
+
+        if ( jQuery( "#wp-content-wrap" ).hasClass( "tmce-active" ) ){
+
+            return tinyMCE.activeEditor.getContent();
+        }
+        else {
+
+            return jQuery('#content').val();
+        }
+    },
+    loadClientMessages: function( $clientId ) {
+
+        console.log("Loading the Client message panel (send email)");
+
+        var $class = this;
+
+        $class.$spinner.show();
+
+        jQuery.ajax({
+            url: $class.$ajaxUrl,
+            type: 'POST',
+            timeout: 5000,
+            dataType: 'JSON',
+            data: {
+                action: 'e20r_showClientMessage',
+                'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
+                'client-id': $clientId
+            },
+            error: function (data, $errString, $errType) {
+                console.log($errString + ' error returned from e20r_clientDetail action: ' + $errType, data );
+                $class.$spinner.hide();
+
+            },
+            success: function (res) {
+
+                if ( ( res.success ) ) {
+
+                    console.log("Returned for client Messages: ");
+                    // console.log( res.data.html );
+
+                    $class.clientMsgForm.html( res.data.html );
+
+                    tinymce.execCommand('mceRemoveEditor', true, 'content');
+
+                    // init editor for newly appended div
+                    var init = tinymce.extend( {}, tinyMCEPreInit.mceInit[ 'content' ] );
+                    try { tinymce.init( init ); } catch(e){}
+
+                    jQuery("div#wp-content-editor-container").hide();
+
+                    jQuery('input#e20r-send-email-message').on('click', function(){
+
+                        console.log("Click event for sendClientMessage button");
+                        $class.$spinner.show();
+                        // $class.saveClientId(self);
+                        $class.sendMessage();
+                        $class.$spinner.hide();
+                    });
+
+                }
+
+            },
+            complete: function () {
+
+                // Disable the spinner again
+                $class.$spinner.hide();
+            }
+        });
+    },
+    sendMessage: function() {
+
+        var $class = this;
+
+        console.log("Coach/Admin is attempting to send email message...");
+        event.preventDefault();
+
+        $class.$spinner.show();
+
+        var $data = {
+            action: 'e20r_sendClientMessage',
+            'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
+            'subject': jQuery('input#e20r-email-subject').val(),
+            'content': $class.get_tinymce_content(),
+            'email-from-id': jQuery("input#e20r-send-from-id").val(),
+            'email-to': jQuery("input#e20r-send-message-to").val(),
+            'email-cc': jQuery("input#e20r-send-message-cc").val(),
+            'email-from': jQuery("input#e20r-email-from").val(),
+            'email-from-name': jQuery("input#e20r-email-from-name").val()
+        };
+
+        jQuery.ajax({
+            url: $class.$ajaxUrl,
+            type: 'POST',
+            timeout: 5000,
+            dataType: 'JSON',
+            data: $data,
+            error: function (data, $errString, $errType) {
+
+                console.log($errString + ' error returned from e20r_sendClientMessage action: ' + $errType, data );
+                alert("Warning:\n\nWe may have been unable to send your message to this client!");
+                $class.$spinner.hide();
+
+            },
+            success: function (res) {
+
+                console.dir(res);
+
+                if ( ( res.success ) ) {
+
+                    console.log("Returned for e20r_sendClientMessage: ");
+                    alert("Email system received your message.\n\nIt should be under way at this time.");
+                }
+
+            },
+            complete: function () {
+
+                // Disable the spinner again
+                $class.$spinner.hide();
+            }
+        });
+    },
+    loadClientInfo: function( $clientId ) {
+
         console.log("Loading the Client Admin Info");
+
+        var $class = this;
+
+        $class.$spinner.show();
+
+        jQuery.ajax({
+            url: $class.$ajaxUrl,
+            type: 'POST',
+            timeout: 5000,
+            dataType: 'JSON',
+            data: {
+                action: 'e20r_clientDetail',
+                'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
+                'client-id': $clientId
+            },
+            error: function (data, $errString, $errType) {
+                console.log($errString + ' error returned from e20r_clientDetail action: ' + $errType, data );
+                $class.$spinner.hide();
+
+            },
+            success: function (res) {
+
+                if ( ( res.success ) ) {
+
+                    console.log("Returned for clientData: ");
+                    // console.log( res.data.html );
+
+                    $class.$clientInfo.html( res.data.html );
+
+                }
+
+            },
+            complete: function () {
+
+                // Disable the spinner again
+                $class.$spinner.hide();
+            }
+        });
     },
     saveClientId: function(self) {
 
@@ -365,7 +562,8 @@ var progMeasurements = {
                     }
                     else {
                         jQuery("div#inner-tabs").hide();
-                        alert("No measurement data found");
+                        console.log("No measurement data found in database for user with ID: " + $clientId );
+                        // alert("No measurement data found");
                     }
                 }
 

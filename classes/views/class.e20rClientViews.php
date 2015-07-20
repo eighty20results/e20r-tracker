@@ -119,22 +119,137 @@ class e20rClientViews {
         return $html;
     }
 
-    public function viewClientDetail( $clientId ) {
-        // TODO: Display upcoming appointments, track attendance (and timeliness - multiple statuses)?
-        // TODO: Pull data from appointments table and use Checkin tables for status(es)..?
+    public function viewClientContact( $clientId ) {
 
-        // $billingInfo = $this->load_billing_data( $clientId );
-        $program_list = new e20rProgram();
-        // $programData = $program_list->load_client_programs( $clientId );
-        /*
-        try {
-            $appointments = $this->load_appointments();
-        }
-        catch ( Exception $e ) {
-            dbg("Exception thrown: " . $e->getMessage() );
-            return false;
-        }
-    */
+        global $e20rProgram;
+        global $e20rClient;
+
+        global $currentProgram;
+        global $currentClient;
+
+        global $current_user;
+
+        $e20rProgram->getProgramIdForUser( $clientId );
+
+        // $interview = $e20rClient->loadClientInfo( $clientId );
+        dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
+        dbg( $currentClient );
+
+        ob_start(); ?>
+        <form id="e20r-message-form">
+            <input type="hidden" name="e20r-send-message-to" id="e20r-send-message-to" value="<?php echo $currentClient->email; ?>">
+            <input type="hidden" name="e20r-send-message-cc" id="e20r-send-message-cc" value="<?php echo $current_user->user_email; ?>">
+            <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
+            <table id="e20r-send-message">
+                <thead>
+                <tr>
+                    <th colspan="3" class="e20r-activity-table-header">Send message to: <?php echo "{$currentClient->first_name} {$currentClient->last_name} &lt;<em>{$currentClient->email}</em>&gt;"; ?></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="e20r-message-header">
+                        <?php _e("From", "e20rtracker"); ?>:
+                    </td>
+                    <td class="e20r-message-from">
+                        <input class="e20r-message-input" type="text" name="e20r-email-from-name" id="e20r-email-from-name" autocomplete="off" value="<?php echo "{$current_user->user_firstname} {$current_user->user_lastname}"; ?>" />
+                    </td>
+                    <td class="e20r-message-from">
+                        <input class="e20r-message-input" type="email" name="e20r-email-from" id="e20r-email-from" autocomplete="off" value="<?php echo "{$current_user->user_email}"; ?>" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="e20r-message-header">
+                        <?php _e("Subject", "e20rtracker"); ?>:
+                    </td>
+                    <td class="e20r-message-subject" colspan="2">
+                        <input class="e20r-message-input" type="text" name="e20r-email-subject" id="e20r-email-subject" autocomplete="off" placeholder="<?php _e('Enter subject for email', 'e20rtracker'); ?>" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3"><hr/></td>
+                </tr>
+                <tr>
+                    <td class="e20r-message-subject" colspan="3">
+                        <textarea class="e20r-message-input" id="content" autocomplete="off" name="content" placeholder="<?php _e('Message to user', 'e20rtracker'); ?>" rows="20" cols="75" type='textarea'> </textarea><?php
+                        $settings = array(
+                            'textarea_name' => 'content',
+                            'quicktags' => false,
+                            'textarea_rows' => 20,
+                            'media_buttons' => false,
+                            'tinymce' => array(
+                                'theme_advanced_buttons1' => 'formatselect,|,bold,italic,underline,|,' .
+                                    'bullist,blockquote,|,justifyleft,justifycenter' .
+                                    ',justifyright,justifyfull,|,link,unlink,|' .
+                                    ',spellchecker,wp_fullscreen,wp_adv'
+                            )
+                        );
+                        wp_editor( '', 'content', $settings );
+
+                        // wp_editor($content, $editor_id, $editor_settings); ?>
+                    </td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="3">
+                        <?php
+
+                        $btn_attrs = array( 'id' => 'e20r-send-email-message' );
+                        submit_button( __("Send message", "e20rtracker"), 'primary', 'e20r-send-email-message', true, $btn_attrs );
+                        ?>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </form><?php
+
+        $html = ob_get_clean();
+
+        dbg("e20rClientViews::viewClientContact() - Data loaded and form being returned");
+        return $html;
+    }
+
+    public function viewClientDetail( $clientId ) {
+
+        global $e20rProgram;
+        global $e20rClient;
+
+        global $currentProgram;
+        global $currentClient;
+
+        global $current_user;
+
+        $e20rProgram->getProgramIdForUser( $clientId );
+
+        $hideFields = array(
+            'user_enc_key',
+            'incomplete_interview',
+            'loadedDefaults',
+            'id'
+        );
+
+        dbg("e20rClientViews::viewClientDetail() - Loaded interview/survey data for {$currentClient->user_id}");
+        dbg( $currentClient );
+
+        ob_start(); ?>
+        <table class="e20r-client-information-table">
+            <thead>
+
+            </thead><?php
+            foreach( $currentClient as $field => $data ) {
+
+            } ?>
+            <tbody>
+
+            </tbody>
+        </table><?php
+
+        $html = ob_get_clean();
+
+        dbg("e20rClientViews::viewClientDetail() - Data loaded and form being returned");
+        return $html;
+
     }
 
     public function viewClientAdminPage( $lvlName = '' ) {
@@ -165,7 +280,7 @@ class e20rClientViews {
                     <tbody>
                     <tr>
                         <td><div id="load-client-data" class="e20r-spinner"></div></td>
-                        <!--                            <td><a href="#" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
+<!--                        <td><a href="#" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-compliance" class="e20r-choice-button button" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-assignments" class="e20r-choice-button button" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td> -->
                         <td><a href="#" id="e20r-client-load-measurements" class="e20r-choice-button button" ><?php _e('Load Information', 'e20r-tracker'); ?></a></td>
@@ -181,6 +296,7 @@ class e20rClientViews {
 			    <li><a href="#tabs-2">Assignments</a></li>
 			    <li><a href="#tabs-3">Achievements</a></li>
 			    <li><a href="#tabs-4">Client info</a></li>
+                <li><a href="#tabs-5">Messages</a></li>
 		    </ul>
 	        <div id="tabs-1">
 		        <div id="e20r-progress-measurements">
@@ -201,8 +317,14 @@ class e20rClientViews {
 				    <?php echo $this->viewClientDetail( $this->client_id ); ?>
 			    </div>
 		    </div>
-	    </div>
-	    <div class="modal"><!-- At end of form --></div>
+            <div id="tabs-5">
+                <div id="e20r-client-contact">
+                    <?php echo $this->viewClientContact( $this->client_id ); ?>
+                </div>
+            </div>
+
+        </div>
+	    <!-- <div class="modal"> --><!-- At end of form --><!-- </div> -->
     <?php
     }
 

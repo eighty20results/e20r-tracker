@@ -135,6 +135,8 @@ class e20rTracker {
             // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
             add_action( 'wp_ajax_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
+            add_action( 'wp_ajax_e20r_showClientMessage', array( &$e20rClient, 'ajax_showClientMessage' ) );
+            add_action( 'wp_ajax_e20r_sendClientMessage', array( &$e20rClient, 'ajax_sendClientMessage' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
             add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rClient, 'ajax_assignmentData' ) );
             add_action( 'wp_ajax_get_memberlistForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
@@ -982,17 +984,18 @@ class e20rTracker {
         dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
 
         global $e20rAdminPage;
+        global $e20rTracker;
         global $post;
 
         if( $hook == $e20rAdminPage ) {
 
             global $e20r_plot_jscript, $e20rTracker;
 
-            self::load_adminJS();
+            $e20rTracker->load_adminJS();
 
             $e20r_plot_jscript = true;
-            self::register_plotSW( $hook );
-            self::enqueue_plotSW( $hook );
+            $e20rTracker->register_plotSW( $hook );
+            $e20rTracker->enqueue_plotSW( $hook );
             $e20r_plot_jscript = false;
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
@@ -1018,6 +1021,7 @@ class e20rTracker {
 
                 case 'e20r_programs':
 
+                    wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
 	                $type = 'program';
 					$deps = array('jquery', 'jquery-ui-core');
                     break;
@@ -1251,8 +1255,8 @@ class e20rTracker {
 
         dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
 
-        $e20rAdminPage = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r-tracker', __( 'Client Data','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
+        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20rtracker"), __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        add_submenu_page( 'e20r-tracker', __( 'Client Info','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-client-info', array( &$e20rClient, 'render_client_page' ));
 
         $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20rtracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
 

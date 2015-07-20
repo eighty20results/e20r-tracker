@@ -507,6 +507,8 @@ class e20rCheckin extends e20rSettings {
 		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
 		dbg("e20rCheckin::dailyProgress_callback() - Ajax calleee has the right privileges");
 
+        dbg( $_POST );
+
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
 		}
@@ -525,7 +527,8 @@ class e20rCheckin extends e20rSettings {
 		$userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
 		$delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
 		$answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
-		$answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
+		$recordIds = ( isset( $_POST['e20r-assignment-record_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-record_id'] ) : array() );
+        $answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
 		$questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
 		$fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
 		$answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
@@ -602,15 +605,21 @@ class e20rCheckin extends e20rSettings {
 					'question_id' => $questionIds[$key],
 					'user_id' => $userId,
 					'answer_date' => $answerDate,
-					'answer' => ( !empty( $answers ) ? $answers[$key] : null ),
+					'answer' => ( isset( $answers[$key] ) ? $answers[$key] : null ),
 					'field_type' => $e20rAssignment->getInputType( $fieldTypes[ $key ] ),
 				);
+
+                if ( -1 != $recordIds[$key] ) {
+
+                    $answer['id'] = $recordIds[$key];
+                }
 
 				dbg('e20rCheckin::dailyProgress_callback() - Answer Provided: ');
 				dbg($answer);
 
 				dbg("e20rCheckin::dailyProgress_callback() - Saving answer to question # {$answer['question_id']}" );
-				$success = ( $success || $e20rAssignment->saveAssignment( $answer ) );
+				$new = $e20rAssignment->saveAssignment( $answer );
+                $success = ( $success && $new );
 			}
 /*		} */
 
@@ -690,6 +699,8 @@ class e20rCheckin extends e20rSettings {
         global $e20rProgram;
         global $e20rTracker;
 
+        global $currentProgram;
+
         global $current_user;
         global $post;
 
@@ -702,14 +713,12 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        $config->startTS = $e20rProgram->startdate( $config->userId );
-        $config->url = URL_TO_CHECKIN_FORM;
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        $config->startTS = strtotime( $currentProgram->startdate );
 
         $config->articleId = ( ! isset( $_POST['article-id'] ) ? null : intval($_POST['article-id']) );
 
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
-
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
 
         $pdate = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
 
@@ -722,11 +731,17 @@ class e20rCheckin extends e20rSettings {
         // $config->delay_byDate = $e20rTracker->daysBetween( $config->startTS, ( $config->startTS + ( $config->delay * ( 3600*24 ) ) ) );
 	    $config->delay_byDate = $e20rTracker->getDelay( 'now' );
 
+        $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
+        $config->url =  $dashboard;
+
+
+        // $config->url = URL_TO_CHECKIN_FORM;
+        dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
         dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
 
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
-            dbg("e20rCheckin::nextCheckin() - Sending new dailyProgress data (html)");
+            dbg("e20rCheckin::nextCheckin_callback() - Sending new dailyProgress data (html)");
 	        dbg($html);
             wp_send_json_success( $html );
         }
@@ -938,6 +953,7 @@ class e20rCheckin extends e20rSettings {
 
         global $current_user;
 	    global $currentArticle;
+        global $currentProgram;
         global $post;
 
         dbg("e20rCheckin::shortcode_dailyProgress() - Processing the daily_process short code");
@@ -953,12 +969,15 @@ class e20rCheckin extends e20rSettings {
         $config->survey_id = null;
         $config->post_date = null;
         $config->maxDelayFlag = null;
-        $config->url = URL_TO_CHECKIN_FORM;
 
         $config->complete = false;
         $config->userId = $current_user->ID;
 	    $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
-        $config->startTS = $e20rProgram->startdate( $config->userId );
+
+        $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
+        $config->url =  $dashboard;
+
+        $config->startTS = strtotime( $currentProgram->startdate );
         $config->delay = $e20rTracker->getDelay( 'now', $config->userId );
         $config->delay_byDate = $config->delay;
 

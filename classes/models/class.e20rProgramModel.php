@@ -73,10 +73,12 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings = parent::defaultSettings();
 	    $settings->id = -1;
         $settings->program_shortname = ( isset( $post->post_name ) ? $post->post_name : null );
-        $settings->startdate = date_i18n( 'Y-m-d H:i:s', current_time('timestamp') );
+        $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
         $settings->enddate = null;
 	    $settings->intake_form = null;
         $settings->activity_page_id = null;
+        $settings->dashboard_page_id = null;
+        $settings->progress_page_id = null;
         $settings->group = -1;
         $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
         $settings->sequences = array();

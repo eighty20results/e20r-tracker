@@ -344,10 +344,10 @@ class e20rAssignmentView extends e20rSettingsView {
                 </tr>
                 <tr>
                     <td class="e20r-assignment-survey-question-choice">
-                        <input name="e20r-assignment-answer[]" type="radio" value="1" tabindex="0">
+                        <input name="e20r-assignment-answer[]" type="checkbox" value="yes">
                     </td>
                     <td class="e20r-assignment-survey-question-choice">
-                        <input name="e20r-assignment-answer[]" type="radio" value="0" tabindex="1">
+                        <input name="e20r-assignment-answer[]" type="checkbox" value="no">
                     </td>
                 </tr>
                 </tbody>

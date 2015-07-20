@@ -144,6 +144,7 @@ jQuery(document).ready( function($) {
         $loadItem.prop('disabled', false);
     });
 
+    /*
     $(document).on("click","#e20r-client-info", function() {
 
         // saveClientId($oldClientId);
@@ -151,7 +152,7 @@ jQuery(document).ready( function($) {
         saveClientId( $oldClientId );
 
     });
-
+    */
     $(document).on("click", "#e20r-client-compliance", function() {
 
         // saveClientId($oldClientId);

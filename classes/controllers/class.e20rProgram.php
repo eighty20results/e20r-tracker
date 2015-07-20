@@ -184,11 +184,6 @@ class e20rProgram extends e20rSettings {
         return $list;
     }
 
-    public function getProgram( $pId ) {
-
-        $this->model->loadSettings( $pId );
-    }
-
 	public function get_welcomeSurveyLink( $userId ) {
 
 		global $currentProgram;

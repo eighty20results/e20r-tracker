@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.8.10
+Stable tag: 0.8.12
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -18,6 +18,10 @@ During its development, we discovered a side-benefit which also allows us to man
 
 = 0.8.12 =
 * Buffer output in showYesNoQuestion()
+* Configure the dashboard page and progress page as part of the program definition
+* Set background color for the heading settings
+* Use $currentProgram global to set the start timestamp and page URL for the dashboard.
+* Load style for wp-admin when defining programs
 
 = 0.8.11 =
 * Clean up CSS for lesson button

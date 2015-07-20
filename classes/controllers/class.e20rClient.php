@@ -41,7 +41,7 @@ class e20rClient {
         if ( $this->client_loaded !== true ) {
 
             $this->model->setUser( $this->id );
-            $this->model->load();
+            $this->model->getData( $this->id );
             $this->client_loaded = true;
         }
 
@@ -754,7 +754,7 @@ class e20rClient {
 
             dbg("e20rClient::loadClientInfo() - Loading data for client model");
             $this->model->setUser($user_id);
-            $this->model->load();
+            $this->model->getData( $user_id );
 
         }
         catch ( Exception $e ) {
@@ -772,7 +772,7 @@ public function loadClient( $id = null ) {
     }
 
     $this->model->setUser( $this->id );
-    $this->model->load();
+    $this->model->getData( $this->id );
 
 }
 */
@@ -821,6 +821,10 @@ public function loadClient( $id = null ) {
     public function render_client_page( $lvlName = '', $client_id = 0 ) {
 
         global $current_user;
+        global $currentClient;
+        global $currentProgram;
+
+        global $e20rProgram;
 
         if ( $client_id != 0 ) {
 
@@ -828,6 +832,8 @@ public function loadClient( $id = null ) {
         }
 
         $this->init();
+
+        $this->model->getData( $client_id );
 
         echo $this->view->viewClientAdminPage( $lvlName );
     }
@@ -935,29 +941,156 @@ public function loadClient( $id = null ) {
 
     }
 
-    function ajax_clientDetail() {
-        dbg('Requesting client detail');
+    private function createEmailBody( $subject, $content ) {
+
+        ob_start(); ?>
+<html>
+    <head>
+        <title><?php echo $subject; ?></title>
+    </head>
+    <body>
+        <h1 style="padding:5px 0 0 0; font-family:georgia;font-weight:500;font-size:16px;color:#000;border-bottom:1px solid #bbb">
+            <?php echo $subject; ?>
+        </h1>
+        <div id="the_content" style="">
+            <?php echo $content; ?>
+        </div>
+    </body>
+</html><?php
+        $html = ob_get_clean();
+        return $html;
+    }
+
+    public function ajax_sendClientMessage() {
+
+        global $e20rTracker;
+
+        $headers = array();
+
+        dbg('e20rClient::ajax_sendClientMessage() - Requesting client detail');
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
-        dbg("Nonce is OK");
+        dbg("e20rClient::ajax_sendClientMessage() - Nonce is OK");
 
-        dbg("Request: " . print_r($_REQUEST, true));
+        dbg("e20rClient::ajax_sendClientMessage() - Request: " . print_r($_REQUEST, true));
 
-        $this->init();
-        // $this->initClientViews();
+        // $to_uid = isset( $_POST['email-to-id']) ? $e20rTracker->sanitize( $_POST['email-to-id']) : null;
+        $to_email = isset( $_POST['email-to'] ) ? $e20rTracker->sanitize( $_POST['email-to']) : null;
+        $cc = isset( $_POST['email-cc'] ) ? $e20rTracker->sanitize( $_POST['email-cc']) : null;
+        $from_uid = isset( $_POST['email-from-id'] ) ? $e20rTracker->sanitize( $_POST['email-from-id']) : null;
+        $from = isset( $_POST['email-from'] ) ? $e20rTracker->sanitize( $_POST['email-from']) : null;
+        $from_name = isset( $_POST['email-from-name'] ) ? $e20rTracker->sanitize( $_POST['email-from-name']) : null;
+        $subject = isset( $_POST['subject'] ) ? $e20rTracker->sanitize( $_POST['subject']) : ' ';
+        $content = isset( $_POST['content'] ) ? $e20rTracker->sanitize( $_POST['content']) : '&nbsp;';
 
-        /*
-        global $wpdb, $current_user, $e20rClient, $e20rMeasurements;
+        $content = stripslashes_deep( $content );
 
-        // TODO: Don't init the client here. No need until it's actually used by something (i.e. in the has_weeklyProgress_shortcode, etc)
-        if ( ! $e20rClient->client_loaded ) {
-            dbg("e20rTracker::init() - Loading Client info");
-            $e20rClient->init();
+        $message = $this->createEmailBody( $subject, $content );
+
+        if (! is_null( $from_uid ) ) {
+            $f= get_user_by( 'id', $from_uid );
         }
-        */
 
+        // $sendTo = "{$to->display_name} <{$to_email}>";
 
+        $headers[] = "Content-type: text/html";
+        $headers[] = "Cc: " . $cc;
+        $headers[] = "From: " . $from;
+        // $headers[] = "From: \"{$from_name}\" <{$from}>";
+
+        dbg($to_email);
+        dbg($headers);
+        dbg($subject);
+        dbg($message);
+
+        add_filter('wp_mail', array( $this, 'test_wp_mail') );
+
+        add_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
+        // add_filter( 'wp_mail_charset', 'utf8' );
+        $status = wp_mail( $to_email, $subject, $message, $headers, null );
+        // remove_filter( 'wp_mail_charset', 'utf8' );
+        remove_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
+
+        if ( true ==  $status ) {
+            dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
+            wp_send_json_success();
+            wp_die();
+        }
+
+        dbg("e20rClient::ajax_sendClientMessage() - Error while transferring info to wp_mail()");
+        wp_send_json_error();
+    }
+
+    public function set_html_content_type() {
+
+        return 'text/html';
+    }
+
+    public function test_wp_mail( $args ) {
+
+        $debug = var_export($args, true);
+        dbg($debug);
+    }
+
+    public function ajax_showClientMessage() {
+        dbg('e20rClient::ajax_showClientMessage() - Requesting client detail');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+
+        dbg("e20rClient::ajax_showClientMessage() - Nonce is OK");
+
+        dbg("e20rClient::ajax_showClientMessage() - Request: " . print_r($_REQUEST, true));
+
+        global $current_user;
+        global $e20rProgram;
+        global $e20rMeasurements;
+        global $e20rTracker;
+
+        global $currentProgram;
+        global $currentClient;
+
+        $userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
+        $e20rProgram->getProgramIdForUser( $userId );
+
+        dbg("e20rClient::ajax_showClientMessage() - Load client data...");
+
+        // Loads the program specific client information we've got stored.
+        $this->model->getData( $userId );
+
+        $html = $this->view->viewClientContact( $userId );
+
+        wp_send_json_success( array( 'html' => $html ));
+    }
+
+    public function ajax_clientDetail() {
+        dbg('e20rClient::ajax_clientDetail() - Requesting client detail');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+
+        dbg("e20rClient::ajax_clientDetail() - Nonce is OK");
+
+        dbg("e20rClient::ajax_clientDetail() - Request: " . print_r($_REQUEST, true));
+
+        global $current_user;
+		global $e20rProgram;
+		global $e20rMeasurements;
+		global $e20rTracker;
+
+		global $currentProgram;
+        global $currentClient;
+
+		$userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
+		$e20rProgram->getProgramIdForUser( $userId );
+
+		dbg("e20rClient::ajax_clientDetail() - Load client data...");
+
+        // Loads the program specific client information we've got stored.
+        $this->model->getData( $userId );
+
+        $html = $this->view->viewClientDetail( $userId );
+
+        wp_send_json_success( array( 'html' => $html ));
     }
 
     function ajax_complianceData() {

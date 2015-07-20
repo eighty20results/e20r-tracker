@@ -2570,3 +2570,23 @@ blockquote:before {
     color:    #b5b5b5;
     opacity:  1;
 }
+form#e20r-message-form {
+    width: 100%;
+}
+table#e20r-send-message {
+    width: 100%;
+}
+td.e20r-message-header {
+    width: 100px;
+}
+td.e20r-message-from {
+    max-width: 300px;
+    min-width: 200px;
+    width: 50%;
+}
+input.e20r-message-input {
+    width: 100%;
+}
+table.e20r-client-information-table {
+    width: 100%;
+}

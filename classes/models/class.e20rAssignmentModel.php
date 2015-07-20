@@ -175,7 +175,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->field_type = 0;
         $settings->article_id = null;
         // $settings->user_id = $current_user->ID;
-	    // $settings->program_id = null;
+	    $settings->program_id = null;
         $settings->answer_date = null;
         $settings->answer = null;
 
@@ -313,7 +313,12 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			$new->descr = $query->post->post_excerpt;
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;
-			$assignments[] = $new;
+
+            dbg("e20rAssignmentsModel::loadAssignmentByMeta() - Want records for program id: {$programId}, got {$new->program_id}");
+
+            if ( $programId == $new->program_id ) {
+                $assignments[] = $new;
+            }
 		}
 
 		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returning " .

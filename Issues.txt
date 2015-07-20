@@ -21,6 +21,14 @@ Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
 
 Fix: (P1) Need to be able to specify "Day number" for start/end of activity.
 
+07/18/2015
+
+Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
+
+07/19/2015
+
+Fix: (P1) Need to be able to specify "Day number" for start/end of activity.
+
 == Completed / Fixed ==
 
 Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
