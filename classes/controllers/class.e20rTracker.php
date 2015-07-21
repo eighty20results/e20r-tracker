@@ -2993,22 +2993,31 @@ class e20rTracker {
         return false;
     }
 
-    public function getDateFromDelay( $delay = 0, $userId = null ) {
+    public function getDateFromDelay( $rDelay = "now", $userId = null ) {
 
         global $current_user;
         global $e20rProgram;
+        global $currentProgram;
 
         if ( ! $userId ) {
             $userId = $current_user->ID;
         }
 
+        dbg("e20rTracker::getDateFromDelay() - Received Delay value of {$rDelay} from calling function: " . $this->whoCalledMe() );
         $startTS = $e20rProgram->startdate( $userId );
 
-        if ( ( $delay === 0 ) || ( $delay == 'now' ) ) {
+        if ( 0 == $rDelay ) {
+            $delay = 0;
+        }
+        elseif ( "now" == $rDelay ) {
 
-            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user");
+            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user. Got delay value of {$rDelay}");
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
         }
+        else {
+            $delay = $rDelay;
+        }
+
 
         dbg("e20rTracker::getDateFromDelay() - user w/id {$userId} has a startdate timestamp of {$startTS}");
 
