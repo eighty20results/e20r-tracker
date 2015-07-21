@@ -150,7 +150,7 @@ jQuery(document).ready(function() {
                 'program-id': self.$checkinProgramId,
                 'checkedin': jQuery(elem).val(),
                 'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first').val(),
-                'id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
+                'action-id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
                 'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_short_name:first').val()
             };
 
@@ -300,6 +300,10 @@ jQuery(document).ready(function() {
                         self.$allowActivityOverride = true;
 
                         self.init();
+
+                        console.log("Re-init for Note object(s)");
+                        jQuery(Note.init());
+
                         return;
                     }
                     else {
@@ -647,10 +651,10 @@ jQuery(document).ready(function() {
                         var data = {
                             action: 'saveCheckin',
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
-                            'id': self.note_id,
+                            'action-id': self.note_id,
                             'checkin-short-name': self.checkin_shortname,
                             'checkin-date': self.note_date,
-                            'checkedin_date': self.note_actualdate,
+                            'checkedin-date': self.note_actualdate,
                             'assignment-id': self.note_assignment,
                             'article-id': self.note_article,
                             'program-id': self.note_program,
