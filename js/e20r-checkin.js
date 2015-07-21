@@ -528,7 +528,7 @@ jQuery(document).ready(function() {
             this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
             this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
             this.note_actualdate = this.noteField.siblings('#e20r-checkin-checkedin_date').val();
-            this.checkin_type = this.actionFields.find('.e20r-checkin-checkin_type').val();
+            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
             this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val()
 
             var self = this;
