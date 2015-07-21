@@ -781,6 +781,12 @@ class e20rCheckin extends e20rSettings {
 
         // dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
 
+        if ( $config->delay <= 0 ) {
+
+            dbg("e20rCheckin::dailyProgress() - Negative delay value. No article to be found.");
+            $config->articleId = CONST_NULL_ARTICLE;
+        }
+
         if ( !isset( $currentArticle->post_id) || ( $config->articleId != $currentArticle->id ) ) {
 
             dbg("e20rCheckin::dailyProgress() - No or wrong article is active. Updating...");
@@ -792,11 +798,13 @@ class e20rCheckin extends e20rSettings {
             $config->maxDelayFlag = CONST_MAXDAYS_FUTURE;
         }
 
+/*
         if ( $config->delay < ( $config->delay_byDate - 2 ) ) {
 
             // The user is attempting to view a day >2 days before today.
             $config->maxDelayFlag = CONST_MAXDAYS_PAST;
         }
+*/
 
         $config->prev = $config->delay - 1;
         $config->next = $config->delay + 1;
