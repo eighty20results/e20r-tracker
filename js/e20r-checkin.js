@@ -665,7 +665,7 @@ jQuery(document).ready(function() {
                             'checkin-type': self.checkin_type
                         };
 
-                        console.log("Sending: ", data );
+                        // console.log("Sending: ", data );
 
                         jQuery('body').addClass("loading");
 
