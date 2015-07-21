@@ -82,6 +82,7 @@ class e20rCheckin extends e20rSettings {
 
         return $columns;
     }
+
 	public function hasCompletedLesson( $articleId, $postId = null, $userId = null, $delay = null ) {
 
 		dbg("e20rCheckin::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson.");
@@ -646,42 +647,7 @@ class e20rCheckin extends e20rSettings {
 			wp_send_json_error( __( "Unable to save your update", "e20rtracke" ) );
 		}
 	}
-/*
-	public function dailyCheckin_callback() {
 
-		dbg($_POST);
-		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
-		dbg("e20rCheckin::dailyCheckin_callback() - Ajax callee has the right privileges");
-
-		if ( ! is_user_logged_in() ) {
-			auth_redirect();
-		}
-
-        global $e20rTracker;
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rAssignment;
-
-        $articleId = ( isset( $_POST['e20r-article-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-id'] ) : null );
-        $userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
-        $delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
-        $answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
-        $answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
-        $questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
-        $fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
-        $answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
-
-        $programId = $e20rProgram->getProgramIdForUser( $userId, $articleId );
-
-        if ( ( CONST_NULL_ARTICLE === $articleId ) && ( is_null( $userId ) || is_null($answerDate) || is_null($delay) ) ) {
-
-            dbg("e20rCheckin::dailyProgress_callback() - Can't save assignment info!");
-            wp_send_json_error( __("Unable to save your confirmation. Please contact technical support!", "e20rtracker" ) );
-        }
-
-
-    }
-*/
     public function nextCheckin_callback() {
 
         dbg("e20rCheckin::nextCheckin_callback() - Checking ajax referrer privileges");
@@ -753,6 +719,8 @@ class e20rCheckin extends e20rSettings {
                     wp_send_json_error( array( 'ecode' => 1 ) );
                 }
 
+                dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
+                $e20rArticle->init($articles->id);
                 $config->articleId = $articles->id;
             }
         }
@@ -1021,6 +989,7 @@ class e20rCheckin extends e20rSettings {
 
 		    $config->{$key} = $val;
 	    }
+
         dbg("e20rCheckin::shortcode_dailyProgress() - Config is currently: ");
 	    dbg( $config );
 
