@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.8.18
+Stable tag: 0.8.19
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -15,6 +15,22 @@ We developed the plugin to meet our own specific coaching platform needs which r
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
 
 == ChangeLog ==
+
+= 0.8.19 =
+* Check-in action would sometimes overwrite check-in data for other days.
+* Set activity override if user navigates to next/previous day.
+* Bind to the "Read more" activity link
+* Removed dummy class function
+* Add redirect with POST when user clicks teh "read more" link for a future/past activity.
+* Load new settings for the correct article when the user is navigating through daily_progress days
+* Remove commented out callback handler(s)
+* Remove debug for arguments in find() (log file hog!)
+* Handle cases where the activity short code is loaded as part of a redirect with specific activity ID & article information present. Note: Short code attributes take precedence over $_POST entries. Only load data for specific activities if authorized to do so
+* Load jquery.redirect.js for daily_progress short code
+* Add ID to Read more link for activity & action excerpts
+* Add event handler for the Activity excerpt "Read more" link
+* Add function to execute on click event for "Read more" link
+* Add support for specifying activity to display when "Read more" link is selected/clicked.
 
 = 0.8.18 =
 * Handle situations where the delay value is 0 (i.e. the beginning of the program)
