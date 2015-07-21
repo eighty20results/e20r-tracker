@@ -16,6 +16,9 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.9 =
+* Display daily progress notes (decoupled from action check-in data)
+
 = 0.8.19 =
 * Check-in action would sometimes overwrite check-in data for other days.
 * Set activity override if user navigates to next/previous day.
