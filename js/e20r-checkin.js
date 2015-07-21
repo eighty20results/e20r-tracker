@@ -32,7 +32,8 @@ jQuery(document).ready(function() {
             this.$ulList = this.$checkinOptions.parents('ul');
             this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
-            this.$activityLnk = jQuery("a#e20r-activity-read-lnk");
+            this.$activityLnk = jQuery("#e20r-checkin-activity").find("#e20r-activity-read-lnk");
+            this.$allowActivityOverride = false;
 
             var me = this;
 
@@ -42,6 +43,7 @@ jQuery(document).ready(function() {
 
             self.$tomorrowBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             self.$yesterdayBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            self.$activityLnk = jQuery("#e20r-daily-progress").find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk")
 
             jQuery("#e20r-daily-progress").find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
 
@@ -73,7 +75,9 @@ jQuery(document).ready(function() {
 
             });
 
-            self.$activityLnk.on("click", function() {
+            jQuery(self.$activityLnk).on("click", function() {
+
+                console.log("Clicked the 'Read more' link");
 
                 jQuery("body").addClass("loading");
                 event.preventDefault();
@@ -121,12 +125,12 @@ jQuery(document).ready(function() {
                 });
             }
         },
-        saveNotes: function( elem, $a, self ) {
+/*        saveNotes: function( elem, $a, self ) {
 
             var $data = {
 
             }
-        },
+        }, */
         saveCheckin: function( elem, $a, self ){
 
 //            console.log("Element is: ", elem );
@@ -293,8 +297,9 @@ jQuery(document).ready(function() {
                     if ( response.success ) {
 
                         jQuery('#e20r-daily-progress').html(response.data);
+                        self.$allowActivityOverride = true;
 
-                        self.bindProgressElements(self);
+                        self.init();
                         return;
                     }
                     else {
@@ -302,6 +307,8 @@ jQuery(document).ready(function() {
                         if ( 1 == response.data.ecode ) {
 
                             console.log("Give the user an error message");
+
+                            self.$allowActivityOverride = false;
 
                             var $string;
 
@@ -316,6 +323,8 @@ jQuery(document).ready(function() {
                 error: function (jqx, errno, errtype) {
 
                     console.log("Error: ", jqx );
+
+                    self.$allowActivityOverride = false;
 
                     var $string;
                     $string = "An error occurred while trying to load the requested page. If you\'d like to try again, please reload ";
@@ -365,6 +374,41 @@ jQuery(document).ready(function() {
         toActivity: function( self ) {
 
             console.log("Clicked the 'Read more' link for the activity");
+
+            var data = {
+                'e20r-checkin-nonce': self.$nonce,
+                'for-date': self.$checkinDate,
+                'article-id': self.$checkinArticleId,
+                'program-id': self.$checkinProgramId,
+                'activity-id': jQuery("#e20r-checkin-activity_id").val(),
+                'activity-override': self.$allowActivityOverride
+            };
+
+            jQuery.redirect( e20r_checkin.activity_url, data );
+
+            /*
+            jQuery.ajax({
+                url: e20r_checkin.url,
+                type: 'POST',
+                timeout: 5000,
+                data: data,
+                success: function (response) {
+                    console.dir(response);
+
+                    return;
+                },
+                error: function (jqx, errno, errtype) {
+
+                    console.log("Error: ", jqx );
+
+                    return;
+
+                },
+                complete: function() {
+                    jQuery("body").removeClass("loading");
+                }
+            });
+            */
         }
     };
 
