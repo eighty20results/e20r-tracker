@@ -187,6 +187,7 @@ class e20rArticle extends e20rSettings {
         global $currentProgram;
 
 	    $postId = null;
+        $activityField = null;
 
         switch( $type ) {
             case 'action':
@@ -198,6 +199,7 @@ class e20rArticle extends e20rSettings {
             case 'activity':
                 // $postId = $this->getActivity( $articleId );
 				$postId = $this->model->getSetting( $articleId, 'activity_id' );
+                $activityField = '<input type="hidden" id="e20r-checkin-activity_id" value="' . $postId . '" name="e20r-checkin-activity_id">';
 	            $prefix = null; // Using NULL prefix for activities
 	            dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
 		        break;
@@ -243,6 +245,7 @@ class e20rArticle extends e20rSettings {
                 <h4>
                     <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
                 </h4>
+                <?php echo !is_null( $activityField ) ? $activityField : null; ?>
                 <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
 
                 if ( $type == 'action' ) {
@@ -276,7 +279,7 @@ class e20rArticle extends e20rSettings {
                     }
                     */
                 }?>
-                <p class="e20r-descr"><a href="<?php echo $url; ?>" title="<?php get_the_title(); ?>">
+                <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title(); ?>">
                         <?php _e('Click to read', 'e20tracker'); ?>
                     </a>
                 </p><?php
@@ -397,9 +400,16 @@ class e20rArticle extends e20rSettings {
         $article = $this->model->findArticle( 'release_day', $delayVal, 'numeric', $currentProgram->id );
 
         if ( ( false != $article ) && ( count($article) == 1 ) ) {
+            if (  is_object( $article ) ) {
+                dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article->id}");
+                return $article->id;
+            }
 
-            dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article[0]->id}");
-            return $article[0]->id;
+            if ( is_array( $article ) ) {
+                dbg("e20rArticle::findArticleByDelay() - Returning a single articleID: {$article[0]->id}");
+                return $article[0]->id;
+            }
+            return false;
         }
         elseif ( count($article) > 1 ) {
             // TODO: Won't return all of the articles defined for this program!

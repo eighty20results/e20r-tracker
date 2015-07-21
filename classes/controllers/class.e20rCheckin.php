@@ -82,6 +82,7 @@ class e20rCheckin extends e20rSettings {
 
         return $columns;
     }
+
 	public function hasCompletedLesson( $articleId, $postId = null, $userId = null, $delay = null ) {
 
 		dbg("e20rCheckin::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson.");
@@ -173,48 +174,6 @@ class e20rCheckin extends e20rSettings {
     public function findCheckinItemId( $articleId ) {
 
         global $e20rArticle;
-    }
-
-    public function saveCheckin_callback() {
-
-        dbg("e20rCheckin::saveCheckin_callback() - Attempting to save checkin for user.");
-
-        // Save the $_POST data for the Action callback
-        global $current_user;
-	    global $e20rTracker;
-
-        dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
-        dbg($_POST);
-
-        $data = array(
-            'user_id' => $current_user->ID,
-            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
-            'checkin_type' => (isset( $_POST['checkin-type']) ? $e20rTracker->sanitize( $_POST['checkin-type'] ) : null),
-            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : CONST_NULL_ARTICLE ),
-            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
-            'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
-	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
-	        'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
-	        'checkin_note' => (isset( $_POST['checkin-note']) ? $e20rTracker->sanitize( $_POST['checkin-note'] ) : null ),
-            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
-            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
-        );
-
-	    if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
-		    dbg("e20rCheckin::saveCheckin_callback() - No checkin needed/scheduled");
-		    wp_send_json_error();
-		    wp_die();
-	    }
-
-        if ( ! $this->model->setCheckin( $data ) ) {
-
-            dbg("e20rCheckin::saveCheckin_callback() - Error saving checkin information...");
-            wp_send_json_error();
-            wp_die();
-        }
-
-        wp_send_json_success();
-        wp_die();
     }
 
     public function setArticleAsComplete( $userId, $articleId ) {
@@ -502,6 +461,58 @@ class e20rCheckin extends e20rSettings {
 		return $this->view->view_user_achievements( $results );
 	}
 
+    public function saveCheckin_callback() {
+
+        dbg("e20rCheckin::saveCheckin_callback() - Attempting to save checkin for user.");
+
+        dbg("e20rCheckin::saveCheckin_callback() - Checking ajax referrer privileges");
+        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+
+        dbg("e20rCheckin::saveCheckin_callback() - Checking ajax referrer has the right privileges");
+
+        if ( ! is_user_logged_in() ) {
+            auth_redirect();
+        }
+
+        // Save the $_POST data for the Action callback
+        global $current_user;
+        global $e20rTracker;
+
+        dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
+        dbg($_POST);
+
+        $data = array(
+            'user_id' => $current_user->ID,
+            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
+            'action_id' => (isset( $_POST['action-id']) ? ( $e20rTracker->sanitize( $_POST['action-id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['action-id'] ) : null ) : null),
+            'checkin_type' => (isset( $_POST['checkin-type']) ? $e20rTracker->sanitize( $_POST['checkin-type'] ) : null),
+            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : CONST_NULL_ARTICLE ),
+            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
+            'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
+            'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
+            'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
+            'checkin_note' => (isset( $_POST['checkin-note']) ? $e20rTracker->sanitize( $_POST['checkin-note'] ) : null ),
+            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
+            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
+        );
+
+        if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
+            dbg("e20rCheckin::saveCheckin_callback() - No checkin needed/scheduled");
+            wp_send_json_error();
+            wp_die();
+        }
+
+        if ( ! $this->model->setCheckin( $data ) ) {
+
+            dbg("e20rCheckin::saveCheckin_callback() - Error saving checkin information...");
+            wp_send_json_error();
+            wp_die();
+        }
+
+        wp_send_json_success();
+        wp_die();
+    }
+
 	public function dailyProgress_callback() {
 
 		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
@@ -648,42 +659,7 @@ class e20rCheckin extends e20rSettings {
 			wp_send_json_error( __( "Unable to save your update", "e20rtracke" ) );
 		}
 	}
-/*
-	public function dailyCheckin_callback() {
 
-		dbg($_POST);
-		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-assignment-answer' );
-		dbg("e20rCheckin::dailyCheckin_callback() - Ajax callee has the right privileges");
-
-		if ( ! is_user_logged_in() ) {
-			auth_redirect();
-		}
-
-        global $e20rTracker;
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rAssignment;
-
-        $articleId = ( isset( $_POST['e20r-article-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-id'] ) : null );
-        $userId = ( isset( $_POST['e20r-article-user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-user_id'] ) : null );
-        $delay = ( isset( $_POST['e20r-article-release_day'] ) ? $e20rTracker->sanitize( $_POST['e20r-article-release_day'] ) : null );
-        $answerDate = ( isset( $_POST['e20r-assignment-answer_date'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer_date'] ) : null );
-        $answerIds = ( isset( $_POST['e20r-assignment-id'] ) && is_array( $_POST['e20r-assignment-id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-id'] ) : array( ) );
-        $questionIds = ( isset( $_POST['e20r-assignment-question_id'] ) && is_array( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : array( ) );
-        $fieldTypes = ( isset( $_POST['e20r-assignment-field_type'] ) && is_array( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : array() );
-        $answers = ( isset( $_POST['e20r-assignment-answer'] ) && is_array( $_POST['e20r-assignment-answer'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-answer'] ) : array() );
-
-        $programId = $e20rProgram->getProgramIdForUser( $userId, $articleId );
-
-        if ( ( CONST_NULL_ARTICLE === $articleId ) && ( is_null( $userId ) || is_null($answerDate) || is_null($delay) ) ) {
-
-            dbg("e20rCheckin::dailyProgress_callback() - Can't save assignment info!");
-            wp_send_json_error( __("Unable to save your confirmation. Please contact technical support!", "e20rtracker" ) );
-        }
-
-
-    }
-*/
     public function nextCheckin_callback() {
 
         dbg("e20rCheckin::nextCheckin_callback() - Checking ajax referrer privileges");
@@ -700,6 +676,7 @@ class e20rCheckin extends e20rSettings {
         global $e20rTracker;
 
         global $currentProgram;
+        global $currentArticle;
 
         global $current_user;
         global $post;
@@ -713,18 +690,18 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        // $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : intval( $_POST['program-id'] ) );
         $config->startTS = strtotime( $currentProgram->startdate );
 
         $config->articleId = ( ! isset( $_POST['article-id'] ) ? null : intval($_POST['article-id']) );
-
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
 
         $pdate = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
 
 	    dbg("e20rCheckin::nextCheckin_callback() - Expected delay info: {$pdate} from {$_POST['e20r-checkin-day']}");
 
-	    $config->delay = $e20rTracker->getDelay( $pdate, $config->userId );
+        $config->delay = $e20rTracker->getDelay( $pdate, $config->userId );
 
 	    dbg("e20rCheckin::nextCheckin_callback() - using delay info: {$config->delay} from {$_POST['e20r-checkin-day']}");
 
@@ -734,6 +711,32 @@ class e20rCheckin extends e20rSettings {
         $dashboard = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ? get_permalink( $currentProgram->dashboard_page_id ) : null;
         $config->url =  $dashboard;
 
+        if ( $pdate != $currentArticle->release_day ) {
+
+            dbg("e20rCheckin::nextCheckin_callback() - Need to load a new article (by delay)");
+
+            $articles = $e20rArticle->findArticle( 'release_day', $pdate, 'numeric', $config->programId );
+            dbg("e20rCheckin::nextCheckin_callback() - Found " . count($articles) . " articles for program {$config->programId} and with a release day of {$pdate}");
+
+            if ( is_object($articles ) ) {
+                // Single article returned.
+
+                dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
+                $access = $e20rTracker->hasAccess( $config->userId, $articles->post_id );
+
+                dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
+
+                if ( false == $access  ) {
+                    dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " . get_the_title( $articles->post_id ) );
+                    wp_send_json_error( array( 'ecode' => 1 ) );
+                }
+
+                dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
+                $e20rArticle->init($articles->id);
+                $config->articleId = $articles->id;
+            }
+        }
+
 
         // $config->url = URL_TO_CHECKIN_FORM;
         dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
@@ -742,7 +745,7 @@ class e20rCheckin extends e20rSettings {
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
             dbg("e20rCheckin::nextCheckin_callback() - Sending new dailyProgress data (html)");
-	        dbg($html);
+	        // dbg($html);
             wp_send_json_success( $html );
         }
 
@@ -758,6 +761,12 @@ class e20rCheckin extends e20rSettings {
 
         // dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
 
+        if ( $config->delay <= 0 ) {
+
+            dbg("e20rCheckin::dailyProgress() - Negative delay value. No article to be found.");
+            $config->articleId = CONST_NULL_ARTICLE;
+        }
+
         if ( !isset( $currentArticle->post_id) || ( $config->articleId != $currentArticle->id ) ) {
 
             dbg("e20rCheckin::dailyProgress() - No or wrong article is active. Updating...");
@@ -769,11 +778,13 @@ class e20rCheckin extends e20rSettings {
             $config->maxDelayFlag = CONST_MAXDAYS_FUTURE;
         }
 
+/*
         if ( $config->delay < ( $config->delay_byDate - 2 ) ) {
 
             // The user is attempting to view a day >2 days before today.
             $config->maxDelayFlag = CONST_MAXDAYS_PAST;
         }
+*/
 
         $config->prev = $config->delay - 1;
         $config->next = $config->delay + 1;
@@ -854,6 +865,8 @@ class e20rCheckin extends e20rSettings {
             // dbg( "e20rCheckin::dailyProgress() - Activity info loaded (count): " . count( $activity ) );
             // dbg($activity);
 
+            $note = null;
+
             foreach ( $checkinIds as $id ) {
 
                 dbg("e20rCheckin::dailyProgress() - Processing checkin ID {$id}");
@@ -879,6 +892,7 @@ class e20rCheckin extends e20rSettings {
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in & action list" );
 
                         $checkin            = $this->model->loadUserCheckin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
+                        $note               = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
                         $checkin->actionList = $this->model->getActions( $id, $settings->checkin_type, -3 );
 
                         break;
@@ -891,7 +905,8 @@ class e20rCheckin extends e20rSettings {
 
                     case $this->types['note']:
                         // We handle this in the action check-in.
-                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity note(s)" );
+                        dbg( "e20rCheckin::dailyProgress() - Explicitly loading data for daily activity note(s)" );
+                        $note            = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
                         break;
 
                     default:
@@ -906,11 +921,15 @@ class e20rCheckin extends e20rSettings {
                     // Reset the value to true Y-m-d format
                     $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
                     $this->checkin[ $settings->checkin_type ] = $checkin;
+
+                    if ( !$this->isEmpty( $note ) ) {
+
+                        dbg( "e20rCheckin::dailyProgress() - Including data for daily progress note" );
+                        $this->checkin[ CHECKIN_NOTE ] = $note;
+                    }
                 }
 
             } // End of foreach()
-
-
 
             dbg( "e20rCheckin::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}.." );
             dbg( $this->checkin );
@@ -990,6 +1009,7 @@ class e20rCheckin extends e20rSettings {
 
 		    $config->{$key} = $val;
 	    }
+
         dbg("e20rCheckin::shortcode_dailyProgress() - Config is currently: ");
 	    dbg( $config );
 
@@ -1039,6 +1059,7 @@ class e20rCheckin extends e20rSettings {
         $action = null;
         $activity = null;
         $assignment = null;
+        $note = null;
         $survey = null;
         $view = null;
 
@@ -1065,6 +1086,12 @@ class e20rCheckin extends e20rSettings {
                     $activity = $c;
                 }
 
+                if ( $type == CHECKIN_NOTE ) {
+
+                    dbg( "e20rCheckin::load_UserCheckin() - Loading check-in note(s)" );
+                    $note = $c;
+                }
+
                 if ( $type == CHECKIN_ASSIGNMENT ) {
                     $assignment = $c;
                 }
@@ -1077,8 +1104,8 @@ class e20rCheckin extends e20rSettings {
 
             if ( ( ! $this->isEmpty( $action ) ) && ( ! $this->isEmpty( $activity ) ) ) {
 
-                dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Actions & Activity check-in.");
-                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList);
+                dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Dashboard");
+                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note );
             }
 
         }
@@ -1087,7 +1114,7 @@ class e20rCheckin extends e20rSettings {
             ( $config->type == $this->getTypeDescr( CHECKIN_ACTIVITY ) ) ) {
 
             dbg("e20rCheckin::load_UserCheckin() - An activity or action check-in requested...");
-            $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
+            $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList, $note );
         }
 
         return $view;

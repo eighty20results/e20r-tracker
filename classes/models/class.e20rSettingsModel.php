@@ -392,9 +392,10 @@ class e20rSettingsModel {
                 'order' => $order,
             );
         }
+/*
 		dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
 		dbg($args);
-
+*/
 		$dataList = $this->loadForQuery( $args );
 
 		if ( empty( $dataList ) && $key == 'id' )  {

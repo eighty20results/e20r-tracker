@@ -233,6 +233,8 @@ class e20rCheckinModel extends e20rSettingsModel {
 			$dateArr['max'] . " 23:59:59"
 		);
 
+        // dbg("e20rCheckinModel::loadCheckinsForUser() - SQL: {$sql}");
+
 		$results = $wpdb->get_results( $sql );
 
 		if ( $results == false ) {
@@ -405,6 +407,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $result = $wpdb->get_row( $sql );
 
         if ( ! empty( $result ) ) {
+
             dbg("e20rCheckinModel::exists() - Got a result returned: ");
             dbg($result);
             return $result;

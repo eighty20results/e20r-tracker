@@ -22,7 +22,7 @@ class e20rCheckinView extends e20rSettingsView {
 
     }
 
-    public function view_actionAndActivityCheckin( $config, $action, $activity, $habitEntries) {
+    public function view_actionAndActivityCheckin( $config, $action, $activity, $habitEntries, $note = null) {
 
         global $e20rTracker;
         global $e20rArticle;
@@ -188,17 +188,17 @@ class e20rCheckinView extends e20rSettingsView {
                 <fieldset class="notes">
 	                <input type="hidden" name="e20r-checkin-id" class="e20r-checkin-id" value="<?php echo $action->id; ?>" />
 	                <input type="hidden" name="e20r-checkin-checkin_type" class="e20r-checkin-checkin_type" value="<?php echo CHECKIN_NOTE; ?>" />
-	                <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
+	                <input type="hidden" name="e20r-checkin-checkin_short_name" class="e20r-checkin-checkin_short_name" value="<?php echo $note->checkin_short_name; ?>" />
 
 	                <legend><?php _e("Notes", "e20rtracker"); ?></legend>
 
                     <p><?php _e("Please, feel free to add any notes that you'd like to record for this day. The notes are for your benefit; your coaches won't read them unless you ask them to.", "e20rtracker"); ?></p>
 
                     <div id="note-display">
-                        <div style="margin: 8px;"><?php isset( $action->checkin_note ) ? base64_decode( $action->checkin_note ) : 'hidden text'; ?></div>
+                        <div style="margin: 8px;"><?php isset( $note->checkin_note ) ? base64_decode( $note->checkin_note ) : 'hidden text'; ?></div>
                     </div>
 
-                    <textarea name="value" id="note-textarea"><?php echo isset( $action->checkin_note ) ? base64_decode( $action->checkin_note ) : null ; ?></textarea>
+                    <textarea name="value" id="note-textarea"><?php echo isset( $note->checkin_note ) ? base64_decode( $note->checkin_note ) : null ; ?></textarea>
 
                     <div id="note-display-overflow-pad"></div>
 

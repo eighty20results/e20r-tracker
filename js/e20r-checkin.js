@@ -32,6 +32,8 @@ jQuery(document).ready(function() {
             this.$ulList = this.$checkinOptions.parents('ul');
             this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            this.$activityLnk = jQuery("#e20r-checkin-activity").find("#e20r-activity-read-lnk");
+            this.$allowActivityOverride = false;
 
             var me = this;
 
@@ -41,6 +43,7 @@ jQuery(document).ready(function() {
 
             self.$tomorrowBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             self.$yesterdayBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            self.$activityLnk = jQuery("#e20r-daily-progress").find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk")
 
             jQuery("#e20r-daily-progress").find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
 
@@ -70,6 +73,16 @@ jQuery(document).ready(function() {
                 event.preventDefault();
                 self.dayNav(self, this);
 
+            });
+
+            jQuery(self.$activityLnk).on("click", function() {
+
+                console.log("Clicked the 'Read more' link");
+
+                jQuery("body").addClass("loading");
+                event.preventDefault();
+
+                self.toActivity( self );
             });
         },
         showBtn: function( self ) {
@@ -112,12 +125,12 @@ jQuery(document).ready(function() {
                 });
             }
         },
-        saveNotes: function( elem, $a, self ) {
+/*        saveNotes: function( elem, $a, self ) {
 
             var $data = {
 
             }
-        },
+        }, */
         saveCheckin: function( elem, $a, self ){
 
 //            console.log("Element is: ", elem );
@@ -137,7 +150,7 @@ jQuery(document).ready(function() {
                 'program-id': self.$checkinProgramId,
                 'checkedin': jQuery(elem).val(),
                 'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first').val(),
-                'id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
+                'action-id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
                 'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_short_name:first').val()
             };
 
@@ -259,7 +272,7 @@ jQuery(document).ready(function() {
 
             var navDay = jQuery(elem).next("input[name^='e20r-checkin-day']").val();
 
-            console.log("Day Nav value: ", navDay );
+            // console.log("Day Nav value: ", navDay );
 
             var data = {
                 action: 'daynav',
@@ -280,13 +293,42 @@ jQuery(document).ready(function() {
                 success: function (response) {
 
                     console.log("Response: ", response);
-                    jQuery('#e20r-daily-progress').html(response.data);
 
-                    self.bindProgressElements(self);
+                    if ( response.success ) {
+
+                        jQuery('#e20r-daily-progress').html(response.data);
+                        self.$allowActivityOverride = true;
+
+                        self.init();
+
+                        console.log("Re-init for Note object(s)");
+                        jQuery(Note.init());
+
+                        return;
+                    }
+                    else {
+                        console.log("success == false returned from AJAX call");
+                        if ( 1 == response.data.ecode ) {
+
+                            console.log("Give the user an error message");
+
+                            self.$allowActivityOverride = false;
+
+                            var $string;
+
+                            $string = "Sorry, we're not quite ready to show you that yet...\n\n";
+                            $string += "If you want see what tomorrow\'s workout is, ";
+                            $string += "head over to the Archives.";
+
+                            alert( $string );
+                        }
+                    }
                 },
                 error: function (jqx, errno, errtype) {
 
                     console.log("Error: ", jqx );
+
+                    self.$allowActivityOverride = false;
 
                     var $string;
                     $string = "An error occurred while trying to load the requested page. If you\'d like to try again, please reload ";
@@ -331,6 +373,45 @@ jQuery(document).ready(function() {
             });
 
             $body.removeClass("loading");
+            */
+        },
+        toActivity: function( self ) {
+
+            console.log("Clicked the 'Read more' link for the activity");
+
+            var data = {
+                'e20r-checkin-nonce': self.$nonce,
+                'for-date': self.$checkinDate,
+                'article-id': self.$checkinArticleId,
+                'program-id': self.$checkinProgramId,
+                'activity-id': jQuery("#e20r-checkin-activity_id").val(),
+                'activity-override': self.$allowActivityOverride
+            };
+
+            jQuery.redirect( e20r_checkin.activity_url, data );
+
+            /*
+            jQuery.ajax({
+                url: e20r_checkin.url,
+                type: 'POST',
+                timeout: 5000,
+                data: data,
+                success: function (response) {
+                    console.dir(response);
+
+                    return;
+                },
+                error: function (jqx, errno, errtype) {
+
+                    console.log("Error: ", jqx );
+
+                    return;
+
+                },
+                complete: function() {
+                    jQuery("body").removeClass("loading");
+                }
+            });
             */
         }
     };
@@ -447,7 +528,7 @@ jQuery(document).ready(function() {
             this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
             this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
             this.note_actualdate = this.noteField.siblings('#e20r-checkin-checkedin_date').val();
-            this.checkin_type = this.actionFields.find('.e20r-checkin-checkin_type').val();
+            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
             this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val()
 
             var self = this;
@@ -570,10 +651,10 @@ jQuery(document).ready(function() {
                         var data = {
                             action: 'saveCheckin',
                             'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
-                            'id': self.note_id,
+                            'action-id': self.note_id,
                             'checkin-short-name': self.checkin_shortname,
                             'checkin-date': self.note_date,
-                            'checkedin_date': self.note_actualdate,
+                            'checkedin-date': self.note_actualdate,
                             'assignment-id': self.note_assignment,
                             'article-id': self.note_article,
                             'program-id': self.note_program,

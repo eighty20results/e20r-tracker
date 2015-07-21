@@ -48,9 +48,9 @@ class e20rTracker {
     Give admin members access to everything.
     Add this to your active theme's functions.php or a custom plugin.
 	*/
-	public function admin_access_filter($access, $post, $user) {
+	public function admin_access_filter($access, $post, $user ) {
 
-		if ( ( !empty($user->membership_level) && $user->membership_level->ID == 2 ) || ( current_user_can('administrator') ) ) {
+		if ( ( current_user_can('administrator') ) ) {
 			// dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
 			return true;    //level 2 (and administrator) ALWAYS has access
 		}
@@ -218,7 +218,6 @@ class e20rTracker {
 	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
-
 
 	        // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
@@ -1534,19 +1533,25 @@ class e20rTracker {
 
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
-            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}");
+            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to teh preview");
             return true;
         }
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
 
-            $results = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+            $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
 
-            if ( $results[0] === true ) { // First item in results array == true if user has access
+            if ( $result[0] ) {
 
-                dbg( "e20rTracker::hasAccess() - User {$userId} has access to this post" );
-                return true;
+                dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . $result[0]);
+                // $flt_access = apply_filters('pmpro_has_membership_access_filter', $result[0], $myPost, $myUser, $levels );
+
             }
+
+            return $result[0];
+        }
+        else {
+            dbg("e20rTracker::hasAccess() - No membership access function found!");
         }
 
         return false;
@@ -1634,6 +1639,7 @@ class e20rTracker {
 
         global $post;
         global $pagenow;
+        global $currentProgram;
 
         if ( ! isset( $post->ID ) ) {
             return;
@@ -1646,19 +1652,21 @@ class e20rTracker {
 
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
+	        wp_register_script( 'jquery-redirect', E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.js', array( 'jquery' ), '1.0', false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js' ), E20R_VERSION, false );
             wp_register_script( 'e20r-assignments-js', E20R_PLUGINS_URL . '/js/e20r-assignments.js', array( 'jquery', 'e20r-checkin-js'), E20R_VERSION, false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
                     'url' => admin_url('admin-ajax.php'),
+                    'activity_url' => get_permalink( $currentProgram->activity_page_id ),
                 )
             );
 
             wp_enqueue_style( 'e20r-assignments');
             wp_print_scripts( array(
-                'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
+                'base64', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
                 ) );
 
         }
@@ -2929,6 +2937,7 @@ class e20rTracker {
 
 	    if ( $this->validateDate( $delayVal ) ) {
 
+            dbg("e20rTracker::getDelay() - {$delayVal} is a date.");
 		    $delay = $this->daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
 
 		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$startDate}");
@@ -2991,22 +3000,31 @@ class e20rTracker {
         return false;
     }
 
-    public function getDateFromDelay( $delay = 0, $userId = null ) {
+    public function getDateFromDelay( $rDelay = "now", $userId = null ) {
 
         global $current_user;
         global $e20rProgram;
+        global $currentProgram;
 
         if ( ! $userId ) {
             $userId = $current_user->ID;
         }
 
+        dbg("e20rTracker::getDateFromDelay() - Received Delay value of {$rDelay} from calling function: " . $this->whoCalledMe() );
         $startTS = $e20rProgram->startdate( $userId );
 
-        if ( ( $delay === 0 ) || ( $delay == 'now' ) ) {
+        if ( 0 == $rDelay ) {
+            $delay = 0;
+        }
+        elseif ( "now" == $rDelay ) {
 
-            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user");
+            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user. Got delay value of {$rDelay}");
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
         }
+        else {
+            $delay = $rDelay;
+        }
+
 
         dbg("e20rTracker::getDateFromDelay() - user w/id {$userId} has a startdate timestamp of {$startTS}");
 
