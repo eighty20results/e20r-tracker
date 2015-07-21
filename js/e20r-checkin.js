@@ -283,7 +283,7 @@ jQuery(document).ready(function() {
                 'e20r-checkin-day': navDay
             }
 
-            console.log("toNext data: ", data);
+            // console.log("toNext data: ", data);
 
             jQuery.ajax({
                 url: e20r_checkin.url,
@@ -292,7 +292,7 @@ jQuery(document).ready(function() {
                 data: data,
                 success: function (response) {
 
-                    console.log("Response: ", response);
+                    // console.log("Response: ", response);
 
                     if ( response.success ) {
 
@@ -534,7 +534,7 @@ jQuery(document).ready(function() {
 
             var self = this;
 
-            console.log('Note object: ', self);
+            // console.log('Note object: ', self);
 
             jQuery('#note-textarea').autogrow().trigger('keyup');
 
