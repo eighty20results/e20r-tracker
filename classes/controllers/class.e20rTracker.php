@@ -2843,7 +2843,7 @@ class e20rTracker {
                 dbg("e20rTracker::getLevelList() - Level Name: {$name}");
             }
 
-            $allLevels = pmpro_getAllLevels();
+            $allLevels = pmpro_getAllLevels( $onlyVisible, true );
             $levels    = array();
 
             if ( ! empty( $name ) ) {
