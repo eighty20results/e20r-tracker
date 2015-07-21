@@ -405,6 +405,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         $result = $wpdb->get_row( $sql );
 
         if ( ! empty( $result ) ) {
+
             dbg("e20rCheckinModel::exists() - Got a result returned: ");
             dbg($result);
             return $result;
