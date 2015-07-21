@@ -565,6 +565,7 @@ class e20rWorkout extends e20rSettings {
 
 		$config = new stdClass();
 		$workoutData = array();
+        $activity_override = false;
 
 		$tmp = shortcode_atts( array(
 			'type' => 'activity',
@@ -578,19 +579,64 @@ class e20rWorkout extends e20rSettings {
             }
 		}
 
-		$config->userId = $current_user->ID;
-		// $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
+        $config->userId = $current_user->ID;
+        // $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
         $config->programId = $currentProgram->id;
         $config->startTS = strtotime( $currentProgram->startdate );
-		// $config->startTS = $e20rProgram->startdate( $config->userId );
-		$config->delay = $e20rTracker->getDelay( 'now' );
-		$config->date = $e20rTracker->getDateForPost( $config->delay );
-		$config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
+        // $config->startTS = $e20rProgram->startdate( $config->userId );
+        $config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
         $config->withInput = true;
 
-		$config->dayNo = date_i18n( 'N', current_time('timestamp') );
+        $actId_from_dash = isset( $_POST['activity-id'] ) ? $e20rTracker->sanitize( $_POST['activity-id'] ) : null;
 
-        dbg( $config );
+        // Make sure we won't load anything but the short code requested activity
+        if ( empty( $config->activity_id ) ) {
+
+            dbg("e20rWorkout::shortcode_activity() - No user specified activity ID in short code config");
+            dbg($_POST);
+
+            // Check whether we go called via the dashboard and an activity Id is given to us from there.
+            if ( !empty( $actId_from_dash ) ) {
+
+                $act_override = isset( $_POST['activity-override']) ? $e20rTracker->sanitize( $_POST['activity-override'] ) : false;
+                $articleId = isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null;
+                $checkin_date = isset( $_POST['for-date']) ? $e20rTracker->sanitize( $_POST['for-date'] ) : null;
+
+                dbg("e20rWorkout::shortcode_activity() - Original activity ID is: " . ( isset( $config->activity_id ) ? $config->activity_id : 'Not defined' ) );
+                dbg("e20rWorkout::shortcode_activity() - Dashboard requested a specific activity ID: {$actId_from_dash}.");
+
+                if ( $act_override == true ) {
+
+                    $activity_override = true;
+                    $config->activity_id = $actId_from_dash;
+
+                    if ( !isset($currentArticle->id) || ( $currentArticle->id != $articleId ) ) {
+
+                        dbg("e20rWorkout::shortcode_activity() - Loading article with id {$articleId}");
+                        $e20rArticle->init( $articleId );
+                    }
+
+                    $config->date = $checkin_date;
+                    $config->delay = $e20rTracker->getDelay( $config->date, $config->userId );
+
+                    dbg("e20rWorkout::shortcode_activity() - Overridden configuration: ");
+                    dbg($config);
+                }
+
+            }
+        }
+
+        if ( !isset( $config->delay ) || empty( $config->delay ) ) {
+            $config->delay = $e20rTracker->getDelay('now');
+        }
+
+        if ( !isset( $config->date ) || empty( $config->date ) ) {
+            $config->date = $e20rTracker->getDateForPost($config->delay);
+        }
+
+        $config->dayNo = date_i18n( 'N', current_time('timestamp') );
+
+        // dbg( $config );
 
 		dbg("e20rWorkout::shortcode_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
 
@@ -703,7 +749,7 @@ class e20rWorkout extends e20rSettings {
                 dbg( "e20rWorkout::shortcode_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
 				$saved_data = $this->model->getRecordedActivity( $config, $w->id );
 
-				if ( ( ! empty( $w->days ) ) && ( ! in_array( $config->dayNo, $w->days ) ) ) {
+				if ( ( false == $activity_override ) && ( ! empty( $w->days ) ) && ( ! in_array( $config->dayNo, $w->days ) ) ) {
 
 					dbg( "e20rWorkout::shortcode_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
 					dbg( $w->days );
