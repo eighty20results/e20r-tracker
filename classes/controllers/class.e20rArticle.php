@@ -279,7 +279,7 @@ class e20rArticle extends e20rSettings {
                     }
                     */
                 }?>
-                <p class="e20r-descr"><a href="<?php echo $url; ?>" title="<?php get_the_title(); ?>">
+                <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title(); ?>">
                         <?php _e('Click to read', 'e20tracker'); ?>
                     </a>
                 </p><?php
