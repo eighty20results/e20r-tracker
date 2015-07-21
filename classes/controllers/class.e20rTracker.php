@@ -217,7 +217,6 @@ class e20rTracker {
 	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
 
-
 	        // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
 
@@ -1636,6 +1635,7 @@ class e20rTracker {
 
         global $post;
         global $pagenow;
+        global $currentProgram;
 
         if ( ! isset( $post->ID ) ) {
             return;
@@ -1648,19 +1648,21 @@ class e20rTracker {
 
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
+	        wp_register_script( 'jquery-redirect', E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.js', array( 'jquery' ), '1.0', false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js' ), E20R_VERSION, false );
             wp_register_script( 'e20r-assignments-js', E20R_PLUGINS_URL . '/js/e20r-assignments.js', array( 'jquery', 'e20r-checkin-js'), E20R_VERSION, false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
                     'url' => admin_url('admin-ajax.php'),
+                    'activity_url' => get_permalink( $currentProgram->activity_page_id ),
                 )
             );
 
             wp_enqueue_style( 'e20r-assignments');
             wp_print_scripts( array(
-                'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
+                'base64', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
                 ) );
 
         }
@@ -2931,6 +2933,7 @@ class e20rTracker {
 
 	    if ( $this->validateDate( $delayVal ) ) {
 
+            dbg("e20rTracker::getDelay() - {$delayVal} is a date.");
 		    $delay = $this->daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
 
 		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$startDate}");
