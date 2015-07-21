@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.8.19
+Stable tag: 0.9.2
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -13,6 +13,15 @@ The plugin is designed to coach clients through various change processes, whethe
 
 We developed the plugin to meet our own specific coaching platform needs which revolved around a year long nutrition coaching approach.
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
+
+=== Short Codes ===
+
+* Weekly Progress (weight/girth measurements).
+
+Shortcode: [weekly_progress]
+
+Arguments:
+    [weekly_progress day="<days since startdate>" from_programstart="<1|0>" use_article_id="<1|0>" demo_form="0|1"]
 
 == ChangeLog ==
 
