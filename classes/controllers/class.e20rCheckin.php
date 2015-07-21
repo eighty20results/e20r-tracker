@@ -863,6 +863,8 @@ class e20rCheckin extends e20rSettings {
             // dbg( "e20rCheckin::dailyProgress() - Activity info loaded (count): " . count( $activity ) );
             // dbg($activity);
 
+            $note = null;
+
             foreach ( $checkinIds as $id ) {
 
                 dbg("e20rCheckin::dailyProgress() - Processing checkin ID {$id}");
@@ -888,6 +890,7 @@ class e20rCheckin extends e20rSettings {
                         dbg( "e20rCheckin::dailyProgress() - Loading data for daily action check-in & action list" );
 
                         $checkin            = $this->model->loadUserCheckin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
+                        $note               = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
                         $checkin->actionList = $this->model->getActions( $id, $settings->checkin_type, -3 );
 
                         break;
@@ -900,7 +903,8 @@ class e20rCheckin extends e20rSettings {
 
                     case $this->types['note']:
                         // We handle this in the action check-in.
-                        dbg( "e20rCheckin::dailyProgress() - Loading data for daily activity note(s)" );
+                        dbg( "e20rCheckin::dailyProgress() - Explicitly loading data for daily activity note(s)" );
+                        $note            = $this->model->loadUserCheckin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
                         break;
 
                     default:
@@ -915,11 +919,15 @@ class e20rCheckin extends e20rSettings {
                     // Reset the value to true Y-m-d format
                     $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
                     $this->checkin[ $settings->checkin_type ] = $checkin;
+
+                    if ( !$this->isEmpty( $note ) ) {
+
+                        dbg( "e20rCheckin::dailyProgress() - Including data for daily progress note" );
+                        $this->checkin[ CHECKIN_NOTE ] = $note;
+                    }
                 }
 
             } // End of foreach()
-
-
 
             dbg( "e20rCheckin::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}.." );
             dbg( $this->checkin );
@@ -1049,6 +1057,7 @@ class e20rCheckin extends e20rSettings {
         $action = null;
         $activity = null;
         $assignment = null;
+        $note = null;
         $survey = null;
         $view = null;
 
@@ -1075,6 +1084,12 @@ class e20rCheckin extends e20rSettings {
                     $activity = $c;
                 }
 
+                if ( $type == CHECKIN_NOTE ) {
+
+                    dbg( "e20rCheckin::load_UserCheckin() - Loading check-in note(s)" );
+                    $note = $c;
+                }
+
                 if ( $type == CHECKIN_ASSIGNMENT ) {
                     $assignment = $c;
                 }
@@ -1087,8 +1102,8 @@ class e20rCheckin extends e20rSettings {
 
             if ( ( ! $this->isEmpty( $action ) ) && ( ! $this->isEmpty( $activity ) ) ) {
 
-                dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Actions & Activity check-in.");
-                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList);
+                dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Dashboard");
+                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note );
             }
 
         }
@@ -1097,7 +1112,7 @@ class e20rCheckin extends e20rSettings {
             ( $config->type == $this->getTypeDescr( CHECKIN_ACTIVITY ) ) ) {
 
             dbg("e20rCheckin::load_UserCheckin() - An activity or action check-in requested...");
-            $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList );
+            $view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList, $note );
         }
 
         return $view;
