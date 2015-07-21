@@ -176,48 +176,6 @@ class e20rCheckin extends e20rSettings {
         global $e20rArticle;
     }
 
-    public function saveCheckin_callback() {
-
-        dbg("e20rCheckin::saveCheckin_callback() - Attempting to save checkin for user.");
-
-        // Save the $_POST data for the Action callback
-        global $current_user;
-	    global $e20rTracker;
-
-        dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
-        dbg($_POST);
-
-        $data = array(
-            'user_id' => $current_user->ID,
-            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
-            'checkin_type' => (isset( $_POST['checkin-type']) ? $e20rTracker->sanitize( $_POST['checkin-type'] ) : null),
-            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : CONST_NULL_ARTICLE ),
-            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
-            'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
-	        'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
-	        'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
-	        'checkin_note' => (isset( $_POST['checkin-note']) ? $e20rTracker->sanitize( $_POST['checkin-note'] ) : null ),
-            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
-            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
-        );
-
-	    if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
-		    dbg("e20rCheckin::saveCheckin_callback() - No checkin needed/scheduled");
-		    wp_send_json_error();
-		    wp_die();
-	    }
-
-        if ( ! $this->model->setCheckin( $data ) ) {
-
-            dbg("e20rCheckin::saveCheckin_callback() - Error saving checkin information...");
-            wp_send_json_error();
-            wp_die();
-        }
-
-        wp_send_json_success();
-        wp_die();
-    }
-
     public function setArticleAsComplete( $userId, $articleId ) {
 
         global $e20rArticle;
@@ -502,6 +460,58 @@ class e20rCheckin extends e20rSettings {
 
 		return $this->view->view_user_achievements( $results );
 	}
+
+    public function saveCheckin_callback() {
+
+        dbg("e20rCheckin::saveCheckin_callback() - Attempting to save checkin for user.");
+
+        dbg("e20rCheckin::saveCheckin_callback() - Checking ajax referrer privileges");
+        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+
+        dbg("e20rCheckin::saveCheckin_callback() - Checking ajax referrer has the right privileges");
+
+        if ( ! is_user_logged_in() ) {
+            auth_redirect();
+        }
+
+        // Save the $_POST data for the Action callback
+        global $current_user;
+        global $e20rTracker;
+
+        dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
+        dbg($_POST);
+
+        $data = array(
+            'user_id' => $current_user->ID,
+            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
+            'action_id' => (isset( $_POST['action-id']) ? ( $e20rTracker->sanitize( $_POST['action-id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['action-id'] ) : null ) : null),
+            'checkin_type' => (isset( $_POST['checkin-type']) ? $e20rTracker->sanitize( $_POST['checkin-type'] ) : null),
+            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : CONST_NULL_ARTICLE ),
+            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
+            'checkin_date' => (isset( $_POST['checkin-date']) ? $e20rTracker->sanitize( $_POST['checkin-date'] ) : null ),
+            'checkedin_date' => (isset( $_POST['checkedin-date']) ? $e20rTracker->sanitize( $_POST['checkedin-date'] ) : null ),
+            'descr_id' => (isset( $_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null ),
+            'checkin_note' => (isset( $_POST['checkin-note']) ? $e20rTracker->sanitize( $_POST['checkin-note'] ) : null ),
+            'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
+            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
+        );
+
+        if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
+            dbg("e20rCheckin::saveCheckin_callback() - No checkin needed/scheduled");
+            wp_send_json_error();
+            wp_die();
+        }
+
+        if ( ! $this->model->setCheckin( $data ) ) {
+
+            dbg("e20rCheckin::saveCheckin_callback() - Error saving checkin information...");
+            wp_send_json_error();
+            wp_die();
+        }
+
+        wp_send_json_success();
+        wp_die();
+    }
 
 	public function dailyProgress_callback() {
 
