@@ -187,6 +187,7 @@ class e20rArticle extends e20rSettings {
         global $currentProgram;
 
 	    $postId = null;
+        $activityField = null;
 
         switch( $type ) {
             case 'action':
@@ -198,6 +199,7 @@ class e20rArticle extends e20rSettings {
             case 'activity':
                 // $postId = $this->getActivity( $articleId );
 				$postId = $this->model->getSetting( $articleId, 'activity_id' );
+                $activityField = '<input type="hidden" id="e20r-checkin-activity_id" value="' . $postId . '" name="e20r-checkin-activity_id">';
 	            $prefix = null; // Using NULL prefix for activities
 	            dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
 		        break;
@@ -243,6 +245,7 @@ class e20rArticle extends e20rSettings {
                 <h4>
                     <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
                 </h4>
+                <?php echo !is_null( $activityField ) ? $activityField : null; ?>
                 <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
 
                 if ( $type == 'action' ) {
