@@ -378,6 +378,7 @@ jQuery(document).ready(function() {
         toActivity: function( self ) {
 
             console.log("Clicked the 'Read more' link for the activity");
+            jQuery('body').addClass("loading");
 
             var data = {
                 'e20r-checkin-nonce': self.$nonce,
@@ -569,7 +570,7 @@ jQuery(document).ready(function() {
                     .fadeIn(fadeSpeed);
 
                 setDisplayState();
-
+                jQuery('body').removeClass("loading");
                 return true;
             };
 
@@ -623,6 +624,7 @@ jQuery(document).ready(function() {
 
             jQuery('#save-note')
                 .click(function() {
+
                     var $this = jQuery(this);
                     var $noteTextarea = jQuery('#note-textarea');
 
@@ -665,9 +667,12 @@ jQuery(document).ready(function() {
 
                         console.log("Sending: ", data );
 
+                        jQuery('body').addClass("loading");
+
                         jQuery.post( e20r_checkin.url, data, function( response, status ) {
 
                             if (status == 'success') {
+
                                 $this.data('__persisted', true);
                             }
                         });
@@ -689,6 +694,7 @@ jQuery(document).ready(function() {
                         .find('.notification-entry-saved')
                         .children('div')
                         .fadeIn('medium', function() {
+
                             var self = this;
                             notificationTimeout = setTimeout(function() {
                                 jQuery(self)
