@@ -233,6 +233,8 @@ class e20rCheckinModel extends e20rSettingsModel {
 			$dateArr['max'] . " 23:59:59"
 		);
 
+        // dbg("e20rCheckinModel::loadCheckinsForUser() - SQL: {$sql}");
+
 		$results = $wpdb->get_results( $sql );
 
 		if ( $results == false ) {
