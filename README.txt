@@ -16,6 +16,13 @@ During its development, we discovered a side-benefit which also allows us to man
 
 == ChangeLog ==
 
+= 0.9.1 =
+Removed console logging of various objects
+Add "working" graphic when saving notes.
+Set default measurement day to be Saturday (day #6)
+Didn't attempt to list all defined mebership levels for Paid Memberships Pro
+Make measurement day setting a program specific setting.
+
 = 0.9 =
 * Display daily progress notes (decoupled from action check-in data)
 
