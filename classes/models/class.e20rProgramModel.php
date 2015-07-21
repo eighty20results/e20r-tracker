@@ -76,6 +76,7 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->startdate = date_i18n( 'Y-m-d h:i:s', current_time('timestamp') );
         $settings->enddate = null;
 	    $settings->intake_form = null;
+        $settings->measurement_day = null;
         $settings->activity_page_id = null;
         $settings->dashboard_page_id = null;
         $settings->progress_page_id = null;

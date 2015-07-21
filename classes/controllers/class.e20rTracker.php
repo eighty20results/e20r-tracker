@@ -29,7 +29,7 @@ class e20rTracker {
         $this->settings = get_option( $this->setting_name, array(
                             'delete_tables' => false,
                             'purge_tables' => false,
-                            'measurement_day' => CONST_SATURDAY,
+                            // 'measurement_day' => CONST_SATURDAY,
                             'lesson_source' => null,
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
@@ -1115,7 +1115,7 @@ class e20rTracker {
         add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
         add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
         add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
 
         add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
@@ -1190,7 +1190,7 @@ class e20rTracker {
         <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $pVal ) ?> >
     <?php
     }
-
+/*
     public function render_measurementday_select() {
 
         $options = get_option( $this->setting_name );
@@ -1203,9 +1203,10 @@ class e20rTracker {
         <option value="4" <?php selected( 4, $options['measurement_day']); ?>>Thursday</option>
         <option value="5" <?php selected( 5, $options['measurement_day']); ?>>Friday</option>
         <option value="6" <?php selected( 6, $options['measurement_day']); ?>>Saturday</option>
+        </select>
         <?php
     }
-
+*/
     public function render_login_section_text() {
 
         echo "<p>Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.</p><hr/>";
@@ -1306,6 +1307,8 @@ class e20rTracker {
      */
     public function datesForMeasurements( $startDate = null, $weekdayNumber = null ) {
 
+        global $currentProgram;
+
         $dateArr = array();
 
         dbg("e20rTracker::datesForMeasurements(): {$startDate}, {$weekdayNumber}");
@@ -1324,9 +1327,10 @@ class e20rTracker {
 
         if ( ! $weekdayNumber ) {
 
-            dbg("e20rTracker::datesForMeasurements() - Using option value(s)");
-            $options = get_option( $this->setting_name );
-            $weekdayNumber = $options['measurement_day'];
+            dbg("e20rTracker::datesForMeasurements() - Using program value");
+            // $options = get_option( $this->setting_name );
+            // $weekdayNumber = $options['measurement_day'];
+            $weekdayNumber = $currentProgram->measurement_day;
         }
 
         switch ( $weekdayNumber ) {

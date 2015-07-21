@@ -186,6 +186,9 @@ class e20rProgramView {
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
         ?>
+        <style>
+            .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+        </style>
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
             <div class="e20r-editform">
@@ -195,7 +198,7 @@ class e20rProgramView {
                     <tr>
                         <th class="e20r-label header"><label for="e20r-program-startdate"><strong><?php _e("Starts on", "e20rtracker"); ?></strong></label></th>
                         <th class="e20r-label header"><label for="e20r-program-enddate"><strong><?php _e("Ends on", "e20rtracker"); ?></strong></label></th>
-                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership Level", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-measurement_day"><strong><?php _e("Measurement day", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="3"><hr width="100%"/></td>
@@ -226,6 +229,33 @@ class e20rProgramView {
                             <td class="text-input">
                                 <input type="date" id="e20r-program-enddate" name="e20r-program-enddate" value="<?php echo $end; ?>">
                             </td>
+	                        <td>
+                                <select class="select2-container" name="e20r-program-measurement_day" id="e20r-program-measurement_day">
+                                    <option value="0" <?php selected( 0, $programData->measurement_day); ?>>Sunday</option>
+                                    <option value="1" <?php selected( 1, $programData->measurement_day); ?>>Monday</option>
+                                    <option value="2" <?php selected( 2, $programData->measurement_day); ?>>Tuesday</option>
+                                    <option value="3" <?php selected( 3, $programData->measurement_day); ?>>Wednesday</option>
+                                    <option value="4" <?php selected( 4, $programData->measurement_day); ?>>Thursday</option>
+                                    <option value="5" <?php selected( 5, $programData->measurement_day); ?>>Friday</option>
+                                    <option value="6" <?php selected( 6, $programData->measurement_day); ?>>Saturday</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership Level", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson/Reminder feed", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
                             <td>
                                 <select class="select2-container" id="e20r-program-group" name="e20r-program-group">
                                     <option value="-1" <?php selected( $programData->group, 0 ); ?>><?php _e("Not Applicable", "e20rtracker"); ?></option>
@@ -239,21 +269,6 @@ class e20rProgramView {
                                     ?>
                                 </select>
                             </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="e20r-program-settings wp-list-table widefat fixed">
-                    <thead>
-                    <tr>
-                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson/Reminder feed", "e20rtracker"); ?></strong></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><hr width="100%"/></td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="program-inputs">
                             <td>
                                 <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
                                     <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>>Not configured</option>
@@ -269,9 +284,6 @@ class e20rProgramView {
                                             <option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
                                 <?php   } ?>
                                 </select>
-                                <style>
-                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                                </style>
                             </td>
 	                        <td>
 		                        <select class="select2-container" id="e20r-program-intake_form" name="e20r-program-intake_form">
@@ -306,12 +318,6 @@ class e20rProgramView {
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->activity_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
-                                <style>
-                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                                </style>
-                                <script>
-                                    jQuery('#e20r-program-activity_page_id').select2();
-                                </script>
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-dashboard_page_id" name="e20r-program-dashboard_page_id">
@@ -321,12 +327,6 @@ class e20rProgramView {
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->dashboard_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
-                                <style>
-                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                                </style>
-                                <script>
-                                    jQuery('#e20r-program-dashboard_page_id').select2();
-                                </script>
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-progress_page_id" name="e20r-program-progress_page_id">
@@ -336,17 +336,25 @@ class e20rProgramView {
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->progress_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
-                                <style>
-                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                                </style>
-                                <script>
-                                    jQuery('#e20r-program-progress_page_id').select2();
-                                </script>
                             </td>
 
                         </tr>
                     </tbody>
                 </table>
+                <script>
+                    jQuery('.e20r-editform').find('.select2-container').each(function(){
+                        jQuery(this).select2();
+                    });
+                    /*
+                    jQuery('#e20r-program-sequences').select2();
+                    jQuery('#e20r-program-intake_form').select2();
+                    jQuery('#e20r-program-measurement_day').select2();
+                    jQuery('#e20r-program-activity_page_id').select2();
+                    jQuery('#e20r-program-progress_page_id').select2();
+                    jQuery('#e20r-program-dashboard_page_id').select2();
+                    */
+                </script>
+
             </div>
         </form>
     <?php
