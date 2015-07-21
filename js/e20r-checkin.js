@@ -283,7 +283,7 @@ jQuery(document).ready(function() {
                 'e20r-checkin-day': navDay
             }
 
-            console.log("toNext data: ", data);
+            // console.log("toNext data: ", data);
 
             jQuery.ajax({
                 url: e20r_checkin.url,
@@ -292,7 +292,7 @@ jQuery(document).ready(function() {
                 data: data,
                 success: function (response) {
 
-                    console.log("Response: ", response);
+                    // console.log("Response: ", response);
 
                     if ( response.success ) {
 
@@ -378,6 +378,7 @@ jQuery(document).ready(function() {
         toActivity: function( self ) {
 
             console.log("Clicked the 'Read more' link for the activity");
+            jQuery('body').addClass("loading");
 
             var data = {
                 'e20r-checkin-nonce': self.$nonce,
@@ -533,7 +534,7 @@ jQuery(document).ready(function() {
 
             var self = this;
 
-            console.log('Note object: ', self);
+            // console.log('Note object: ', self);
 
             jQuery('#note-textarea').autogrow().trigger('keyup');
 
@@ -569,7 +570,7 @@ jQuery(document).ready(function() {
                     .fadeIn(fadeSpeed);
 
                 setDisplayState();
-
+                jQuery('body').removeClass("loading");
                 return true;
             };
 
@@ -623,6 +624,7 @@ jQuery(document).ready(function() {
 
             jQuery('#save-note')
                 .click(function() {
+
                     var $this = jQuery(this);
                     var $noteTextarea = jQuery('#note-textarea');
 
@@ -663,11 +665,14 @@ jQuery(document).ready(function() {
                             'checkin-type': self.checkin_type
                         };
 
-                        console.log("Sending: ", data );
+                        // console.log("Sending: ", data );
+
+                        jQuery('body').addClass("loading");
 
                         jQuery.post( e20r_checkin.url, data, function( response, status ) {
 
                             if (status == 'success') {
+
                                 $this.data('__persisted', true);
                             }
                         });
@@ -689,6 +694,7 @@ jQuery(document).ready(function() {
                         .find('.notification-entry-saved')
                         .children('div')
                         .fadeIn('medium', function() {
+
                             var self = this;
                             notificationTimeout = setTimeout(function() {
                                 jQuery(self)

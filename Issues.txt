@@ -26,6 +26,7 @@ Fix: (P0) - daily_progress prev/next day navigation didn't load the correct acti
 Fix: (P0) - Check-in for the daily progress dashboard gets saved in the same row all the time.
 Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
 Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
+Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
 
 Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
 Enh: Prevent the daily assignment short code from bleeding into the actual post/page.
