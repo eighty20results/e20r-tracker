@@ -32,6 +32,7 @@ jQuery(document).ready(function() {
             this.$ulList = this.$checkinOptions.parents('ul');
             this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            this.$activityLnk = jQuery("a#e20r-activity-read-lnk");
 
             var me = this;
 
@@ -70,6 +71,14 @@ jQuery(document).ready(function() {
                 event.preventDefault();
                 self.dayNav(self, this);
 
+            });
+
+            self.$activityLnk.on("click", function() {
+
+                jQuery("body").addClass("loading");
+                event.preventDefault();
+
+                self.toActivity( self );
             });
         },
         showBtn: function( self ) {
@@ -259,7 +268,7 @@ jQuery(document).ready(function() {
 
             var navDay = jQuery(elem).next("input[name^='e20r-checkin-day']").val();
 
-            console.log("Day Nav value: ", navDay );
+            // console.log("Day Nav value: ", navDay );
 
             var data = {
                 action: 'daynav',
@@ -298,7 +307,7 @@ jQuery(document).ready(function() {
 
                             $string = "Sorry, we're not quite ready to show you that yet...\n\n";
                             $string += "If you want see what tomorrow\'s workout is, ";
-                            $string  += "head over to the Archives.";
+                            $string += "head over to the Archives.";
 
                             alert( $string );
                         }
@@ -352,6 +361,10 @@ jQuery(document).ready(function() {
 
             $body.removeClass("loading");
             */
+        },
+        toActivity: function( self ) {
+
+            console.log("Clicked the 'Read more' link for the activity");
         }
     };
 
