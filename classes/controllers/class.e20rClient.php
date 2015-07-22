@@ -9,39 +9,49 @@
 class e20rClient {
 
     private $id;
-    public $client_loaded = false;
-
-    public $actionsLoaded = false;
-    public $scriptsLoaded = false;
-
     private $model = null; // Client Model.
     private $view = null; // Client Views.
 
     private $weightunits;
     private $lengthunits;
 
+    public $client_loaded = false;
+    public $actionsLoaded = false;
+    public $scriptsLoaded = false;
+
     public function __construct( $user_id = null) {
+
+        global $currentClient;
+
+        $this->model = new e20rClientModel();
+        $this->view = new e20rClientViews( $user_id );
 
         if ( $user_id !== null ) {
 
-            $this->id = $user_id;
+            $currentClient->user_id = $user_id;
         }
 
-        $this->model = new e20rClientModel();
-        $this->view = new e20rClientViews( $this->id );
     }
 
     public function init() {
 
         global $e20rTracker;
+        global $currentClient;
+
+        if ( empty( $currentClient->user_id ) ) {
+
+            global $current_user;
+            // $this->id = $current_user->ID;
+            $currentClient->user_id = $current_user->ID;
+        }
 
         dbg('e20rClient::init() - Running INIT for e20rClient Controller');
         dbg('e20rClient::init() - ' . $e20rTracker->whoCalledMe() );
 
         if ( $this->client_loaded !== true ) {
 
-            $this->model->setUser( $this->id );
-            $this->model->load();
+            $this->model->setUser( $currentClient->user_id );
+            $this->model->getData( $currentClient->user_id );
             $this->client_loaded = true;
         }
 
@@ -81,17 +91,23 @@ class e20rClient {
 
     public function clientId() {
 
-        return $this->id;
+        global $currentClient;
+
+        return $currentClient->user_id;
     }
 
     public function getLengthUnit() {
 
-        return $this->model->getData( $this->id, 'lengthunits');
+        global $currentClient;
+
+        return $this->model->getData( $currentClient->user_id, 'lengthunits');
     }
 
     public function getWeightUnit() {
 
-        return $this->model->getData( $this->id, 'weightunits' );
+        global $currentClient;
+
+        return $this->model->getData( $currentClient->user_id, 'weightunits' );
     }
 
     public function getBirthdate( $user_id ) {
@@ -118,19 +134,20 @@ class e20rClient {
 
     public function setClient( $userId ) {
 
-        $this->id = $userId;
-        $this->model->setUser( $this->id );
+        $this->model->setUser( $userId );
+        $this->init();
     }
 
     public function getData( $clientId, $private = false ) {
 
         if ( ! $this->client_loaded ) {
 
+            dbg("e20rClient::getData() - No client data loaded yet...");
             $this->setClient( $clientId );
-            $this->init();
+            // $this->getData( $clientId );
         }
 
-        $data = $this->model->getData( $this->id );
+        $data = $this->model->getData( $clientId );
 
 	    if ( $private ) {
 
@@ -138,7 +155,7 @@ class e20rClient {
 		    $data = $this->strip_private_data( $data );
 	    }
 
-	    dbg("e20rClient::getData() - Returned data for {$this->id} from client_info table:");
+	    dbg("e20rClient::getData() - Returned data for {$clientId} from client_info table:");
         dbg($data);
 
         return $data;
@@ -182,14 +199,21 @@ class e20rClient {
 
 	public function getGender() {
 
-		return strtolower( $this->model->getData( $this->id, 'gender') );
+        global $currentClient;
+
+		return strtolower( $this->model->getData( $currentClient->user_id, 'gender') );
 	}
 
     public function completeInterview( $userId ) {
 
+        global $e20rTracker;
+
         $data = $this->model->getData( $userId, 'completed_date');
 
-        return ( empty($data) ? 0 : 1 );
+        dbg("e20rClient::completeInterview() - completed_date field contains: ");
+        dbg($data);
+
+        return ( empty( $data ) ? 0 : 1 );
     }
 
 	public function load_interview( $form ) {
@@ -678,6 +702,8 @@ class e20rClient {
 
 	public function process_gf_fields( $value, $field, $name ) {
 
+        global $currentClient;
+
 		$type   = GFFormsModel::get_input_type( $field );
 
 		if ( ( 'likert' == $type ) && $field->allowsPrepopulate ) {
@@ -693,11 +719,11 @@ class e20rClient {
 			}
 		}
 
-		if ( ( 'address' == $type ) && $field->allowsPrepopulate && !is_null( $this->id ) ) {
+		if ( ( 'address' == $type ) && $field->allowsPrepopulate && !is_null( $currentClient->user_id ) ) {
 
-			$val = $this->model->getData($this->id, $name );
+			$val = $this->model->getData($currentClient->user_id, $name );
 
-			dbg("e20rClient::process_gf_fields() - Found the {$name} field for user ({$this->id}): {$val}");
+			dbg("e20rClient::process_gf_fields() - Found the {$name} field for user ({$currentClient->user_id}): {$val}");
 			return $val;
 		}
 
@@ -753,8 +779,8 @@ class e20rClient {
         try {
 
             dbg("e20rClient::loadClientInfo() - Loading data for client model");
-            $this->model->setUser($user_id);
-            $this->model->load();
+            $this->model->setUser( $user_id );
+            $this->model->getData( $user_id );
 
         }
         catch ( Exception $e ) {
@@ -767,12 +793,14 @@ class e20rClient {
     /*
 public function loadClient( $id = null ) {
 
+    global $currentClient;
+
     if ( $id ) {
-        $this->id = $id;
+        $currrentClient->user_id = $id;
     }
 
-    $this->model->setUser( $this->id );
-    $this->model->load();
+    $this->model->setUser( $currrentClient->user_id );
+    $this->model->getData( $user_id );
 
 }
 */
@@ -821,6 +849,10 @@ public function loadClient( $id = null ) {
     public function render_client_page( $lvlName = '', $client_id = 0 ) {
 
         global $current_user;
+        global $currentClient;
+        global $currentProgram;
+
+        global $e20rProgram;
 
         if ( $client_id != 0 ) {
 
@@ -828,6 +860,8 @@ public function loadClient( $id = null ) {
         }
 
         $this->init();
+
+        $this->model->getData( $client_id );
 
         echo $this->view->viewClientAdminPage( $lvlName );
     }
@@ -857,15 +891,16 @@ public function loadClient( $id = null ) {
         dbg("e20rClient::updateUnitTypes() - POST content: " . print_r($_POST, true));
 
         global $current_user;
+        global $currentClient;
         global $e20rMeasurements;
 
-        $this->id = isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID;
+        $currentClient->user_id = isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID;
         $dimension = isset( $_POST['dimension'] ) ? sanitize_text_field( $_POST['dimension'] ) : null;
         $value = isset( $_POST['value'] ) ? sanitize_text_field( $_POST['value'] ) : null;
 
         // Configure the client data object(s).
         $this->init();
-        $e20rMeasurements->setClient( $this->id );
+        $e20rMeasurements->setClient( $currentClient->user_id );
 
         // Update the data for this user in the measurements table.
         try {
@@ -1003,8 +1038,8 @@ public function loadClient( $id = null ) {
 
         if ( $clientId ) {
 
-            dbg("Real user Id provided ");
             $client = get_user_by("id", $clientId );
+            dbg("e20rClient::validateAccess() - Real user Id provided ");
 
             if ( ($current_user->ID != $clientId ) &&  ( $e20rTracker->isActiveClient( $clientId )  ) ) {
                 return true;
