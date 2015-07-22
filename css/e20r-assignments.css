@@ -50,7 +50,9 @@ div.e20r-assignment-descr {
     right: 0px;
     width: 50%;
 }
-.e20r-assignments-question {
+.e20r-assignments-question,
+.e20r-achievement-header,
+.e20r-achievement-descr {
     font-size: 1.05em;
     font-weight: bold;
     border-bottom: 1px solid white;
