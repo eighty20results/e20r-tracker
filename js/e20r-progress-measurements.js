@@ -365,7 +365,7 @@ var progMeasurements = {
                     }
                     else {
                         jQuery("div#inner-tabs").hide();
-                        alert("No measurement data found");
+                        // alert("No measurement data found");
                     }
                 }
 
