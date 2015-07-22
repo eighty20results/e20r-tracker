@@ -2,8 +2,8 @@
 
 class e20rClientModel {
 
-    protected $id = null;
-    private $program_id = null;
+    // protected $id = null;
+    // private $program_id = null;
 
     protected $table;
     protected $fields;
@@ -14,16 +14,48 @@ class e20rClientModel {
 
         global $e20rTables;
         global $e20rProgram;
+        global $currentClient;
 
         try {
             $this->table = $e20rTables->getTable( 'client_info' );
             $this->fields = $e20rTables->getFields( 'client_info' );
         }
         catch ( Exception $e ) {
-            dbg("e20rClientModel::load() - Error loading client_info table: " . $e->getMessage() );
+            dbg("e20rClientModel::construct() - Error loading client_info table: " . $e->getMessage() );
+        }
+
+        if ( empty( $currentClient) ) {
+
+            $currentClient = new stdClass();
+
+            $currentClient->user_id = null;
+            $currentClient->program_id = null;
         }
     }
 
+    public function defaultSettings() {
+
+        global $currentClient;
+        global $currentProgram;
+        global $post;
+
+        $defaults                       = new stdClass();
+        $defaults->user_id              = $currentClient->user_id;
+        $defaults->program_id           = $currentProgram->id;
+        $defaults->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
+        $defaults->program_start        = $currentProgram->startdate;
+        $defaults->progress_photo_dir    = "e20r_pics/client_{$currentClient->program_id}_{$currentClient->user_id}";
+        $defaults->gender               = 'm';
+        $defaults->incomplete_interview = true; // Will redirect the user to the interview page.
+        $defaults->first_name           = null;
+        $defaults->birthdate            = null;
+        $defaults->lengthunits          = 'in';
+        $defaults->weightunits          = 'lbs';
+        $defaults->loadedDefaults       = true;
+
+        return $defaults;
+
+    }
 	public function save_client_interview( $data ) {
 
 		global $wpdb;
@@ -94,13 +126,10 @@ class e20rClientModel {
 	private function recordExists( $userId, $programId, $pageId ) {
 
 		global $wpdb;
-		global $e20rTables;
-
-		$cTable = $e20rTables->getTable('client_info');
 
 		$sql = $wpdb->prepare("
 			SELECT id
-			FROM $cTable
+			FROM {$this->table}
 			WHERE user_id = %d AND program_id = %d AND page_id = %d
 		",
 			$userId,
@@ -121,28 +150,32 @@ class e20rClientModel {
 
     public function getData( $userId, $item = null ) {
 
+        global $currentClient;
+
+        if ( $currentClient->user_id != $userId ) {
+
+            $this->setUser( $userId );
+        }
+
         // No item specified, returning everything we have.
         if ( is_null( $item ) ) {
 
-            if ( !isset( $this->data->weightunits) || empty( $this->data->weightunits ) ) {
-
-                dbg("e20rClientModel::getData() - Completed date for record not found. Reloading..");
-                $this->setUser( $userId );
-                $this->load();
-            }
+            dbg("e20rClientModel::getData() - Loading client information from database");
+            $this->loadData( $currentClient->user_id );
 
             // Return all of the data for this user.
-            return $this->data;
+            return $currentClient;
+
         } else {
 
-	        if ( ! isset( $this->data->{$item} ) ) {
+	        if ( ! isset( $currentClient->{$item} ) ) {
 
 		        dbg( "e20rClientModel::getData() - Requested Item ({$item}) not found. Reloading.." );
-		        $this->load();
+		        $this->loadData( $userId );
 	        }
 
 	        // Only return the specified item value.
-	        return ( empty( $this->data->{$item} ) ? false : $this->data->{$item} );
+	        return ( empty( $currentClient->{$item} ) ? false : $currentClient->{$item} );
         }
 
 	    return false;
@@ -200,65 +233,70 @@ class e20rClientModel {
 	    $this->clearTransients();
     }
 
-    public function load() {
+/*    public function load() {
+
+        global $currentClient;
+        global $current_user;
 
 	    if ( WP_DEBUG === true ) {
 
 		    $this->clearTransients();
 	    }
 
-	    global $current_user;
+	    if ( empty( $currentClient->user_id ) ) {
 
-	    if ( empty( $this->id ) ) {
-
-		    $this->id = $current_user->ID;
+            $currentClient->user_id = $current_user->ID;
 	    }
 
-	    $this->setUser( $this->id );
+	    // $this->setUser( $currentClient->user_id );
 
         try {
-            dbg("e20rClientModel::load() - Loading clientInfo for user {$this->id}");
+            dbg("e20rClientModel::load() - Attempting to load clientInfo for user {$currentClient->user_id} from cache");
 
-            if ( false === ( $this->data = get_transient( "e20r_client_info_{$this->id}" ) ) ) {
+            if ( false === ( $currentClient = get_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" ) ) ) {
 
-                dbg("e20rClientModel::load() - Loading client information for {$this->id} from the database");
+                dbg("e20rClientModel::load() - Have to load client information for {$this->id} from the database");
 
                 // Not stored yet, so grab the data from the DB and store it.
-                $this->info = $this->loadData( $this->id );
+                $currentClient = $this->loadData( $currentClient->user_id, $currentClient->program_id );
+                $this->data = $currentClient;
+
                 // set_transient( "e20r_client_info_{$this->id}", $this->info, 1 * HOUR_IN_SECONDS );
-                set_transient( "e20r_client_info_{$this->id}", $this->info, 1 * 60 ); // TODO: Set to one hour!
+                set_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}", $currentClient, 1 * 60 ); // TODO: Set to one hour!
             }
 
-            if ( empty( $this->data ) ) {
-                dbg("e20rClientModel::load() - No Client information in the database for {$this->id}");
-	            $this->data = $this->info;
-            }
+            dbg("e20rClientModel::load() - No Client information in the database for {$currentClient->user_id} and program {$currentClient->program_id}");
+            $this->info = $currentClient;
 
             dbg("e20rClientModel::load() - Client info loaded" );
 
         } catch ( Exception $e ) {
 
-            dbg( "e20rClientModel::load() - Error loading user information for {$this->id}: " . $e->getMessage() );
+            dbg( "e20rClientModel::load() - Error loading user information for {$currentClient->user_id} and program {$currentClient->program_id}: " . $e->getMessage() );
         }
 
-    }
+    } */
 
     public function setUser( $id ) {
 
+        global $currentClient;
         global $e20rProgram;
 
-        $this->id = $id;
-        $this->program_id = $e20rProgram->getProgramIdForUser( $this->id );
+        if ( $id != $currentClient->user_id ) {
+            $currentClient->user_id = $id;
+            $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
+        }
     }
 
     public function saveUnitInfo( $lengthunit, $weightunit ) {
 
         global $wpdb;
         global $e20rProgram;
+        global $currentClient;
 
         if ( $wpdb->update( $this->table,
             array( 'lengthunits' => $lengthunit, 'weightunits' => $weightunit ),
-            array( 'user_id' => $this->id, 'program_id' => $e20rProgram->getProgramIdForUser( $this->id ) ),
+            array( 'user_id' => $currentClient->user_id, 'program_id' => $currentClient->programId ),
                 array( '%d' ) ) === false ) {
 
             dbg("e20rClientModel::saveUnitInfo() - Error updating unit info: " . $wpdb->print_error() );
@@ -272,8 +310,10 @@ class e20rClientModel {
 
 	private function clearTransients() {
 
-		dbg("e20rClientModel::clearTransients() - Resetting cache & transiets");
-		delete_transient( "e20r_client_info_{$this->id}" );
+        global $currentClient;
+
+		dbg("e20rClientModel::clearTransients() - Resetting cache & transients");
+		delete_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" );
 	}
 
     /**
@@ -345,6 +385,7 @@ class e20rClientModel {
         return $imageUrl;
     }
 
+    /*
     public function getAppointments() {
 
         if ( empty( $this->appointments ) ) {
@@ -354,48 +395,52 @@ class e20rClientModel {
 
         return $this->appointments;
     }
-
-    private function loadData( $clientId ) {
+    */
+    private function loadData( $clientId, $program_id = null ) {
 
 	    global $wpdb;
 	    global $post;
-	    global $e20rProgram;
+        global $e20rProgram;
+	    global $currentProgram;
+        global $currentClient;
+
 	    global $e20rTracker;
 
-	    $oldId = $this->id;
+	    // $oldId = $clientId;
 
-	    if ( $clientId != $this->id ) {
+        if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
 
-		    dbg( "e20rClientModel::loadClientData() - WARNING: Loading data for a different client/user. Was: {$this->id}, now: {$clientId}" );
-		    $this->id = $clientId;
-	    }
+            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
+            $this->setUser( $clientId );
+        }
 
-	    $this->setUser( $this->id );
+        if ( $currentProgram->id != $program_id ) {
 
-	    $key = $e20rTracker->getUserKey( $clientId );
+            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different program: {$program_id} vs {$currentProgram->id}" );
+            $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
+            dbg( "e20rClientModel::loadData() - WARNING: Program data is now for {$currentProgram->id}" );
+        }
+
+
+        dbg( "e20rClientModel::loadData() - Loading default currentClient structure");
+
+        // Init the unencrypted structure and load defaults.
+        $currentClient = $this->defaultSettings();
+
+	    // $this->setUser( $currentClient->user_id );
+
+	    $key = $e20rTracker->getUserKey( $currentClient->user_id );
 
 	    if ( WP_DEBUG === true ) {
 
 		    $this->clearTransients();
 	    }
 
-	    if ( false === ( $clientData = get_transient( "e20r_client_info_{$this->id}" ) ) ) {
+	    if ( false === ( $tmpData = get_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" ) ) ) {
 
-		    // Init the unencrypted structure and load defaults.
-		    $clientData                       = new stdClass();
-		    $clientData->user_id              = $this->id;
-		    $clientData->program_id           = $this->program_id;
-		    $clientData->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
-		    $clientData->program_start        = date_i18n( 'Y-m-d', $e20rProgram->startdate( $clientId, $this->program_id ) );
-		    $clientData->progress_photo_dir    = "e20r_pics/client_{$this->program_id}_{$this->id}";
-		    $clientData->gender               = 'm';
-		    $clientData->incomplete_interview = true; // Will redirect the user to the interview page.
-		    $clientData->first_name           = null;
-		    $clientData->birthdate            = null;
-		    $clientData->lengthunits          = 'in';
-		    $clientData->weightunits          = 'lbs';
+            dbg("e20rClientModel::loadData() - Client data wasn't cached. Loading from DB.");
 
-		    $excluded = array_keys( (array) $clientData );
+		    $excluded = array_keys( (array) $currentClient );
 
 		    $sql = $wpdb->prepare( "
 	                    SELECT *
@@ -404,23 +449,26 @@ class e20rClientModel {
 	                    user_id = %d
 	                    ORDER BY program_start DESC
 	                    LIMIT 1",
-			    $this->program_id,
-			    $this->id
+			    $currentClient->program_id,
+			    $currentClient->user_id
 		    );
 
 		    $result = $wpdb->get_row( $sql, ARRAY_A );
 
 		    if ( ! empty( $result ) ) {
 
+                dbg("e20rClientModel::loadData() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
+                $currentClient->loadedDefaults = false;
+
 			    foreach ( $result as $key => $val ) {
 
 				    // Encrypted data gets decoded
 				    if ( ! in_array( $key, $excluded ) ) {
 
-					    $clientData->{$key} = $e20rTracker->decryptData( $val, $key );
+                        $currentClient->{$key} = $e20rTracker->decryptData( $val, $key );
 				    } else {
 					    // Unencrypted data is simply passed back.
-					    $clientData->{$key} = $val;
+                        $currentClient->{$key} = $val;
 				    }
 			    }
 
@@ -428,24 +476,29 @@ class e20rClientModel {
 			    unset( $result );
 		    }
 
-		    if ( ! isset( $clientData->user_enc_key ) && ( ! empty( $clientData->user_enc_key ) ) ) {
-			    unset( $clientData->user_enc_key );
+		    if ( ! isset( $currentClient->user_enc_key ) && ( ! empty( $currentClient->user_enc_key ) ) ) {
+			    unset( $currentClient->user_enc_key );
 		    }
 
-		    if ( isset( $clientData->weight_loss ) && ( ! empty( $clientData->weight_loss ) ) ) {
+		    if ( isset( $currentClient->weight_loss ) && ( ! empty( $currentClient->weight_loss ) ) ) {
 
 			    dbg( "e20rClientModel::loadClientData() - Client interview has been completed." );
-			    $clientData->incomplete_interview = false;
+                $currentClient->incomplete_interview = false;
 		    }
 
-		    // Restore the original User ID.
-		    $this->id = $oldId;
-		    set_transient( "e20r_client_info_{$this->id}", $clientData, 3600 );
-	    }
+		    set_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}", $currentClient, 3600 );
 
-        return $clientData;
+            // Restore the original User ID.
+            // $this->setUser( $oldId );
+        }
+        else {
+            $currentClient = $tmpData;
+        }
+
+        return $currentClient;
     }
 
+    /*
     private function load_appointments() {
 
         global $current_user, $wpdb, $appointments, $e20rTracker, $e20rTables;
@@ -481,7 +534,7 @@ class e20rClientModel {
         // dbg("SQL for appointment list: " . print_r( $sql, true ) );
         $this->appointments = $wpdb->get_results( $sql, OBJECT);
     }
-
+    */
     /*
     public function getUserList( $level = '' ) {
 
