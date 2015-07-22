@@ -9,28 +9,30 @@
 class e20rMeasurements {
 
     private $id = null;
+    private $girths = null;
     private $model = null;
     private $view = null;
 
     protected $dates = null;
     protected $measurementDate = null;
 
-    private $girths = null;
-
     public function e20rMeasurements( $user_id = null ) {
 
         global $e20rMeasurements;
+        global $e20rTracker;
+
         global $current_user;
+        global $currentClient;
+
+        $this->view = new e20rMeasurementViews();
+        $this->model = new e20rMeasurementModel( $user_id );
 
         if ( $user_id === null ) {
 
             $this->id = $current_user->ID;
         }
 
-        $this->view = new e20rMeasurementViews();
-        $this->model = new e20rMeasurementModel( $this->id );
-
-        if ( ! isset( $e20rMeasurements ) ) {
+        if ( $e20rTracker->isEmpty( $e20rMeasurements ) ) {
 
             dbg("e20rMeasurements::__construct() - Self-referencing for the e20rMeasurements global");
             $e20rMeasurements = $this;
@@ -499,6 +501,9 @@ class e20rMeasurements {
         global $e20r_plot_jscript;
         global $current_user;
         global $post;
+
+        global $currentClient;
+
         global $e20rArticle;
         global $e20rTracker;
         global $e20rClient;
@@ -533,14 +538,14 @@ class e20rMeasurements {
 
 	    $this->model->setUser( $this->id );
 
-        dbg("e20rMeasurements::shortcode_provressOverview() - Loading progress data...");
+        dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
         $measurements = $this->getMeasurement( 'all', false );
 
         $tabs = array(
             'Measurements' => '<div id="e20r-progress-measurements">' . $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false ) . '</div>',
             'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
+            'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
-            // 'Activity' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
         );
 
         return $this->view->viewTabbedProgress( $tabs, $pDimensions );
@@ -600,6 +605,9 @@ class e20rMeasurements {
         global $e20rArticle;
         global $e20rTracker;
         global $e20rClient;
+
+        global $currentClient;
+
         global $e20rMeasurementDate;
 
         dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
@@ -636,11 +644,13 @@ class e20rMeasurements {
             $e20rExampleProgress = true; // TODO: Do something if it's an example progress form.
         }
 
+        /**
         if ( $current_user->ID == 0 ) {
 
             dbg("e20rMeasurements::shortcode_weeklyProgress() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
+        */
 
         // TODO: Does user have permission...?
         try {
@@ -648,7 +658,7 @@ class e20rMeasurements {
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
             $this->init( $this->measurementDate, $this->id );
 
-            if ( ! isset( $e20rClient->model ) ) {
+            if ( !is_object( $currentClient ) || ( false == $currentClient->loadedDefaults ) ) {
 
                 dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the e20rClient class()");
                 $e20rClient->init();
