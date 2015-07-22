@@ -920,7 +920,7 @@ class e20rCheckin extends e20rSettings {
                     $checkin->checkin_date                    = date( 'Y-m-d', strtotime( $checkin->checkin_date ) );
                     $this->checkin[ $settings->checkin_type ] = $checkin;
 
-                    if ( !$this->isEmpty( $note ) ) {
+                    if ( !$e20rTracker->isEmpty( $note ) ) {
 
                         dbg( "e20rCheckin::dailyProgress() - Including data for daily progress note" );
                         $this->checkin[ CHECKIN_NOTE ] = $note;
@@ -1054,6 +1054,8 @@ class e20rCheckin extends e20rSettings {
 
     public function load_UserCheckin( $config, $checkinArr ) {
 
+        global $e20rTracker;
+
         $action = null;
         $activity = null;
         $assignment = null;
@@ -1100,7 +1102,7 @@ class e20rCheckin extends e20rSettings {
 
             } // End of foreach()
 
-            if ( ( ! $this->isEmpty( $action ) ) && ( ! $this->isEmpty( $activity ) ) ) {
+            if ( ( ! $e20rTracker->isEmpty( $action ) ) && ( ! $e20rTracker->isEmpty( $activity ) ) ) {
 
                 dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Dashboard");
                 $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note );
@@ -1117,20 +1119,6 @@ class e20rCheckin extends e20rSettings {
 
         return $view;
     }
-
-	private function isEmpty( $obj ) {
-
-		if ( ! is_object( $obj ) ) {
-            dbg('e20rCheckin::isEmpty() - Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
-            dbg($obj);
-			return empty( $obj );
-		}
-
-		$o = (array)$obj;
-        dbg('e20rCheckin::isEmpty() - Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
-        dbg( $o );
-		return empty( $o );
-	}
 
     public function getPeers( $checkinId = null ) {
 
