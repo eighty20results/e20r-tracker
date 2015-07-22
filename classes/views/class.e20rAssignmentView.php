@@ -24,22 +24,31 @@ class e20rAssignmentView extends e20rSettingsView {
     
     public function viewSettingsBox( $assignmentData, $answerTypes ) {
 
+        global $e20rProgram;
+
         dbg( "e20rAssignmentView::viewSettingsBox() - Supplied data: " . print_r( $assignmentData, true ) );
+
+        $pList = $e20rProgram->getProgramList();
+        if ( is_null( $assignmentData->program_ids ) ) {
+            $assignmentData->program_ids = array();
+        }
+
         ?>
         <form action="" method="post">
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-settings' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-assignment-id" id="hidden-e20r-assignment-id"
                        value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->id : 0 ); ?>">
-                <table id="e20r-assignment-settings wp-list-table widefat fixed">
+                <table class="e20r-assignment-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
                         <th class="e20r-label header"><label for="e20r-assignment-order_num">Order #</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-field_type">Answer type</label></th>
                         <th class="e20r-label header"><label for="e20r-assignment-delay">Day #</label></th>
+                        <th class="e20r-label header"><label for="e20r-assignment-program_ids">Programs</label></th>
                     </tr>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="4">
                             <hr width="100%"/>
                         </td>
                     </tr>
@@ -61,7 +70,21 @@ class e20rAssignmentView extends e20rSettingsView {
                         <td class="text-input">
                             <input type="number" id="e20r-assignment-delay" name="e20r-assignment-delay" value="<?php echo ( ! isset( $assignmentData->delay ) ? '' : $assignmentData->delay ); ?>">
                         </td>
+                        <td class="select-input">
+                            <select class="select2-container" id="e20r-assignment-program_ids" name="e20r-assignment-program_ids" multiple="multiple">
+                                <option value="-1" <?php echo empty( $assignmentData->program_ids) || in_array( -1, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php _e("No program defined", "e20rtracker");?></option><?php
 
+                                foreach( $pList as $p ) { ?>
+                                    <option value="<?php echo $p->id;?>"<?php echo in_array( $p->id, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php echo esc_textarea($p->title);?></option><?php
+                                } ?>
+                            </select>
+                            <style>
+                                .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+                            </style>
+                            <script>
+                                jQuery("#e20r-assignment-program_ids").select2();
+                            </script>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -513,7 +536,7 @@ class e20rAssignmentView extends e20rSettingsView {
 									<tr>
 										<td>
 											<div class="e20r-assignments-answer">
-												<?php echo stripslashes($answer->answer); ?>
+												<?php echo empty( $answer->answer ) ? __("No response recorded", "e20rtracker") : stripslashes($answer->answer); ?>
 											</div>
 										</td>
 									</tr>
