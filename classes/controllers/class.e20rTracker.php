@@ -33,6 +33,7 @@ class e20rTracker {
                             'lesson_source' => null,
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
+                            'encrypt_surveys' => 0,
             )
         );
 
@@ -851,6 +852,8 @@ class e20rTracker {
 
     public function encryptData( $data, $key ) {
 
+        $enable = $this->loadOption('encrypt_surveys');
+
         if ( ! class_exists( 'Crypto' ) ) {
 
             dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
@@ -870,7 +873,9 @@ class e20rTracker {
 		    return $data;
 	    }
 
-        if ( ! WP_DEBUG ) {
+        if ( 1 == $enable ) {
+
+            dbg("e20rTracker::encryptData() - Configured to encrypt data.");
 
             try {
 
@@ -892,7 +897,9 @@ class e20rTracker {
 
     public function decryptData( $encData, $key ) {
 
-	    if ( $key === null ) {
+        $enable = $this->loadOption('encrypt_surveys');
+
+	    if ( ( $key === null ) || ( 0 == 'enable' ) ) {
 
 		    return $encData;
 	    }
@@ -909,7 +916,7 @@ class e20rTracker {
             }
         }
 
-        if ( ! WP_DEBUG ) {
+        if ( 1 == $enable ) {
 
             try {
 
@@ -1117,6 +1124,7 @@ class e20rTracker {
         add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
         add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Survey", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
         add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
         // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
@@ -1141,10 +1149,18 @@ class e20rTracker {
             <option value="<?php echo $days; ?>" <?php selected($days, $timeout); ?>><?php echo $days . ($days <= 1 ? " day" : " days") ?></option>
         <?php
         }
-
-
     }
 
+    public function render_survey_select() {
+
+            $encrypted = $this->loadOption( 'encrypt_surveys' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[encrypt_surveys]" id="<?php echo $this->setting_name; ?>_encrypt_surveys">
+            <option value="0" <?php selected(0, $encrypted); ?>>No</option>
+            <option value="1" <?php selected(1, $encrypted); ?>>Yes</option>
+        </select><?php
+
+    }
     public function render_logintimeout_select() {
 
         $timeout = $this->loadOption( 'auth_timeout' );
@@ -1153,7 +1169,8 @@ class e20rTracker {
         foreach ( range( 1, 12 ) as $hrs ) { ?>
             <option value="<?php echo $hrs; ?>" <?php selected($hrs, $timeout); ?>><?php echo $hrs . ($hrs <= 1 ? " hour" : " hours") ?></option>
         <?php
-        }
+        } ?>
+        </select><?php
     }
 
     // TODO: Make this a program setting and not a global setting!
