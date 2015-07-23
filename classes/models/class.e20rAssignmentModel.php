@@ -187,7 +187,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		global $e20rTracker;
 		global $e20rProgram;
-		global $e20rArticle;
 
 		$delay = $e20rTracker->getDelay( 'now', $userId );
 		$programId = $e20rProgram->getProgramIdForUser( $userId );
