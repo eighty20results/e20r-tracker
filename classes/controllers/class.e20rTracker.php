@@ -984,6 +984,7 @@ class e20rTracker {
 
         global $e20rAdminPage;
         global $post;
+        global $e20rTracker;
 
         if( $hook == $e20rAdminPage ) {
 
