@@ -88,6 +88,8 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
+            add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
@@ -989,6 +991,7 @@ class e20rTracker {
         if( $hook == $e20rAdminPage ) {
 
             global $e20r_plot_jscript, $e20rTracker;
+            global $e20rTracker;
 
             $e20rTracker->load_adminJS();
 
@@ -1007,7 +1010,7 @@ class e20rTracker {
 
         if( $hook == 'edit.php' || $hook == 'post.php' || $hook == 'post-new.php' ) {
 
-            switch( self::getCurrentPostType() ) {
+            switch( $e20rTracker->getCurrentPostType() ) {
 
                 case 'e20r_checkins':
 
@@ -1467,6 +1470,8 @@ class e20rTracker {
         global $post;
         global $e20rArticle;
         global $e20rClient;
+        global $currentClient;
+        global $e20r_plot_jscript;
 
         if ( ! isset( $post->ID ) ) {
 
@@ -1478,58 +1483,64 @@ class e20rTracker {
 
             $e20rArticle->setId( $post->ID );
 
-            if ( ! $e20rClient->client_loaded ) {
-                $e20rClient->init();
+            if ( !isset( $currentClient->loadedDefaults ) || ( $currentClient->loadedDefaults == true ) ) {
+
                 dbg( "e20rTracker::has_measurementprogress_shortcode() - Have to init e20rClient class & grab data..." );
+                $e20rClient->init();
             }
 
-            $this->loadUserScripts();
+            $e20r_plot_jscript = true;
+
+            wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+            wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
+
+            wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, true );
+            // wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.min.js", array( 'jquery' ), '1.11.2', false);
+            wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery-ui-tabs', 'jquery.timeago' ), E20R_VERSION, true );
+            wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), E20R_VERSION, true );
+
+            dbg("e20rTracker::has_measurementprogress_shortcode() - Registered touchpunch, timeago, ui-tabs, tracker and progress-measurements");
+
+            $this->register_plotSW();
+
+            // wp_print_scripts( array( 'jquery.touchpunch' , 'jquery.timeago' , 'jquery-ui-tabs' ,'e20r-tracker' ) );
+            wp_print_scripts( array( 'jquery.touchpunch' , 'jquery.timeago' , 'e20r-tracker' ) );
+            $this->enqueue_plotSW();
+
+            wp_localize_script( 'e20r-progress-measurements', 'e20r_progress',
+                array(
+                    'clientId' => $currentClient->user_id,
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                )
+            );
+
+            wp_print_scripts( 'e20r-progress-measurements' );
+            wp_print_footer_scripts();
+
+            $e20r_plot_jscript = false;
+
+            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
+
+                dbg("e20rTracker::has_measurementprogress_shortcode() - Need to load CSS for e20rTracker.");
+                wp_deregister_style("e20r-tracker");
+                wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
+            }
+
             // $e20rMeasurements->init( $e20rArticle->releaseDate(), $e20rClient->clientId() );
 
         }
     }
 
-    private function loadUserScripts() {
+/*    private function loadUserScripts() {
 
-        global $current_user;
+        global $currentClient;
         global $e20r_plot_jscript;
 
-        $e20r_plot_jscript = true;
-        $this->register_plotSW();
-
-        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
-
-	    wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
-        wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
-	    wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery', 'jquery.touchpunch'), '1.11.2', true);
-        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery.touchpuch' ), E20R_VERSION, true );
-        wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), E20R_VERSION, true );
-
-        wp_localize_script( 'e20r-progress-measurements', 'e20r_progress',
-            array(
-                'clientId' => $current_user->ID,
-                'ajaxurl' => admin_url('admin-ajax.php'),
-            )
-        );
 
         // wp_print_scripts( 'e20r-jquery-json' );
-        wp_print_scripts( 'jquery-ui-tabs' );
-	    wp_print_scripts( 'jquery.touchpunch' );
-        wp_print_scripts( 'jquery.timeago' );
-        $this->enqueue_plotSW();
-        wp_print_scripts( 'e20r-tracker' );
-        wp_print_scripts( 'e20r-progress-measurements' );
-
-        $e20r_plot_jscript = true;
-
-        if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
-
-            dbg("e20rTracker::loadUserScripts() - Need to load CSS for e20rTracker.");
-            wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
-        }
-
     }
+*/
     // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
     // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
 
@@ -1691,6 +1702,7 @@ class e20rTracker {
         global $post;
         global $current_user;
 	    global $currentArticle;
+	    global $currentProgram;
 
         if ( ! isset( $post->ID ) ) {
             return;
@@ -1711,7 +1723,8 @@ class e20rTracker {
             $e20rMeasurementDate = $measurementDate;
 
             $userId = $current_user->ID;
-            $programId = $e20rProgram->getProgramIdForUser( $userId );
+            // $programId = $e20rProgram->getProgramIdForUser( $userId );
+            $programId = $currentProgram->id;
             $articleId = $e20rArticle->init( $articleId );
             $articleURL = $e20rArticle->getPostUrl( $articleId );
 
@@ -1860,7 +1873,7 @@ class e20rTracker {
 
     }
 
-	private function loadOption( $optionName ) {
+	public function loadOption( $optionName ) {
 
 		$value = false;
 
@@ -2916,6 +2929,19 @@ class e20rTracker {
 		return $date;
 	}
 */
+	public function isEmpty( $obj ) {
+
+		if ( ! is_object( $obj ) ) {
+            dbg('e20rTracker::isEmpty() - Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
+            dbg($obj);
+			return empty( $obj );
+		}
+
+		$o = (array)$obj;
+        dbg('e20rTracker::isEmpty() - Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
+        dbg( $o );
+		return empty( $o );
+	}
 
 	public function validateDate($date)
 	{

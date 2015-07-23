@@ -18,6 +18,118 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+    public function viewExerciseProgress( $activities = null, $error = null ) {
+
+        global $currentProgram;
+        global $e20rExercise;
+
+        ob_start();
+
+        dbg("e20rWorkoutView::viewExerciseProgress() - Listing exercise history");
+        dbg($activities);
+
+        if ( is_null( $activities) ) { ?>
+
+        <div class="red-notice">
+            <h2>Our apologies</h2>
+            <p>This section is currently under construction.</p>
+            <p>We're sorry for the inconvenience, but please do check back later while we whip the Web Monkey into shape!</p>
+        </div><?php
+
+            $html = ob_get_clean();
+
+            return $html;
+        }
+
+        if ( !is_null($error) ) { ?>
+
+        <div class="red-notice">
+            <h3>Error</h3>
+            <p><?php echo $error ?></p>
+        </div><?php
+        }
+
+        ?>
+        <div class="e20r-activity-list">
+            <div class="e20r-row">
+                <h2 style="text-align: center; margin-bottom: 30px;">History for <?php echo $currentProgram->title ?></h2><?php
+        foreach( $activities as $exId => $info ) {
+
+            $row = 1;
+
+            $type = $info->type;
+            $title = $info->name;
+
+            unset( $info->type );
+            unset( $info->name );
+
+            switch( $type ) {
+                case 1: // weight
+                    $wType = __("Resistance");
+                    $unit_pre = __("Weight", "e20rtracker");
+                    $unit_post = null;
+                    break;
+
+                case 2: // time
+                case 3: // AMRAP
+                    $unit_pre = __("Time", "e20rtracker");
+                    $wType = $e20rExercise->getExerciseType($type);
+                $unit_post = __("seconds", "e20rtracker");
+                    break;
+            }
+
+            ?>
+
+            <div class="e20r-column e20r-column_1_1">
+                <div class="e20r-faq-container e20r-toggle-close">
+                    <h3 class="e20r-faq-question"><?php echo $title; ?></h3>
+                    <div class="e20r-faq-answer-container clearfix"><?php
+
+                    unset($info->name);
+
+                    foreach( $info as $time => $sets ) {
+
+                        $cnt = 1;
+                        ?>
+                        <div class="e20r-activity-history-row <?php echo ($row % 2) == 0  ? 'e20rEven' : 'e20rOdd'; ?>">
+                            <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div><?php
+                                foreach( $sets as $set ) { ?>
+
+                                <div class="e20r-activity-history-sets"><?php
+                                    if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
+                                        $unit = "BW? ({$set->weight})";
+                                    }
+                                    else {
+                                        $unit = $set->weight;
+                                    }
+
+                                    if ( $set->reps != 0 ) {
+                                    ?>
+                                    <h4 class="e20r-activity-history-set-title">Set #<?php echo $cnt++; ?></h4>
+                                    <div class="e20r-activity-history-set-detail">
+                                        <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
+                                        <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
+                                        <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps > 1 ? __("reps", "e20rtracker") : __("rep", "e20rtracker") ); ?></p>
+                                    </div><?php
+                                    } ?>
+                                </div><?php
+                                    $row++;
+                                } ?>
+                        <div class="clearfix"></div>
+                        </div><?php
+                    } ?>
+                    </div>
+                </div>
+            </div><?php
+        } ?>
+            </div>
+        <div class="clearfix"></div>
+        </div><?php
+
+        $html = ob_get_clean();
+
+        return $html;
+    }
     /**
      * Displays the html for the e20r_activity_archive short code
      *

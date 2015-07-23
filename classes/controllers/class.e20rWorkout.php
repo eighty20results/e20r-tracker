@@ -104,7 +104,25 @@ class e20rWorkout extends e20rSettings {
 
 	public function listUserActivities( $userId ) {
 
-		return false;
+        global $current_user;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        $config = new stdClass();
+        $config->type = 'activity';
+        $config->post_date = null;
+
+        $config->userId = $userId;
+        $config->startTS = $e20rProgram->startdate( $config->userId );
+        $config->delay = $e20rTracker->getDelay( 'now' );
+
+        $activities = $this->model->loadAllUserActivities( $userId );
+
+        dbg("e20rWorkout::listUserActivities() - Received " . count($activities) . " activity records...");
+        // dbg($activities);
+
+        return $this->view->viewExerciseProgress( $activities, null );
+
 	}
 
 	public function saveExData_callback() {

@@ -2,8 +2,8 @@
 
 class e20rClientModel {
 
-    protected $id = null;
-    private $program_id = null;
+    // protected $id = null;
+    // private $program_id = null;
 
     protected $table;
     protected $fields;
@@ -27,9 +27,36 @@ class e20rClientModel {
         if ( empty( $currentClient) ) {
 
             $currentClient = new stdClass();
+
+            $currentClient->user_id = null;
+            $currentClient->program_id = null;
         }
     }
 
+    public function defaultSettings() {
+
+        global $currentClient;
+        global $currentProgram;
+        global $post;
+
+        $defaults                       = new stdClass();
+        $defaults->user_id              = $currentClient->user_id;
+        $defaults->program_id           = $currentProgram->id;
+        $defaults->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
+        $defaults->program_start        = $currentProgram->startdate;
+        $defaults->progress_photo_dir    = "e20r_pics/client_{$currentClient->program_id}_{$currentClient->user_id}";
+        $defaults->gender               = 'm';
+        $defaults->incomplete_interview = true; // Will redirect the user to the interview page.
+        $defaults->first_name           = null;
+        $defaults->birthdate            = null;
+        $defaults->lengthunits          = 'in';
+        $defaults->weightunits          = 'lbs';
+        $defaults->loadedDefaults       = true;
+
+        return $defaults;
+
+    }
+    
 	public function save_client_interview( $data ) {
 
 		global $wpdb;
@@ -126,21 +153,26 @@ class e20rClientModel {
 
         global $currentClient;
 
+        if ( $currentClient->user_id != $userId ) {
+
+            $this->setUser( $userId );
+        }
+
         // No item specified, returning everything we have.
         if ( is_null( $item ) ) {
 
             dbg("e20rClientModel::getData() - Loading client information from database");
-            $this->setUser( $userId );
-            $this->loadData( $userId );
+            $this->loadData( $currentClient->user_id );
 
             // Return all of the data for this user.
             return $currentClient;
+
         } else {
 
 	        if ( ! isset( $currentClient->{$item} ) ) {
 
 		        dbg( "e20rClientModel::getData() - Requested Item ({$item}) not found. Reloading.." );
-		        $this->loaddata($userId);
+		        $this->loadData( $userId );
 	        }
 
 	        // Only return the specified item value.
@@ -248,23 +280,24 @@ class e20rClientModel {
 
     public function setUser( $id ) {
 
-        global $e20rProgram;
-        global $currentProgram;
         global $currentClient;
+        global $e20rProgram;
 
-        $currentClient->user_id = $id;
-        $currentClient->program_id = $currentProgram->id;
-        //$this->program_id = $e20rProgram->getProgramIdForUser( $this->id );
+        if ( $id != $currentClient->user_id ) {
+            $currentClient->user_id = $id;
+            $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
+        }
     }
 
     public function saveUnitInfo( $lengthunit, $weightunit ) {
 
         global $wpdb;
         global $e20rProgram;
+        global $currentClient;
 
         if ( $wpdb->update( $this->table,
             array( 'lengthunits' => $lengthunit, 'weightunits' => $weightunit ),
-            array( 'user_id' => $this->id, 'program_id' => $e20rProgram->getProgramIdForUser( $this->id ) ),
+            array( 'user_id' => $currentClient->user_id, 'program_id' => $currentClient->programId ),
                 array( '%d' ) ) === false ) {
 
             dbg("e20rClientModel::saveUnitInfo() - Error updating unit info: " . $wpdb->print_error() );
@@ -278,8 +311,10 @@ class e20rClientModel {
 
 	private function clearTransients() {
 
+        global $currentClient;
+
 		dbg("e20rClientModel::clearTransients() - Resetting cache & transients");
-		delete_transient( "e20r_client_info_{$this->id}_{$this->program_id}" );
+		delete_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" );
 	}
 
     /**
@@ -372,41 +407,26 @@ class e20rClientModel {
 
 	    global $e20rTracker;
 
-	    $oldId = $clientId;
+	    // $oldId = $clientId;
 
-        if ( !isset( $currentClient->user_id ) || empty( $currentClient->user_id )) {
+        if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
 
-            dbg( "e20rClientModel::loadClientData() - Loading default currentClient data");
-
-            // Init the unencrypted structure and load defaults.
-            $currentClient                       = new stdClass();
-            $currentClient->user_id              = $clientId;
-            $currentClient->program_id           = $e20rProgram->getProgramIdForUser( $clientId );
-            $currentClient->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
-            $currentClient->program_start        = $currentProgram->startdate;
-            $currentClient->progress_photo_dir    = "e20r_pics/client_{$currentClient->program_id}_{$currentClient->user_id}";
-            $currentClient->gender               = 'm';
-            $currentClient->incomplete_interview = true; // Will redirect the user to the interview page.
-            $currentClient->first_name           = null;
-            $currentClient->birthdate            = null;
-            $currentClient->lengthunits          = 'in';
-            $currentClient->weightunits          = 'lbs';
-            $currentClient->loadedDefaults       = true;
-
+            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
+            $this->setUser( $clientId );
         }
-
-	    if ( $clientId != $currentClient->user_id ) {
-
-		    dbg( "e20rClientModel::loadClientData() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
-            $currentClient->user_id = $clientId;
-	    }
 
         if ( $currentProgram->id != $program_id ) {
 
-            dbg( "e20rClientModel::loadClientData() - WARNING: Loading data for a different program {$program_id}" );
-            $e20rProgram->getProgramIdForUser( $currentClient->user_id );
-            dbg( "e20rClientModel::loadClientData() - WARNING: Program data is now {$currentProgram->id}" );
+            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different program: {$program_id} vs {$currentProgram->id}" );
+            $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
+            dbg( "e20rClientModel::loadData() - WARNING: Program data is now for {$currentProgram->id}" );
         }
+
+
+        dbg( "e20rClientModel::loadData() - Loading default currentClient structure");
+
+        // Init the unencrypted structure and load defaults.
+        $currentClient = $this->defaultSettings();
 
 	    // $this->setUser( $currentClient->user_id );
 
@@ -418,6 +438,8 @@ class e20rClientModel {
 	    }
 
 	    if ( false === ( $tmpData = get_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" ) ) ) {
+
+            dbg("e20rClientModel::loadData() - Client data wasn't cached. Loading from DB.");
 
 		    $excluded = array_keys( (array) $currentClient );
 
@@ -436,6 +458,7 @@ class e20rClientModel {
 
 		    if ( ! empty( $result ) ) {
 
+                dbg("e20rClientModel::loadData() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
                 $currentClient->loadedDefaults = false;
 
 			    foreach ( $result as $key => $val ) {
@@ -464,10 +487,11 @@ class e20rClientModel {
                 $currentClient->incomplete_interview = false;
 		    }
 
-		    // Restore the original User ID.
-		    $this->id = $oldId;
 		    set_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}", $currentClient, 3600 );
-	    }
+
+            // Restore the original User ID.
+            // $this->setUser( $oldId );
+        }
         else {
             $currentClient = $tmpData;
         }

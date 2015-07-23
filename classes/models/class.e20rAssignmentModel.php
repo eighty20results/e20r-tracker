@@ -175,7 +175,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->field_type = 0;
         $settings->article_id = null;
         // $settings->user_id = $current_user->ID;
-	    $settings->program_id = null;
+        // $settings->program_id = null;
+	    $settings->program_ids = array();
         $settings->answer_date = null;
         $settings->answer = null;
 
@@ -186,10 +187,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		global $e20rTracker;
 		global $e20rProgram;
-		global $e20rArticle;
 
 		$delay = $e20rTracker->getDelay( 'now', $userId );
 		$programId = $e20rProgram->getProgramIdForUser( $userId );
+
+        dbg("e20rAssignmentModel::loadAllUserAssignments() - Loading assignments for user {$userId} until day {$delay} for program {$programId}");
 
 		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay' );
 		dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $assignments ) . " to process ");
@@ -314,9 +316,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;
 
-            dbg("e20rAssignmentsModel::loadAssignmentByMeta() - Want records for program id: {$programId}, got {$new->program_id}");
-
-            if ( $programId == $new->program_id ) {
+            if ( empty( $new->program_ids ) || in_array( $programId, $new->program_ids ) ) {
                 $assignments[] = $new;
             }
 		}
@@ -332,7 +332,6 @@ class e20rAssignmentModel extends e20rSettingsModel {
     public function loadAllAssignments() {
 
         global $post;
-
 
 	    $assignments = parent::loadAllSettings( 'publish' );
 
@@ -512,6 +511,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			    $this->settings->question    = $post->post_title;
 			    $this->settings->id          = $post->ID;
 		    }
+
+            if ( ! is_array( $this->settings->program_ids ) ) {
+                $this->settings->program_ids = array( $this->settings->program_ids );
+            }
 
 		    wp_reset_postdata();
 		    $post = $savePost;

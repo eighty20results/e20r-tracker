@@ -7,6 +7,8 @@
  *  the GPL v2 license(?)
  */
 
+define( "E20R_ASSIGNMENT_META_VER", 1 );
+
 class e20rAssignment extends e20rSettings {
 
     private $assignment = array();
@@ -66,6 +68,32 @@ class e20rAssignment extends e20rSettings {
 	    }
 
         return $currentAssignment;
+    }
+
+    public function addPrograms( $assignmentId, $programIds ) {
+
+        dbg("e20rAssignment::addProgram() - Adding " . count($programIds) . " programs to assignment {$assignmentId}");
+
+        $settings = $this->model->loadSettings( $assignmentId );
+
+        // Clean up settings with empty program id values.
+        foreach( $settings->program_ids as $k => $value ) {
+
+            if ( empty($value ) ) {
+                unset( $settings->program_ids[$k]);
+            }
+        }
+
+        foreach( $programIds as $pId ) {
+
+            if ( !in_array( $pId, $settings->program_ids ) ) {
+
+                dbg("e20rAssignment::addProgram() - Adding program {$pId} to assignment {$assignmentId}");
+                $settings->program_ids[] = $pId;
+            }
+        }
+
+        return $this->model->saveSettings( $settings );
     }
 
 	public function saveAssignment( $aArray ) {
@@ -145,7 +173,7 @@ class e20rAssignment extends e20rSettings {
 		$config->type = 'action';
 		$config->post_date = null;
 
-		$config->userId = $current_user->ID;
+		$config->userId = $userId;
 		$config->startTS = $e20rProgram->startdate( $config->userId );
 		$config->delay = $e20rTracker->getDelay( 'now' );
 
@@ -153,6 +181,61 @@ class e20rAssignment extends e20rSettings {
 
 		return $this->view->viewAssignmentList( $config, $answers );
 	}
+
+    public function update_metadata() {
+
+        dbg("e20rAssignment::update_metadata() - Test for required metadata update.");
+        global $e20rTracker;
+
+        $old_meta_key = 'program_id';
+        $new_meta_key = 'program_ids';
+
+        $type = 'array';
+
+        $version = $e20rTracker->loadOption( 'assignment_meta' );
+
+        if ( ( false == $version ) || ( $version < E20R_ASSIGNMENT_META_VER ) ) {
+
+            dbg("e20rAssignment::update_metadata() - Need to update metadata for key: {$old_meta_key}.");
+            $assignments = $this->getAllAssignments();
+
+            foreach( $assignments as $k => $a ) {
+
+                dbg($a);
+
+                if ( !property_exists( $a, $old_meta_key ) ) {
+                    dbg("e20rAssignment::update_metadata() - ERROR: Old key ({$old_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!");
+                    return;
+                }
+
+                if ( !property_exists( $a, $new_meta_key ) ) {
+                    dbg("e20rAssignment::update_metadata() - ERROR: New key ({$new_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!");
+                    return;
+                }
+
+                switch ( $type ) {
+                    case 'array':
+
+                        if ( !empty( $a->{$old_meta_key} ) ) {
+                            $a->{$new_meta_key} = array( $a->{$old_meta_key} );
+                        }
+                        else {
+                            $a->{$new_meta_key} = null;
+                        }
+                        unset($a->{$old_meta_key});
+                        break;
+                }
+
+                // dbg("e20rAssignment::update_metadata() - Saving assignments # {$a->id} with new settings: ");
+                // dbg($a);
+                $this->saveSettings( $a->id, $a );
+            }
+
+            dbg("e20rAssignment::update_metadata() - Save the new meta version: " . (E20R_ASSIGNMENT_META_VER + 1) );
+            $e20rTracker->updateSetting( 'assignment_meta', (E20R_ASSIGNMENT_META_VER + 1) );
+        }
+
+    }
 
     public function addMeta_answers() {
 
@@ -177,7 +260,7 @@ class e20rAssignment extends e20rSettings {
             'id' => (isset( $_POST['id']) ? ( intval( $_POST['id'] ) != 0 ?  intval( $_POST['id'] ) : null ) : null),
             'assignment_type' => (isset( $_POST['assignment-type']) ? intval( $_POST['assignment-type'] ) : null),
             'article_id' => (isset( $_POST['article-id']) ? intval( $_POST['article-id'] ) : null ),
-            'program_id' => (isset( $_POST['program-id']) ? intval( $_POST['program-id'] ) : -1 ),
+            'program_ids' => (isset( $_POST['program-ids']) ? intval( $_POST['program-ids'] ) : -1 ),
             'assignment_date' => (isset( $_POST['assignment-date']) ? sanitize_text_field( $_POST['assignment-date'] ) : null ),
             'assignment_short_name' => isset( $_POST['assignment-short-name']) ? sanitize_text_field( $_POST['assignment-short-name'] ) : null,
             'checkedin' => (isset( $_POST['checkedin']) ? intval( $_POST['checkedin'] ) : null),

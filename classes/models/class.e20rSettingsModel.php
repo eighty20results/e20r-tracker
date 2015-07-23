@@ -230,6 +230,7 @@ class e20rSettingsModel {
         $settings_list = array();
 
         $query = array(
+			'posts_per_page' => -1,
             'post_type' => $this->cpt_slug,
             'post_status' => $statuses,
         );

@@ -111,6 +111,14 @@
 .e20rOdd {
     background-color: #c5c5c5;
 }
+.e20rEven td,
+.e20rEven tbody,
+.e20rOdd td,
+.e20rOdd tbody {
+    border-bottom: none;
+    border-top: none;
+}
+
 #e20r_reload_btn {
     margin: 20px 20px;
 }
@@ -1429,7 +1437,11 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     border: none;
 }
 .e20r-measurement-table td {
+    border-top: none;
     font-size: 11px;
+}
+.e20r-measurement-table tbody {
+    border-bottom: none;
 }
 .e20r-measurements-container {
     margin-top: 20px;
@@ -1452,7 +1464,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     font-size: 14px;
     font-weight: bold;
     width: 350px;
-    top: -12px;
+    top: 0;
     left: 0px;
     margin-left: 10px;
     text-align: left;
@@ -1603,6 +1615,7 @@ div.photo-overlay span.value {
 .quick-nav table td a {
     display: block;
     width: 100%;
+    padding-left: 5px;
     /* text-align: center; */
 }
 .hover {
@@ -1619,6 +1632,7 @@ div.date {
     min-width: 75px;
 }
 div.timeagosize {
+    padding-left: 5px;
     color: #555;
     font-weight: bold;
     font-size: 0.45rem;
@@ -2310,6 +2324,7 @@ td.e20r-tracker-score {
     text-align: center;
 }
 td.e20r-tracker-action-descr {
+    padding-left: 5px;
     font-size: 1.1em;
     font-style: italic;
     font-weight: bold;

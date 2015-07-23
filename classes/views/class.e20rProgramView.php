@@ -302,17 +302,18 @@ class e20rProgramView {
                     <tr>
 	                    <th class="e20r-label header"><label for="e20r-program-activity_page_id"><strong><?php _e("Activity Page", "e20rtracker"); ?></strong></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Dashboard Page", "e20rtracker"); ?></strong></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Progress Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-progress_page_id"><strong><?php _e("Status Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-measurements_page_id"><strong><?php _e("Measurements Page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="3"><hr width="100%"/></td>
+                        <td colspan="4"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
                         <tr class="program-inputs">
 	                        <td>
                                 <select class="select2-container" id="e20r-program-activity_page_id" name="e20r-program-activity_page_id">
-                                    <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>><?php _e("No Activity page defined", "e20rtracker");?></option><?php
+                                    <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->activity_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
@@ -321,7 +322,7 @@ class e20rProgramView {
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-dashboard_page_id" name="e20r-program-dashboard_page_id">
-                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>><?php _e("No Dashboard page defined", "e20rtracker");?></option><?php
+                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->dashboard_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
@@ -330,14 +331,22 @@ class e20rProgramView {
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-progress_page_id" name="e20r-program-progress_page_id">
-                                    <option value="-1" <?php selected( -1, $programData->progress_page_id) ?>><?php _e("No Progress page defined", "e20rtracker");?></option><?php
+                                    <option value="-1" <?php selected( -1, $programData->progress_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->progress_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
                             </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-measurements_page_id" name="e20r-program-measurements_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->measurements_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
 
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->measurements_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

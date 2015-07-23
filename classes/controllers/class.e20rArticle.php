@@ -996,8 +996,6 @@ class e20rArticle extends e20rSettings {
 
                 if ( 'assignments' == $field ) {
 
-                    $assignments = array();
-
                     dbg("e20rArticle::saveSettings() - Process the assignments array");
 
                     if ( empty( $tmp[0] ) ) {
@@ -1012,38 +1010,34 @@ class e20rArticle extends e20rSettings {
 
                         foreach ($tmp as $k => $assignmentId) {
 
-                            if (is_null($assignmentId)) {
+                            if ( is_null($assignmentId) ) {
 
                                 dbg("e20rArticle::saveSettings() - Assignments Array: Setting key {$k} has no ID}");
-                                dbg("e20rArticle() - Create a new default assignment for this article ID: {$settings->id}");
+                                dbg("e20rArticle::saveSettings() - Create a new default assignment for this article ID: {$settings->id}");
 
                                 //Generate a default assignment for this article.
                                 $assignmentId = $e20rAssignment->createDefaultAssignment($settings);
 
                                 dbg("e20rArticle::saveSettings() - Replacing empty assignment key #{$k} with value {$assignmentId}");
+                                $tmp[$k] = $assignmentId;
                             }
-
-                            $tmp[$k] = $assignmentId;
                         }
+
+                        dbg("e20rArticle::saveSettings() - Assignments array after processing: ");
+                        dbg($tmp);
                     }
                 }
 
                 if ( empty( $tmp ) ) {
 
                     $tmp = $defaults->{$field};
-                    $settings->{$field} = $tmp;
                 }
-                else {
 
-                    $settings->{$field} = $tmp;
-                }
+                $settings->{$field} = $tmp;
             }
 
             // Add post ID (article ID)
             $settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
-
-            dbg( "e20rArticle::saveSettings() - Saving: " );
-            dbg( $settings );
 
             if ( ! $this->model->saveSettings( $settings ) ) {
 

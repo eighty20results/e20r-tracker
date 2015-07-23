@@ -95,7 +95,7 @@ class e20rArticleModel extends e20rSettingsModel {
         if ( isset( $currentArticle->id ) && ( !is_null( $currentArticle->id )) ) {
             $currentArticle = $this->settings;
         }
-        dbg( $currentArticle );
+        // dbg( $currentArticle );
 		return $currentArticle;
 	}
 
@@ -295,11 +295,13 @@ class e20rArticleModel extends e20rSettingsModel {
      */
     public function saveSettings( stdClass $settings ) {
 
+		global $e20rAssignment;
+
         $articleId = $settings->id;
 
         $defaults = self::defaultSettings();
 
-        dbg("e20rArticleModel::saveSettings() - Saving article Metadata: " . print_r( $settings, true ) );
+        dbg("e20rArticleModel::saveSettings() - Saving article Metadata" );
 
         $error = false;
 
@@ -317,13 +319,23 @@ class e20rArticleModel extends e20rSettingsModel {
 
 	        if ( 'assignments' == $key ) {
 
-		        foreach( $value as $k => $assignmentId ) {
+                dbg("e20rArticleModel::saveSettings() - Processing assignments (include program info):");
+                dbg($value);
+
+		        foreach( $settings->{$key} as $k => $assignmentId ) {
 
 			        if ( empty( $assignmentId ) ) {
 
 				        dbg("e20rArticleModel::saveSettings() - Removing empty assignment key #{$k} with value {$assignmentId}");
 				        unset( $value[$k] );
 			        }
+
+                    dbg("e20rArticleModel::saveSettings() - Adding program IDs for assignment {$assignmentId}");
+					if (! $e20rAssignment->addPrograms( $assignmentId, $settings->programs ) ) {
+
+                        dbg("e20rArticleModel::saveSettings() - ERROR: Unable to save program list for assignment {$assignmentId}");
+                        dbg($settings->programs);
+                    }
 		        }
 	        }
 
