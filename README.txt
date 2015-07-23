@@ -25,6 +25,33 @@ Arguments:
 
 == ChangeLog ==
 
+= 0.9.2 =
+* Fix static/non-static call warnings in e20rTracker
+* Removed unused global declaration
+* Add support for showing Activity history (i.e. the exercise rep statistics)
+* Ensure all assignment data gets loaded when requested.
+* Hide annoying alert dialog when there are no measurements to be found for the user.
+* Fix text for default setting (no page) in Program definition meta
+* Add program list to assignment definition (may hide at some point in future)
+* Don't limit number of records returned in loadAllSettings()
+* Refactor parameters
+* Transition to using currentClient global variable.
+* Save program ID(s) for each assignment used by the article.
+* Add update_metadata() at init for Assignments
+* Load all required scripts and styles to front-end.
+* Transition isEmpty() to the global e20rTracker class.
+* Use the isEmpty() function to check whether objects/arrays contain data
+* Only load assignment if it's defined as belonging to the program(s) (Or there are not programs defined for this assignment)
+* Force program_ids settings to be an array (if it's not when loaded).
+* Support updating assignment options (name and values) on init.
+* Add program list to assignment definition
+* Correctly process assignments array during save
+* Didn't always recognize if the e20rMeasurements object was empty or not.
+* Load Activities tab for progress_overview short code
+* Set user id & program info for weekly_progress short code
+* Fix formatting for progress_overview short code
+* Program-specific setting for weekly_progress page
+
 = 0.9.1 =
 Removed console logging of various objects
 Add "working" graphic when saving notes.
