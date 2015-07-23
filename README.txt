@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -24,6 +24,11 @@ Arguments:
     [weekly_progress day="<days since startdate>" from_programstart="<1|0>" use_article_id="<1|0>" demo_form="0|1"]
 
 == ChangeLog ==
+
+= 0.9.3 =
+Simplify processing of workout history for user's progress overview.
+Allow metadata upgrade to proceed
+White-screen of death issue (undeclared variable)
 
 = 0.9.2 =
 * Fix static/non-static call warnings in e20rTracker
