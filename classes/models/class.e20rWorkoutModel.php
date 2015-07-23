@@ -445,13 +445,14 @@ class e20rWorkoutModel extends e20rSettingsModel {
         $activities = array();
         $userData = $this->loadUserActivityData( $userId, $programId );
 
+        /*
         foreach ( $workouts as $w ) {
 
             dbg("e20rWorkoutModel::loadAllUserActivities() - Processing workout {$w->id}");
 
-            foreach( $w->groups as $g ) {
-
-                foreach( $g->exercises as $e ) {
+             foreach( $w->groups as $g ) {
+        */
+                foreach( $userData as $e => $info ) {
 
                     dbg("e20rWorkoutModel::loadAllUserActivities() - Processing exercise {$e}");
 
@@ -463,8 +464,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
                         // $userData[$e]->descr = $currentExercise->descr;
                     }
                 }
-            }
-        }
+        /*  }
+        } */
 
         return $userData;
     }
