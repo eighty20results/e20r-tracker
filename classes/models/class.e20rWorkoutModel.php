@@ -348,6 +348,186 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return false;
     }
 
+    public function loadUserActivityData( $userId, $programId = null ) {
+
+        dbg("e20rWorkoutModel::loadUserActivityData() - Loading activity data for {$userId} in program {$programId}");
+
+        global $wpdb;
+        global $currentProgram;
+        global $e20rProgram;
+
+        if ( ( $currentProgram->id != $programId ) && ( !is_null( $programId ) ) ) {
+
+            dbg("e20rWorkoutModel::loadUserActivityData() - Change program id from {$currentProgram->id} to {$programId}");
+            $programId = $e20rProgram->getProgramForUserId( $userId );
+        }
+
+        $activities = array();
+
+        $sql = $wpdb->prepare(
+            "SELECT exercise_id, UNIX_TIMESTAMP(for_date) AS for_date,
+                    exercise_key, group_no, set_no, weight, reps
+             FROM {$this->table}
+             WHERE user_id = %d AND program_id = %d
+             ORDER BY exercise_id, for_date, group_no, set_no, exercise_key DESC",
+            $userId,
+            $programId
+        );
+
+        dbg("e20rWorkoutModel::loadUserActivityData() - SQL: {$sql}");
+
+        $records = $wpdb->get_results( $sql, ARRAY_A );
+
+        if ( !empty( $records ) ) {
+
+            dbg("e20rWorkoutModel::loadUserActivityData() - Processing " . count($records) . " workout records for user {$userId}");
+
+            foreach( $records as $wr ) {
+
+                //$set = ( ($wr['group_no'] != 0 ? $wr['group_no'] : 1) * $wr['set_no'] * $wr['exercise_key']);
+                // $set = ( ($wr['group_no'] != 0 ? $wr['group_no'] : 1) * $wr['set_no'] + $wr['exercise_key']);
+                $set = $wr['group_no'] + $wr['set_no'] + $wr['exercise_key'];
+
+                if ( !isset( $activities[$wr['exercise_id']] ) ) {
+
+                    $activities[$wr['exercise_id']] = new stdClass();
+                }
+
+                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}  ) ) {
+
+                    $activities[$wr['exercise_id']]->{$wr['for_date']} = array();
+                }
+
+/*                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}->{$wr['group_no']} ) ) {
+
+                    $activities[$wr['exercise_id']]->$wr['for_date']->{$wr['group_no']} = array();
+                }
+*/
+                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}[$set] ) ) {
+
+                    $activities[$wr['exercise_id']]->{$wr['for_date']}[$set] = new stdClass();
+                }
+
+                $activities[$wr['exercise_id']]->{$wr['for_date']}[$set]->weight = $wr['weight'];
+                $activities[$wr['exercise_id']]->{$wr['for_date']}[$set]->reps = $wr['reps'];
+            }
+
+            dbg("e20rWorkoutModel::loadUserActivityData() - Completed processing: Returnding data for " . count($activities) . " workouts");
+            // dbg($activities);
+        }
+
+        return $activities;
+    }
+
+    public function loadAllUserActivities( $userId ) {
+
+        global $e20rTracker;
+        global $e20rExercise;
+        global $e20rProgram;
+
+        global $currentExercise;
+
+        $today = date_i18n( 'Y-m-d', current_time( 'timestamp' ) );
+
+        $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+        dbg("e20rWorkoutModel::loadAllUserActivities() - Loading assignments for user {$userId} in program {$programId}");
+
+        $workouts = $this->loadWorkoutByMeta( $programId, 'startdate', $today, '<=', 'date', 'startdate' );
+        dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $workouts ) . " to process ");
+
+        if ( empty( $workouts ) ) {
+
+            dbg("e20rAssignmentModel::loadAllUserAssignments() - No records found.");
+            return false;
+        }
+
+        $activities = array();
+        $userData = $this->loadUserActivityData( $userId, $programId );
+
+        foreach ( $workouts as $w ) {
+
+            dbg("e20rWorkoutModel::loadAllUserActivities() - Processing workout {$w->id}");
+
+            foreach( $w->groups as $g ) {
+
+                foreach( $g->exercises as $e ) {
+
+                    dbg("e20rWorkoutModel::loadAllUserActivities() - Processing exercise {$e}");
+
+                    if ( isset($userData[$e]) ) {
+
+                        $e20rExercise->set_currentExercise($e);
+                        $userData[$e]->name = $currentExercise->title;
+                        $userData[$e]->type = $currentExercise->type;
+                        // $userData[$e]->descr = $currentExercise->descr;
+                    }
+                }
+            }
+        }
+
+        return $userData;
+    }
+
+    private function loadWorkoutByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'startday' ) {
+
+        global $current_user;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        $records = array();
+
+        dbg("e20rWorkoutModel::loadWorkoutByMeta() - for program #: {$programId}");
+
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type' => $this->cpt_slug,
+            'post_status' => 'publish',
+            'meta_key' => "_e20r-{$this->type}-{$orderbyKey}",
+            'order_by' => 'meta_value',
+            'order' => 'ASC',
+            'meta_query' => array(
+                array(
+                    'key' => "_e20r-{$this->type}-{$key}",
+                    'value' => $value,
+                    'compare' => $comp,
+                    'type' => $type,
+                ),
+                /*				array(
+                                    'key' => "_e20r-assignments-program_id",
+                                    'value' => $programId,
+                                    'compare' => '=',
+                                    'type' => 'numeric',
+                                ),
+                */
+            )
+        );
+
+        $query = new WP_Query( $args );
+
+        dbg("e20rWorkoutModel::loadWorkoutByMeta() - Returned workouts: {$query->post_count}" );
+
+        while ( $query->have_posts() ) {
+
+            $query->the_post();
+
+            $new = new stdClass();
+
+            $new = $this->loadSettings( get_the_ID() );
+
+            if ( empty( $new->programs ) || in_array( $programId, $new->programs ) ) {
+                $records[] = $new;
+            }
+        }
+
+        dbg("e20rWorkoutModel::loadWorkoutByMeta() - Returning " .
+            count( $records ) . " records to: " . $e20rTracker->whoCalledMe() );
+
+        wp_reset_query();
+
+        return $records;
+    }
+
 	/**
      * Returns an array of all workouts merged with their associated settings.
      *
@@ -357,6 +537,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
     public function loadAllData( $statuses = 'any' ) {
 
         $query = array(
+            'posts_per_page' => -1,
             'post_type' => 'e20r_workout',
             'post_status' => $statuses,
         );
