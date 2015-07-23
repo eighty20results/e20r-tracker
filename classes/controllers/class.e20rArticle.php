@@ -189,6 +189,8 @@ class e20rArticle extends e20rSettings {
 	    $postId = null;
         $activityField = null;
 
+        $oldPost = $post;
+
         switch( $type ) {
             case 'action':
                 $postId = $this->model->getSetting( $articleId, 'post_id' );
@@ -209,90 +211,64 @@ class e20rArticle extends e20rSettings {
             return null;
         }
 
+        $art = get_post( $articleId );
+        $post = get_post( $postId );
+
 	    dbg( "e20rArticle::getExcerpt() - Prefix for {$type}: {$prefix}");
 
-        $articles = new WP_Query( array(
-            'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
-            'post_status'         => apply_filters( 'e20r-tracker-post-status-filter', array( 'publish' ) ),
-            'posts_per_page'      => 1,
-            'p'                   => $postId,
-            'ignore_sticky_posts' => true,
-        ) );
+        if ( !empty( $art->post_excerpt ) && ( 'action' == $type )) {
 
-        dbg( "e20rArticle::getExcerpt() - Number of posts for ID {$postId} in article {$articleId} is {$articles->found_posts}" );
+            dbg( "e20rArticle::getExcerpt() - Using the article summary.");
+            $pExcerpt = $art->post_excerpt;
+        }
+        elseif ( !empty( $post->post_excerpt ) ) {
 
-        if ( $articles->found_posts > 0 ) {
-
-            ob_start();
-
-            while ( $articles->have_posts() ) : $articles->the_post();
-
-                $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID, 'pmpro_seq_recentpost_widget_size' ) : '<div class="noThumb"></div>' );
-
-
-                if ( !empty( $post->post_excerpt ) ) {
-
-                    $pExcerpt = $post->post_excerpt;
-                }
-                else {
-                    $pExcerpt = $post->post_content;
-                }
-
-                $pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
-                $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt );
-
-                ?>
-                <h4>
-                    <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
-                </h4>
-                <?php echo !is_null( $activityField ) ? $activityField : null; ?>
-                <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
-
-                if ( $type == 'action' ) {
-
-                    $url = get_permalink();
-                }
-                else if ($type == 'activity' ) {
-
-                    $url = null;
-
-                    dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
-
-                    $url = get_permalink( $currentProgram->activity_page_id );
-                    dbg("e20rArticle::getExcerpt() - URL is: {$url}");
-
-/*                     $urls = $e20rTracker->getURLToPageWithShortcode( "e20r_activity" );
-
-                    if (!empty($urls)) {
-
-                        if (count($urls) > 1) {
-                            dbg("e20rArticle::getExcerpt() - ERROR: More than a single page containing the 'e20r_activity' short code! List follows: ");
-                            dbg($urls);
-                        }
-
-                        $url = array_pop($urls);
-
-                    }
-                    else {
-                        dbg("e20rArticle::getExcerpt() - No page with 'e20r_activity' short code has been found! Returning nothing...");
-                        ?><p class="e20r-descr"></p><?php
-                    }
-                    */
-                }?>
-                <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title(); ?>">
-                        <?php _e('Click to read', 'e20tracker'); ?>
-                    </a>
-                </p><?php
-            endwhile;
-
-            wp_reset_postdata();
-
-            $html = ob_get_clean();
+            dbg( "e20rArticle::getExcerpt() - Using the post excerpt.");
+            $pExcerpt = $post->post_excerpt;
         }
         else {
-            dbg("e20rArticle::getExcerpt() - No posts found. Returning null for the excerpt");
-            $html = null;
+
+            dbg( "e20rArticle::getExcerpt() - Using the post summary.");
+            $pExcerpt = $post->post_content;
         }
+
+        $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID ) : '<div class="noThumb"></div>' );
+
+        $pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
+        $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt );
+
+        ob_start();
+        ?>
+        <h4>
+            <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title( $post->ID ); ?>
+        </h4>
+        <?php echo !is_null( $activityField ) ? $activityField : null; ?>
+        <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
+
+        if ( $type == 'action' ) {
+
+            $url = get_permalink( $post->ID );
+        }
+        else if ($type == 'activity' ) {
+
+            $url = null;
+
+            dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
+
+            $url = get_permalink( $currentProgram->activity_page_id );
+            dbg("e20rArticle::getExcerpt() - URL is: {$url}");
+
+        }?>
+        <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title( $post->ID ); ?>">
+            <?php _e('Click to read', 'e20tracker'); ?>
+        </a>
+        </p><?php
+
+        wp_reset_postdata();
+
+        $html = ob_get_clean();
+
+        $post = $oldPost;
 
         return $html;
     }
