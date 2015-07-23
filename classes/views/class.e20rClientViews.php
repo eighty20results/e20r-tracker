@@ -137,6 +137,7 @@ class e20rClientViews {
 
         ob_start(); ?>
         <form id="e20r-message-form">
+            <input type="hidden" name="e20r-send-to-id" id="e20r-send-to-id" value="<?php echo $currentClient->user_id; ?>">
             <input type="hidden" name="e20r-send-message-to" id="e20r-send-message-to" value="<?php echo $currentClient->email; ?>">
             <input type="hidden" name="e20r-send-message-cc" id="e20r-send-message-cc" value="<?php echo $current_user->user_email; ?>">
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
@@ -255,7 +256,9 @@ class e20rClientViews {
     public function viewClientAdminPage( $lvlName = '' ) {
 
 	    global $e20rCheckin;
+        global $currentClient;
 	    global $e20rAssignment;
+        global $e20rWorkout;
 
         if ( is_admin() ) {
 
@@ -295,8 +298,9 @@ class e20rClientViews {
 			    <li><a href="#tabs-1">Measurements</a></li>
 			    <li><a href="#tabs-2">Assignments</a></li>
 			    <li><a href="#tabs-3">Achievements</a></li>
-			    <li><a href="#tabs-4">Client info</a></li>
-                <li><a href="#tabs-5">Messages</a></li>
+			    <li><a href="#tabs-4">Activities</a></li>
+                <li><a href="#tabs-5">Client Info</a></li>
+                <li><a href="#tabs-6">Send Message</a></li>
 		    </ul>
 	        <div id="tabs-1">
 		        <div id="e20r-progress-measurements">
@@ -304,22 +308,28 @@ class e20rClientViews {
 	        </div>
 		    <div id="tabs-2">
 			    <div id="e20r-progress-assignments">
-				    <?php echo $e20rAssignment->listUserAssignments( $this->client_id ) ?>
+				    <?php echo $e20rAssignment->listUserAssignments( $currentClient->user_id ) ?>
 			    </div>
 		    </div>
 		    <div id="tabs-3">
 		        <div id="e20r-progress-accomplishments">
-			        <?php echo $e20rCheckin->listUserAccomplishments( $this->client_id ); ?>
+			        <?php echo $e20rCheckin->listUserAccomplishments( $currentClient->user_id ); ?>
 		        </div>
 		    </div>
-		    <div id="tabs-4">
+            <div id="tabs-4">
+                <div id="e20r-progress-activities">
+                    <?php echo $e20rWorkout->listUserActivities( $currentClient->user_id ); ?>
+                </div>
+            </div>
+
+            <div id="tabs-5">
 			    <div id="e20r-client-info">
-				    <?php echo $this->viewClientDetail( $this->client_id ); ?>
+				    <?php echo $this->viewClientDetail( $currentClient->user_id ); ?>
 			    </div>
 		    </div>
-            <div id="tabs-5">
+            <div id="tabs-6">
                 <div id="e20r-client-contact">
-                    <?php echo $this->viewClientContact( $this->client_id ); ?>
+                    <?php echo $this->viewClientContact( $currentClient->user_id ); ?>
                 </div>
             </div>
 

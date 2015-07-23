@@ -1041,7 +1041,7 @@ public function loadClient( $id = null ) {
         // remove_filter( 'wp_mail_charset', 'utf8' );
         remove_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
 
-        if ( true ==  $status ) {
+		if ( true ==  $status ) {
             dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
             wp_send_json_success();
             wp_die();

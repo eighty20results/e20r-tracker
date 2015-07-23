@@ -356,7 +356,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         global $currentProgram;
         global $e20rProgram;
 
-        if ( ( $currentProgram->id != $programId ) && ( !is_null( $programId ) ) ) {
+        if ( ( is_null( $programId ) ) || ( $currentProgram->id != $programId ) ) {
 
             dbg("e20rWorkoutModel::loadUserActivityData() - Change program id from {$currentProgram->id} to {$programId}");
             $programId = $e20rProgram->getProgramForUserId( $userId );

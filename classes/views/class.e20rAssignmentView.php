@@ -489,7 +489,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 						if ( $answer->field_type == 0 ) {
 
-							dbg("e20rAssignmentView::viewAssignmentList() - {$answer->id} has no answer ('lesson complete' button).");
+							dbg("e20rAssignmentView::viewAssignmentList() - {$answer->id} has no answer (It's a 'lesson complete' button).");
 							continue;
 						}
 
@@ -508,6 +508,7 @@ class e20rAssignmentView extends e20rSettingsView {
 									<!-- <span> -->
 									<?php
 									if ( $showLink ) {
+                                        dbg( "e20rAssignmentView::viewAssignmentList() - Want to show link for article {$answer->article_id}" );
 										?>
 										<a href="<?php echo $e20rArticle->getPostUrl( $answer->article_id ); ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
 											<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>

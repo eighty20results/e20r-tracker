@@ -62,6 +62,7 @@ var progMeasurements = {
             $class.clientMsgForm = jQuery("div#e20r-client-contact");
 
             $class.$clientMessageTab = jQuery("#ui-id-5");
+            $class.$clientMessageForm = jQuery("#e20r-client-contact");
             $class.$clientCompliance = jQuery("#e20r-client-compliance");
 
             $class.$clientAssignments = jQuery("#e20r-client-assignments");
@@ -300,15 +301,17 @@ var progMeasurements = {
 
         $class.$spinner.show();
 
+        var $clientId = jQuery("input#e20r-send-to-id").val();
+
         var $data = {
             action: 'e20r_sendClientMessage',
             'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
             'subject': jQuery('input#e20r-email-subject').val(),
             'content': $class.get_tinymce_content(),
-            'email-from-id': jQuery("input#e20r-send-from-id").val(),
             'email-to': jQuery("input#e20r-send-message-to").val(),
             'email-cc': jQuery("input#e20r-send-message-cc").val(),
             'email-from': jQuery("input#e20r-email-from").val(),
+            'email-from-id': jQuery("input#e20r-send-from-id").val(),
             'email-from-name': jQuery("input#e20r-email-from-name").val()
         };
 
@@ -331,8 +334,10 @@ var progMeasurements = {
 
                 if ( ( res.success ) ) {
 
-                    console.log("Returned for e20r_sendClientMessage: ");
+                    console.log("Returned for e20r_sendClientMessage: ", res );
                     alert("Email system received your message.\n\nIt should be under way at this time.");
+                    $class.loadClientMessages( $clientId );
+                    return false;
                 }
 
             },

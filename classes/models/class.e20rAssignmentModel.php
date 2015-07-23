@@ -316,6 +316,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;
 
+            dbg("e20rAssignmentModel::loadAssignmentByMeta() - Checking assignment against {$programId} and program id array: ");
+            dbg($new->program_ids);
+
             if ( empty( $new->program_ids ) || in_array( $programId, $new->program_ids ) ) {
                 $assignments[] = $new;
             }

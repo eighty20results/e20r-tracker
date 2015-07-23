@@ -121,6 +121,8 @@ class e20rArticle extends e20rSettings {
     public function getPostUrl( $articleId ) {
 
         if ( !$articleId ) {
+
+            dbg("e20rArticle::getPostUrl() - No article ID provided?!?");
             return false;
         }
 
