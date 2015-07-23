@@ -988,12 +988,13 @@ class e20rTracker {
         if( $hook == $e20rAdminPage ) {
 
             global $e20r_plot_jscript, $e20rTracker;
+            global $e20rTracker;
 
-            self::load_adminJS();
+            $e20rTracker->load_adminJS();
 
             $e20r_plot_jscript = true;
-            self::register_plotSW( $hook );
-            self::enqueue_plotSW( $hook );
+            $e20rTracker->register_plotSW( $hook );
+            $e20rTracker->enqueue_plotSW( $hook );
             $e20r_plot_jscript = false;
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
@@ -1005,7 +1006,7 @@ class e20rTracker {
 
         if( $hook == 'edit.php' || $hook == 'post.php' || $hook == 'post-new.php' ) {
 
-            switch( self::getCurrentPostType() ) {
+            switch( $e20rTracker->getCurrentPostType() ) {
 
                 case 'e20r_checkins':
 
