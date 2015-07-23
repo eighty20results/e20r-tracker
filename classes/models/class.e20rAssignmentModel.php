@@ -564,7 +564,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         foreach ( $defaults as $key => $value ) {
 
-            if ( in_array( $key, array( 'id', 'descr', 'question' ) ) ) {
+            if ( in_array( $key, array( 'id', 'descr', 'question', 'program_id' ) ) ) {
                 continue;
             }
 
