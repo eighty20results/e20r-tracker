@@ -175,7 +175,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->field_type = 0;
         $settings->article_id = null;
         // $settings->user_id = $current_user->ID;
-        // $settings->program_id = null;
+        $settings->program_id = null;
 	    $settings->program_ids = array();
         $settings->answer_date = null;
         $settings->answer = null;
