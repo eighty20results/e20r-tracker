@@ -51,6 +51,7 @@ Arguments:
 * Set user id & program info for weekly_progress short code
 * Fix formatting for progress_overview short code
 * Program-specific setting for weekly_progress page
+* Fix typos in change log
 
 = 0.9.1 =
 Removed console logging of various objects
