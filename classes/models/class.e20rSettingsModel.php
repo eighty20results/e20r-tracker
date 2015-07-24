@@ -56,6 +56,7 @@ class e20rSettingsModel {
 
     }
 
+
     public function doSerialize( $field_key ) {
 
         return ( in_array( $field_key, $this->serialized ) );
@@ -144,6 +145,8 @@ class e20rSettingsModel {
     }
 
     public function getSetting( $typeId, $fieldName ) {
+
+        dbg("e20rSettingsModel::getSetting() - Running from parent class");
 
 	    $typeVar = 'current' . ucfirst($this->type);
 	    global ${$typeVar};
@@ -342,6 +345,12 @@ class e20rSettingsModel {
 					'compare' => '>=',
 					'type' => 'DATE',
 				),
+                array(
+                    'key' => "_e20r-{$this->type}-program_ids",
+                    'value' => $programId,
+                    'compare' => '=',
+                    'type' => 'numeric',
+                ),
 			)
 		);
 
@@ -353,6 +362,8 @@ class e20rSettingsModel {
 
 			$query->the_post();
 
+            $list[] = get_the_ID();
+            /*
 			$id = get_the_ID();
 
 			dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Getting program info for action ID: {$id}");
@@ -373,6 +384,7 @@ class e20rSettingsModel {
 
 				$list[] = $id;
 			}
+            */
 		}
 
 		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Returning ids:");
@@ -397,11 +409,13 @@ class e20rSettingsModel {
 
 		global $e20rProgram;
 
+        /*
         $programKey = null;
 
         if ( -1 != $programId ) {
             $programKey = $this->getProgramKey();
         }
+        */
 
 		$pArray = false;
 
@@ -413,7 +427,7 @@ class e20rSettingsModel {
 				'order' => $order,
             );
 		}
-/*        elseif ( ( $key == 'id') && (! is_array( $value ) ) ) {
+        elseif ( ( $key == 'id') && (! is_array( $value ) ) ) {
             $args = array(
                 'posts_per_page' => -1,
                 'post_type' => $this->cpt_slug,
@@ -421,7 +435,7 @@ class e20rSettingsModel {
                 'p' => $value,
                 'order' => $order,
             );
-        } */
+        }
 		elseif ( $key != 'id' ) {
 			$args = array(
 				'posts_per_page' => -1,
@@ -449,14 +463,15 @@ class e20rSettingsModel {
             );
         }
 
-        if ( !empty( $programKey ) ) {
 
-            dbg("e20r" . ucfirst($this->type) . "Model::find() - Program Key is: _e20r-{$this->type}-{$programKey}");
+        if ( -1 != $programId ) {
+
+            dbg("e20r" . ucfirst($this->type) . "Model::find() - Program ID is: $programId");
 
             $pExcl = array(
-                'key' => "_e20r-{$this->type}-{$programKey}",
+                'key' => "_e20r-{$this->type}-program_ids",
                 'value' => $programId,
-                'compare' => '!='
+                'compare' => '='
             );
 
             if ( array_key_exists( 'meta_query', $args ) ) {
@@ -499,7 +514,7 @@ class e20rSettingsModel {
 			$pArray = false;
 			$tId = 0;
 		}
-
+/*
 		$metaKeys = get_post_custom_keys( $tId );
 
 		if ( ! empty( $metaKeys ) ) {
@@ -536,8 +551,9 @@ class e20rSettingsModel {
 					$dataList = false;
 				}
 			}
-		}
 
+		}
+*/
 		return $dataList;
 	}
 
