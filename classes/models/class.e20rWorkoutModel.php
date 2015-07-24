@@ -431,9 +431,27 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
+        $delay = $e20rTracker->getDelay( 'now', $userId );
+
         dbg("e20rWorkoutModel::loadAllUserActivities() - Loading assignments for user {$userId} in program {$programId}");
 
-        $workouts = $this->loadWorkoutByMeta( $programId, 'startdate', $today, '<=', 'date', 'startdate' );
+        $workout_byDate = $this->loadWorkoutByMeta( $programId, 'startdate', $today, '<=', 'date', 'startdate' );
+
+        dbg("e20rWorkoutModel::loadAllUserActivities() - Not using  assignments for user {$userId} in program {$programId}");
+        $workout_byDay = $this->loadWorkoutByMeta( $programId, 'startday', $delay, '<=', 'numeric', 'startday' );
+
+        if ( is_array( $workout_byDate) && is_array( $workout_byDay) ) {
+            $workouts = array_merge( $workout_byDay, $workout_byDate );
+        }
+
+        if ( is_array( $workout_byDate ) && ( !is_array( $workout_byDay) ) ) {
+            $workouts = $workout_byDate;
+        }
+
+        if ( is_array( $workout_byDay ) && ( !is_array( $workout_byDate) ) ) {
+            $workouts = $workout_byDay;
+        }
+
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $workouts ) . " to process ");
 
         if ( empty( $workouts ) ) {
@@ -494,13 +512,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
                     'compare' => $comp,
                     'type' => $type,
                 ),
-                /*				array(
-                                    'key' => "_e20r-assignments-program_id",
-                                    'value' => $programId,
-                                    'compare' => '=',
-                                    'type' => 'numeric',
-                                ),
-                */
+                array(
+                    'key' => "_e20r-{$this->type}-program_ids",
+                    'value' => $programId,
+                    'compare' => '=',
+                    'type' => 'numeric',
+                ),
             )
         );
 
@@ -513,12 +530,15 @@ class e20rWorkoutModel extends e20rSettingsModel {
             $query->the_post();
 
             $new = new stdClass();
+            $records[] = $this->loadSettings( get_the_ID() );
 
+            /*
             $new = $this->loadSettings( get_the_ID() );
 
             if ( empty( $new->program_ids ) || in_array( $programId, $new->program_ids ) ) {
                 $records[] = $new;
             }
+            */
         }
 
         dbg("e20rWorkoutModel::loadWorkoutByMeta() - Returning " .
