@@ -1898,21 +1898,21 @@ class e20rTracker {
 
 		$value = false;
 
-        dbg("e20rTracker::loadOption() - Looking for option with name: {$optionName}");
+        // dbg("e20rTracker::loadOption() - Looking for option with name: {$optionName}");
         $options = get_option( $this->setting_name );
 
         if ( empty( $options ) ) {
 
-            dbg("e20rTracker::loadOption() - No options defined at all!");
+            // dbg("e20rTracker::loadOption() - No options defined at all!");
             return false;
         }
 
         if ( empty( $options[$optionName] ) ) {
-            dbg("e20rTracker::loadOption() - Option {$optionName} exists but contains no data!");
+            // dbg("e20rTracker::loadOption() - Option {$optionName} exists but contains no data!");
             return false;
         }
         else {
-            dbg("e20rTracker::loadOption() - Option {$optionName} exists...");
+            // dbg("e20rTracker::loadOption() - Option {$optionName} exists...");
 
             if ( 'e20r_interview_page' == $optionName ) {
                 return E20R_COACHING_URL . "/welcome-questionnaire/";
