@@ -103,6 +103,19 @@ class e20rSettings {
 
     }
 
+    public function get_cpt_slug() {
+
+        return $this->cpt_slug;
+    }
+    public function get_cpt_type() {
+
+        return $this->type;
+    }
+
+    public function get_defaults() {
+
+        return $this->model->defaultSettings();
+    }
     /*
     public function getID( $userId = null ) {
 

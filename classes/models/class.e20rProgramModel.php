@@ -185,7 +185,7 @@ class e20rProgramModel extends e20rSettingsModel {
 		}
 
 		$currentProgram = $this->settings;
-		return $this->settings;
+		return $currentProgram;
 	}
 
     /**

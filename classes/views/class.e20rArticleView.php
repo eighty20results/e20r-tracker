@@ -136,14 +136,16 @@ class e20rArticleView extends e20rSettingsView {
         global $post;
         global $e20rTracker;
 
+        dbg($settings);
+
         $savePost = $post;
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
         }
 
-	    if ( ( !isset( $settings->programs ) ) || ( $settings->programs == null ) ) {
-		    $settings->programs = array();
+	    if ( ( !isset( $settings->program_ids ) ) || ( $settings->program_ids == null ) ) {
+		    $settings->program_ids = array();
 	    }
 
         ?>
@@ -203,14 +205,14 @@ class e20rArticleView extends e20rSettingsView {
                     <tr><td colspan="4"><hr width="100%" /></td></tr>
                     <tr>
                         <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20rtracker"); ?></label></th>
-                        <th colspan="3" class="e20r-label header"><label for="e20r-article-programs"><?php _e("Programs", "e20rtracker"); ?></label></th>
+                        <th colspan="3" class="e20r-label header"><label for="e20r-article-program_ids"><?php _e("Programs", "e20rtracker"); ?></label></th>
                     </tr>
                     <tr>
                         <td style="vertical-align: top;">
                             <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo $settings->prefix; ?>">
                         </td>
                         <td colspan="3">
-                            <select class="select2-container" id="e20r-article-programs" name="e20r-article-programs[]" multiple="multiple"> <?php
+                            <select class="select2-container" id="e20r-article-program_ids" name="e20r-article-program_ids[]" multiple="multiple"> <?php
 
                                 wp_reset_query();
 
@@ -230,7 +232,7 @@ class e20rArticleView extends e20rSettingsView {
 
                                     $programs->the_post();
 
-                                    $selected = ( in_array( $programs->post->ID, $settings->programs ) ? ' selected="selected"' : null );
+                                    $selected = ( in_array( $programs->post->ID, $settings->program_ids ) ? ' selected="selected"' : null );
                                     ?><option value="<?php echo $programs->post->ID; ?>" <?php echo $selected; ?>><?php echo $programs->post->post_title; ?></option><?php
                                 } ?>
                             </select>

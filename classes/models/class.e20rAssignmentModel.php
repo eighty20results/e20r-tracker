@@ -142,7 +142,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $assignment->question_id = $assignment->id;
             $assignment->order_num = 1;
             $assignment->field_type = 0; // Lesson complete button
-            $assignment->article_id = $article->id;
+            $assignment->article_ids = array( $article->id );
             $assignment->delay = $article->release_day;
 
             if ( ! $this->saveSettings( $assignment ) ) {
@@ -161,8 +161,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     public function defaultSettings() {
 
-        global $current_user;
-        global $e20rProgram;
+        global $e20rTracker;
 
         $settings = parent::defaultSettings();
 
@@ -170,12 +169,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->descr = null;
         $settings->order_num = 1;
         $settings->question = null;
-	    $settings->question_id = null;
+        $settings->question_id = null;
         $settings->delay = null;
         $settings->field_type = 0;
-        $settings->article_id = null;
         // $settings->user_id = $current_user->ID;
-        $settings->program_id = null;
+        $settings->article_ids = array();
 	    $settings->program_ids = array();
         $settings->answer_date = null;
         $settings->answer = null;
@@ -201,14 +199,20 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			dbg("e20rAssignmentModel::loadAllUserAssignments() - No records found.");
 			return false;
 		}
+
 		$answers = array();
 
 		foreach ( $assignments as $assignment ) {
 
-			$userInfo = $this->loadUserAssignment( $assignment->article_id, $userId, $assignment->delay, $assignment->id );
-			$assignment->answer = isset( $userInfo[$assignment->id]->answer ) ? $userInfo[$assignment->id]->answer : null;
-			$assignment->answer_date = isset( $userInfo[$assignment->id]->answer_date ) ? $userInfo[$assignment->id]->answer_date : null;
-			$answers[] = $assignment;
+            if ( 0 != $assignment->field_type ) {
+                dbg("e20rAssigmentModel::loadAllUserAssignments() - Assignment information being processed:");
+                dbg($assignment);
+
+                $userInfo = $this->loadUserAssignment($assignment->article_ids, $userId, $assignment->delay, $assignment->id);
+                $assignment->answer = isset($userInfo[$assignment->id]->answer) ? $userInfo[$assignment->id]->answer : null;
+                $assignment->answer_date = isset($userInfo[$assignment->id]->answer_date) ? $userInfo[$assignment->id]->answer_date : null;
+                $answers[] = $assignment;
+            }
 		}
 
 		return $answers;
@@ -232,7 +236,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             'order' => 'ASC',
             'meta_query' => array(
                 array(
-                    'key' => '_e20r-assignments-article_id',
+                    'key' => '_e20r-assignments-article_ids',
                     'value' => $articleId,
                     'compare' => '=',
                     'type' => 'numeric',

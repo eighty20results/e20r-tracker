@@ -55,7 +55,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout->excerpt = '';
 	    $workout->title = '';
 	    $workout->days = array();
-	    $workout->programs = array( 0 );
+        $workout->program_ids = array( 0 );
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
 	    $workout->assigned_user_id = array( -1 );
@@ -516,7 +516,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
             $new = $this->loadSettings( get_the_ID() );
 
-            if ( empty( $new->programs ) || in_array( $programId, $new->programs ) ) {
+            if ( empty( $new->program_ids ) || in_array( $programId, $new->program_ids ) ) {
                 $records[] = $new;
             }
         }

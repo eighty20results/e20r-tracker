@@ -66,10 +66,10 @@ class e20rArticle extends e20rSettings {
 
         if ( empty( $lessons ) ) {
 
-            dbg( "e20rArticle::addMeta_Settings() - No lessons found!" );
+            dbg( "e20rArticle::addMeta_Settings() - No posts/pages/lessons found!" );
         }
 
-        dbg("e20rArticle::addMeta_Settings() - Loaded " . $lessons->found_posts . " lessons");
+        dbg("e20rArticle::addMeta_Settings() - Loaded " . $lessons->found_posts . " posts/pages/lessons");
         dbg("e20rArticle::addMeta_Settings() - Loading settings metabox for article page {$post->ID} or {$savePost->ID}?");
 
         $settings = $this->model->loadSettings( $post->ID );
@@ -149,6 +149,14 @@ class e20rArticle extends e20rSettings {
         // $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
 
         $aId = $this->model->getSetting( $articleId, 'activity_id');
+
+        // No activity defined
+        if ( -1 == $aId ) {
+
+            dbg("e20rArticle::getActivity() - No defined activity for this article ({$articleId})");
+            return false;
+        }
+
         $delay = $this->model->getSetting( $articleId, 'release_day');
 
 	    $mGroupId = $e20rTracker->getMembershipLevels();
