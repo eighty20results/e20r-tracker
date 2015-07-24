@@ -28,7 +28,7 @@ class e20rWorkoutView extends e20rSettingsView {
         dbg("e20rWorkoutView::viewExerciseProgress() - Listing exercise history");
         dbg($activities);
 
-        if ( is_null( $activities) ) { ?>
+        if ( empty( $activities) ) { ?>
 
         <div class="red-notice">
             <h2>Our apologies</h2>
