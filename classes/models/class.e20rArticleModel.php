@@ -149,9 +149,9 @@ class e20rArticleModel extends e20rSettingsModel {
 					'type' => $type,
 				),
 				array(
-					'key' => "_e20r-article-programs",
+					'key' => "_e20r-article-program_ids",
 					'value' => $programId,
-					'compare' => '!='
+					'compare' => '='
 				),
                 array(
                     'key' => "_e20r-article-release_day",
@@ -189,10 +189,14 @@ class e20rArticleModel extends e20rSettingsModel {
 		return $a_list;
 	}
 
-    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $multi = NULL ) {
+    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $order = 'DESC', $multi = NULL ) {
 
 	    $article = null;
 
+        // $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC'
+        $list = parent::find( $key, $value, $type, $programId, $comp, $order );
+
+        /*
 	    if ( $key != 'id' ) {
 		    $args = array(
 			    'posts_per_page' => -1,
@@ -208,9 +212,9 @@ class e20rArticleModel extends e20rSettingsModel {
 					    'type' => $type,
 				    ),
 				    array(
-					    'key' => "_e20r-article-programs",
+					    'key' => "_e20r-article-program_ids",
 					    'value' => $programId,
-					    'compare' => 'IN'
+					    'compare' => '='
 				    ),
                     array(
                         'key' => "_e20r-article-release_day",
@@ -225,11 +229,11 @@ class e20rArticleModel extends e20rSettingsModel {
 		    $args = array(
 			    'posts_per_page' => -1,
 			    'post_type' => 'e20r_articles',
-			    /* 'post_status' => 'publish', */
+			    // 'post_status' => 'publish',
 			    'p' => $value,
 		    );
 	    }
-
+*/
 /*
         $articleList = array();
 	    dbg( $args );
@@ -252,14 +256,14 @@ class e20rArticleModel extends e20rSettingsModel {
                 $articleList = $new;
             }
         }
-*/
-        $list = $this->loadForQuery( $args );
 
+        $list = $this->loadForQuery( $args );
+*/
 	    dbg("e20rArticleModel::findArticle() - Loaded " . count($list) . " articles");
 
 	    foreach ( $list as $a ) {
 
-		    if ( ( -9999 != $a->release_day ) && ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) {
+		    if ( ( -9999 != $a->release_day ) && ( $programId !== -1 ) ) {
 
 			    dbg( "e20rArticleModel::findArticle() - Returning {$a->id} because it matches program ID {$programId}" );
 			    $article[] = $a;
