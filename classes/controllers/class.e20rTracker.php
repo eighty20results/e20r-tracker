@@ -34,6 +34,11 @@ class e20rTracker {
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
                             'encrypt_surveys' => 0,
+                            'unserialize_notice' => null,
+                            'converted_metadata_e20r_articles' => false,
+                            'converted_metadata_e20r_assignments' => false,
+                            'converted_metadata_e20r_workout' => false,
+                            'converted_metadata_e20r_checkins' => false,
             )
         );
 
@@ -89,7 +94,9 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
-            add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+            // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+
+            add_action( 'admin_notices', array( &$this, 'convert_postmeta_notice'  ) );
 
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
@@ -2383,6 +2390,65 @@ class e20rTracker {
 
         add_option( 'e20rTracker_db_version', $e20r_db_version );
 
+        dbg("e20rTracker::e20r_tracker_activate() - Should we attempt to unserialize the plugin settings?");
+        $errors = '';
+
+        if ( 0 != E20R_RUN_UNSERIALIZE ) {
+
+            dbg("e20rTracker::e20r_tracker_activate() - Attempting to unserialize the plugin program id and article id settings");
+
+            $what = $this->getCPTInfo();
+
+            foreach( $what as $cpt_type => $options ) {
+
+                $this->updateSetting( "converted_metadata_{$cpt_type}", 0 );
+
+                foreach( $options->keylist as $from => $to ) {
+
+                    $success = $this->unserialize_settings( $cpt_type, $from, $to );
+
+                    // Check to see if post meta was updated and store appropriate admin notice	in options table
+                    if ( -1 === $success )
+                    {
+                        $message = '<div class="error">';
+                            $message .= '<p>';
+                                $message .= __( "Error: no specified ({$from}/{$to}) postmeta {$from}/{$to} for {$cpt_type} was found. Deactivate the plugin, specify different meta keys, then activate the plugin to try again." );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.error -->';
+                    }
+                    elseif ( empty( $success ) )
+                    {
+                        $message = '<div class="updated">';
+                            $message .= '<p>';
+                                $message .= __( "All specified postmeta ({$from}/{$to}) for {$cpt_type} was unserialized and saved back to the database." );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.updated -->';
+
+                        $this->updateSetting( "converted_metadata_{$cpt_type}", 1 );
+                    }
+                    else
+                    {
+                        $message = '<div class="error">';
+                            $message .= '<p>';
+                                $message .= __( "Error: not all postmeta {$from}/{$to} for {$cpt_type} was unserialized" );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.error -->';
+
+                        dbg("e20rTracker::tracker_activate() - Error while unserializing:");
+                        dbg($success);
+                    }
+
+                    $errors .= $message;
+                }
+            }
+
+            $this->updateSetting( 'unserialize_notice', $errors );
+
+            global $e20rAssignment;
+            dbg("e20rTracker::e20r_tracker_activate() -- Updating assignment programs key to program_ids key. ");
+            // $e20rAssignment->update_metadata();
+        }
+
         flush_rewrite_rules();
     }
 
@@ -2426,9 +2492,14 @@ class e20rTracker {
             }
 
         }
+
         $wpdb->query("DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total");
+
+        // $this->unserialize_deactivate();
+
         // Remove existing options
         delete_option( $this->setting_name );
+
     }
 
     public function e20r_program_taxonomy() {
@@ -3398,4 +3469,232 @@ class e20rTracker {
 
         return $retVal;
     }
+
+    /**
+     * Unserialize Post Meta plugin for WordPress
+     *
+     * Note: only acts upon post meta when plugin is activated
+     *
+     * @package WordPress
+     * @subpackage WPAlchemy
+     * @author Grant Kinney
+     * @version 0.1
+     * @license http://www.opensource.org/licenses/gpl-license.php GPL v2.0 (or later)
+     *
+     */
+    public function unserialize_settings( $post_type, $from_key, $to_key ) {
+
+        if ( 1 != E20R_RUN_UNSERIALIZE ) {
+
+            dbg("e20rTracker::unserialize_settings() - Not being asked to convert serialized metadata.");
+            return;
+        }
+
+        // Get all posts with post meta that have the specified meta key
+        $posts_array = get_posts( array(
+            'meta_key' => $from_key,
+            'post_type' => $post_type,
+            'posts_per_page' => -1,
+            'nopaging' => true,
+            'post_status' => 'any',
+            )
+        );
+
+        // Loop through posts, extract requested post meta, and send it back to the database in it's own row!
+        // Keep a list of updated posts and check that the unserialized postmeta has been stored
+        $serialized_post_list = array();
+        $unserialized_post_list = array();
+
+        dbg("e20rTracker::unserialize_settings() - Converting from {$from_key} to {$to_key} for type {$post_type}");
+
+        foreach ($posts_array as $serialized_post) {
+
+            $serialized_post_id = $serialized_post->ID;
+            $serialized_postmeta = get_post_meta( $serialized_post_id, $from_key, true );
+
+//            if ( false !== strpos( $from_key, 'assignment' ) ) {
+                dbg("e20rTracker::unserialize_settings() - Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
+                // dbg($serialized_postmeta);
+//            }
+
+
+            if ( "delete" == $to_key ) {
+//                if ( false !== strpos( $from_key, 'assignment' ) ) {
+                    dbg("e20rTracker::unserialize_settings() - WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
+//                }
+                delete_post_meta( $serialized_post_id, $from_key );
+            }
+            else {
+
+                if ( !is_array( $serialized_postmeta ) ) {
+
+                    dbg( "e20rTracker::unserialize_settings() - Value isn't actually serialized: {$serialized_postmeta}");
+                    $serialized_postmeta = array( $serialized_postmeta );
+                }
+
+                if ( is_array( $serialized_postmeta ) ) {
+
+//                        if ( false !== strpos( $from_key, 'assignment' ) ) {
+                            dbg("e20rTracker::unserialize_settings() - serialized postmeta IS an array.");
+                            dbg($serialized_postmeta);
+//                        }
+
+                    delete_post_meta( $serialized_post_id, $to_key );
+
+                    foreach ( $serialized_postmeta as $k => $val ) {
+
+//                        if ( false !== strpos( $from_key, 'assignment' ) ) {
+                            dbg("e20rTracker::unserialize_settings() - Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
+//                        }
+                        if ( 0 !== $val ) {
+
+                            add_post_meta( $serialized_post_id, $to_key, $val);
+                        }
+                        else {
+                            dbg("e20rTracker::unserialize_settings() - Zero value for {$to_key}. Won't save it");
+                            unset( $serialized_postmeta[$k] );
+                        }
+                    }
+
+//                    if ( false !== strpos( $from_key, 'assignment' ) ) {
+                        dbg("e20rTracker::unserialize_settings() - From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
+//                    }
+
+                    // update_post_meta( $serialized_post_id, $from_key, null, $serialized_postmeta );
+
+                    // update_post_meta( $serialized_post_id, $to_key, $extracted_postmeta );
+                    $serialized_post_list[] = $serialized_post_id;
+                }
+
+                $unserialized_postmeta = get_post_meta( $serialized_post_id, $to_key );
+
+                // dbg("e20rTracker::unserialize_settings() - Because this is a simulation, the following data is wrong... ");
+//                if ( false !== strpos( $from_key, 'assignment' ) ) {
+                    dbg("e20rTracker::unserialize_settings() - Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
+                    dbg($unserialized_postmeta);
+//                }
+
+
+                if ( is_array( $serialized_postmeta ) && ( is_array($unserialized_postmeta) ) ) {
+                    $cmp = array_diff( $serialized_postmeta, $unserialized_postmeta );
+                }
+                else {
+                    if ( $serialized_postmeta != $unserialized_postmeta ) {
+                        $cmp = null;
+                    }
+                    else {
+                        $cmp = true;
+                    }
+                }
+
+                if ( empty( $cmp )  ) {
+//                    if ( false !== strpos( $from_key, 'assignment' ) ) {
+                        dbg("e20rTracker::unserialize_settings() - {$serialized_post_id} was unserialized and saved.");
+//                    }
+                    $unserialized_post_list[] = $serialized_post_id;
+
+                }
+            }
+        }
+
+        $post_check = array_diff($serialized_post_list, $unserialized_post_list);
+
+        if ( 0 == count( $posts_array ) ) {
+            return -1;
+        }
+        else {
+            return $post_check;
+       }
+    }
+
+    /**
+     * cc_postmeta_notice function.
+     * Displays an appropriate notice based on the results of the cc_unserialize_postmeta function.
+     * @access public
+     * @return void
+     */
+    public function convert_postmeta_notice()
+    {
+        if ( $notice = $this->loadOption('unserialize_notice') )
+        {
+            echo $notice;
+            $this->updateSetting('unserialize_notice', null);
+        }
+    }
+
+    /**
+     * cc_unserialize_deactivate function.
+     * Cleanup plugin when deactivated
+     * @access public
+     * @return void
+     */
+    public function unserialize_deactivate() {
+
+        delete_option('unserialize_notice');
+        return;
+    }
+
+    private function getCPTInfo() {
+
+        global $e20rTables;
+
+        $e20rTables = new e20rTables();
+        $e20rTables->init();
+
+        $e20rWorkout = new e20rWorkout();
+        $e20rAssignment = new e20rAssignment();
+        $e20rProgram = new e20rProgram();
+        $e20rCheckin = new e20rCheckin();
+        $e20rArticle = new e20rArticle();
+
+        $cpt_info = array(
+			'e20r_workout' => null,
+			'e20r_assignments' => null,
+            'e20r_articles' => null,
+			'e20r_checkins' => null,
+		);
+
+        foreach( $cpt_info as $cpt => $data ) {
+
+            dbg("e20rTracker::getCPTInfo() - Processing {$cpt}");
+
+            $cpt_info[$cpt] = new stdClass();
+            $cpt_info[$cpt]->keylist = array();
+
+            switch ( $cpt ) {
+                case 'e20r_workout':
+
+                    $cpt_info[$cpt]->type = $e20rWorkout->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    break;
+
+                case 'e20r_articles':
+
+                    $cpt_info[$cpt]->type = $e20rArticle->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    break;
+
+                case 'e20r_assignments':
+
+                    $cpt_info[$cpt]->type = $e20rAssignment->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-article_id"] = "_e20r-{$cpt_info[$cpt]->type}-article_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_id"] = "delete";
+
+                    break;
+
+                case 'e20r_checkins':
+                    $cpt_info[$cpt]->type = $e20rCheckin->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    break;
+            }
+
+        }
+
+        dbg("e20rTracker::getCPTInfo() - Config is: ");
+        dbg($cpt_info);
+
+        return $cpt_info;
+    }
+
 }
