@@ -91,6 +91,11 @@ class e20rArticle extends e20rSettings {
 
 	    global $currentArticle;
 
+        if ( empty( $postId ) ) {
+
+
+        }
+
         if ( ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) || !isset($currentArticle->id) ) {
 
 	        $currentArticle = parent::init( $postId );
@@ -204,6 +209,12 @@ class e20rArticle extends e20rSettings {
                 $postId = $this->model->getSetting( $articleId, 'post_id' );
 	            $prefix = $this->model->getSetting( $articleId, 'prefix' );
 				dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the action in article {$articleId}");
+
+                if ( -1 == $postId ) {
+                    dbg("e20rArticle::getExcerpt() - No activity excerpt to be found (no activity specified).");
+                    return null;
+                }
+
                 break;
 
             case 'activity':
@@ -212,10 +223,18 @@ class e20rArticle extends e20rSettings {
                 $activityField = '<input type="hidden" id="e20r-checkin-activity_id" value="' . $postId . '" name="e20r-checkin-activity_id">';
 	            $prefix = null; // Using NULL prefix for activities
 	            dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
+
+                if ( -1 == $postId ) {
+                    dbg("e20rArticle::getExcerpt() - No activity excerpt to be found (no activity specified).");
+                    return null;
+                }
+
 		        break;
         }
 
-        if ( is_null( $postId ) ) {
+        dbg("e20rArticle::getExcerpt() - Post Id for article {$articleId}: {$postId}");
+
+        if ( empty( $postId ) ) {
             return null;
         }
 
@@ -359,10 +378,12 @@ class e20rArticle extends e20rSettings {
 
     public function getSettings( $articleId ) {
 
-        $article = $this->model->getSettings();
+        global $currentArticle;
 
-        if ( $article->id == $articleId ) {
-            return $article;
+        // $article = $this->model->getSettings();
+
+        if ( $currentArticle->id == $articleId ) {
+            return $currentArticle->id;
         }
 
         return false;
@@ -433,7 +454,9 @@ class e20rArticle extends e20rSettings {
         global $e20rProgram;
         global $e20rTracker;
 	    global $e20rCheckin;
+
 	    global $currentArticle;
+        global $currentProgram;
 
 	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
 		    return $content;
@@ -460,7 +483,8 @@ class e20rArticle extends e20rSettings {
 	    $rDay = $currentArticle->release_day;
         $rDate =  $this->releaseDate( $this->articleId );
 	    // $rDate = $currentArticle->release_date;
-        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        //$programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        $programId = $currentProgram->id;
 
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
@@ -519,6 +543,7 @@ class e20rArticle extends e20rSettings {
 	public function remove_assignment_callback() {
 
 		global $e20rAssignment;
+        global $currentArticle;
 
 		dbg("e20rArticle::remove_assignment_callback().");
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
@@ -530,7 +555,7 @@ class e20rArticle extends e20rSettings {
 		$this->articleId = $articleId;
 		$this->init( $this->articleId );
 
-		$artSettings = $this->model->getSettings();
+		$artSettings = $currentArticle;
 		dbg("e20rArticle::remove_assignment_callback() - Article settings for ({$articleId}): ");
 		dbg($artSettings);
 
