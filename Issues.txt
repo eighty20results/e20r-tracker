@@ -3,7 +3,6 @@
 
 07/16/2015:
 
-Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
 Fix: (P3) Add a "program_list" for the assignment definition (take under consideration).
 
 07/17/2015:
@@ -24,9 +23,11 @@ Enh: P2 - Add client message form for back-end.
 Fix: P1 - Correctly load the Client Info page in back end.
 Fix: P1 - Not loading correct assignment information on a measurement day (wrong currentArticle perhaps - Load ?)
 
+Enh: P0 - Configure a program "sales page(s)" (i.e. multi-select2 box) which, in the content filter, can be redirected if the user belongs to that program. (fix breadcrumb navigation).
 Enh: P1 - Fix measurements form.
 Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
-
+Enh: P2 - Add graphs for the exercise history.
+Enh: P1 - Explanation of ribbon colors to the activity summary.
 
 == Completed / Fixed ==
 
@@ -42,3 +43,4 @@ Enh: (P1) When creating an article (and the Article 'delay' has been set), only 
 Enh: Prevent the daily assignment short code from bleeding into the actual post/page.
 Enh: (P1) Let user/admin define the progress and dashboard pages on a per-program basis.
 Enh: (P1) Specify "Day number" or date for start/end of activity.
+Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
