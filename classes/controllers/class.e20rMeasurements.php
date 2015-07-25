@@ -658,7 +658,7 @@ class e20rMeasurements {
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
             $this->init( $this->measurementDate, $this->id );
 
-            if ( !is_object( $currentClient ) || ( false == $currentClient->loadedDefaults ) ) {
+            if ( !is_object( $currentClient ) || ( isset( $currentClient->loadedDefaults) && (false == $currentClient->loadedDefaults) ) ) {
 
                 dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the e20rClient class()");
                 $e20rClient->init();
