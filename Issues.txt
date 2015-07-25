@@ -20,6 +20,7 @@ Enh: (P1) When user changes the release_day field, save the article as a draft &
 07/25/2015 - For Monday?
 
 Enh: P2 - Add client message form for back-end.
+Fix: P1 - Client info not loading correctly (the data ) for back-end form.
 Fix: P1 - Correctly load the Client Info page in back end.
 Fix: P1 - Not loading correct assignment information on a measurement day (wrong currentArticle perhaps - Load ?)
 
