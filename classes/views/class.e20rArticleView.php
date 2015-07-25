@@ -94,6 +94,7 @@ class e20rArticleView extends e20rSettingsView {
                 </div>
             </div>
         </div>
+        <br/>
         <?php
         $html = ob_get_clean();
 
