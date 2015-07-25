@@ -23,7 +23,7 @@ class e20rAssignment extends e20rSettings {
         $this->model = new e20rAssignmentModel();
         $this->view = new e20rAssignmentView();
 
-        parent::__construct( 'assignment', 'e20r_assignment', $this->model, $this->view );
+        parent::__construct( 'assignments', 'e20r_assignment', $this->model, $this->view );
     }
 
     public function createDefaultAssignment( $article ) {
@@ -184,6 +184,10 @@ class e20rAssignment extends e20rSettings {
 
     public function update_metadata() {
 
+        if ( 0 == E20R_RUN_UNSERIALIZE ) {
+            return;
+        }
+
         dbg("e20rAssignment::update_metadata() - Test for required metadata update.");
         global $e20rTracker;
 
@@ -228,7 +232,12 @@ class e20rAssignment extends e20rSettings {
 
                 // dbg("e20rAssignment::update_metadata() - Saving assignments # {$a->id} with new settings: ");
                 // dbg($a);
-                $this->saveSettings( $a->id, $a );
+                if ( false !== $this->saveSettings( $a->id, $a ) ) {
+
+                    dbg("e20rAssignment::update_metadata() - Removing assignment # {$a->id}'s {$old_meta_key} setting. ");
+                    delete_post_meta( $a->id, "_e20r-assignments-{$old_meta_key}" );
+                }
+
             }
 
             dbg("e20rAssignment::update_metadata() - Save the new meta version: " . (E20R_ASSIGNMENT_META_VER + 1) );
@@ -252,18 +261,19 @@ class e20rAssignment extends e20rSettings {
 
         // Save the $_POST data for the Action callback
         global $current_user;
+        global $e20rTracker;
 
         dbg("e20rAssignment::saveAssignment_callback() - Content of POST variable:");
 
         $data = array(
             'user_id' => $current_user->ID,
-            'id' => (isset( $_POST['id']) ? ( intval( $_POST['id'] ) != 0 ?  intval( $_POST['id'] ) : null ) : null),
-            'assignment_type' => (isset( $_POST['assignment-type']) ? intval( $_POST['assignment-type'] ) : null),
-            'article_id' => (isset( $_POST['article-id']) ? intval( $_POST['article-id'] ) : null ),
-            'program_ids' => (isset( $_POST['program-ids']) ? intval( $_POST['program-ids'] ) : -1 ),
-            'assignment_date' => (isset( $_POST['assignment-date']) ? sanitize_text_field( $_POST['assignment-date'] ) : null ),
-            'assignment_short_name' => isset( $_POST['assignment-short-name']) ? sanitize_text_field( $_POST['assignment-short-name'] ) : null,
-            'checkedin' => (isset( $_POST['checkedin']) ? intval( $_POST['checkedin'] ) : null),
+            'id' => (isset( $_POST['id']) ? ( $e20rTracker->sanitize( $_POST['id'] ) != 0 ?  $e20rTracker->sanitize( $_POST['id'] ) : null ) : null),
+            'assignment_type' => (isset( $_POST['assignment-type']) ? $e20rTracker->sanitize( $_POST['assignment-type'] ) : null),
+            'article_id' => (isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null ),
+            'program_id' => (isset( $_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : -1 ),
+            'assignment_date' => (isset( $_POST['assignment-date']) ? $e20rTracker->sanitize( $_POST['assignment-date'] ) : null ),
+            'assignment_short_name' => isset( $_POST['assignment-short-name']) ? $e20rTracker->sanitize( $_POST['assignment-short-name'] ) : null,
+            'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
         );
 
         dbg("e20rAssignment::saveAssignment_callback() - Saving assignment data: ");
@@ -449,6 +459,7 @@ class e20rAssignment extends e20rSettings {
             if ( ! $this->model->saveSettings( $settings ) ) {
 
                 dbg( "e20rAssignment::saveSettings() - Error saving settings!" );
+                return false;
             }
 
         }
@@ -473,6 +484,8 @@ class e20rAssignment extends e20rSettings {
         }
 
         $post = $savePost;
+
+        return true;
     }
 
 }

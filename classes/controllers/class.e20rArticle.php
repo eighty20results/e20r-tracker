@@ -66,10 +66,10 @@ class e20rArticle extends e20rSettings {
 
         if ( empty( $lessons ) ) {
 
-            dbg( "e20rArticle::addMeta_Settings() - No lessons found!" );
+            dbg( "e20rArticle::addMeta_Settings() - No posts/pages/lessons found!" );
         }
 
-        dbg("e20rArticle::addMeta_Settings() - Loaded " . $lessons->found_posts . " lessons");
+        dbg("e20rArticle::addMeta_Settings() - Loaded " . $lessons->found_posts . " posts/pages/lessons");
         dbg("e20rArticle::addMeta_Settings() - Loading settings metabox for article page {$post->ID} or {$savePost->ID}?");
 
         $settings = $this->model->loadSettings( $post->ID );
@@ -90,6 +90,11 @@ class e20rArticle extends e20rSettings {
     public function init( $postId = NULL ) {
 
 	    global $currentArticle;
+
+        if ( empty( $postId ) ) {
+
+
+        }
 
         if ( ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) || !isset($currentArticle->id) ) {
 
@@ -151,6 +156,14 @@ class e20rArticle extends e20rSettings {
         // $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
 
         $aId = $this->model->getSetting( $articleId, 'activity_id');
+
+        // No activity defined
+        if ( -1 == $aId ) {
+
+            dbg("e20rArticle::getActivity() - No defined activity for this article ({$articleId})");
+            return false;
+        }
+
         $delay = $this->model->getSetting( $articleId, 'release_day');
 
 	    $mGroupId = $e20rTracker->getMembershipLevels();
@@ -191,11 +204,19 @@ class e20rArticle extends e20rSettings {
 	    $postId = null;
         $activityField = null;
 
+        $oldPost = $post;
+
         switch( $type ) {
             case 'action':
                 $postId = $this->model->getSetting( $articleId, 'post_id' );
 	            $prefix = $this->model->getSetting( $articleId, 'prefix' );
 				dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the action in article {$articleId}");
+
+                if ( -1 == $postId ) {
+                    dbg("e20rArticle::getExcerpt() - No activity excerpt to be found (no activity specified).");
+                    return null;
+                }
+
                 break;
 
             case 'activity':
@@ -204,97 +225,79 @@ class e20rArticle extends e20rSettings {
                 $activityField = '<input type="hidden" id="e20r-checkin-activity_id" value="' . $postId . '" name="e20r-checkin-activity_id">';
 	            $prefix = null; // Using NULL prefix for activities
 	            dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
+
+                if ( -1 == $postId ) {
+                    dbg("e20rArticle::getExcerpt() - No activity excerpt to be found (no activity specified).");
+                    return null;
+                }
+
 		        break;
         }
 
-        if ( is_null( $postId ) ) {
+        dbg("e20rArticle::getExcerpt() - Post Id for article {$articleId}: {$postId}");
+
+        if ( empty( $postId ) ) {
             return null;
         }
 
+        $art = get_post( $articleId );
+        $post = get_post( $postId );
+
 	    dbg( "e20rArticle::getExcerpt() - Prefix for {$type}: {$prefix}");
 
-        $articles = new WP_Query( array(
-            'post_type'           => apply_filters( "e20r-tracker-{$type}-type-filter", array( 'any' ) ),
-            'post_status'         => apply_filters( 'e20r-tracker-post-status-filter', array( 'publish' ) ),
-            'posts_per_page'      => 1,
-            'p'                   => $postId,
-            'ignore_sticky_posts' => true,
-        ) );
+        if ( !empty( $art->post_excerpt ) && ( 'action' == $type )) {
 
-        dbg( "e20rArticle::getExcerpt() - Number of posts for ID {$postId} in article {$articleId} is {$articles->found_posts}" );
+            dbg( "e20rArticle::getExcerpt() - Using the article summary.");
+            $pExcerpt = $art->post_excerpt;
+        }
+        elseif ( !empty( $post->post_excerpt ) ) {
 
-        if ( $articles->found_posts > 0 ) {
-
-            ob_start();
-
-            while ( $articles->have_posts() ) : $articles->the_post();
-
-                $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID, 'pmpro_seq_recentpost_widget_size' ) : '<div class="noThumb"></div>' );
-
-
-                if ( !empty( $post->post_excerpt ) ) {
-
-                    $pExcerpt = $post->post_excerpt;
-                }
-                else {
-                    $pExcerpt = $post->post_content;
-                }
-
-                $pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
-                $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt );
-
-                ?>
-                <h4>
-                    <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title(); ?>
-                </h4>
-                <?php echo !is_null( $activityField ) ? $activityField : null; ?>
-                <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
-
-                if ( $type == 'action' ) {
-
-                    $url = get_permalink();
-                }
-                else if ($type == 'activity' ) {
-
-                    $url = null;
-
-                    dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
-
-                    $url = get_permalink( $currentProgram->activity_page_id );
-                    dbg("e20rArticle::getExcerpt() - URL is: {$url}");
-
-/*                     $urls = $e20rTracker->getURLToPageWithShortcode( "e20r_activity" );
-
-                    if (!empty($urls)) {
-
-                        if (count($urls) > 1) {
-                            dbg("e20rArticle::getExcerpt() - ERROR: More than a single page containing the 'e20r_activity' short code! List follows: ");
-                            dbg($urls);
-                        }
-
-                        $url = array_pop($urls);
-
-                    }
-                    else {
-                        dbg("e20rArticle::getExcerpt() - No page with 'e20r_activity' short code has been found! Returning nothing...");
-                        ?><p class="e20r-descr"></p><?php
-                    }
-                    */
-                }?>
-                <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title(); ?>">
-                        <?php _e('Click to read', 'e20tracker'); ?>
-                    </a>
-                </p><?php
-            endwhile;
-
-            wp_reset_postdata();
-
-            $html = ob_get_clean();
+            dbg( "e20rArticle::getExcerpt() - Using the post excerpt.");
+            $pExcerpt = $post->post_excerpt;
         }
         else {
-            dbg("e20rArticle::getExcerpt() - No posts found. Returning null for the excerpt");
-            $html = null;
+
+            dbg( "e20rArticle::getExcerpt() - Using the post summary.");
+            $pExcerpt = $post->post_content;
         }
+
+        $image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID ) : '<div class="noThumb"></div>' );
+
+        $pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
+        $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt );
+
+        ob_start();
+        ?>
+        <h4>
+            <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title( $post->ID ); ?>
+        </h4>
+        <?php echo !is_null( $activityField ) ? $activityField : null; ?>
+        <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
+
+        if ( $type == 'action' ) {
+
+            $url = get_permalink( $post->ID );
+        }
+        else if ($type == 'activity' ) {
+
+            $url = null;
+
+            dbg("e20rArticle::getExcerpt() - Loading URL for activity...");
+
+            $url = get_permalink( $currentProgram->activity_page_id );
+            dbg("e20rArticle::getExcerpt() - URL is: {$url}");
+
+        }?>
+        <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title( $post->ID ); ?>">
+            <?php _e('Click to read', 'e20tracker'); ?>
+        </a>
+        </p><?php
+
+        wp_reset_postdata();
+
+        $html = ob_get_clean();
+
+        $post = $oldPost;
 
         return $html;
     }
@@ -377,10 +380,12 @@ class e20rArticle extends e20rSettings {
 
     public function getSettings( $articleId ) {
 
-        $article = $this->model->getSettings();
+        global $currentArticle;
 
-        if ( $article->id == $articleId ) {
-            return $article;
+        // $article = $this->model->getSettings();
+
+        if ( $currentArticle->id == $articleId ) {
+            return $currentArticle->id;
         }
 
         return false;
@@ -437,6 +442,7 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
+        /*
 	    if ( has_shortcode( $content, 'weekly_progress') ||
             has_shortcode( $content, 'progress_overview' ) ||
             has_shortcode( $content, 'daily_progress') ||
@@ -444,6 +450,12 @@ class e20rArticle extends e20rSettings {
 		    // Process in shortcode actions
 		    return $content;
 	    }
+        */
+        if ( has_shortcode( $content, 'progress_overview' ) ||
+            has_shortcode( $content, 'e20r_activity_archive') ) {
+            // Process in shortcode actions
+            return $content;
+        }
 
         global $post;
         global $current_user;
@@ -451,12 +463,14 @@ class e20rArticle extends e20rSettings {
         global $e20rProgram;
         global $e20rTracker;
 	    global $e20rCheckin;
-	    global $currentArticle;
 
-	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
+	    global $currentArticle;
+        global $currentProgram;
+
+/*	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
 		    return $content;
 	    }
-
+*/
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articleId = $this->init( $post->ID );
 
@@ -478,7 +492,8 @@ class e20rArticle extends e20rSettings {
 	    $rDay = $currentArticle->release_day;
         $rDate =  $this->releaseDate( $this->articleId );
 	    // $rDate = $currentArticle->release_date;
-        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        //$programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+        $programId = $currentProgram->id;
 
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
@@ -498,7 +513,7 @@ class e20rArticle extends e20rSettings {
             dbg( $measured );
 
             // dbg("e20rArticle::contentFilter() - Settings: " . print_r( $settings, true));
-            dbg("e20rArticle::contentFilter() - Check whether it's a measurement day or not: {$md}, {$measured}");
+            dbg("e20rArticle::contentFilter() - Check whether it's a measurement day or not: {$md} ");
 
             if ( $md && !$measured['status'] ) {
 
@@ -537,6 +552,7 @@ class e20rArticle extends e20rSettings {
 	public function remove_assignment_callback() {
 
 		global $e20rAssignment;
+        global $currentArticle;
 
 		dbg("e20rArticle::remove_assignment_callback().");
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
@@ -548,7 +564,7 @@ class e20rArticle extends e20rSettings {
 		$this->articleId = $articleId;
 		$this->init( $this->articleId );
 
-		$artSettings = $this->model->getSettings();
+		$artSettings = $currentArticle;
 		dbg("e20rArticle::remove_assignment_callback() - Article settings for ({$articleId}): ");
 		dbg($artSettings);
 
@@ -831,10 +847,13 @@ class e20rArticle extends e20rSettings {
 
     public function isMeasurementDay( $articleId = null ) {
 
+        global $currentArticle;
             if ( is_null( $articleId ) ) {
 
-                $articleId = $this->articleId;
+                $articleId = $currentArticle->id;
             }
+
+        dbg($currentArticle);
 
         return ( $this->model->getSetting( $articleId, 'measurement_day' ) == 0 ? false : true );
 

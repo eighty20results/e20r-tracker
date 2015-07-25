@@ -228,7 +228,7 @@ class e20rWorkout extends e20rSettings {
 	    $groupSetTempo = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
 		$groupSetRest  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
 
-	    $workout->programs = isset( $_POST['e20r-workout-programs'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-programs'] ) : array( 0 ) ;
+	    $workout->program_ids = isset( $_POST['e20r-workout-program_ids'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-program_ids'] ) : array( 0 ) ;
 	    $workout->days = isset( $_POST['e20r-workout-days'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-days'] ) : array();
 	    $workout->workout_ident = isset( $_POST['e20r-workout-workout_ident'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-workout_ident'] ) : 'A';
 	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
@@ -702,7 +702,7 @@ class e20rWorkout extends e20rSettings {
                 dbg( "e20rWorkout::shortcode_activity() - Iterating through the fetched workout IDs. Now processing workoutData entry {$k}");
                 // dbg($workout);
 
-                if ( ! in_array( $config->programId, $workoutData[$k]->programs ) ) {
+                if ( ! in_array( $config->programId, $workoutData[$k]->program_ids ) ) {
 
                     dbg( "e20rWorkout::shortcode_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
                     unset( $workoutData[ $k ] );
@@ -735,7 +735,7 @@ class e20rWorkout extends e20rSettings {
 					dbg("e20rWorkout::shortcode_activity() - Loading activity data for {$wid}:");
 					$workoutData = $this->model->loadWorkoutData( $wid );
 
-					if ( ! in_array( $config->programId, $workoutData[$wid]->programs ) ) {
+					if ( ! in_array( $config->programId, $workoutData[$wid]->program_ids ) ) {
 
 						dbg( "e20rWorkout::shortcode_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
 						unset( $workoutData[ $wid ] );

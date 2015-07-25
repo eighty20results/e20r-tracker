@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.9.2
+Stable tag: 0.9.5
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -24,6 +24,33 @@ Arguments:
     [weekly_progress day="<days since startdate>" from_programstart="<1|0>" use_article_id="<1|0>" demo_form="0|1"]
 
 == ChangeLog ==
+
+= 0.9.5 =
+* Handle situations where user has defined a workout with start/end day number or dates.
+* Include support for handling proper WP meta_query for program_id limited searches
+* Use $currentArticle rather than loading the same data again.
+* viewExerciseProgress() - Test activity list being received against empty() not is_null()
+* Fix issue when searching for article definitions belonging to a specific program.
+* Simplify findArticle() and leverage the find() function from the parent class while still ignoring "always available" articles (Possibly not what we want!)
+* Simplify and use WP meta_query when searching for program specific check-in definitions
+* Remove debug output for loadOption() function - too noisy
+* Fix: Achievements statistics in progress overview.
+* Fix: Attempted to show excerpt when there was no action or activity defined.
+* For consistency use $currentArticle for accessing article settings
+* Fix: Achievements statistics in progress overview.
+* Automated metadata conversion (from serialized array to independent meta_key values) on plugin activation.
+* Added constant to determine whether to convert/unserialize the metadata.
+* Converted from serialized program id & article id metadata (programs|program_ids|article_id|other keys) to proper meta data (for those settings) that is WP query searchable.
+* Indicate link to assignment page when listing assignments in the progress_overview short code.
+
+= 0.9.4 =
+Use the article summary - if it exists - for the action excerpt.
+Set background color to white for activity history list
+
+= 0.9.3 =
+Simplify processing of workout history for user's progress overview.
+Allow metadata upgrade to proceed
+White-screen of death issue (undeclared variable)
 
 = 0.9.2 =
 * Fix static/non-static call warnings in e20rTracker

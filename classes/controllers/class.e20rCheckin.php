@@ -293,8 +293,8 @@ class e20rCheckin extends e20rSettings {
 
 		$art_list = $e20rArticle->loadArticlesByMeta( 'release_day', $user_delay, 'numeric', $programId, '<=' );
 
-		dbg("e20rCheckin::listUserAccomplishments() - Article list:");
-		dbg($art_list);
+		dbg("e20rCheckin::listUserAccomplishments() - Article list loaded: " . count($art_list) . " articles");
+		// dbg($art_list);
 
 		if ( empty( $art_list ) || ( 0 == count( $art_list ) ) ) {
 
@@ -405,13 +405,13 @@ class e20rCheckin extends e20rSettings {
 				$results[ $action->startdate ]->actionText = $action->item_text;
 				$results[ $action->startdate ]->days       = $this->days_of_action( $action );
 
-				dbg( "e20rCheckin::listUserAccomplishments() - Processing actions" );
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing " . count($checkins) . " actions" );
 				$action_count     = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
 
-				dbg( "e20rCheckin::listUserAccomplishments() - Processing activities" );
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing " .count($checkins) . " activities" );
 				$activity_count   = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
 
-				dbg( "e20rCheckin::listUserAccomplishments() - Processing assignments" );
+				dbg( "e20rCheckin::listUserAccomplishments() - Processing " . count($lessons) . " assignments" );
 				$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
 
 				$avg_score = 0;
@@ -691,10 +691,10 @@ class e20rCheckin extends e20rSettings {
 
         $config->userId = $current_user->ID;
         // $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : intval( $_POST['program-id'] ) );
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : $e20rTracker->sanitize( $_POST['program-id'] ) );
         $config->startTS = strtotime( $currentProgram->startdate );
 
-        $config->articleId = ( ! isset( $_POST['article-id'] ) ? null : intval($_POST['article-id']) );
+        $config->articleId = ( !isset( $_POST['article-id'] ) ? null : $e20rTracker->sanitize($_POST['article-id']) );
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
 
         $pdate = ( ! isset( $_POST['e20r-checkin-day'] ) ? $e20rTracker->getDelay( 'now' ) : intval( $_POST['e20r-checkin-day'] ) );
@@ -754,12 +754,13 @@ class e20rCheckin extends e20rSettings {
 
     public function dailyProgress( $config ) {
 
+        dbg( "e20rCheckin::dailyProgress() - Start of dailyProgress()");
         global $e20rTracker;
         global $e20rArticle;
         global $e20rAssignment;
         global $currentArticle;
 
-        // dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
+        dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
 
         if ( $config->delay <= 0 ) {
 

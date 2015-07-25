@@ -62,7 +62,7 @@ var e20rActivity = {
             allowClear: true
         });
 
-        jQuery('#e20r-workout-programs').select2({
+        jQuery('#e20r-workout-program_ids').select2({
             placeholder: "Select user's program",
             allowClear: true
         });

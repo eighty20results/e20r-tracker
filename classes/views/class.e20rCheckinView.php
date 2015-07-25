@@ -26,6 +26,7 @@ class e20rCheckinView extends e20rSettingsView {
 
         global $e20rTracker;
         global $e20rArticle;
+        global $currentArticle;
 
         $skipYN = false;
 
@@ -34,7 +35,8 @@ class e20rCheckinView extends e20rSettingsView {
         }
 
         $trackerOpts = get_option('e20r-tracker');
-        $article = $e20rArticle->getSettings($config->articleId);
+        // $article = $e20rArticle->getSettings($config->articleId);
+        $article = $currentArticle;
 
         if ( $habitEntries[0]->short_name == 'null_action') {
 

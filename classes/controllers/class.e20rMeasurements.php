@@ -619,6 +619,8 @@ class e20rMeasurements {
         $mDate = ( isset( $_POST['e20r-progress-form-date'] ) ? ( strtotime( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null ) : null );
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
 
+        // TODO: Get current article ID if it's not set as part of the $_POST variable.
+
         if ( $mDate ) {
 
             $e20rMeasurementDate = $mDate;
@@ -658,7 +660,7 @@ class e20rMeasurements {
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
             $this->init( $this->measurementDate, $this->id );
 
-            if ( !is_object( $currentClient ) || ( false == $currentClient->loadedDefaults ) ) {
+            if ( !is_object( $currentClient ) || ( isset( $currentClient->loadedDefaults) && (false == $currentClient->loadedDefaults) ) ) {
 
                 dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the e20rClient class()");
                 $e20rClient->init();

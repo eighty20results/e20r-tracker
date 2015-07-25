@@ -28,7 +28,7 @@ class e20rWorkoutView extends e20rSettingsView {
         dbg("e20rWorkoutView::viewExerciseProgress() - Listing exercise history");
         dbg($activities);
 
-        if ( is_null( $activities) ) { ?>
+        if ( empty( $activities) ) { ?>
 
         <div class="red-notice">
             <h2>Our apologies</h2>
@@ -465,13 +465,13 @@ class e20rWorkoutView extends e20rSettingsView {
 		                                </select>
 	                                </td>
 	                                <td class="select-input" style="width: 40%;">
-		                                <select class="select2-container" id="e20r-workout-programs" name="e20r-workout-programs[]" multiple="multiple">
+		                                <select class="select2-container" id="e20r-workout-program_ids" name="e20r-workout-program_ids[]" multiple="multiple">
 			                                <option value="0">Not configured</option>
 			                                <?php
 			                                foreach ( $programs as $pgm ) {
 
-				                                if ( !empty( $workoutData->programs ) ) {
-				                                    $selected = ( in_array( $pgm->id, $workoutData->programs ) ? ' selected="selected" ' : null);
+				                                if ( !empty( $workoutData->program_ids ) ) {
+				                                    $selected = ( in_array( $pgm->id, $workoutData->program_ids ) ? ' selected="selected" ' : null);
 				                                }
 				                                else {
 					                                $selected = '';
@@ -483,7 +483,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			                                <?php } ?>
 		                                </select>
 		                                <style>
-			                                #e20r-workout-programs {
+			                                #e20r-workout-program_ids {
 				                                min-width: 150px;
 				                                max-width: 300px;
 				                                width: 90%;

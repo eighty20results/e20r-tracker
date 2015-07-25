@@ -65,6 +65,12 @@ class e20rCheckinModel extends e20rSettingsModel {
                     'compare' => '>=',
                     'type' => 'DATE',
                 ),
+                array(
+                    'key' => '_e20r-checkin-program_ids',
+                    'value' => $programId,
+                    'compare' => '=',
+                    'type' => 'numeric'
+                )
             )
         );
 
@@ -76,18 +82,24 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $query->the_post();
 
+            $actions[] = get_the_ID();
+
+            /*
             $id = get_the_ID();
+
 
             dbg("e20rCheckinModel::findActionByDate() - Getting program info for action ID: {$id}");
 
-            $programs = get_post_meta( $id, '_e20r-checkin-program_ids', true);
+            $programs = get_post_meta( $id, '_e20r-checkin-program_ids');
 
             dbg("e20rCheckinModel::findActionByDate() - Getting program info... ");
 
             if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
 
+
                 $actions[] = $id;
             }
+            */
         }
 
 	    dbg("e20rCheckinModel::findActionByDate() - Returning " . count($actions) . " action ids");
@@ -137,6 +149,12 @@ class e20rCheckinModel extends e20rSettingsModel {
                     'compare' => '=',
                     'type' => 'numeric',
                 ),
+                array(
+                    'key' => '_e20r-checkin-program_ids',
+                    'value' => $currentProgram->id,
+                    'compare' => '=',
+                    'type' => 'numeric'
+                ),
             )
         );
 
@@ -150,10 +168,12 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             $new = $this->loadSettings( get_the_ID() );
 
+            /*
             if ( ! in_array( $currentProgram->id, $new->program_ids ) ) {
                 dbg( "e20rCheckinModel::getActions() - {$new->id} not part of program {$currentProgram->id}");
                 continue;
             }
+            */
             $new->id = get_the_ID();
             $new->item_text = $query->post->post_excerpt;
             $new->short_name = $query->post->post_title;
@@ -166,7 +186,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 	// TODO: This requires the presence of checkin IDs in the Article list, etc.
 	// checkin definitions -> $obj->type, $obj->
-
+/*
 	public function lessonComplete( $articleId, $userId = null ) {
 
 		dbg("e20rArticleModel::lessonComplete() - Checking lesson status for article: {$articleId} (ID)");
@@ -201,7 +221,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 		// AND the $programId that applies to this $articleId and $userId.
 		return false;
 	}
-
+*/
 	public function loadCheckinsForUser( $userId, $articleArr, $typeArr, $dateArr ) {
 
 		global $wpdb;

@@ -10,7 +10,7 @@
 class e20rArticleModel extends e20rSettingsModel {
 
     protected $id;
-    protected $settings;
+    // protected $settings;
 
     public function e20rArticleModel() {
 
@@ -19,69 +19,69 @@ class e20rArticleModel extends e20rSettingsModel {
 
     public function defaultSettings() {
 
-        $this->settings = parent::defaultSettings();
+        $defaults = parent::defaultSettings();
 
-        $this->settings->id = null;
-        $this->settings->programs = array();
-        $this->settings->post_id = null;
-        $this->settings->activity_id = array();
-        $this->settings->release_day = null;
-        $this->settings->release_date = null;
-        $this->settings->assignments = array();
-        $this->settings->checkins = array();
-        $this->settings->measurement_day = false;
-        $this->settings->photo_day = false;
-        $this->settings->prefix = "Lesson";
+        $defaults->id = null;
+        $defaults->program_ids = array();
+        $defaults->post_id = null;
+        $defaults->activity_id = array();
+        $defaults->release_day = null;
+        $defaults->release_date = null;
+        $defaults->assignments = array();
+        $defaults->checkins = array();
+        $defaults->measurement_day = false;
+        $defaults->photo_day = false;
+        $defaults->prefix = "Lesson";
 
         // dbg("e20rArticleModel::defaultSettings() - Defaults loaded");
-        return $this->settings;
+        return $defaults;
     }
 
 	public function loadSettings( $id ) {
 
         global $currentArticle;
 
-		$this->settings = parent::loadSettings($id);
+		$currentArticle = parent::loadSettings($id);
 
-		if ( empty( $this->settings->programs ) ) {
+		if ( empty( $currentArticle->program_ids ) ) {
 
-			$this->settings->programs = array();
+            $currentArticle->program_ids = array();
 		}
 
-		if ( empty( $this->settings->activity_id ) ) {
+		if ( empty( $currentArticle->activity_id ) ) {
 
-			$this->settings->activity_id = array();
+            $currentArticle->activity_id = array();
 		}
 
-		if ( empty( $this->settings->assignments ) ) {
+		if ( empty( $currentArticle->assignments ) ) {
 
-			$this->settings->assignments = array();
+            $currentArticle->assignments = array();
 		}
 		else {
             dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
-			foreach( $this->settings->assignments as $k => $assignmentId ) {
+			foreach( $currentArticle->assignments as $k => $assignmentId ) {
 
 				if ( empty( $assignmentId ) ) {
 
 					dbg("e20rArticleModel::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $assignmentId ) ? 'null' : $assignmentId );
-					unset( $this->settings->assignments[$k] );
+					unset( $currentArticle->assignments[$k] );
 				}
 			}
 
 		}
 
-		if ( empty( $this->settings->checkins ) ) {
+		if ( empty( $currentArticle->checkins ) ) {
 
-			$this->settings->checkins = array();
+            $currentArticle->checkins = array();
 		}
 
 		// Check if the post_id has defined excerpt we can use for this article.
-		if ( isset( $this->settings->post_id ) && ( ! empty($this->settings->post_id ) ) ) {
+		if ( isset( $currentArticle->post_id ) && ( ! empty($currentArticle->post_id ) ) ) {
 
-			$post = get_post( $this->settings->post_id );
+			$post = get_post( $currentArticle->post_id );
 			setup_postdata( $post );
 
-			$article = get_post( $this->settings->id );
+			$article = get_post( $currentArticle->id );
 			setup_postdata( $article );
 
 			if ( ! empty( $post->post_excerpt ) && ( empty( $article->post_excerpt ) ) ) {
@@ -92,9 +92,11 @@ class e20rArticleModel extends e20rSettingsModel {
 
 		}
 
+        /*
         if ( isset( $currentArticle->id ) && ( !is_null( $currentArticle->id )) ) {
             $currentArticle = $this->settings;
         }
+        */
         // dbg( $currentArticle );
 		return $currentArticle;
 	}
@@ -114,6 +116,22 @@ class e20rArticleModel extends e20rSettingsModel {
 		}
 	*/
 
+	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC' ) {
+
+		$result = parent::find( $key, $value, $dataType, $programId, $comp, $order );
+
+		foreach( $result as $k => $data ) {
+
+			if ( -9999 == $data->release_day ) {
+				// Dropping articles containing the "Always released" indicator ( -9999 )
+				dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's a 'default' article");
+				unset( $result[$k]);
+			}
+		}
+
+		return $result;
+	}
+
 	public function findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' ) {
 
 		$args = array(
@@ -130,23 +148,28 @@ class e20rArticleModel extends e20rSettingsModel {
 					'compare' => $comp,
 					'type' => $type,
 				),
-/*				array(
-					'key' => "_e20r-article-programs",
+				array(
+					'key' => "_e20r-article-program_ids",
 					'value' => $programId,
-					'compare' => 'IN'
-				) */
+					'compare' => '='
+				),
+                array(
+                    'key' => "_e20r-article-release_day",
+                    'value' => -9999,
+                    'compare' => '!='
+                )
 			),
 		);
 
 		$a_list = $this->loadForQuery( $args );
-
+/*
 		if ( is_array( $a_list ) ) {
 
 			foreach( $a_list as $k => $a ) {
 
 				$programs = get_post_meta( $a->id, "_e20r-article-programs", true );
 
-				if ( ! in_array( $programId, $programs ) ) {
+				if ( ( -9999 == $a->release_day ) || $this->inProgram( $programId, '_e20r-article-programs', $programs ) ) {
 						unset( $a_list[$k] );
 				}
 			}
@@ -155,21 +178,25 @@ class e20rArticleModel extends e20rSettingsModel {
 
 			$programs = get_post_meta( $a_list->id, "_e20r-article-programs", true);
 
-			if ( ! in_array( $programId, $programs ) ) {
+			if ( ( -9999 == $a_list->release_day ) || $this->inProgram( $programId, '_e20r-article-programs', $programs ) ) {
 				$a_list = false;
 			}
 		}
-
+*/
 		dbg("e20rArticleModel()::findClosestArticle() - List of articles:");
 		dbg( $a_list );
 
 		return $a_list;
 	}
 
-    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $multi = NULL ) {
+    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $order = 'DESC', $multi = NULL ) {
 
 	    $article = null;
 
+        // $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC'
+        $list = parent::find( $key, $value, $type, $programId, $comp, $order );
+
+        /*
 	    if ( $key != 'id' ) {
 		    $args = array(
 			    'posts_per_page' => -1,
@@ -184,23 +211,29 @@ class e20rArticleModel extends e20rSettingsModel {
 					    'compare' => $comp,
 					    'type' => $type,
 				    ),
-/*				    array(
-					    'key' => "_e20r-article-programs",
+				    array(
+					    'key' => "_e20r-article-program_ids",
 					    'value' => $programId,
-					    'compare' => 'IN'
-				    ) */
-			    )
+					    'compare' => '='
+				    ),
+                    array(
+                        'key' => "_e20r-article-release_day",
+                        'value' => -9999,
+                        'compare' => '!='
+
+                    )
+                )
 		    );
 	    }
 	    else {
 		    $args = array(
 			    'posts_per_page' => -1,
 			    'post_type' => 'e20r_articles',
-			    /* 'post_status' => 'publish', */
+			    // 'post_status' => 'publish',
 			    'p' => $value,
 		    );
 	    }
-
+*/
 /*
         $articleList = array();
 	    dbg( $args );
@@ -223,14 +256,14 @@ class e20rArticleModel extends e20rSettingsModel {
                 $articleList = $new;
             }
         }
-*/
-        $list = $this->loadForQuery( $args );
 
+        $list = $this->loadForQuery( $args );
+*/
 	    dbg("e20rArticleModel::findArticle() - Loaded " . count($list) . " articles");
 
 	    foreach ( $list as $a ) {
 
-		    if ( ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) {
+		    if ( ( -9999 != $a->release_day ) && ( $programId !== -1 ) ) {
 
 			    dbg( "e20rArticleModel::findArticle() - Returning {$a->id} because it matches program ID {$programId}" );
 			    $article[] = $a;
@@ -267,23 +300,18 @@ class e20rArticleModel extends e20rSettingsModel {
 			$new = $this->loadSettings( get_the_ID() );
 			$new->id = get_the_ID();
 
-/* 			if ( $query->post_count > 1 ) {
-
-				$articleList[] = $new;
-			}
-			else {
-				$articleList = $new;
-			}
-*/
 			$articleList[] = $new;
 		}
 
 		return $articleList;
 	}
 
+    // TODO: Get rid of this and use $currentArticle instead.
     public function getSettings() {
 
-        return $this->settings;
+        global $currentArticle;
+
+        return $currentArticle;
     }
 
     /**

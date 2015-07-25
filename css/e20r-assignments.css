@@ -149,3 +149,7 @@ table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.
 .e20r-lesson-highlight.lesson-completed {
     background-color: rgba(0, 255, 0, 0.5);
 }
+td.measurement-date a {
+    text-decoration: underline;
+    color: #004CFF;
+}
