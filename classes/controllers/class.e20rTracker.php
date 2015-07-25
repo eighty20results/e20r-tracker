@@ -999,11 +999,13 @@ class e20rTracker {
         dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
 
         global $e20rAdminPage;
+        global $e20rClientInfoPage;
+
         global $e20rTracker;
         global $post;
         global $e20rTracker;
 
-        if( $hook == $e20rAdminPage ) {
+        if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
 
             global $e20r_plot_jscript, $e20rTracker;
             global $e20rTracker;
@@ -1280,14 +1282,14 @@ class e20rTracker {
 
         global $e20rClient, $e20rProgram, $e20rCheckin;
         global $e20rAdminPage;
+        global $e20rClientInfoPage;
 
         dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
 
-        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20rtracker"), __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r-tracker', __( 'Client Info','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-client-info', array( &$e20rClient, 'render_client_page' ));
+        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20rtracker"), __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker-info', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        $e20rClientInfoPage = add_submenu_page( 'e20r-tracker-info', __( 'Client Info','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-client-info', array( &$e20rClient, 'render_client_page' ));
 
         $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20rtracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
-
         $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20rtracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
         $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20rtracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
 
@@ -1937,8 +1939,9 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $post;
 	    global $e20rAdminPage;
+	    global $e20rClientInfoPage;
 
-        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
+        if ( $e20r_plot_jscript || $hook == $e20rClientInfoPage || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
@@ -1981,8 +1984,9 @@ class e20rTracker {
 
         global $e20r_plot_jscript, $post;
 	    global $e20rAdminPage;
+	    global $e20rClientInfoPage;
 
-        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
+        if ( $e20r_plot_jscript || $hook == $e20rClientInfoPage || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
             dbg("e20rTracker::enqueue_plotSW() -- Loading javascript for graph generation");
             wp_print_scripts('jqplot');
@@ -2681,7 +2685,7 @@ class e20rTracker {
                    'supports' => array('title','editor','excerpt','thumbnail','custom-fields','author'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-info',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
                        'with_front' => false
