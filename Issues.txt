@@ -23,6 +23,7 @@ Enh: (P1) When user changes the release_day field, save the article as a draft &
 
 Enh: P2 - Add client message form for back-end.
 Fix: P1 - Correctly load the Client Info page in back end.
+Fix: P1 - Not loading correct assignment information on a measurement day (wrong currentArticle perhaps - Load ?)
 
 Enh: P1 - Fix measurements form.
 Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
