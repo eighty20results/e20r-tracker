@@ -440,6 +440,7 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
+        /*
 	    if ( has_shortcode( $content, 'weekly_progress') ||
             has_shortcode( $content, 'progress_overview' ) ||
             has_shortcode( $content, 'daily_progress') ||
@@ -447,6 +448,12 @@ class e20rArticle extends e20rSettings {
 		    // Process in shortcode actions
 		    return $content;
 	    }
+        */
+        if ( has_shortcode( $content, 'progress_overview' ) ||
+            has_shortcode( $content, 'e20r_activity_archive') ) {
+            // Process in shortcode actions
+            return $content;
+        }
 
         global $post;
         global $current_user;
@@ -458,10 +465,10 @@ class e20rArticle extends e20rSettings {
 	    global $currentArticle;
         global $currentProgram;
 
-	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
+/*	    if ( ! in_array( $post->post_type, $e20rTracker->trackerCPTs() ) ) {
 		    return $content;
 	    }
-
+*/
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articleId = $this->init( $post->ID );
 
@@ -504,7 +511,7 @@ class e20rArticle extends e20rSettings {
             dbg( $measured );
 
             // dbg("e20rArticle::contentFilter() - Settings: " . print_r( $settings, true));
-            dbg("e20rArticle::contentFilter() - Check whether it's a measurement day or not: {$md}, {$measured}");
+            dbg("e20rArticle::contentFilter() - Check whether it's a measurement day or not: {$md} ");
 
             if ( $md && !$measured['status'] ) {
 
@@ -838,10 +845,13 @@ class e20rArticle extends e20rSettings {
 
     public function isMeasurementDay( $articleId = null ) {
 
+        global $currentArticle;
             if ( is_null( $articleId ) ) {
 
-                $articleId = $this->articleId;
+                $articleId = $currentArticle->id;
             }
+
+        dbg($currentArticle);
 
         return ( $this->model->getSetting( $articleId, 'measurement_day' ) == 0 ? false : true );
 
