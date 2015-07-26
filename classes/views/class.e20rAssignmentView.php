@@ -287,7 +287,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			else { ?>
 				<div id="e20r-assignment-save-btn" style="display:none;"><?php
             } ?>
-				    <button id="e20r-assignment-save" class="e20r-button"><?php _e("Completed", 'e20rtracker'); ?></button>
+				    <button id="e20r-assignment-save" class="e20r-button"><?php _e("Save Answers", 'e20rtracker'); ?></button>
 				</div><?php
 		}
 
