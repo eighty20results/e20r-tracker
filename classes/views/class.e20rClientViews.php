@@ -236,13 +236,18 @@ class e20rClientViews {
         ob_start(); ?>
         <table class="e20r-client-information-table">
             <thead>
-
-            </thead><?php
-            foreach( $currentClient as $field => $data ) {
-
+                <tr>
+                    <th><?php _e("Question", "e20rtracker"); ?></th>
+                    <th><?php _e("Content", "e20rtracker"); ?></th>
+                </tr>
+            </thead>
+            <tbody><?php
+            foreach( $currentClient as $field => $data ) { ?>
+                <tr class="e20r-clientdetail-row">
+                    <td class="e20r-clientdetail-header"><?php echo $field; ?></td>
+                    <td class="e20r-clientdetail-info"><?php echo $data; ?></td>
+                </tr><?php
             } ?>
-            <tbody>
-
             </tbody>
         </table><?php
 
