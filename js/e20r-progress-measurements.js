@@ -59,13 +59,17 @@ var progMeasurements = {
             $class.$measureBtn = jQuery("#e20r-client-load-measurements");
 
             $class.$clientInfo = jQuery("#e20r-client-info");
+            $class.$clientAssignmentsInfo = jQuery( "#e20r-progress-assignments");
+            $class.$clientAchievementsInfo = jQuery("#e20r-progress-accomplishments");
+            $class.$clientActivityInfo = jQuery("#e20r-progress-activities");
+
             $class.clientMsgForm = jQuery("div#e20r-client-contact");
 
             $class.$clientMessageTab = jQuery("#ui-id-5");
             $class.$clientMessageForm = jQuery("#e20r-client-contact");
-            $class.$clientCompliance = jQuery("#e20r-client-compliance");
 
-            $class.$clientAssignments = jQuery("#e20r-client-assignments");
+            $class.$clientComplianceTab = jQuery("#e20r-client-compliance");
+            $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
 
             jQuery(function(){
                 console.log("Loading tabs for wp-admin page");
@@ -207,6 +211,9 @@ var progMeasurements = {
         // $class.$memberSelect.prop("disabled", true);
 
         this.loadMeasurementData(id);
+        this.loadAchivementsData(id);
+        this.loadAssignmentData( id );
+        this.loadActivityData(id);
         this.loadClientInfo(id);
         this.loadClientMessages(id);
 
@@ -214,14 +221,59 @@ var progMeasurements = {
 
         // $class.$memberSelect.prop("disabled", false);
     },
-    loadComplianceData: function(self) {
+    loadAchivementsData: function( $clientId ) {
 
-        console.log("Loading the Client checkin compliance data");
+        console.log("Loading the Client achievements data");
+
+        var $class = this;
+        var $html = $class._loadInfo( $clientId, 'achievements', $class.$clientAchievementsInfo );
+
+        /*
+        console.dir($html);
+
+        if ( $html ) {
+            $class.$clientAchievementsInfo.html($html);
+        }
+        else {
+            console.log("ERROR: Unable to load the client achievements information!");
+        }*/
+
     },
-    loadAssignmentData: function(self) {
+    loadAssignmentData: function( $clientId ) {
 
         console.log("Loading the Client assignment data");
+
+        var $class = this;
+        var $html = $class._loadInfo( $clientId, 'assignments', $class.$clientAssignmentsInfo );
+
+        // console.log("Assignment HTML: ", $html );
+
+        /*
+        if ( $html ) {
+            $class.$clientAssignmentsInfo.html($html);
+        }
+        else {
+            console.log("ERROR: Unable to load the client assignment information!");
+        }*/
+
     },
+    loadActivityData: function( $clientId ) {
+
+        console.log("Loading the Client activity data");
+
+        var $class = this;
+        var $html = $class._loadInfo( $clientId, 'activities', $class.$clientActivityInfo );
+
+        /*
+        if ( $html ) {
+            $class.$clientActivityInfo.html($html);
+        }
+        else {
+            console.log("ERROR: Unable to load the client activity information!");
+        }*/
+
+    },
+
     get_tinymce_content: function() {
 
         if ( jQuery( "#wp-content-wrap" ).hasClass( "tmce-active" ) ){
@@ -348,11 +400,10 @@ var progMeasurements = {
             }
         });
     },
-    loadClientInfo: function( $clientId ) {
-
-        console.log("Loading the Client Admin Info");
+    _loadInfo: function( $clientId, $requested_action, $caller ) {
 
         var $class = this;
+        var $res = { data: { html: '' } };
 
         $class.$spinner.show();
 
@@ -364,6 +415,7 @@ var progMeasurements = {
             data: {
                 action: 'e20r_clientDetail',
                 'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
+                'tab-id': $requested_action,
                 'client-id': $clientId
             },
             error: function (data, $errString, $errType) {
@@ -375,13 +427,10 @@ var progMeasurements = {
 
                 if ( ( res.success ) ) {
 
-                    console.log("Returned for clientData: ");
+                    console.log("Returned for clientData: ", res);
                     // console.log( res.data.html );
-
-                    $class.$clientInfo.html( res.data.html );
-
+                    $caller.html( res.data.html );
                 }
-
             },
             complete: function () {
 
@@ -389,6 +438,22 @@ var progMeasurements = {
                 $class.$spinner.hide();
             }
         });
+    },
+    loadClientInfo: function( $clientId ) {
+
+        console.log("Loading the Client Admin Info");
+
+        var $class = this;
+        var $html = $class._loadInfo( $clientId, 'client-info', $class.$clientInfo);
+
+        /*
+        if ( false != $html ) {
+            $class.$clientInfo.html($html);
+        }
+        else {
+            console.log("ERROR: Unable to load the client information!");
+        }*/
+
     },
     saveClientId: function(self) {
 

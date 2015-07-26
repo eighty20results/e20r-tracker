@@ -854,7 +854,13 @@ public function loadClient( $id = null ) {
 
         global $e20rProgram;
 
-        if ( $client_id != 0 ) {
+		if ( !$this->is_a_coach( $current_user->ID ) ) {
+
+			dbg("e20rClient::ajax_clientDetail() - User isn't a coach. Return error & force redirect");
+			wp_redirect( admin_url() );
+		}
+
+		if ( $client_id != 0 ) {
 
             $this->setClient( $client_id );
         }
@@ -1092,68 +1098,105 @@ public function loadClient( $id = null ) {
         wp_send_json_success( array( 'html' => $html ));
     }
 
-    public function ajax_clientDetail() {
-        dbg('e20rClient::ajax_clientDetail() - Requesting client detail');
+	private function is_a_coach() {
 
-        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+		// FixMe: Implement this function!
 
-        dbg("e20rClient::ajax_clientDetail() - Nonce is OK");
+		return true; // Temporary (for testing purposes)
+	}
+	public function ajax_clientDetail() {
 
-        dbg("e20rClient::ajax_clientDetail() - Request: " . print_r($_REQUEST, true));
+		global $current_user;
 
-        global $current_user;
+		if ( !is_user_logged_in() ) {
+
+			dbg("e20rClient::ajax_clientDetail() - User isn't logged in. Return error & force redirect");
+			wp_send_json_error( array( 'error' => 403 ) );
+		}
+
+		if ( !$this->is_a_coach( $current_user->ID ) ) {
+
+			dbg("e20rClient::ajax_clientDetail() - User isn't a coach. Return error & force redirect");
+			wp_send_json_error( array( 'error' => 403 ) );
+		}
+		dbg('e20rClient::ajax_clientDetail() - Requesting client detail');
+
+		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+
+		dbg("e20rClient::ajax_clientDetail() - Nonce is OK");
+
+		dbg("e20rClient::ajax_clientDetail() - Request: " . print_r($_REQUEST, true));
+
 		global $e20rProgram;
 		global $e20rMeasurements;
 		global $e20rTracker;
 
 		global $currentProgram;
-        global $currentClient;
+		global $currentClient;
 
 		$userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
+		$type = isset( $_POST['tab-id'] ) ? $e20rTracker->sanitize( $_POST['tab-id']) : 'client-info';
 		$e20rProgram->getProgramIdForUser( $userId );
+
+		switch ( $type ) {
+			case 'client-info':
+                dbg("e20rClient::ajax_clientDetail() - Loading client data");
+				$html = $this->load_clientDetail( $userId );
+				break;
+
+			case 'achievements':
+                dbg("e20rClient::ajax_clientDetail() - Loading client achievement data");
+				$html = $this->load_assignmentsData( $userId );
+                dbg($html);
+				break;
+
+			case 'assignments':
+                dbg("e20rClient::ajax_clientDetail() - Loading client assignment data");
+				$html = $this->load_assignmentsData( $userId );
+				break;
+
+            case 'activities':
+                dbg("e20rClient::ajax_clientDetail() - Loading client activity data");
+                $html = $this->load_activityData( $userId );
+                break;
+
+			default:
+                dbg("e20rClient::ajax_clientDetail() - Default: Loading client information");
+				$html = $this->load_clientDetail( $userId );
+		}
+
+		wp_send_json_success( array( 'html' => $html ));
+	}
+
+	public function load_clientDetail( $clientId ) {
 
 		dbg("e20rClient::ajax_clientDetail() - Load client data...");
 
         // Loads the program specific client information we've got stored.
-        $this->model->getData( $userId );
+        $this->model->getData( $clientId );
 
-        $html = $this->view->viewClientDetail( $userId );
-
-        wp_send_json_success( array( 'html' => $html ));
+        return $this->view->viewClientDetail( $clientId );
     }
 
-    function ajax_complianceData() {
+    function load_achievementsData( $clientId ) {
 
-        dbg('Requesting Check-In details');
+		global $e20rCheckin;
 
-        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
-
-        dbg("Nonce is OK");
-
-        $this->init();
-//        $this->initClientViews();
-
-        $checkins = new E20Rcheckin();
-
-        // TODO: 10/02/2014 - Multiple steps: For different habits, get & generate different graphs.
-        // NOTE: Special care for existing Nourish group... :(
-        // Get the list of check-ins so far - SQL.
-        // Calculate the max # of check-ins per check-in type (day/calendar based)
-        //
-
-
+        return $e20rCheckin->listUserAccomplishments( $clientId );
     }
 
-    function ajax_assignmentData() {
-        dbg('Requesting Assignment details');
+    function load_assignmentsData( $clientId ) {
 
-        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+		global $e20rAssignment;
 
-        dbg("Nonce is OK");
+        return $e20rAssignment->listUserAssignments( $clientId );
+    }
 
-        $this->init();
-//        $this->initClientViews();
+    function load_activityData( $clientId ) {
 
+        global $e20rWorkout;
+
+        return $e20rWorkout->listUserActivities( $clientId );
     }
 
     public function validateAccess( $clientId ) {
@@ -1168,7 +1211,10 @@ public function loadClient( $id = null ) {
             $client = get_user_by("id", $clientId );
             dbg("e20rClient::validateAccess() - Real user Id provided ");
 
-            if ( ($current_user->ID != $clientId ) &&  ( $e20rTracker->isActiveClient( $clientId )  ) ) {
+            if ( ($current_user->ID != $clientId ) &&
+                ( $e20rTracker->isActiveClient( $clientId )  ) &&
+                $this->is_a_coach() ) {
+
                 return true;
             }
             elseif ( $current_user->ID == $clientId ) {
