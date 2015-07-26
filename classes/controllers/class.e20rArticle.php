@@ -471,12 +471,12 @@ class e20rArticle extends e20rSettings {
 		    return $content;
 	    }
 */
-        if ( isset( $currentProgram->sales_page_id) && ( $post->ID == $currentProgram->sales_page_id ) && is_user_logged_in() ) {
+        if ( !empty( $currentProgram->sales_page_ids) && in_array( $post->ID, $currentProgram->sales_page_ids ) && is_user_logged_in() ) {
 
             dbg("e20rArticle::contentFilter() - WARNING: Logged in user requested sales page, suspect they want the dashboard...");
             if ( isset( $currentProgram->dashboard_page_id ) ) {
 
-                $to_dashboard = get_permalink($currentProgram->dashboard_page_id);
+                $to_dashboard = get_permalink( $currentProgram->dashboard_page_id );
                 wp_redirect($to_dashboard, 302);
             }
         }
