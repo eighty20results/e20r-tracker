@@ -1104,6 +1104,7 @@ public function loadClient( $id = null ) {
 
 		return true; // Temporary (for testing purposes)
 	}
+
 	public function ajax_clientDetail() {
 
 		global $current_user;
