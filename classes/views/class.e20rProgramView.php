@@ -246,9 +246,10 @@ class e20rProgramView {
                 <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership Level", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership level", "e20rtracker"); ?></strong></label></th>
                         <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson/Reminder feed", "e20rtracker"); ?></strong></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-sales_page_id"><strong><?php _e("Sales page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="3"><hr width="100%"/></td>
@@ -294,6 +295,15 @@ class e20rProgramView {
                                     } ?>
 		                        </select>
 	                        </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-sales_page_id" name="e20r-program-sales_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->sales_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->sales_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

@@ -471,6 +471,13 @@ class e20rArticle extends e20rSettings {
 		    return $content;
 	    }
 */
+        if ( isset( $currentProgram->sales_page_id) && ( $post->ID == $currentProgram->sales_page_id ) && is_user_logged_in() ) {
+
+            dbg("e20rArticle::contentFilter() - WARNING: Logged in user requested sales page, suspect they want the dashboard...");
+            $to_dashboard = get_permalink( $currentProgram->dashboard_page_id );
+            wp_redirect( $to_dashboard, 302 );
+        }
+
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articleId = $this->init( $post->ID );
 
