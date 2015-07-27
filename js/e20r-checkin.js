@@ -308,6 +308,7 @@ jQuery(document).ready(function() {
                     }
                     else {
                         console.log("success == false returned from AJAX call");
+
                         if ( 1 == response.data.ecode ) {
 
                             console.log("Give the user an error message");
@@ -321,6 +322,20 @@ jQuery(document).ready(function() {
                             $string += "head over to the Archives.";
 
                             alert( $string );
+                        }
+
+                        if ( 2 == response.data.ecode ) {
+
+                            self.$allowActivityOverride = false;
+
+                            var $string;
+
+                            $string = "This day that you are on is the first day of the program.\n\n";
+                            $string += "There is no past beyond this! Feel free to try to navigate into ";
+                            $string += "the (relative) future from here!";
+
+                            alert( $string );
+
                         }
                     }
                 },
