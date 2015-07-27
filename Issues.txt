@@ -21,7 +21,6 @@ Enh: (P1) When user changes the release_day field, save the article as a draft &
 
 Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
 Enh: P2 - Add graphs for the exercise history.
-Enh: P1 - Explanation of ribbon colors to the activity summary.
 
 07/26/2015
 
@@ -31,6 +30,9 @@ Fix: P0 - Members who sign up late in the week get their start date set to Monda
 
 Fix: P0 - Don't let new users see actual dashboard content, etc until their PMPRO startdate has come (or gone).
 
+07/27/2015:
+
+Fix: P2 - Make Achievements list responsive (from table to div & float:left)
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
@@ -49,6 +51,7 @@ Fix: (P2) Moved the configuration of a measurement day to the program definition
 
 Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
 Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
+Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.
 Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
 Enh: (P1) Let user/admin define the progress and dashboard pages on a per-program basis.
