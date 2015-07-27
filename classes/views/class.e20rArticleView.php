@@ -23,7 +23,7 @@ class e20rArticleView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<div class="green-notice big" style="background-image: url( http://home.strongcubedfitness.com/wp-content/plugins/e20r-tracker/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
 			<p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
 		</div>
 
@@ -37,17 +37,18 @@ class e20rArticleView extends e20rSettingsView {
 
         global $e20rTracker;
         $postDate = $e20rTracker->getDateForPost( $day );
+        global $currentProgram;
 
         // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
         ?>
-        <div class="green-notice big" style="background-image: url( http://home.strongcubedfitness.com/wp-content/plugins/e20r-tracker/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+        <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
             <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong>
             <?php
                 if ( $measurements !== 0 ) { ?>
                 <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "e20rTracker"); ?></strong>  &raquo;</a>
-                <form action="<?php echo URL_TO_PROGRESS_FORM; ?>" method="POST" id="e20r-start" style="display: none;">
+                <form action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>" method="POST" id="e20r-start" style="display: none;">
                     <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
                     <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                 </form>
@@ -66,6 +67,7 @@ class e20rArticleView extends e20rSettingsView {
 
         dbg("e20rArticleView::viewMeasurementAlert() - Photos: {$photos} for {$day}");
         global $e20rTracker;
+        global $currentProgram;
 
         ob_start();
         ?>
@@ -86,7 +88,7 @@ class e20rArticleView extends e20rSettingsView {
                 <?php endif; ?>
                     </ul>
 
-                    <form action="<?php echo URL_TO_PROGRESS_FORM; ?>" method="POST" id="e20r-start">
+                    <form action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>" method="POST" id="e20r-start">
                         <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
                         <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                     </form>
@@ -235,18 +237,21 @@ class e20rArticleView extends e20rSettingsView {
 
                                     $selected = ( in_array( $programs->post->ID, $settings->program_ids ) ? ' selected="selected"' : null );
                                     ?><option value="<?php echo $programs->post->ID; ?>" <?php echo $selected; ?>><?php echo $programs->post->post_title; ?></option><?php
-                                } ?>
+                                }
+
+                                wp_reset_postdata();
+                                ?>
                             </select>
                         </td>
                     </tr>
                     <tr><td colspan="4"><hr width="100%" /></td></tr>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-checkins"><?php _e("Actions", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_ids"><?php _e("Actions", "e20rtracker"); ?></label></th>
 	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
                     </tr>
                     <tr>
                         <td>
-                            <select class="select2-container" id="e20r-article-checkins" name="e20r-article-checkins[]" multiple="multiple"><?php
+                            <select class="select2-container" id="e20r-article-checkin_ids" name="e20r-article-checkin_ids[]" multiple="multiple"><?php
 
                                 wp_reset_query();
 
@@ -267,9 +272,12 @@ class e20rArticleView extends e20rSettingsView {
 
                                     $checkins->the_post();
 
-                                    $selected = ( in_array( $checkins->post->ID, $settings->checkins ) ? ' selected="selected"' : null );
+                                    $selected = ( in_array( $checkins->post->ID, $settings->checkin_ids ) ? ' selected="selected"' : null );
                                     ?><option value="<?php echo $checkins->post->ID; ?>" <?php echo $selected; ?>><?php echo $checkins->post->post_title; ?></option><?php
-                                } ?>
+                                }
+
+                                wp_reset_postdata();
+                                ?>
                             </select>
                         </td>
 	                    <td><?php
@@ -600,7 +608,9 @@ class e20rArticleView extends e20rSettingsView {
                                                     <option value="<?php echo $exercise->ID; ?>">
                                                         <?php echo $exercise->post_title; ?>
                                                     </option> <?php
-                                                } ?>
+                                                }
+
+                                                wp_reset_postdata(); ?>
                                             </select>
                                         </td>
                                         <td class="text-input">
