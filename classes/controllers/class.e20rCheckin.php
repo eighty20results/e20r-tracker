@@ -724,24 +724,33 @@ class e20rCheckin extends e20rSettings {
                 $articles = $articles[0];
             }
 
+
             // Single article returned.
+            if (  !empty( $articles ) ) {
 
-            dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
-            $access = $e20rTracker->hasAccess( $config->userId, $articles->post_id );
+                dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
+                $e20rArticle->init($articles->id);
+                $config->articleId = $articles->id;
 
-            dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
+                dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
+                $access = $e20rTracker->hasAccess($config->userId, $articles->post_id);
+                dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
+            }
+            else {
 
-            if ( false == $access  ) {
-                dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " . get_the_title( $articles->post_id ) );
-                wp_send_json_error( array( 'ecode' => 1 ) );
+                $access = false;
             }
 
-            dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
-            $e20rArticle->init($articles->id);
-            $config->articleId = $articles->id;
+            if ( ( false === $access  ) && ( empty( $articles ) ) ) {
+                dbg("e20rCheckin::nextCheckin_callback() - Error: No article for user {$config->userId} in this program.");
+                wp_send_json_error( array( 'ecode' => 2 ) );
+            }
+            elseif ( ( false === $access ) && ( !empty( $articles ) ) ) {
 
+                dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post ");
+                wp_send_json_error( array( 'ecode' => 1 ) );
+            }
         }
-
 
         // $config->url = URL_TO_CHECKIN_FORM;
         dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
