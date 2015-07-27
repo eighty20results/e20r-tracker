@@ -140,9 +140,13 @@ class e20rProgramView {
 
 			                        $list = array_merge( $pages, $posts );
 
+			                        wp_reset_postdata();
+
 			                        foreach( $list as $p ) { ?>
 	                                    <option value="<?php echo $p->ID; ?>"<?php selected( $p->ID, $programData->intake_form );?>><?php echo $p->post_title; ?></option> <?php
-                                    } ?>
+                                    }
+
+                                    ?>
 		                        </select>
 	                        </td>
 
