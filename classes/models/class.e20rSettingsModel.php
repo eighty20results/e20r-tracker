@@ -125,6 +125,8 @@ class e20rSettingsModel {
                 case 'e20r-workout':
                 case 'e20r-articles':
                     $migrate->programs = null;
+                    $migrate->assignments = null;
+                    $migrate->checkins = null;
                     break;
 
                 case 'e20r-assignments':
@@ -311,6 +313,8 @@ class e20rSettingsModel {
             $settings_list[$data->ID] = $settings;
         }
 
+        wp_reset_postdata();
+
         return $settings_list;
     }
 
@@ -386,6 +390,8 @@ class e20rSettingsModel {
 			}
             */
 		}
+
+        wp_reset_postdata();
 
 		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Returning ids:");
 		dbg( $list );
@@ -616,6 +622,7 @@ class e20rSettingsModel {
 			$list[] = $new;
 		}
 
+        wp_reset_postdata();
 		return $list;
 	}
 
@@ -665,7 +672,7 @@ class e20rSettingsModel {
                     $this->settings->{$key} = $setting;
 
 					// "Unroll" a setting that's represented as an array of entries
-					if ( in_array( $key, array( 'program_ids', 'article_ids' ) ) ) {
+					if ( in_array( $key, array( 'program_ids', 'article_ids', 'checkin_ids', 'assignment_ids' ) ) ) {
 
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key} is an article id or program id array. Simplifying search operations in the metadata table.");
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Clearing post meta for {$post_id} and key _e20r-{$this->type}-{$key}");
@@ -707,13 +714,15 @@ class e20rSettingsModel {
                 $asArray = false;
                 // $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
 
-                if ( !in_array( $key, array( 'program_ids', 'article_ids' ) ) ) {
+                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'checkin_ids');
+
+                if ( !in_array( $key, $newAFields ) ) {
                     $asArray = true;
                 }
 
                 $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $asArray );
 
-                if ( in_array( $key, array( 'program_ids', 'article_ids' ) ) &&
+                if ( in_array( $key, $newAFields ) &&
                     ( !is_array( $val ) )  ) {
 
                     // Clean up in case something isn't being returned correctly
