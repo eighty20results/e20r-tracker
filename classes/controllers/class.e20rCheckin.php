@@ -1017,17 +1017,27 @@ class e20rCheckin extends e20rSettings {
 	    if ( $config->type == 'assignment' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
-		    $article = $e20rArticle->findArticle( 'post_id', $post->ID, 'numeric', $config->programId );
+		    $articles = $e20rArticle->findArticle( 'post_id', $post->ID, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'action' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by delay value of {$config->delay} days");
-		    $article = $e20rArticle->findArticle( 'release_day', $config->delay, 'numeric', $config->programId );
+		    $articles = $e20rArticle->findArticle( 'release_day', $config->delay, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'show_assignments' ) {
 
 
 	    }
+
+        if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
+
+            $article = $articles[0];
+        }
+        elseif ( is_object( $articles ) ) {
+            dbg("e20rCheckin::shortcode_dailyProgress() - Articles object: " . gettype( $articles ) );
+            dbg( $articles );
+            $article = $articles;
+        }
 
 	    /*
 	    if ( empty( $article ) ) {
@@ -1161,6 +1171,8 @@ class e20rCheckin extends e20rSettings {
             }
         }
 
+        wp_reset_postdata();
+
         return $checkinList;
     }
 
@@ -1202,6 +1214,8 @@ class e20rCheckin extends e20rSettings {
 
             dbg( "e20rCheckin::addMeta_Settings() - No programs found!" );
         }
+
+        wp_reset_postdata();
 
         dbg("e20rCheckin::addMeta_Settings() - Loading settings metabox for checkin page {$post->ID}");
         $settings = $this->model->loadSettings( $post->ID );
