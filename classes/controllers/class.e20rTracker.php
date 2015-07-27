@@ -1019,7 +1019,7 @@ class e20rTracker {
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
             wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
-            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
+            wp_enqueue_style( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
 
@@ -1032,7 +1032,7 @@ class e20rTracker {
                 case 'e20r_checkins':
 
                     wp_enqueue_script( 'jquery-ui-datepicker' );
-                    wp_enqueue_style( 'jquery-style', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+                    wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
                     $type = 'checkin';
                     $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
@@ -1199,10 +1199,11 @@ class e20rTracker {
             <option value="0" <?php selected(0, $options['lesson_source']); ?>>Not Specified</option> <?php
             while ( $sequences->have_posts() ) : $sequences->the_post(); ?>
                 <option	value="<?php echo the_ID(); ?>" <?php echo selected( the_ID(), $options['lesson_source'] ); ?> ><?php echo the_title_attribute(); ?></option><?php
-            endwhile;
-            wp_reset_postdata(); ?>
+            endwhile; ?>
         </select>
         <?php
+
+        wp_reset_postdata();
     }
 
     public function render_delete_checkbox() {
@@ -1468,10 +1469,10 @@ class e20rTracker {
 
             global $e20r_plot_jscript;
 
-	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+	        wp_enqueue_style( "jquery-ui-tabs", "https://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
-            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.js", array('jquery'), '4.0', true );
+            wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
@@ -1521,7 +1522,7 @@ class e20rTracker {
             wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
             wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
 
-            wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
+            wp_register_script( 'jquery.touchpunch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, true );
             // wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.min.js", array( 'jquery' ), '1.11.2', false);
             wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery-ui-tabs', 'jquery.timeago' ), E20R_VERSION, true );
@@ -1774,7 +1775,7 @@ class e20rTracker {
 
             $this->enqueue_plotSW();
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
-            wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
+            wp_register_script( 'jquery-colorbox', "https://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), E20R_VERSION, false );
             wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
@@ -1815,6 +1816,7 @@ class e20rTracker {
                         'imagepath'         => E20R_PLUGINS_URL . '/images/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
                         'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
+                        'weekly_progress'   => get_permalink( $currentProgram->measurements_page_id ),
                     ),
                     'measurements' => array(
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
@@ -3607,6 +3609,8 @@ class e20rTracker {
 
         $post_check = array_diff($serialized_post_list, $unserialized_post_list);
 
+        wp_reset_postdata();
+
         if ( 0 == count( $posts_array ) ) {
             return -1;
         }
@@ -3680,6 +3684,8 @@ class e20rTracker {
 
                     $cpt_info[$cpt]->type = $e20rArticle->get_cpt_type();
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-assignments"] = "_e20r-{$cpt_info[$cpt]->type}-assignment_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-checkin_ids";
                     break;
 
                 case 'e20r_assignments':
