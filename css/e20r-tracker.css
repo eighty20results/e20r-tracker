@@ -2688,11 +2688,13 @@ p.achivement-descr-small {
      color: #555;
  }
 div#e20r-assignment-answer-list {
-/*    width: inherit;
+    width: inherit;
     margin-left: auto;
     margin-right: auto;
-*/
-    margin-left: 25px;
+}
+div#e20r-progress-achievements {
+    max-width: 940px;
+    width: 80%;
 }
 .float_center {
     float: right;
