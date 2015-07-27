@@ -315,32 +315,32 @@ class e20rArticle extends e20rSettings {
 
 		// dbg($articleSettings);
 
-		$assignments = array();
+		$assignment_ids = array();
 
         dbg("e20rArticle::getAssignments() - Loading assignments for article # {$articleId}");
 
-		if ( ! empty( $articleSettings->assignments ) ) {
+		if ( ! empty( $articleSettings->assignment_ids ) ) {
 
             dbg("e20rArticle::getAssignments() - Have predefined assignments for article");
 
-			foreach ( $articleSettings->assignments as $assignmentId ) {
+			foreach ( $articleSettings->assignment_ids as $assignmentId ) {
 
                 dbg("e20rArticle::getAssignments() - Loading assignment {$assignmentId} for article");
 
 				// Load the user specific assignment data (if available. If not, load default data)
 				$tmp                               = $e20rAssignment->load_userAssignment( $articleId, $assignmentId, $userId );
-				$assignments[ $tmp[0]->order_num ] = $tmp[0];
+				$assignment_ids[ $tmp[0]->order_num ] = $tmp[0];
 			}
 		}
 		else {
             dbg("e20rArticle::getAssignments() - No defined explicit assignments for this article.");
-			$assignments[0] = $e20rAssignment->loadAssignment( );
+			$assignment_ids[0] = $e20rAssignment->loadAssignment();
 		}
 
 		dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
-		ksort( $assignments );
+		ksort( $assignment_ids );
 
-		return $assignments;
+		return $assignment_ids;
 	}
 
     public function getArticleForCheckin( ) {
@@ -551,7 +551,7 @@ class e20rArticle extends e20rSettings {
         else {
             dbg("e20rArticle::loadArticlesByMeta() - {$key}, {$value}, {$type}, {$programId}, {$comp}");
         }
-		return $this->model->findArticle($key, $value, $type, $programId, $comp );
+		return $this->model->find($key, $value, $type, $programId, $comp );
 	}
 
 	public function findArticleNear( $key, $value, $programId = -1, $comp = '<=', $sort_order = 'DESC', $limit = 1, $type = 'numeric' ) {
@@ -588,12 +588,12 @@ class e20rArticle extends e20rSettings {
 
 		dbg("e20rArticle::remove_assignment_callback() - Updating Article settings for ({$articleId}): ");
 
-		if ( in_array( $assignmentId, $artSettings->assignments) ) {
+		if ( in_array( $assignmentId, $artSettings->assignment_ids) ) {
 
-			$artSettings->assignments = array_diff($artSettings->assignments, array( $assignmentId ));
+			$artSettings->assignment_ids = array_diff($artSettings->assignment_ids, array( $assignmentId ));
 		}
 
-		$this->model->set( 'assignments', $artSettings->assignments, $articleId );
+		$this->model->set( 'assignment_ids', $artSettings->assignment_ids, $articleId );
 
 		dbg("e20rArticle::remove_assignment_callback() - Generating the assignments metabox for the article {$articleId} definition");
 
@@ -678,11 +678,11 @@ class e20rArticle extends e20rSettings {
         $e20rAssignment->saveSettings( $assignmentId, $assignment );
 
         $ordered = array();
-        $orig = $currentArticle->assignments;
+        $orig = $currentArticle->assignment_ids;
         $new = array();
 
         // Load assignments so we can sort (if needed)
-        foreach( $currentArticle->assignments as $aId ) {
+        foreach( $currentArticle->assignment_ids as $aId ) {
 
             $a = $e20rAssignment->loadAssignment( $aId );
 
@@ -771,7 +771,7 @@ class e20rArticle extends e20rSettings {
         dbg($new);
 
 	    dbg("e20rArticle::add_assignment_callback() - Updating Article settings for ({$articleId}): ");
-        $currentArticle->assignments = $new;
+        $currentArticle->assignment_ids = $new;
 
 	    dbg("e20rArticle::add_assignment_callback() - Saving Article settings for ({$articleId}): ");
 	    dbg($currentArticle);
@@ -858,12 +858,11 @@ class e20rArticle extends e20rSettings {
     public function isMeasurementDay( $articleId = null ) {
 
         global $currentArticle;
-            if ( is_null( $articleId ) ) {
+
+        if ( is_null( $articleId ) ) {
 
                 $articleId = $currentArticle->id;
-            }
-
-        dbg($currentArticle);
+        }
 
         return ( $this->model->getSetting( $articleId, 'measurement_day' ) == 0 ? false : true );
 
@@ -890,20 +889,20 @@ class e20rArticle extends e20rSettings {
 
         dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$aConfig->articleId}");
 
-        $checkin = $this->model->getSetting( $aConfig->articleId, 'checkins' );
+        $checkin_ids = $this->model->getSetting( $aConfig->articleId, 'checkin_ids' );
         // $activity = $this->model->getSetting( $aConfig->articleId, 'activity_id' );
 
-        if ( ! is_array( $checkin ) ) {
+        if ( ! is_array( $checkin_ids ) ) {
             // $setting = array_merge( array( $checkin ), array( $activity ) );
-            $checkin = array( $checkin );
+            $checkin = array( $checkin_ids );
         }
 
-        if ( empty( $checkin ) /* && is_null( $activity ) */ ) {
+        if ( empty( $checkin_ids ) /* && is_null( $activity ) */ ) {
             dbg("e20rArticle::getCheckins() - No check-in IDs found for this article ({$aConfig->articleId})");
             return false;
         }
 
-        return $checkin;
+        return $checkin_ids;
     }
 
     public function setId( $id = null ) {
@@ -955,7 +954,7 @@ class e20rArticle extends e20rSettings {
 
     public function findArticle( $key = 'id', $val = null, $type = 'numeric', $programId = -1, $comp = '=' ) {
 
-        return $this->model->findArticle( $key, $val, $type, $programId, $comp );
+        return $this->model->find( $key, $val, $type, $programId, $comp );
     }
 
     /**
@@ -1025,7 +1024,7 @@ class e20rArticle extends e20rSettings {
                 dbg( "e20rArticle::saveSettings() - Page data : {$field}->" );
                 dbg($tmp);
 
-                if ( 'assignments' == $field ) {
+                if ( 'assignment_ids' == $field ) {
 
                     dbg("e20rArticle::saveSettings() - Process the assignments array");
 
