@@ -27,8 +27,10 @@ class e20rArticleModel extends e20rSettingsModel {
         $defaults->activity_id = array();
         $defaults->release_day = null;
         $defaults->release_date = null;
-        $defaults->assignments = array();
-        $defaults->checkins = array();
+        $defaults->assignment_ids = array();
+        $defaults->checkin_ids = array();
+//        $defaults->assignments = array();
+//        $defaults->checkins = array();
         $defaults->measurement_day = false;
         $defaults->photo_day = false;
         $defaults->prefix = "Lesson";
@@ -53,29 +55,42 @@ class e20rArticleModel extends e20rSettingsModel {
             $currentArticle->activity_id = array();
 		}
 
-		if ( empty( $currentArticle->assignments ) ) {
+		if ( empty( $currentArticle->assignment_ids ) ) {
 
-            $currentArticle->assignments = array();
+            $currentArticle->assignment_ids = array();
 		}
 		else {
             dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
-			foreach( $currentArticle->assignments as $k => $assignmentId ) {
+			foreach( $currentArticle->assignment_ids as $k => $assignmentId ) {
 
 				if ( empty( $assignmentId ) ) {
 
 					dbg("e20rArticleModel::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $assignmentId ) ? 'null' : $assignmentId );
-					unset( $currentArticle->assignments[$k] );
+					unset( $currentArticle->assignment_ids[$k] );
 				}
 			}
 
 		}
 
-		if ( empty( $currentArticle->checkins ) ) {
+		if ( empty( $currentArticle->checkin_ids ) ) {
 
-            $currentArticle->checkins = array();
+            $currentArticle->checkin_ids = array();
 		}
+        else {
+            dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
+            foreach( $currentArticle->checkin_ids as $k => $checkinId ) {
 
-		// Check if the post_id has defined excerpt we can use for this article.
+                if ( empty( $checkinId ) ) {
+
+                    dbg("e20rArticleModel::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $checkinId ) ? 'null' : $checkinId );
+                    unset( $currentArticle->checkin_ids[$k] );
+                }
+            }
+
+        }
+
+
+        // Check if the post_id has defined excerpt we can use for this article.
 		if ( isset( $currentArticle->post_id ) && ( ! empty($currentArticle->post_id ) ) ) {
 
 			$post = get_post( $currentArticle->post_id );
@@ -303,6 +318,8 @@ class e20rArticleModel extends e20rSettingsModel {
 			$articleList[] = $new;
 		}
 
+        wp_reset_postdata();
+
 		return $articleList;
 	}
 
@@ -324,6 +341,7 @@ class e20rArticleModel extends e20rSettingsModel {
     public function saveSettings( stdClass $settings ) {
 
 		global $e20rAssignment;
+        global $e20rCheckin;
 
         $articleId = $settings->id;
 
@@ -345,24 +363,32 @@ class e20rArticleModel extends e20rSettingsModel {
                 update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
             }
 
-	        if ( 'assignments' == $key ) {
+	        // if ( 'assignments' == $key ) {
+            if ( ( 'assignment_ids' == $key ) || ( 'checkin_ids' == $key ) ) {
 
                 dbg("e20rArticleModel::saveSettings() - Processing assignments (include program info):");
                 dbg($value);
 
-		        foreach( $settings->{$key} as $k => $assignmentId ) {
+		        foreach( $settings->{$key} as $k => $id ) {
 
-			        if ( empty( $assignmentId ) ) {
+			        if ( empty( $id ) || ( 0 == $id ) ) {
 
-				        dbg("e20rArticleModel::saveSettings() - Removing empty assignment key #{$k} with value {$assignmentId}");
+				        dbg("e20rArticleModel::saveSettings() - Removing empty assignment key #{$k} with value {$id}");
 				        unset( $value[$k] );
 			        }
 
-                    dbg("e20rArticleModel::saveSettings() - Adding program IDs for assignment {$assignmentId}");
-					if (! $e20rAssignment->addPrograms( $assignmentId, $settings->programs ) ) {
+                    dbg("e20rArticleModel::saveSettings() - Adding program IDs for assignment {$id}");
 
-                        dbg("e20rArticleModel::saveSettings() - ERROR: Unable to save program list for assignment {$assignmentId}");
-                        dbg($settings->programs);
+					if ( ( 'assignment_ids' == $key ) && (! $e20rAssignment->addPrograms( $id, $settings->program_ids ) ) ) {
+
+                        dbg("e20rArticleModel::saveSettings() - ERROR: Unable to save program list for assignment {$id}");
+                        dbg($settings->program_ids);
+                    }
+
+                    if ( ( 'checkin_ids' == $key ) && (! $e20rCheckin->addPrograms( $id, $settings->program_ids ) ) ) {
+
+                        dbg("e20rArticleModel::saveSettings() - ERROR: Unable to save program list for checkin {$id}");
+                        dbg($settings->program_ids);
                     }
 		        }
 	        }
