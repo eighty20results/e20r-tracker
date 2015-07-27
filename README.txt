@@ -25,6 +25,38 @@ Arguments:
 
 == ChangeLog ==
 
+= 0.9.6 =
+
+Handle migration from  articles/assignments/checkins settings/postmeta to using article_ids/assignment_ids/checkin_ids
+Set program id for measurement entry in progress overview "measurement history" table
+Reset postdata whenever using WP_Query(), get_posts() or get_pages();
+Add private sort function (sortAssignments()): Will sort based on delay and order_num value ( delay, then order_num )
+Nits for setting up arguments in loadAssignmentByMeta()
+Skip entries with field_type = 0 ("Completed" button) unless searching based on field_type.
+Also include article_id from database ({wp_prefix}_e20r_assignments table when loading user data for an assignment.
+Fix issue where the system would always load default settings if an assignment question had been defined.
+Move addPrograms() function to parent class.
+Add addPrograms() function to allow adding of a single program_id to the existing settings->program_ids array.
+Load from the correct select2 CDN (assume HTTPS) Reset postdata after using WP_Query() or get_posts()
+Add URL to weekly_progress form to the javascript settings array.
+Because we moved to using the parent::find() function we have to deal with testing whether the data returned is an array or an object before attempting to use it
+Need a program id setting when configured when we list the assignments for the user
+Use the e20r_progress.settings.weekly_progress constant to locate the URL for the measurement form
+Fix layout/styles on measurement page(s)
+Fix layout/style for photo upload buttons on measurement page.
+Use page_id setting for generating link to the correct measurement form when listing the table of measurements.
+Use correct URL to check-mark graphic for viewLessonComplete()
+Use measurement_page_id setting for loading link to measurement form.
+Use parent class find() function to load article data.
+Add rudimentary client_info data listing
+Load & view available client information in /wp-admin/ back end
+Add support for handling redirection for logged in user when attempting to access multiple sales pages in contentFilter()
+Add support for handling multiple sales pages in contentFilter()
+Rename save button from "Complete" to "Save Answers"
+Make sure the dashboard page ID has been defined.
+Add redirect to dashboard if a logged in user (who's a member of the program) is attempting to access the sales page/post.
+URL to client info page was incomplete
+
 = 0.9.5 =
 * Handle situations where user has defined a workout with start/end day number or dates.
 * Include support for handling proper WP meta_query for program_id limited searches
