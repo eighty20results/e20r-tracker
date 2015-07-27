@@ -10,7 +10,7 @@ jQuery(document).ready( function(){
 
     jQuery('#e20r-assignments-id').select2();
     jQuery('#e20r-article-post_id').select2();
-    jQuery('#e20r-article-checkins').select2();
+    jQuery('#e20r-article-checkin_ids').select2();
     jQuery('#e20r-article-program_ids').select2();
     jQuery('#e20r-article-activity_id').select2();
 
