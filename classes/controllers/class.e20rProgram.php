@@ -138,6 +138,8 @@ class e20rProgram extends e20rSettings {
             }
         }
 
+        wp_reset_postdata();
+
         return $this->programTree;
     }
 
