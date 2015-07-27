@@ -102,6 +102,8 @@ class e20rCheckinModel extends e20rSettingsModel {
             */
         }
 
+        wp_reset_postdata();
+
 	    dbg("e20rCheckinModel::findActionByDate() - Returning " . count($actions) . " action ids");
 	    // dbg( $actions );
 
@@ -181,6 +183,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $checkins[] = $new;
         }
 
+        wp_reset_postdata();
         return $checkins;
     }
 
