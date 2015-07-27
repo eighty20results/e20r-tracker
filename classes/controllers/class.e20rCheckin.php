@@ -717,24 +717,29 @@ class e20rCheckin extends e20rSettings {
 
             $articles = $e20rArticle->findArticle( 'release_day', $pdate, 'numeric', $config->programId );
             dbg("e20rCheckin::nextCheckin_callback() - Found " . count($articles) . " articles for program {$config->programId} and with a release day of {$pdate}");
+            dbg( $articles );
 
-            if ( is_object($articles ) ) {
-                // Single article returned.
+            if ( is_array( $articles )  && ( 1 == count($articles) ) ) {
 
-                dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
-                $access = $e20rTracker->hasAccess( $config->userId, $articles->post_id );
-
-                dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
-
-                if ( false == $access  ) {
-                    dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " . get_the_title( $articles->post_id ) );
-                    wp_send_json_error( array( 'ecode' => 1 ) );
-                }
-
-                dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
-                $e20rArticle->init($articles->id);
-                $config->articleId = $articles->id;
+                $articles = $articles[0];
             }
+
+            // Single article returned.
+
+            dbg("e20rCheckin::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}");
+            $access = $e20rTracker->hasAccess( $config->userId, $articles->post_id );
+
+            dbg("e20rCheckin::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}");
+
+            if ( false == $access  ) {
+                dbg("e20rCheckin::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " . get_the_title( $articles->post_id ) );
+                wp_send_json_error( array( 'ecode' => 1 ) );
+            }
+
+            dbg("e20rCheckin::nextCheckin_callback() - Loading the article info for the requested day");
+            $e20rArticle->init($articles->id);
+            $config->articleId = $articles->id;
+
         }
 
 
