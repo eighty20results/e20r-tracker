@@ -213,7 +213,10 @@ class e20rProgram extends e20rSettings {
 
 			    dbg("e20rProgram::getProgramIdForUser() - Loading program info from DB for user w/ID {$userId}");
 			    $this->loadProgram( $userId );
-			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId}");
+
+                $currentProgram->stardate = $this->startdate( $userId, null, true );
+
+			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId} and startdate: {$currentProgram->startdate}");
 			    // dbg($currentProgram);
 		    }
 		    else {
@@ -369,7 +372,7 @@ class e20rProgram extends e20rSettings {
      *
      * @return int|mixed - Timestamp (seconds since UNIX epoch
      */
-    public function startdate( $userId, $program_id = null, $membership = false ) {
+    public function startdate( $userId, $program_id = null, $membership = true) {
 
 	    global $currentProgram;
 
@@ -379,7 +382,7 @@ class e20rProgram extends e20rSettings {
             $this->model->loadSettings( $program_id );
         }
 
-        if ( ( false === $membership ) && ( $program_id == null ) ) {
+        if ( ( $program_id == null ) ) {
 
             dbg( "e20rProgram::startdate() - Loading usermeta to get Program for user with ID: {$userId}" );
             $program_id = get_user_meta( $userId, 'e20r-tracker-program-id', true );
@@ -392,15 +395,17 @@ class e20rProgram extends e20rSettings {
         }
 
 
-        if ( ( true === $membership ) || ( !isset( $currentProgram->startdate ) ) ) {
+        if ( true === $membership ) {
 
 	        dbg( "e20rProgram::startdate() - Forcing check by membership plugin, or no valid program start date found for user with ID {$userId}" );
 
 	        // No program setting was configured so we'll use the start date for the users active membership level.
 	        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
 
-		        dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}");
-		        return pmpro_getMemberStartdate( $userId );
+		        dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
+                $user_startdate = pmpro_getMemberStartdate( $userId );
+		        $currentProgram->startdate = date('Y-m-d', $user_startdate );
+                return $user_startdate;
 	        }
 
 	        return false;
