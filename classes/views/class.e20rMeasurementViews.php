@@ -253,19 +253,19 @@ class e20rMeasurementViews {
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Front Photo</div>
-                                        <button id="photo-upload-front">Select Image: Front</button>
+                                        <button id="photo-upload-front" class="e20r-button">Select Image: Front</button>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Side Photo</div>
-                                        <button id="photo-upload-side">Select Image: Side</button>
+                                        <button id="photo-upload-side" class="e20r-button">Select Image: Side</button>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Back Photo</div>
-                                        <button id="photo-upload-back">Select Image: Back</button>
+                                        <button id="photo-upload-back" class="e20r-button">Select Image: Back</button>
                                     </div>
                                 </th>
                             </tr>
@@ -446,6 +446,7 @@ class e20rMeasurementViews {
         // $clientId = 12;
         global $e20rTables;
         global $e20rClient;
+        global $currentProgram;
         global $current_user;
 
         if ( $dimensions === null ) {
@@ -605,7 +606,7 @@ class e20rMeasurementViews {
 					                            if ( $showLink ) {
 						                            ?>
 						                            <form method="POST" class="article_data"
-						                                  action="<?php echo URL_TO_PROGRESS_FORM; ?>">
+						                                  action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>">
 							                            <input type="hidden" name="e20r-progress-form-date"
 							                                   class="e20r-progress-form-date"
 							                                   data-measurement-type="date"
