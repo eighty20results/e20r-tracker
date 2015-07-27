@@ -427,7 +427,7 @@ var progMeasurements = {
 
                 if ( ( res.success ) ) {
 
-                    console.log("Returned for clientData: ", res);
+                    // console.log("Returned for clientData: ", res);
                     // console.log( res.data.html );
                     $caller.html( res.data.html );
                 }
@@ -742,7 +742,7 @@ var progMeasurements = {
 
         $form.submit( function () {
             jQuery('.load_progress_data').post(
-                '/weekly-progress/',
+                e20r_progress.settings.weekly_progress,
                 jQuery(this).serialize(),
                 function(data){
                     alert("Data sent: ")
