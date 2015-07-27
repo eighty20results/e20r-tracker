@@ -340,6 +340,27 @@ class e20rCheckinView extends e20rSettingsView {
 
 		ob_start();
 		?>
+        <div class="e20r-achievement-description float_center">
+            <div class="e20r-description-row child">
+                <div class="column_1_3">
+                    <h4 class="e20r-ribbon-small">Gold Ribbon</h4>
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/gold-badge.png'; ?>">
+                    <p class="achivement-descr-small">The gold badge is awarded when your consistency is at more than 80 percent</p>
+                </div>
+                <div class="column_2_3">
+                    <h4 class="e20r-ribbon-small">Silver Ribbon</h4>
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/silver-badge.png'; ?>">
+                    <p class="achivement-descr-small">The sliver badge is awarded when your consistency is between 70 to 80 percent</p>
+                </div>
+                <div class="column_3_3">
+                    <h4 class="e20r-ribbon-small">Bronze Ribbon</h4>
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/bronze-badge.png'; ?>">
+                    <p class="achivement-descr-small">The bronze badge is awarded when your consistency is less than 70 percent</p>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 			<h4>Achievements</h4>
 			<a class="close" href="#">X</a>
