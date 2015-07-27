@@ -746,6 +746,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
             $workout_list[$key] = $loaded_settings;
         }
 
+        wp_reset_postdata();
         return $workout_list;
     }
 
@@ -791,6 +792,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			    $new->id         = $id;
 			    $workouts[$new->id] = $new;
 		    }
+
+            wp_reset_postdata();
 	    }
 
 	    return $workouts;
