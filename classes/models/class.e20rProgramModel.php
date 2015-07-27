@@ -61,6 +61,8 @@ class e20rProgramModel extends e20rSettingsModel {
             // $pList[] = $new;
         }
 
+        wp_reset_postdata();
+
         dbg("e20rProgramModel::findByMembershipId() - Located program # {$pId}" );
 
         return $pId;
