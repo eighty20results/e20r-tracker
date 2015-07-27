@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.9.7
+Stable tag: 0.9.8
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -24,6 +24,15 @@ Arguments:
     [weekly_progress day="<days since startdate>" from_programstart="<1|0>" use_article_id="<1|0>" demo_form="0|1"]
 
 == ChangeLog ==
+
+= 0.9.8 =
+Use the delay value for the article that is manages the postId to verify access. If the delay value is <= the the userIds current delay value, grant access.
+Set the program start date to that of the user (i.e. force the startdate to be keyed off of the users membership start date).
+Force use of the membership plugin's start date for the specified user.
+Base access on the delay value for the specified user(s).
+Handle the 'First day of the program, not allowed to proceed backwards' error message (ecode == 2)
+On the first day of the program, it allowed you to attempt to navigate backwards without having any defined articles available. This caused error messages.
+Return a specific error code to the AJAX caller if we're on the first day of the program for this user and they try to go backwards.
 
 = 0.9.7 =
 * Add styles for legend/description on Achievements tab
