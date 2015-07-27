@@ -460,6 +460,8 @@ class e20rWorkout extends e20rSettings {
             }
         }
 
+        wp_reset_postdata();
+
         return $workoutList;
     }
 
