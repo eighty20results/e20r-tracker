@@ -503,12 +503,12 @@ class e20rAssignmentView extends e20rSettingsView {
 										<input type="hidden" name="assignment_id" id="assignment_id" data-measurement-type="id" value="<?php echo $answer->id; ?>">
 										<input type="hidden" name="date" id="delay" data-measurement-type="delay" value="<?php echo $answer->delay; ?>">
 										<input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $answer->article_id; ?>">
-										<input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $answer->program_id; ?>">
+										<input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $config->programId; ?>">
 									</form>
 									<!-- <span> -->
 									<?php
 									if ( $showLink ) {
-                                        dbg( "e20rAssignmentView::viewAssignmentList() - Want to show link for article {$answer->article_id}" );
+                                        //dbg( "e20rAssignmentView::viewAssignmentList() - Want to show link for article {$answer->article_id}" );
 										?>
 										<a href="<?php echo $e20rArticle->getPostUrl( $answer->article_id ); ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
 											<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>
