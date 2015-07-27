@@ -19,29 +19,39 @@ Enh: (P1) When user changes the release_day field, save the article as a draft &
 
 07/25/2015 - For Monday?
 
-Enh: P2 - Add client message form for back-end.
-Fix: P1 - Client info not loading correctly (the data ) for back-end form.
-Fix: P1 - Correctly load the Client Info page in back end.
-Fix: P1 - Not loading correct assignment information on a measurement day (wrong currentArticle perhaps - Load ?)
-
-Enh: P0 - Configure a program "sales page(s)" (i.e. multi-select2 box) which, in the content filter, can be redirected if the user belongs to that program. (fix breadcrumb navigation).
-Enh: P1 - Fix measurements form.
 Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
 Enh: P2 - Add graphs for the exercise history.
 Enh: P1 - Explanation of ribbon colors to the activity summary.
 
+07/26/2015
+
+Fix: P0 - Members who sign up late in the week get their start date set to Monday (next week).
+            Need something on the dashboard (possibly? ) to indicate that full access won't be available
+            until the startdate... (Trap that during login perhaps?) - use: pmpro_getMemberStartdate( $user_id, $level_id)
+
+Fix: P0 - Don't let new users see actual dashboard content, etc until their PMPRO startdate has come (or gone).
+
 == Completed / Fixed ==
 
-Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
-Fix: (P1) Problems adding assignments to article (non-default ones).
-Fix: (P0) - daily_progress prev/next day navigation didn't load the correct activity/workout data.
-Fix: (P0) - Check-in for the daily progress dashboard gets saved in the same row all the time.
+Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
+Fix: (P0) Check-in for the daily progress dashboard gets saved in the same row all the time.
 Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
+Fix: (P0) In the content filter, redirect a logged in program member to their dashboard if when attempting to access a defined sales page for the program.
+Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
+Fix: (P0) Not loading correct assignment information on a measurement day.
+Fix: (P0) Convert $e20rArticle->activities to unserialized variable (activity_ids) a-la program_ids and article_ids.
+
+Fix: (P1) Client info not loading correctly (the data) for back-end form.
+Fix: (P1) Problems adding assignments to article (non-default ones).
+Fix: (P1) Correctly load the Client Info page in back end.
 Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
 Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
 
+Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
+Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
+Enh: (P1) Fix measurements form.
 Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
-Enh: Prevent the daily assignment short code from bleeding into the actual post/page.
 Enh: (P1) Let user/admin define the progress and dashboard pages on a per-program basis.
 Enh: (P1) Specify "Day number" or date for start/end of activity.
 Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
+Enh: (P2) Add client message form for back-end.
