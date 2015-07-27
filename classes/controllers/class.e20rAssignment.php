@@ -70,6 +70,7 @@ class e20rAssignment extends e20rSettings {
         return $currentAssignment;
     }
 
+    /*
     public function addPrograms( $assignmentId, $programIds ) {
 
         dbg("e20rAssignment::addProgram() - Adding " . count($programIds) . " programs to assignment {$assignmentId}");
@@ -95,7 +96,7 @@ class e20rAssignment extends e20rSettings {
 
         return $this->model->saveSettings( $settings );
     }
-
+    */
 	public function saveAssignment( $aArray ) {
 
 		dbg('e20rAssignment::saveAssignment() - Saving assignment data for user... ');
@@ -176,6 +177,7 @@ class e20rAssignment extends e20rSettings {
 		$config->userId = $userId;
 		$config->startTS = $e20rProgram->startdate( $config->userId );
 		$config->delay = $e20rTracker->getDelay( 'now' );
+        $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
 
 		$answers = $this->model->loadAllUserAssignments( $userId );
 
@@ -372,7 +374,7 @@ class e20rAssignment extends e20rSettings {
                 }
             }
         }
-
+        wp_reset_postdata();
         return $assignmentList;
     }
 
