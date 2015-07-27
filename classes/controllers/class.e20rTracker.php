@@ -1574,9 +1574,26 @@ class e20rTracker {
 
     public function hasAccess( $userId, $postId ) {
 
+        global $e20rArticle;
+        global $e20rProgram;
+
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
             dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to teh preview");
+            return true;
+        }
+
+        $current_delay = $this->getDelay( 'now', $userId );
+        $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+        $articles = $e20rArticle->findArticle( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
+
+        if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+            $article = $articles[0];
+        }
+
+        if ( $article->release_day <= $current_delay ) {
+            dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
             return true;
         }
 
