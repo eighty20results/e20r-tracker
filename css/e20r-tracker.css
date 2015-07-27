@@ -2654,3 +2654,53 @@ input.e20r-message-input {
 table.e20r-client-information-table {
     width: 100%;
 }
+.e20r-achievement-description {
+    /* border: 1px solid #c5c5c5; */
+    padding: 10px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+div.column_1_3,
+div.column_2_3,
+div.column_3_3 {
+    width: 27%;
+    position: relative;
+    margin: 10px;
+    border: 1px solid #c5c5c5;
+    padding: 5px;
+    float: left;
+    text-align: center;
+}
+img.e20r-ribbon-small {
+    height: 35px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+h4.e20r-ribbon-small {
+    font-size: 1em;
+    color: #555;
+    text-align: center;
+}
+p.achivement-descr-small {
+     font-size: 0.7em;
+     color: #555;
+ }
+div#e20r-assignment-answer-list {
+/*    width: inherit;
+    margin-left: auto;
+    margin-right: auto;
+*/
+    margin-left: 25px;
+}
+.float_center {
+    float: right;
+    position: relative;
+    right: 50%; /* or right 50% */
+    text-align: left;
+}
+.float_center > .child {
+    position: relative;
+    left: 50%;
+}
