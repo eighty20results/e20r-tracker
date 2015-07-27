@@ -288,7 +288,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: e20r_checkin.url,
                 type: 'POST',
-                timeout: 5000,
+                timeout: 10000,
                 data: data,
                 success: function (response) {
 
@@ -485,6 +485,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: e20r_checkin.url,
                 type: 'POST',
+                timeout: 10000,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
                 data: 'action=save_daily_progress&' + self.$answerForm.serialize(),
                 success: function( $response ) {
@@ -512,6 +513,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 'type': 'POST',
                 'url': e20r_checkin.url,
+                timeout: 10000,
                 'data': 'action=save_daily_progress&' + answers,
                 success: function( $response ) {
 

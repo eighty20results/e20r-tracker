@@ -271,7 +271,7 @@ var e20rActivity = {
             jQuery.ajax({
                 url: e20r_workout.url,
                 type: 'POST',
-                timeout: 7000,
+                timeout: 10000,
                 data: $data,
                 success: function (resp) {
 

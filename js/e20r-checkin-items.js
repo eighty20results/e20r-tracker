@@ -24,7 +24,7 @@ jQuery(function() {
             jQuery.ajax({
                 url: ajaxurl,
                 type: 'POST',
-                timeout: 5000,
+                timeout: 10000,
                 dataType: 'JSON',
                 data: {
                     action: 'save_item_data',

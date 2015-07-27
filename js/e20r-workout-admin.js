@@ -104,7 +104,7 @@ var e20rActivity = {
         wp.ajax.send({
             url: e20r_tracker.ajaxurl,
             type:'POST',
-            timeout:5000,
+            timeout:10000,
             dataType: 'JSON',
             data: {
                 action: "e20r_add_new_exercise_group",
@@ -165,7 +165,7 @@ var e20rActivity = {
         wp.ajax.send({
             url: e20r_tracker.ajaxurl,
             type: 'POST',
-            timeout: 5000,
+            timeout: 10000,
             dataType: 'JSON',
             data: {
                 action: 'e20r_add_exercise',

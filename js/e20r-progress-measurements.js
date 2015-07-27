@@ -296,7 +296,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 5000,
+            timeout: 10000,
             dataType: 'JSON',
             data: {
                 action: 'e20r_showClientMessage',
@@ -370,7 +370,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 5000,
+            timeout: 10000,
             dataType: 'JSON',
             data: $data,
             error: function (data, $errString, $errType) {
@@ -410,7 +410,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 5000,
+            timeout: 10000,
             dataType: 'JSON',
             data: {
                 action: 'e20r_clientDetail',
@@ -478,7 +478,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 5000,
+            timeout: 10000,
             dataType: 'JSON',
             data: {
                 action: 'e20r_measurementDataForUser',
