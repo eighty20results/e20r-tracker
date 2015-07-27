@@ -167,6 +167,8 @@ class e20rExerciseModel extends e20rSettingsModel {
             $exercise_list[$key] = $settings;
         }
 
+		wp_reset_postdata();
+
         return $exercise_list;
     }
 
@@ -200,6 +202,7 @@ class e20rExerciseModel extends e20rSettingsModel {
             $exercise_list[$key] = $settings;
         }
 
+        wp_reset_postdata();
 
         return $settings;
     }
