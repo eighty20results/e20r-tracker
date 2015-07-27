@@ -191,8 +191,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Loading assignments for user {$userId} until day {$delay} for program {$programId}");
 
+
 		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay' );
 		dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $assignments ) . " to process ");
+        // dbg($assignments);
 
 		if ( empty( $assignments ) ) {
 
@@ -204,18 +206,22 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		foreach ( $assignments as $assignment ) {
 
-            if ( ( $key = array_search( 0, $assignment->article_ids ) ) !== false ) {
+            if ( !empty( $assignment->article_ids) && ( $key = array_search( 0, $assignment->article_ids ) ) !== false ) {
+
+                dbg("e20rAssignmentModel::loadAllUserAssignments() - Assignment has a 0 for an article_ids value. Removing that value.");
                 unset($assignment->article_ids[$key]);
             }
 
+            // Process this assignment if it's NOT a "I've read it" button.
             if ( 0 != $assignment->field_type ) {
+
                 dbg("e20rAssigmentModel::loadAllUserAssignments() - Assignment information being processed:");
                 dbg($assignment);
 
                 if ( count( $assignment->article_ids) < 1 ) {
 
                     dbg("e20rAssignmentModel::loadAssUserAssignments() - ERROR: No user assignments defined for {$assignment->question_id}!");
-                    $assignment->article_ids = array( 0 );
+                    $assignment->article_ids = array();
 
                 }
 
@@ -223,20 +229,36 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
                     $userInfo = $this->loadUserAssignment( $userAId, $userId, $assignment->delay, $assignment->id);
 
-                    dbg( $userInfo );
-
                     foreach( $userInfo as $k => $data ) {
 
                         $assignment->answer = isset( $data->answer ) ? $data->answer : null;
                         $assignment->answer_date = isset($data->answer_date) ? $data->answer_date : null;
+                        $assignment->article_id = $userAId;
                         $answers[] = $assignment;
                     }
                 }
             }
 		}
 
-		return $answers;
+        // Sort the answers by the delay value, then the order_num value
+        usort( $answers, array( &$this, 'sortAssignments' ) );
+
+        dbg("e20rAssignmentModel::loadAllUserAssignments() - Returning sorted array of answers: ");
+        dbg($answers);
+
+        return $answers;
 	}
+
+    private function sortAssignments( $a, $b ) {
+
+        if ($a->delay == $b->delay)
+        {
+            if($a->order_num == $b->order_num) return 0 ;
+            return ($a->order_num < $b->order_num) ? -1 : 1;
+        }
+        else
+            return ($a->delay < $b->delay) ? -1 : 1;
+    }
 
     public function getArticleAssignments( $articleId ) {
 
@@ -285,6 +307,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $assignments[] = $new;
         }
 
+        wp_reset_postdata();
+
         return $assignments;
     }
 
@@ -292,6 +316,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		global $current_user;
 		global $e20rProgram;
+        global $e20rArticle;
 		global $e20rTracker;
 
 		$assignments = array();
@@ -300,20 +325,20 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		$args = array(
 			'posts_per_page' => -1,
-			'post_type' => 'e20r_assignments',
+			'post_type' => $this->cpt_slug,
 			'post_status' => 'publish',
-			'meta_key' => "_e20r-assignments-{$orderbyKey}",
-			'order_by' => 'meta_value',
+			'meta_key' => "_e20r-{$this->type}-{$orderbyKey}",
+			'order_by' => 'meta_key',
 			'order' => 'ASC',
 			'meta_query' => array(
 				array(
-					'key' => "_e20r-assignments-{$key}",
+					'key' => "_e20r-{$this->type}-{$key}",
 					'value' => $value,
 					'compare' => $comp,
 					'type' => $type,
 				),
 				array(
-					'key' => "_e20r-assignments-program_ids",
+					'key' => "_e20r-{$this->type}-program_ids",
 					'value' => $programId,
 					'compare' => '=',
 					'type' => 'numeric',
@@ -321,22 +346,53 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			)
 		);
 
+        if ( 'field_type' != $key ) {
+
+            $args['meta_query'][] = array(
+                'key' => "_e20r-{$this->type}-field_type",
+                'value' => 0,
+                'compare' => '!=',
+                'type' => 'numeric'
+            );
+        }
         dbg("e20rAssignmentModel::loadAssignmentByMeta() - Using:" );
         dbg( $args );
 
 		$query = new WP_Query( $args );
 
-		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returned assignments: {$query->post_count}" );
+		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returned {$query->post_count} {$this->cpt_slug} records" );
 
 		while ( $query->have_posts() ) {
 
 			$query->the_post();
 
-			$new = new stdClass();
+			// $new = new stdClass();
+            $assignment_id = get_the_ID();
 
-			$new = $this->loadSettings( get_the_ID() );
+			$new = $this->loadSettings( $assignment_id );
 
-			$new->id = get_the_ID();
+            if ( empty( $new->article_ids) || !isset( $new->article_ids ) || in_array( 0, $new->article_ids ) ) {
+
+                dbg("e20rAssignmentModel::loadAssignmentByMeta() - Loading articles which have had {$assignment_id} assigned to it");
+                $tmp = $e20rArticle->loadArticlesByMeta('assignment_ids', $assignment_id, 'numeric', $programId);
+                $article_list = array();
+
+                foreach ($tmp as $art) {
+
+                    if ( !empty( $art->id ) && ( 0 != $art->id ) ) {
+                        dbg("e20rAssignmentModel::loadAssignmentByMeta() - Article definitions received: ");
+                        dbg($tmp);
+                    }
+
+                    if ( !empty( $art->id ) && ( 0 != $art->id ) ) {
+                        $article_list[] = $art->id;
+                    }
+                }
+
+                $new->article_ids = $article_list;
+            }
+
+			$new->id = $assignment_id;
 			$new->descr = $query->post->post_excerpt;
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;
@@ -352,7 +408,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returning " .
 		    count( $assignments ) . " records to: " . $e20rTracker->whoCalledMe() );
 
-		wp_reset_query();
+        wp_reset_postdata();
 
 		return $assignments;
 	}
@@ -426,7 +482,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
                             {$this->fields['answer_date']},
                             {$this->fields['answer']},
                             {$this->fields['user_id']},
-                            {$this->fields['question_id']}
+                            {$this->fields['question_id']},
+                            {$this->fields['article_id']}
                      FROM {$this->table} AS a
                      WHERE ( ( a.{$this->fields['user_id']} = %d ) AND
                       ( a.{$this->fields['question_id']} = %d ) AND
@@ -439,8 +496,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
             $sql = $wpdb->prepare( $sql,
                 $userId,
                 $assignmentId,
-                $programId,
-                $articleId
+                $programId
+//                $articleId
             );
 
             dbg("e20rAssignmentModel::loadUserAssignment() - SQL: {$sql}");
@@ -463,7 +520,14 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	            foreach ( $assignment as $k => $val ) {
 
 		            if ( ! in_array( $k, $resp ) ) {
-			            $data->{$k} = $val;
+
+			            if ( $k == 'article_ids' ) {
+
+                            $data->{$k}[] = $val;
+                        }
+                        else {
+                            $data->{$k} = $val;
+                        }
 		            }
 	            }
                 dbg("e20rAssignmentModel::loadUserAssignment() - Loading record ID {$data->id} from database result: {$key}");
@@ -477,6 +541,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $records[(count($result) - 1)]->descr = $post->post_excerpt;
                 $records[(count($result) - 1)]->question = $post->post_title;
                 $records[(count($result) - 1)]->question_id = $assignment->question_id;
+                $records[(count($result) - 1)]->article_ids = $assignment->article_ids;
 
                 unset($result[$key]);
 
@@ -485,8 +550,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
             }
         }
         else {
-	        // dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned. {$wpdb->last_error}");
-            dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned.");
+	        dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned. {$wpdb->last_error}");
+            // dbg("e20rAssignmentModel::loadUserAssignment() - No user data returned.");
 
 	        if (  CONST_DEFAULT_ASSIGNMENT != $assignmentId ) {
 
@@ -494,7 +559,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $assignment = $this->loadSettings( $assignmentId );
 	        }
 
-            if ( !isset( $assignment->question_id ) ) {
+            if ( empty( $assignment->question_id ) ) {
                 dbg("e20rAssignmentModel::loadUserAssignment() - Loading default settings");
                 $assignment = $this->defaultSettings();
             }
@@ -545,6 +610,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
             if ( ! is_array( $this->settings->program_ids ) ) {
                 $this->settings->program_ids = array( $this->settings->program_ids );
+            }
+
+            if ( ! is_array( $this->settings->article_ids ) ) {
+                $this->settings->article_ids = array( $this->settings->article_ids );
             }
 
 		    wp_reset_postdata();
