@@ -510,7 +510,26 @@ jQuery(function() {
                     'measurement-value': 1
                 },
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from saveMeasurementForUser action: ' + $errType );
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from saveMeasurementForUser()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the content on this page. If you\'d like to try again, please ";
+                    $string += "reload this page and re-enter your values. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.\n\n";
+                    $string += "We apologize for the inconvenience.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
                     return;
                 },
                 success: function($response) {
@@ -545,7 +564,25 @@ jQuery(function() {
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save this measurement. If you\'d like to try again, please ";
+                            $string += "reload this page and enter this value again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                             return;
                         }
                     });
@@ -571,7 +608,25 @@ jQuery(function() {
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save your progress note. If you\'d like to try again, please ";
+                            $string += "reload this page and enter the note again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                             return;
                         },
                         success: function($response) {
@@ -622,7 +677,26 @@ jQuery(function() {
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the measurement unit type. If you\'d like to try again, please ";
+                    $string += "reload this page and select this value again. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                    return;
                 },
                 success: function() {
                     console.log("Updated all old values in DB")
@@ -682,7 +756,26 @@ jQuery(function() {
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to delete this photo. If you\'d like to try again, please ";
+                            $string += "reload this page and retry the delete operation again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
+                            return;
                         },
                         success: function( $response ) {
 
@@ -781,7 +874,26 @@ jQuery(function() {
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save this photo. If you\'d like to try again, please ";
+                            $string += "reload this page and select or upload the correct photo. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
+                            return;
                         },
                         success: function( $repsponse ) {
 
@@ -895,7 +1007,25 @@ jQuery(function() {
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the measurement unit type. If you\'d like to try again, please ";
+                    $string += "reload this page and select this value again. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
                     return;
                 },
                 success: function($response) {
@@ -932,7 +1062,25 @@ jQuery(function() {
             // async: false,
             data: $data,
             error: function($response, $errString, $errType) {
-                console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to check whether you have completed the form. Please ";
+                $string += "reload this page. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                alert( $msg + $string + "\n\n" + $response.data );
+
                 return;
             },
             success: function($response) {

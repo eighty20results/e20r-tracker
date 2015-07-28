@@ -56,10 +56,27 @@ jQuery(function() {
                     e20r_tracker_levels_nonce: jQuery('#e20r_tracker_levels_nonce').val(),
                     hidden_e20r_level: $levelId
                 },
-                error: function ($data) {
-                    if ($data.data !== '') {
-                        alert($data.data);
+                error: function($response, $errString, $errType) {
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
                     }
+
+                    var $string;
+                    $string = "An error occurred while trying to retrieve the list of members at the requested membership level. If you\'d like to try again, please ";
+                    $string += "reload the page and edit this value again. \n\nShould you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this message in its entirety.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                    return;
                 },
                 success: function ($data) {
 

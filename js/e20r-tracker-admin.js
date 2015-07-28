@@ -43,8 +43,25 @@ jQuery(document).ready( function($) {
                 'post_ID': $('#post_ID').val()
             },
             error: function($response, $errString, $errType) {
-                console.log($errString + ' error returned from addWorkoutGroup action: ' + $errType );
-                console.dir( $response );
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to add a Workout Group to this page. If you\'d like to try again, please ";
+                $string += "click \'Save\', then force a reload of this page and try again. \n\nShould you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                alert( $msg + $string + "\n\n" + $response.data );
+
                 return;
             },
             success: function( $retVal ) {

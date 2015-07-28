@@ -39,9 +39,22 @@ jQuery(function() {
                     e20r_checkin_item_maxcount: $valueArray['maxcount'],
                     e20r_checkin_item_delete: $delete_action
                 },
-                error: function (data) {
-                    console.dir(data);
-                    alert( data.data );
+                error: function( $response, $errString, $errType ) {
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                    $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using our Contact form ";
+                    $string += "at the top of this page.";
+
+                    alert( $msg + $string );
+
+                    return;
 
                 },
                 success: function (data) {

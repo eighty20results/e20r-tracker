@@ -292,7 +292,8 @@ var e20rActivity = {
                     activity.hide($edit);
 
                 },
-                error: function (xhdr, errstr, error) {
+                error: function($response, $errString, $errType) {
+
                     console.log("Error saving data");
 
                     $rInput.val($hReps);
@@ -301,6 +302,25 @@ var e20rActivity = {
                     $show.find('a.e20r-edit-rep-value').text($hReps);
                     $show.find('a.e20r-edit-weight-value').text($hWeight);
 
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save this set/reps entry. If you\'d like to try again, please ";
+                    $string += "reload the page and edit this value again. \n\nShould you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this message in its entirety.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                    return;
                 },
                 complete: function () {
                     console.log("Completed processing of activity set/rep update");
@@ -325,6 +345,7 @@ var e20rActivity = {
             console.log("Incomplete form...")
         }
         console.log("Serialized form: ", $data );
+        alert("Ooops!\n\nThis functionality is incomplete.\nPlease report this message to Technical Support.\nThanks!");
 
     },
     _complete: function() {

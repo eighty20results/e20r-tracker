@@ -303,9 +303,29 @@ var progMeasurements = {
                 'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
                 'client-id': $clientId
             },
-            error: function (data, $errString, $errType) {
-                console.log($errString + ' error returned from e20r_clientDetail action: ' + $errType, data );
+            error: function( $response, $errString, $errType ) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using our Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
                 $class.$spinner.hide();
+
+                return;
 
             },
             success: function (res) {
@@ -373,10 +393,29 @@ var progMeasurements = {
             timeout: 10000,
             dataType: 'JSON',
             data: $data,
-            error: function (data, $errString, $errType) {
+            error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
 
-                console.log($errString + ' error returned from e20r_sendClientMessage action: ' + $errType, data );
-                alert("Warning:\n\nWe may have been unable to send your message to this client!");
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+                else {
+                    $msg = "Warning:\n\nWe may have been unable to send your message to this client!";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to send your message. If you\'d like to try again, please ";
+                $string += "click the send button once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
                 $class.$spinner.hide();
 
             },
@@ -418,8 +457,26 @@ var progMeasurements = {
                 'tab-id': $requested_action,
                 'client-id': $clientId
             },
-            error: function (data, $errString, $errType) {
-                console.log($errString + ' error returned from e20r_clientDetail action: ' + $errType, data );
+            error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to fetch client information. If you\'d like to try again, please ";
+                $string += "click the Load Information button once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
                 $class.$spinner.hide();
 
             },
@@ -489,8 +546,26 @@ var progMeasurements = {
                 'w_dimension_type': jQuery("#w_dimension_type").val(),
                 client_id: $clientId
             },
-            error: function (data, $errString, $errType) {
-                console.log($errString + ' error returned from e20r_measurementDataForUser action: ' + $errType, data );
+            error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to fetch client measurements. If you\'d like to try again, please ";
+                $string += "click the tab or button once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
                 $class.$spinner.hide();
 
             },
@@ -693,11 +768,30 @@ var progMeasurements = {
                 'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
                 'hidden_e20r_level': $class.$levelId
             },
-            error: function (data, $errString, $errType) {
+            error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to fetch a list of available membership levels. If you\'d like to try again, please ";
+                $string += "reload this page. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string + "\n\n" + $response.data );
+
+                $class.$spinner.hide();
 
                 console.log($errString + ' error returned from get_memberlistForLevel action: ' + $errType );
-                console.log('Available data: ', data );
-                alert(data.data);
+
             },
             success: function ($data) {
 

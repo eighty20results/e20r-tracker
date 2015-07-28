@@ -43,6 +43,21 @@ jQuery(document).ready( function(){
             },
             error: function( $response, $errString, $errType ) {
                 console.log($errString + ' error returned from getDelayValue action: ' + $errType );
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using our Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
+                return;
             }
         });
 

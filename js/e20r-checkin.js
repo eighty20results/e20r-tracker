@@ -339,11 +339,18 @@ jQuery(document).ready(function() {
                         }
                     }
                 },
-                error: function (jqx, errno, errtype) {
+                error: function( $response, $errString, $errType ) { // function (jqx, errno, errtype) {
 
-                    console.log("Error: ", jqx );
+                    console.log("Error: ", $response );
 
                     self.$allowActivityOverride = false;
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
 
                     var $string;
                     $string = "An error occurred while trying to load the requested page. If you\'d like to try again, please reload ";
@@ -351,7 +358,7 @@ jQuery(document).ready(function() {
                     $string += "please contact Technical Support by using our Contact form ";
                     $string += "at the top of this page.";
 
-                    alert($string);
+                    alert( $msg + $string );
 
                     return;
 
@@ -496,8 +503,30 @@ jQuery(document).ready(function() {
                         jQuery(this).show();
                     });
                 },
-                error: function( jqxhr, $errString, $errType ) {
+                error: function( $response, $errString, $errType ) {
+
+                    console.log("From server: ", $response );
                     console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                    self.$allowActivityOverride = false;
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                    $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using our Contact form ";
+                    $string += "at the top of this page.";
+
+                    alert( $msg + $string );
+
+                    return;
+
                 }
             });
 
@@ -523,8 +552,27 @@ jQuery(document).ready(function() {
                     });
 
                 },
-                error: function( jqxhr, $errString, $errType ) {
-                    console.log("Error String: " + $errString + " and errorType: " + $errType, jqxhr);
+                error: function( $response, $errString, $errType ) {
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                    $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using our Contact form ";
+                    $string += "at the top of this page.";
+
+                    alert( $msg + $string );
+
+                    return;
                 }
             });
 
