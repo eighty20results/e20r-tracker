@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
-Tested up to: 4.2.2
-Stable tag: 0.9.9
+Tested up to: 4.2.3
+Stable tag: 0.9.10
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,13 @@ Arguments:
 * Add timeout error handling to jQuery.ajax() or .post() operations
 * Update shortcode section in Readme
 * Remove or comment out shortcode arguments that aren't used
+* Use $currentProgram global in getDelay.
+* Make sure startdate gets converted to a timestamp value before use.
+* We don't use 0 as the first day of the program, so correct the daysBetween() calculation.
+* Be consistent in loading settings for a program. Set program startdate for the current user based on their membership startdate.
+* Remove special handling for membership systems in $e20rProgram->startdate() (It's now in the loadProgram() code).
+* Remove obsolete code
+* Handle startdate correctly (it's set to monday)
 
 = 0.9.9 =
 
