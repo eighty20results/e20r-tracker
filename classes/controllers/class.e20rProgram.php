@@ -40,11 +40,11 @@ class e20rProgram extends e20rSettings {
 
 			    if ( ( $pid !== false ) && ( $pid != $programId ) ) {
 				    dbg("e20rProgram::init() - Loading program settings based on user login {$programId}.");
-				    $currentProgram = parent::init( $pid );
+				    $this->model->loadSettings( $pid );
 				    return true;
 			    }
 			    else {
-				    $currentProgram = parent::init( $programId );
+				    $this->model->loadSettings( $programId );
 				    return true;
 			    }
 		    }
@@ -214,7 +214,7 @@ class e20rProgram extends e20rSettings {
 			    dbg("e20rProgram::getProgramIdForUser() - Loading program info from DB for user w/ID {$userId}");
 			    $this->loadProgram( $userId );
 
-                $currentProgram->stardate = $this->startdate( $userId, null, true );
+                // $currentProgram->stardate = $this->startdate( $userId, null, true );
 
 			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId} and startdate: {$currentProgram->startdate}");
 			    // dbg($currentProgram);
@@ -333,7 +333,7 @@ class e20rProgram extends e20rSettings {
                     ( !isset( $currentProgram->id) || ( $currentProgram->id !== $programId ) ) ) {
 
                     dbg( "e20rProgram::loadProgram() - Need to init the program object");
-                    $this->init($programId);
+                    $this->model->loadSettings($programId);
 				}
 			}
 		}
@@ -342,6 +342,21 @@ class e20rProgram extends e20rSettings {
 			$this->init();
 		}
 */
+        // Set the program startdate based on the user's membership start.
+        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+
+            dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
+
+            $from_mbr = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+
+            dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
+
+            // $actual_startTS = strtotime( "{$from_mbr} + 1 day");
+            // $currentProgram->startdate = date_i18n( 'Y-m-d', $actual_startTS );
+            $currentProgram->startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+            dbg("e20rProgram::startdate() - Forcing startTS to the day after (workaround): {$from_mbr} vs {$currentProgram->startdate} for {$userId}");
+        }
+
         dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
 	}
     /**
@@ -392,23 +407,6 @@ class e20rProgram extends e20rSettings {
                 dbg( "e20rProgram::startdate() - User program not set! Loading settings by passed Program ID: {$program_id}" );
                 $this->model->loadSettings( $program_id );
             }
-        }
-
-
-        if ( true === $membership ) {
-
-	        dbg( "e20rProgram::startdate() - Forcing check by membership plugin, or no valid program start date found for user with ID {$userId}" );
-
-	        // No program setting was configured so we'll use the start date for the users active membership level.
-	        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
-
-		        dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
-                $user_startdate = pmpro_getMemberStartdate( $userId );
-		        $currentProgram->startdate = date('Y-m-d', $user_startdate );
-                return $user_startdate;
-	        }
-
-	        return false;
         }
 
         dbg("e20rProgram::startdate() - Using startdate as configured for program with id {$currentProgram->id}: {$currentProgram->startdate}");
