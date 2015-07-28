@@ -5,8 +5,9 @@ Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
 Stable tag: 0.9.9
+License: GPLv2
 
-A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
+A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
 
 == Description ==
 The plugin is designed to coach clients through various change processes, whether they're behavioral, nutritional, fitness related, or otherwise.
@@ -14,7 +15,12 @@ The plugin is designed to coach clients through various change processes, whethe
 We developed the plugin to meet our own specific coaching platform needs which revolved around a year long nutrition coaching approach.
 During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
 
-== Short Codes ==
+== Developers ==
+
+=== ToDo ===
+* Add translation support to all english messages & javascript alerts. (Very partially done).
+
+== Additional Info One ==
 
 === Shortcode: [weekly_progress] ===
     Shows a weekly progress capture form. The form requests input in terms of weight, girth measurements,
@@ -91,14 +97,12 @@ Arguments:
         *** Values: N/A
         *** Default: N/A
 
-== ToDo ==
-* Add translation support to all english messages & javascript alerts. (Very partially done).
-
 == ChangeLog ==
 
 = 0.9.10 =
-Add timeout error handling to jQuery.ajax() or .post() operations.
-Update shortcode section in Readme
+* Add timeout error handling to jQuery.ajax() or .post() operations
+* Update shortcode section in Readme
+* Remove or comment out shortcode arguments that aren't used
 
 = 0.9.9 =
 
@@ -113,13 +117,13 @@ Update shortcode section in Readme
 * Set timeout for AJAX operations to 10 seconds (10000)
 
 = 0.9.8 =
-Use the delay value for the article that is manages the postId to verify access. If the delay value is <= the the userIds current delay value, grant access.
-Set the program start date to that of the user (i.e. force the startdate to be keyed off of the users membership start date).
-Force use of the membership plugin's start date for the specified user.
-Base access on the delay value for the specified user(s).
-Handle the 'First day of the program, not allowed to proceed backwards' error message (ecode == 2)
-On the first day of the program, it allowed you to attempt to navigate backwards without having any defined articles available. This caused error messages.
-Return a specific error code to the AJAX caller if we're on the first day of the program for this user and they try to go backwards.
+* Use the delay value for the article that is manages the postId to verify access. If the delay value is <= the the userIds current delay value, grant access.
+* Set the program start date to that of the user (i.e. force the startdate to be keyed off of the users membership start date).
+* Force use of the membership plugin's start date for the specified user.
+* Base access on the delay value for the specified user(s).
+* Handle the 'First day of the program, not allowed to proceed backwards' error message (ecode == 2)
+* On the first day of the program, it allowed you to attempt to navigate backwards without having any defined articles available. This caused error messages.
+* Return a specific error code to the AJAX caller if we're on the first day of the program for this user and they try to go backwards.
 
 = 0.9.7 =
 * Add styles for legend/description on Achievements tab
@@ -176,13 +180,13 @@ Return a specific error code to the AJAX caller if we're on the first day of the
 * Indicate link to assignment page when listing assignments in the progress_overview short code.
 
 = 0.9.4 =
-Use the article summary - if it exists - for the action excerpt.
-Set background color to white for activity history list
+* Use the article summary - if it exists - for the action excerpt.
+* Set background color to white for activity history list
 
 = 0.9.3 =
-Simplify processing of workout history for user's progress overview.
-Allow metadata upgrade to proceed
-White-screen of death issue (undeclared variable)
+* Simplify processing of workout history for user's progress overview.
+* Allow metadata upgrade to proceed
+* White-screen of death issue (undeclared variable)
 
 = 0.9.2 =
 * Fix static/non-static call warnings in e20rTracker
@@ -213,11 +217,11 @@ White-screen of death issue (undeclared variable)
 * Fix typos in change log
 
 = 0.9.1 =
-Removed console logging of various objects
-Add "working" graphic when saving notes.
-Set default measurement day to be Saturday (day #6)
-Didn't attempt to list all defined mebership levels for Paid Memberships Pro
-Make measurement day setting a program specific setting.
+* Removed console logging of various objects
+* Add "working" graphic when saving notes.
+* Set default measurement day to be Saturday (day #6)
+* Didn't attempt to list all defined mebership levels for Paid Memberships Pro
+* Make measurement day setting a program specific setting.
 
 = 0.9 =
 * Display daily progress notes (decoupled from action check-in data)

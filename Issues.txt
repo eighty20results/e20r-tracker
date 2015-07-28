@@ -24,7 +24,7 @@ Enh: P2 - Add graphs for the exercise history.
 
 07/26/2015
 
-Fix: P0 - Members who sign up late in the week get their start date set to Monday (next week).
+Fix: P0 - Members who sign up late in the week get their start date set to Sunday (next week).
             Need something on the dashboard (possibly? ) to indicate that full access won't be available
             until the startdate... (Trap that during login perhaps?) - use: pmpro_getMemberStartdate( $user_id, $level_id)
 
@@ -33,6 +33,13 @@ Fix: P0 - Don't let new users see actual dashboard content, etc until their PMPR
 07/27/2015:
 
 Fix: P2 - Make Achievements list responsive (from table to div & float:left)
+Fix: P1 - Clean up the client information page in the back-end.
+Fix: P0 - Create a survey infrastructure for the E20R-Tracker plugin. Leverage the Assignment CPTs? (Add SELECT2 box!) have table in DB that stores structure of answers in one go.
+
+07/28/2015:
+
+
+
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
@@ -42,6 +49,7 @@ Fix: (P0) In the content filter, redirect a logged in program member to their da
 Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
 Fix: (P0) Not loading correct assignment information on a measurement day.
 Fix: (P0) Convert $e20rArticle->activities to unserialized variable (activity_ids) a-la program_ids and article_ids.
+Fix: (P0) Add timeout error handling to jQuery.ajax() calls.
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).
