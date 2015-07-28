@@ -367,14 +367,14 @@ class e20rArticleModel extends e20rSettingsModel {
             if ( ( 'assignment_ids' == $key ) || ( 'checkin_ids' == $key ) ) {
 
                 dbg("e20rArticleModel::saveSettings() - Processing assignments (include program info):");
-                dbg($value);
+                dbg($settings->{$key});
 
 		        foreach( $settings->{$key} as $k => $id ) {
 
 			        if ( empty( $id ) || ( 0 == $id ) ) {
 
 				        dbg("e20rArticleModel::saveSettings() - Removing empty assignment key #{$k} with value {$id}");
-				        unset( $value[$k] );
+				        unset( $settings->{$key}[$k] );
 			        }
 
                     dbg("e20rArticleModel::saveSettings() - Adding program IDs for assignment {$id}");
