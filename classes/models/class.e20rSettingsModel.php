@@ -674,20 +674,29 @@ class e20rSettingsModel {
 					// "Unroll" a setting that's represented as an array of entries
 					if ( in_array( $key, array( 'program_ids', 'article_ids', 'checkin_ids', 'assignment_ids' ) ) ) {
 
-                        dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key} is an article id or program id array. Simplifying search operations in the metadata table.");
+                        dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key}: Simplifying search operations in the metadata table.");
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Clearing post meta for {$post_id} and key _e20r-{$this->type}-{$key}");
                         delete_post_meta( $post_id, "_e20r-{$this->type}-{$key}" );
 
-						foreach( $setting as $aVal ) {
+                        if ( is_array( $setting ) ) {
+                            foreach ($setting as $aVal) {
 
-							if ( !$this->isStored( $post_id, $key, $aVal, true ) && ( 0 !== $aVal )) {
-
-								add_post_meta($post_id, "_e20r-{$this->type}-{$key}", $aVal);
-							}
-                            elseif( 0 === $aVal ) {
-                                delete_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $aVal );
+                                if (!$this->isStored($post_id, $key, $aVal, true) && (0 !== $aVal)) {
+                                    dbg("e20r" . ucfirst($this->type) . "Model::settings() - Not currently saved in DB. Saving {$key} = $aVal");
+                                    add_post_meta($post_id, "_e20r-{$this->type}-{$key}", $aVal);
+                                } elseif (0 === $aVal) {
+                                    delete_post_meta($post_id, "_e20r-{$this->type}-{$key}", $aVal);
+                                }
                             }
-						}
+                        }
+                        else {
+                            if (!$this->isStored($post_id, $key, $setting, true) && (0 !== $setting)) {
+                                dbg("e20r" . ucfirst($this->type) . "Model::settings() - Not currently saved in DB. Saving {$key} = $setting");
+                                add_post_meta($post_id, "_e20r-{$this->type}-{$key}", $setting);
+                            } elseif (0 === $setting) {
+                                delete_post_meta($post_id, "_e20r-{$this->type}-{$key}", $setting);
+                            }
+                        }
 					}
 					else {
 						update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting );
@@ -761,11 +770,14 @@ class e20rSettingsModel {
 
 		$metaContent = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $asArray );
 
-		if ( in_array( $value, $metaContent ) ) {
+        if ( !is_array( $metaContent ) ) {
+            $metaContent = array( $metaContent );
+        }
 
-			return true;
-		}
+        if (in_array($value, $metaContent)) {
 
+            return true;
+        }
 		return false;
 	}
 }
