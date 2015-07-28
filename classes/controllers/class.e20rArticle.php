@@ -686,6 +686,9 @@ class e20rArticle extends e20rSettings {
 
             $a = $e20rAssignment->loadAssignment( $aId );
 
+            if ( $a->order_num == 0 ) {
+                $a->order_num = 1;
+            }
             $ordered[ ($a->order_num - 1 )] = $a;
         }
 
