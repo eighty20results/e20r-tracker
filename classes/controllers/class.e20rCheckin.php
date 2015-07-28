@@ -811,10 +811,10 @@ class e20rCheckin extends e20rSettings {
 
         dbg("e20rCheckin::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");
 
-        $t = $e20rTracker->getDateFromDelay( $config->next );
+        $t = $e20rTracker->getDateFromDelay( ( $config->next - 1 ) );
         $config->tomorrow = date_i18n( 'l M. jS', strtotime( $t ));
 
-        $y = $e20rTracker->getDateFromDelay( $config->prev );
+        $y = $e20rTracker->getDateFromDelay( ( $config->prev - 1 ) );
         $config->yesterday = date_i18n( 'l M. jS', strtotime( $y ) );
 
         if ( !isset( $config->userId ) ) {
