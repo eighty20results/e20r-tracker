@@ -1591,11 +1591,12 @@ class e20rTracker {
 
         if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
             $article = $articles[0];
-        }
 
-        if ( $article->release_day <= $current_delay ) {
-            dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
-            return true;
+
+            if ( $article->release_day <= $current_delay ) {
+                dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
+                return true;
+            }
         }
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
