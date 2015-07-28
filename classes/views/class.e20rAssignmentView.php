@@ -149,7 +149,7 @@ class e20rAssignmentView extends e20rSettingsView {
                     <td class="e20r-assignment-buttons">
                         <a class="e20r-assignment-remove" href="javascript:e20r_assignmentRemove(<?php echo $a->question_id; ?>); void(0);"><?php _e("Remove", "e20rtracker"); ?></a>
                         <input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]" value="<?php echo $a->question_id ?>" />
-	                    <input type="hidden" class="e20r-article-assignments" name="e20r-article-assignments[]" value="<?php echo $a->question_id ?>" />
+	                    <input type="hidden" class="e20r-article-assignment_ids" name="e20r-article-assignment_ids[]" value="<?php echo $a->question_id ?>" />
                     </td>
                 </tr><?php
             } ?>
