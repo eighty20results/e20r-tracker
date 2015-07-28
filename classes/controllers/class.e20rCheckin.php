@@ -293,6 +293,8 @@ class e20rCheckin extends e20rSettings {
 
 		$art_list = $e20rArticle->loadArticlesByMeta( 'release_day', $user_delay, 'numeric', $programId, '<=' );
 
+		dbg("e20rCheckin::listUserAccomplishments() - Loading accomplishments related to ". count($art_list) . " articles related to user ({$userId}) in program {$programId}");
+
 		dbg("e20rCheckin::listUserAccomplishments() - Article list loaded: " . count($art_list) . " articles");
 		// dbg($art_list);
 
