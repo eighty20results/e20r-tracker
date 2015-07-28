@@ -1049,6 +1049,17 @@ class e20rCheckin extends e20rSettings {
 
             $article = $articles[0];
         }
+        elseif ( 1 < count( $articles ) ) {
+            dbg("e20rCheckin::shortcode_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
+
+            foreach( $articles as $art ) {
+
+                if ( $config->delay == $art->release_day ) {
+                    dbg("e20rCheckin::shortcode_dailyProgress() - Continuing while using article ID {$art->id}.");
+                    $article = $art;
+                }
+            }
+        }
         elseif ( is_object( $articles ) ) {
             dbg("e20rCheckin::shortcode_dailyProgress() - Articles object: " . gettype( $articles ) );
             dbg( $articles );
