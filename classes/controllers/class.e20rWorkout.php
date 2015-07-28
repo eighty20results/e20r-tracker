@@ -592,7 +592,6 @@ class e20rWorkout extends e20rSettings {
         $activity_override = false;
 
 		$tmp = shortcode_atts( array(
-			'type' => 'activity',
 			'activity_id' => null,
 		), $attributes );
 
