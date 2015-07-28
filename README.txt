@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.2
-Stable tag: 0.9.8
+Stable tag: 0.9.9
 
 A platform for managing nutrition and fitness coaching programs. Recommend using it in conjunction with the Paid Memberships Pro plugin and the PMPro Seuqences plugin.
 
@@ -24,6 +24,18 @@ Arguments:
     [weekly_progress day="<days since startdate>" from_programstart="<1|0>" use_article_id="<1|0>" demo_form="0|1"]
 
 == ChangeLog ==
+
+= 0.9.9 =
+
+* Fix situations where the order number winds up getting 'wonky' (negative)
+* Handle situations where an unexpected variable type is attempted saved (should be array but isn't so we'll need to convert it).
+* Didn't clear the actual NULL (or 0) setting.
+* Didn't save assignment_ids for article when user clicked 'Save' in back-end
+* Add data filter for PMPro emails.
+* Include message to user (in confirmation email) about the status of their membership (depends on day of sign-up).
+* Removed unneeded level look-up
+* When it's requested, make sure we actually load Achievements (not Assignments) data. (Only applied to the back-end client view)
+* Set timeout for AJAX operations to 10 seconds (10000)
 
 = 0.9.8 =
 Use the delay value for the article that is manages the postId to verify access. If the delay value is <= the the userIds current delay value, grant access.
