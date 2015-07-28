@@ -786,7 +786,7 @@ input:hover[type="submit"],
     margin-bottom: 12px;
     margin-top: 4px;
     font-size: 24px;
-    background: url(../images/report_edit32.png) no-repeat; /* TODO: Path to edit icon is bad */
+    background: url(../images/report_edit32.png) no-repeat;
     height: 32px;
     padding-left: 39px;
     line-height: 35px;
