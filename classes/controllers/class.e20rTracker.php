@@ -3124,7 +3124,7 @@ class e20rTracker {
     public function getDelay( $delayVal = 'now', $userId = null ) {
 
         global $current_user;
-        global $e20rProgram;
+        global $currentProgram;
 
         // We've been given a numeric value so assuming it's the delay.
         if ( is_numeric( $delayVal ) ) {
@@ -3133,16 +3133,16 @@ class e20rTracker {
             return $delayVal;
         }
 
-	    $startDate = $e20rProgram->startdate( $userId );
+	    $startDate = strtotime( $currentProgram->startdate );
 
-	    dbg("e20rTracker::getDelay() - Based on startdate of {$startDate}...");
+	    dbg("e20rTracker::getDelay() - Based on startdate of {$currentProgram->startdate}...");
 
 	    if ( $this->validateDate( $delayVal ) ) {
 
             dbg("e20rTracker::getDelay() - {$delayVal} is a date.");
 		    $delay = $this->daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
 
-		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$startDate}");
+		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$currentProgram->startdate}");
 		    return $delay;
 	    }
 
@@ -3511,6 +3511,8 @@ class e20rTracker {
                 $days = 0 - $days;
         }
 
+        // Correct the $days value because we're not starting at "day 0":
+        $days = $days + 1;
         dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
     }
