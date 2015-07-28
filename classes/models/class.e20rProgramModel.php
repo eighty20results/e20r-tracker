@@ -232,7 +232,7 @@ class e20rProgramModel extends e20rSettingsModel {
     }
     */
     /********************** OBSOLETE ***************************/
-
+/*
     public function ajax_save_program_info() {
 
         dbg("Save new or updated information for a program");
@@ -484,5 +484,5 @@ class e20rProgramModel extends e20rSettingsModel {
 
         return ( $id === false ? false : true );
     }
-
+*/
 }
