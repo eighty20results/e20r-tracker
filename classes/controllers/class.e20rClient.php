@@ -856,12 +856,13 @@ public function loadClient( $id = null ) {
 
 		if ( !$this->is_a_coach( $current_user->ID ) ) {
 
-			dbg("e20rClient::ajax_clientDetail() - User isn't a coach. Return error & force redirect");
+			dbg("e20rClient::render_client_page() - User isn't a coach. Return error & force redirect");
 			wp_redirect( admin_url() );
 		}
 
 		if ( $client_id != 0 ) {
 
+			dbg("e20rClient::render_client_page() - Forcing client ID to {$client_id}");
             $this->setClient( $client_id );
         }
 
@@ -959,16 +960,16 @@ public function loadClient( $id = null ) {
 
         if ( $levelId != 0 ) {
 
-            $levels = $e20rTracker->getMembershipLevels( $levelId );
+            // $levels = $e20rTracker->getMembershipLevels( $levelId );
             // $this->load_levels( $levelObj->name );
-            dbg("e20rClient::getMemberListForLevel() - Loading members:");
-	        dbg($levels);
+            // dbg("e20rClient::getMemberListForLevel() - Loading members:");
+	        // dbg($levels);
 
             $data = $this->view->viewMemberSelect(  $levelId );
         }
         else {
 
-            $this->view->load_levels();
+            // $this->view->load_levels();
             $data = $this->view->viewMemberSelect();
         }
 
@@ -1147,7 +1148,7 @@ public function loadClient( $id = null ) {
 
 			case 'achievements':
                 dbg("e20rClient::ajax_clientDetail() - Loading client achievement data");
-				$html = $this->load_assignmentsData( $userId );
+				$html = $this->load_achievementsData( $userId );
                 dbg($html);
 				break;
 
