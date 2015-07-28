@@ -281,6 +281,7 @@ class e20rTracker {
 
             add_filter('auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3);
 
+            add_filter( 'pmpro_email_data', array( &$this, 'filter_changeConfirmationMessage' ), 10, 2 );
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -1615,6 +1616,65 @@ class e20rTracker {
         }
 
         return false;
+    }
+
+    public function filter_changeConfirmationMessage( $data, $email ) {
+
+        global $current_user;
+        global $wpdb;
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+
+            // If this is a "checkout" e-mail and we have a current user
+            if (  !empty( $current_user ) ) {
+
+                // Force the $currentProgram global to be populated
+                $e20rProgram->getProgramIdForUser( $current_user->ID );
+
+                // Grab the dates
+                $available_when = $currentProgram->startdate;
+                $today = date( 'Y-m-d', current_time( 'timestamp' ) );
+
+                $membership_levels = pmpro_getMembershipLevelsForUser( $current_user->ID );
+                $groups = $currentProgram->group;
+
+                $levels = array();
+
+                foreach( $membership_levels as $lvl ) {
+                    $levels[]  = $lvl->id;
+                }
+
+                if ( !is_array( $groups ) ) {
+                    $groups = array( $groups );
+                }
+
+                $is_in_program = array_intersect( $groups, $levels );
+
+                dbg("e20rTracker::filter_changeConfirmationMessage() - Info: Today: {$today}, {$available_when}: ");
+                dbg($is_in_program);
+
+	            if ( !empty( $is_in_program ) ) {
+
+                    if ( $currentProgram->startdate > $today ) {
+
+                        $substitute = "Your membership account is active, <strong>but access to the Virtual Private Trainer content - including your daily workout routine - will <em>not</em> be available until Monday {$available_when}</strong>.<br/>In the mean time, why not take a peak in the Help Menu items and read through the Frequently Asked Questions?";
+
+                    }else {
+                        $substitute = "Your membership account is now active and you have full access to your Virtual Personal Trainer content. However, we recommend that you <a href=\"https://strongcubedfitness.com/login/\">log in</a> and spend some time reading the Help section (click the \"<a href=\"/faq/\">Help</a>\" menu)";
+                    }
+
+                   dbg("e20rTracker::filter_changeConfirmationMessage() - Sending: {$substitute}");
+
+                    // Replace the message (after filters have been applied)
+                    $data['e20r_status'] = $substitute;
+                }
+            }
+        }
+
+        return $data;
     }
 
     public function isActiveClient( $clientId ) {
