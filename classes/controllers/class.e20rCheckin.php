@@ -1019,7 +1019,7 @@ class e20rCheckin extends e20rSettings {
 
         $tmp = shortcode_atts( array(
             'type' => 'action',
-            'form_id' => null,
+//            'form_id' => null,
         ), $attributes );
 
 	    foreach ( $tmp as $key => $val ) {
