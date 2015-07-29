@@ -34,6 +34,7 @@ class e20rTracker {
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
                             'encrypt_surveys' => 0,
+                            'e20r_db_version' => 0,
                             'unserialize_notice' => null,
                             'converted_metadata_e20r_articles' => false,
                             'converted_metadata_e20r_assignments' => false,
@@ -2119,13 +2120,20 @@ class e20rTracker {
         return $permitted;
     }
 
-    public function e20r_tracker_activate() {
+    public function manage_tables() {
 
         global $wpdb;
         global $e20r_db_version;
 
-        // Create settings with default values
-        update_option( $this->setting_name, $this->settings );
+        $current_db_version = '1.1';
+
+        if ( $current_db_version == $e20r_db_version ) {
+
+            dbg("e20rTracker::manage_tables() - No change in DB structure. Continuing...");
+            return;
+        }
+
+        $e20r_db_version = $current_db_version;
 
         $charset_collate = '';
 
@@ -2137,38 +2145,25 @@ class e20rTracker {
             $charset_collate .= " COLLATE {$wpdb->collate}";
         }
 
-        dbg("e20r_tracker_activate() - Loading table SQL");
+        dbg("e20rTracker::manage_tables() - Loading table SQL...");
 
-/*
-        $programsTableSql = "
-            CREATE TABLE {$wpdb->prefix}e20r_programs (
-                    id int not null auto_increment,
-                    program_name varchar(255) null,
-                    program_shortname varchar(50) null,
-                    description mediumtext null,
-                    starttime timestamp not null default current_timestamp,
-                    endtime timestamp null,
-                    member_id int null,
-                    sequences varchar(512) null,
-                    belongs_to int null,
-                    primary key (id) )
-                  {$charset_collate}
-        ";
-
-        $setsTableSql = "
-            CREATE TABLE {$wpdb->prefix}e20r_sets (
+        $surveyTable = "
+            CREATE TABLE {$wpdb->prefix}e20r_surveys (
                 id int not null auto_increment,
-                set_name varchar(50) null,
-                rounds int not null default 1,
-                set_rest int not null default 60,
-                program_id int not null default 0,
-                exercise_id int not null default 0,
-                primary key (id),
-                key exercises ( exercise_id asc ),
-                key programs ( program_id asc ) )
+				user_id int not null,
+				program_id int not null,
+				article_id int not null,
+				survey_data text null,
+				recorded timestamp not null default current_timestamp,
+				completed datetime null,
+				for_date datetime null,
+                primary key (id) ,
+                index user_program ( user_id, program_id ),
+                index program_article ( program_id, article_id ),
+                index dated ( for_date ) )
                 {$charset_collate}
         ";
-*/
+
         $activityTable = "
             CREATE TABLE {$wpdb->prefix}e20r_workout (
                 id int not null auto_increment,
@@ -2338,8 +2333,8 @@ class e20rTracker {
                     research_consent tinyint not null default 0,
                     medical_release tinyint not null default 0,
                     primary key  (id),
-                    key user_id  (user_id asc),
-                    key programstart  (program_start asc)
+                    index user_id  (user_id),
+                    index programstart  (program_start)
               )
                   {$charset_collate}
         ";
@@ -2370,7 +2365,7 @@ class e20rTracker {
                     back_image int default null,
                     program_id int default -1,
                     primary key  ( id ),
-                    key user_id ( user_id asc) )
+                    index user_id ( user_id ) )
                   {$charset_collate}
               ";
         /**
@@ -2394,8 +2389,8 @@ class e20rTracker {
                     checkedin tinyint not null default 0,
                     checkin_note text null,
                     primary key  (id),
-                        key program_id ( program_id asc ),
-                        key checkin_short_name ( checkin_short_name asc ) )
+                        index program_id ( program_id ),
+                        index checkin_short_name ( checkin_short_name ) )
                 {$charset_collate}";
 
 
@@ -2415,40 +2410,12 @@ class e20rTracker {
                     answer text null,
                     field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button', 'yesno', 'survey' ),
                     primary key  (id),
-                     key articles (article_id asc),
-                     key questions (question_id asc),
-                     key user_id ( user_id asc )
+                     index articles (article_id ),
+                     index questions (question_id ),
+                     index user_id ( user_id )
                      )
                     {$charset_collate}
         ";
-
-        $oldMeasurementTableSql =
-            "CREATE TABLE {$wpdb->prefix}nourish_measurements (
-                    lead_id int(11) not null,
-                    created_by int(11) not null,
-                    date_created date not null,
-                    username varchar(50) not null,
-                    recordedDate date not null,
-                    weight float not null,
-                    neckCM float default null,
-                    shoulderCM float default null,
-                    chestCM float default null,
-                    armCM float default null,
-                    waistCM float default null,
-                    hipCM float default null,
-                    thighCM float default null,
-                    calfCM float default null,
-                    totalGrithCM float default null,
-                    article_id int(11) DEFAULT NULL,
-                    essay1 text NULL,
-                    behaviorprogress tinyint NULL,
-                    front_image int default null,
-                    side_image int default null,
-                    back_image int default null,
-                    program_id int default 0
-                    )
-                    {$charset_collate}
-            ";
 
         // FixMe: The trigger works but can only be installed if using the mysqli_* function. That causes "Command out of sync" errors.
         /* $girthTriggerSql =
@@ -2462,28 +2429,46 @@ class e20rTracker {
         */
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
-        dbg('e20r_tracker_activate() - Creating tables in database');
+        dbg('e20rTracker::manage_tables() - Loading/updating tables in database...');
         dbDelta( $checkinSql );
+        dbg('e20rTracker::manage_tables() - Check-in table');
         dbDelta( $measurementTableSql );
+        dbg('e20rTracker::manage_tables() - Measurements table');
         dbDelta( $intakeTableSql );
+        dbg('e20rTracker::manage_tables() - Client Information table');
         dbDelta( $assignmentAsSql );
+        dbg('e20rTracker::manage_tables() - Assignments table');
         dbDelta( $activityTable );
-/*        dbDelta( $programsTableSql );
-        dbDelta( $setsTableSql );
-        dbDelta( $exercisesTableSql ); */
-        dbDelta( $oldMeasurementTableSql );
+        dbg('e20rTracker::manage_tables() - Activity table');
+        dbDelta( $surveyTable );
+        dbg('e20rTracker::manage_tables() - Survey table');
 
-        // dbg("e20r_tracker_activate() - Adding triggers in database");
+        // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
-        add_option( 'e20rTracker_db_version', $e20r_db_version );
+        $this->updateSetting( 'e20r_db_version', $e20r_db_version );
+    }
 
-        dbg("e20rTracker::e20r_tracker_activate() - Should we attempt to unserialize the plugin settings?");
+    public function activate() {
+
+        global $e20r_db_version;
+
+        // Set the requested DB version.
+        $e20r_db_version = E20R_DB_VERSION;
+
+        // Create settings with default values
+        update_option( $this->setting_name, $this->settings );
+
+        $this->manage_tables();
+
+        $this->updateSetting( 'e20r_db_version', $e20r_db_version );
+
+        dbg("e20rTracker::activate() - Should we attempt to unserialize the plugin settings?");
         $errors = '';
 
         if ( 0 != E20R_RUN_UNSERIALIZE ) {
 
-            dbg("e20rTracker::e20r_tracker_activate() - Attempting to unserialize the plugin program id and article id settings");
+            dbg("e20rTracker::activate() - Attempting to unserialize the plugin program id and article id settings");
 
             $what = $this->getCPTInfo();
 
@@ -2522,7 +2507,7 @@ class e20rTracker {
                             $message .= '</p>';
                         $message .= '</div><!-- /.error -->';
 
-                        dbg("e20rTracker::tracker_activate() - Error while unserializing:");
+                        dbg("e20rTracker::activate() - Error while unserializing:");
                         dbg($success);
                     }
 
@@ -2533,21 +2518,21 @@ class e20rTracker {
             $this->updateSetting( 'unserialize_notice', $errors );
 
             global $e20rAssignment;
-            dbg("e20rTracker::e20r_tracker_activate() -- Updating assignment programs key to program_ids key. ");
+            dbg("e20rTracker::activate() -- Updating assignment programs key to program_ids key. ");
             // $e20rAssignment->update_metadata();
         }
 
         flush_rewrite_rules();
     }
 
-    public function e20r_tracker_deactivate() {
+    public function deactivate() {
 
         global $wpdb;
         global $e20r_db_version;
 
         $options = get_option( $this->setting_name );
 
-        dbg("Deactivation options: " . print_r( $options, true ) );
+        dbg("e20rTracker::deactivate() - Deactivation options: " . print_r( $options, true ) );
 
         $tables = array(
             $wpdb->prefix . 'e20r_checkin',
@@ -2566,14 +2551,14 @@ class e20rTracker {
 
             if ( $options['purge_tables'] == 1 ) {
 
-                dbg("e20r_tracker_deactivate() - Truncating {$tblName}" );
+                dbg("e20rTracker::deactivate() - Truncating {$tblName}" );
                 $sql = "TRUNCATE TABLE {$tblName}";
                 $wpdb->query( $sql );
             }
 
             if ( $options['delete_tables'] == 1 ) {
 
-                dbg( "e20r_tracker_deactivate() - {$tblName} being dropped" );
+                dbg( "e20rTracker::deactivate() - {$tblName} being dropped" );
 
                 $sql = "DROP TABLE IF EXISTS {$tblName}";
                 $wpdb->query( $sql );
