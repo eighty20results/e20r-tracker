@@ -86,13 +86,13 @@ h2.e20r-daily-assignment-headline{
     margin-bottom: 30px;
 }
 /** Survey questions (likert style) **/
-table.e20r-assignment-survey-question{
+table.e20r-assignment-ranking-question{
     width:100%;
     table-layout: fixed;
     border-spacing: 0;
     border-bottom:1px solid silver;
 }
-table.e20r-assignment-survey-question td{
+table.e20r-assignment-ranking-question td{
     text-align:center;
     vertical-align:middle;
     border:1px solid silver;
@@ -101,42 +101,42 @@ table.e20r-assignment-survey-question td{
     border:0;
     position: relative;
 }
-table.e20r-assignment-survey-question tr td:first-child{
+table.e20r-assignment-ranking-question tr td:first-child{
     border-left:1px solid silver
 }
-table.e20r-assignment-survey-question tr td{
+table.e20r-assignment-ranking-question tr td{
     border-right:1px solid silver;
     border-top:1px solid silver
 }
 
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice-label{
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice-label{
     background-color:#eee;
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice:hover {
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice:hover {
     background-color:#DFEFFF;
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice:focus {
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice:focus {
     background-color: #d2e8fc !important;
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-hover {
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice-hover {
     background-color:#DFEFFF;
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-focus {
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice-focus {
     background-color: #d2e8fc !important;
 }
-table.e20r-assignment-survey-question td input{
+table.e20r-assignment-ranking-question td input{
     /*visibility:hidden;*/
     position: absolute;
     top: 0;
     left: -999em;
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice{
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice{
     background-image:url(../images/inactive.png);
     background-repeat:no-repeat;
     background-position:center center;
     height:26px
 }
-table.e20r-assignment-survey-question td.e20r-assignment-survey-question-choice.e20r-assignment-survey-question-choice-selected{
+table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice-selected{
     background-image:url(../images/active.png);
     background-repeat:no-repeat;
     background-position:center center;
