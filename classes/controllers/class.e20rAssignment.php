@@ -124,6 +124,119 @@ class e20rAssignment extends e20rSettings {
         global $e20rArticle;
     }
 
+    public function manage_option_list() {
+
+        global $e20rTracker;
+
+        dbg("e20rAssignment::manage_option_list() - Checking ajax referrer privileges");
+        check_ajax_referer('e20r-assignment-data', 'e20r-tracker-assignment-settings-nonce');
+
+        dbg("e20rAssignment::manage_option_list() - Checking ajax referrer has the right privileges");
+
+        if ( ! is_user_logged_in() ) {
+            auth_redirect();
+        }
+
+        dbg( $_POST );
+
+        $post_id = isset( $_POST['e20r-assignment-question_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-question_id'] ) : null;
+        $field_type = isset( $_POST['e20r-assignment-field_type'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-field_type'] ) : null;;
+        $order_num = isset( $_POST['e20r-assignment-order_num'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-order_num'] ) : null;
+        $delay = isset( $_POST['e20r-assignment-delay'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-delay'] ) : null;
+        $program_ids = isset( $_POST['e20r-assignment-program_ids'] ) ? $e20rTracker->sanitize($_POST['e20r-assignment-program_ids'] ) : array();
+
+        dbg("e20rAssignment::manage_option_list() - Post ID for assignment is: {$post_id}");
+
+        if ( empty( $post_id ) ) {
+
+            dbg( "e20rAssignment::manage_option_list() - This is a new post. Ask user to click 'Publish'");
+            wp_send_json_error( array( 'errno' => -9999 ) );
+        }
+
+        $settings = $this->model->loadSettings( $post_id );
+
+        if ( !is_null( $field_type ) && ( 4 != $settings->field_type ) ) {
+            dbg("e20rAssignment::manage_option_list() - Update field type from {$settings->field_type} to 4");
+            $settings->field_type = 4;
+        }
+
+        if ( !is_null( $order_num) && ( $order_num != $settings->order_num ) ) {
+            dbg("e20rAssignment::manage_option_list() - Update order_num to {$order_num}");
+            $settings->order_num = $order_num;
+        }
+
+        if ( $delay != $settings->delay ) {
+            dbg("e20rAssignment::manage_option_list() - Update delay to {$delay}");
+            $settings->delay = $delay;
+
+        }
+
+
+        dbg("e20rAssignment::manage_option_list() - Settings loaded for assignment {$settings->id}");
+
+        $operation = isset( $_POST['operation'] ) ? $e20rTracker->sanitize( $_POST['operation'] ) : null;
+
+        dbg("e20rAssignment::manage_option_list() - Requested operation: {$operation}");
+
+        if ( is_null( $operation ) ) {
+
+            dbg("e20rAssignment::manage_option_list() - Error: No operation requested!");
+            wp_send_json_error( array( 'errno' => -1 ) );
+        }
+
+        $existing_options = isset( $_POST['e20r-assignment-select_options'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-select_options'] ) : array();
+        $new_option = isset( $_POST['e20r-new-assignment-option'] ) ? $e20rTracker->sanitize( $_POST['e20r-new-assignment-option']) : null;
+
+        switch( $operation ) {
+            case 'save':
+
+                if ( empty( $new_option ) ) {
+                    dbg("e20rAssignment::manage_option_list() - Error: Requested add operation, but no new option was supplied");
+                    wp_send_json_error( array( 'errno' => -2 ) );
+                }
+
+                $existing_options[] = $new_option;
+                break;
+
+            case 'delete':
+
+                $to_delete = isset( $_POST['e20r-delete-assignments'] ) ? $e20rTracker->sanitize( $_POST['e20r-delete-assignments'] ) : array();
+
+                foreach( $to_delete as $dVal ) {
+
+                    if ( ( $key = array_search( $dVal, $existing_options ) ) !== false) {
+                        dbg("e20rAssignment::manage_option_list() - Removing option #{$key}: {$existing_options[$key]}");
+                        unset( $existing_options[$key] );
+                    }
+                }
+                break;
+        }
+
+
+        dbg("e20rAssignment::manage_option_list() - Current list of options: ");
+        dbg( $existing_options);
+
+        if ( empty($existing_options ) ) {
+
+            dbg("e20rAssignment::manage_option_list() - Empty list of existing options. Resetting.");
+            $existing_options = array();
+        }
+
+        $settings->select_options = $existing_options;
+
+        if ( $this->saveSettings( $post_id, $settings ) ) {
+
+            $html = $this->view->viewOptionListTable( $settings );
+
+            dbg("e20rAssignment::manage_option_list() - Saved settings of assignment {$settings->id}");
+            wp_send_json_success( array( 'html' => $html ) );
+        }
+
+        dbg("e20rAssignment::manage_option_list() - Returning error because we didn't exist gracefully.");
+        wp_send_json_error( array( 'errno' => -3 ) );
+
+    }
+
     public function configureArticleMetabox( $articleId, $ajax = false ) {
 
         dbg("e20rAssignment::configureArticleMetabox() - For article {$articleId}");
@@ -162,6 +275,10 @@ class e20rAssignment extends e20rSettings {
         $html = ob_get_clean();
 
         return $html;
+    }
+
+    public function listUserSurveys( $userId ) {
+        // TODO: Complete implementation of this function.
     }
 
 	public function listUserAssignments( $userId ) {
@@ -455,6 +572,12 @@ class e20rAssignment extends e20rSettings {
             // Add post ID (checkin ID)
             $settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
             $settings->question_id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
+
+            if ( !empty( $settings->select_options )  && ( 4 != $settings->field_type ) ) {
+
+                dbg("e20rAssignment::saveSettings() - Forcing select_options to null...");
+                $settings->select_options = null;
+            }
 
             dbg( "e20rAssignment::saveSettings() - Saving: " . print_r( $settings, true ) );
 
