@@ -533,7 +533,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
-            <input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="Type your response" value="<?php echo $assignment->answer; ?>"/>
+            <input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="<?php _e("Type your response and click 'Save Answers', please...", "e20rtracker"); ?>" value="<?php echo $assignment->answer; ?>"/>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -552,7 +552,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( ! empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
-			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="Type your response and click 'Complete', please..."><?php
+			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80" placeholder="<?php _e("Type your response and click 'Save Answers', please...", "e20rtracker"); ?>"><?php
 				if ( ! empty( $assignment->answer ) ) {
 					dbg("e20rAssignmentView::showAssignmentParagraph() - Loading actual answer...");
 					echo trim(stripslashes($assignment->answer));
