@@ -1,0 +1,103 @@
+=== E20R Tracker ===
+Contributors: eighty20results
+Tags: content management, fitness, nutrition coaching, tracking
+Requires at least: 3.7
+Requires PHP 5.2 or later.
+Tested up to: 4.2.3
+Stable tag: [VERSION]
+License: GPLv2
+
+A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
+
+== Description ==
+The plugin is designed to coach clients through various change processes, whether they're behavioral, nutritional, fitness related, or otherwise.
+
+We developed the plugin to meet our own specific coaching platform needs which revolved around a year long nutrition coaching approach.
+During its development, we discovered a side-benefit which also allows us to manage an online personal training membership.
+
+== Developers ==
+
+=== ToDo ===
+* Add translation support to all english messages & javascript alerts. (Very partially done).
+
+== Additional Info One ==
+
+=== Shortcode: [weekly_progress] ===
+Shows a weekly progress capture form. The form requests input in terms of weight, girth measurements,
+photos (configurable), free form input for "other things" the client may be tracking as well as
+a "am I making progress" question.
+
+Arguments:
+    ** day
+        *** Description: Show on day X after the member's startdate
+        *** Type: numeric
+        *** Values: 0 or greater.
+        *** Default: N/A
+    ** from_programstart
+        *** Description: Whether to start the count from the start of the program or from the start of the membership
+        *** Type: numeric
+        *** Values: 1 or 0
+        *** Default: 1 (true)
+    ** use_article_id
+        *** Description: Whether to use the specified article id (if one is defined) to decide how to display the form
+        *** Type: numeric
+        *** Values: 1 or 0
+        *** Default: 1 (true)
+    ** demo_form
+        *** Desription: Whether this is a demo form (i.e. dummy) or not
+        *** Type: numeric
+        *** Values: 0 or 1
+        *** Default: 0 (false)
+
+=== Shortcode: [daily_progress] ===
+Shows the daily progress dashboard or the Assignment input form for the program that the user is a member of on that day.
+
+Arguments:
+    ** type
+        *** Description: What type of progress form to show
+        *** Type: text
+        *** Values: assignment, action, show_assignments
+        *** Default: action (when not specified)
+
+=== Shortcode: [progress_overview] ===
+Shows a progress overview (summary) for the user. Includes Measurements, Assignment input, Achievements summary and Workout history.
+
+Arguments: N/A
+
+=== Shortcode: [e20r_activity] ===
+Based on the delay value for "today" of the user logged in on the system, this shortcode will display the Daily Workout (Activity) for that user.
+If no activity is defined, will show an "error" message that no activity is scheduled for that day.
+
+Arguments:
+    ** activity_id
+        *** Description: The ID (post ID) for the e20r_workouts CPT defining this activity
+
+=== Shortcode: [e20r_activity_archive] ===
+Lists the scheduled workouts (activities) for the specified time period.
+
+Arguments:
+    ** period
+        *** Description: The week for which to show an activity list
+        *** Type: text
+        *** Values: 'current', 'next', 'previous'
+        *** Default: 'current'
+
+=== Shortcode:  [e20r_exercise] ===
+Show the exercise definition for the specified exercise.
+
+Arguments:
+    ** id
+        *** Description: The ID (post id) for the exercise definition
+        *** Type: numeric
+        *** Values: valid post ids for e20r_exercise CPTs
+        *** Default: N/A
+    ** short_code
+        *** Description: The short code name for the exercise.
+        *** Type: text
+        *** Values: N/A
+        *** Default: N/A
+
+== ChangeLog ==
+
+[MARKDOWN_LOG]
+
