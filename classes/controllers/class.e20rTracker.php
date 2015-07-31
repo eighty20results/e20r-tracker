@@ -85,6 +85,7 @@ class e20rTracker {
 
 	        $plugin = E20R_PLUGIN_NAME;
 
+            add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
@@ -164,11 +165,12 @@ class e20rTracker {
             add_action( 'wp_ajax_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
             add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
-	        add_action( 'wp_ajax_save_daily_progress', array( $e20rCheckin, 'dailyProgress_callback' ) );
-	        // add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( $e20rWorkout, 'add_new_exercise_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_exercise', array( $e20rWorkout, 'add_new_exercise_to_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_save_activity', array( $e20rWorkout, 'saveExData_callback' ) );
+	        add_action( 'wp_ajax_save_daily_progress', array( &$e20rCheckin, 'dailyProgress_callback' ) );
+	        // add_action( 'wp_ajax_save_daily_checkin', array( &$e20rCheckin, 'dailyCheckin_callback' ) );
+	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( &$e20rWorkout, 'add_new_exercise_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_add_exercise', array( &$e20rWorkout, 'add_new_exercise_to_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
+	        add_action( 'wp_ajax_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
 
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
@@ -229,6 +231,7 @@ class e20rTracker {
 	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
 	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
+	        add_action( 'wp_ajax_nopriv_manage_option_list', 'e20r_ajaxUnprivError' );
 
 	        // TODO: Investigate the need for this.
             // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
@@ -1020,7 +1023,7 @@ class e20rTracker {
             $e20r_plot_jscript = false;
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
-            wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
+            // wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
             wp_enqueue_style( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
@@ -1042,7 +1045,7 @@ class e20rTracker {
 
                 case 'e20r_programs':
 
-                    wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
+                    wp_enqueue_style( 'e20r-tracker-program-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
 	                $type = 'program';
 					$deps = array('jquery', 'jquery-ui-core');
                     break;
@@ -1056,10 +1059,17 @@ class e20rTracker {
 
 	            case 'e20r_workout':
 
-		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
+		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
 		            $type = 'workout';
 					$deps = array( 'jquery', 'jquery-ui-core' );
 		            break;
+
+                case 'e20r_assignments':
+
+                    wp_enqueue_style( 'e20r-tracker-assignment-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
+                    $type = 'assignment';
+                    $deps = array( 'jquery', 'jquery-ui-core' );
+                    break;
 
 	            default:
 		            $type = null;
@@ -1472,6 +1482,7 @@ class e20rTracker {
             global $e20r_plot_jscript;
 
 	        wp_enqueue_style( "jquery-ui-tabs", "https://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+            wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.css", false, E20R_VERSION );
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
             wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
@@ -2125,7 +2136,7 @@ class e20rTracker {
         global $wpdb;
         global $e20r_db_version;
 
-        $current_db_version = '1.1';
+        $current_db_version = '1';
 
         if ( $current_db_version == $e20r_db_version ) {
 
@@ -2408,7 +2419,7 @@ class e20rTracker {
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
-                    field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button', 'yesno', 'survey' ),
+                    field_type enum( 'button', 'input', 'textbox', 'checkbox', 'multichoice', 'rank', 'yesno' ),
                     primary key  (id),
                      index articles (article_id ),
                      index questions (question_id ),
@@ -2446,8 +2457,45 @@ class e20rTracker {
         // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
-        $this->updateSetting( 'e20r_db_version', $e20r_db_version );
+        // $this->updateSetting( 'e20r_db_version', $e20r_db_version );
     }
+
+    public function update_db() {
+
+        if ( ( $db_ver = (int)$this->loadOption('e20r_db_version' ) ) < E20R_DB_VERSION ) {
+
+            $path = E20R_PLUGIN_DIR . '/e20r_db_update.php';
+
+            if ( file_exists( $path ) ) {
+
+                dbg("e20rTracker::update_db() - Loading: $path ");
+                require_once( $path );
+                dbg("e20rTracker::update_db() - DB Upgrade functions loaded");
+            }
+            else {
+                dbg("e20rTracker::update_db() - ERROR: Can't load DB update script!");
+                return;
+             }
+
+            $diff = ( $db_ver - E20R_DB_VERSION );
+
+            for ( $i = 1 ; $i <= $diff ; $i++ ) {
+
+                $version = E20R_DB_VERSION + $i;
+                dbg("e20rTracker::update_db() - Process upgrade function for Version: {$version}");
+
+                if ( function_exists("update_db_to_{$version}" ) ) {
+
+                    dbg("e20rTracker::update_db() - Function to update version to {$version} is present. Executing...");
+                    call_user_func( "update_db_to_{$version}" );
+                }
+                else {
+                    dbg("e20rTracker::update_db() - No version specific update function for database version: {$version} ");
+                }
+            }
+        }
+    }
+
 
     public function activate() {
 
@@ -3501,6 +3549,25 @@ class e20rTracker {
         $days = $days + 1;
         dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
+    }
+
+    /**
+     * @param $data - The data to sort
+     * @param array $fields - An array (2 elements) for the fields to sort by.
+ *
+     */
+    public function sortByFields( array $data, array $fields = array() ) {
+
+        uasort( $data, function( $a, $b ) use ($fields) {
+
+            if ($a->{$fields[0]} == $b->{$fields[0]})
+            {
+                if($a->{$fields[1]} == $b->{$fields[1]}) return 0 ;
+                return ($a->{$fields[1]} < $b->{$fields[1]}) ? -1 : 1;
+            }
+            else
+                return ($a->{$fields[0]} < $b->{$fields[0]}) ? -1 : 1;
+        });
     }
 
     /**
