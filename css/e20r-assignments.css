@@ -8,25 +8,26 @@
  * Purpose: CSS to display e20r-assignments CPTs in the [daily_progress] short code
  * @since: 0.8.9
  */
-.e20r-assignment-paragraph {
+
+div.e20r-assignment-paragraph,
+div.e20r-assignment-ranking {
     width: 80%;
     padding-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.e20r-assignment-paragraph textarea,
+.e20r-assignment-paragraph input,
+.e20r-assignment-paragraph select {
+    max-width: 600px;
+    width: 100%;
+    border: 3px solid #cccccc;
+    padding: 5px;
+    font-family: Tahoma, sans-serif;
+
 }
 .e20r-assignment-paragraph textarea {
-    max-width: 600px;
-    width: 100%;
     height: 120px;
-    border: 3px solid #cccccc;
-    padding: 5px;
-    font-family: Tahoma, sans-serif;
-}
-.e20r-assignment-paragraph input {
-    max-width: 600px;
-    width: 100%;
-    height: 30px;
-    border: 3px solid #cccccc;
-    padding: 5px;
-    font-family: Tahoma, sans-serif;
 }
 .e20r-assignment-question {
     font-size: 130%;
@@ -88,6 +89,7 @@ h2.e20r-daily-assignment-headline{
 /** Survey questions (likert style) **/
 table.e20r-assignment-ranking-question{
     width:100%;
+    max-width: 600px;
     table-layout: fixed;
     border-spacing: 0;
     border-bottom:1px solid silver;
