@@ -38,4 +38,4 @@ if ( !function_exists( "update_db_to_2" ) ) {
 
         $e20rTracker->updateSetting( 'e20r_db_version', 2 );
     }
-}
+} // End of function_exists('update_db_to_2')
