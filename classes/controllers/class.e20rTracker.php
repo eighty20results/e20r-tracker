@@ -1782,13 +1782,15 @@ class e20rTracker {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
             wp_register_style( 'e20r-assignments', E20R_PLUGINS_URL . '/css/e20r-assignments.css', false, E20R_VERSION );
+            wp_register_style( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
 
+            wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
 	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
 	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
 	        wp_register_script( 'jquery-redirect', E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.js', array( 'jquery' ), '1.0', false );
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), E20R_VERSION, false );
             wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-assignments-js', E20R_PLUGINS_URL . '/js/e20r-assignments.js', array( 'jquery', 'e20r-checkin-js'), E20R_VERSION, false );
+            wp_register_script( 'e20r-assignments-js', E20R_PLUGINS_URL . '/js/e20r-assignments.js', array( 'jquery', 'select2', 'e20r-checkin-js'), E20R_VERSION, false );
 
             wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
                 array(
@@ -1797,9 +1799,10 @@ class e20rTracker {
                 )
             );
 
-            wp_enqueue_style( 'e20r-assignments');
+            wp_enqueue_style( 'e20r-assignments' );
+            wp_enqueue_style( 'select2' );
             wp_print_scripts( array(
-                'base64', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
+                'base64', 'select2', 'jquery-autoresize', 'jquery-redirect', 'e20r-tracker-js', 'e20r-checkin-js', 'e20r-assignments-js'
                 ) );
 
         }
@@ -2469,7 +2472,7 @@ class e20rTracker {
             if ( file_exists( $path ) ) {
 
                 dbg("e20rTracker::update_db() - Loading: $path ");
-                require_once( $path );
+                require( $path );
                 dbg("e20rTracker::update_db() - DB Upgrade functions loaded");
             }
             else {
@@ -2477,11 +2480,13 @@ class e20rTracker {
                 return;
              }
 
-            $diff = ( $db_ver - E20R_DB_VERSION );
 
-            for ( $i = 1 ; $i <= $diff ; $i++ ) {
+            $diff = ( E20R_DB_VERSION - $db_ver );
+            dbg("e20rTracker::update_db() - We've got {$diff} versions to upgrade...");
 
-                $version = E20R_DB_VERSION + $i;
+            for ( $i = $db_ver ; $i <= E20R_DB_VERSION ; $i++ ) {
+
+                $version = $i;
                 dbg("e20rTracker::update_db() - Process upgrade function for Version: {$version}");
 
                 if ( function_exists("update_db_to_{$version}" ) ) {
