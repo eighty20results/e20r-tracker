@@ -23,9 +23,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	        0 => 'button',
 		    1 => 'input',
 		    2 => 'textbox',
-		    3 => 'radio',
-		    4 => 'checkbox',
-            5 => 'survey',
+		    3 => 'checkbox',
+		    4 => 'multichoice',
+            5 => 'rank',
             6 => 'yesno',
 	    );
 
@@ -35,7 +35,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    2 => __("Paragraph of text (textbox)", "e20rtracker"),
 		    3 => __("Checkbox", "e20rtracker"),
 		    4 => __("Multiple choice", "e20rtracker"),
-            5 => __("Survey rating", "e20rtracker"),
+            5 => __("1-10 ranking", "e20rtracker"),
             6 => __("Yes/No question", "e20rtracker"),
 	    );
 
@@ -177,6 +177,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	    $settings->program_ids = array();
         $settings->answer_date = null;
         $settings->answer = null;
+        $settings->select_options = array();
 
         return $settings;
     }
@@ -241,24 +242,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		}
 
         // Sort the answers by the delay value, then the order_num value
-        usort( $answers, array( &$this, 'sortAssignments' ) );
+        $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
 
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Returning sorted array of answers: ");
         dbg($answers);
 
         return $answers;
 	}
-
-    private function sortAssignments( $a, $b ) {
-
-        if ($a->delay == $b->delay)
-        {
-            if($a->order_num == $b->order_num) return 0 ;
-            return ($a->order_num < $b->order_num) ? -1 : 1;
-        }
-        else
-            return ($a->delay < $b->delay) ? -1 : 1;
-    }
 
     public function getArticleAssignments( $articleId ) {
 
@@ -616,6 +606,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $this->settings->article_ids = array( $this->settings->article_ids );
             }
 
+            if ( !is_array( $this->settings->select_options ) ) {
+                $this->settings->select_options = array( $this->settings->select_options );
+            }
+
 		    wp_reset_postdata();
 		    $post = $savePost;
 	    }
@@ -625,7 +619,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         }
 
         $currentAssignment = $this->settings;
-        return $this->settings;
+        return $currentAssignment;
     }
 /*
     public function setAssignment( $assignment ) {
