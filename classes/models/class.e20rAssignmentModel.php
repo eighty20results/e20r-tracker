@@ -23,7 +23,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	        0 => 'button',
 		    1 => 'input',
 		    2 => 'textbox',
-		    3 => 'checkbox',
+//		    3 => 'checkbox',
 		    4 => 'multichoice',
             5 => 'rank',
             6 => 'yesno',
@@ -33,7 +33,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    0 => __("'Lesson complete' button", "e20rtracker"),
 		    1 => __("Line of text (input)", "e20rtracker"),
 		    2 => __("Paragraph of text (textbox)", "e20rtracker"),
-		    3 => __("Checkbox", "e20rtracker"),
+//		    3 => __("Checkbox", "e20rtracker"),
 		    4 => __("Multiple choice", "e20rtracker"),
             5 => __("1-10 ranking", "e20rtracker"),
             6 => __("Yes/No question", "e20rtracker"),
@@ -511,16 +511,24 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		            if ( ! in_array( $k, $resp ) ) {
 
-			            if ( $k == 'article_ids' ) {
+			            if ( 'article_ids' == $k ) {
 
                             $data->{$k}[] = $val;
                         }
                         else {
                             $data->{$k} = $val;
                         }
+
+                        // Special handling of field_type == 4
+                        if ( ( 'field_type' == $k ) && ( 4 == $val ) ) {
+
+                            dbg("e20rAssignmentModel::loadUserAssignment() - Found a multi-choice answer. Restoring it as an array.");
+                            $data->answer = json_decode( stripslashes( $data->answer ) );
+
+                        }
 		            }
 	            }
-                dbg("e20rAssignmentModel::loadUserAssignment() - Loading record ID {$data->id} from database result: {$key}");
+                dbg("e20rAssignmentModel::loadUserAssignment()- Loading record ID {$data->id} from database result: {$key}");
 	            $records[(count($result) - 1)] = $data;
 
 	            $post = get_post( $data->question_id );
