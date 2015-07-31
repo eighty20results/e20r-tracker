@@ -43,3 +43,28 @@ table.e20r-program-settings th.e20r-label {
 .e20r-measurements-container h4 {
     top: -22px;
 }
+table#e20r-assignment-options th.e20r-label.header:first-child,
+table#e20r-assignment-options td.e20r-row-counter {
+    width: 10%;
+    max-width: 100px;
+}
+table#e20r-assignment-options th.e20r-label.header,
+table#e20r-assignment-options td.e20r-row-value {
+    width: 80%;
+    min-width: 250px;
+}
+
+table#e20r-assignment-options input#e20r-new-assignment-option {
+    min-width: 250px;
+    max-width: 600px;
+    width: 80%;
+}
+hr.e20r-assignment-separator {
+    width: 100%;
+    height: 30px;
+    background-color: #5c5c5c;
+}
+th.e20r-label {
+    background-color: #c5c5c5;
+    font-weight: bold;
+}
