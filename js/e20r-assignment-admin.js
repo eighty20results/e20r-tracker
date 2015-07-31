@@ -21,7 +21,6 @@ var e20rAssignments = {
         this.$deleteBtn = this.optionsForm.find('button#e20r-add-assignment-delete-option');
         this.$checkboxes = this.optionsForm.find('input.e20r-checked-assignment-option');
         this.$checked_all = this.optionsForm.find('input#e20r-select_option-check_all');
-        this.$checked = [];
 
         var self = this;
 
@@ -44,8 +43,6 @@ var e20rAssignments = {
         self.$checked_all.unbind('click').on('click', function() {
 
             console.log("Admin clicked the 'check-all' button");
-            // Re-init the array.
-            self.$checked  = [];
 
             // Add all of the
             self.$checkboxes.each(function() {
@@ -101,9 +98,13 @@ var e20rAssignments = {
 
         event.preventDefault();
 
+        var $new_option = jQuery('input#e20r-new-assignment-option');
         var $cnt =  jQuery('tr.assignment-select-options').length;
+        var $new_row = '';
+
         console.log( " Row counter: " + $cnt);
-        var $option_text = jQuery('input#e20r-new-assignment-option').val().trim();
+
+        var $option_text = $new_option.val().trim();
 
         if ( 'save' == $operation ) {
 
@@ -113,7 +114,7 @@ var e20rAssignments = {
             }
 
             console.log("'Saving' a new option row for the select options.");
-            var $new_row = '<tr class="assignment-select-options">\n';
+            $new_row = '<tr class="assignment-select-options">\n';
             $new_row += '   <td class="e20r-row-counter checkbox"><input type="checkbox" class="e20r-checked-assignment-option" name="e20r-add-option-checkbox[]" value="' + $cnt +'"></td>\n';
             $new_row += '   <td colspan="2" class="e20r-row-value">\n';
             $new_row += '       <input type="hidden" name="e20r-option_key[]" id="e20r-option-key" value="' + $cnt + '">\n';
@@ -121,12 +122,12 @@ var e20rAssignments = {
             $new_row += '       ' + $option_text;
             $new_row += '   </td>\n';
             $new_row +='</tr>\n';
-            $cnt++;
+            // $cnt++;
 
             this.optionsForm.find('tbody').append( $new_row );
 
             // Reset the option input field.
-            jQuery('input#e20r-new-assignment-option').val('');
+            $new_option.val('');
 
             this.reinit();
         }
@@ -153,7 +154,7 @@ var e20rAssignments = {
 
             if ( ! this.$checkboxes.length ) {
 
-                var $new_row = '<tr class="assignment-select-options">\n';
+                $new_row = '<tr class="assignment-select-options">\n';
                 $new_row += '   <td class="e20r-row-counter checkbox"></td>\n';
                 $new_row += '   <td colspan="2" class="e20r-row-value">\n';
                 $new_row += '       <input type="hidden" name="e20r-option_key[]" id="e20r-option-key" value>\n';
@@ -180,26 +181,29 @@ var e20rAssignments = {
         $serialized_data += "operation=" + $operation + "&";
         $serialized_data += jQuery("form#post").find('input[id^="e20r-"],select[id^="e20r-"],input[class^="e20r-"],select[class^="e20r-"]').serialize();
 
+        var $title = jQuery('input#post_title');
+        var $save = jQuery('input#save-post');
+
         console.log("Serialize data: ", $serialized_data );
 
         // Check if this is a brand new post (assignment).
-        if ( jQuery('input#save-post').length ) {
+        if ( $save.length ) {
 
             // Make sure we actually ought to save it.
             console.log("This is a brand new post so we'll need to save a draft of it first.");
 
-            if ( ( jQuery('input#post_title').val() == '' ) && ( 1 == this.$field_type.val() )) {
+            if ( ( $title.val() == '' ) && ( 1 == this.$field_type.val() )) {
                 alert("Saving an empty assignment probably doesn't make sense, right?");
                 return;
             }
 
-            if ( jQuery('input#post_title').val() == '' ) {
+            if ( $title.val() == '' ) {
                 alert("You should probably name this assignment.");
                 return;
             }
 
             // Let's save it as a draft.
-            jQuery('input#save-post').click();
+            $save.click();
             return;
         }
 
@@ -236,6 +240,6 @@ var e20rAssignments = {
 jQuery(document).ready( function(){
 
     console.log("Loaded admin specific scripts for the e20r_assignments CPT");
-    var $assignments = e20rAssignments.init();
+    e20rAssignments.init();
 
 });
