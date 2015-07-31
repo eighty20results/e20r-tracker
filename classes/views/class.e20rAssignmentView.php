@@ -407,10 +407,16 @@ class e20rAssignmentView extends e20rSettingsView {
 
     private function showMultipleChoice( $assignment ) {
 
-        $assignment->choices;
-        $assignment->selected_choices;
-
         ob_start();
+
+        if ( is_array( $assignment->answer ) ) {
+            dbg("e20rAssignmentView::showMultipleChoice() - Answer is an array and contains: " . json_encode( $assignment->answer ));
+            $answer = json_encode( $assignment->answer);
+        }
+        else {
+            $answer = $assignment->answer;
+        }
+
         ?>
         <div class="e20r-assignment-paragraph">
             <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
@@ -418,17 +424,30 @@ class e20rAssignmentView extends e20rSettingsView {
             <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
             <h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
             if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
-                <div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
+                <div class="e20r-assignment-descr">
+                    <?php echo $assignment->descr; ?>
+                    <p class="e20r-assignment-select"><?php _e("Select one or more applicable responses", "e20rtracker"); ?></p>
+                </div><?php
             }?>
-            <select class="select2-container" name="e20r-assignment-answer[]" multiple="multiple"><?php
+            <select class="select2-container e20r-select2-assignment-options e20r-assignment-response" name="e20r-multiplechoice_answer[]" multiple="multiple"><?php
+
+                if ( !is_array( $assignment->answer ) ) {
+
+                    $assignment->answer = array( $assignment->answer );
+                }
+
+                if ( empty( $assignment->answer ) || ( -1 == $assignment->answer[0] ) ) { ?>
+
+                    <option value="-1"><?php _e("Not applicable", "e20rtracker"); ?></option><?php
+                }
 
                 foreach( $assignment->select_options as $option_id => $option_text ) {
 
-                    $selected = ( in_array( $option_id, $assignment->answer ) ) ? 'selected="selected"' : null;
-                    ?>
-                    <option value="<?php echo $option_id ?>" <?php echo $selected; ?>><?php echo $option_text; ?></option><?php
+                    $selected = ( !empty( $assignment->answer ) && in_array( $option_id, $assignment->answer ) ) ? 'selected="selected"' : null; ?>
+                    <option value="<?php echo $option_id; ?>" <?php echo $selected; ?>><?php echo $option_text; ?></option><?php
                 }?>
             </select>
+            <input type="hidden" value="<?php echo $answer; ?>" name="e20r-assignment-answer[]" class="e20r-assignment-select2-hidden">
         </div><?php
 
         return ob_get_clean();
@@ -457,7 +476,7 @@ class e20rAssignmentView extends e20rSettingsView {
                 <tr><?php
                     foreach( range(1, 10) as $cnt ) {?>
                         <td class="e20r-assignment-ranking-question-choice">
-                        <input name="e20r-assignment-answer[]" type="radio" value="<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>" <?php checked( $assignment->answer, $cnt); ?>>
+                        <input name="e20r-assignment-answer[]" type="radio" class="e20r-assignment-response" value="<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>" <?php checked( $assignment->answer, $cnt); ?>>
                         </td><?php
                     }?>
                 </tr>
@@ -489,10 +508,10 @@ class e20rAssignmentView extends e20rSettingsView {
                 </tr>
                 <tr>
                     <td class="e20r-assignment-ranking-question-choice">
-                        <input name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' );?>>
+                        <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' );?>>
                     </td>
                     <td class="e20r-assignment-ranking-question-choice">
-                        <input name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' );?>>
+                        <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' );?>>
                     </td>
                 </tr>
                 </tbody>
@@ -514,7 +533,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
-            <input class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="Type your response" />
+            <input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="Type your response" value="<?php echo $assignment->answer; ?>"/>
 		</div>
 		<?php
 		return ob_get_clean();
