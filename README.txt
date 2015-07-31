@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.3
-Stable tag: 0.9.11
+Stable tag: 0.9.12
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -98,6 +98,54 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+= 0.9.12 =
+* Load select2 code for assignments in daily_progress shortcode.
+* Correctly identify the DB upgrade routine(s) to run.
+* Set DB version number
+* We haven't got handlers for a simple checkbox assignment yet, so remove it as an option Decode array of answers when field_type = multichoice.
+* Handle multichoice and hidden input field for the multichoice answer(s).
+* Include pre-existing answer in text input for assignment.
+* Add formatting for inputs in Yes/No fields.
+* Fix SQL for update function
+* Rename '*assignment-survey*' identifiers/classes to '*assignment-ranking*' Init select2 if multichoice field is present on page/in post.
+* Same formatting for multichoice and other inputs on assignments form
+* Add support for multichoice field(s) on the assignment form
+* Make 'save' button available if multichoice field is clicked (and save is hidden).
+* Convert multichoice answers to json and save in hidden assignment-answer input (to keep saving simple).
+* Handle survey configuration(s) in dailyProgress shortcode.
+* Add check-box for article that hosts/manages a survey
+* Set DB Version number
+* Fix CSS for new multichoice field option in Assignments
+* Add support for managing multi-option select fields for assignments
+* DB table upgrade script for DB v2.
+* Add support for upgrading DB based on external e20r_db_upgrade.php file & functions
+* Add manage_option_list callback for multichoice field support. (May not be needed)
+* Handle cases where there are select_options defined but the admin changed the field type.
+* Rename answer inputs (requires change to DB enum()) Rename survey rating to ranking
+* Rename sortAssignments() to sortByField().
+* Transition to sortByFields() in Assignments class.
+* Move sortByFields() to e20rTracker class
+* Make sortByFields() support user defined fields to sort by.
+* Add select_options setting/postmeta field.
+* Add support for multichoice field in assignment configuration.
+* Add support for displaying a multichoice field in an assignment.
+* Rename 'survey' fields to 'ranking' fields (the 1 - 10 ranking/likert fields)
+* Show an actual input field for text input fields.
+* Fix JS warnings
+* Enh: Add support for managing multi-option select fields for assignments
+* First update DB function created/loaded.
+* Reflect actual purpose of input: 'survey' versus 'ranking'
+* Use E20R_DB_VERSION constant to indicate change in DB version.
+* Use renamed activation/deactivation functions
+* Add e20r_db_version option
+* Create e20r_surveys table definition on plugin activation.
+* Transition from 'key' to 'index' for table indexes.
+* Move DB management to its own manage_tables() function
+* Rename plugin activiation and deactivation functions.
+* Handle situations where the user has assigned the same post/page to two different articles.
+* Test for access against a valid $article object.
+
 
 = 0.9.11 =
 * Unnecessary version bump due to mistake during commit.
