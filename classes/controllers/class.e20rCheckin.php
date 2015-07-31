@@ -754,6 +754,8 @@ class e20rCheckin extends e20rSettings {
             }
         }
 
+        $config->is_survey = $currentArticle->is_survey == 0 ? false : true;
+
         // $config->url = URL_TO_CHECKIN_FORM;
         dbg("e20rCheckin::nextCheckin_callback() - URL to daily progress dashboard: {$config->url}");
         dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
@@ -966,8 +968,15 @@ class e20rCheckin extends e20rSettings {
 
             dbg("e20rCheckin::dailyProgress() - Loading pre-existing data for the lesson/assignment ");
 
+            // TODO: Decide whether or not the daily assignment is supposed to be a survey or not.
             $assignments = $e20rArticle->getAssignments( $config->articleId, $config->userId );
             dbg($assignments);
+
+            if ( true === $config->is_survey ) {
+
+                dbg("e20rCheckin::dailyProgress() - We're being asked to render a survey with the article");
+
+            }
 
             return $e20rAssignment->showAssignment( $assignments, $config );
         }
@@ -978,6 +987,25 @@ class e20rCheckin extends e20rSettings {
 
             dbg("e20rCheckin::dailyProgress[show_assignment]() - Loading Assignment list");
             return $e20rAssignment->listUserAssignments( $config );
+        }
+
+        if ( strtolower( $config->type == 'survey' ) ) {
+
+            dbg("e20rCheckin::dailyProgress() - Process a survey assignment/page");
+
+            if ( $config->articleId === false ) {
+
+                dbg("e20rCheckin::dailyProgress() - No article defined. Quitting.");
+                return null;
+            }
+
+            dbg("e20rCheckin::dailyProgress() - Loading pre-existing data for the lesson/assignment ");
+
+            $assignments = $e20rArticle->getAssignments( $config->articleId, $config->userId );
+            dbg($assignments);
+
+            return $e20rAssignment->showAssignment( $assignments, $config );
+
         }
     }
 
@@ -1045,6 +1073,7 @@ class e20rCheckin extends e20rSettings {
 
 	    }
 
+
         if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
 
             $article = $articles[0];
@@ -1077,6 +1106,7 @@ class e20rCheckin extends e20rSettings {
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article object:");
 	    dbg( $article );
 
+        $config->is_survey = isset( $article->is_survey) && ( $article->is_survey == 0 ) ? false : true;
         $config->articleId = isset( $article->id ) ? $article->id : CONST_NULL_ARTICLE;
 
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article ID is set to: {$config->articleId}" );
