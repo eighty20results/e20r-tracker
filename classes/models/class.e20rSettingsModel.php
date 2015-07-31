@@ -672,7 +672,7 @@ class e20rSettingsModel {
                     $this->settings->{$key} = $setting;
 
 					// "Unroll" a setting that's represented as an array of entries
-					if ( in_array( $key, array( 'program_ids', 'article_ids', 'checkin_ids', 'assignment_ids' ) ) ) {
+					if ( in_array( $key, array( 'program_ids', 'article_ids', 'checkin_ids', 'assignment_ids', 'select_options' ) ) ) {
 
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key}: Simplifying search operations in the metadata table.");
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Clearing post meta for {$post_id} and key _e20r-{$this->type}-{$key}");
@@ -723,7 +723,7 @@ class e20rSettingsModel {
                 $asArray = false;
                 // $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
 
-                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'checkin_ids');
+                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'checkin_ids', 'select_options');
 
                 if ( !in_array( $key, $newAFields ) ) {
                     $asArray = true;
