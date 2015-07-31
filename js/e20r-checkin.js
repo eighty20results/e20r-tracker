@@ -450,6 +450,7 @@ jQuery(document).ready(function() {
             this.$checkinBtn = this.$assignment.find("button#e20r-lesson-complete");
             this.$inputs = this.$answerForm.find('.e20r-assignment-response');
             this.$choices = this.$answerForm.find( 'td.e20r-assignment-survey-question-choice, input[type="radio"], input[type="checkbox"]' );
+            this.$multichoice = this.$answerForm.find('.e20r-select2-assignment-options');
 
             var self = this;
 
@@ -472,10 +473,13 @@ jQuery(document).ready(function() {
                     console.log("Gave focus to", this);
                     jQuery('#e20r-assignment-save-btn').show();
                     jQuery('#e20r-assignment-complete').hide();
-                })
-            })
+                });
+            });
 
             this.$choices.each(function() {
+
+                console.log("Working through likert fields");
+
                 jQuery(this).on('click', function(){
 
                     console.log("Gave focus to", this);
@@ -483,6 +487,20 @@ jQuery(document).ready(function() {
                     jQuery('#e20r-assignment-complete').hide();
                 })
             });
+
+            this.$multichoice.each(function() {
+
+                console.log("Working through multichoice fields");
+                jQuery(this).on('select2:open', function(){
+
+                    console.log(" Opening select2 entry.");
+                    console.log("Clicked on:", this);
+
+                    jQuery('#e20r-assignment-save-btn').show();
+                    jQuery('#e20r-assignment-complete').hide();
+                })
+            });
+
         },
         lessonComplete: function( self ) {
 
@@ -535,6 +553,18 @@ jQuery(document).ready(function() {
         saveAnswers: function( self ) {
 
             event.preventDefault();
+
+            var $mc_answers = jQuery( '.e20r-select2-assignment-options');
+
+            $mc_answers.each( function() {
+
+                var $resp_val = jQuery(this);
+                var $h_resp = $resp_val.siblings('.e20r-assignment-select2-hidden');
+
+                console.log( "Assignment answer(s) for this field: ", $resp_val.val() );
+                $h_resp.val( JSON.stringify( $resp_val.val() ) );
+                console.log( "Stringified list of answers in multichoice: " + $h_resp.val() );
+            });
 
             var answers = self.$answerForm.serialize();
             console.log("saveAssignment(): " + answers, self.$answerForm);
