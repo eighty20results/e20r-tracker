@@ -12,7 +12,7 @@ License: GPLv2
 
 define( 'E20R_VERSION', '0.9.11' );
 define( 'E20R_RUN_UNSERIALIZE', 0 ); // 0 == Do NOT Run, 1 == Run
-define( 'E20R_DB_VERSION', '1.0');
+define( 'E20R_DB_VERSION', '2');
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'E20R_PLUGINS_URL', plugins_url( '', __FILE__ ) );
 define( 'E20R_PLUGIN_NAME', plugin_basename( __FILE__ ) );
