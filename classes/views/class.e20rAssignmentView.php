@@ -33,70 +33,155 @@ class e20rAssignmentView extends e20rSettingsView {
             $assignmentData->program_ids = array();
         }
 
-        ?>
-        <form action="" method="post">
-            <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-settings' ); ?>
-            <div class="e20r-editform">
-                <input type="hidden" name="hidden-e20r-assignment-id" id="hidden-e20r-assignment-id"
-                       value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->id : 0 ); ?>">
-                <table class="e20r-assignment-settings wp-list-table widefat fixed">
-                    <thead>
-                    <tr>
-                        <th class="e20r-label header"><label for="e20r-assignment-order_num">Order #</label></th>
-                        <th class="e20r-label header"><label for="e20r-assignment-field_type">Answer type</label></th>
-                        <th class="e20r-label header"><label for="e20r-assignment-delay">Day #</label></th>
-                        <th class="e20r-label header"><label for="e20r-assignment-program_ids">Programs</label></th>
-                    </tr>
-                    <tr>
-                        <td colspan="4">
-                            <hr width="100%"/>
-                        </td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr id="<?php echo $assignmentData->id; ?>" class="assignment-inputs">
-                        <td class="text-input">
-                            <input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num" value="<?php echo ( ! isset( $assignmentData->order_num ) ? 1 : $assignmentData->order_num ); ?>">
-                        </td>
-                        <td class="text-input" style="width: 50%;">
-                            <select id="e20r-assignment-field_type select2-container" name="e20r-assignment-field_type" style="width: 100%;">
-                                <?php
-                                foreach ( $answerTypes as $key => $descr ) { ?>
-                                    <option value="<?php echo $key; ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
-                                }
-                                ?>
-                            </select>
-                        </td>
-                        <td class="text-input">
-                            <input type="number" id="e20r-assignment-delay" name="e20r-assignment-delay" value="<?php echo ( ! isset( $assignmentData->delay ) ? '' : $assignmentData->delay ); ?>">
-                        </td>
-                        <td class="select-input">
-                            <select class="select2-container" id="e20r-assignment-program_ids" name="e20r-assignment-program_ids" multiple="multiple">
-                                <option value="-1" <?php echo empty( $assignmentData->program_ids) || in_array( -1, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php _e("No program defined", "e20rtracker");?></option><?php
+        $hide_options = ( 4 == $assignmentData->field_type ) ? true : false;
 
-                                foreach( $pList as $p ) { ?>
-                                    <option value="<?php echo $p->id;?>"<?php echo in_array( $p->id, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php echo esc_textarea($p->title);?></option><?php
-                                } ?>
-                            </select>
-                            <style>
-                                .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                            </style>
-                            <script>
-                                jQuery("#e20r-assignment-program_ids").select2();
-                            </script>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        if ( !is_array( $assignmentData->select_options) && empty( $assignmentData->select_options ) ) {
+            $assignmentData->select_options = array();
+        }
+
+        // ob_start();
+        ?>
+        <div id="e20r-editform">
+            <?php wp_nonce_field( 'e20r-assignment-data', 'e20r-tracker-assignment-settings-nonce' ); ?>
+            <input type="hidden" name="hidden-e20r-assignment-id" id="hidden-e20r-assignment-id"
+                   value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->id : 0 ); ?>">
+            <table id="e20r-assignment-settings" class="wp-list-table widefat fixed">
+                <thead>
+                <tr>
+                    <th class="e20r-label header"><label for="e20r-assignment-order_num">Order #</label></th>
+                    <th class="e20r-label header"><label for="e20r-assignment-field_type">Answer type</label></th>
+                    <th class="e20r-label header"><label for="e20r-assignment-delay">Day #</label></th>
+                    <th class="e20r-label header"><label for="e20r-assignment-program_ids">Programs</label></th>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <hr width="100%"/>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="<?php echo $assignmentData->id; ?>" class="assignment-inputs">
+                    <td class="text-input">
+                        <input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num" value="<?php echo ( ! isset( $assignmentData->order_num ) ? 1 : $assignmentData->order_num ); ?>">
+                    </td>
+                    <td class="text-input" style="width: 50%;">
+                        <select id="e20r-assignment-field_type" class="select2-container" name="e20r-assignment-field_type" style="width: 100%;">
+                            <?php
+                            foreach ( $answerTypes as $key => $descr ) { ?>
+                                <option value="<?php echo $key; ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
+                            }
+                            ?>
+                        </select>
+                    </td>
+                    <td class="text-input">
+                        <input type="number" id="e20r-assignment-delay" name="e20r-assignment-delay" value="<?php echo ( ! isset( $assignmentData->delay ) ? '' : $assignmentData->delay ); ?>">
+                    </td>
+                    <td class="select-input">
+                        <select class="select2-container" id="e20r-assignment-program_ids" name="e20r-assignment-program_ids" multiple="multiple">
+                            <option value="-1" <?php echo empty( $assignmentData->program_ids) || in_array( -1, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php _e("No program defined", "e20rtracker");?></option><?php
+
+                            foreach( $pList as $p ) { ?>
+                                <option value="<?php echo $p->id;?>"<?php echo in_array( $p->id, $assignmentData->program_ids) ? 'selected="selected"' : null; ?>><?php echo esc_textarea($p->title);?></option><?php
+                            } ?>
+                        </select>
+                        <style>
+                            .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+                        </style>
+                        <script>
+                            jQuery("#e20r-assignment-program_ids").select2();
+                        </script>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <hr class="e20r-assignment-separator" />
+            <div id="e20r-assignment-option-div">
+                <?php echo $this->viewOptionListTable( $assignmentData ); ?>
             </div>
-        </form>
-    <?php
+        </div><?php
+        // echo ob_get_clean();
+    }
+
+    public function viewOptionListTable( $assignmentData ) {
+
+        $hide_options = ( 4 == $assignmentData->field_type ) ? true : false;
+        ob_start();
+        ?>
+            <table id="e20r-assignment-options" class="wp-list-table widefat fixed" <?php echo ( $hide_options ? 'style="display: none;"' : null); ?>>
+            <thead>
+            <tr>
+                <th class="e20r-label header">
+                    <label for="e20r-assignment-select_option-checked">
+                        <input type="checkbox" id="e20r-select_option-check_all" name="e20r-add-option-checkbox[]" value="all">
+                    </label>
+                </th>
+                <th colspan="2" class="e20r-label header"><label for="e20r-assignment-select_options"><?php _e("Option", "e20rtracker"); ?></label></th>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <hr width="100%"/>
+                </td>
+            </tr>
+            </thead>
+            <tbody><?php
+
+                if ( empty( $assignmentData->select_options ) ) { ?>
+                <tr class="assignment-select-options">
+                    <td class="e20r-row-counter checkbox"></td>
+                    <td colspan="2" class="e20r-row-value"><?php _e("No options found", "e20rtracker" ); ?></td>
+                </tr><?php
+                }
+
+                foreach( $assignmentData->select_options as $k => $option ) { ?>
+                <tr class="assignment-select-options">
+                    <td class="e20r-row-counter checkbox">
+                        <input type="checkbox" class="e20r-checked-assignment-option" name="e20r-add-option-checkbox[]" value="<?php echo $k; ?>">
+                    </td>
+                    <td colspan="2" class="e20r-row-value">
+                        <input type="hidden" name="e20r-option_key[]" id="e20r-option-key" value="<?php echo $k; ?>">
+                        <input type="hidden" name="e20r-assignment-select_options[]" id="e20r-assignment-select_option_<?php echo $k; ?>" value="<?php echo !empty($option) || 0 != $option  ? $option : null; ?>">
+                        <?php echo !empty($option) || 0 == $option  ? $option : null; ?>
+                    </td>
+                </tr><?php
+                }?>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3">
+                    <hr width="100%"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="e20r-row-counter"></td>
+                <td colspan="2" class="e20r-row-value text-input">
+                    <input type="text" id="e20r-new-assignment-option" name="e20r-new-assignment-option" placeholder="Type option text">
+                </td>
+            </tr>
+            <tr>
+                <td class="e20r-add-assignment-manage-options">
+                    <button class="button button-secondary" id="e20r-add-assignment-delete-option"><?php _e("Delete Option(s)", "e20rtracker"); ?></button>
+                </td>
+                <td class="e20r-add-assignment-manage-options">
+                    <button class="button button-primary" id="e20r-add-assignment-save-option"><?php _e("Add Option", "e20rtracker"); ?></button>
+                </td>
+
+                <td class="e20r-add-assignment-manage-options">
+                    <!-- <button class="button button-secondary" id="e20r-add-assignment-new-option"><?php _e("New Option", "e20rtracker"); ?></button> -->
+                </td>
+            </tr>
+            </tfoot>
+        </table><?php
+
+        $html = ob_get_clean();
+        return $html;
     }
 
     public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments, $answerDefs = null  ) {
 
         global $e20rAssignment;
 		global $currentArticle;
+
+        $multi_select = false;
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -123,6 +208,12 @@ class e20rAssignmentView extends e20rSettingsView {
             dbg("e20rAssignmentView::viewArticle_Assignments() - Processing previously defined assignment definitions.");
 
             foreach ( $assignments as $a ) {
+
+                if ( !empty( $a->select_options ) ) {
+
+                    $multi_select = true;
+                }
+
                 dbg("e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->question_id}");
                 dbg( $a );
                 ?>
@@ -253,13 +344,13 @@ class e20rAssignmentView extends e20rSettingsView {
 
 					break;
 
-				case 4: // Mulitple choice (radio buttons) (array?)
-
+				case 4: // Multiple choice (select2 list) list of assignments
+                    echo $this->showMultipleChoice( $assignment );
 					break;
 
                 case 5: // Likert/Survey (1 - 10)
 
-                    echo $this->showAssignmentSurvey( $assignment );
+                    echo $this->showAssignmentRanking( $assignment );
                     break;
 
                 case 6: // Yes/No question
@@ -314,11 +405,40 @@ class e20rAssignmentView extends e20rSettingsView {
 		return $html;
 	}
 
-    private function showAssignmentSurvey( $assignment ) {
+    private function showMultipleChoice( $assignment ) {
+
+        $assignment->choices;
+        $assignment->selected_choices;
 
         ob_start();
         ?>
-        <div class="e20r-assignment-survey">
+        <div class="e20r-assignment-paragraph">
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+            <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+            <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+            <h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+            if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
+                <div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
+            }?>
+            <select class="select2-container" name="e20r-assignment-answer[]" multiple="multiple"><?php
+
+                foreach( $assignment->select_options as $option_id => $option_text ) {
+
+                    $selected = ( in_array( $option_id, $assignment->answer ) ) ? 'selected="selected"' : null;
+                    ?>
+                    <option value="<?php echo $option_id ?>" <?php echo $selected; ?>><?php echo $option_text; ?></option><?php
+                }?>
+            </select>
+        </div><?php
+
+        return ob_get_clean();
+    }
+
+    private function showAssignmentRanking( $assignment ) {
+
+        ob_start();
+        ?>
+        <div class="e20r-assignment-ranking">
             <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
             <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
             <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
@@ -327,16 +447,16 @@ class e20rAssignmentView extends e20rSettingsView {
             if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
                 <div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
             }?>
-            <table class="e20r-assignment-survey-question">
+            <table class="e20r-assignment-ranking-question">
                 <tbody>
                 <tr><?php
                     foreach( range(1, 10) as $cnt ) { ?>
-                        <td class="e20r-assignment-survey-question-choice-label"><?php echo $cnt; ?></td><?php
+                        <td class="e20r-assignment-ranking-question-choice-label"><?php echo $cnt; ?></td><?php
                     }?>
                 </tr>
                 <tr><?php
                     foreach( range(1, 10) as $cnt ) {?>
-                        <td class="e20r-assignment-survey-question-choice">
+                        <td class="e20r-assignment-ranking-question-choice">
                         <input name="e20r-assignment-answer[]" type="radio" value="<?php echo $cnt; ?>" tabindex="<?php echo $cnt; ?>" <?php checked( $assignment->answer, $cnt); ?>>
                         </td><?php
                     }?>
@@ -352,7 +472,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
         ob_start();
         ?>
-        <div class="e20r-assignment-survey">
+        <div class="e20r-assignment-ranking">
             <input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : -1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
             <input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
             <input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
@@ -361,17 +481,17 @@ class e20rAssignmentView extends e20rSettingsView {
             if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
                 <div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
             }?>
-            <table class="e20r-assignment-survey-question">
+            <table class="e20r-assignment-ranking-question">
                 <tbody>
                 <tr>
-                    <td class="e20r-assignment-survey-question-choice-label"><?php _e("Yes", "e20rtracker"); ?></td>
-                    <td class="e20r-assignment-survey-question-choice-label"><?php _e("No", "e20rtracker"); ?></td>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e("Yes", "e20rtracker"); ?></td>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e("No", "e20rtracker"); ?></td>
                 </tr>
                 <tr>
-                    <td class="e20r-assignment-survey-question-choice">
+                    <td class="e20r-assignment-ranking-question-choice">
                         <input name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' );?>>
                     </td>
-                    <td class="e20r-assignment-survey-question-choice">
+                    <td class="e20r-assignment-ranking-question-choice">
                         <input name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' );?>>
                     </td>
                 </tr>
@@ -394,6 +514,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( isset( $assignment->descr ) && !empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
 			}?>
+            <input class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="Type your response" />
 		</div>
 		<?php
 		return ob_get_clean();
