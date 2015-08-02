@@ -69,35 +69,44 @@ class e20rArticleView extends e20rSettingsView {
         global $e20rTracker;
         global $currentProgram;
 
-        ob_start();
-        ?>
-        <div id="saturday-progress-container" class="progress-container" style="margin-bottom: 16px;">
-            <h3>Weekly Progress <span>Update</span></h3>
-            <div id="e20r-progress-canvas" style="min-height: 255px;">
-                <img src="<?php echo E20R_PLUGINS_URL; ?>/images/alert.png" class="tooltip-handle" data-tooltip="" data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock" style="float: left;"/>
-                <div style="float: left; width: 360px;">
+        if ( !empty( $currentProgram->measurements_page_id ) ) {
 
-                    <h4 style="font-size: 22px; margin-top: 8px; height: 28px; line-height: 30px;"><span class="highlighted">We&nbsp;need&nbsp;your&nbsp;measurements.</span></h4>
-                    <p style="font-size: 16px; color: black;">Today is a measurement day. Here's what we need you to collect:</p>
+            ob_start();
+            ?>
+            <div id="saturday-progress-container" class="progress-container" style="margin-bottom: 16px;">
+                <h3>Weekly Progress <span>Update</span></h3>
 
-                    <ul style="font-size: 16px;">
-                        <li style="line-height: 20px;">Body Weight</li>
-                        <li style="line-height: 20px;">Girth Measurements</li>
-                <?php if ( $photos == 1): ?>
-                        <li style="line-height: 20px;">Photos</li>
-                <?php endif; ?>
-                    </ul>
+                <div id="e20r-progress-canvas" style="min-height: 255px;">
+                    <img src="<?php echo E20R_PLUGINS_URL; ?>/images/alert.png" class="tooltip-handle" data-tooltip=""
+                         data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock" style="float: left;"/>
 
-                    <form action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>" method="POST" id="e20r-start">
-                        <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
-                        <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
-                    </form>
-                    <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="font-size: 18px; line-height: 20px; font-weight: bold; margin-top: 16px; display: block;">Begin  &raquo;</a>
+                    <div style="float: left; width: 360px;">
+
+                        <h4 style="font-size: 22px; margin-top: 8px; height: 28px; line-height: 30px;"><span class="highlighted">We&nbsp;need&nbsp;your&nbsp;measurements.</span></h4>
+
+                        <p style="font-size: 16px; color: black;">Today is a measurement day. Here's what we need you to
+                            collect:</p>
+
+                        <ul style="font-size: 16px;">
+                            <li style="line-height: 20px;">Body Weight</li>
+                            <li style="line-height: 20px;">Girth Measurements</li>
+                            <?php if ($photos == 1): ?>
+                                <li style="line-height: 20px;">Photos</li>
+                            <?php endif; ?>
+                        </ul>
+                        <form action="<?php echo get_permalink($currentProgram->measurements_page_id); ?>" method="POST"
+                              id="e20r-start">
+                            <input type="hidden" value="<?php echo $e20rTracker->getDateForPost($day); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
+                            <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+                        </form>
+                        <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn"
+                           style="font-size: 18px; line-height: 20px; font-weight: bold; margin-top: 16px; display: block;">Begin &raquo;</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <br/>
-        <?php
+            <br/>
+            <?php
+        }
         $html = ob_get_clean();
 
         return $html;
