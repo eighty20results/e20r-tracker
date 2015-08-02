@@ -51,7 +51,8 @@ class e20rTables {
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->workout       = $wpdb->prefix . 'e20r_workout';
-        $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
+        $this->tables->surveys       = $wpdb->prefix . 'e20r_surveys';
+        // $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
 	    //        $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
 
 
@@ -124,6 +125,20 @@ class e20rTables {
             'checkin_short_name' => 'checkin_short_name',
             'checkin_type'      => 'checkin_type',
             'checkin_note'      => 'checkin_note',
+        );
+    }
+
+    private function loadSurveyFields() {
+
+        $this->fields['surveys'] = array(
+            'id'                => 'id',
+            'user_id'           => 'user_id',
+            'program_id'        => 'program_id',
+            'article_id'        => 'article_id',
+            'survey_data'       => 'survey_data',
+            'recorded'          => 'recorded',
+            'completed'         => 'completed',
+            'for_date'          => 'for_date'
         );
     }
 
@@ -366,6 +381,10 @@ class e20rTables {
 	        case 'workout':
 		        $this->loadWorkoutFields();
 		        break;
+
+            case 'surveys':
+                $this->loadSurveyFields();
+                break;
 
 	        default:
 		        dbg("e20rTables::loadFields() - No fields to load for {$name}");
