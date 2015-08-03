@@ -259,8 +259,9 @@ class e20rTracker {
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
+	        // add_action( 'gform_entry_post_save', array( &$e20rClient, 'save_interview'), 10, 2);
 	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
- 	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
+//  	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
 	        add_filter( 'gform_field_value', array( &$e20rClient, 'process_gf_fields'), 10, 3);
 //	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
 // 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
@@ -1149,7 +1150,7 @@ class e20rTracker {
         add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
         add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
-        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Survey", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Surveys", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
         add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
         // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
@@ -1915,7 +1916,7 @@ class e20rTracker {
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->getData( $userId, true ), JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->get_data( $userId, true ), JSON_NUMERIC_CHECK ),
 //                        'progress_pictures' => '',
 //                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
@@ -2169,6 +2170,7 @@ class e20rTracker {
 				article_id int not null,
 				survey_type int null,
 				survey_data text null,
+				is_encrypted tinyint null,
 				recorded timestamp not null default current_timestamp,
 				completed datetime null,
 				for_date datetime null,
@@ -3283,6 +3285,11 @@ class e20rTracker {
         $rDate = date( 'Y-m-d', strtotime( "{$sDate} +{$delay} days") );
 
         dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Startdate ({$sDate}) + delay ({$delay}) days = date: {$rDate}");
+
+        if ( $delay < 0 ) {
+            dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Returning 'startdate' as the correct date.");
+            $rDate = $sDate;
+        }
 
         return $rDate;
     }
