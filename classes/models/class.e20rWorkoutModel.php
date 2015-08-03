@@ -393,23 +393,33 @@ class e20rWorkoutModel extends e20rSettingsModel {
                     $activities[$wr['exercise_id']] = new stdClass();
                 }
 
-                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}  ) ) {
+                // if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}  ) ) {
 
-                    $activities[$wr['exercise_id']]->{$wr['for_date']} = array();
+                if ( !isset( $activities[$wr['exercise_id']]->when  ) ) {
+                    $activities[$wr['exercise_id']]->when = array();
                 }
 
+                if ( !isset( $activities[$wr['exercise_id']]->when[$wr['for_date']] ) ) {
+                    $activities[$wr['exercise_id']]->when[$wr['for_date']] = new stdClass();
+                }
+
+                if ( !isset( $activities[$wr['exercise_id']]->when[$wr['for_date']]->group ) ) {
+
+                    $activities[$wr['exercise_id']]->when[$wr['for_date']]->group = array();
+                }
 /*                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}->{$wr['group_no']} ) ) {
 
                     $activities[$wr['exercise_id']]->$wr['for_date']->{$wr['group_no']} = array();
                 }
 */
-                if ( !isset( $activities[$wr['exercise_id']]->{$wr['for_date']}[$set] ) ) {
+                if ( !isset( $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']] ) ) {
 
-                    $activities[$wr['exercise_id']]->{$wr['for_date']}[$set] = new stdClass();
+                    $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']] = new stdClass();
                 }
 
-                $activities[$wr['exercise_id']]->{$wr['for_date']}[$set]->weight = $wr['weight'];
-                $activities[$wr['exercise_id']]->{$wr['for_date']}[$set]->reps = $wr['reps'];
+                $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']]->set = $wr['set_no'];
+                $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']]->weight = $wr['weight'];
+                $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']]->reps = $wr['reps'];
             }
 
             dbg("e20rWorkoutModel::loadUserActivityData() - Completed processing: Returnding data for " . count($activities) . " workouts");

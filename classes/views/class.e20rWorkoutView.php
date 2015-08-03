@@ -87,25 +87,25 @@ class e20rWorkoutView extends e20rSettingsView {
 
                     unset($info->name);
 
-                    foreach( $info as $time => $sets ) {
+                    foreach( $info->when as $time => $group ) {
 
                         $cnt = 1;
                         ?>
                         <div class="e20r-activity-history-row <?php echo ($row % 2) == 0  ? 'e20rEven' : 'e20rOdd'; ?>">
                             <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div><?php
-                                foreach( $sets as $set ) { ?>
+                                foreach( $group->group as $gid => $set ) { ?>
 
-                                <div class="e20r-activity-history-sets"><?php
-                                    if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
-                                        $unit = "BW? ({$set->weight})";
-                                    }
-                                    else {
-                                        $unit = $set->weight;
-                                    }
+								<div class="e20r-activity-history-sets"><?php
+										if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
+											$unit = "BW? ({$set->weight})";
+										}
+										else {
+											$unit = $set->weight;
+										}
 
-                                    if ( $set->reps != 0 ) {
+										if ( $set->reps != 0 ) {
                                     ?>
-                                    <h4 class="e20r-activity-history-set-title">Set #<?php echo $cnt++; ?></h4>
+                                    <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Group: %d, Set: %d", "e20rtracker" ),$gid, $set->set ); ?></h4>
                                     <div class="e20r-activity-history-set-detail">
                                         <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
                                         <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
