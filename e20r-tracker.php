@@ -26,6 +26,8 @@ define( 'CONST_SATURDAY', 6 );
 define( 'CONST_SUNDAY', 0 );
 define( 'CONST_MONDAY', 1 );
 define( 'GF_PHOTOFORM_ID', 45 );
+define( 'E20R_SURVEY_TYPE_WELCOME', 1);
+define( 'E20R_SURVEY_TYPE_OTHER', 9999);
 
 // define( 'URL_TO_PROGRESS_FORM', site_url('/coaching/progress-update/'));
 define( 'E20R_COACHING_URL' , site_url( '/coaching/' ) );
