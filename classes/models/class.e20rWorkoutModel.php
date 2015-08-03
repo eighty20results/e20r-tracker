@@ -386,7 +386,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
                 //$set = ( ($wr['group_no'] != 0 ? $wr['group_no'] : 1) * $wr['set_no'] * $wr['exercise_key']);
                 // $set = ( ($wr['group_no'] != 0 ? $wr['group_no'] : 1) * $wr['set_no'] + $wr['exercise_key']);
-                $set = $wr['group_no'] + $wr['set_no'] + $wr['exercise_key'];
+                // $set = $wr['group_no'] + $wr['set_no'] + $wr['exercise_key'];
 
                 if ( !isset( $activities[$wr['exercise_id']] ) ) {
 
