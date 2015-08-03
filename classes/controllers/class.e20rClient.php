@@ -224,6 +224,8 @@ class e20rClient {
 		global $current_user;
 		global $post;
 
+        // dbg( $form );
+
 		if ( stripos( $form['cssClass'], 'nourish-interview-identifier' ) === false ) {
 
 			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form: ' . $form['cssClass']);
@@ -265,7 +267,7 @@ class e20rClient {
 			return $form;
 		}
 
-		$cFields = array( 'GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select' );
+		$cFields = array( 'GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select', 'GF_Field_MultiSelect' );
 		$txtFields = array( 'GF_Field_Phone', 'GF_Field_Text', 'GF_Field_Email', 'GF_Field_Date', 'GF_Field_Number', 'GF_Field_Textarea');
 		$skipLabels = array( 'Comments', 'Name', 'Email', 'Phone' );
 
@@ -291,11 +293,23 @@ class e20rClient {
 				// Option/select fields - Use ['choices'] to set the current/default value.
 				dbg("e20rClient::loadClientInterviewData() - Processing {$classType} object {$item['label']}");
 
+                if ( !is_array( $item['choices' ] ) ) {
+                    dbg("e20rClient::loadClientInterviewData() - Processing {$classType} object {$item['label']} Isn't an array of values?");
+                }
+
 				foreach( $item['choices'] as $cId => $i ) {
+
+                    if  ( ( !isset( $c_data->{$item['label']})) || ( ( $c_data->{$item['label']} != 0 ) && empty( $c_data->{$item['label']} ) ) ) {
+                        dbg("e20rClient::loadClientInterviewData() - {$item['label']} is empty?");
+                        continue;
+                    }
 
 					// Split any checkbox list values in $c_data by semicolon...
 					$itArr = preg_split( '/;/', $c_data->{$item['label']} );
 
+                    $msArr = preg_split( '/,/', $c_data->{$item['label']} );
+
+                    // dbg("e20rClient::loadClientInterviewData() - Is value {$c_data->{$item['label']}} for object {$item['label']} numeric? " . ( is_numeric( $c_data->{$item['label']}) ? 'Yes' : 'No' ) );
 					/** Process special cases where the DB field is numeric but the value in the form is text (Yes/No values) */
 					if ( is_numeric( $c_data->{$item['label']}) && ( 'likert' != $item['inputType'] ) ) {
 
@@ -349,6 +363,16 @@ class e20rClient {
 
 					}
 
+                    if ( is_array( $msArr ) && ( count( $msArr ) ) ) {
+
+                        dbg( "e20rClient::loadClientInterviewData() - List of values. Processing {$choiceField[$cId][$key]}" );
+
+                        if ( in_array( $choiceField[ $cId ][ $key ], $msArr ) ) {
+                            dbg( "e20rClient::loadClientInterviewData() - Found {$i[$key]} as a saved value!" );
+                            $choiceField[ $cId ]['isSelected'] = 1;
+                        }
+                    }
+
 					if ( is_array($itArr) && ( count( $itArr ) > 1 ) ) {
 
 						dbg( "e20rClient::loadClientInterviewData() - List of values. Processing {$choiceField[$cId][$key]}" );
@@ -370,8 +394,8 @@ class e20rClient {
 
 				if ( !empty( $c_data->{$item['label']} ) )  {
 
-					dbg("e20rClient::loadClientInterviewData() - Restoring value: " . $c_data->{$item['label']} . " for field: " . $item['label']);
-					$form['fields'][ $id ]['defaultValue'] = $c_data->{$item['label']};
+					dbg("e20rClient::loadClientInterviewData() - Restoring value: " . htmlentities2( $c_data->{$item['label']} ) . " for field: " . $item['label']);
+					$form['fields'][ $id ]['defaultValue'] = htmlentities2( $c_data->{$item['label']} );
 				}
 			}
 		}
@@ -457,13 +481,13 @@ class e20rClient {
 		if ( false === stripos( $form['cssClass'], 'nourish-interview-identifier' ) ) {
 
 			dbg('e20rTracker::save_interview()  - Not the BitBetter Interview form: ' . $form['cssClass']);
-			return;
+			return false;
 		}
 
 		if ( ! is_user_logged_in() ) {
 
 			dbg("e20rTracker::save_interview()  - User accessing form without being logged in.");
-			return;
+			return false;
 		}
 
 		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
@@ -480,16 +504,21 @@ class e20rClient {
 		global $e20rTracker;
         global $page;
 
+		global $currentProgram;
+		global $currentArticle;
+
 		$userId = $current_user->ID;
-		$userProgramId = $e20rProgram->getProgramIdForUser( $userId );
-		$userProgramStart = $e20rProgram->startdate( $userId );
+		$userProgramId = !empty( $currentProgram->id ) ? $currentProgram->id : $e20rProgram->getProgramIdForUser( $userId );
+		$userProgramStart = $currentProgram->startdate;
 		$eKey = $e20rTracker->getUserKey( $userId );
+		$articleId = $currentArticle->id;
 
 		$db_Data = array(
 			// 'id' => $userId,
 			'user_id' => $userId,
 			'program_id' => $userProgramId,
-            'page_id' => $page->ID,
+            'page_id' => isset( $page->ID ) ? $page->ID : null,
+			'article_id' => $currentArticle->id,
 			'program_start' => date_i18n('Y-m-d', $userProgramStart ),
 	        'user_enc_key' => $eKey,
 			'progress_photo_dir'=> "e20r_pics/client_{$userProgramId}_{$userId}"
@@ -498,7 +527,9 @@ class e20rClient {
 		$fieldList = array( 'text', 'textarea', 'number', 'email', 'phone' );
 
 		dbg("e20rClient::save_interview() - Processing the Welcome Interview form");
-
+/*        dbg($form['fields']);
+        dbg($entry);
+*/
 		foreach( $form['fields'] as $item ) {
 
 			$skip = true;
@@ -535,7 +566,7 @@ class e20rClient {
 
 					if ( ! empty( $checked ) ) {
 
-						$db_Data[ $fieldName ] = $e20rTracker->encryptData( join( ';', $checked ), $eKey );
+						$db_Data[ $fieldName ] = join( ';', $checked );
 
 					}
 
@@ -625,13 +656,27 @@ class e20rClient {
 						if ( !empty( $val ) ) {
 
 							dbg("e20rClient::save_interview() - Saving address item {$fieldName} -> {$val}");
-							$db_Data[ $fieldName ] = $e20rTracker->encryptData( $this->filterResponse( $val ), $eKey );
+							$db_Data[ $fieldName ] = $this->filterResponse( $val );
 						}
 
 					}
 
 					$skip = true;
 				}
+
+                if ( $item['type'] == 'multiselect' ) {
+
+                    dbg("e20rClient::save_interview() - Processing MultiSelect");
+
+                    if (!empty( $entry[$subm_key]) ) {
+
+//                        $selections = explode(",", $entry[$subm_key]);
+//                        dbg( $selections );
+
+                        dbg("e20rClient::save_interview() - Multiselect - Field: {$fieldName}, subm_key={$subm_key}, entryVal={$entry[$subm_key]}, item={$item['choices'][$k]['value']}");
+                        $db_Data[ $fieldName ] = $this->filterResponse( $entry[$subm_key]);
+                    }
+                }
 
 				if ( $item['type'] == 'select' ) {
 
@@ -643,7 +688,7 @@ class e20rClient {
 
 							if ( $item['choices'][$k]['value'] == $entry[$subm_key] ) {
 
-								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $this->filterResponse( $item['choices'][$k]['value'] ), $eKey );
+								$db_Data[ $fieldName ] = $this->filterResponse( $item['choices'][$k]['value'] );
 							}
 						}
 					}
@@ -652,11 +697,33 @@ class e20rClient {
 				if ( $item['type'] == 'radio' ) {
 
 					if ( !empty( $entry[$subm_key] ) ) {
-						foreach ( $item['choices'] as $k => $v ) {
+
+                        // Handle cases where Yes/No fields have 0/1 values.
+                        dbg("e20rClient::save_interview() - Processing numeric radio button value: {$entry[$subm_key]}");
+/*
+                        if ( in_array( $entry[$subm_key], array( 'Yes', 'No' ) ) ) {
+
+                            switch ( $entry[$subm_key] ) {
+                                case 'No':
+                                    $db_Data[ $fieldName ] = 0;
+                                    break;
+
+                                case 'Yes':
+                                    $db_Data[ $fieldName ] = 1;
+                                    break;
+                            }
+                            // $data[ $fieldName ] = $this->filterResponse( $entry[$subm_key] );
+                            $skip = true;
+                        }
+*/
+                        foreach ( $item['choices'] as $k => $v ) {
+
+                            // dbg($item['choices'][$k]);
 
 							if ( $item['choices'][ $k ]['value'] == $entry[ $subm_key ] ) {
 
-								$db_Data[ $fieldName ] = $e20rTracker->encryptData( $this->filterResponse( $item['choices'][ $k ]['value'] ), $eKey );
+                                dbg("e20rClient::save_interview() - Processing radio button: Value: {$item['choices'][ $k ]['value']}");
+								$db_Data[ $fieldName ] = $this->filterResponse( $item['choices'][ $k ]['value'] );
 								$skip                  = true;
 							}
 						}
@@ -673,8 +740,13 @@ class e20rClient {
 					$data = trim( $entry[ $subm_key ] );
 					dbg("e20rClient::save_interview() - Data being stored: .{$data}.");
 
+					if ( 'textarea' == $item['type'] ) {
+
+						$data = htmlspecialchars( $data );
+					}
+
 					// Encrypt the data.
-					$encData = $e20rTracker->encryptData( $this->filterResponse( $data ), $eKey );
+					$encData = $this->filterResponse( $data );
 					$db_Data[ $fieldName ] = $encData;
 				}
 				else {
@@ -683,10 +755,9 @@ class e20rClient {
 			}
 		} // End of foreach loop for submitted form
 
-		if ( ! WP_DEBUG ) {
-
-			dbg("e20rClient::save_interview() - Removing any GF entry data from database.");
-			$this->remove_survey_form_entry( $entry );
+		if ( WP_DEBUG ) {
+            dbg("e20rClient::save_interview() - Data to save: ");
+            dbg($db_Data);
 		}
 
 		dbg("e20rClient::save_interview() - Saving the client interview data to the DB. ");
@@ -694,7 +765,11 @@ class e20rClient {
 		if ( $this->model->save_client_interview( $db_Data ) ) {
 
 			dbg("e20rClient::save_interview() - Saved data to the database ");
-			return true;
+
+            dbg("e20rClient::save_interview() - Removing any GF entry data from database.");
+            $this->remove_survey_form_entry( $entry );
+
+            return true;
 		}
 
 		return false;
@@ -718,6 +793,19 @@ class e20rClient {
 				}
 			}
 		}
+
+        if ( ( 'multichoice' == $type ) && $field->allowsPrepopulate ) {
+
+            $col_value = null;
+
+            foreach( $field->choices as $i ) {
+
+                if ( 1 == $i['isSelected'] ) {
+
+                    return $i['value'];
+                }
+            }
+        }
 
 		if ( ( 'address' == $type ) && $field->allowsPrepopulate && !is_null( $currentClient->user_id ) ) {
 
@@ -751,6 +839,8 @@ class e20rClient {
 				break;
 		}
 
+		// Preserve \n in textboxes
+		$data = implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $data ) ) );
 		return $data;
 	}
     /*
@@ -790,59 +880,6 @@ class e20rClient {
 
     }
 
-    /*
-public function loadClient( $id = null ) {
-
-    global $currentClient;
-
-    if ( $id ) {
-        $currrentClient->user_id = $id;
-    }
-
-    $this->model->setUser( $currrentClient->user_id );
-    $this->model->get_data( $user_id );
-
-}
-*/
-    /*
-    public function afterGFSubmission( $entry, $form ) {
-
-        dbg("gf_after_submission - entry: ". print_r( $entry, true));
-        dbg("gf_after_submission - form: ". print_r( $form, true));
-    }
-    */
-/*
-    public function ajax_userInfo_callback() {
-
-        dbg("ajax_userInfo_Callback() - Checking access");
-        dbg("Received data: " . print_r($_POST, true ) );
-
-        check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
-
-        dbg("ajax_userInfo_Callback() - Access approved");
-
-        global $wpdb;
-
-        $var = ( isset( $_POST['measurement-type']) ? sanitize_text_field( $_POST['measurement-type']): null );
-
-        try {
-
-            if ( empty( $this->model ) ) {
-                $this->init();
-            }
-
-            $userData = $this->model->info->getInfo();
-            $retVal = $userData->{$var};
-
-            dbg("Requested variable: {$var} = {$retVal}" );
-            echo json_encode( $retVal, JSON_FORCE_OBJECT );
-            exit;
-        }
-        catch ( Exception $e ) {
-            dbg("Error loading and returning user data: " . $e->getMessage() );
-        }
-    }
-*/
     /**
      * Render page on back-end for client data (admin selectable).
      */
@@ -873,22 +910,6 @@ public function loadClient( $id = null ) {
         echo $this->view->viewClientAdminPage( $lvlName );
     }
 
-    /*
-    public function getInfo() {
-
-        if ( empty( $this->model->info ) ) {
-
-            try {
-                $this->loadInfo();
-            }
-            catch ( Exception $e ) {
-                dbg('Error loading user info from the database: ' . $e->getMessage() );
-            }
-        }
-
-        return $this->info;
-    }
-*/
     public function updateUnitTypes() {
 
         dbg( "e20rClient::updateUnitTypes() - Attempting to update the Length or weight Units via AJAX");
