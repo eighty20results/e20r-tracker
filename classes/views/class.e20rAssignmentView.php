@@ -676,8 +676,29 @@ class e20rAssignmentView extends e20rSettingsView {
 									</tr>
 									<tr>
 										<td>
-											<div class="e20r-assignments-answer">
-												<?php echo empty( $answer->answer ) ? __("No response recorded", "e20rtracker") : stripslashes($answer->answer); ?>
+											<div class="e20r-assignments-answer"><?php
+
+                                                if ( is_array( $answer->answer ) ) {
+
+                                                    $info = '';
+                                                    // Build the string of options selected.
+                                                    foreach ( $answer->answer as $key ) {
+
+                                                        $info .= "{$answer->select_options[$key]}, ";
+                                                    }
+
+                                                    // Remove trailing comma and whitespace.
+                                                    $info = preg_replace("/,\s$/", '', $info );
+                                                }
+                                                elseif ( 5 == $answer->field_type ) {
+                                                    $info = "On a scale from 1 to 10: <strong>{$answer->answer}</strong>";
+                                                }
+                                                else {
+                                                    $info = $answer->answer;
+                                                }
+
+
+                                                echo empty( $info ) ? __("No response recorded", "e20rtracker") : stripslashes($info); ?>
 											</div>
 										</td>
 									</tr>
