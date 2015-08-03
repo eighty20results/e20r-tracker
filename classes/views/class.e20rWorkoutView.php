@@ -74,7 +74,7 @@ class e20rWorkoutView extends e20rSettingsView {
                 case 3: // AMRAP
                     $unit_pre = __("Time", "e20rtracker");
                     $wType = $e20rExercise->getExerciseType($type);
-                $unit_post = __("seconds", "e20rtracker");
+                    $unit_post = __("seconds", "e20rtracker");
                     break;
             }
 
@@ -89,7 +89,6 @@ class e20rWorkoutView extends e20rSettingsView {
 
                     foreach( $info->when as $time => $group ) {
 
-                        $cnt = 1;
                         ?>
                         <div class="e20r-activity-history-row <?php echo ($row % 2) == 0  ? 'e20rEven' : 'e20rOdd'; ?>">
                             <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div><?php
@@ -103,15 +102,15 @@ class e20rWorkoutView extends e20rSettingsView {
 											$unit = $set->weight;
 										}
 
-										if ( $set->reps != 0 ) {
+										//if ( $set->reps != 0 ) {
                                     ?>
-                                    <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Group: %d, Set: %d", "e20rtracker" ),$gid, $set->set ); ?></h4>
+                                    <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Set %d in Group %d", "e20rtracker" ),$set->set, ( $gid + 1) ); ?></h4>
                                     <div class="e20r-activity-history-set-detail">
                                         <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
                                         <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
-                                        <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps > 1 ? __("reps", "e20rtracker") : __("rep", "e20rtracker") ); ?></p>
+                                        <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps == 1 ? __("rep", "e20rtracker") : __("reps", "e20rtracker") ); ?></p>
                                     </div><?php
-                                    } ?>
+                                    // } ?>
                                 </div><?php
                                     $row++;
                                 } ?>
