@@ -51,7 +51,7 @@ class e20rClient {
         if ( $this->client_loaded !== true ) {
 
             $this->model->setUser( $currentClient->user_id );
-            $this->model->getData( $currentClient->user_id );
+            $this->model->get_data( $currentClient->user_id );
             $this->client_loaded = true;
         }
 
@@ -100,24 +100,24 @@ class e20rClient {
 
         global $currentClient;
 
-        return $this->model->getData( $currentClient->user_id, 'lengthunits');
+        return $this->model->get_data( $currentClient->user_id, 'lengthunits');
     }
 
     public function getWeightUnit() {
 
         global $currentClient;
 
-        return $this->model->getData( $currentClient->user_id, 'weightunits' );
+        return $this->model->get_data( $currentClient->user_id, 'weightunits' );
     }
 
     public function getBirthdate( $user_id ) {
 
-        return $this->model->getData( $user_id, 'birthdate' );
+        return $this->model->get_data( $user_id, 'birthdate' );
     }
 
     public function getUploadPath( $user_id ) {
 
-        return $this->model->getData( $user_id, 'program_photo_dir' );
+        return $this->model->get_data( $user_id, 'program_photo_dir' );
     }
 
     public function getUserImgUrl( $who, $when, $imageSide ) {
@@ -138,24 +138,24 @@ class e20rClient {
         $this->init();
     }
 
-    public function getData( $clientId, $private = false ) {
+    public function get_data( $clientId, $private = false ) {
 
         if ( ! $this->client_loaded ) {
 
-            dbg("e20rClient::getData() - No client data loaded yet...");
+            dbg("e20rClient::get_data() - No client data loaded yet...");
             $this->setClient( $clientId );
-            // $this->getData( $clientId );
+            // $this->get_data( $clientId );
         }
 
-        $data = $this->model->getData( $clientId );
+        $data = $this->model->get_data( $clientId );
 
 	    if ( $private ) {
 
-		    dbg("e20rClient::getData() - Removing private data");
+		    dbg("e20rClient::get_data() - Removing private data");
 		    $data = $this->strip_private_data( $data );
 	    }
 
-	    dbg("e20rClient::getData() - Returned data for {$clientId} from client_info table:");
+	    dbg("e20rClient::get_data() - Returned data for {$clientId} from client_info table:");
         dbg($data);
 
         return $data;
@@ -186,12 +186,12 @@ class e20rClient {
 
 		if ( strtotime( $data->birthdate ) ) {
 
-			$data->display_birthdate = 0;
+			$data->display_birthdate = false;
 		}
 
 		if ( isset( $data->first_name ) && ( isset( $data->id ) ) && isset( $data->display_birthdate ) ) {
 
-			$data->incomplete_interview = 0;
+			$data->incomplete_interview = false;
 		}
 
 		return $data;
@@ -201,14 +201,14 @@ class e20rClient {
 
         global $currentClient;
 
-		return strtolower( $this->model->getData( $currentClient->user_id, 'gender') );
+		return strtolower( $this->model->get_data( $currentClient->user_id, 'gender') );
 	}
 
     public function completeInterview( $userId ) {
 
         global $e20rTracker;
 
-        $data = $this->model->getData( $userId, 'completed_date');
+        $data = $this->model->get_data( $userId, 'completed_date');
 
         dbg("e20rClient::completeInterview() - completed_date field contains: ");
         dbg($data);
@@ -254,7 +254,7 @@ class e20rClient {
 
 		$this->setClient($clientId);
 
-		$c_data = $this->model->getData( $clientId );
+		$c_data = $this->model->get_data( $clientId );
 
 		dbg("e20rClient::loadClientInterviewData() - Client Data from DB:");
 		dbg($c_data);
@@ -721,7 +721,7 @@ class e20rClient {
 
 		if ( ( 'address' == $type ) && $field->allowsPrepopulate && !is_null( $currentClient->user_id ) ) {
 
-			$val = $this->model->getData($currentClient->user_id, $name );
+			$val = $this->model->get_data($currentClient->user_id, $name );
 
 			dbg("e20rClient::process_gf_fields() - Found the {$name} field for user ({$currentClient->user_id}): {$val}");
 			return $val;
@@ -780,7 +780,7 @@ class e20rClient {
 
             dbg("e20rClient::loadClientInfo() - Loading data for client model");
             $this->model->setUser( $user_id );
-            $this->model->getData( $user_id );
+            $this->model->get_data( $user_id );
 
         }
         catch ( Exception $e ) {
@@ -800,7 +800,7 @@ public function loadClient( $id = null ) {
     }
 
     $this->model->setUser( $currrentClient->user_id );
-    $this->model->getData( $user_id );
+    $this->model->get_data( $user_id );
 
 }
 */
@@ -868,7 +868,7 @@ public function loadClient( $id = null ) {
 
         $this->init();
 
-        $this->model->getData( $client_id );
+        $this->model->get_data( $client_id );
 
         echo $this->view->viewClientAdminPage( $lvlName );
     }
@@ -1092,7 +1092,7 @@ public function loadClient( $id = null ) {
         dbg("e20rClient::ajax_showClientMessage() - Load client data...");
 
         // Loads the program specific client information we've got stored.
-        $this->model->getData( $userId );
+        $this->model->get_data( $userId );
 
         $html = $this->view->viewClientContact( $userId );
 
@@ -1175,7 +1175,7 @@ public function loadClient( $id = null ) {
 		dbg("e20rClient::ajax_clientDetail() - Load client data...");
 
         // Loads the program specific client information we've got stored.
-        $this->model->getData( $clientId );
+        $this->model->get_data( $clientId );
 
         return $this->view->viewClientDetail( $clientId );
     }
