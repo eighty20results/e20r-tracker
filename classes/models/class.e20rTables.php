@@ -135,6 +135,7 @@ class e20rTables {
             'user_id'           => 'user_id',
             'program_id'        => 'program_id',
             'article_id'        => 'article_id',
+            'survey_type'       => 'survey_type',
             'survey_data'       => 'survey_data',
             'recorded'          => 'recorded',
             'completed'         => 'completed',
