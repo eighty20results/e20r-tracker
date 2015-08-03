@@ -39,8 +39,8 @@
     background-image: linear-gradient(#E5E5E5, #004CFF);
 }
 input[type="button"], input[type="reset"], input[type="submit"], .button {
-    background-color: #FFF
-cursor: pointer;
+    background-color: #FFF;
+    cursor: pointer;
     width: auto;
     display: inline-block;
     margin: 0 10px 0 0;
@@ -71,7 +71,7 @@ input:hover[type="submit"],
 .footer-widgets input[type="button"],
 .footer-widgets input[type="reset"],
 .footer-widgets input[type="submit"] {
-    color: #FFF;
+    color: #FFF !important;
     box-shadow: none !important;
     background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
     background-image: -moz-linear-gradient(#E5E5E5, #004CFF);
