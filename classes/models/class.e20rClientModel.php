@@ -10,6 +10,8 @@ class e20rClientModel {
 
     protected $data;
 
+    protected $clientinfo_fields;
+
     public function __construct() {
 
         global $e20rTables;
@@ -24,6 +26,12 @@ class e20rClientModel {
             dbg("e20rClientModel::construct() - Error loading client_info table: " . $e->getMessage() );
         }
 
+        $this->clientinfo_fields = array(
+            'user_id', 'program_id', 'page_id', 'program_start', 'progress_photo_dir',
+            'gender', 'incomplete_interview', 'first_name', 'birthdate', 'lengthunits',
+            'weightunits', 'loadedDefaults'
+        );
+
         if ( empty( $currentClient) ) {
 
             $currentClient = new stdClass();
@@ -37,12 +45,14 @@ class e20rClientModel {
 
         global $currentClient;
         global $currentProgram;
+        global $currentArticle;
         global $post;
 
         $defaults                       = new stdClass();
         $defaults->user_id              = $currentClient->user_id;
         $defaults->program_id           = $currentProgram->id;
-        $defaults->page_id              = isset( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
+        $defaults->page_id              = !empty( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
+        $defaults->article_id           = !empty( $currentArticle->id ) ? $currentArticle->id : CONST_NULL_ARTICLE;
         $defaults->program_start        = $currentProgram->startdate;
         $defaults->progress_photo_dir    = "e20r_pics/client_{$currentClient->program_id}_{$currentClient->user_id}";
         $defaults->gender               = 'm';
@@ -56,14 +66,115 @@ class e20rClientModel {
         return $defaults;
 
     }
-    
+
+    public function save_in_survey_table( $data ) {
+
+        global $currentProgram;
+        global $currentArticle;
+        global $current_user;
+        global $e20rTracker;
+        global $e20rTables;
+
+        global $post;
+        global $wpdb;
+
+        $record = array();
+
+        $table = $e20rTables->getTable('surveys');
+        $fields = $e20rTables->getFields('survey');
+
+        if ( ( !empty( $data['article_id'] )) && ( $data['article_id'] != $currentArticle->id ) ) {
+
+            global $e20rArticle;
+            dbg("e20rClientModel::save_in_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
+            $e20rArticle->getSettings( $data['article_id']);
+        }
+
+        $record["{$fields['article_id']}"] = !empty( $data['article_id'] ) ? $data['article_id'] : $currentArticle->id;
+
+        if ( ( !empty( $data['program_id'] ) ) && ( $data['program_id'] != $currentProgram->id ) ) {
+
+            global $e20rProgram;
+            dbg("e20rClientModel::save_in_survey_table() - Program ID in data vs currentProgram mismatch. Loading new program info");
+
+            $e20rProgram->init( $data['program_id']);
+        }
+
+        $record["{$fields['program_id']}"] = !empty( $data['program_id'] ) ? $data['program_id'] : $currentProgram->id;
+
+        if ( $post->ID == $currentProgram->intake_form ) {
+            dbg("e20rClientModel::save_in_survey_table() - Program config indicates we're on the same page as the welcome survey.");
+            $record["{$fields['survey_type']}"] = E20R_SURVEY_TYPE_WELCOME;
+        }
+        else {
+
+        }
+
+        $for_date_ts = strtotime( $e20rTracker->getDateFromDelay( $currentArticle->release_day, $data['user_id'] ) );
+        $record["{$fields['for_date']}"] = date_i18n( 'Y-m-d H:i:s', $for_date_ts );
+
+        if ( !empty( $data['user_id'] ) ) {
+            dbg("e20rClientModel::save_in_survey_table() - User ID: {$data['user_id']}");
+
+            $record["{$fields['user_id']}"] = $data['user_id'];
+        }
+        else {
+            $record["{$fields['user_id']}"] = $current_user->ID;
+        }
+
+        if ( !empty( $data['completion_date'] ) ) {
+            $record["{$fields['completed']}"] = date_i18n( 'Y-m-d H:i:s', strtotime( $data['completion_date'] ) );
+        }
+
+        $survey_data = array();
+
+        foreach( $data as $key => $value ) {
+
+            if ( !in_array( $key, $this->clientinfo_fields ) ) {
+
+                $survey_data[$key] = $value;
+            }
+        }
+
+        dbg("e20rClientModel::save_in_survey_table() - Loading the encryption key for the end user");
+        $key = $e20rTracker->getUserKey( $data['user_id']);
+
+        $record["{$fields['survey_data']}"] = $e20rTracker->encryptData( maybe_serialize( $survey_data ), $key );
+
+        // Check whether the surveys table already contains the record we're trying to save.
+        if ( ( $id = $this->recordExists( $record['user_id'], $record['program_id'], null, $record['article_id'], $table ) ) !== false ) {
+
+            dbg('e20rTrackerModel::save_in_survey_table() - User/Program exists in the client info table. Editing existing record.' );
+            $record["{$fields['id']}"] = $id;
+        }
+
+        $format = $e20rTracker->setFormatForRecord( $record );
+
+        if ( false === $wpdb->replace( $table, $data, $format ) ) {
+
+            global $EZSQL_ERROR;
+            dbg($EZSQL_ERROR);
+
+            dbg( "e20rTrackerModel::save_in_survey_table() - Error inserting form data: " . $wpdb->print_error() );
+            dbg( "e20rTrackerModel::save_in_survey_table() - Query: " . print_r( $wpdb->last_query, true ) );
+
+            return false;
+        }
+
+        return true;
+    }
+
 	public function save_client_interview( $data ) {
 
 		global $wpdb;
-		// global $e20rTables;
 		global $e20rTracker;
 
-		$data['completed_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
+		if ( !empty( $data['completion_date'] ) ) {
+            $data['completed_date'] = date('Y-m-d H:i:s', strtotime( $data['completion_date'] . " ". date( 'H:i:s', current_time('timestamp') ) ) );
+        }
+        else {
+            $data['completed_date'] = date('Y-m-d H:i:s', current_time('timestamp'));
+        }
 		// $id = false;
 
 		dbg("e20rClientModel::save_client_interview() - Saving data to {$this->table}");
@@ -80,43 +191,34 @@ class e20rClientModel {
 			unset($data['started_date'] ); // $data['started_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
 		}
 
+        if ( false === $this->save_in_survey_table( $data ) ) {
+            dbg("e20rClientModel::save_client_interview() - ERROR: Couldn't save in survey table!");
+            return false;
+        }
+
+        $to_save = array();
+        foreach( $this->clientinfo_fields as $field ) {
+
+            // Clean (empty) the client_info for everything except what we need in order to load various forms, etc.
+            $to_save[$field] = $data[$field];
+        }
+
+        dbg("e20rClientModel::save_client_interview() - We will save the following data to the client_info table:");
+        dbg($to_save);
+
 		// Generate format array.
-		$format = $e20rTracker->setFormatForRecord( $data );
+		$format = $e20rTracker->setFormatForRecord( $to_save );
 
-		dbg("e20rClientModel::save_client_interview() - Format for the record: ");
-		// dbg($format);
-		dbg("e20rClientModel::save_client_interview() - The record to insert: ");
-		// dbg($data);
+        if ( false === $wpdb->replace( $this->table, $to_save, $format ) ) {
 
-		// $wpdb->show_errors();
+            global $EZSQL_ERROR;
+            dbg($EZSQL_ERROR);
 
-		// if ( $id === false ) {
+            dbg( "e20rTrackerModel::save_client_interview() - Error inserting form data: " . $wpdb->print_error() );
+            dbg( "e20rTrackerModel::save_client_interview() - Query: " . print_r( $wpdb->last_query, true ) );
 
-			if ( false === $wpdb->replace( $this->table, $data, $format ) ) {
-
-				global $EZSQL_ERROR;
-				dbg($EZSQL_ERROR);
-
-				dbg( "e20rTrackerModel::save_client_interview() - Error inserting form data: " . $wpdb->print_error() );
-				dbg( "e20rTrackerModel::save_client_interview() - Query: " . print_r( $wpdb->last_query, true ) );
-
-				return false;
-			}
-/* 		}
-		else {
-
-			$data['id'] = $id;
-
-			if ( false === $wpdb->update( $this->table, $data, array( 'id' => $id ), $format, array( '%d' ) ) ) {
-
-				dbg( "e20rTrackerModel::save_client_interview() - Error updating data: " . $wpdb->print_error() );
-				dbg( "e20rTrackerModel::save_client_interview() - Query: " . print_r( $wpdb->last_query, true ) );
-
-				return false;
-			}
-		}
-*/
-		// $wpdb->hide_errors();
+            return false;
+        }
 
 		dbg("e20rTrackerModel::save_client_interview() - Data saved...");
 		$this->clearTransients();
@@ -124,19 +226,39 @@ class e20rClientModel {
 		return true;
 	}
 
-	private function recordExists( $userId, $programId, $pageId ) {
+	private function recordExists( $userId, $programId, $postId = null, $article_id = null, $table_name = null ) {
 
 		global $wpdb;
+        global $e20rTables;
 
-		$sql = $wpdb->prepare("
-			SELECT id
-			FROM {$this->table}
-			WHERE user_id = %d AND program_id = %d AND page_id = %d
-		",
-			$userId,
-			$programId,
-			$pageId
-		);
+        if ( is_null( $table_name ) ) {
+
+            $table_name = $this->table;
+        }
+
+        if ( !is_null( $postId ) ) {
+            $sql = $wpdb->prepare("
+                SELECT id
+                FROM {$table_name}
+                WHERE user_id = %d AND program_id = %d AND page_id = %d AND article_id = %d
+            ",
+                $userId,
+                $programId,
+                $postId,
+                $article_id
+            );
+        }
+        else {
+            $sql = $wpdb->prepare("
+                SELECT id
+                FROM {$table_name}
+                WHERE user_id = %d AND program_id = %d AND article_id = %d
+            ",
+                $userId,
+                $programId,
+                $article_id
+            );
+        }
 
 		$exists = $wpdb->get_var( $sql );
 
@@ -149,7 +271,7 @@ class e20rClientModel {
 		return false;
 	}
 
-    public function getData( $userId, $item = null ) {
+    public function get_data( $userId, $item = null ) {
 
         global $currentClient;
 
@@ -161,8 +283,8 @@ class e20rClientModel {
         // No item specified, returning everything we have.
         if ( is_null( $item ) ) {
 
-            dbg("e20rClientModel::getData() - Loading client information from database");
-            $this->loadData( $currentClient->user_id );
+            dbg("e20rClientModel::get_data() - Loading client information from database");
+            $this->load_data( $currentClient->user_id );
 
             // Return all of the data for this user.
             return $currentClient;
@@ -171,8 +293,8 @@ class e20rClientModel {
 
 	        if ( ! isset( $currentClient->{$item} ) ) {
 
-		        dbg( "e20rClientModel::getData() - Requested Item ({$item}) not found. Reloading.." );
-		        $this->loadData( $userId );
+		        dbg( "e20rClientModel::get_data() - Requested Item ({$item}) not found. Reloading.." );
+		        $this->load_data( $userId );
 	        }
 
 	        // Only return the specified item value.
@@ -194,6 +316,7 @@ class e20rClientModel {
         $encData = array();
         $encData['user_id'] = $clientData['user_id'];
         $encData['program_id'] = $clientData['program_id'];
+        $encData['article_id'] = $clientData['article_id'];
 	    $encData['page_id'] = $clientData['page_id'];
         $encData['program_start'] = $clientData['program_start'];
         $encData['progress_photo_dir'] = $clientData['progress_photo_dir'];
@@ -259,7 +382,7 @@ class e20rClientModel {
                 dbg("e20rClientModel::load() - Have to load client information for {$this->id} from the database");
 
                 // Not stored yet, so grab the data from the DB and store it.
-                $currentClient = $this->loadData( $currentClient->user_id, $currentClient->program_id );
+                $currentClient = $this->load_data( $currentClient->user_id, $currentClient->program_id );
                 $this->data = $currentClient;
 
                 // set_transient( "e20r_client_info_{$this->id}", $this->info, 1 * HOUR_IN_SECONDS );
@@ -386,51 +509,111 @@ class e20rClientModel {
         return $imageUrl;
     }
 
-    /*
-    public function getAppointments() {
+    private function load_from_survey_table( $clientId, $program_id, $article_id ) {
 
-        if ( empty( $this->appointments ) ) {
+        global $currentProgram;
+        global $currentArticle;
+        global $current_user;
+        global $e20rTracker;
+        global $e20rTables;
 
-            $this->load_appointments();
+        global $wpdb;
+
+        if ( ( !empty( $article_id )) && ( $article_id != $currentArticle->id ) ) {
+
+            global $e20rArticle;
+            dbg("e20rClientModel::load_from_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
+            $e20rArticle->getSettings( $article_id);
         }
 
-        return $this->appointments;
+        if ( ( !empty( $program_id ) ) && ( $program_id != $currentProgram->id ) ) {
+
+            global $e20rProgram;
+            dbg("e20rClientModel::save_in_survey_table() - Program ID in data vs currentProgram mismatch. Loading new program info");
+
+            $e20rProgram->init( $program_id );
+        }
+
+        $current_date_ts = strtotime( $e20rTracker->getDateFromDelay( $currentArticle->release_day, $clientId ) );
+        $record['for_date'] = date_i18n( 'Y-m-d H:i:s', $current_date_ts );
+
+        $table = $e20rTables->getTable('survey');
+        $fields = $e20rTables->getTable( 'survey' );
+
+        $sql = $wpdb->prepare(
+            "SELECT *
+                FROM {$table}
+                WHERE {$fields['user_id']} = %d AND
+                {$fields['program_id']} = %d AND
+                {$fields['article_id']} = %d
+          ",
+            $clientId,
+            $program_id,
+            $article_id
+        );
+
+        $records = $wpdb->get_results( $sql, ARRAY_A );
+
+        if ( !empty( $records ) ) {
+
+            if ( count( $records ) > 1 ) {
+                dbg("e20rClientModel::load_from_survey_table() - WARNING: More than one record returned for this program/article/user combination (not supposed to happen!)");
+                return false;
+            }
+            else {
+
+                $encrypted_survey = $records[ "{$fields['survey_data']}"];
+                $userKey = $e20rTracker->getUserKey( $clientId );
+
+                $decrypted_survey = $e20rTracker->decryptData( $encrypted_survey, $userKey );
+                $survey = maybe_unserialize( $decrypted_survey );
+
+                dbg("e20rClientModel::load_from_survey_table() - Retrieved " . count( $survey ) . " encrypted survey fields");
+                return $survey;
+            }
+        }
+
+        dbg("e20rClientModel::load_from_survey_table() - No survey records found for user ID {$clientId} in program {$program_id} for article {$article_id} ");
+        return false;
     }
-    */
-    private function loadData( $clientId, $program_id = null ) {
+
+    private function load_data( $clientId, $program_id = null, $table = null ) {
 
 	    global $wpdb;
 	    global $post;
         global $e20rProgram;
 	    global $currentProgram;
         global $currentClient;
+        global $currentArticle;
 
 	    global $e20rTracker;
 
-	    // $oldId = $clientId;
+	    if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
 
-        if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
-
-            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
+            dbg( "e20rClientModel::load_data() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
             $this->setUser( $clientId );
         }
 
         if ( $currentProgram->id != $program_id ) {
 
-            dbg( "e20rClientModel::loadData() - WARNING: Loading data for a different program: {$program_id} vs {$currentProgram->id}" );
+            dbg( "e20rClientModel::load_data() - WARNING: Loading data for a different program: {$program_id} vs {$currentProgram->id}" );
             $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
-            dbg( "e20rClientModel::loadData() - WARNING: Program data is now for {$currentProgram->id}" );
+            dbg( "e20rClientModel::load_data() - WARNING: Program data is now for {$currentProgram->id}" );
         }
 
-
-        dbg( "e20rClientModel::loadData() - Loading default currentClient structure");
+        dbg( "e20rClientModel::load_data() - Loading default currentClient structure");
 
         // Init the unencrypted structure and load defaults.
         $currentClient = $this->defaultSettings();
 
 	    // $this->setUser( $currentClient->user_id );
 
-	    $key = $e20rTracker->getUserKey( $currentClient->user_id );
+        if ( is_null( $table ) ) {
+
+            $table = $this->table;
+        }
+
+	    // $key = $e20rTracker->getUserKey( $currentClient->user_id );
 
 	    if ( WP_DEBUG === true ) {
 
@@ -439,13 +622,13 @@ class e20rClientModel {
 
 	    if ( false === ( $tmpData = get_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" ) ) ) {
 
-            dbg("e20rClientModel::loadData() - Client data wasn't cached. Loading from DB.");
+            dbg("e20rClientModel::load_data() - Client data wasn't cached. Loading from DB.");
 
 		    $excluded = array_keys( (array) $currentClient );
 
 		    $sql = $wpdb->prepare( "
 	                    SELECT *
-	                    FROM {$this->table}
+	                    FROM {$table}
 	                    WHERE program_id = %d AND
 	                    user_id = %d
 	                    ORDER BY program_start DESC
@@ -454,36 +637,46 @@ class e20rClientModel {
 			    $currentClient->user_id
 		    );
 
-		    $result = $wpdb->get_row( $sql, ARRAY_A );
+		    $records = $wpdb->get_row( $sql, ARRAY_A );
 
-		    if ( ! empty( $result ) ) {
+		    if ( ! empty( $records ) ) {
 
-                dbg("e20rClientModel::loadData() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
+                dbg("e20rClientModel::load_data() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
                 $currentClient->loadedDefaults = false;
 
+                // Load the relevant survey record (for this article/assignment/page)
+                if ( false ===
+                    ( $survey = $this->load_from_survey_table( $clientId, $currentProgram->id, $currentArticle->id ) ) ) {
+                    return false;
+                }
+
+                dbg("e20rClientModel::load_data() - Fetched Survey record: ");
+                dbg($survey);
+
+                // Merge the survey data with the client_info data.
+                $result = array_merge( $survey, $records );
+
+                dbg("e20rClientModel::load_data() - Merged Survey record with client_info record: ");
+                dbg($result);
+
+                // Save merged records to $currentClient global
 			    foreach ( $result as $key => $val ) {
 
-				    // Encrypted data gets decoded
-				    if ( ! in_array( $key, $excluded ) ) {
-
-                        $currentClient->{$key} = $e20rTracker->decryptData( $val, $key );
-				    } else {
-					    // Unencrypted data is simply passed back.
-                        $currentClient->{$key} = $val;
-				    }
+                    $currentClient->{$key} = $val;
 			    }
 
 			    // Clear the record from memory.
-			    unset( $result );
+			    unset( $survey );
+                unset( $result );
 		    }
 
 		    if ( ! isset( $currentClient->user_enc_key ) && ( ! empty( $currentClient->user_enc_key ) ) ) {
 			    unset( $currentClient->user_enc_key );
 		    }
 
-		    if ( isset( $currentClient->weight_loss ) && ( ! empty( $currentClient->weight_loss ) ) ) {
+		    if ( isset( $currentClient->completed_date ) && ( ! empty( $currentClient->completed_date ) ) ) {
 
-			    dbg( "e20rClientModel::loadClientData() - Client interview has been completed." );
+			    dbg( "e20rClientModel::load_data() - Client interview has been completed." );
                 $currentClient->incomplete_interview = false;
 		    }
 
