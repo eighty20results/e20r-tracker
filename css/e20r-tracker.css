@@ -30,7 +30,7 @@
     text-shadow: none;
 }
 .e20r-button:hover {
-    color: #FFF;
+    color: #FFF !important;
     box-shadow: none;
     /* background: #000; */
     background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
@@ -44,7 +44,7 @@ cursor: pointer;
     width: auto;
     display: inline-block;
     margin: 0 10px 0 0;
-    color: #004CFF;
+    color: #004CFF !important;
     padding: 8px 15px;
     -moz-border-radius: 8px;
     border-radius: 8px;
