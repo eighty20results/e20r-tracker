@@ -137,6 +137,7 @@ class e20rTables {
             'article_id'        => 'article_id',
             'survey_type'       => 'survey_type',
             'survey_data'       => 'survey_data',
+            'is_encrypted'      => 'is_encrypted',
             'recorded'          => 'recorded',
             'completed'         => 'completed',
             'for_date'          => 'for_date'
