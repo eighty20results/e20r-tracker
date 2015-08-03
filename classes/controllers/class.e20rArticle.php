@@ -387,6 +387,10 @@ class e20rArticle extends e20rSettings {
         if ( $currentArticle->id == $articleId ) {
             return $currentArticle->id;
         }
+        else {
+            $this->model->loadSettings( $articleId );
+            return $currentArticle;
+        }
 
         return false;
     }
