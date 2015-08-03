@@ -1104,7 +1104,7 @@ class e20rCheckin extends e20rSettings {
 	    }
 		*/
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article object:");
-	    dbg( $article );
+	    // dbg( $article );
 
         $config->is_survey = isset( $article->is_survey) && ( $article->is_survey == 0 ) ? false : true;
         $config->articleId = isset( $article->id ) ? $article->id : CONST_NULL_ARTICLE;
