@@ -403,6 +403,21 @@ class e20rClient {
 		return $form;
 	}
 
+    private function find_gf_id( $content ) {
+
+        preg_match_all("/\[[^\]]*\]/", $content, $matches);
+
+        foreach( $matches as $k => $match ) {
+
+            foreach( $match as $sc ) {
+
+                preg_match( '/id="(\d*)"/', $sc, $ids );
+            }
+        }
+
+        return $ids;
+    }
+
 	/**
 	 * Prevents Gravity Form entries from being stored in the database.
 	 *
@@ -418,19 +433,20 @@ class e20rClient {
 		global $post;
 
         global $currentProgram;
+        global $currentArticle;
+
+        $ids = array();
 
         if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $post->ID == $currentProgram->intake_form ) ) {
+
             dbg("e20rClient::remove_survey_form_entry() - Processing on the intake form page with the gravityform shortcode present");
+            $ids = $this->find_gf_id( $post->post_content );
+        }
 
-            preg_match_all("/\[[^\]]*\]/", $post->post_content, $matches);
+        if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $currentArticle->is_survey == 1) && ( $currentArticle->post_id == $post->ID ) ) {
 
-            foreach( $matches as $k => $match ) {
-
-                foreach( $match as $sc ) {
-
-                    preg_match( '/id="(\d*)"/', $sc, $ids );
-                }
-            }
+            dbg("e20rClient::remove_survey_form_entry() - Processing on a survey article page with the gravityform shortcode present");
+            $ids = $this->find_gf_id( $post->post_content );
         }
 
         if ( empty( $ids ) ) {
