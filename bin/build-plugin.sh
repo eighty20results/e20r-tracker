@@ -36,6 +36,7 @@ fi
 #    meta_log=$(sed -e"s/\"/\'/g" -e"s/.*/\<li\>&\<\/li\>/" ${changelog_source} )
 #    #history=$(cat ${meta_log_source})
 #    to_file="\<h3\>${version}\<\/h3\>\<ol\>${meta_log}\<\/ol\>$(cat ${meta_log_source})"
+#    fix_line=$(echo ${meta_log} | tr -d '\n')
 #    sed -e "s/\[JSON_LOG\]/$to_file" -e "s/\[VERSION\]/$version" ${json_template} > ${metadata}
 #fi
 
