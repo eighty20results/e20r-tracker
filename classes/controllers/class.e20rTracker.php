@@ -1488,6 +1488,8 @@ class e20rTracker {
 
 	        wp_enqueue_style( "jquery-ui-tabs", "https://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
             wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-activity", E20R_PLUGINS_URL . "/css/e20r-activity.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
             wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
@@ -1502,7 +1504,8 @@ class e20rTracker {
 	        self::register_plotSW();
             self::enqueue_plotSW();
             $e20r_plot_jscript = false;
-
+            wp_print_scripts( 'select2' );
+            wp_print_scripts( 'jquery.timeago' );
             wp_print_scripts( 'jquery-ui-tabs' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
@@ -3572,7 +3575,8 @@ class e20rTracker {
     /**
      * @param $data - The data to sort
      * @param array $fields - An array (2 elements) for the fields to sort by.
- *
+     *
+     * @return array $data
      */
     public function sortByFields( array $data, array $fields = array() ) {
 
@@ -3586,6 +3590,8 @@ class e20rTracker {
             else
                 return ($a->{$fields[0]} < $b->{$fields[0]}) ? -1 : 1;
         });
+
+        return $data;
     }
 
     /**
