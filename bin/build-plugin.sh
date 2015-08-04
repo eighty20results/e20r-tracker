@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-include=(classes css images js languages e20r-tracker.php e20r_db_update.php README.txt)
+include=(classes css fonts images js languages e20r-tracker.php e20r_db_update.php README.txt)
 short_name="e20r-tracker"
 plugin_path="${short_name}"
 readme_path="../build_readmes/"
