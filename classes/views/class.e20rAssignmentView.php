@@ -633,7 +633,7 @@ class e20rAssignmentView extends e20rSettingsView {
 							continue;
 						}
 
-						$when     = date_i18n( "Y-m-d", strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) );
+						$when     = date_i18n( "Y-m-d", strtotime( $e20rTracker->getDateForPost( $answer->delay, $config->userId ) ) );
 						$showLink = ( $config->userId == $current_user->ID ? true : false );
 						?>
 						<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
@@ -651,18 +651,18 @@ class e20rAssignmentView extends e20rSettingsView {
                                         //dbg( "e20rAssignmentView::viewAssignmentList() - Want to show link for article {$answer->article_id}" );
 										?>
 										<a href="<?php echo $e20rArticle->getPostUrl( $answer->article_id ); ?>" target="_blank" alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
-											<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>
+											<?php echo date_i18n( 'M j, Y', strtotime( $when ) ); ?>
 										</a>
 									<?php
 									} else {
 										?>
-										<?php echo date_i18n( 'M j, Y', strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?>
+										<?php echo date_i18n( 'M j, Y', strtotime( $when ) ); ?>
 									<?php
 									}
 									?>
 								</div>
 								<div
-									class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $e20rTracker->getDateForPost( $answer->delay ) ) ); ?></div>
+									class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $when ) ); ?></div>
 							</td>
 							<td>
 								<table class="e20r-answers">
