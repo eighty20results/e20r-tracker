@@ -26,7 +26,7 @@ class e20rWorkoutView extends e20rSettingsView {
         ob_start();
 
         dbg("e20rWorkoutView::viewExerciseProgress() - Listing exercise history");
-        dbg($activities);
+        // dbg($activities);
 
         if ( empty( $activities) ) { ?>
 
