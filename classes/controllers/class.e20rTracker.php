@@ -2147,7 +2147,7 @@ class e20rTracker {
         global $wpdb;
         global $e20r_db_version;
 
-        $current_db_version = '1';
+        $current_db_version = '2';
 
         if ( $current_db_version == $e20r_db_version ) {
 
