@@ -856,7 +856,7 @@ class e20rTracker {
 
 					if ( false === update_user_meta( $userId, 'e20r_user_key', Crypt::binToHex( $key ) ) ){
 
-					    dbg("e20rTracker::getUserKey() - ERROR: Unable to save the key for user {$userId}: {$key}");
+					    dbg("e20rTracker::getUserKey() - ERROR: Unable to save the key for user {$userId}");
 					    return null;
 					}
 
@@ -872,7 +872,7 @@ class e20rTracker {
 				}
 			}
 
-            dbg("e20rTracker::getUserKey() - Returning key for user {$userId}: {$key}");
+            dbg("e20rTracker::getUserKey() - Returning key for user {$userId}");
 			return $key;
 		}
 		else {
@@ -922,9 +922,12 @@ class e20rTracker {
         }
     }
 
-    public function decryptData( $encData, $key ) {
+    public function decryptData( $encData, $key, $enable = 0 ) {
 
-        $enable = $this->loadOption('encrypt_surveys');
+        if ( is_null( $enable ) ) {
+
+            $enable = $this->loadOption('encrypt_surveys');
+        }
 
 	    if ( ( $key === null ) || ( 0 == $enable ) ) {
 
@@ -932,32 +935,29 @@ class e20rTracker {
 		    return base64_decode( $encData );
 	    }
 
-        if ( 1 == $enable ) {
+        try {
 
-            try {
+            dbg("e20rTracker::decryptData() - Attempting to decrypt data...");
 
-                dbg("e20rTracker::decryptData() - Attempting to decrypt data...");
+            $data = Crypt::hexToBin( $encData );
+            $decrypted = Crypt::decrypt( $data, $key);
+            return $decrypted;
+        }
+        catch (Ex\InvalidCiphertextException $ex) { // VERY IMPORTANT
+            // Either:
+            //   1. The ciphertext was modified by the attacker,
+            //   2. The key is wrong, or
+            //   3. $ciphertext is not a valid ciphertext or was corrupted.
+            // Assume the worst.
+            wp_die('DANGER! DANGER! The encrypted information has been tampered with during transmission/load');
+        }
+        catch (Ex\CryptoTestFailedException $ex) {
 
-                $data = Crypt::hexToBin( $encData );
-		        $decrypted = Crypt::decrypt( $data, $key);
-                return $decrypted;
-            }
-            catch (Ex\InvalidCiphertextException $ex) { // VERY IMPORTANT
-                // Either:
-                //   1. The ciphertext was modified by the attacker,
-                //   2. The key is wrong, or
-                //   3. $ciphertext is not a valid ciphertext or was corrupted.
-                // Assume the worst.
-                wp_die('DANGER! DANGER! The encrypted information has been tampered with during transmission/load');
-            }
-            catch (Ex\CryptoTestFailedException $ex) {
+            wp_die('Cannot safely perform encryption');
+        }
+        catch (Ex\CannotPerformOperationException $ex) {
 
-                wp_die('Cannot safely perform encryption');
-            }
-            catch (Ex\CannotPerformOperationException $ex) {
-
-                wp_die('Cannot safely perform decryption');
-            }
+            wp_die('Cannot safely perform decryption');
         }
 
     }
@@ -1592,6 +1592,13 @@ class e20rTracker {
 */
     // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
     // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
+
+	public function is_a_coach( $user_id ) {
+
+		// FixMe: Implement this function!
+
+		return true; // Temporary (for testing purposes)
+	}
 
     public function hasAccess( $userId, $postId ) {
 
