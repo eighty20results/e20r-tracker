@@ -277,6 +277,9 @@ if ( ! class_exists( 'e20rTracker' ) ):
 
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTables.php" );
 
+        require_once( E20R_PLUGIN_DIR . "classes/controllers/autoload.php" );
+        // require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypto.php" );
+
         require_once( E20R_PLUGIN_DIR . "classes/models/class.e20rTrackerModel.php");
         require_once( E20R_PLUGIN_DIR . "classes/controllers/class.e20rTracker.php");
 
