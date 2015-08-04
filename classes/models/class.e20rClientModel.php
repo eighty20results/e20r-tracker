@@ -577,6 +577,7 @@ class e20rClientModel {
                         $userKey = $e20rTracker->getUserKey($clientId);
 
                         if ( !empty( $userKey ) ) {
+
                             dbg("e20rClientModel::load_from_survey_table() - Loaded key for user {$clientId} ");
                             $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey);
 
