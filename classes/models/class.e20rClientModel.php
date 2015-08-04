@@ -615,7 +615,7 @@ class e20rClientModel {
                         $survey = unserialize( $encrypted_survey );
                     }
 
-                    dbg("e20rClientModel::load_from_survey_table() - Retrieved and decrypted" . count($survey) . " encrypted survey fields");
+                    dbg("e20rClientModel::load_from_survey_table() - Retrieved and decrypted " . count($survey) . " survey fields");
                     return $survey;
                 }
             }
