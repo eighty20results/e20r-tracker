@@ -133,7 +133,7 @@ class e20rClientViews {
 
         // $interview = $e20rClient->loadClientInfo( $clientId );
         dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
-        dbg( $currentClient );
+        // dbg( $currentClient );
 
         $client = get_user_by( 'id', $clientId );
 
@@ -243,7 +243,6 @@ class e20rClientViews {
         );
 
         dbg("e20rClientViews::viewClientDetail() - Loaded interview/survey data for {$currentClient->user_id}");
-        dbg( $currentClient );
 
         ob_start(); ?>
         <table class="e20r-client-information-table">
@@ -254,7 +253,10 @@ class e20rClientViews {
                 </tr>
             </thead>
             <tbody><?php
-            foreach( $currentClient as $field => $data ) { ?>
+            foreach( $currentClient as $field => $data ) {
+                if ( 'user_enc_key' == $field ) {
+                    continue;
+                } ?>
                 <tr class="e20r-clientdetail-row">
                     <td class="e20r-clientdetail-header"><?php echo $field; ?></td>
                     <td class="e20r-clientdetail-info"><?php echo $data; ?></td>
