@@ -1,45 +1,47 @@
-Load select2 code for assignments in daily_progress shortcode.
-Correctly identify the DB upgrade routine(s) to run.
-Set DB version number
-We haven't got handlers for a simple checkbox assignment yet, so remove it as an option Decode array of answers when field_type = multichoice.
-Handle multichoice and hidden input field for the multichoice answer(s).
-Include pre-existing answer in text input for assignment.
-Add formatting for inputs in Yes/No fields.
-Fix SQL for update function
-Rename '*assignment-survey*' identifiers/classes to '*assignment-ranking*' Init select2 if multichoice field is present on page/in post.
-Same formatting for multichoice and other inputs on assignments form
-Add support for multichoice field(s) on the assignment form
-Make "save" button available if multichoice field is clicked (and save is hidden).
-Convert multichoice answers to json and save in hidden assignment-answer input (to keep saving simple).
-Handle survey configuration(s) in dailyProgress shortcode.
-Add check-box for article that hosts/manages a survey
-Set DB Version number
-Fix CSS for new multichoice field option in Assignments
-Add support for managing multi-option select fields for assignments
-DB table upgrade script for DB v2.
-Add support for upgrading DB based on external e20r_db_upgrade.php file & functions
-Add manage_option_list callback for multichoice field support. (May not be needed)
-Handle cases where there are select_options defined but the admin changed the field type.
-Rename answer inputs (requires change to DB enum()) Rename survey rating to ranking
-Rename sortAssignments() to sortByField().
-Transition to sortByFields() in Assignments class.
-Move sortByFields() to e20rTracker class
-Make sortByFields() support user defined fields to sort by.
-Add select_options setting/postmeta field.
-Add support for multichoice field in assignment configuration.
-Add support for displaying a multichoice field in an assignment.
-Rename "survey" fields to "ranking" fields (the 1 - 10 ranking/likert fields)
-Show an actual input field for text input fields.
-Fix JS warnings
-Enh: Add support for managing multi-option select fields for assignments
-First update DB function created/loaded.
-Reflect actual purpose of input: 'survey' versus 'ranking'
-Use E20R_DB_VERSION constant to indicate change in DB version.
-Use renamed activation/deactivation functions
-Add e20r_db_version option
-Create e20r_surveys table definition on plugin activation.
-Transition from 'key' to 'index' for table indexes.
-Move DB management to its own manage_tables() function
-Rename plugin activiation and deactivation functions.
-Handle situations where the user has assigned the same post/page to two different articles.
-Test for access against a valid $article object.
+Load css for admin to render client information page(s) correctly sortByFields() needs to return the sorted data.
+Get the correct startdate for the specified user id
+Fix client message display and add alert if the client hasn't completed their interview.
+Sort the assignment replies by delay (date) and order
+Whitespace for readability
+Return false if key is empty.
+Use namespace for Crypto library and its exception handler
+Handle cases where no UserId was supplied and the user is logged in.
+Encode metadata when saving and loading the key.
+Default to Base64 if we're having problems with the key
+Upgraded Crypto library and renamed Crypto sources
+Renamed Crypto library & its autoloader
+Wouldn't handle all cases of a non-existing record.
+Fix encryption (AES) and masking (base64).
+Support any GravityForm based survey with the correct CSS class defined for processing.
+Find the survey form we're processing and try to match it to an article that has a survey configured.
+Ensure hover color of the text remains white.
+Remove superflous loads of the survey & client_info data.
+Typo in Encrypt Surveys option
+Renamed getData() to get_data()
+Added is_encrypted column to the e20r_surveys.
+Add 'is_encrypted' field for a row in the surveys table.
+Don't try to save dynamic client_info fields (incomplete_interview and loadedDefaults)
+Check variables before using them.
+Set survey type based on post ID
+Correctly merge data from the e20r_surveys and e20r_client_info tables on load.
+Handle multi-choice options when saving Gravity Form surveys.
+Handle multi-choice fields when loading previously saved Gravity Form surveys
+Disable encryption of individual DB fields.
+Remove a survey entry after it's been encrypted and saved by the app.
+Handle \n in text boxes.
+Force color for buttons
+Add definitions for a SURVEY_TYPE constant.
+Didn't load the article settings for the specified articleId if it wasn't already loaded
+Add e20r_surveys table definition
+Add article_id field to e20r_client_info table
+Rename getData() function to get_data() Return false in place of 0 for boolean flags
+Remove wrong/weird set/group calculation
+Superfluous warning thrown if article was empty.
+Add support for survey_type field.
+Remove wrong/weird set/group calculation
+Typos and counter errors
+Clean up group/set display for activity history.
+Display multichoice arrays correctly in assignment view
+Add support for e20r_surveys table
+Don't show Measurements alert if measurements page isn't defined in the program
+Make placeholder text translatable (and update to match button text)

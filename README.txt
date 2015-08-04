@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.3
-Stable tag: 0.9.13
+Stable tag: 0.9.14
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -98,6 +98,55 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+= 0.9.14 =
+* Load css for admin to render client information page(s) correctly sortByFields() needs to return the sorted data.
+* Get the correct startdate for the specified user id
+* Fix client message display and add alert if the client hasn't completed their interview.
+* Sort the assignment replies by delay (date) and order
+* Whitespace for readability
+* Return false if key is empty.
+* Use namespace for Crypto library and its exception handler
+* Handle cases where no UserId was supplied and the user is logged in.
+* Encode metadata when saving and loading the key.
+* Default to Base64 if we're having problems with the key
+* Upgraded Crypto library and renamed Crypto sources
+* Renamed Crypto library & its autoloader
+* Wouldn't handle all cases of a non-existing record.
+* Fix encryption (AES) and masking (base64).
+* Support any GravityForm based survey with the correct CSS class defined for processing.
+* Find the survey form we're processing and try to match it to an article that has a survey configured.
+* Ensure hover color of the text remains white.
+* Remove superflous loads of the survey & client_info data.
+* Typo in Encrypt Surveys option
+* Renamed getData() to get_data()
+* Added is_encrypted column to the e20r_surveys.
+* Add 'is_encrypted' field for a row in the surveys table.
+* Don't try to save dynamic client_info fields (incomplete_interview and loadedDefaults)
+* Check variables before using them.
+* Set survey type based on post ID
+* Correctly merge data from the e20r_surveys and e20r_client_info tables on load.
+* Handle multi-choice options when saving Gravity Form surveys.
+* Handle multi-choice fields when loading previously saved Gravity Form surveys
+* Disable encryption of individual DB fields.
+* Remove a survey entry after it's been encrypted and saved by the app.
+* Handle \n in text boxes.
+* Force color for buttons
+* Add definitions for a SURVEY_TYPE constant.
+* Didn't load the article settings for the specified articleId if it wasn't already loaded
+* Add e20r_surveys table definition
+* Add article_id field to e20r_client_info table
+* Rename getData() function to get_data() Return false in place of 0 for boolean flags
+* Remove wrong/weird set/group calculation
+* Superfluous warning thrown if article was empty.
+* Add support for survey_type field.
+* Remove wrong/weird set/group calculation
+* Typos and counter errors
+* Clean up group/set display for activity history.
+* Display multichoice arrays correctly in assignment view
+* Add support for e20r_surveys table
+* Don't show Measurements alert if measurements page isn't defined in the program
+* Make placeholder text translatable (and update to match button text)
 
 = 0.9.13 =
 * Load e20r_db_update.php for database updates. Omitted in last plugin build.
