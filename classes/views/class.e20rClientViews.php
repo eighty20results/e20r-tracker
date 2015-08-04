@@ -135,16 +135,28 @@ class e20rClientViews {
         dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
         dbg( $currentClient );
 
+        $client = get_user_by( 'id', $clientId );
+
+        $first_name = ( empty( $currentClient->first_name ) ? $client->user_firstname : $currentClient->first_name );
+        $last_name = ( empty( $currentClient->last_name ) ? $client->user_lastname : $currentClient->last_name );
+        $email = ( empty( $currentClient->email ) ? $client->user_email : $currentClient->email );
+        $incomplete = ( empty( $currentClient->email ) ? true : false );
+
         ob_start(); ?>
         <form id="e20r-message-form">
             <input type="hidden" name="e20r-send-to-id" id="e20r-send-to-id" value="<?php echo $currentClient->user_id; ?>">
             <input type="hidden" name="e20r-send-message-to" id="e20r-send-message-to" value="<?php echo $currentClient->email; ?>">
             <input type="hidden" name="e20r-send-message-cc" id="e20r-send-message-cc" value="<?php echo $current_user->user_email; ?>">
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
+            <?php if ( true === $incomplete ) { ?>
+                <div class="red-notice">
+                    <?php _e("Incomplete client interview. Please ask them to complete this interview as quickly as possible", "e20rtracker" ); ?>
+                </div><?php
+            }?>
             <table id="e20r-send-message">
                 <thead>
                 <tr>
-                    <th colspan="3" class="e20r-activity-table-header">Send message to: <?php echo "{$currentClient->first_name} {$currentClient->last_name} &lt;<em>{$currentClient->email}</em>&gt;"; ?></th>
+                    <th colspan="3" class="e20r-activity-table-header">Send message to: <?php echo "{$first_name} {$last_name} &lt;<em>{$email}</em>&gt;"; ?></th>
                 </tr>
                 </thead>
                 <tbody>
