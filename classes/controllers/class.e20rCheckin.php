@@ -282,7 +282,16 @@ class e20rCheckin extends e20rSettings {
 
 		// $config = new stdClass();
 
-		$user_delay = $e20rTracker->getDelay( 'now', $current_user->ID );
+		if ( $userId != $current_user->ID ) {
+
+			dbg("e20rCheckin::listUserAccomplishments() - Validate that the current user has rights to access this data!");
+			if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
+
+				return null;
+			}
+
+		}
+		$user_delay = $e20rTracker->getDelay( 'now', $userId );
 
 		if ( ! isset( $currentProgram->id ) ) {
 
@@ -335,8 +344,8 @@ class e20rCheckin extends e20rSettings {
 
 			// dbg("e20rCheckin::getAllUserAccomplishments() - Loading user check-in for {$article->id} with delay value: {$article->release_day}");
 
-			$dates['min'] = $e20rTracker->getDateForPost( $delays[0] );
-			$dates['max'] = $e20rTracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ] );
+			$dates['min'] = $e20rTracker->getDateForPost( $delays[0], $userId );
+			$dates['max'] = $e20rTracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ], $userId );
 		}
 		else {
 			$dates['min'] = date('Y-m-d', current_time('timestamp'));
@@ -381,8 +390,8 @@ class e20rCheckin extends e20rSettings {
 
 		if ( ! empty( $aIds ) ) {
 			dbg( "e20rCheckin::listUserAccomplishments() - Loaded " . count( $actions ) . " defined actions. I.e. all possible 'check-ins' for this program so far." );
-			$checkins = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, $cTypes, $dates );
-			$lessons  = $this->model->loadCheckinsForUser( $current_user->ID, $aIds, array( $this->types['assignment'] ), $dates );
+			$checkins = $this->model->loadCheckinsForUser( $userId, $aIds, $cTypes, $dates );
+			$lessons  = $this->model->loadCheckinsForUser( $userId, $aIds, array( $this->types['assignment'] ), $dates );
 		}
 
 		foreach( $actions as $type => $a_list ) {
