@@ -217,7 +217,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             if ( 0 != $assignment->field_type ) {
 
                 dbg("e20rAssigmentModel::loadAllUserAssignments() - Assignment information being processed:");
-                dbg($assignment);
+                // dbg($assignment);
 
                 if ( count( $assignment->article_ids) < 1 ) {
 
@@ -245,7 +245,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $answers = $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
 
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Returning sorted array of answers: ");
-        dbg($answers);
+        // dbg($answers);
 
         return $answers;
 	}
@@ -371,12 +371,14 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
                     if ( !empty( $art->id ) && ( 0 != $art->id ) ) {
                         dbg("e20rAssignmentModel::loadAssignmentByMeta() - Article definitions received: ");
-                        dbg($tmp);
+                        //dbg($tmp);
+                        $article_list[] = $art->id;
                     }
-
+/*
                     if ( !empty( $art->id ) && ( 0 != $art->id ) ) {
                         $article_list[] = $art->id;
                     }
+*/
                 }
 
                 $new->article_ids = $article_list;
@@ -490,7 +492,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 //                $articleId
             );
 
-            dbg("e20rAssignmentModel::loadUserAssignment() - SQL: {$sql}");
+            // dbg("e20rAssignmentModel::loadUserAssignment() - SQL: {$sql}");
 
             $result = $wpdb->get_results($sql);
         }
