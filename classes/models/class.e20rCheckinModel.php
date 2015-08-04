@@ -260,7 +260,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 		$results = $wpdb->get_results( $sql );
 
-		if ( $results == false ) {
+		if ( empty( $results ) ) {
 
 			dbg("e20rCheckinModel::loadCheckinsForUser() - Error: {$wpdb->last_error}");
 			return array();
