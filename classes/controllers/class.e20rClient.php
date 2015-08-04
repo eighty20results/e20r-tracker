@@ -218,7 +218,7 @@ class e20rClient {
 
 	public function load_interview( $form ) {
 
-		dbg("e20rTracker::gravityform_preload() - Start" );
+		dbg("e20rTracker::load_interview() - Start" );
 
 		global $e20rTracker;
 		global $current_user;
@@ -228,23 +228,23 @@ class e20rClient {
 
 		if ( stripos( $form['cssClass'], 'nourish-interview-identifier' ) === false ) {
 
-			dbg('e20rTracker::gravityform_preload()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+			dbg('e20rTracker::load_interview()  - Not the BitBetter Interview form: ' . $form['cssClass']);
 			return $form;
 		}
 
 		if ( ! is_user_logged_in() ) {
 
-			dbg("e20rTracker::save_interview()  - User accessing form without being logged in.");
+			dbg("e20rTracker::load_interview()  - User accessing form without being logged in.");
 			return;
 		}
 
 		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
 
-			dbg("e20rTracker::save_interview()  - User doesn't have access to this form.");
+			dbg("e20rTracker::load_interview()  - User doesn't have access to this form.");
 			return false;
 		}
 
-		dbg("e20rTracker::gravityform_preload() - Loading form data: ");
+		dbg("e20rTracker::load_interview() - Loading form data: ");
 		// dbg( "Form: " . print_r( $form, true) );
 
 		return $this->loadClientInterviewData( $current_user->ID, $form );
@@ -417,21 +417,37 @@ class e20rClient {
 		global $current_user;
 		global $post;
 
-		if ( ! in_array( $entry['id'], array( '1' ) ) ) {
+        global $currentProgram;
 
-			dbg("e20rTracker::gravityform_preload()  - Not the BitBetter Interview form!");
-			return;
-		}
+        if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $post->ID == $currentProgram->intake_form ) ) {
+            dbg("e20rClient::remove_survey_form_entry() - Processing on the intake form page with the gravityform shortcode present");
 
-		if ( ! is_user_logged_in() ) {
+            preg_match_all("/\[[^\]]*\]/", $post->post_content, $matches);
 
-			dbg("e20rTracker::save_interview()  - User accessing form without being logged in.");
+            foreach( $matches as $k => $match ) {
+
+                foreach( $match as $sc ) {
+
+                    preg_match( '/id="(\d*)"/', $sc, $ids );
+                }
+            }
+        }
+
+        if ( empty( $ids ) ) {
+
+            dbg("e20rTracker::remove_survey_form_entry()  - This is not the BitBetter Interview form!");
+            return;
+        }
+
+		if ( !is_user_logged_in() ) {
+
+			dbg("e20rTracker::remove_survey_form_entry()  - User accessing form without being logged in.");
 			return;
 		}
 
 		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
 
-			dbg("e20rTracker::save_interview()  - User doesn't have access to this form.");
+			dbg("e20rTracker::remove_survey_form_entry()  - User doesn't have access to this form.");
 			return false;
 		}
 
@@ -444,22 +460,27 @@ class e20rClient {
 		$lead_detail_table      = RGFormsModel::get_lead_details_table_name();
 		$lead_detail_long_table = RGFormsModel::get_lead_details_long_table_name();
 
+        dbg("e20rTracker::remove_survey_form_entry()  - Removing entries from the lead_detail_long_table");
 		// Delete from lead detail long.
 		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_long_table WHERE lead_detail_id IN(SELECT id FROM $lead_detail_table WHERE lead_id = %d)", $lead_id );
 		$wpdb->query( $sql );
 
+        dbg("e20rTracker::remove_survey_form_entry()  - Removing entries from the lead_detail_table");
 		// Delete from lead details.
 		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_table WHERE lead_id = %d", $lead_id );
 		$wpdb->query( $sql );
 
 		// Delete from lead notes.
+        dbg("e20rTracker::remove_survey_form_entry()  - Removing entries from the lead_notes_table");
 		$sql = $wpdb->prepare( "DELETE FROM $lead_notes_table WHERE lead_id = %d", $lead_id );
 		$wpdb->query( $sql );
 
 		// Delete from lead.
+        dbg("e20rTracker::remove_survey_form_entry()  - Removing entries from the lead_table");
 		$sql = $wpdb->prepare( "DELETE FROM $lead_table WHERE id = %d", $lead_id );
 		$wpdb->query( $sql );
 
+        dbg("e20rTracker::remove_survey_form_entry()  - Removing entries from any addons");
 		// Finally, ensure everything is deleted (like stuff from Addons).
 		GFAPI::delete_entry( $lead_id );
 
@@ -513,13 +534,15 @@ class e20rClient {
 		$eKey = $e20rTracker->getUserKey( $userId );
 		$articleId = $currentArticle->id;
 
+        dbg( $currentProgram );
+        dbg( $currentArticle );
+
 		$db_Data = array(
-			// 'id' => $userId,
 			'user_id' => $userId,
-			'program_id' => $userProgramId,
+			'program_id' => $currentProgram->id,
             'page_id' => isset( $page->ID ) ? $page->ID : null,
 			'article_id' => $currentArticle->id,
-			'program_start' => date_i18n('Y-m-d', $userProgramStart ),
+			'program_start' => $currentProgram->startdate,
 	        'user_enc_key' => $eKey,
 			'progress_photo_dir'=> "e20r_pics/client_{$userProgramId}_{$userId}"
 		);
