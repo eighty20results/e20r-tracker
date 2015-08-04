@@ -201,8 +201,8 @@ class e20rClientModel {
 
 		if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'], $data['page_id'] ) ) !== false ) {
 
-			dbg('e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing existing record.' );
-			$data['edited_date'] = date('Y-m-d H:i:s', current_time('timestamp') );
+			dbg('e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing an existing record.' );
+			$data['edited_date'] = date_i18n('Y-m-d H:i:s', current_time('timestamp') );
 			$data['id'] = $id;
 		}
 
@@ -256,6 +256,8 @@ class e20rClientModel {
             $table_name = $this->table;
         }
 
+        dbg("e20rClientModel::recordExists() - Checking whether {$table_name} record exists for {$userId} in {$programId}");
+
         if ( !is_null( $postId ) ) {
             $sql = $wpdb->prepare("
                 SELECT id
@@ -284,7 +286,7 @@ class e20rClientModel {
 
 		if ( !empty( $exists ) ) {
 
-			dbg("e20rTrackerModel::recordExists() - Found record with id: {$exists}");
+			dbg("e20rClientModel::recordExists() - Found record with id: {$exists}");
 			return (int)$exists;
 		}
 
@@ -299,17 +301,27 @@ class e20rClientModel {
         }
 
         global $currentClient;
+        global $e20rTracker;
+        global $e20rProgram;
 
-        if ( $currentClient->user_id != $userId ) {
+        global $current_user;
+        global $currentProgram;
 
+        dbg("e20rClientModel::get_data() - Loading program information for client ID {$userId}");
+        $e20rProgram->getProgramIdForUser( $userId );
+
+        if ( ( $currentClient->user_id != $userId ) && ( $e20rTracker->is_a_coach( $current_user->ID ) ) ) {
+
+            dbg("e20rClientModel::get_data() - Loading client information from database for client ID {$userId}");
             $this->setUser( $userId );
         }
+
 
         // No item specified, returning everything we have.
         if ( is_null( $item ) ) {
 
-            dbg("e20rClientModel::get_data() - Loading client information from database");
-            $this->load_data( $currentClient->user_id );
+            dbg("e20rClientModel::get_data() - Loading client information from database for {$currentClient->user_id}");
+            $this->load_data( $currentClient->user_id, $currentProgram->id );
 
             // Return all of the data for this user.
             return $currentClient;
@@ -319,9 +331,11 @@ class e20rClientModel {
 	        if ( ! isset( $currentClient->{$item} ) ) {
 
 		        dbg( "e20rClientModel::get_data() - Requested Item ({$item}) not found. Reloading.." );
-		        $this->load_data( $userId );
+                // $programId = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
+		        $this->load_data( $currentClient->user_id, $currentProgram->id );
 	        }
 
+            dbg( "e20rClientModel::get_data() - Requested Item ({$item}) found for user {$currentClient->user_id}" );
 	        // Only return the specified item value.
 	        return ( empty( $currentClient->{$item} ) ? false : $currentClient->{$item} );
         }
@@ -502,11 +516,14 @@ class e20rClientModel {
             return false;
         }
 
+        dbg("e20rClientModel::load_from_survey_table() - Start...");
         global $currentProgram;
         global $currentArticle;
         global $current_user;
+
         global $e20rTracker;
         global $e20rTables;
+        global $e20rArticle;
 
         global $wpdb;
         global $post;
@@ -514,13 +531,18 @@ class e20rClientModel {
         $table = $e20rTables->getTable('surveys');
         $fields = $e20rTables->getFields( 'surveys' );
 
+        /*
         if ( ( !empty( $article_id )) && ( $article_id != $currentArticle->id ) ) {
 
-            global $e20rArticle;
             dbg("e20rClientModel::load_from_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
             $e20rArticle->getSettings( $article_id );
         }
-
+        else {
+            dbg("e20rClientModel::load_from_survey_table() - No article ID specified. ");
+            $e20rArticle->getSettings( CONST_NULL_ARTICLE );
+        }
+        */
+        /*
         if ( ( !empty( $program_id ) ) && ( $program_id != $currentProgram->id ) ) {
 
             global $e20rProgram;
@@ -528,8 +550,8 @@ class e20rClientModel {
 
             $e20rProgram->init( $program_id );
         }
-
-        if ( $post->ID == $currentProgram->intake_form ) {
+        */
+        if ( ( is_admin() && $e20rTracker->is_a_coach( $current_user->ID ) )|| ( $post->ID == $currentProgram->intake_form ) ) {
 
             dbg("e20rClientModel::load_from_survey_table() - Program config indicates we're on the same page as the welcome survey.");
             $survey_type = E20R_SURVEY_TYPE_WELCOME;
@@ -579,7 +601,7 @@ class e20rClientModel {
                         if ( !empty( $userKey ) ) {
 
                             dbg("e20rClientModel::load_from_survey_table() - Loaded key for user {$clientId} ");
-                            $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey);
+                            $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey, $encrypted_survey );
 
                             $survey = unserialize($decrypted_survey);
                         }
@@ -612,20 +634,22 @@ class e20rClientModel {
 
 	    global $wpdb;
 	    global $post;
-        global $e20rProgram;
+
 	    global $currentProgram;
         global $currentClient;
         global $currentArticle;
 
+        global $e20rProgram;
 	    global $e20rTracker;
+        global $e20rArticle;
 
 	    if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
 
-            dbg( "e20rClientModel::load_data() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, now: {$clientId}" );
+            dbg( "e20rClientModel::load_data() - WARNING: Loading data for a different client/user. Was: {$currentClient->user_id}, will be: {$clientId}" );
             $this->setUser( $clientId );
         }
 
-        if ( $currentProgram->id != $program_id ) {
+        if ( empty( $currentProgram->id ) || ($currentProgram->id != $program_id ) ) {
 
             dbg( "e20rClientModel::load_data() - WARNING: Loading data for a different program: {$program_id} vs {$currentProgram->id}" );
             $currentClient->program_id = $e20rProgram->getProgramIdForUser( $currentClient->user_id );
@@ -673,10 +697,21 @@ class e20rClientModel {
 
 		    if ( ! empty( $records ) ) {
 
+/*                if ( !empty( $records['page_id'] ) ) {
+
+                    dbg("e20rClientModel::load_data() - Have a page Id to search for the article on behalf of");
+                    $aId = $e20rArticle->findArticle( 'post_id', $records['page_id'], 'numeric', $currentClient->program_id );
+                    dbg($aId);
+
+                    $e20rArticle->getSettings( $aId );
+                }
+*/
                 dbg("e20rClientModel::load_data() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
                 $currentClient->loadedDefaults = false;
 
                 // Load the relevant survey record (for this article/assignment/page)
+                dbg("e20rClientModel::load_data() - Load data from survey table for user {$currentClient->user_id} and program {$currentClient->program_id} and article {$currentArticle->id}");
+
                 if ( false ===
                     ( $survey = $this->load_from_survey_table( $clientId, $currentProgram->id, $currentArticle->id ) ) ) {
                     return false;
