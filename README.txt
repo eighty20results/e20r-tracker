@@ -100,6 +100,11 @@ Arguments:
 == ChangeLog ==
 
 = 0.9.15 =
+* Add e20r_coach role to system on load if needed.
+* Add actions for updating the user profile with the 'coach' role (if applicable)
+* Implemented is_a_coach() - returns true if the user has the e20r_coach capability.
+* Small typo in debug info from load_from_survey_table()
+* Add support for setting a user as a program coach in the user profile screen for the E20R-Tracker plugin
 * Add fonts directory to installation kit
 * Move ElegantIcons fonts to a sub-dir of css/
 * Add iThemes' ElegantIcons font files
@@ -131,6 +136,7 @@ Arguments:
 * Always set program ID & Article ID when a coach is attempting to view E20R-Tracker data in /wp-admin/
 * Would sometimes treat a regular user as a coach
 * Update DB version number
+
 
 = 0.9.14 =
 * Load css for admin to render client information page(s) correctly sortByFields() needs to return the sorted data.
