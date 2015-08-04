@@ -282,7 +282,7 @@ class e20rClientModel {
 
 		$exists = $wpdb->get_var( $sql );
 
-		if ( ! is_null( $exists ) ) {
+		if ( !empty( $exists ) ) {
 
 			dbg("e20rTrackerModel::recordExists() - Found record with id: {$exists}");
 			return (int)$exists;
@@ -572,8 +572,11 @@ class e20rClientModel {
 
                     if ( 1 == $record["{$fields['is_encrypted']}"] ) {
 
-                        dbg("e20rClientModel::load_from_survey_table() - WARNING: Survey data is encrypted. Decrypting it");
+                        dbg("e20rClientModel::load_from_survey_table() - WARNING: Survey data is encrypted. Decrypting it for user {$clientId}");
+
                         $userKey = $e20rTracker->getUserKey($clientId);
+
+                        dbg("e20rClientModel::load_from_survey_table() - Loaded key for user {$clientId} ");
                         $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey);
 
                         $survey = unserialize($decrypted_survey);
@@ -584,7 +587,6 @@ class e20rClientModel {
                     }
 
                     dbg("e20rClientModel::load_from_survey_table() - Retrieved " . count($survey) . " encrypted survey fields");
-                    // dbg($survey);
                     return $survey;
                 }
             }
