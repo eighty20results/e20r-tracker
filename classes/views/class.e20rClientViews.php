@@ -389,6 +389,30 @@ class e20rClientViews {
         // TODO: show a graph for the users compliance.
     }
 
+    public function view_userProfile( $userId ) {
+
+        $checked = null;
+
+        if ( user_can( $userId, 'e20r_coach' ) ) {
+            $checked = 'checked="checked"';
+        }
+
+        ob_start();
+        ?>
+        <h3><?php _e("E20R-Tracker: Coach Info", "e20rtracker"); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="e20r-tracker-user-role"><?php _e( "User is a program coach", "e20rtracker"); ?></label></th>
+                <td>
+                    <input type="checkbox" id="e20r-tracker-user-role" name="e20r-tracker-user-role" value="e20r_coach" <?php echo $checked; ?>>
+                </td>
+            </tr>
+        </table>
+        <?php
+
+        $html = ob_get_clean();
+        return $html;
+    }
 
     private function viewAssignments( $clientId ) {
 
