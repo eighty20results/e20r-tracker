@@ -156,7 +156,7 @@ class e20rClient {
 	    }
 
 	    dbg("e20rClient::get_data() - Returned data for {$clientId} from client_info table:");
-        dbg($data);
+        // dbg($data);
 
         return $data;
     }
@@ -211,7 +211,7 @@ class e20rClient {
         $data = $this->model->get_data( $userId, 'completed_date');
 
         dbg("e20rClient::completeInterview() - completed_date field contains: ");
-        dbg($data);
+        // dbg($data);
 
         return ( empty( $data ) ? 0 : 1 );
     }
@@ -259,7 +259,7 @@ class e20rClient {
 		$c_data = $this->model->get_data( $clientId );
 
 		dbg("e20rClient::loadClientInterviewData() - Client Data from DB:");
-		dbg($c_data);
+		// dbg($c_data);
 
 		if ( isset($c_data->incomplete_interview) && ( 1 == $c_data->incomplete_interview ) ) {
 
@@ -929,8 +929,9 @@ class e20rClient {
         global $currentProgram;
 
         global $e20rProgram;
+        global $e20rTracker;
 
-		if ( !$this->is_a_coach( $current_user->ID ) ) {
+		if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
 
 			dbg("e20rClient::render_client_page() - User isn't a coach. Return error & force redirect");
 			wp_redirect( admin_url() );
@@ -946,6 +947,7 @@ class e20rClient {
 
         $this->model->get_data( $client_id );
 
+        dbg("e20rClient::render_client_page() - Loading admin page for the Client {$client_id}");
         echo $this->view->viewClientAdminPage( $lvlName );
     }
 
@@ -1141,13 +1143,35 @@ class e20rClient {
         global $current_user;
         global $e20rProgram;
         global $e20rMeasurements;
+        global $e20rArticle;
+
         global $e20rTracker;
 
         global $currentProgram;
         global $currentClient;
 
+        if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
+
+            dbg("e20rClient::ajax_showClientMessage() - User isn't a coach. Return error & force redirect");
+            wp_send_json_error( array( 'error' => 403 ) );
+        }
+
         $userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
         $e20rProgram->getProgramIdForUser( $userId );
+
+        $articles = $e20rArticle->findArticle( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+        $a = $articles[0];
+
+        dbg("e20rClient::ajax_showClientMessage() - Article ID: ");
+        dbg( $a->id );
+
+        if ( !$e20rArticle->isSurvey( $a->id ) ) {
+            wp_send_json_error( array( 'error' => 'Configuration error. Please report to tech support.' ) );
+        }
+        else {
+            dbg("e20rClient::ajax_showClientMessage() - Loading article configuration for the survey!");
+            $e20rArticle->init( $a->id );
+        }
 
         dbg("e20rClient::ajax_showClientMessage() - Load client data...");
 
@@ -1159,16 +1183,10 @@ class e20rClient {
         wp_send_json_success( array( 'html' => $html ));
     }
 
-	private function is_a_coach() {
-
-		// FixMe: Implement this function!
-
-		return true; // Temporary (for testing purposes)
-	}
-
 	public function ajax_clientDetail() {
 
 		global $current_user;
+        global $e20rTracker;
 
 		if ( !is_user_logged_in() ) {
 
@@ -1176,7 +1194,7 @@ class e20rClient {
 			wp_send_json_error( array( 'error' => 403 ) );
 		}
 
-		if ( !$this->is_a_coach( $current_user->ID ) ) {
+		if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
 
 			dbg("e20rClient::ajax_clientDetail() - User isn't a coach. Return error & force redirect");
 			wp_send_json_error( array( 'error' => 403 ) );
@@ -1191,25 +1209,40 @@ class e20rClient {
 
 		global $e20rProgram;
 		global $e20rMeasurements;
-		global $e20rTracker;
+        global $e20rArticle;
 
 		global $currentProgram;
+        global $currentArticle;
 		global $currentClient;
 
 		$userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
 		$type = isset( $_POST['tab-id'] ) ? $e20rTracker->sanitize( $_POST['tab-id']) : 'client-info';
 		$e20rProgram->getProgramIdForUser( $userId );
 
+        $articles = $e20rArticle->findArticle( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+        $a = $articles[0];
+
+        dbg("e20rClient::ajax_clientDetail() - Article ID: ");
+        dbg( $a->id );
+
+        if ( !$e20rArticle->isSurvey( $a->id ) ) {
+            wp_send_json_error( array( 'error' => 'Configuration error. Please report to tech support.' ) );
+        }
+        else {
+            dbg("e20rClient::ajax_clientDetail() - Loading article configuration for the survey!");
+            $e20rArticle->init( $a->id );
+        }
+
 		switch ( $type ) {
 			case 'client-info':
                 dbg("e20rClient::ajax_clientDetail() - Loading client data");
-				$html = $this->load_clientDetail( $userId );
+				$html = $this->load_clientDetail( $userId, $currentProgram->id, $currentArticle->id );
 				break;
 
 			case 'achievements':
                 dbg("e20rClient::ajax_clientDetail() - Loading client achievement data");
 				$html = $this->load_achievementsData( $userId );
-                dbg($html);
+                // dbg($html);
 				break;
 
 			case 'assignments':
@@ -1232,11 +1265,42 @@ class e20rClient {
 
 	public function load_clientDetail( $clientId ) {
 
-		dbg("e20rClient::ajax_clientDetail() - Load client data...");
+		dbg("e20rClient::load_clientDetail() - Load client data...");
+        global $e20rProgram;
+        global $e20rArticle;
 
+        global $currentProgram;
+        global $currentArticle;
+
+        dbg("e20rClient::load_clientDetail() - Load program info for this clientID.");
         // Loads the program specific client information we've got stored.
+        $e20rProgram->getProgramIdForUser( $clientId );
+
+        if ( empty( $currentProgram->id ) ) {
+            dbg("e20rClient::load_clientDetail() - ERROR: No program ID defined for user {$clientId}!!!");
+            return null;
+        }
+
+        dbg("e20rClient::load_clientDetail() - Find article ID for the intake form {$currentProgram->intake_form} for the program ({$currentProgram->id}).");
+        $article = $e20rArticle->findArticle('post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+
+        dbg("e20rClient::load_clientDetail() - Returned " . count($article) . " articles on behalf of the intake form");
+
+        if ( !empty( $article ) ) {
+
+            dbg("e20rClient::load_clientDetail() - Load article configuration.");
+            dbg( $article[0] );
+            $e20rArticle->init( $article[0]->id );
+        }
+        else {
+            dbg("e20rClient::load_clientDetail() - ERROR: No article defined for the Welcome Survey!!!");
+            return null;
+        }
+
+        dbg("e20rClient::load_clientDetail() - Load the client information for {$clientId} in program {$currentProgram->id} for article {$currentArticle->id}");
         $this->model->get_data( $clientId );
 
+        dbg("e20rClient::ajax_clientDetail() - Show client detail for {$clientId} related to {$currentArticle->id} and {$currentProgram->id}");
         return $this->view->viewClientDetail( $clientId );
     }
 
@@ -1274,8 +1338,8 @@ class e20rClient {
             dbg("e20rClient::validateAccess() - Real user Id provided ");
 
             if ( ($current_user->ID != $clientId ) &&
-                ( $e20rTracker->isActiveClient( $clientId )  ) &&
-                $this->is_a_coach() ) {
+                ( ( $e20rTracker->isActiveClient( $clientId )  ) ||
+                ( $e20rTracker->is_a_coach( $current_user->ID ) ) ) ) {
 
                 return true;
             }
