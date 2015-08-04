@@ -91,12 +91,13 @@ class e20rArticle extends e20rSettings {
 
 	    global $currentArticle;
 
+        /*
         if ( empty( $postId ) ) {
 
 
         }
-
-        if ( ( isset( $currentArticle->post_id) && ($currentArticle->post_id != $postId ) ) || !isset($currentArticle->id) ) {
+        */
+        if ( ( isset( $currentArticle->id) && ($currentArticle->id != $postId ) ) || !isset($currentArticle->id) ) {
 
 	        $currentArticle = parent::init( $postId );
             dbg("e20rArticle::init() - Loaded settings for post ID {$postId}:");
@@ -106,12 +107,14 @@ class e20rArticle extends e20rSettings {
         }
 	    else {
 		    dbg("e20rArticle::init() - No need to load settings (previously loaded): ");
-		    dbg($currentArticle);
+//		    dbg($currentArticle);
 	    }
 
-        if ( ( $this->articleId  !== false ) && ( $currentArticle->post_id != $postId ) ) {
+        // dbg( $currentArticle );
 
-	        dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->post_id} & {$postId}");
+        if ( ( $this->articleId  !== false ) && ( $currentArticle->id != $postId ) ) {
+
+	        dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->id} & {$postId}");
             $this->articleId = false;
         }
 
@@ -890,6 +893,22 @@ class e20rArticle extends e20rSettings {
             return ($setting != 0 ? true : false);
         }
         // return ( is_null( $retVal ) ? false : true );
+    }
+
+    public function isSurvey( $id ) {
+
+        dbg("e20rArticle::isSurvey() - checking survey setting for {$id}");
+
+        $setting = $this->model->getSetting( $id, 'is_survey' );
+
+        if ( empty( $setting ) ) {
+
+            dbg("e20rArticle::isSurvey() - is_survey setting is empty/null");
+            return false;
+        }
+        else {
+            return ( 0 != $setting ? true : false );
+        }
     }
 
     public function getCheckins( $aConfig ) {
