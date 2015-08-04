@@ -1059,6 +1059,47 @@ class e20rClient {
         return $html;
     }
 
+    public function updateRoleForUser( $userId ) {
+
+        // global $currentProgram;
+        global $e20rTracker;
+
+        if ( ! current_user_can( 'edit_user' ) ) {
+            return false;
+        }
+
+        $role_name = isset( $_POST['e20r-tracker-user-role'] ) ? $e20rTracker->sanitize( $_POST['e20r-tracker-user-role'] ) : null;
+
+        dbg("e20rTracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}");
+
+        $u = get_user_by('id', $userId );
+
+        if ( !is_null( $role_name ) ) {
+
+            $u->add_role( $role_name );
+        }
+        else {
+            if ( $u->has_cap( 'e20r_coach' ) ) {
+                dbg("e20rTracker::updateRoleForUser() - Removing 'e20r_coach' capability/role for user {$userId}");
+                $u->remove_cap( 'e20r_coach' );
+            }
+
+            // wp_die( "Unable to remove the {$role_name} role for this user ({$userId})" );
+        }
+
+        dbg("e20rTracker::updateRoleForUser() - User roles are now: ");
+        dbg( $u->caps );
+
+        return true;
+    }
+
+    public function selectRoleForUser( $user ) {
+
+        dbg("e20rClient::selectRoleForUser() - Various roles & capabilities for user {$user->ID}");
+
+        echo $this->view->view_userProfile( $user->ID );
+    }
+
     public function ajax_sendClientMessage() {
 
         global $e20rTracker;
