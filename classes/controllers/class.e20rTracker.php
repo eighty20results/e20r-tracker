@@ -34,6 +34,7 @@ class e20rTracker {
                             'purge_tables' => false,
                             // 'measurement_day' => CONST_SATURDAY,
                             'lesson_source' => null,
+                            'roles_are_set' => false,
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
                             'encrypt_surveys' => 0,
@@ -87,6 +88,8 @@ class e20rTracker {
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
 	        $plugin = E20R_PLUGIN_NAME;
+
+            add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
 
             add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
@@ -244,6 +247,11 @@ class e20rTracker {
             add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
             add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
             add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
+
+            add_action( 'show_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
+            add_action( 'edit_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
+            add_action( 'edit_user_profile_update', array( &$e20rClient, 'updateRoleForUser') );
+            add_action( 'personal_options_update', array( &$e20rClient, 'updateRoleForUser') );
 
             dbg("e20rTracker::loadAllHooks() - Short Codes");
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
@@ -1595,9 +1603,13 @@ class e20rTracker {
 
 	public function is_a_coach( $user_id ) {
 
-		// FixMe: Implement this function!
+		$wp_user = get_user_by( 'id', $user_id );
 
-		return true; // Temporary (for testing purposes)
+		if ( $wp_user->has_cap( 'e20r_coach' ) ) {
+		    return true;
+        }
+
+        return false;
 	}
 
     public function hasAccess( $userId, $postId ) {
@@ -3579,6 +3591,44 @@ class e20rTracker {
         return $days;
     }
 
+    public function define_e20rtracker_roles() {
+
+        $roles_set = $this->loadOption('roles_are_set');
+
+        if ( !$roles_set ) {
+
+            $result = add_role(
+                'e20r_coach',
+                __( "Coach", "e20rtracker" ),
+                array(
+                    'read' => true,
+    /*                'edit_users' => true,
+                    'manage_options' => true, */
+                )
+            );
+
+            if ( null === $result ) {
+                dbg("e20rTracker::define_e20rtracker_roles() - Error adding 'coach' role!");
+                return false;
+            }
+
+            $this->updateSetting('roles_are_set',true);
+
+            $admins = get_users( array( 'role' => 'administrator' ) );
+
+            foreach( $admins as $admin ) {
+
+                if ( !in_array( 'e20r_coach', (array) $admin->roles ) ) {
+                    dbg("e20rTracker::define_e20rtracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
+                    $admin->add_role( 'e20r_coach' );
+                    dbg("e20rTracker::define_e20rtracker_roles() - Added 'e20r_coach' role to {$admin->ID}");
+                }
+            }
+
+        }
+
+        return true;
+    }
     /**
      * @param $data - The data to sort
      * @param array $fields - An array (2 elements) for the fields to sort by.
