@@ -242,7 +242,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		}
 
         // Sort the answers by the delay value, then the order_num value
-        $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
+        $answers = $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
 
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Returning sorted array of answers: ");
         dbg($answers);
