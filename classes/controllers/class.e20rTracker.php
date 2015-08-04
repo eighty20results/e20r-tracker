@@ -7,6 +7,9 @@
  *  the GPL v2 license(?)
  */
 
+use \Defuse\Crypto\Crypto as Crypt;
+use \Defuse\Crypto\Exception as Ex;
+
 class e20rTracker {
 
     private $client = null;
@@ -815,48 +818,62 @@ class e20rTracker {
 
 		global $e20rTracker;
 		global $post;
+		global $current_user;
 
 		if ( ! is_user_logged_in() ) {
 
 			return null;
 		}
 
+/*
 		if ( $userId === null ) {
 
-			global $current_user;
 
 			$userId = $current_user->ID;
 		}
+*/
+        if ( ( $current_user->ID != 0 ) && ( null === $userId ) ) {
 
-		if ( WP_DEBUG == true ) {
-
-			return null;
-		}
+            $userId = $current_user->ID;
+        }
 
 		if ( $e20rTracker->hasAccess( $userId, $post->ID ) ) {
-			dbg('e20rClient::getUserKey() - User is permitted to access their AES key.');
+			dbg('e20rTracker::getUserKey() - User is permitted to access their AES key.');
 
-			$key = get_user_option( '_e20r_user_key', $userId );
+			$key = Crypt::hexToBin( get_user_meta( $userId, 'e20r_user_key', true ) );
+
+            // dbg( $key );
 
 			if ( empty( $key ) ) {
 
 				try {
-					require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypto.php" );
 
-					$key = Crypto::CreateNewRandomKey();
+                    dbg("e20rTracker::getUserKey() - Generating a new key for user {$userId}");
+					$key = Crypt::createNewRandomKey();
+
 					// WARNING: Do NOT encode $key with bin2hex() or base64_encode(),
 					// they may leak the key to the attacker through side channels.
-					update_user_option( $userId, '_e20r_user_key', $key );
+
+					if ( false === update_user_meta( $userId, 'e20r_user_key', Crypt::binToHex( $key ) ) ){
+
+					    dbg("e20rTracker::getUserKey() - ERROR: Unable to save the key for user {$userId}: {$key}");
+					    return null;
+					}
+
+					dbg("e20rTracker::getUserKey() - New key generated for user {$userId}");
 				}
-				catch (CryptoTestFailedException $ex) {
+				catch (Ex\CryptoTestFailedException $ex) {
 
 					wp_die('Cannot safely create your encryption key');
 				}
-				catch (CannotPerformOperationException $ex) {
+				catch (Ex\CannotPerformOperationException $ex) {
 
 					wp_die('Cannot safely create an encryption key on your behalf');
 				}
 			}
+
+            dbg("e20rTracker::getUserKey() - Returning key for user {$userId}: {$key}");
+			return $key;
 		}
 		else {
 			return null;
@@ -869,24 +886,19 @@ class e20rTracker {
 
         $enable = $this->loadOption('encrypt_surveys');
 
-        if ( ! class_exists( 'Crypto' ) ) {
-
-            dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
-
-            if ( ! WP_DEBUG ) {
-
-                return base64_encode($data);
-            }
-            else {
-                return $data;
-            }
-
-        }
-
 	    if ( $key === null ) {
 
-		    return $data;
+            dbg("e20rTracker::encryptData() - No key defined!");
+		    return base64_encode( $data );
 	    }
+
+        if ( empty( $key ) ) {
+
+            dbg("e20rTracker::encryptData() - Unable to load encryption engine/key. Using Base64... *sigh*");
+
+            return base64_encode( $data );
+        }
+
 
         if ( 1 == $enable ) {
 
@@ -894,14 +906,14 @@ class e20rTracker {
 
             try {
 
-                $ciphertext = Crypto::Encrypt($data, $key);
-                return $ciphertext;
+                $ciphertext = Crypt::encrypt($data, $key);
+                return Crypt::binToHex($ciphertext);
             }
-            catch (CryptoTestFailedException $ex) {
+            catch (Ex\CryptoTestFailedException $ex) {
 
                 wp_die('Cannot safely perform encryption');
             }
-            catch (CannotPerformOperationException $ex) {
+            catch (Ex\CannotPerformOperationException $ex) {
                 wp_die('Cannot safely perform decryption');
             }
         }
@@ -914,43 +926,35 @@ class e20rTracker {
 
         $enable = $this->loadOption('encrypt_surveys');
 
-	    if ( ( $key === null ) || ( 0 == 'enable' ) ) {
+	    if ( ( $key === null ) || ( 0 == $enable ) ) {
 
-		    return $encData;
+            dbg("e20rTracker::decryptData() - No decryption key - or encryption is disabled: {$enable}");
+		    return base64_decode( $encData );
 	    }
-
-	    if ( ! class_exists( 'Crypto' ) ) {
-
-            if ( ! WP_DEBUG ) {
-
-                dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
-                return base64_decode( $encData );
-            }
-            else {
-                return $encData;
-            }
-        }
 
         if ( 1 == $enable ) {
 
             try {
 
-		        $decrypted = Crypto::Decrypt($encData, $key);
+                dbg("e20rTracker::decryptData() - Attempting to decrypt data...");
+
+                $data = Crypt::hexToBin( $encData );
+		        $decrypted = Crypt::decrypt( $data, $key);
                 return $decrypted;
             }
-            catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
+            catch (Ex\InvalidCiphertextException $ex) { // VERY IMPORTANT
                 // Either:
                 //   1. The ciphertext was modified by the attacker,
                 //   2. The key is wrong, or
                 //   3. $ciphertext is not a valid ciphertext or was corrupted.
                 // Assume the worst.
-                wp_die('DANGER! DANGER! The encrypted text has been tampered with during transmission/load');
+                wp_die('DANGER! DANGER! The encrypted information has been tampered with during transmission/load');
             }
-            catch (CryptoTestFailedException $ex) {
+            catch (Ex\CryptoTestFailedException $ex) {
 
                 wp_die('Cannot safely perform encryption');
             }
-            catch (CannotPerformOperationException $ex) {
+            catch (Ex\CannotPerformOperationException $ex) {
 
                 wp_die('Cannot safely perform decryption');
             }
