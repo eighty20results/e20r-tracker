@@ -576,17 +576,23 @@ class e20rClientModel {
 
                         $userKey = $e20rTracker->getUserKey($clientId);
 
-                        dbg("e20rClientModel::load_from_survey_table() - Loaded key for user {$clientId} ");
-                        $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey);
+                        if ( !empty( $userKey ) ) {
+                            dbg("e20rClientModel::load_from_survey_table() - Loaded key for user {$clientId} ");
+                            $decrypted_survey = $e20rTracker->decryptData($encrypted_survey, $userKey);
 
-                        $survey = unserialize($decrypted_survey);
+                            $survey = unserialize($decrypted_survey);
+                        }
+                        else {
+
+                            return false;
+                        }
                     }
                     else {
                         dbg("e20rClientModel::load_from_survey_table() - Survey data is NOT encrypted. Nothing to decrypt");
                         $survey = unserialize( $encrypted_survey );
                     }
 
-                    dbg("e20rClientModel::load_from_survey_table() - Retrieved " . count($survey) . " encrypted survey fields");
+                    dbg("e20rClientModel::load_from_survey_table() - Retrieved and decrypted" . count($survey) . " encrypted survey fields");
                     return $survey;
                 }
             }
