@@ -493,7 +493,7 @@ class e20rSettingsModel {
         }
 
 		dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
-		dbg($args);
+		// dbg($args);
 
 		$dataList = $this->loadForQuery( $args );
 
