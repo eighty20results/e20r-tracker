@@ -381,7 +381,7 @@ class e20rCheckinView extends e20rSettingsView {
 					if ( ! empty( $achievements ) ) {
 
 						dbg("e20rCheckinView::view_user_achievements() - User has supplied answers...");
-						dbg($achievements);
+						// dbg($achievements);
 						$achievements = array_reverse( $achievements, true);
 
 						foreach ( $achievements as $key => $answer ) {
