@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.3
-Stable tag: 0.9.14
+Stable tag: 0.9.15
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -98,6 +98,39 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+= 0.9.15 =
+* Add fonts directory to installation kit
+* Move ElegantIcons fonts to a sub-dir of css/
+* Add iThemes' ElegantIcons font files
+* Stop debug listing for activity datastructure.
+* Stop debug listing for achievement datastructure.
+* Stop output of arguments debug for query.
+* Check for empty() rather than false after $wpdb->get_results() call,
+* Avoid double-checking whether the article ID is present or not before adding it to the list of articles to return.
+* Remove echo of actual user key (used during debug of functionality).
+* Support using DB column value as indicator for type of decryption to do.
+* Remove superfluous check of encryption indicator.
+* Move un-implemented is_a_coach() function to e20rTracker class.
+* Don't display the encryption key for the user in the client information data.
+* Use I18N capable date function when calculating date/time for updates/edits.
+* Always use program Id & article when loading data.
+* Avoid superfluous config loads for programs and articles in load_from_survey_table()
+* Force the survey type if we're running from the back-end.
+* Select decryption type based on whether or not the DB records indicates its encryption status
+* Wouldn't always load the client data for the specified user/client ID
+* Only allow coaches to access a users data ( test whether is_a_coach() returns true/false )
+* Load program and article config when a coach is attempting to view the data for a user in the back-end.
+* Would occasionally return the incorrect date for a post/article.
+* Would occasionally load check-in data for the wrong user ID
+* Wouldn't always identify the correct article by ID on init.
+* Add survey check (returns true/false) based on article ID (isSurvey())
+* Only allow coaches to access a users data ( test whether is_a_coach() returns true/false )
+* Would occasionally return the incorrect date for a post/article.
+* Would occasionally load check-in data for the wrong user ID
+* Always set program ID & Article ID when a coach is attempting to view E20R-Tracker data in /wp-admin/
+* Would sometimes treat a regular user as a coach
+* Update DB version number
 
 = 0.9.14 =
 * Load css for admin to render client information page(s) correctly sortByFields() needs to return the sorted data.
