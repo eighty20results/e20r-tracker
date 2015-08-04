@@ -145,7 +145,7 @@ class e20rClientViews {
         ob_start(); ?>
         <form id="e20r-message-form">
             <input type="hidden" name="e20r-send-to-id" id="e20r-send-to-id" value="<?php echo $currentClient->user_id; ?>">
-            <input type="hidden" name="e20r-send-message-to" id="e20r-send-message-to" value="<?php echo $currentClient->email; ?>">
+            <input type="hidden" name="e20r-send-message-to" id="e20r-send-message-to" value="<?php echo $email; ?>">
             <input type="hidden" name="e20r-send-message-cc" id="e20r-send-message-cc" value="<?php echo $current_user->user_email; ?>">
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
             <?php if ( true === $incomplete ) { ?>
