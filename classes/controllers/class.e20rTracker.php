@@ -40,6 +40,7 @@ class e20rTracker {
                             'encrypt_surveys' => 0,
                             'e20r_db_version' => 0,
                             'unserialize_notice' => null,
+                            'run_unserialize' => 0,
                             'converted_metadata_e20r_articles' => false,
                             'converted_metadata_e20r_assignments' => false,
                             'converted_metadata_e20r_workout' => false,
@@ -494,50 +495,32 @@ class e20rTracker {
 
     /**
      * Check whether the user belongs to a group (membership level) or the user is directly specified in the list of users for the activity.
+     *
      * @param $activity - The Activity object
-     * @param $uId - The user ID (or array of user IDs)
-     * @param $grpId - The group ID (or array of group IDs)
-     * @return bool - True if the user is in the group list or user list for the activity
+     * @param $uId - The user ID
+     * @param $grpId - The group ID
+     *
+     * @return array - True if the user is in the group list or user list for the activity
      *
      */
     public function allowedActivityAccess( $activity, $uId, $grpId ) {
 
-        $retval = false;
-
-        $grpRet = false;
-        $usrRet = false;
+        $ret = array( 'user' => false, 'group' => false );
 
         dbg("e20rTracker::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 
-        if  ( ! is_array( $grpId ) ) {
-
-            $grpId = array( $grpId );
-        }
-
-        if ( ! is_array( $uId ) ) {
-
-            $uId = array( $uId );
-        }
+        // Check against list of users for the specified activity.
+        dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$uId}");
+        $ret['user'] = $this->inUserList( $uId, $activity->assigned_user_id );
 
         // Check against group list(s) first.
         // Loop through any list of groups the user belongs to
-        foreach( $grpId as $gid ) {
 
-            dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$gid}");
-
-            $grpRet = $this->inGroup( $gid, $activity->assigned_usergroups );
-        }
-
-        // Then check against list of users.
-        foreach ( $uId as $id ) {
-
-            dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$id}");
-
-            $usrRet = $this->inUserList( $id, $activity->assigned_user_id );
-        }
+        dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$grpId}");
+        $ret['group'] = $this->inGroup( $grpId, $activity->assigned_usergroups );
 
         // Return true if either user or group access is true.
-        return ( $usrRet || $grpRet );
+        return $ret;
     }
 
     public function getURLToPageWithShortcode( $short_code = '' ) {
@@ -3707,7 +3690,9 @@ class e20rTracker {
      */
     public function unserialize_settings( $post_type, $from_key, $to_key ) {
 
-        if ( 1 != E20R_RUN_UNSERIALIZE ) {
+        $run_unserialize = $this->loadOption('run_unserialize');
+
+        if ( 1 != $run_unserialize ) {
 
             dbg("e20rTracker::unserialize_settings() - Not being asked to convert serialized metadata.");
             return;
@@ -3735,16 +3720,12 @@ class e20rTracker {
             $serialized_post_id = $serialized_post->ID;
             $serialized_postmeta = get_post_meta( $serialized_post_id, $from_key, true );
 
-//            if ( false !== strpos( $from_key, 'assignment' ) ) {
-                dbg("e20rTracker::unserialize_settings() - Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
-                // dbg($serialized_postmeta);
-//            }
+            dbg("e20rTracker::unserialize_settings() - Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
 
 
             if ( "delete" == $to_key ) {
-//                if ( false !== strpos( $from_key, 'assignment' ) ) {
-                    dbg("e20rTracker::unserialize_settings() - WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
-//                }
+
+                dbg("e20rTracker::unserialize_settings() - WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
                 delete_post_meta( $serialized_post_id, $from_key );
             }
             else {
@@ -3757,18 +3738,15 @@ class e20rTracker {
 
                 if ( is_array( $serialized_postmeta ) ) {
 
-//                        if ( false !== strpos( $from_key, 'assignment' ) ) {
-                            dbg("e20rTracker::unserialize_settings() - serialized postmeta IS an array.");
-                            dbg($serialized_postmeta);
-//                        }
+                    dbg("e20rTracker::unserialize_settings() - serialized postmeta IS an array.");
+                    dbg($serialized_postmeta);
 
                     delete_post_meta( $serialized_post_id, $to_key );
 
                     foreach ( $serialized_postmeta as $k => $val ) {
 
-//                        if ( false !== strpos( $from_key, 'assignment' ) ) {
-                            dbg("e20rTracker::unserialize_settings() - Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
-//                        }
+                        dbg("e20rTracker::unserialize_settings() - Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
+
                         if ( 0 !== $val ) {
 
                             add_post_meta( $serialized_post_id, $to_key, $val);
@@ -3779,23 +3757,16 @@ class e20rTracker {
                         }
                     }
 
-//                    if ( false !== strpos( $from_key, 'assignment' ) ) {
-                        dbg("e20rTracker::unserialize_settings() - From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
-//                    }
+                    dbg("e20rTracker::unserialize_settings() - From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
 
-                    // update_post_meta( $serialized_post_id, $from_key, null, $serialized_postmeta );
-
-                    // update_post_meta( $serialized_post_id, $to_key, $extracted_postmeta );
                     $serialized_post_list[] = $serialized_post_id;
                 }
 
                 $unserialized_postmeta = get_post_meta( $serialized_post_id, $to_key );
 
                 // dbg("e20rTracker::unserialize_settings() - Because this is a simulation, the following data is wrong... ");
-//                if ( false !== strpos( $from_key, 'assignment' ) ) {
-                    dbg("e20rTracker::unserialize_settings() - Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
-                    dbg($unserialized_postmeta);
-//                }
+                dbg("e20rTracker::unserialize_settings() - Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
+                dbg($unserialized_postmeta);
 
 
                 if ( is_array( $serialized_postmeta ) && ( is_array($unserialized_postmeta) ) ) {
@@ -3811,9 +3782,7 @@ class e20rTracker {
                 }
 
                 if ( empty( $cmp )  ) {
-//                    if ( false !== strpos( $from_key, 'assignment' ) ) {
                         dbg("e20rTracker::unserialize_settings() - {$serialized_post_id} was unserialized and saved.");
-//                    }
                     $unserialized_post_list[] = $serialized_post_id;
 
                 }
@@ -3899,6 +3868,7 @@ class e20rTracker {
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-assignments"] = "_e20r-{$cpt_info[$cpt]->type}-assignment_ids";
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-checkin_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-activity_id"] = "_e20r-{$cpt_info[$cpt]->type}-activity_id";
                     break;
 
                 case 'e20r_assignments':
