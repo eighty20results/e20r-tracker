@@ -17,7 +17,7 @@ class e20rExerciseView {
     }
 
 	// Display the exercise entry for an activity page
-	public function printExercise( $hidden = null ) {
+	public function printExercise( $show = true ) {
 
 		global $currentExercise;
 		global $e20rExercise;
@@ -31,7 +31,7 @@ class e20rExerciseView {
 			$type_label = __('seconds', 'e20rtracker');
 		}
 
-		dbg("e20rExerciseViews::printExercise() - Hidden status is: {$hidden}");
+		dbg("e20rExerciseViews::printExercise() - Hidden status is: {$show}");
 		$display = null;
 
 		if ( empty( $currentExercise->video_link ) ) {
@@ -86,7 +86,7 @@ class e20rExerciseView {
 				</div>
 			</div>
 			<div class="spacer">&nbsp;</div>
-			<div class="e20r-exercise-table-body<?php echo is_null($hidden) ? " show" : " startHidden"; ?>">
+			<div class="e20r-exercise-table-body<?php echo ( $show == true ? " show" : " startHidden" ); ?>">
 				<div class="e20r-exercise-detail-row e20r-video">
 					<div class="e20r-exercise-table-column">
 						<div class="e20r-exercise-video">
