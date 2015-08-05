@@ -13,13 +13,15 @@ readme_header="== ${version} =="
 ###########
 #
 # Create a metadata.json friendly changelog entry for the current ${version}
-
+#
 ${sed} -e"s/\"/\'/g" -e"s/.*/\<li\>&\<\/li\>/" ${changelog_source} > ${incomplete_out}
 echo -n ${json_header} > ${json_out}
 cat ${incomplete_out} | tr -d '\n' >> ${json_out}
 echo -n ${json_footer} >> ${json_out}
 
+###########
+#
 # Create a README.txt friendly changelog entry for the current ${version}
+#
 echo -n ${readme_header} > ${readme_out}
 ${sed} -e"s/\"/\'/g" -e"s/.*/\*\ &/" ${changelog_source} >> ${readme_out}
-
