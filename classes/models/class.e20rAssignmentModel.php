@@ -134,6 +134,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
             'ping_status' => 'closed',
         );
 
+        $exists = get_page_by_title( "Lesson complete for {$title}" );
+
+        if ( !empty( $exists ) ) {
+
+            return false;
+        }
+
         $assignment = $this->defaultSettings();
         $assignment->id = wp_insert_post( $postDef );
 
