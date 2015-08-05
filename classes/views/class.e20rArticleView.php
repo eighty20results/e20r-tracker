@@ -303,7 +303,7 @@ class e20rArticleView extends e20rSettingsView {
 			                    $selected = ( -1 == $settings->activity_id ? 'selected="selected"' : null );
 		                    }
 		                    ?>
-		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id">
+		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id[]" multiple="multiple">
 			                    <option value="-1" <?php echo $selected ?>>No defined activity</option>
 			                    <?php
 			                    global $e20rWorkout;
