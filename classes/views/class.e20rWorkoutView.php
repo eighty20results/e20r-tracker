@@ -145,27 +145,33 @@ class e20rWorkoutView extends e20rSettingsView {
             auth_redirect();
         }
 
-        dbg("e20rWorkoutView::displayArchive() - Content of workoutData object ");
+        dbg("e20rWorkoutView::displayArchive() - Display archive");
+        // dbg( $activityList );
 
         $activityHeader = $activityList['header'];
         unset( $activityList['header'] );
-        ob_start(); ?>
 
+        ob_start(); ?>
         <h2 class="e20r-faq-headline"><?php echo $activityHeader; ?></h2>
         <hr/><?php
 
+        dbg("e20rWorkoutView::displayArchive() - Check whether the archive is empty");
+        dbg( "e20rWorkoutView::displayArchive() - # of entries in archive: " . count( $activityList ) );
+
         if ( empty( $activityList ) ) { ?>
             <div class="red-notice">
-                <h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date('l', current_time('timestamp')) ); ?></h3>
+                <h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date( 'l', current_time('timestamp') ) ); ?></h3>
                 <p><?php _e( "Sorry, we're not quite ready to share activities for this week.<br/>But maybe if you come back later in the week..? (Sunday)", "e20rtracker" ); ?></p>
-            </div><?
-            }
+            </div><?php
+        }
+
+        dbg("e20rWorkoutView::displayArchive() - Iterating through list of activities.");
         foreach( $activityList as $day => $activity ) { ?>
 
         <div class="e20r-faq-container e20r-toggle-close">
-            <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
+            <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName( $day ); ?></h3>
             <div class="e20r-faq-answer-container clearfix">
-                <?php echo $this->displayActivity($config, array( $activity ) ); ?>
+                <?php echo $this->displayActivity( $config, array( $activity ) ); ?>
             </div>
         </div><?php
         }
@@ -231,7 +237,7 @@ class e20rWorkoutView extends e20rSettingsView {
 								<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" />
 								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" />
 								<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" />
-								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo $config->date; ?>" />
+								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo ( !empty( $config->date ) ? $config->date : null ); ?>" />
 								<div class="e20r-int-table">
 									<div class="e20r-act-content-row">
 										<p class="e20r-content-col">
@@ -301,10 +307,13 @@ class e20rWorkoutView extends e20rSettingsView {
 								?>
 						<div class="e20r-exercise-row">
 							<div class="e20r-activity-info-col">
-								<?php echo $e20rExercise->print_exercise( $config->withInput ); ?>
+								<?php echo $e20rExercise->print_exercise( $config->expanded ); ?>
 							</div> <!-- End of info-col -->
 						</div><!-- End of exercise-row -->
-						<div class="spacer">&nbsp;</div>
+						<div class="spacer">&nbsp;</div><?php
+
+                                if ( 1 == $config->show_tracking ) {
+                        ?>
 						<div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
 							<div class="e20r-activity-info-col">
 								<div class="e20r-activity-exercise-tracking">
@@ -368,7 +377,8 @@ class e20rWorkoutView extends e20rSettingsView {
 									</table>
 								</div> <!-- end of activity-exercise-tracking -->
 							</div> <!-- End of info-col -->
-						</div> <!-- end of exercise tracking row -->
+						</div> <!-- end of exercise tracking row --><?php
+                                } ?>
 						<div class="spacer">&nbsp;</div>
 					<?php } // End of for loop for exercise list
 					} // End of loop for Groups ?>
