@@ -34,7 +34,8 @@ class e20rMeasurementModel {
 		    }
 
 		    $this->client_id = $user_id;
-		    $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
+            $this->programId = 0;
+		    // $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
 
 		    dbg( "e20rMeasurementModel::construct() - For user_id: {$user_id}" );
 	    }
@@ -198,7 +199,7 @@ class e20rMeasurementModel {
         $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
 
         // Update tables (account for possible beta group data).
-        $e20rTables->init( $this->client_id);
+        $e20rTables->init( $this->client_id );
 
         $this->table = $e20rTables->getTable( 'measurements', true );
         $this->fields = $e20rTables->getFields( 'measurements', true );
