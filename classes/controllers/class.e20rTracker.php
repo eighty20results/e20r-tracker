@@ -70,6 +70,131 @@ class e20rTracker {
 		return $access;
 	}
 
+    public function duplicate_cpt_link( $actions, $post ) {
+
+        global $current_user;
+
+        dbg("e20rTracker::duplicate_cpt_link() - Checking whether to add a 'Duplicate' link for the {$post->post_type} post type");
+
+        $managed_types = apply_filters( 'e20r_tracker_duplicate_types', array(
+                                                                'e20r_programs',
+                                                                'e20r_workout',
+                                                                'e20r_articles'
+                                                            )
+                            );
+
+        if ( in_array( $post->post_type, $managed_types ) &&
+                current_user_can( 'edit_posts' ) &&
+                $this->is_a_coach( $current_user->ID ) ) {
+
+            dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for the post type!");
+            $actions['duplicate'] = '<a href="admin.php?post=' . $post->ID . '&amp;action=e20r_duplicate_as_draft" title="' .__("Duplicate this item", "e20rtracker" ) .'" rel="permalink">' . __("Duplicate", "e20rtracker") . '</a>';
+        }
+
+        return $actions;
+    }
+    /**
+      * Duplicate a E20R Tracker CPT and save the duplicate as 'draft'
+      */
+    public function duplicate_cpt_as_draft() {
+
+        global $wpdb;
+
+        dbg("e20rTracker::duplicate_cpt_as_draft() - Requested duplication of a CPT");
+        dbg( $_GET['post'] );
+        // dbg( $_POST['post'] );
+        dbg( $_REQUEST['action'] );
+
+        if ( !isset( $_GET['post'] ) && !isset( $_POST['post'] ) ) {
+            dbg("e20rTracker::duplicate_cpt_as_draft() - One of the expected globals isn't set correctly?");
+            wp_die("No E20R Tracker Custom Post Type found to duplicate!");
+        }
+
+        /*
+         * Grab the old post (the one we're duplicating)
+         */
+
+        $e20r_post_id = ( isset( $_GET[ 'post'] ) ? $this->sanitize( $_GET[ 'post' ] ) : $this->sanitize( $_POST[ 'post' ] ) );
+        $e20r_post = get_post( $e20r_post_id );
+
+        /*
+         * Set author as the current user.
+         */
+        $user = wp_get_current_user();
+
+        if ( !$this->isEmpty( $e20r_post ) && !is_null( $e20r_post ) ) {
+
+             // Copy the data for the new post.
+            $new_post = array(
+                'comment_status' => $e20r_post->comment_status,
+                'ping_status'    => $e20r_post->ping_status,
+                'post_author'    => $user->ID,
+                'post_content'   => $e20r_post->post_content,
+                'post_excerpt'   => $e20r_post->post_excerpt,
+                'post_name'      => $e20r_post->post_name,
+                'post_parent'    => $e20r_post->post_parent,
+                'post_password'  => $e20r_post->post_password,
+                'post_status'    => 'draft',
+                'post_title'     => $e20r_post->post_title,
+                'post_type'      => $e20r_post->post_type,
+                'to_ping'        => $e20r_post->to_ping,
+                'menu_order'     => $e20r_post->menu_order
+            );
+
+
+            dbg("e20rTracker::duplicate_cpt_as_draft() - Content for new post: ");
+            dbg( $new_post );
+
+            $new_id = wp_insert_post( $new_post, true );
+
+            if ( is_wp_error( $new_id ) ) {
+                dbg("e20rTracker::duplicate_cpt_as_draft() - Error: ");
+                dbg( $new_id );
+                wp_die("Unable to save the duplicate post!");
+            }
+            $taxonomies = get_object_taxonomies( $e20r_post->post_type );
+
+            foreach( $taxonomies as $taxonomy ) {
+
+               $post_terms = wp_get_object_terms( $e20r_post_id, $taxonomy, array( 'fields' => 'slugs') );
+               wp_set_object_terms( $new_id, $post_terms, $taxonomy, false );
+            }
+
+            // Duplicate the post meta for the new post
+            $sql = "SELECT meta_key, meta_value
+                    FROM {$wpdb->postmeta}
+                    WHERE post_id = {$e20r_post_id} AND meta_key LIKE '%e20r-%';";
+
+            dbg( "e20rTracker::duplicate_cpt_as_draft() - SQL for postmeta: " . $sql );
+
+            $meta_data = $wpdb->get_results( $sql );
+
+            if ( !empty( $meta_data ) ) {
+
+                $sql = "INSERT INTO {$wpdb->postmeta} ( post_id, meta_key, meta_value )";
+
+                $query_sel = array();
+
+                foreach( $meta_data as $meta ) {
+
+                    $key = $meta->meta_key;
+                    $value = addslashes( $meta->meta_value );
+                    $query_sel[] = "SELECT {$new_id}, '{$key}', '{$value}'";
+                }
+
+                $sql .= implode( " UNION ALL ", $query_sel );
+
+                $wpdb->query( $sql );
+            }
+
+            wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_id ) );
+            exit;
+        }
+        else {
+            wp_die("Unable to create a duplicate of post with ID {$e20r_post_id}. We couldn't locate it!");
+        }
+    }
+
 	public function loadAllHooks() {
 
         global $current_user;
@@ -104,6 +229,10 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
             // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+
+            add_filter( "post_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+            add_filter( "page_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+            add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
 
             add_action( 'admin_notices', array( &$this, 'convert_postmeta_notice'  ) );
 
@@ -3198,13 +3327,13 @@ class e20rTracker {
 
 		if ( ! is_object( $obj ) ) {
             dbg('e20rTracker::isEmpty() - Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
-            dbg($obj);
+            // dbg($obj);
 			return empty( $obj );
 		}
 
 		$o = (array)$obj;
         dbg('e20rTracker::isEmpty() - Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
-        dbg( $o );
+        // dbg( $o );
 		return empty( $o );
 	}
 
