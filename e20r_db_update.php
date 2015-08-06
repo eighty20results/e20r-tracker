@@ -25,7 +25,7 @@ if ( !function_exists( "update_db_to_6" ) ) {
         foreach(  $result as $record ) {
 
             $for_date = $record['for_date'];
-            $new_for_date = date('Y-m-d H:i:s', strtotime( "{$for_date} -1 day" ) );
+            $new_for_date = date('Y-m-d H:i:s', strtotime( "{$for_date} -1 day in e20r_workout table" ) );
 
             $sql = $wpdb->prepare(
                 "UPDATE {$wpdb->prefix}e20r_workout
@@ -36,6 +36,37 @@ if ( !function_exists( "update_db_to_6" ) ) {
             );
 
             dbg("update_db_to_6() - Updating record # {$record['id']}");
+
+            if ( false === $wpdb->query( $sql ) ) {
+
+                dbg("update_db_to_6() - Error when updating record # {$record['id']}: " . $wpdb->print_error() );
+                $error = true;
+            }
+        }
+
+        $sql = $wpdb->prepare(
+            "SELECT id, checkin_date
+            FROM {$wpdb->prefix}e20r_checkin
+            WHERE checkin_date >= %s",
+            '2015-07-29'
+        );
+
+        $result = $wpdb->get_results( $sql );
+
+        foreach(  $result as $record ) {
+
+            $checkin_date = $record['checkin_date'];
+            $new_checkin_date = date('Y-m-d H:i:s', strtotime( "{$checkin_date} -1 day" ) );
+
+            $sql = $wpdb->prepare(
+                "UPDATE {$wpdb->prefix}e20r_checkin
+                 SET checkin_date = %s
+                 WHERE id = %d",
+                $new_checkin_date,
+                $record['id']
+            );
+
+            dbg("update_db_to_6() - Updating record # {$record['id']} in e20r_checkin table");
 
             if ( false === $wpdb->query( $sql ) ) {
 
