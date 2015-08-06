@@ -1035,6 +1035,53 @@ class e20rArticle extends e20rSettings {
             }
         }
 
+        dbg("e20rArticle::contentFilter() - Check whether this user should have access to the dashboard page for their program (yet!)");
+        $program_pages = array();
+
+        $pgm_pages = array(
+            'dashboard_page_id',
+            'activity_page_id',
+            'measurements_page_id',
+            'progress_page_id',
+        );
+
+        foreach( $pgm_pages as $key ) {
+
+            if ( !empty( $currentProgram->{$key}) ) {
+
+                if ( !is_array( $currentProgram->{$key} ) ) {
+
+                    $program_pages[] = $currentProgram->{$key};
+                }
+                else {
+
+                    foreach( $currentProgram->{$key} as $id ) {
+
+                        $program_pages[] = $id;
+                    }
+                }
+            }
+        }
+
+
+        if ( ( !empty( $currentProgram->dashboard_page_id ) && in_array($post->ID, $program_pages ) ) ) {
+
+            if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+
+                $user_startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $current_user->ID ) );
+                $today = date_i18n( 'Y-m-d', current_time('timestamp') );
+
+                if ( $today < $user_startdate ) {
+
+                    dbg("e20rArticle::contentFitler() - Warning: User shouldn't have access to this dashboard yet. Redirect them to the start page(s)?");
+                    if ( !empty( $currentProgram->welcome_page_id ) ) {
+
+                        wp_redirect( get_permalink( $currentProgram->welcome_page_id ) );
+                    }
+                }
+            }
+        }
+
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articles = $this->findArticles( 'post_id', $post->ID );
         $dayNo = $e20rTracker->getDelay( 'now', $current_user->ID );
