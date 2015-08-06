@@ -2665,17 +2665,17 @@ class e20rTracker {
 
 
             $diff = ( E20R_DB_VERSION - $db_ver );
-            dbg("e20rTracker::update_db() - We've got {$diff} versions to upgrade...");
+            dbg("e20rTracker::update_db() - We've got {$diff} versions to upgrade... {$db_ver} to " . E20R_DB_VERSION );
 
-            for ( $i = $db_ver ; $i <= E20R_DB_VERSION ; $i++ ) {
+            for ( $i = ($db_ver + 1) ; $i <= E20R_DB_VERSION ; $i++ ) {
 
                 $version = $i;
                 dbg("e20rTracker::update_db() - Process upgrade function for Version: {$version}");
 
-                if ( function_exists("update_db_to_{$version}" ) ) {
+                if ( function_exists("e20r_update_db_to_{$version}" ) ) {
 
                     dbg("e20rTracker::update_db() - Function to update version to {$version} is present. Executing...");
-                    call_user_func( "update_db_to_{$version}", array( $version ) );
+                    call_user_func( "e20r_update_db_to_{$version}", array( $version ) );
                 }
                 else {
                     dbg("e20rTracker::update_db() - No version specific update function for database version: {$version} ");
