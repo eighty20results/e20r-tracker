@@ -20,47 +20,37 @@ class e20rProgram extends e20rSettings {
 
     public function init( $programId = null ) {
 
-        global $post;
 	    global $currentProgram;
 	    global $current_user;
 
 	    if ( is_user_logged_in() ) {
 
-		    if ( ( !isset( $currentProgram->id) ||
-                ( !is_null( $programId ) && ( $currentProgram->id != $programId ) ) ) ) {
+            if ( ( is_null( $programId ) ) ) {
+
+                dbg("e20rProgram::init() - Fetching program ID for user {$current_user->ID}.");
+                $programId = get_user_meta($current_user->ID, 'e20r-tracker-program-id', true);
+            }
+
+            if ( ( empty( $currentProgram->id) ||
+                ( !empty( $programId ) && ( $currentProgram->id != $programId ) ) ) ) {
 
 			    dbg("e20rProgram::init() - Loading program settings for {$programId}.");
-			    $currentProgram = parent::init( $programId );
-			    return true;
+
+                $currentProgram = $this->model->loadSettings( $programId );
+
+                dbg("e20rProgram::init() - Program info has been loaded for: {$currentProgram->id}");
+                return true;
 		    }
 
-		    if ( ( is_null( $programId ) ) ) {
-
-			    $pid = get_user_meta( $current_user->ID, 'e20r-tracker-program-id', true );
-
-			    if ( ( $pid !== false ) && ( $pid != $programId ) ) {
-				    dbg("e20rProgram::init() - Loading program settings based on user login {$programId}.");
-				    $this->model->loadSettings( $pid );
-				    return true;
-			    }
-			    else {
-				    $this->model->loadSettings( $programId );
-				    return true;
-			    }
-		    }
-
-		    if ( isset( $currentProgram->id ) && ( $currentProgram->id == $programId ) ) {
+/*		    if ( isset( $currentProgram->id ) && ( $currentProgram->id == $programId ) ) {
 
 			    $this->programTree = $this->getPeerPrograms( $currentProgram->id );
 		    }
-
-		    dbg("e20rProgram::init() - Program ID: {$currentProgram->id}");
-
-		    return true;
+*/
 	    }
 
 	    $currentProgram = new stdClass();
-	    $currentProgram->id = false;
+	    $currentProgram->id = null;
 
 	    dbg("e20rProgram::init() - No Program ID found or user not logged in!");
 	    return false;
@@ -199,46 +189,65 @@ class e20rProgram extends e20rSettings {
 		return $link;
 	}
 
-    public function getProgramIdForUser( $userId = null, $articleId = null ) {
+    public function getProgramIdForUser( $userId = 0, $articleId = null ) {
 
 	    global $currentProgram;
 
-        $uPgmId = get_user_meta( $userId, 'e20r-tracker-program-id', true );
+        global $e20rArticle;
 
-	    if ( !isset( $currentProgram->id ) || ( $currentProgram->id === false ) ) {
+        $user_program = -9999;
 
-		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id is false or not set yet.");
+        if ( 0 != $userId ) {
 
-		    if ( $userId != 0 )  {
+            $user_program = get_user_meta( $userId, 'e20r-tracker-program-id', true);
+        }
 
-			    dbg("e20rProgram::getProgramIdForUser() - Loading program info from DB for user w/ID {$userId}");
-			    $this->loadProgram( $userId );
+        if ( !empty( $currentProgram->id ) && ( $currentProgram->id == $user_program ) ) {
 
-                // $currentProgram->stardate = $this->startdate( $userId, null, true );
+            return $currentProgram->id;
+        }
 
-			    dbg("e20rProgram::getProgramIdForUser() - Loaded program settings for user w/ID {$userId} and startdate: {$currentProgram->startdate}");
-			    // dbg($currentProgram);
-		    }
-		    else {
-			    $this->init();
-		    }
-	    }
-	    else {
+	    if ( empty( $currentProgram->id ) || ( !empty( $user_program) && ( $currentProgram->id != $user_program ) ) ) {
 
-		    dbg("e20rProgram::getProgramIdForUser() - currentProgram is already loaded & configured.");
+		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id isn't configured or its different from what this user ({$userId}) needs it to be ({$user_program}).");
 
-            if ( ( $uPgmId != $currentProgram->id ) && ( ! in_array( $userId, $currentProgram->users ) ) ) {
-                $this->loadProgram($userId);
-            }
+            dbg("e20rProgram::getProgramIdForUser() - currentProgram being configured for {$userId} -> {$user_program}.");
+            $this->model->loadSettings( $user_program );
 
-		    if ( $currentProgram->id === false ) {
+            $this->configure_startdate( $user_program, $userId );
+
+		    if ( empty( $currentProgram->id ) ) {
 
 			    dbg("e20rProgram::getProgramIdForUser() - currentProgram getting set to default values");
-			    $this->init( $uPgmId );
+			    $this->init();
 		    }
-	    }
 
+            if ( !empty( $articleId ) ) {
+
+                dbg("e20rProgram::getProgramIdForUser() - load Article ({$articleId}) too");
+                $e20rArticle->init( $articleId );
+            }
+
+        }
+
+        dbg("e20rProgram::getProgramIdForUser() - Loaded program ID ($currentProgram->id) for user {$userId}");
 	    return ( isset( $currentProgram->id ) ? $currentProgram->id : false );
+    }
+
+    private function configure_startdate( $program_id, $userId ) {
+
+        global $currentProgram;
+
+        dbg("e20rProgram::configure_startdate() - Defined program startdate value: {$currentProgram->startdate}");
+
+        if ( ( $currentProgram->id == $program_id ) && ( function_exists( 'pmpro_getMemberStartdate' ) ) ) {
+
+            dbg( "e20rProgram::configure_startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
+
+            $currentProgram->startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+            dbg("e20rProgram::configure_startdate() - Startdate set to the member's start date for the program: {$currentProgram->startdate} for {$userId}");
+        }
+
     }
 
     public function setProgramForUser( $user_id, $membership_id ) {
@@ -336,27 +345,32 @@ class e20rProgram extends e20rSettings {
                     $this->model->loadSettings($programId);
 				}
 			}
+
+            $this->configure_startdate( $programId, $userId );
 		}
+
+
 /*		else {
 
 			$this->init();
 		}
 */
         // Set the program startdate based on the user's membership start.
-        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+/*        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
 
             dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
 
-            $from_mbr = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+            // $from_mbr = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
 
-            dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
+            // dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
 
             // $actual_startTS = strtotime( "{$from_mbr} + 1 day");
             // $currentProgram->startdate = date_i18n( 'Y-m-d', $actual_startTS );
             $currentProgram->startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+            dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
             dbg("e20rProgram::startdate() - Forcing startTS to the day after (workaround): {$from_mbr} vs {$currentProgram->startdate} for {$userId}");
         }
-
+*/
         dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
 	}
     /**
@@ -391,22 +405,24 @@ class e20rProgram extends e20rSettings {
 
 	    global $currentProgram;
 
-        if ( ( !is_null( $program_id ) && isset( $currentProgram->id ) && ( $currentProgram->id === false ) ) ||
-                ( (!is_null( $program_id ) ) && ( $program_id != $currentProgram->id ) ) ) {
+        if ( ( !empty( $program_id ) && !empty( $currentProgram->id ) && ( $currentProgram->id === false ) ) ||
+                ( (!empty( $program_id ) ) && ( $program_id != $currentProgram->id ) ) ) {
 
+            dbg( "e20rProgram::startdate() - Loading new program {$program_id} in place of {$currentProgram->id}" );
             $this->model->loadSettings( $program_id );
         }
 
-        if ( ( $program_id == null ) ) {
+        if ( ( empty($program_id) ) ) {
 
-            dbg( "e20rProgram::startdate() - Loading usermeta to get Program for user with ID: {$userId}" );
-            $program_id = get_user_meta( $userId, 'e20r-tracker-program-id', true );
+            // dbg( "e20rProgram::startdate() - Loading program for user with ID: {$userId}" );
+            $this->getProgramIdForUser( $userId );
 
-            if ( ( $currentProgram->id != $program_id ) && ( $program_id !== false ) ) {
+/*            if ( ( $currentProgram->id != $program_id ) && ( $program_id !== false ) ) {
 
                 dbg( "e20rProgram::startdate() - User program not set! Loading settings by passed Program ID: {$program_id}" );
                 $this->model->loadSettings( $program_id );
             }
+*/
         }
 
         dbg("e20rProgram::startdate() - Using startdate as configured for program with id {$currentProgram->id}: {$currentProgram->startdate}");
