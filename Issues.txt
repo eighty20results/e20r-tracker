@@ -1,13 +1,7 @@
 
 == List of issues that need fixing ==
 
-07/16/2015:
-
-Fix: (P3) Add a "program_list" for the assignment definition (take under consideration).
-
 07/17/2015:
-
-Enh: (P1) When user changes the release_day field, save the article as a draft & reload the page.
 
 07/18/2015
 
@@ -17,24 +11,15 @@ Enh: (P1) When user changes the release_day field, save the article as a draft &
 
 07/21/2015
 
-07/25/2015 - For Monday?
+07/25/2015
 
-Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
 Enh: P2 - Add graphs for the exercise history.
 
 07/26/2015
 
-Fix: P0 - Members who sign up late in the week get their start date set to Sunday (next week).
-            Need something on the dashboard (possibly? ) to indicate that full access won't be available
-            until the startdate... (Trap that during login perhaps?) - use: pmpro_getMemberStartdate( $user_id, $level_id)
-
-Fix: P0 - Don't let new users see actual dashboard content, etc until their PMPRO startdate has come (or gone).
-
 07/27/2015:
 
 Fix: P2 - Make Achievements list responsive (from table to div & float:left)
-Fix: P1 - Clean up the client information page in the back-end.
-Fix: P0 - Create a survey infrastructure for the E20R-Tracker plugin. Leverage the Assignment CPTs? (Add SELECT2 box!) have table in DB that stores structure of answers in one go.
 
 07/28/2015:
 
@@ -50,19 +35,36 @@ Fix: (P0) The Assignment list is does not display correctly on a post/page when 
 Fix: (P0) Not loading correct assignment information on a measurement day.
 Fix: (P0) Convert $e20rArticle->activities to unserialized variable (activity_ids) a-la program_ids and article_ids.
 Fix: (P0) Add timeout error handling to jQuery.ajax() calls.
+Fix: (P0) Create a survey infrastructure for the E20R-Tracker plugin. Leverage the Gravity Forms plugin (for now)
+Fix: (P0) Added select2 box as "multichoice" box for assignment(s).
+Fix: (P0) Email messages to clients had their HTML stripped.
+Fix: (P0) Don't let new users see actual program content except the welcome info until their PMPRO startdate has come (or gone).
+Fix: (P0) Showing program pages before a users startdate (redirect to a preview page instead).
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).
 Fix: (P1) Correctly load the Client Info page in back end.
 Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
+Fix: (P1) Clean up the client information page in the back-end.
+
 Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
+
+Fix: (P3) Add a "program_list" for the assignment definition
 
 Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
 Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
+
 Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.
 Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
 Enh: (P1) Let user/admin define the progress and dashboard pages on a per-program basis.
 Enh: (P1) Specify "Day number" or date for start/end of activity.
+
 Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
 Enh: (P2) Add client message form for back-end.
+
+
+== Won't fix ==
+
+Enh: (P1) When user changes the release_day field, save the article as a draft & reload the page.
+Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.
