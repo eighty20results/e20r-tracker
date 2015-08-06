@@ -1,5 +1,55 @@
 <?php
 
+if ( !function_exists( "update_db_to_6" ) ) {
+
+    function update_db_to_6() {
+
+        global $wpdb;
+        global $e20rTracker;
+
+        dbg("update_db_to_6() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION );
+
+        $error = false;
+
+        // Start updating e20r_workout records with for_date >= 07-29-2015 and set the for_date to $for_date - 1 day.
+
+        $sql = $wpdb->prepare(
+            "SELECT id, for_date
+            FROM {$wpdb->prefix}e20r_workout
+            WHERE for_date >= %s",
+            '2015-07-29'
+        );
+
+        $result = $wpdb->get_results( $sql );
+
+        foreach(  $result as $record ) {
+
+            $for_date = $record['for_date'];
+            $new_for_date = date('Y-m-d H:i:s', strtotime( "{$for_date} -1 day" ) );
+
+            $sql = $wpdb->prepare(
+                "UPDATE {$wpdb->prefix}e20r_workout
+                 SET for_date = %s
+                 WHERE id = %d",
+                $new_for_date,
+                $record['id']
+            );
+
+            dbg("update_db_to_6() - Updating record # {$record['id']}");
+
+            if ( false === $wpdb->query( $sql ) ) {
+
+                dbg("update_db_to_6() - Error when updating record # {$record['id']}: " . $wpdb->print_error() );
+                $error = true;
+            }
+        }
+
+        if (! $error ) {
+            $e20rTracker->updateSetting( 'e20r_db_version', 6 );
+        }
+
+    }
+}
 if ( !function_exists( "update_db_to_5" ) ) {
 
     function update_db_to_5() {
