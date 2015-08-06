@@ -88,7 +88,10 @@ class e20rCheckin extends e20rSettings {
 		dbg("e20rCheckin::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson.");
 
 		global $currentArticle;
+		global $currentProgram;
+
 		global $e20rArticle;
+		global $e20rProgram;
 
         $config = new stdClass();
 
@@ -96,6 +99,11 @@ class e20rCheckin extends e20rSettings {
 
 			global $post;
 			$postId = ( isset( $post->ID ) ? $post->ID : null );
+		}
+
+		if ( empty( $currentProgram->id ) ) {
+
+			$e20rProgram->getProgramIdForUser( $userId );
 		}
 
         dbg("e20rCheckin::hasCompletedLesson() - Requested post ID #{$postId} v.s. currentArticle post_id: {$currentArticle->post_id}");
@@ -144,9 +152,12 @@ class e20rCheckin extends e20rSettings {
 
 		global $wpdb;
 		global $currentArticle;
+		global $currentProgram;
+
 		global $current_user;
 		global $e20rTracker;
 		global $e20rTables;
+		global $e20rProgram;
 		global $e20rCheckin;
 
 		if ( is_null( $userId ) ) {
@@ -154,6 +165,11 @@ class e20rCheckin extends e20rSettings {
 			$userId = $current_user->ID;
 		}
 
+		if ( empty( $currentProgram->id ) ) {
+
+			$e20rProgram->getProgramIdForUser( $userId );
+
+		}
 		if ( ( empty($currentArticle) ) || ( $currentArticle->id != $articleId ) ) {
 
 			dbg("e20rArticleModel::lessonComplete() - loading settings for article: {$articleId} (ID)");
@@ -293,14 +309,14 @@ class e20rCheckin extends e20rSettings {
 		}
 		$user_delay = $e20rTracker->getDelay( 'now', $userId );
 
-		if ( ! isset( $currentProgram->id ) ) {
+		if ( empty( $currentProgram->id ) ) {
 
 			$e20rProgram->getUserProgramIdForUser( $userId );
 		}
 
 		$programId = $currentProgram->id;
 
-		$art_list = $e20rArticle->loadArticlesByMeta( 'release_day', $user_delay, 'numeric', $programId, '<=' );
+		$art_list = $e20rArticle->findArticles( 'release_day', $user_delay, 'numeric', $programId, '<=' );
 
 		dbg("e20rCheckin::listUserAccomplishments() - Loading accomplishments related to ". count($art_list) . " articles related to user ({$userId}) in program {$programId}");
 
@@ -487,7 +503,9 @@ class e20rCheckin extends e20rSettings {
 
         // Save the $_POST data for the Action callback
         global $current_user;
+
         global $e20rTracker;
+		global $e20rProgram;
 
         dbg("e20rCheckin::saveCheckin_callback() - Content of POST variable:");
         dbg($_POST);
@@ -506,6 +524,15 @@ class e20rCheckin extends e20rSettings {
             'checkin_short_name' => (isset( $_POST['checkin-short-name']) ? $e20rTracker->sanitize( $_POST['checkin-short-name'] ) : null),
             'checkedin' => (isset( $_POST['checkedin']) ? $e20rTracker->sanitize( $_POST['checkedin'] ) : null),
         );
+
+		if ( $data['program_id'] !== -1 ) {
+
+			$e20rProgram->init( $data['program_id']);
+		}
+		else {
+
+			$e20rProgram->getProgramIdForUser( $current_user->ID, $data['article_id'] );
+		}
 
         if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
             dbg("e20rCheckin::saveCheckin_callback() - No checkin needed/scheduled");
@@ -701,8 +728,8 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        // $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : $e20rTracker->sanitize( $_POST['program-id'] ) );
+        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        // $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : $e20rTracker->sanitize( $_POST['program-id'] ) );
         $config->startTS = strtotime( $currentProgram->startdate );
 
         $config->articleId = ( !isset( $_POST['article-id'] ) ? null : $e20rTracker->sanitize($_POST['article-id']) );
@@ -726,7 +753,7 @@ class e20rCheckin extends e20rSettings {
 
             dbg("e20rCheckin::nextCheckin_callback() - Need to load a new article (by delay)");
 
-            $articles = $e20rArticle->findArticle( 'release_day', $pdate, 'numeric', $config->programId );
+            $articles = $e20rArticle->findArticles( 'release_day', $pdate, 'numeric', $config->programId );
             dbg("e20rCheckin::nextCheckin_callback() - Found " . count($articles) . " articles for program {$config->programId} and with a release day of {$pdate}");
             dbg( $articles );
 
@@ -781,13 +808,16 @@ class e20rCheckin extends e20rSettings {
 
     public function dailyProgress( $config ) {
 
-        dbg( "e20rCheckin::dailyProgress() - Start of dailyProgress()");
         global $e20rTracker;
         global $e20rArticle;
         global $e20rAssignment;
+        global $e20rWorkout;
         global $currentArticle;
 
-        dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
+        dbg( "e20rCheckin::dailyProgress() - Start of dailyProgress(): " . $e20rTracker->whoCalledMe() );
+        dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId}");
+        dbg( "e20rCheckin::dailyProgress() - vs {$currentArticle->id} ");
+        dbg( $config );
 
         if ( $config->delay <= 0 ) {
 
@@ -817,8 +847,8 @@ class e20rCheckin extends e20rSettings {
         $config->prev = $config->delay - 1;
         $config->next = $config->delay + 1;
 
-//        $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
-//        dbg("e20rCheckinView::view_actionAndActivityCheckin() - ArticleID: {$articleId}");
+//        $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
+//        dbg("e20rCheckinView::view_actionAndActivityCheckin() - Articles found: " .count($articles) );
 
         dbg("e20rCheckin::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");
 
@@ -849,24 +879,36 @@ class e20rCheckin extends e20rSettings {
             if ( !isset( $config->articleId ) || empty( $config->articleId ) ) {
 
                 dbg("e20rCheckin::dailyProgress() -  No articleId specified. Searching...");
-                $config->articleId = $e20rArticle->findArticleByDelay( $config->delay );
 
-                if ( empty( $config->articleId ) ) {
+                $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
+                // dbg( $articles );
+
+                foreach ( $articles as $article ) {
+
+                    if ( $config->delay == $article->release_day ) {
+
+                        $config->articleId = $article->id;
+                        dbg("e20rCheckin::dailyProgress() -  Found article # {$config->articleId}");
+                        break;
+                    }
+                }
+
+                if ( empty( $articles ) ) {
                     dbg("e20rCheckin::dailyProgress() - No article found. Using default of: " . CONST_NULL_ARTICLE );
                     $config->articleId = CONST_NULL_ARTICLE;
                 }
             }
 
             dbg("e20rCheckin::dailyProgress() - Configured daily action check-ins for article ID(s):");
-            dbg($config->articleId);
 
-            if ( $config->articleId !== CONST_NULL_ARTICLE ) {
+            // if ( !is_array( $config->articleId ) && ( $config->articleId !== CONST_NULL_ARTICLE ) ) {
+            // if ( $config->articleId !== CONST_NULL_ARTICLE ) {
+            dbg("e20rCheckin::dailyProgress() - Generating excerpt for daily action lesson/reminder");
+            $config->actionExcerpt = $e20rArticle->getExcerpt( $config->articleId, $config->userId, 'action' );
 
-                dbg("e20rCheckin::dailyProgress() - Loading action & activity excerpts");
-
-                $config->actionExcerpt = $e20rArticle->getExcerpt( $config->articleId, $config->userId, 'action' );
-                $config->activityExcerpt = $e20rArticle->getExcerpt( $config->articleId, $config->userId, 'activity' );
-            }
+            dbg("e20rCheckin::dailyProgress() - Generating excerpt for daily activity");
+            $config->activityExcerpt = $e20rArticle->getExcerpt( $config->articleId, $config->userId, 'activity' );
+            //}
 
             // Get the check-in id list for the specified article ID
             $checkinIds = $e20rArticle->getCheckins( $config );
@@ -1070,18 +1112,17 @@ class e20rCheckin extends e20rSettings {
 	    if ( $config->type == 'assignment' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
-		    $articles = $e20rArticle->findArticle( 'post_id', $post->ID, 'numeric', $config->programId );
+		    $articles = $e20rArticle->findArticles( 'post_id', $post->ID, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'action' ) {
 
 		    dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by delay value of {$config->delay} days");
-		    $articles = $e20rArticle->findArticle( 'release_day', $config->delay, 'numeric', $config->programId );
+		    $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
 	    }
 	    elseif ( $config->type == 'show_assignments' ) {
 
 
 	    }
-
 
         if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
 
@@ -1092,7 +1133,7 @@ class e20rCheckin extends e20rSettings {
 
             foreach( $articles as $art ) {
 
-                if ( $config->delay == $art->release_day ) {
+                if ( ( in_array( $currentProgram->id, $art->program_ids ) ) && ( $config->delay == $art->release_day ) ) {
                     dbg("e20rCheckin::shortcode_dailyProgress() - Continuing while using article ID {$art->id}.");
                     $article = $art;
                 }
@@ -1102,16 +1143,19 @@ class e20rCheckin extends e20rSettings {
             dbg("e20rCheckin::shortcode_dailyProgress() - Articles object: " . gettype( $articles ) );
             dbg( $articles );
             $article = $articles;
+
         }
 
-	    /*
-	    if ( empty( $article ) ) {
+	    if ( !isset( $article ) ) {
 
 		    // TODO: Find article by closest delay.
 		    // $article = $e20rArticle->findArticleNear( 'release_day', $config->delay, $config->programId, '<=' );
 		    $article = $e20rArticle->emptyArticle();
+            $article->id = CONST_NULL_ARTICLE;
 	    }
-		*/
+
+        $currentArticle = $article;
+
 	    dbg("e20rCheckin::shortcode_dailyProgress() - Article object:");
 	    // dbg( $article );
 
