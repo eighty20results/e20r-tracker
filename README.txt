@@ -71,6 +71,11 @@ Arguments: N/A
 Arguments:
     ** activity_id
         *** Description: The ID (post ID) for the e20r_workouts CPT defining this activity
+    ** show_tracking
+        *** Description: Whether to include the tracking input (or not) for the defined activity
+        *** Type: Numeric
+        *** Values: 0 | 1 (1 == include the tracking input fields)
+        *** Default: 1
 
 === Shortcode: [e20r_activity_archive] ===
     Lists the scheduled workouts (activities) for the specified time period.
@@ -98,6 +103,64 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 0.9.18 ==
+
+* Set new DB version
+* Transition to using findArticles() whenever searching for articles
+* findArticles() will always return an array of articles or FALSE.
+* Set the tempo type (string) for fetched activity groups in archives
+* Add ability to turn on/off tracking fields in e20r_activity shortcode.
+* Handle new allowedActivityAccess() return values.
+* Add filter to determine which CPTs to allow duplication of
+* Add 'Duplicate' option for specific CPT types
+* Duplicate a post (CPT) and all of its e20rTracker specific metadata, etc.
+* Avoid loading program ID for users that aren't logged in.
+* Transition to using findArticles() whenever looking up an article
+* Handle cases where the Workout speed (type) ID is null.
+* Set program ID whenever an AJAX call is triggered.
+* Transition to using findArticles() whenever looking up an article.
+* Only select articles that are in the correct program and has the correct delay (day of release since start)
+* Set default (empty) article & ID if no article is found.
+* Set program ID when processing AJAX calls
+* If no article is found, define a default (empty) one and set the id for it to CONST_NULL_ARTICLE
+* Make sure the activity is checked against the user ID (if the User ID is defined)
+* Include check & update of the e20r_checkin table as well
+* Add load_client_settings() function to only load client_information required to manage progress forms, etc.
+* Only load the required client_info data on init()
+* Force refresh of data in setClient() if new user gets loaded.
+* Use simplified $e20rArticle->findArticles() function to locate articles
+* Load default settings if user/admin/program specifies the CONST_DEFAULT_ARTICLE id (-9999)
+* Only ignore an article with a release date of -9999 if the user isn't adamant we don't.
+* Add parent::find() for e20rSettings class.
+* Load the $currentProgram configuration when e20rProgram::init() is called
+* Transition loadProgram() to use configure_startdate() function.
+* Create dedicated 'configure_startdate' function - it currently supports using the defined program startdate, or to use the membership start date for the user.
+* Modify program config in startdate() if a different programId from what we have in $currentProgram is specified in the function arguments.
+* Refactor e20rArticle class Use article ID when init()
+* Load $currentArticle in init()
+* emptyArticle() didn't return the default settings when called.
+* Reduce the number of article search & return functions available (only really need findArticles(), but may want findArticlesNear() later)
+* Clean up getActivity() function and return the activity ID when calling it. (or false if error)
+* getExcerpt() now handles multiple activities defined for an article (and returns the most likely candidate for the logged in user).
+* Do nothing in the has_*_shortcode() functions if the user isn't logged in.
+* Init $currentProgram global in has_*_shortcode() functions
+* Simplify the article search functions (use 'findArticles() consistently)
+* Use I18N compatible date function in getDateForPost()
+* Fix display function for Workout Archive didn't always run
+* Fix date for when the check-in was made (i.e. when it's scheduled to be done based on the delay value)
+* Add code to fix for_date field in e20r_workout table.
+* Only init the plugin if the user is already logged in
+* Make show/hide logic more obvious.
+* Remove unused if/then clauses for debug logging.
+* Add activity_id for the e20r_articles CPT to the list of variables to de-serialize.
+* Simplified the allowedActivityAccess function and have it return better granularity access information
+* Allow selection of multiple activities for an article definition
+* Remove unneeded code (Doesn't do anything useful) Add activity_id as a field to save/load as an array (from postmeta)
+* Builds the Change Log entries automatically
+* Don't create a new default assignment if one with the same title already exists
+* Fix paths & clean up temporary files
+* fonts/ is now included in the css/ directory so no need to specify it separately
 
 = 0.9.16 =
 * Make sure we have a valid 'To' address in 'Client Contact' form for email messages.
