@@ -1636,11 +1636,6 @@ class e20rTracker {
 
     public function has_measurementprogress_shortcode() {
 
-        if ( ! is_user_logged_in() ) {
-
-            return;
-        }
-
         global $post;
         global $e20rArticle;
         global $e20rClient;
@@ -1741,7 +1736,7 @@ class e20rTracker {
 
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
-            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to teh preview");
+            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
             return true;
         }
 
@@ -1861,11 +1856,6 @@ class e20rTracker {
 
 	public function has_exercise_shortcode() {
 
-        if ( ! is_user_logged_in() ) {
-
-            auth_redirect();
-        }
-
 		global $post;
 
         if ( ! isset( $post->ID ) ) {
@@ -1894,11 +1884,6 @@ class e20rTracker {
 	}
 
 	public function has_activity_shortcode() {
-
-        if ( ! is_user_logged_in() ) {
-
-            auth_redirect();
-        }
 
 		global $post;
 		global $pagenow;
@@ -1933,11 +1918,6 @@ class e20rTracker {
 	}
 
     public function has_dailyProgress_shortcode() {
-
-        if ( ! is_user_logged_in() ) {
-
-            auth_redirect();
-        }
 
         global $post;
         global $pagenow;
@@ -1987,11 +1967,6 @@ class e20rTracker {
      * Load Javascript for the Weekly Progress page/shortcode
      */
     public function has_weeklyProgress_shortcode() {
-
-        if ( ! is_user_logged_in() ) {
-
-            auth_redirect();
-        }
 
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- Loading & adapting javascripts. ");
         global $e20rMeasurements;
