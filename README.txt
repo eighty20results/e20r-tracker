@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 0.9.16
+Stable tag: 0.9.19
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,14 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 0.9.19 ==
+
+* Support passing the $version variable to the update_db_to_*() function
+* Add support for version argument in when calling the update_db_to_$version() function.
+* Can't attempt to use result data as array entries when they're stdClass().
+* Split update_db_to for OB1 errors into 2 separate functions w/2 separate DB version numbers.
+* Update DB Version to upgrade OB1 errors in dates for check-ins & activities
 
 == 0.9.18 ==
 

@@ -1,1 +1,5 @@
-Make sure we have a valid "To" address in "Client Contact" form for email messages.
+Support passing the $version variable to the update_db_to_*() function
+Add support for version argument in when calling the update_db_to_$version() function.
+Can't attempt to use result data as array entries when they're stdClass().
+Split update_db_to for OB1 errors into 2 separate functions w/2 separate DB version numbers.
+Update DB Version to upgrade OB1 errors in dates for check-ins & activities
