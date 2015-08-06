@@ -111,7 +111,7 @@ class e20rCheckinView extends e20rSettingsView {
                 <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
                 <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo isset( $article->id ) ? $article->id : null; ?>" />
 	            <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? $config->assignment_id : null ); ?>" />
-                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateFromDelay( $config->delay ); ?>" />
+                <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo $e20rTracker->getDateFromDelay( ( $config->delay - 1) ); ?>" />
 	            <input type="hidden" name="e20r-checkin-checkedin_date" id="e20r-checkin-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo isset( $action->program_id ) ? $action->program_id : -1 ; ?>" />
                 <div class="clear-after">
