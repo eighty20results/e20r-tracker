@@ -32,6 +32,11 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	public function getType( $tId ) {
 
+        if ( null == $tId ) {
+            return $this->types[0];
+        }
+
+        dbg("e20rWorkoutModel::getType() - Type ID: {$tId}");
 		return $this->types[$tId];
 	}
 
