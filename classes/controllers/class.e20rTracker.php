@@ -1507,11 +1507,20 @@ class e20rTracker {
 
     public function has_measurementprogress_shortcode() {
 
+        if ( ! is_user_logged_in() ) {
+
+            return;
+        }
+
         global $post;
         global $e20rArticle;
         global $e20rClient;
+        global $e20rProgram;
         global $currentClient;
         global $e20r_plot_jscript;
+
+        global $current_user;
+
 
         if ( ! isset( $post->ID ) ) {
 
@@ -1521,7 +1530,8 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
-            $e20rArticle->setId( $post->ID );
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
+            // $e20rArticle->init( $post->ID );
 
             if ( !isset( $currentClient->loadedDefaults ) || ( $currentClient->loadedDefaults == true ) ) {
 
@@ -1609,7 +1619,7 @@ class e20rTracker {
         $current_delay = $this->getDelay( 'now', $userId );
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
-        $articles = $e20rArticle->findArticle( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
+        $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
 
         if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
             $article = $articles[0];
@@ -1722,6 +1732,11 @@ class e20rTracker {
 
 	public function has_exercise_shortcode() {
 
+        if ( ! is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
 		global $post;
 
         if ( ! isset( $post->ID ) ) {
@@ -1751,14 +1766,24 @@ class e20rTracker {
 
 	public function has_activity_shortcode() {
 
+        if ( ! is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
 		global $post;
 		global $pagenow;
+
+        global $e20rProgram;
+        global $current_user;
 
         if ( ! isset( $post->ID ) ) {
             return;
         }
 
         if ( ( has_shortcode( $post->post_content, 'e20r_activity' ) || ( has_shortcode( $post->post_content, 'e20r_activity_archive' ) ) ) ) {
+
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
 
 			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 
@@ -1780,13 +1805,24 @@ class e20rTracker {
 
     public function has_dailyProgress_shortcode() {
 
+        if ( ! is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
         global $post;
         global $pagenow;
+
         global $currentProgram;
+        global $current_user;
+
+        global $e20rProgram;
 
         if ( ! isset( $post->ID ) ) {
             return;
         }
+
+        $e20rProgram->getProgramIdForUser( $current_user->ID );
 
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
@@ -1823,6 +1859,11 @@ class e20rTracker {
      */
     public function has_weeklyProgress_shortcode() {
 
+        if ( ! is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- Loading & adapting javascripts. ");
         global $e20rMeasurements;
         global $e20rClient;
@@ -1854,7 +1895,7 @@ class e20rTracker {
             $e20rMeasurementDate = $measurementDate;
 
             $userId = $current_user->ID;
-            // $programId = $e20rProgram->getProgramIdForUser( $userId );
+            $e20rProgram->getProgramIdForUser( $userId );
             $programId = $currentProgram->id;
             $articleId = $e20rArticle->init( $articleId );
             $articleURL = $e20rArticle->getPostUrl( $articleId );
@@ -3319,7 +3360,7 @@ class e20rTracker {
         if (! $startDateTS ) {
 
             dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$userId}");
-            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
+            return ( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) );
         }
 
         if ( empty( $days ) || ( $days == 'now' ) ) {
@@ -3327,10 +3368,10 @@ class e20rTracker {
             $days = $this->daysBetween( $startDateTS, current_time('timestamp') );
         }
 
-        $startDate = date( 'Y-m-d', $startDateTS );
+        $startDate = date_i18n( 'Y-m-d', $startDateTS );
         dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
 
-        $releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +{$days} days") );
+        $releaseDate = date_i18n( 'Y-m-d', strtotime( "{$startDate} +" . ($days -1) ." days") );
 
         dbg("e20rTracker::getDateForPost( {$days} ) -> Calculated date for delay of {$days}: {$releaseDate}");
         return $releaseDate;
@@ -3568,7 +3609,7 @@ class e20rTracker {
                 $days = 0 - $days;
         }
 
-        // Correct the $days value because we're not starting at "day 0":
+        // Correct the $days value because include the "to" day.
         $days = $days + 1;
         dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
@@ -3868,7 +3909,7 @@ class e20rTracker {
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-assignments"] = "_e20r-{$cpt_info[$cpt]->type}-assignment_ids";
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-checkin_ids";
-                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-activity_id"] = "_e20r-{$cpt_info[$cpt]->type}-activity_id";
+                    // $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-activity_id"] = "_e20r-{$cpt_info[$cpt]->type}-activity_id";
                     break;
 
                 case 'e20r_assignments':
