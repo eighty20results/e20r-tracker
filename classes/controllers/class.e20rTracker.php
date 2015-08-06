@@ -2675,7 +2675,7 @@ class e20rTracker {
                 if ( function_exists("update_db_to_{$version}" ) ) {
 
                     dbg("e20rTracker::update_db() - Function to update version to {$version} is present. Executing...");
-                    call_user_func( "update_db_to_{$version}" );
+                    call_user_func( "update_db_to_{$version}", array( $version ) );
                 }
                 else {
                     dbg("e20rTracker::update_db() - No version specific update function for database version: {$version} ");
