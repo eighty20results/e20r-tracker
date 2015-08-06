@@ -364,6 +364,29 @@ class e20rProgramView {
                         </tr>
                     </tbody>
                 </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-welcome_page_id"><strong><?php _e("Preparation Page", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="1"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+	                        <td>
+                                <select class="select2-container" id="e20r-program-welcome_page_id" name="e20r-program-welcome_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->welcome_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->welcome_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <script>
                     jQuery('.e20r-editform').find('.select2-container').each(function(){
                         jQuery(this).select2();
