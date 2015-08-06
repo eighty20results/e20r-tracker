@@ -23,5 +23,7 @@ rm ${readme_path}${incomplete_out}
 #
 # Create a README.txt friendly changelog entry for the current ${version}
 #
-echo -n ${readme_header} > ${readme_path}${readme_out}
+echo ${readme_header} > ${readme_path}${readme_out}
+echo '' >> ${readme_path}${readme_out}
 ${sed} -e"s/\"/\'/g" -e"s/.*/\*\ &/" ${changelog_source} >> ${readme_path}${readme_out}
+echo '' >> ${readme_path}${readme_out}
