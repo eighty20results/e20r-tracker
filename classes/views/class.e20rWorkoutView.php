@@ -31,9 +31,9 @@ class e20rWorkoutView extends e20rSettingsView {
         if ( empty( $activities) ) { ?>
 
         <div class="red-notice">
-            <h2>Our apologies</h2>
-            <p>This section is currently under construction.</p>
-            <p>We're sorry for the inconvenience, but please do check back later while we whip the Web Monkey into shape!</p>
+            <h2>I wonder...</h2>
+            <p>It seems like there are no records of completed activities in the database? :-(</p>
+            <p>We're sorry for the inconvenience, and the possible issue! Please do report this to the Web Monkey so he can whip himself into shape!</p>
         </div><?php
 
             $html = ob_get_clean();
