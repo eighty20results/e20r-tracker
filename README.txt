@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 0.9.21
+Stable tag: 0.9.22
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -104,10 +104,17 @@ Arguments:
 
 == ChangeLog ==
 
+== 0.9.22 ==
+
+* Redirect users if their startdate for the program is after today and they're attempting to access a program related page.
+* Add support for defining a preparatory welcome page.
+* Fix text when no activities have been found for the user/client. (It's not that it isn't implemented, it's that nothing has been recorded).
+* Fix handling of incoming message
+* Strip unneeded heading for Subject (duplication)
+
 == 0.9.21 ==
 
 * Fix redirect loop in has_* shortcode checks.
-
 
 == 0.9.20 ==
 
