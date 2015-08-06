@@ -1,21 +1,16 @@
 <?php
 
-if ( !function_exists( "update_db_to_6" ) ) {
+if ( !function_exists( "e20r_update_db_to_6" ) ) {
 
-    function update_db_to_6( $version )
+    function e20r_update_db_to_6( $version )
     {
 
-        global $wpdb;
-        global $e20rTracker;
-
-        // $version = $e20rTracker->loadOption('e20r_db_version');
-
-        if ( ( $version != E20R_DB_VERSION ) && ( $version > E20R_DB_VERSION ) ) {
-            dbg("update_db_to_6() - Already ran this. Skipping");
+        if ( ! e20r_should_we_run( $version ) ) {
             return;
         }
 
-        dbg("update_db_to_6() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION);
+        global $wpdb;
+        global $e20rTracker;
 
         $error = false;
 
@@ -43,11 +38,11 @@ if ( !function_exists( "update_db_to_6" ) ) {
                 $record->id
             );
 
-            dbg("update_db_to_6() - Updating record # {$record->id}");
+            dbg("e20r_update_db_to_6() - Updating record # {$record->id}");
 
             if (false === $wpdb->query($sql)) {
 
-                dbg("update_db_to_6() - Error when updating record # {$record['id']}: " . $wpdb->print_error());
+                dbg("e20r_update_db_to_6() - Error when updating record # {$record['id']}: " . $wpdb->print_error());
                 $error = true;
             }
         }
@@ -58,23 +53,20 @@ if ( !function_exists( "update_db_to_6" ) ) {
     }
 }
 
-if ( !function_exists( "update_db_to_7" ) ) {
+if ( !function_exists( "e20r_update_db_to_7" ) ) {
 
-    function update_db_to_7( $version )
-    {
+    function e20r_update_db_to_7( $version ) {
+
+        if ( ! e20r_should_we_run( $version ) ) {
+            return;
+        }
 
         global $wpdb;
         global $e20rTracker;
 
         $error = false;
-        // $version = $e20rTracker->loadOption('e20r_db_version');
 
-        if ( ( $version != E20R_DB_VERSION ) && ( $version > E20R_DB_VERSION ) ) {
-            dbg("update_db_to_7() - Already ran this. Skipping");
-            return;
-        }
-
-        dbg("update_db_to_7() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION );
+        dbg("e20r_update_db_to_7() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION );
 
         $sql = $wpdb->prepare(
             "SELECT id, checkin_date
@@ -98,11 +90,11 @@ if ( !function_exists( "update_db_to_7" ) ) {
                 $record->id
             );
 
-            dbg("update_db_to_6() - Updating record # {$record->id} in e20r_checkin table");
+            dbg("e20r_update_db_to_7() - Updating record # {$record->id} in e20r_checkin table");
 
             if ( false === $wpdb->query( $sql ) ) {
 
-                dbg("update_db_to_6() - Error when updating record # {$record->id}: " . $wpdb->print_error() );
+                dbg("e20r_update_db_to_7() - Error when updating record # {$record->id}: " . $wpdb->print_error() );
                 $error = true;
             }
         }
@@ -113,21 +105,16 @@ if ( !function_exists( "update_db_to_7" ) ) {
 
     }
 }
-if ( !function_exists( "update_db_to_5" ) ) {
+if ( !function_exists( "e20r_update_db_to_5" ) ) {
 
-    function update_db_to_5( $version ) {
+    function e20r_update_db_to_5( $version ) {
 
         global $wpdb;
         global $e20rTracker;
 
-        // $version = $e20rTracker->loadOption('e20r_db_version');
-
-        if ( ( $version != E20R_DB_VERSION ) && ( $version > E20R_DB_VERSION ) ) {
-            dbg("update_db_to_5() - Already ran this. Skipping");
+        if ( ! e20r_should_we_run( $version ) ) {
             return;
         }
-
-        dbg("update_db_to_5() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION );
 
         $error = false;
         $update_enums = array();
@@ -147,7 +134,7 @@ if ( !function_exists( "update_db_to_5" ) ) {
 
         if  ( false === $wpdb->query( $add_enum ) ) {
             $error = true;
-            dbg("SQL statement resulted in error: " . $wpdb->print_error() );
+            dbg("e20r_update_db_to_5() - SQL statement resulted in error: " . $wpdb->print_error() );
             dbg( $add_enum );
         }
 
@@ -155,14 +142,14 @@ if ( !function_exists( "update_db_to_5" ) ) {
 
             if  ( false === $wpdb->query( $upd ) ) {
                 $error = true;
-                dbg("SQL statement resulted in error: " . $wpdb->print_error());
+                dbg("e20r_update_db_to_5() - SQL statement resulted in error: " . $wpdb->print_error());
                 dbg($upd);
             }
         }
 
         if  ( false === $wpdb->query( $remove_enum ) ) {
             $error = true;
-            dbg("SQL statement resulted in error: " . $wpdb->print_error());
+            dbg("e20r_update_db_to_5() - SQL statement resulted in error: " . $wpdb->print_error());
             dbg($remove_enum);
         }
 
@@ -171,3 +158,21 @@ if ( !function_exists( "update_db_to_5" ) ) {
         }
     }
 } // End of function_exists('update_db_to_4')
+
+if ( ! function_exists( 'e20r_should_we_run' ) ) {
+
+    function e20r_should_we_run( $version ) {
+
+        global $e20rTracker;
+
+        $version = $version[0];
+
+        if ( ( $version != E20R_DB_VERSION ) && ( $version > E20R_DB_VERSION ) ) {
+            dbg("update_db_to_{$version}() - Already ran {$version} to " . E20R_DB_VERSION . " upgrade. Skipping");
+            return false;
+        }
+
+        dbg("update_db_to_{$version}() - Upgrading database for e20r-tracker plugin to version " . E20R_DB_VERSION );
+        return true;
+    }
+}
