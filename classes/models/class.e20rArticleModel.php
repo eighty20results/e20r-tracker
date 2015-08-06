@@ -44,6 +44,12 @@ class e20rArticleModel extends e20rSettingsModel {
 
         global $currentArticle;
 
+        if ( -9999 === $id ) {
+            dbg("e20rArticleModel::loadSettings() - Loading default for the NULL article ID (-9999)");
+            $currentArticle = $this->defaultSettings();
+            return $currentArticle;
+        }
+
 		$currentArticle = parent::loadSettings($id);
 
 		if ( empty( $currentArticle->program_ids ) ) {
@@ -132,13 +138,13 @@ class e20rArticleModel extends e20rSettingsModel {
 		}
 	*/
 
-	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC' ) {
+	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC', $dont_drop = false ) {
 
 		$result = parent::find( $key, $value, $dataType, $programId, $comp, $order );
 
 		foreach( $result as $k => $data ) {
 
-			if ( -9999 == $data->release_day ) {
+			if ( ( -9999 == $data->release_day ) && ( $dont_drop == false ) ) {
 				// Dropping articles containing the "Always released" indicator ( -9999 )
 				dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's a 'default' article");
 				unset( $result[$k]);
