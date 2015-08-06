@@ -150,6 +150,10 @@ function add_log_text($text, $filename) {
 
 function loadTracker() {
 
+    if ( ! is_user_logged_in() ) {
+        return;
+    }
+
     dbg("Loading the e20rTracker classes and running init of the e20rTracker() class");
 
     try {
