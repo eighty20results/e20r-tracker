@@ -252,7 +252,7 @@ class e20rArticle extends e20rSettings {
             if ( in_array( $art_day_no, $a->days ) ) {
 
                 // The delay value for the $articleId releases the $articleId on one of the $activity days.
-                dbg("e20rArticle::getActivity() - ID for the correct Activity: {$a->id}");
+                dbg("e20rArticle::getActivity() - ID for an activity allowed on {$art_day_no}: {$a->id}");
                 // $activity = $e20rWorkout->getActivity( $a->id );
 
                 $has_access = array();
@@ -324,7 +324,7 @@ class e20rArticle extends e20rSettings {
                 $group = $e20rTracker->getGroupIdForUser( $userId );
 
                 dbg("e20rArticle::getExcerpt() - Searching for activities for {$articleId}");
-                $actId = $this->getActivity( $articleId );
+                $actId = $this->getActivity( $articleId, $userId );
 
                 dbg("e20rArticle::getExcerpt() - Found activity: {$actId}");
                 dbg( $actId );
