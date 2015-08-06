@@ -51,7 +51,7 @@ class e20rClient {
         if ( $this->client_loaded !== true ) {
 
             $this->model->setUser( $currentClient->user_id );
-            $this->model->get_data( $currentClient->user_id );
+            $this->model->load_client_settings( $currentClient->user_id );
             $this->client_loaded = true;
         }
 
@@ -134,6 +134,7 @@ class e20rClient {
 
     public function setClient( $userId ) {
 
+        $this->client_loaded = false;
         $this->model->setUser( $userId );
         $this->init();
     }
@@ -1200,7 +1201,7 @@ class e20rClient {
         $userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
         $e20rProgram->getProgramIdForUser( $userId );
 
-        $articles = $e20rArticle->findArticle( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+        $articles = $e20rArticle->findArticles( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
         $a = $articles[0];
 
         dbg("e20rClient::ajax_showClientMessage() - Article ID: ");
@@ -1260,7 +1261,7 @@ class e20rClient {
 		$type = isset( $_POST['tab-id'] ) ? $e20rTracker->sanitize( $_POST['tab-id']) : 'client-info';
 		$e20rProgram->getProgramIdForUser( $userId );
 
-        $articles = $e20rArticle->findArticle( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+        $articles = $e20rArticle->findArticles( 'post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
         $a = $articles[0];
 
         dbg("e20rClient::ajax_clientDetail() - Article ID: ");
@@ -1323,7 +1324,7 @@ class e20rClient {
         }
 
         dbg("e20rClient::load_clientDetail() - Find article ID for the intake form {$currentProgram->intake_form} for the program ({$currentProgram->id}).");
-        $article = $e20rArticle->findArticle('post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
+        $article = $e20rArticle->findArticles('post_id', $currentProgram->intake_form, 'numeric', $currentProgram->id );
 
         dbg("e20rClient::load_clientDetail() - Returned " . count($article) . " articles on behalf of the intake form");
 
