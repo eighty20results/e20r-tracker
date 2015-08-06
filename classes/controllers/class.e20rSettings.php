@@ -52,6 +52,11 @@ class e20rSettings {
         return $settings;
     }
 
+    public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = '=', $order = 'DESC' ) {
+
+        return $this->model->find( $key, $value, $dataType, $programId, $comp, $order);
+    }
+
     public function findByName( $shortName ) {
 
         $list = $this->model->loadAllSettings( 'any' );
