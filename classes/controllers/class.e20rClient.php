@@ -1048,10 +1048,10 @@ class e20rClient {
         <title><?php echo $subject; ?></title>
     </head>
     <body>
-        <h1 style="padding:5px 0 0 0; font-family:georgia;font-weight:500;font-size:16px;color:#000;border-bottom:1px solid #bbb">
+<!--        <h1 style="padding:5px 0 0 0; font-family:georgia;font-weight:500;font-size:16px;color:#000;border-bottom:1px solid #bbb">
             <?php echo $subject; ?>
-        </h1>
-        <div id="the_content" style="">
+        </h1> -->
+        <div id="the_content">
             <?php echo $content; ?>
         </div>
     </body>
@@ -1122,7 +1122,7 @@ class e20rClient {
         $from = isset( $_POST['email-from'] ) ? $e20rTracker->sanitize( $_POST['email-from']) : null;
         $from_name = isset( $_POST['email-from-name'] ) ? $e20rTracker->sanitize( $_POST['email-from-name']) : null;
         $subject = isset( $_POST['subject'] ) ? $e20rTracker->sanitize( $_POST['subject']) : ' ';
-        $content = isset( $_POST['content'] ) ? $e20rTracker->sanitize( $_POST['content']) : '&nbsp;';
+        $content = isset( $_POST['content'] ) ? wp_kses_post( $_POST['content'] ) : null;
 
         $content = stripslashes_deep( $content );
 
