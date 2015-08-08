@@ -10,7 +10,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
     private $workouts = null;
 
-	public function e20rWorkoutView( $data = null, $error = null ) {
+	public function __construct( $data = null, $error = null ) {
 
 		parent::__construct( 'workout', 'e20r_workout' );
 

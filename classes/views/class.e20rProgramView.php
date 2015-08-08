@@ -10,7 +10,7 @@ class e20rProgramView {
 
     private $programs = null;
 
-    public function e20rProgramView( $programData = null ) {
+    public function __construct( $programData = null ) {
 
         $this->programs = $programData;
 
