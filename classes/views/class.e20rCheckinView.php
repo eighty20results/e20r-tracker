@@ -340,113 +340,111 @@ class e20rCheckinView extends e20rSettingsView {
 
 		ob_start();
 		?>
-        <div class="e20r-achievement-description float_center">
-            <div class="e20r-description-row child">
+        <div class="e20r-achievement-description">
+            <div class="e20r-description-row clear-after">
                 <div class="column_1_3">
-                    <h4 class="e20r-ribbon-small">Gold Ribbon</h4>
+                    <h4 class="e20r-ribbon-small"><?php _e("Gold Ribbon", "e20rtracker" ); ?></h4>
                     <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/gold-badge.png'; ?>">
-                    <p class="achivement-descr-small">The gold badge is awarded when your consistency is at more than 80 percent</p>
+                    <p class="achivement-descr-small"><?php _e("The gold ribbon is awarded when your consistency is greater than 80 percent", "e20rtracker" ); ?></p>
                 </div>
                 <div class="column_2_3">
-                    <h4 class="e20r-ribbon-small">Silver Ribbon</h4>
+                    <h4 class="e20r-ribbon-small"><?php _e("Silver Ribbon", "e20rtracker"); ?></h4>
                     <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/silver-badge.png'; ?>">
-                    <p class="achivement-descr-small">The sliver badge is awarded when your consistency is between 70 to 80 percent</p>
+                    <p class="achivement-descr-small"><?php _e("The sliver ribbon is awarded when your consistency is between 70 and 80 percent", "e20rtracker" ); ?></p>
                 </div>
                 <div class="column_3_3">
-                    <h4 class="e20r-ribbon-small">Bronze Ribbon</h4>
+                    <h4 class="e20r-ribbon-small"><?php _e("Bronze Ribbon", "e20rtracker"); ?></h4>
                     <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/bronze-badge.png'; ?>">
-                    <p class="achivement-descr-small">The bronze badge is awarded when your consistency is less than 70 percent</p>
+                    <p class="achivement-descr-small"><?php _e("The bronze ribbon is awarded when your consistency is 70 percent or less", "e20rtracekr" ); ?></p>
                 </div>
             </div>
-            <div class="clearfix"></div>
         </div>
-        <div class="clearfix"></div>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 			<h4>Achievements</h4>
 			<a class="close" href="#">X</a>
 			<div class="quick-nav other">
-				<table class="e20r-measurement-table">
-					<thead>
-					<tr>
-						<th class="e20r-achievement-descr"></th>
-						<th class="e20r-achievement-header"><a title="Your daily actions">Action</a></th>
-						<th class="e20r-achievement-header"><a title="Your activities (exercise, etc).">Activity</a></th>
-						<th class="e20r-achievement-header"><a title="The daily lessons">Assignments</a></th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php
-					$counter = 0;
+                <div class="e20r-measurement-table">
+                    <div class="e20r-achievement-row-header large-viewport clear-after">
+                        <div class="e20r-achievements-col_1_4 e20r-achievement-header"></div>
+                        <div class="e20r-achievements-col_2_4 e20r-achievement-header"><a title="<?php _e("The daily actions", "e20rtracker"); ?>"><?php _e("Action", "e20rtracker" ); ?></a></div>
+                        <div class="e20r-achievements-col_3_4 e20r-achievement-header"><a title="<?php _e("The activities (exercise, etc)", "e20rtracker"); ?>"><?php _e("Activity", "e20rtracker" ); ?></a></div>
+                        <div class="e20r-achievements-col_4_4 e20r-achievement-header"><a title="<?php _e("The daily assignments", "e20rtracker"); ?>"><?php _e("Assignments", "e20rtracker" ); ?></a></div>
+                    </div><?php
 
-					if ( ! empty( $achievements ) ) {
+                $counter = 0;
 
-						dbg("e20rCheckinView::view_user_achievements() - User has supplied answers...");
-						// dbg($achievements);
-						$achievements = array_reverse( $achievements, true);
+                if ( ! empty( $achievements ) ) {
 
-						foreach ( $achievements as $key => $answer ) {
+                    dbg("e20rCheckinView::view_user_achievements() - User has supplied answers...");
+                    // dbg($achievements);
+                    $achievements = array_reverse( $achievements, true);
 
-							if ( isset( $answer->action ) ) { ?>
+                    foreach ( $achievements as $key => $answer ) {
 
-								<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
-									<td class="e20r-tracker-action-descr"><?php echo $answer->actionText ?></td>
-									<td class="e20r-tracker-action">
-										<table class="e20r-action-table">
-											<tbody>
-											<tr>
-												<td class="e20r-tracker-<?php echo isset( $answer->action->badge ) ? $answer->action->badge : 'no'; ?>-badge"></td>
-											</tr>
-											<tr>
-												<td class="e20r-tracker-score"><?php echo( $answer->action->score * 100 ); ?>
-													%
-												</td>
-											</tr>
-											</tbody>
-										</table>
-									</td>
-									<td class="e20r-tracker-activity">
-										<table class="e20r-activity-table">
-											<tbody>
-											<tr>
-												<td class="e20r-tracker-<?php echo isset( $answer->activity->badge ) ? $answer->activity->badge : 'no'; ?>-badge"></td>
-											</tr>
-											<tr>
-												<td class="e20r-tracker-score"><?php echo( $answer->activity->score * 100 ); ?>
-													%
-												</td>
-											</tr>
-											</tbody>
-										</table>
-									</td>
-									<td class="e20r-tracker-assignment">
-										<table class="e20r-assignment-table">
-											<tbody>
-											<tr>
-												<td class="e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? $answer->assignment->badge : 'no'; ?>-badge"></td>
-											</tr>
-											<tr>
-												<td class="e20r-tracker-score"><?php echo( $answer->assignment->score * 100 ); ?>
-													%
-												</td>
-											</tr>
-											</tbody>
-										</table>
-									</td>
+                        if ( isset( $answer->action ) ) { ?>
 
-								</tr>
-								<?php
-								$counter ++;
-							}
-						}
-					}
-					else { ?>
-						<tr>
-							<td colspan="2"><?php _e("Don't worry. Your achievements will start piling up soon!", "e20rtracker"); ?></td>
-						</tr>
-					<?php   } ?>
-					</tbody>
-				</table>
-			</div>
+                    <div class="e20r-achievement-row-bg <?php echo ($counter % 2) == 0 ? 'e20rEven' : 'e20rOdd'?>" >
+
+                        <div class="e20r-achievement-row <?php echo ($counter % 2) == 0 ? 'e20rEven' : 'e20rOdd'?> clear-after" >
+                            <div class="e20r-achievements-col_1_4 e20r-tracker-action-descr"><?php echo $answer->actionText ?></div>
+                            <div class="e20r-achievements-col_2_4 e20r-tracker-action">
+                                <div class="e20r-action-table clear-after">
+                                    <div class="e20r-action-row e20r-achievement-header small-viewport">
+                                        <div class="e20r-action-col-1_1"><a title="<?php _e("The daily actions", "e20rtracker"); ?>"><?php _e("Action", "e20rtracker" ); ?></a></div>
+                                    </div>
+                                    <div class="e20r-action-row">
+                                        <div class="e20r-action-col-1_1 e20r-tracker-<?php echo isset( $answer->action->badge ) ? $answer->action->badge : 'no'; ?>-badge"></div>
+                                    </div>
+                                    <div class="e20r-action-row">
+                                        <div class="e20r-action-col-1_1 e20r-tracker-score"><?php echo( $answer->action->score * 100 ); ?> &#37;</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="e20r-achievements-col_3_4 e20r-tracker-activity">
+                                <div class="e20r-activity-table clear-after">
+                                    <div class="e20r-activity-row e20r-achievement-header small-viewport">
+                                        <div class="e20r-activity-col-1_1"><a title="<?php _e("The activities (exercise, etc)", "e20rtracker"); ?>"><?php _e("Activity", "e20rtracker" ); ?></a></div>
+                                    </div>
+                                    <div class="e20r-activity-row">
+                                        <div class="e20r-activity-col-1_1 e20r-tracker-<?php echo isset( $answer->activity->badge ) ? $answer->activity->badge : 'no'; ?>-badge"></div>
+                                    </div>
+                                    <div class="e20r-activity-row">
+                                        <div class="e20r-activity-col-1_1 e20r-tracker-score"><?php echo( $answer->activity->score * 100 ); ?> &#37;</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="e20r-achievements-col_3_4 e20r-tracker-assignment">
+                                <div class="e20r-assignment-table clear-after">
+                                    <div class="e20r-assignment-row e20r-achievement-header small-viewport">
+                                        <div class="e20r-assignment-col-1_1"><a title="<?php _e("The daily assignments", "e20rtracker"); ?>"><?php _e("Assignments", "e20rtracker" ); ?></a></div>
+                                    </div>
+                                    <div class="clear-after"></div>
+                                    <div class="e20r-assignment-row">
+                                        <div class="e20r-assignment-col-1_1 e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? $answer->assignment->badge : 'no'; ?>-badge"></div>
+                                    </div>
+                                    <div class="e20r-assignment-row">
+                                        <div class="e20r-assignment-col-1_1 e20r-tracker-score"><?php echo( $answer->assignment->score * 100 ); ?> &#37;</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php
+                        $counter ++;
+                        }
+                    }
+                }
+                else { ?>
+                    <div class="e20r-achievement-none" >
+                        <div class="e20r-achievements-col_1_1">
+                            <?php _e("Don't worry. Your achievements will start piling up soon!", "e20rtracker"); ?>
+                        </div>
+                        <div class="clear-after"></div>
+                    </div>
+        <?php   } ?>
+                </div>
+            </div>
 		</div>
 		<?php
 

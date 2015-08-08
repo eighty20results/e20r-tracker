@@ -16,6 +16,122 @@
     clear: both;
     visibility: hidden;
 }
+/*** For the Achievements entries *****/
+.large-viewport {
+    display: block;
+}
+.small-viewport {
+    display: none;
+}
+.e20r-achievement-description {
+    /* border: 1px solid #c5c5c5; */
+    border-collapse: separate;
+    border-spacing: 5px;
+    padding: 10px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+div.e20r-description-row {
+    display: flex;
+}
+div.column_1_3,
+div.column_2_3,
+div.column_3_3 {
+    width: 27%;
+    min-width:230px;
+    margin: 5px;
+    border: 1px solid #c5c5c5;
+    padding: 5px;
+    float: left;
+    text-align: center;
+}
+img.e20r-ribbon-small {
+    height: 60px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+h4.e20r-ribbon-small {
+    font-size: 1em;
+    color: #555;
+    margin: 0;
+    text-align: center;
+}
+p.achivement-descr-small {
+    font-size: 0.7em;
+    color: #555;
+    margin: 0;
+}
+div#e20r-progress-achievements {
+    text-align: center;
+    max-width: 940px;
+    min-width:300px;
+    width: 97%;
+}
+/*
+.float_center {
+    float: right;
+    position: relative;
+    right: 50%;
+    text-align: left;
+}
+.float_center > .child {
+    position: relative;
+    left: 50%;
+}
+*/
+div#e20r-assignment-answer-list {
+    margin-left: auto;
+    margin-right: auto;
+}
+div.e20r-achievement-row {
+    /* overflow: hidden; */
+    padding-bottom: 20px;
+    padding-top: 10px;
+}
+div.e20r-achievements-col_1_4 {
+    float: left;
+    width: 58%;
+    min-width: 300px;
+    max-width: 500px;
+    padding-bottom: 5px;
+}
+div.e20r-achievements-col_2_4,
+div.e20r-achievements-col_3_4,
+div.e20r-achievements-col_4_4 {
+    width: 10%;
+    min-width: 75px;
+    max-width: 100px;
+    float: left;
+    padding-bottom: 5px;
+}
+div#e20r-progress-activities{
+    min-height: 300px;
+}
+div#e20r-progress-results {
+    min-height: 300px;
+}
+div.e20r-tracker-score {
+    font-size: 0.9em;
+    font-style: italic;
+    text-align: center;
+}
+div.e20r-tracker-action-descr {
+    text-align: left;
+    padding-left: 5px;
+    font-size: 1.1em;
+    font-style: italic;
+    font-weight: bold;
+}
+div.e20r-achievement-header {
+    text-align: center;
+}
+div.e20r-activity-table,
+div.e20r-assignment-table,
+div.e20r-action-table {
+    margin: 0;
+}
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
 .e20r-button {
     display: inline-block;
@@ -358,14 +474,14 @@ input:hover[type="submit"],
     padding: 5px;
 }
 /***************************** For the Measurements Page ***********************/
-.clear-after { zoom: 1; }
+/* .clear-after { zoom: 1; }
 .clear-after:after {
     content: ".";
     display: block;
     height: 0;
     clear: both;
     visibility: hidden;
-}
+}*/
 .floating-error {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -515,8 +631,58 @@ input:hover[type="submit"],
     border-right: 3px solid #004CFF;
     border-bottom: 3px solid #004CFF;
 }
+@media screen and ( max-width: 961px ) {
+    img.e20r-ribbon-small {
+        height: 40px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    h4.e20r-ribbon-small {
+        font-size: 1rem;
+        color: #555;
+        text-align: center;
+    }
+    div.column_1_3,
+    div.column_2_3,
+    div.column_3_3 {
+        width: 30%;
+        min-width: 100px;
+        font-size: 0.7rem;
+    }
+}
+@media (max-width:1040px) and (min-width:380px) {
+    .large-viewport { display: none; }
+    .small-viewport { display: block; }
+    div.e20r-achievement-row,
+    div.e20r-achievement-row-header {
+        width: 230px;
+    }
+    .other {
+        padding: 20px 10px 10px 10px;
+    }
+}
+@media screen and (max-width: 640px ) {
+    a#ui-id-1, a#ui-id-2, a#ui-id-3, a#ui-id-4 {
+        font-size: 0.7rem;
+    }
+}
 /** The actual weekly progress measurement page container **/
 @media screen and (max-width: 533px) {
+    div.column_1_3,
+    div.column_2_3,
+    div.column_3_3 {
+        width: 100%;
+        min-width: 100px;
+        font-size: 0.7rem;
+        margin-left: 0;
+    }
+    .large-viewport {
+        display: none;
+    }
+    .small-viewport {
+        display: block;
+    }
     #colorbox #cboxClose {
         top: 0;
         right: 0;
@@ -750,36 +916,27 @@ input:hover[type="submit"],
         margin: 8px;
         color: #333;
     }
-    td.e20r-tracker-bronze-badge {
-        height: 40px;
-        background: url('../images/bronze-badge.png') no-repeat center;
+    div.e20r-tracker-bronze-badge,
+    div.e20r-tracker-no-badge { background: url('../images/bronze-badge.png') no-repeat center; }
+    div.e20r-tracker-silver-badge { background: url('../images/silver-badge.png') no-repeat center; }
+    div.e20r-tracker-gold-badge { background: url('../images/gold-badge.png') no-repeat center; }
+    div.e20r-tracker-no-badge,
+    div.e20r-tracker-bronze-badge,
+    div.e20r-tracker-silver-badge,
+    div.e20r-tracker-gold-badge {
+        height: 60px;
         background-size: 50%;
     }
-    td.e20r-tracker-silver-badge {
-        height: 40px;
-        background: url('../images/silver-badge.png') no-repeat center;
-        background-size: 50%;
+    div.e20r-achievement-header {
+        display: inherit;
     }
-    td.e20r-tracker-gold-badge {
-        height: 40px;
-        background: url('../images/gold-badge.png') no-repeat center;
-        background-size: 50%;
-    }
-    td.e20r-tracker-no-badge {
-        height: 40px;
-        background: url('../images/bronze-badge.png') no-repeat center;
-        background-size: 50%;
-    }
-    th.e20r-achievement-header {
-        display: none;
-    }
-    table.e20r-activity-table,
-    table.e20r-assignment-table,
-    table.e20r-action-table {
-        height: 50px;
+    div.e20r-activity-table,
+    div.e20r-assignment-table,
+    div.e20r-action-table {
+        /* height: 50px; */
         font-size: 80%;
     }
-    td.e20r-tracker-score {
+    div.e20r-tracker-score {
         white-space: nowrap;
     }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
@@ -789,6 +946,11 @@ input:hover[type="submit"],
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
     line-height: 1;
+}
+@media screen and (max-width: 460px) {
+    a#ui-id-1, a#ui-id-2, a#ui-id-3, a#ui-id-4 {
+        font-size: 0.5rem;
+    }
 }
 /*** TODO: Include or exclude Welcome banner? ****/
 #saturday-progress-container .welcome-initial { font-size: 16px; }
@@ -1088,25 +1250,26 @@ input:hover[type="submit"],
         margin: 8px;
         color: #333;
     }
-    td.e20r-tracker-bronze-badge {
+    /*** For the Achievements page ***/
+    div.e20r-tracker-bronze-badge {
         background: url('../images/bronze-badge.png') no-repeat center;
         height: 100px;
     }
-    td.e20r-tracker-silver-badge {
+    div.e20r-tracker-silver-badge {
         background: url('../images/silver-badge.png') no-repeat center;
         height: 100px;
     }
-    td.e20r-tracker-gold-badge {
+    div.e20r-tracker-gold-badge {
         height: 100px;
         background: url('../images/gold-badge.png') no-repeat center;
     }
-    td.e20r-tracker-no-badge {
+    div.e20r-tracker-no-badge {
         height: 100px;
         background: url('../images/bronze-badge.png') no-repeat center;
     }
-    table.e20r-activity-table,
-    table.e20r-assignment-table,
-    table.e20r-action-table {
+    div.e20r-activity-table,
+    div.e20r-assignment-table,
+    div.e20r-action-table {
         height: 110px;
     }
 }
@@ -1626,7 +1789,7 @@ div.photo-overlay span.value {
     border-radius: 4px;
 }
 .other {
-    padding: 20px 20px 20px 10px;
+    padding: 20px;
 }
 .quick-nav a {
     color: #004C00;
@@ -2371,31 +2534,6 @@ body.loading .modal {
     border: 1px solid rgba(0, 126, 0, 0.5);
     background-color: rgba(0, 255, 0, 0.2);
 }
-div#e20r-progress-activities{
-    min-height: 300px;
-}
-div#e20r-progress-results {
-    min-height: 300px;
-}
-td.e20r-tracker-score {
-    font-size: 0.9em;
-    font-style: italic;
-    text-align: center;
-}
-td.e20r-tracker-action-descr {
-    padding-left: 5px;
-    font-size: 1.1em;
-    font-style: italic;
-    font-weight: bold;
-}
-th.e20r-achievement-header {
-    text-align: center;
-}
-table.e20r-activity-table,
-table.e20r-assignment-table,
-table.e20r-action-table {
-    margin: 0;
-}
 input[type=text].video_link {
     width: 100%;
 }
@@ -2663,56 +2801,4 @@ input.e20r-message-input {
 }
 table.e20r-client-information-table {
     width: 100%;
-}
-.e20r-achievement-description {
-    /* border: 1px solid #c5c5c5; */
-    padding: 10px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-}
-div.column_1_3,
-div.column_2_3,
-div.column_3_3 {
-    width: 27%;
-    position: relative;
-    margin: 10px;
-    border: 1px solid #c5c5c5;
-    padding: 5px;
-    float: left;
-    text-align: center;
-}
-img.e20r-ribbon-small {
-    height: 35px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-h4.e20r-ribbon-small {
-    font-size: 1em;
-    color: #555;
-    text-align: center;
-}
-p.achivement-descr-small {
-     font-size: 0.7em;
-     color: #555;
- }
-div#e20r-assignment-answer-list {
-    width: inherit;
-    margin-left: auto;
-    margin-right: auto;
-}
-div#e20r-progress-achievements {
-    max-width: 940px;
-    width: 80%;
-}
-.float_center {
-    float: right;
-    position: relative;
-    right: 50%; /* or right 50% */
-    text-align: left;
-}
-.float_center > .child {
-    position: relative;
-    left: 50%;
 }
