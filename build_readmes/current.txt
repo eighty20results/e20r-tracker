@@ -1,5 +1,3 @@
-Redirect users if their startdate for the program is after today and they're attempting to access a program related page.
-Add support for defining a preparatory welcome page.
-Fix text when no activities have been found for the user/client. (It's not that it isn't implemented, it's that nothing has been recorded).
-Fix handling of incoming message
-Strip unneeded heading for Subject (duplication)R
+Fix color problem for input field (button)
+Add assignments to list of post types to allow duplication of.
+Make Achievements tab in progress_overview short code responsive.
