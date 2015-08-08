@@ -16,7 +16,7 @@ class e20rMeasurements {
     protected $dates = null;
     protected $measurementDate = null;
 
-    public function e20rMeasurements( $user_id = null ) {
+    public function __construct( $user_id = null ) {
 
         global $e20rMeasurements;
         global $e20rTracker;

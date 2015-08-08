@@ -15,7 +15,7 @@ class e20rArticle extends e20rSettings {
     protected $model;
     protected $view;
 
-    public function e20rArticle() {
+    public function __construct() {
 
         dbg("e20rArticle::__construct() - Initializing Article class");
         $this->model = new e20rArticleModel();

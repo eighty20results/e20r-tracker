@@ -11,7 +11,7 @@ class e20rProgram extends e20rSettings {
 
     private $programTree = array();
 
-    public function e20rProgram() {
+    public function __construct() {
 
         dbg("e20rProgram::init() - Initializing Program data");
         parent::__construct( 'program', 'e20r_programs', new e20rProgramModel(), new e20rProgramView() );

@@ -16,7 +16,7 @@ class e20rWorkout extends e20rSettings {
 	protected $table;
 	protected $fields;
 
-    public function e20rWorkout() {
+    public function __construct() {
 
         dbg("e20rWorkout::__construct() - Initializing Workout class");
 

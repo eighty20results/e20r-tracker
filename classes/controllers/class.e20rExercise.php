@@ -13,7 +13,7 @@ class e20rExercise extends e20rSettings {
     protected $model = null;
     protected $view = null;
 
-    public function e20rExercise() {
+    public function __construct() {
 
         dbg("e20rProgram:: - Initializing Exercise class");
 

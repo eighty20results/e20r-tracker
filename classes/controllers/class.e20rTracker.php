@@ -24,7 +24,7 @@ class e20rTracker {
 
     private $hooksLoaded = false;
 
-    public function e20rTracker() {
+    public function _construct() {
 
         $this->model = new e20rTrackerModel();
 
