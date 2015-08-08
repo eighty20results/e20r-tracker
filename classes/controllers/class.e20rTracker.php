@@ -79,7 +79,8 @@ class e20rTracker {
         $managed_types = apply_filters( 'e20r_tracker_duplicate_types', array(
                                                                 'e20r_programs',
                                                                 'e20r_workout',
-                                                                'e20r_articles'
+                                                                'e20r_articles',
+                                                                'e20r_assignments',
                                                             )
                             );
 
