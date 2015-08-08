@@ -12,7 +12,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	protected $types;
 	protected $table;
 
-	public function e20rWorkoutModel() {
+	public function __construct() {
 
 		global $e20rTables;
 

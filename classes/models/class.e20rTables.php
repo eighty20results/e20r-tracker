@@ -16,7 +16,7 @@ class e20rTables {
 
     protected $inBeta = false;
 
-    public function e20rTables() {
+    public function __construct() {
 
         if ( ! function_exists( 'in_betagroup' ) ) {
 

@@ -13,7 +13,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	private $answerTypes;
 	private $answerInputs;
 
-    public function e20rAssignmentModel()  {
+    public function __construct()  {
 
 	    global $e20rTables;
 

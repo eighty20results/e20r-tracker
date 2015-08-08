@@ -12,7 +12,7 @@ class e20rArticleModel extends e20rSettingsModel {
     protected $id;
     // protected $settings;
 
-    public function e20rArticleModel() {
+    public function __construct() {
 
         parent::__construct( 'article', 'e20r_articles' );
     }

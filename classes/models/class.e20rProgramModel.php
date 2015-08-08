@@ -11,7 +11,7 @@ class e20rProgramModel extends e20rSettingsModel {
 
 	protected $settings;
 
-    public function e20rProgramModel() {
+    public function __construct() {
 
         parent::__construct( 'program', 'e20r_programs');
 

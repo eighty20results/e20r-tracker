@@ -19,7 +19,7 @@ class e20rMeasurementModel {
     private $table = array();
     private $fields = array();
 
-    public function e20rMeasurementModel( $user_id = null ) {
+    public function __construct( $user_id = null ) {
 
         global $wpdb;
         global $e20rTables;

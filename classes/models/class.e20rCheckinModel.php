@@ -11,7 +11,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
     private $settings;
 
-    public function e20rCheckinModel()  {
+    public function __construct()  {
 
         parent::__construct( 'checkin', 'e20r_checkins' );
 

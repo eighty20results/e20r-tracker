@@ -18,7 +18,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 		'amrap'=> 3
 	);
 
-	public function e20rExerciseModel() {
+	public function __construct() {
 
 		parent::__construct( 'exercise', 'e20r_exercises');
 
