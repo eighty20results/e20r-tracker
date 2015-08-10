@@ -91,6 +91,7 @@ div.e20r-exercise-description p {
     padding-right: 10px;
 }
 /** For the activity tracking Input **/
+table.e20r-measurement-table.e20r-resp-table { border: none; }
 table.e20r-resp-table {
     border-collapse: collapse;
     border-spacing: 0;
@@ -102,11 +103,41 @@ table.e20r-resp-table {
 }
 table.e20r-resp-table th {background-color:rgba( 92, 92, 92, 0.3 );font-weight:bold;color:#004CFF;}
 table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
+@media screen and (max-width: 1024px ) {
+    table.e20r-measurement-table.e20r-resp-table {width:100%;}
+    .e20r-measurement-table.e20r-resp-table thead {display: none;}
+    .e20r-measurement-table.e20r-resp-table td.e20r_mData { max-width: 100%; }
+    .quick-nav { padding: 0; }
+    .quick-nav .e20r-resp-table td.e20r_mData a { font-size: 1rem; }
+    .e20r-measurement-table.e20r-resp-table tr:nth-of-type(2n) {background-color: inherit;}
+    .e20r-measurement-table.e20r-resp-table tr td:first-child {background: #f0f0f0; font-weight:bold;font-size:1.3em;}
+    .e20r-measurement-table.e20r-resp-table tr td.e20r_mData:first-child {background: #ffffff; }
+    .e20r-measurement-table.e20r-resp-table tbody td {display: block;  text-align:center;}
+    .e20r-measurement-table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
+    .e20r-measurement-table.e20r-resp-table tbody td.e20r-td-input-hidden { display: none; }
+    .e20r-measurement-table.e20r-resp-table tbody td:before {
+        content: attr(data-th);
+        display: block;
+        text-align:center;
+    }
+    .e20r-measurement-table.e20r-resp-table .td-input-button {
+        padding-top: 10px;
+    }
+    .e20r-measurement-table.e20r-resp-table tr.e20r-saved td.e20r-td-input-activity { background-color: #FFF; }
+    .e20r-measurement-table.e20r-resp-table div.e20r-activity-var { color: #004C00; font-weight: bold; font-variant: small-caps; }
+    .e20r-measurement-table.e20r-exercise-value {
+        padding: 0;
+    }
+}
 @media screen and (max-width: 600px) {
     table.e20r-resp-table {width:100%;}
     .e20r-resp-table thead {display: none;}
+    .e20r-resp-table td.e20r_mData { max-width: 100%; }
+    .quick-nav { padding: 0; }
+    .quick-nav .e20r-resp-table td.e20r_mData a { font-size: 1rem; }
     .e20r-resp-table tr:nth-of-type(2n) {background-color: inherit;}
     .e20r-resp-table tr td:first-child {background: #f0f0f0; font-weight:bold;font-size:1.3em;}
+    .e20r-resp-table tr td.e20r_mData:first-child {background: #ffffff; }
     .e20r-resp-table tbody td {display: block;  text-align:center;}
     .e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
     .e20r-resp-table tbody td.e20r-td-input-hidden { display: none; }
@@ -123,6 +154,10 @@ table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
     .e20r-exercise-value {
         padding: 0;
     }
+}
+table.e20r-measurement-table.e20r-resp-table th {
+    background-color: transparent;
+    border-top: 0;
 }
 .e20r-activity-overview-table {
     margin-left: 20px;
