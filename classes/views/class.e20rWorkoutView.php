@@ -18,7 +18,7 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
-    public function viewExerciseProgress( $activities = null, $error = null ) {
+    public function viewExerciseProgress( $activities = null, $error = null, $userId = null, $dimensions = null) {
 
         global $currentProgram;
         global $e20rExercise;
@@ -51,11 +51,22 @@ class e20rWorkoutView extends e20rSettingsView {
 
         ?>
         <div class="e20r-activity-list">
-            <div class="e20r-row">
-                <h2 style="text-align: center; margin-bottom: 30px;">History for <?php echo $currentProgram->title ?></h2><?php
+        <div class="e20r-row"> <?php
+        if ( !empty( $dimensions ) ) {
+            ?>
+            <input type="hidden" name="user_id" id="user_id" value="<?php echo $userId; ?>">
+            <input type="hidden" name="wh_h_dimension" id="wh_h_dimension" value="<?php echo $dimensions['height']; ?>">
+            <input type="hidden" name="wh_h_dimension_type" id="wh_h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
+            <input type="hidden" name="wh_w_dimension" id="wh_w_dimension" value="<?php echo $dimensions['width']; ?>">
+            <input type="hidden" name="wh_w_dimension_type" id="wh_w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
+            <?php wp_nonce_field('e20r-tracker-data', 'e20r-weight-rep-chart');
+        } ?>
+
+            <h2 style="text-align: center; margin-bottom: 30px;">History for <?php echo $currentProgram->title ?></h2><?php
+
         foreach( $activities as $exId => $info ) {
 
-            $row = 1;
+            dbg("e20rWorkoutView::viewExerciseProgress() - Exercise ID: {$exId}");
 
             $type = $info->type;
             $title = $info->name;
@@ -83,36 +94,40 @@ class e20rWorkoutView extends e20rSettingsView {
             <div class="e20r-column e20r-column_1_1">
                 <div class="e20r-faq-container e20r-toggle-close">
                     <h3 class="e20r-faq-question"><?php echo $title; ?></h3>
-                    <div class="e20r-faq-answer-container clearfix"><?php
+                    <div class="e20r-faq-answer-container clearfix">
+                        <div class="e20r-activity-history-graph">
+                            <?php echo $this->view_WorkoutStats( $userId, $exId, $dimensions  ); ?>
+                        </div>
+                        <?php
 
                     unset($info->name);
+                    $row = 0;
 
                     foreach( $info->when as $time => $group ) {
 
                         ?>
-                        <div class="e20r-activity-history-row <?php echo ($row % 2) == 0  ? 'e20rEven' : 'e20rOdd'; ?>">
+                        <div class="e20r-activity-history-row <?php dbg("e20rWorkoutView::viewExerciseProgress() - Row Counter: {$row}"); echo ($row % 2 == 0  ? 'e20rEven' : 'e20rOdd'); ?>">
                             <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div><?php
-                                foreach( $group->group as $gid => $set ) { ?>
+
+                        $row = $row + 1;
+
+                        foreach( $group->group as $gid => $set ) { ?>
 
 								<div class="e20r-activity-history-sets"><?php
-										if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
-											$unit = "BW? ({$set->weight})";
-										}
-										else {
-											$unit = $set->weight;
-										}
-
-										//if ( $set->reps != 0 ) {
+                                    if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
+                                        $unit = "BW? ({$set->weight})";
+                                    }
+                                    else {
+                                        $unit = $set->weight;
+                                    }
                                     ?>
                                     <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Set %d in Group %d", "e20rtracker" ),$set->set, ( $gid + 1) ); ?></h4>
                                     <div class="e20r-activity-history-set-detail">
                                         <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
                                         <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
                                         <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps == 1 ? __("rep", "e20rtracker") : __("reps", "e20rtracker") ); ?></p>
-                                    </div><?php
-                                    // } ?>
+                                    </div>
                                 </div><?php
-                                    $row++;
                                 } ?>
                         <div class="clearfix"></div>
                         </div><?php
@@ -129,6 +144,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
         return $html;
     }
+
     /**
      * Displays the html for the e20r_activity_archive short code
      *
@@ -825,4 +841,74 @@ class e20rWorkoutView extends e20rSettingsView {
 	<?php
 		return ob_get_clean();
 	}
+
+    public function view_WorkoutStats( $clientId = null, $exercise_id = null, $dimensions = null, $records = null ) {
+
+        // TESTING: using $clientId = 12;
+        // $clientId = 116;
+
+        global $e20rClient;
+        global $currentProgram;
+        global $currentExercise;
+        global $current_user;
+
+        if ( $dimensions === null ) {
+
+            $dimensions = array( 'width' => '650', 'height' => '300', 'htype' => 'px', 'wtype' => 'px' );
+        }
+
+        if ( $dimensions['htype'] != '%') {
+
+            $maxHeight = ( ( (int) $dimensions['height']) + 95 );
+            $height =   ( ( (int) $dimensions['height']) + 75 );
+        }
+        else {
+            $maxHeight = ( (int)$dimensions['height'] + 10 ) <= 100 ? ( (int)$dimensions['height'] + 10 ) : $dimensions['height'];
+            $height = ( (int)$dimensions['height'] + 5 ) <= 100 ? ( (int)$dimensions['height'] + 5 ) : $dimensions['height'];
+        }
+
+        if ( $dimensions['wtype'] != '%') {
+
+            $minWidth = ( (int) $dimensions['width'] + 15 );
+            $width = ( (int) $dimensions['width'] + 95 );
+        }
+        else {
+            $minWidth = ( ( (int) $dimensions['width'] - 5 ) <= 100 ? ( (int) $dimensions['width'] - 5 ) : $dimensions['width']);
+            $width = (  ( (int) $dimensions['width'] + 5 ) <= 100 ? ( (int) $dimensions['width'] + 5 ) : $dimensions['width']);
+        }
+
+        $maxHeight = $maxHeight . $dimensions['htype'];
+        $height = $height . $dimensions['htype'];
+
+        $minWidth = $minWidth . $dimensions['wtype'];
+        $width = $width . $dimensions['wtype'];
+
+        $user = get_user_by( 'id', $clientId );
+
+        $reloadBtn = '
+                    <div id="e20r_reload_btn">
+                        <a href="#e20r_tracker_data" id="e20r-reload-statistics" class="e20r-choice-button button e20r-button" > ' . __("Reload Activity Statistics", "e20r-tracker") . '</a>
+                    </div>
+                ';
+
+/*        if ( count( $records ) < 1 ) {
+
+            ob_start(); ?>
+            <div id="e20r_errorMsg"><em><?php sprintf(__("No records found for %s", "e20rtracker"), $user->first_name . " " . $user->last_name ); ?></em></div><?php
+            $html = ob_get_clean();
+        }
+        else { */
+
+            ob_start(); ?>
+            <div class="e20r-exercise-statistics clear-after">
+                <input type="hidden" name="exercise_id[]" class="e20r-workout-statistics-exercise_id" value="<?php echo $exercise_id; ?>">
+                <button class="e20r-button button-primary e20r-choice-button e20r-workout-statistics-loader"><?php _e("Load statistics", "e20rtracker" ); ?></button>
+                <div class="startHidden" id="exercise_stats_<?php echo $exercise_id; ?>" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+            </div><?php
+            $html = ob_get_clean();
+        /* } */
+
+        return $html;
+    }
+
 }
