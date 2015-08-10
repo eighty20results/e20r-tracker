@@ -6,8 +6,8 @@ var UNIT = {
     kg: 'kilograms (kg)',
     lbs: 'pounds (lbs)',
     st: 'stone (st)',
-    'in': 'inches (in)',
-    'cm': 'centimeters (cm)',
+    in: 'inches (in)',
+    cm: 'centimeters (cm)',
 
 
     printAbbr: function(fullForm) {
