@@ -119,7 +119,7 @@ class e20rExerciseView {
 				<div class="spacer">&nbsp;</div>
 				<div class="e20r-exercise-detail-row">
 					<div class="e20r-exercise-table-column first-column e20r-exercise-description">
-						<p><?php echo $currentExercise->descr ; ?></p>
+						<p><?php echo wpautop( $currentExercise->descr ); ?></p>
 					</div>
 				</div>
 				<div class="spacer">&nbsp;</div>
