@@ -21,9 +21,6 @@
 
 08/10/2015:
 
-Fix: (P0) List of exercise statistics in archive can start before the users program startdate. Graph does not.
-Fix: (P2) Set/Group listing has ugly warp in activity progress overview. Can we make the date box be the full height of the row so it won't let other boxes wrap under the date?
-
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
@@ -39,16 +36,19 @@ Fix: (P0) Added select2 box as "multichoice" box for assignment(s).
 Fix: (P0) Email messages to clients had their HTML stripped.
 Fix: (P0) Don't let new users see actual program content except the welcome info until their PMPRO startdate has come (or gone).
 Fix: (P0) Showing program pages before a users startdate (redirect to a preview page instead).
+Fix: (P0) List of exercise statistics in archive can start before the users program startdate. Graph does not.
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).
 Fix: (P1) Correctly load the Client Info page in back end.
 Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
 Fix: (P1) Clean up the client information page in the back-end.
+Fix: (P1) Measurements history table isn't responsive
+Fix: (P1) Refresh all graphs in progress_overview when tab is clicked.
 
 Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
 Fix: (P2) Make Achievements list responsive (from table to div & float:left)
-
+Fix: (P2) Set/Group listing has ugly wrap in activity progress overview.
 Fix: (P3) Add a "program_list" for the assignment definition
 
 Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
