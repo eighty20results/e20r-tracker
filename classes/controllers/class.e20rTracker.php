@@ -24,7 +24,7 @@ class e20rTracker {
 
     private $hooksLoaded = false;
 
-    public function _construct() {
+    public function __construct() {
 
         $this->model = new e20rTrackerModel();
 
@@ -3185,6 +3185,7 @@ class e20rTracker {
 
     public function getUserList( $level = null ) {
 
+        dbg("e20rTracker::getUserList() - Called by: " . $this->whoCalledMe() );
         $levels = array_keys( $this->getMembershipLevels( $level, false ) );
 
         dbg("e20rTracker::getUserList() - Users being loaded for the following level(s): " . print_r( $levels, true ) );
