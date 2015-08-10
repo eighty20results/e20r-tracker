@@ -1859,6 +1859,8 @@ div.photo-overlay span.value {
     display: block;
     width: 100%;
     padding-left: 5px;
+    color: #004CFF;
+    text-decoration: underline;
     /* text-align: center; */
 }
 .hover {
