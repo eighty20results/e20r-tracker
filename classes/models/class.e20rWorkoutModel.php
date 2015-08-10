@@ -410,7 +410,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
                         GROUP BY {$this->fields['for_date']}",
             $programId,
             $userId,
-            '2015-06-01',// $currentProgram->startdate,
+            $currentProgram->startdate,
             $exercise_id
         );
         dbg("e20rWorkoutModel::getExerciseHistory() - SQL: {$sql}");
