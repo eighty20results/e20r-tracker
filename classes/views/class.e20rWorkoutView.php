@@ -51,93 +51,94 @@ class e20rWorkoutView extends e20rSettingsView {
 
         ?>
         <div class="e20r-activity-list">
-        <div class="e20r-row"> <?php
-        if ( !empty( $dimensions ) ) {
-            ?>
-            <input type="hidden" name="user_id" id="user_id" value="<?php echo $userId; ?>">
-            <input type="hidden" name="wh_h_dimension" id="wh_h_dimension" value="<?php echo $dimensions['height']; ?>">
-            <input type="hidden" name="wh_h_dimension_type" id="wh_h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
-            <input type="hidden" name="wh_w_dimension" id="wh_w_dimension" value="<?php echo $dimensions['width']; ?>">
-            <input type="hidden" name="wh_w_dimension_type" id="wh_w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
-            <?php wp_nonce_field('e20r-tracker-data', 'e20r-weight-rep-chart');
-        } ?>
+            <div class="e20r-row clear-after"> <?php
+            if ( !empty( $dimensions ) ) {
+                ?>
+                <input type="hidden" name="user_id" id="user_id" value="<?php echo $userId; ?>">
+                <input type="hidden" name="wh_h_dimension" id="wh_h_dimension" value="<?php echo $dimensions['height']; ?>">
+                <input type="hidden" name="wh_h_dimension_type" id="wh_h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
+                <input type="hidden" name="wh_w_dimension" id="wh_w_dimension" value="<?php echo $dimensions['width']; ?>">
+                <input type="hidden" name="wh_w_dimension_type" id="wh_w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
+                <?php wp_nonce_field('e20r-tracker-data', 'e20r-weight-rep-chart');
+            } ?>
 
-            <h2 style="text-align: center; margin-bottom: 30px;">History for <?php echo $currentProgram->title ?></h2><?php
+                <h2 style="text-align: center; margin-bottom: 30px;">History for <?php echo $currentProgram->title ?></h2><?php
 
-        foreach( $activities as $exId => $info ) {
+            foreach( $activities as $exId => $info ) {
 
-            dbg("e20rWorkoutView::viewExerciseProgress() - Exercise ID: {$exId}");
+                dbg("e20rWorkoutView::viewExerciseProgress() - Exercise ID: {$exId}");
 
-            $type = $info->type;
-            $title = $info->name;
+                $type = $info->type;
+                $title = $info->name;
 
-            unset( $info->type );
-            unset( $info->name );
+                unset( $info->type );
+                unset( $info->name );
 
-            switch( $type ) {
-                case 1: // weight
-                    $wType = __("Resistance");
-                    $unit_pre = __("Weight", "e20rtracker");
-                    $unit_post = null;
-                    break;
+                switch( $type ) {
+                    case 1: // weight
+                        $wType = __("Resistance");
+                        $unit_pre = __("Weight", "e20rtracker");
+                        $unit_post = null;
+                        break;
 
-                case 2: // time
-                case 3: // AMRAP
-                    $unit_pre = __("Time", "e20rtracker");
-                    $wType = $e20rExercise->getExerciseType($type);
-                    $unit_post = __("seconds", "e20rtracker");
-                    break;
-            }
+                    case 2: // time
+                    case 3: // AMRAP
+                        $unit_pre = __("Time", "e20rtracker");
+                        $wType = $e20rExercise->getExerciseType($type);
+                        $unit_post = __("seconds", "e20rtracker");
+                        break;
+                }
 
-            ?>
+                ?>
 
-            <div class="e20r-column e20r-column_1_1">
-                <div class="e20r-faq-container e20r-toggle-close">
-                    <h3 class="e20r-faq-question"><?php echo $title; ?></h3>
-                    <div class="e20r-faq-answer-container clearfix">
-                        <div class="e20r-activity-history-graph">
-                            <?php echo $this->view_WorkoutStats( $userId, $exId, $dimensions  ); ?>
-                        </div>
-                        <?php
+                <div class="e20r-column e20r-column_1_1">
+                    <div class="e20r-faq-container e20r-toggle-close">
+                        <h3 class="e20r-faq-question"><?php echo $title; ?></h3>
+                        <div class="e20r-faq-answer-container clear-after">
+                            <div class="e20r-activity-history-graph">
+                                <?php echo $this->view_WorkoutStats( $userId, $exId, $dimensions  ); ?>
+                            </div><?php
 
-                    unset($info->name);
-                    $row = 0;
+                            unset($info->name);
+                            $row = 0;
 
-                    foreach( $info->when as $time => $group ) {
+                            foreach( $info->when as $time => $group ) { ?>
+                            <div class="e20r-activity-history-row clear-after">
+                                <div class="e20r-activity-container-inner">
+                                    <div class="e20r-activity-container-date-col">
+                                        <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div>
+                                    </div> <!-- date (sidebar) column -->
+                                    <div class="e20r-activity-container-info-col">
+                                    <?php
+                                $row = $row + 1;
 
-                        ?>
-                        <div class="e20r-activity-history-row <?php dbg("e20rWorkoutView::viewExerciseProgress() - Row Counter: {$row}"); echo ($row % 2 == 0  ? 'e20rEven' : 'e20rOdd'); ?>">
-                            <div class="e20r-history-date"><?php echo date_i18n( 'M j, Y', $time ); ?></div><?php
+                                foreach( $group->group as $gid => $set ) { ?>
 
-                        $row = $row + 1;
-
-                        foreach( $group->group as $gid => $set ) { ?>
-
-								<div class="e20r-activity-history-sets"><?php
-                                    if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
-                                        $unit = "BW? ({$set->weight})";
-                                    }
-                                    else {
-                                        $unit = $set->weight;
-                                    }
-                                    ?>
-                                    <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Set %d in Group %d", "e20rtracker" ),$set->set, ( $gid + 1) ); ?></h4>
-                                    <div class="e20r-activity-history-set-detail">
-                                        <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
-                                        <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
-                                        <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps == 1 ? __("rep", "e20rtracker") : __("reps", "e20rtracker") ); ?></p>
-                                    </div>
-                                </div><?php
-                                } ?>
-                        <div class="clearfix"></div>
-                        </div><?php
-                    } ?>
-                    </div>
-                </div>
-            </div><?php
-        } ?>
-            </div>
-        <div class="clearfix"></div>
+                                        <div class="e20r-activity-history-sets clear-after"><?php
+                                            if ( ( 1 == $type ) && ( 0.00 == $set->weight ) ) {
+                                                $unit = "BW? ({$set->weight})";
+                                            }
+                                            else {
+                                                $unit = $set->weight;
+                                            }
+                                            ?>
+                                            <h4 class="e20r-activity-history-set-title"><?php echo sprintf( __("Set %d in Group %d", "e20rtracker" ),$set->set, ( $gid + 1) ); ?></h4>
+                                            <div class="e20r-activity-history-set-detail">
+                                                <p class="e20r-history-type"><strong><?php echo __("Type", "e20rtracker") ."</strong>: {$wType}"; ?> </p>
+                                                <p class="e20r-history-unit"><?php echo "<strong>{$unit_pre}</strong>: {$unit} {$unit_post}"; ?> </p>
+                                                <p class="e20r-history-reps"><?php echo "<strong>{$set->reps}</strong> " . ( $set->reps == 1 ? __("rep", "e20rtracker") : __("reps", "e20rtracker") ); ?></p>
+                                            </div>
+                                        </div><!-- history-sets --><?php
+                                        } ?>
+                                <!-- <div class="clearfix"></div> -->
+                                    </div><!-- Groups/sets (content) container -->
+                                </div><!-- Inner container -->
+                            </div><?php
+                        } ?>
+                        </div> <!-- FAQ answer container -->
+                    </div> <!-- FAQ container -->
+                </div><!-- Column --> <?php
+            } ?>
         </div><?php
 
         $html = ob_get_clean();
