@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 0.9.23
+Stable tag: 0.9.24
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,28 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 0.9.24 ==
+
+* Fix PHP4 constructor to avoid deprecated warning in Wordpress 4.3.
+* Add fields array to model object.
+* Allow 3rd party callers to map fields in DB against default names.
+* Add getExerciseHistory() for user/program/exercise ID combination - Returns jqPlot friendly data structure.
+* Make sure the currentProgram data is available when loading weight/girth graphs.
+* Add AJAX handler to support loading exercise specific graphing data for weight/reps.
+* Integrate Weight/Rep graphs in the viewExerciseProgress() rendering.
+* Add graphing (loadable via button) to the view/page.
+* Fix even/odd coloring problem for rows of data.
+* Clean up UNIT object names.
+* Fix path toe ElegantIcons font(s).
+* Add styling for the exercise specific weight/rep statistics.
+* Add support for graphs of weight/rep statistics per exercise in the Activity tab.
+* Add load button 'click' event handling for weight/rep statistics.
+* Force resize of  weight/rep chart(s) 1 second after the page has loaded.
+* Redraw all visible graphs if window is resized.
+* AJAX function to load activity statistics for a specific exercise/user combination.
+* Redraw and resize the graphs whenever the user clicks one of the Weight/Girth tabs.
+* Go to PHP5 based constructors (avoid deprecated warning from Wordpress 4.3)
 
 == 0.9.23 ==
 
