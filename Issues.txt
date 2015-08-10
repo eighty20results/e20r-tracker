@@ -19,6 +19,11 @@
 
 07/28/2015:
 
+08/10/2015:
+
+Fix: (P0) List of exercise statistics in archive can start before the users program startdate. Graph does not.
+Fix: (P2) Set/Group listing has ugly warp in activity progress overview. Can we make the date box be the full height of the row so it won't let other boxes wrap under the date?
+
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
