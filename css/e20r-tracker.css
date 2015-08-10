@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'ElegantIcons';
-    src:url('css/fonts/ElegantIcons.eot');
-    src:url('css/fonts/ElegantIcons.eot?#iefix') format('embedded-opentype'),
-    url('css/fonts/ElegantIcons.woff') format('woff'),
-    url('css/fonts/ElegantIcons.ttf') format('truetype'),
-    url('css/fonts/ElegantIcons.svg#ElegantIcons') format('svg');
+    src:url('fonts/ElegantIcons.eot');
+    src:url('fonts/ElegantIcons.eot?#iefix') format('embedded-opentype'),
+    url('fonts/ElegantIcons.woff') format('woff'),
+    url('fonts/ElegantIcons.ttf') format('truetype'),
+    url('fonts/ElegantIcons.svg#ElegantIcons') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -131,6 +131,27 @@ div.e20r-activity-table,
 div.e20r-assignment-table,
 div.e20r-action-table {
     margin: 0;
+}
+/** For the activity statistics tab/page **/
+div.e20r-exercise-statistics {
+    text-align: center;
+    margin-bottom: 30px;
+}
+button.e20r-workout-statistics-loader {
+    font-size: 10pt !important;
+    font-weight: normal !important;
+    letter-spacing: normal !important;
+}
+table.jqplot-table-legend {
+    width: auto;
+    line-height: normal;
+}
+table.jqplot-table-legend tbody {
+    border-bottom: none;
+}
+table.jqplot-table-legend td {
+    border-top: none;
+    padding: 0;
 }
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
 .e20r-button {
