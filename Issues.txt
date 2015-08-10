@@ -21,6 +21,8 @@
 
 08/10/2015:
 
+Enh: (P0) - Log and show last login for user on client information page (color coded - red  more than 10 days, Yellow 3-10 days, green: 1-2 days..
+
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.

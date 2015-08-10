@@ -1,7 +1,7 @@
-Release v1.0
-Use the post content TinyMCE editor for the activity description.
-Fix issue where activity settings didn't always get loaded correctly.
-Use the post content TinyMCE editor for the activity description.
-Saving the activity description twice in the DB
-Fix formatting when displaying e20r_exercise description
-Fix formatting when displaying e20r_workout description
+Fix constructor for e20rTracker class
+Set currentProgram->id before attempting to use it in model
+Test whether global variable is set before trying to use it.
+Make client message UI translatable.
+Set "From" to "Coach <name>"
+Don't set program when User ID = 0 (not logged in).
+Fix warning message about uninitialized variable.

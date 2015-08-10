@@ -104,6 +104,16 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.0.1 ==
+
+* Fix constructor for e20rTracker class
+* Set currentProgram->id before attempting to use it in model
+* Test whether global variable is set before trying to use it.
+* Make client message UI translatable.
+* Set 'From' to 'Coach <name>'
+* Don't set program when User ID = 0 (not logged in).
+* Fix warning message about uninitialized variable.
+
 == 1.0 ==
 
 * Release v1.0

@@ -4,7 +4,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.0
+Version: 1.0.1
 Author: Thomas Sjolshagen <thomas@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 License: GPLv2
@@ -12,7 +12,7 @@ License: GPLv2
 
 // TODO: run unserialize functionality from the Tools section?
 
-define( 'E20R_VERSION', '1.0' );
+define( 'E20R_VERSION', '1.0.1' );
 define( 'E20R_RUN_UNSERIALIZE', 0 ); // 0 == Do NOT Run, 1 == Run
 define( 'E20R_DB_VERSION', '7');
 define( 'E20R_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
