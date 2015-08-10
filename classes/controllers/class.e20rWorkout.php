@@ -102,17 +102,111 @@ class e20rWorkout extends e20rSettings {
 
     }
 
+    public function ajax_getPlotDataForUser() {
+
+        global $e20rProgram;
+        global $e20rClient;
+        global $e20rTracker;
+
+        global $currentProgram;
+
+        dbg('e20rWorkout::ajax_getPlotDataForUser() - Requesting workout data');
+        check_ajax_referer('e20r-tracker-data', 'e20r-weight-rep-chart');
+        dbg("e20rWorkout::ajax_getPlotDataForUser() - Nonce is OK");
+        dbg($_POST);
+
+        $user_id = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
+
+        if ( $e20rClient->validateAccess( $user_id ) ) {
+            $e20rProgram->getProgramIdForuser( $user_id );
+        }
+        else {
+            dbg( "e20rWorkout::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$user_id}" );
+            wp_send_json_error( __("Your membership level prevents you from accessing this data. Please upgrade.", "e20rtracker" ) );
+            wp_die();
+        }
+
+        $exercise_id = isset( $_POST['exercise_id'] ) ? $e20rTracker->sanitize( $_POST['exercise_id'] ) : 0;
+
+        dbg("e20rWorkout::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
+
+        $stats = $this->model->getExerciseHistory( $exercise_id, $user_id, $currentProgram->id, $currentProgram->startdate );
+
+        // $stats = $this->generate_stats( $history );
+
+        if ( isset( $_POST['wh_h_dimension'] ) ) {
+
+            dbg("e20rWorkout::ajax_getPlotDataForUser() - We're displaying the front-end user progress summary");
+            $dimensions = array( 'width' => intval( $_POST['wh_w_dimension'] ),
+                'wtype' => sanitize_text_field($_POST['wh_w_dimension_type']),
+                'height' => intval( $_POST['wh_h_dimension'] ),
+                'htype' => sanitize_text_field( $_POST['wh_h_dimension_type'] )
+            );
+
+            // $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+        }
+        else {
+
+            dbg("e20rWorkout::ajax_getPlotDataForUser() - We're displaying on the admin page.");
+            $dimensions = array( 'width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px' );
+        }
+
+        dbg("e20rWorkout::ajax_getPlotDataForuser() - Dimensions: ");
+        dbg($dimensions);
+
+        dbg("e20rWorkout::ajax_getPlotDataForuser() - Stats: ");
+        dbg($stats);
+
+        $html = $this->view->view_WorkoutStats( $user_id, $exercise_id, $dimensions );
+
+        // $stats = $this->generate_stats( $activities );
+        // $reps = $this->generatePlotData( $workout_data, 'reps' );
+
+        dbg("e20rWorkout::ajax_get_PlotDataForUser() - Generated plot data for measurements");
+        $data = json_encode( array( 'success' => true, 'html' => $html, 'stats' => $stats ), JSON_NUMERIC_CHECK );
+        echo $data;
+        // wp_send_json_success( array( 'html' => $data, 'weight' => $weight, 'girth' => $girth ) );
+        wp_die();
+    }
+
+    public function generate_stats( $data ) {
+
+        // global $e20rTables;
+        // $fields = $this->model->getField();
+
+        dbg($data);
+
+        $data_matrix = array();
+
+        if ( empty( $data ) ) {
+
+            return array();
+        }
+
+        foreach ( $data as $exercise ) {
+
+            foreach ( $exercise as $workout )
+            if ( is_object( $exercise->history ) ) {
+
+                $workout_weight[] = array( ( strtotime( $workout->for_date ) * 1000 ), number_format( (float) $workout->weight, 2) );
+                $workout_reps[] = array( ( strtotime( $workout->for_date ) * 1000 ), number_format( (float) $workout->reps, 2 ) );
+            }
+        }
+        return array( $workout_weight, $workout_reps );
+    }
+
 	public function listUserActivities( $userId ) {
 
         global $current_user;
         global $e20rProgram;
         global $e20rTracker;
+        global $currentProgram;
 
         $config = new stdClass();
         $config->type = 'activity';
         $config->post_date = null;
 
-        $config->userId = $userId;
+        $config->userId = 116; // $userId;
         $config->startTS = $e20rProgram->startdate( $config->userId );
         $config->delay = $e20rTracker->getDelay( 'now' );
 
@@ -121,8 +215,34 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::listUserActivities() - Received " . count($activities) . " activity records...");
         // dbg($activities);
 
-        return $this->view->viewExerciseProgress( $activities, null );
+        // Get and load the statistics for the user.
+        if ( isset( $_POST['wh_h_dimension'] ) ) {
 
+            dbg("e20rWorkout::listUserActivities() - We're displaying the front-end user progress summary");
+            $dimensions = array( 'width' => intval( $_POST['wh_w_dimension'] ),
+                'wtype' => sanitize_text_field($_POST['wh_w_dimension_type']),
+                'height' => intval( $_POST['wh_h_dimension'] ),
+                'htype' => sanitize_text_field( $_POST['wh_h_dimension_type'] )
+            );
+
+            // $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+        }
+        else {
+
+            dbg("e20rWorkout::listUserActivities() - We're displaying on the admin page.");
+            $dimensions = array( 'width' => '650', 'height' => '300', 'htype' => 'px', 'wtype' => 'px' );
+        }
+
+/*        foreach( $activities as $key => $activity ) {
+
+            //$activity->graph = $this->model->getExerciseDataByDate( $config->userId, date_i18n( 'Y-m-d', $config->startTS ), $currentProgram->id, $activity );
+            $activity->graph = $this->model->getExerciseDataByDate( $config->userId, '2015-06-01', $currentProgram->id, $activity );
+
+            $activities[$key] = $activity;
+        }
+*/
+        // $html = $this->view->view_WorkoutStats( $config->userId, $data, $dimensions );
+        return $this->view->viewExerciseProgress( $activities, null, $userId, $dimensions );
 	}
 
 	public function saveExData_callback() {
