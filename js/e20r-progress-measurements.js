@@ -32,6 +32,8 @@ var progMeasurements = {
         $class.$measurements = self;
         $class.wPlot = null;
         $class.gPlot = null;
+        $class.statPlot = [];
+        $class.$loadStatsBtn = jQuery(".e20r-workout-statistics-loader");
 
         if ( $class.clientId === null ) {
 
@@ -190,11 +192,54 @@ var progMeasurements = {
                 });
             });
 
+            jQuery(".exercise-stats-container").each(function() {
+                jQuery(this).hide();
+            });
+
+            $class.$loadStatsBtn.each( function() {
+                jQuery.bindEvents({
+                    self: $class,
+                    elem: jQuery(this),
+                    events: {
+                        click: function(self, e) {
+                            console.log("Loading statistics for exercise", this);
+
+                            var $exercise_id = jQuery(this).closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
+                            var $client_id = jQuery('#user_id').val();
+                            var $graph = jQuery(this).closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
+
+                            console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
+                            $class.loadActivityStats( $client_id, $exercise_id, $graph );
+                        }
+                    }
+                });
+            });
+
             setTimeout(function() {
                 $class.loadMeasurementData();
             }, 10);
 
+            setTimeout(function() {
+
+                $class._resize_chart();
+            }, 1000 );
+
+            // $class._resize_chart();
         }
+
+        var $resizeId;
+
+        jQuery(window).on('resize', function() {
+
+            console.log("Window was resized!");
+
+            clearTimeout($resizeId);
+
+            $resizeId = setTimeout( function() {
+                $class._resize_chart();
+                console.log("Updated chart");
+            }, 500);
+        });
 
         $class.$body = jQuery("body");
 
@@ -203,6 +248,58 @@ var progMeasurements = {
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
 
+    },
+    _resize_chart: function() {
+
+        // var $class = this;
+        // console.log("Iterating through the statPlot array()", this.statPlot );
+        var $new_width;
+
+        for( var key in this.statPlot ) {
+
+            if ( this.statPlot.hasOwnProperty(key) ) {
+
+                var $plot = this.statPlot[key];
+                var $plotId = $plot.targetId;
+
+                var element = jQuery($plotId);
+                var $resized = element.closest('.e20r-faq-container');
+
+                $new_width = $resized.width() * 0.87;
+                element.width( $new_width );
+
+                $plot.replot({resetAxes:true});
+            }
+        }
+
+        var $tabspace = jQuery('#e20r-progress-measurements').width() * 0.87;
+
+        if ( $tabspace != 0) {
+
+            console.log("Width for Weight/Girth charts: ", $tabspace);
+
+            jQuery("#weight_chart").width($tabspace);
+            jQuery('#girth_chart').width($tabspace);
+
+            this.wPlot.replot({resetAxes: true});
+            this.gPlot.replot({resetAxes: true});
+        }
+    },
+    _closestChild: function( $me, selector) {
+
+        var $children, $results;
+
+        $children = $me.children();
+
+        if ($children.length === 0)
+            return jQuery();
+
+        $results = $children.filter(selector);
+
+        if ($results.length > 0)
+            return $results;
+        else
+            return $children.closestChild(selector);
     },
     adminLoadData: function(id) {
 
@@ -273,7 +370,6 @@ var progMeasurements = {
         }*/
 
     },
-
     get_tinymce_content: function() {
 
         if ( jQuery( "#wp-content-wrap" ).hasClass( "tmce-active" ) ){
@@ -519,6 +615,230 @@ var progMeasurements = {
         if ( $currId != self.$oldClientId ) {
             self.$hClientId.val($currId);
         }
+
+    },
+    loadActivityStats: function( $clientId, $exercise_id, $graph ) {
+
+        var $class = this;
+
+        if ( $class.loadActivityStats.arguments.length != 1 ) {
+            console.log("No arguments specified?");
+            $clientId = $class.clientId
+        };
+
+        var $data = {
+            action: 'load_activity_stats',
+            'e20r-weight-rep-chart': jQuery('#e20r-weight-rep-chart').val(),
+            'wh_h_dimension': jQuery("#wh_h_dimension").val(),
+            'wh_w_dimension': jQuery("#wh_w_dimension").val(),
+            'wh_h_dimension_type': jQuery("#wh_h_dimension_type").val(),
+            'wh_w_dimension_type': jQuery("#wh_w_dimension_type").val(),
+            client_id: $clientId,
+            exercise_id: $exercise_id
+        };
+
+        jQuery.ajax({
+            url: $class.$ajaxUrl,
+            type: 'POST',
+            timeout: 10000,
+            dataType: 'JSON',
+            data: $data,
+            error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to fetch client measurements. If you\'d like to try again, please ";
+                $string += "click the tab or button once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
+                $class.$spinner.hide();
+
+            },
+            success: function (data) {
+
+                if ( ( data.html !== '' ) ) {
+
+                    $graph.html( data.html );
+
+                    // jQuery(".e20r_progress_text").html(null);
+                    var firstDate;
+                    var lastDate;
+
+                    var $minTick;
+                    var $maxTick;
+                    var $tickPad;
+
+                    var $entries;
+                    var $stepSize;
+
+                    var $max_weight = data.stats[0];
+                    var $reps = data.stats[1];
+
+                    if ( ( typeof $max_weight !== 'undefined' ) && ( $max_weight[0].length > 0 ) ) {
+
+                        firstDate = $max_weight[0][0];
+                        lastDate = $max_weight[$max_weight.length - 1][0];
+
+                        $entries = $max_weight.length;
+
+                        $stepSize = '1 day';
+                        $tickPad = 3600*24*0.5;
+
+                        if ( $entries >= 10 ) {
+                            $tickPad = 3600*24*7;
+                            $stepSize = '1 week';
+                        }
+
+                        if ($entries >= 26) {
+                            $tickPad = 3600*24*14;
+                            $stepSize = '2 weeks';
+                        }
+
+                        $minTick = firstDate - $tickPad;
+                        $maxTick = lastDate + $tickPad;
+
+                        var $plot_target = "exercise_stats_" + $exercise_id;
+
+                        var $resizable = $graph.closest('.e20r-exercise-statistics').find('button.e20r-workout-statistics-loader').hide();
+                        $graph.show();
+
+                        $class.statPlot[$plot_target] = jQuery.jqplot( $plot_target, [ $max_weight, $reps ], {
+                            title: 'Weights and Reps',
+                            gridPadding: {right: 35},
+                            stackSeries: true,
+                            seriesDefaults: {
+                                showMarker: true,
+                                pointLabels: {show: false}
+                            },
+                            axesDefaults: {
+                                tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                                tickOptions: {
+                                    fontFamily: 'Verdana',
+                                    fontSize: '9px',
+                                    angle: 30,
+                                    formatString: '%v',
+                                    showLabel: true
+                                }
+                            },
+                            axes: {
+                                xaxis: {
+                                    renderer: jQuery.jqplot.DateAxisRenderer,
+                                    labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                    showTicks: true,
+                                    tickInterval: $stepSize,
+                                    min: $minTick,
+                                    max: $maxTick,
+                                    pad: 0
+                                },
+                                yaxis: {
+                                    labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                    tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                                    label: 'Max resistance (weight)',
+                                    showTicks: true,
+                                    showTickMarks: true,
+                                    autoScale: true,
+                                    pointLabels: { show: true },
+                                    min: -1,
+                                    tickOptions: {
+                                        formatString: '%.0f',
+                                        showLabel: true
+                                    }
+                                },
+                                y2axis: {
+                                    label: 'Reps at max weight',
+                                    labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
+                                    tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
+                                    showTicks: true,
+                                    showTickMarks: true,
+                                    autoScale: true,
+                                    pointLabels: { show: true },
+                                    min: -1,
+                                    tickOptions: {
+                                        showLabel: true,
+                                        formatString: '%.0f'
+                                    }
+                                }
+                            },
+                            series: [{
+                                yaxis: 'yaxis',
+                                label: 'Max resistance (weight)',
+                                disableStack: true,
+                                color: '#9C0000',
+                                lineWidth: 2,
+                                markerOptions: {
+                                    style: 'diamond',
+                                    size: 10,
+                                },
+                                rendererOptions: {
+                                    smooth: true
+                                }
+                            },
+                            {
+                                yaxis: 'y2axis',
+                                color: '#004DFF',
+                                disableStack: true,
+                                lineWidth: 2,
+                                label: 'Reps at max weight',
+                                linePattern: 'dashed',
+                                markerOptions: {
+                                    showLine: false,
+                                    style: "circle",
+                                    size: 10,
+                                    },
+                                    rendererOptions: {
+                                        smooth: true
+                                    }
+                            }],
+                            grid: {
+                                drawGridlines: false,
+                            },
+                            legend: {
+                                show: true,
+                                location: 'nw',
+                                labels: [ 'Max weight', 'Repetitions' ],
+                                placement: 'inside',
+                            }
+                        });
+
+                        jQuery("#" + $plot_target).show();
+                        $class._resize_chart();
+
+                    }
+                    else {
+                        console.log("No data found in database for the current user with ID: " + $clientId );
+                        // alert("No measurement data found");
+                    }
+                }
+
+            },
+            complete: function () {
+
+                /**
+                jQuery('.timeago')
+                    .each(function() {
+                        jQuery(this)
+                            .text(function(text) {
+                                return jQuery.timeago(text);
+                            });
+                    });
+                **/
+
+                // Disable the spinner again
+                $class.$spinner.hide();
+            }
+        });
 
     },
     loadMeasurementData: function( $clientId ) {
