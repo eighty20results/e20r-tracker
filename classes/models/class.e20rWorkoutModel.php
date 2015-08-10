@@ -142,14 +142,12 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			$post = get_post( $id );
 			setup_postdata( $post );
 
-			if ( ! empty( $post->post_title ) ) {
-
-				$this->settings->excerpt       = $post->post_excerpt;
-				$this->settings->title    = $post->post_title;
-				$this->settings->id          = $id;
-			}
+            $this->settings->excerpt       = ( empty ($post->post_content ) ? $post->post_excerpt : $post->post_content );
+            $this->settings->title    = $post->post_title;
+            $this->settings->id          = $id;
 
             dbg("e20rWorkoutModel::loadSettings() - Analyzing group content");
+            dbg( $this->settings );
 
             $ex = array();
             $g_def = $this->defaultGroup();
@@ -971,11 +969,15 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	    foreach ( $defaults as $key => $value ) {
 
-		    if ( in_array( $key, array( 'id' ) ) ) {
+		    if ( in_array( $key, array( 'id', 'excerpt' ) ) ) {
 
 			    continue;
 		    }
 
+/*            if ( 'excerpt' == $key ) {
+                $settings->{$key} = wpautop( $settings->{$key} );
+            }
+*/
 		    if ( false === $this->settings( $workoutId, 'update', $key, $settings->{$key} ) ) {
 
 			    if ( is_array( $settings->{$key} ) || is_object( $settings->{$key} ) ) {
