@@ -1,9 +1,7 @@
-Set/Group listing has ugly wrap in activity progress overview.
-Fixed issue where the workout history would include workouts for the program that ocurred before the program started (shouldn't happen unless we're forcing it, but worth fixing)
-Force resize/redraw of charts/graphs when the tabs for the progress overview page is clicked.
-Fix issue where a hidden plot was attempted redrawn causing errors.
-Set link for quick-nav class to blue and underlined.
-Added styling fixes for responsive e20r-measurement-table
-Made measurements history table responsive and translatable.
-Return "No answer recorded" for ranking fields if no answer is present.
-Remove debug output
+Release v1.0
+Use the post content TinyMCE editor for the activity description.
+Fix issue where activity settings didn't always get loaded correctly.
+Use the post content TinyMCE editor for the activity description.
+Saving the activity description twice in the DB
+Fix formatting when displaying e20r_exercise description
+Fix formatting when displaying e20r_workout description

@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 0.9.26
+Stable tag: 1.0
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,15 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.0 ==
+
+* Release v1.0
+* Fix issue where activity settings didn't always get loaded correctly.
+* Use the post content TinyMCE editor for the activity description.
+* Saving the activity description twice in the DB
+* Fix formatting when displaying e20r_exercise description
+* Fix formatting when displaying e20r_workout description
 
 == 0.9.26 ==
 
