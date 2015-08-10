@@ -691,7 +691,7 @@ class e20rAssignmentView extends e20rSettingsView {
                                                     $info = preg_replace("/,\s$/", '', $info );
                                                 }
                                                 elseif ( 5 == $answer->field_type ) {
-                                                    $info = "On a scale from 1 to 10: <strong>{$answer->answer}</strong>";
+                                                    $info = sprintf( __( "On a scale from 1 to 10: <strong>%s</strong>", "e20rtracker"), ( empty( $answer->answer ) ? __("No response recorded", "e20rtracker") : $answer->answer ) );
                                                 }
                                                 else {
                                                     $info = $answer->answer;
