@@ -74,11 +74,14 @@ class e20rClientModel {
             return false;
         }
 
+        global $e20rProgram;
         global $currentClient;
         global $currentProgram;
 
         global $wpdb;
         global $e20rTracker;
+
+        $e20rProgram->getProgramIdForUser( $clientId );
 
         dbg("e20rClientModel::load_client_settings() - Loading client information from database for {$currentClient->user_id}");
 
