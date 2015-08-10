@@ -195,11 +195,14 @@ class e20rProgram extends e20rSettings {
 
         global $e20rArticle;
 
-        $user_program = -9999;
+        $user_program = false;
 
         if ( 0 != $userId ) {
 
             $user_program = get_user_meta( $userId, 'e20r-tracker-program-id', true);
+        }
+        else {
+            return;
         }
 
         if ( !empty( $currentProgram->id ) && ( $currentProgram->id == $user_program ) ) {
@@ -207,7 +210,7 @@ class e20rProgram extends e20rSettings {
             return $currentProgram->id;
         }
 
-	    if ( empty( $currentProgram->id ) || ( !empty( $user_program) && ( $currentProgram->id != $user_program ) ) ) {
+	    if ( !isset( $currentProgram->id ) || ( ( false !== $user_program ) && ( isset( $currentProgram->id ) && ( $currentProgram->id != $user_program ) ) ) ) {
 
 		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id isn't configured or its different from what this user ({$userId}) needs it to be ({$user_program}).");
 
