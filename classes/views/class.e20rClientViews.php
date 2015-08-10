@@ -137,10 +137,10 @@ class e20rClientViews {
 
         $client = get_user_by( 'id', $clientId );
 
-        $first_name = ( empty( $currentClient->first_name ) ? $client->user_firstname : $currentClient->first_name );
-        $last_name = ( empty( $currentClient->last_name ) ? $client->user_lastname : $currentClient->last_name );
-        $email = ( empty( $currentClient->email ) ? $client->user_email : $currentClient->email );
-        $incomplete = ( empty( $currentClient->email ) ? true : false );
+        $first_name = ( isset( $currentClient) && empty( $currentClient->first_name ) ? $client->user_firstname : $currentClient->first_name );
+        $last_name = ( isset( $currentClient) && empty( $currentClient->last_name ) ? $client->user_lastname : $currentClient->last_name );
+        $email = ( isset( $currentClient) && empty( $currentClient->email ) ? $client->user_email : $currentClient->email );
+        $incomplete = ( isset( $currentClient) && empty( $currentClient->email ) ? true : false );
 
         ob_start(); ?>
         <form id="e20r-message-form">
@@ -150,13 +150,13 @@ class e20rClientViews {
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
             <?php if ( true === $incomplete ) { ?>
                 <div class="red-notice">
-                    <?php _e("Incomplete client interview. Please ask them to complete this interview as quickly as possible", "e20rtracker" ); ?>
+                    <?php _e("Incomplete client interview. Please ask them to complete their welcome interview as quickly as possible", "e20rtracker" ); ?>
                 </div><?php
             }?>
             <table id="e20r-send-message">
                 <thead>
                 <tr>
-                    <th colspan="3" class="e20r-activity-table-header">Send message to: <?php echo "{$first_name} {$last_name} &lt;<em>{$email}</em>&gt;"; ?></th>
+                    <th colspan="3" class="e20r-activity-table-header"><?php echo sprintf( __("Send message to: %s %s &lt;<em>%s</em>&gt;", "e20rtracker" ), $first_name, $last_name, $email ); ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -165,7 +165,7 @@ class e20rClientViews {
                         <?php _e("From", "e20rtracker"); ?>:
                     </td>
                     <td class="e20r-message-from">
-                        <input class="e20r-message-input" type="text" name="e20r-email-from-name" id="e20r-email-from-name" autocomplete="off" value="<?php echo "{$current_user->user_firstname} {$current_user->user_lastname}"; ?>" />
+                        <input class="e20r-message-input" type="text" name="e20r-email-from-name" id="e20r-email-from-name" autocomplete="off" value="<?php echo __("Coach", "e20rtracker") . " {$current_user->user_firstname}"; ?>" />
                     </td>
                     <td class="e20r-message-from">
                         <input class="e20r-message-input" type="email" name="e20r-email-from" id="e20r-email-from" autocomplete="off" value="<?php echo "{$current_user->user_email}"; ?>" />
@@ -184,7 +184,7 @@ class e20rClientViews {
                 </tr>
                 <tr>
                     <td class="e20r-message-subject" colspan="3">
-                        <textarea class="e20r-message-input" id="content" autocomplete="off" name="content" placeholder="<?php _e('Message to user', 'e20rtracker'); ?>" rows="20" cols="75" type='textarea'> </textarea><?php
+                        <textarea class="e20r-message-input" id="content" autocomplete="off" name="content" placeholder="<?php _e('Message to client', 'e20rtracker'); ?>" rows="20" cols="75" type='textarea'> </textarea><?php
                         $settings = array(
                             'textarea_name' => 'content',
                             'quicktags' => false,
