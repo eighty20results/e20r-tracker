@@ -224,6 +224,20 @@ var progMeasurements = {
                 $class._resize_chart();
             }, 1000 );
 
+            jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
+
+                if ( ui.newTab.index() === 2 ) {
+
+                    console.log("Resize the graphs on the Activities page");
+                    $class._resize_chart();
+                }
+                else if ( ui.newTab.index() === 0 ) {
+
+                    console.log("Redrawing weight/girth graphs");
+                    $class._resize_chart();
+                    //progMeasurements.gPlot.replot({resetAxes: true});
+                }
+            });
             // $class._resize_chart();
         }
 
@@ -266,15 +280,18 @@ var progMeasurements = {
                 var $resized = element.closest('.e20r-faq-container');
 
                 $new_width = $resized.width() * 0.87;
-                element.width( $new_width );
 
-                $plot.replot({resetAxes:true});
+                if ( $new_width > 0 ) {
+                    console.log("New width for element: ", $new_width );
+                    element.width($new_width);
+                    $plot.replot({resetAxes: true});
+                }
             }
         }
 
         var $tabspace = jQuery('#e20r-progress-measurements').width() * 0.87;
 
-        if ( $tabspace != 0) {
+        if ( $tabspace > 0) {
 
             console.log("Width for Weight/Girth charts: ", $tabspace);
 
