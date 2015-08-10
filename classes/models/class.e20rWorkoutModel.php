@@ -19,6 +19,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		parent::__construct( 'workout', 'e20r_workout' );
 
 		$this->table = $e20rTables->getTable('workout');
+        $this->fields = $e20rTables->getFields('workout');
 
 		$this->types = array(
 			0 => '',
@@ -29,6 +30,21 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         $this->settings = new stdClass();
 	}
+
+    public function getTable() {
+
+        return $this->table;
+    }
+
+    public function getField( $name = 'all' ) {
+
+        if ( 'all' == $name ) {
+
+            return $this->fields;
+        }
+
+        return $this->fields[$name];
+    }
 
 	public function getType( $tId ) {
 
@@ -353,6 +369,125 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return false;
     }
 
+    public function getExerciseHistory( $exercise_id, $userId, $programId = null, $start_date = 'all' ) {
+
+        global $wpdb;
+        global $currentProgram;
+
+        if ( is_null( $programId ) ) {
+
+            $programId = $currentProgram->id;
+        }
+
+        if ( 'all' == $start_date ) {
+
+            $start_date = $currentProgram->startdate;
+        }
+
+        /*
+        $sql = $wpdb->prepare(
+            "
+            SELECT
+              {$this->fields['id']}, {$this->fields['for_date']}, {$this->fields['user_id']}, {$this->fields['exercise_id']},
+              MAX({$this->fields['weight']}) AS {$this->fields['weight']}, {$this->fields['reps']}
+            FROM {$this->table}
+              WHERE {$this->fields['program_id']} = %d AND {$this->fields['user_id']} = %d AND {$this->fields['for_date']} >= %s
+              AND {$this->fields['weight']} != 0 AND {$this->fields['exercise_id']} = %d
+              GROUP BY {$this->fields['exercise_id']}, {$this->fields['for_date']}
+              ORDER BY {$this->fields['for_date']};
+            ",
+            $programId,
+            $userId,
+            $start_date,
+            $exercise_id
+          );
+*/
+        $sql = $wpdb->prepare("
+                        SELECT UNIX_TIMESTAMP(for_date) AS for_date, MAX(weight) AS weight, reps
+                          FROM {$this->table}
+                          WHERE {$this->fields['program_id']} = %d AND {$this->fields['user_id']} = %d AND {$this->fields['for_date']} >= %s
+                          AND {$this->fields['exercise_id']} = %d
+                        GROUP BY {$this->fields['for_date']}",
+            $programId,
+            $userId,
+            '2015-06-01',// $currentProgram->startdate,
+            $exercise_id
+        );
+        dbg("e20rWorkoutModel::getExerciseHistory() - SQL: {$sql}");
+
+        $results = $wpdb->get_results( $sql );
+
+        $weights = array();
+        $reps = array();
+
+        if ( empty( $results ) ) {
+
+            dbg( "e20rWorkoutModel::getExerciseHistory() - Error loading from database: Zero records found & possible error:" . $wpdb->print_error() );
+            return false;
+        }
+        else {
+
+            dbg( "e20rWorkoutModel::getExerciseHistory() - loaded " . count( $results ) . " records" );
+
+            foreach( $results as $rec ) {
+
+                // $ts = strtotime(  );
+
+                $weights[] = array( $rec->for_date * 1000, number_format( (float) $rec->weight, 2) );
+                $reps[] = array( $rec->for_date * 1000, number_format( (float) $rec->reps, 2 ) );
+            }
+        }
+
+        return array( $weights, $reps );
+        // return $this->transformForJS( $records );
+    }
+/*
+    private function transformForJS( $records ) {
+
+        global $e20rTables;
+        global $e20rClient;
+
+        $retVal = array();
+
+        if ( ! is_array( $records ) ) {
+            dbg("e20rWorkout::transformForJS() - Convert to array of results");
+            $records = array( $records );
+        }
+
+        $exclude = array(
+            'id',
+            'user_id',
+            'exercise_id',
+            'program_id',
+            'for_date',
+        );
+
+        dbg("e20rWorkoutModel::transformForJS() - DB  data:");
+        // dbg( $this->fields );
+        // dbg( $records );
+
+        foreach( $records as $date => $record ) {
+
+            foreach ( $record as $key => $value ) {
+
+                $mKey = array_search( $key, $this->fields );
+
+                dbg( "e20rWorkout::transformForJS() - Key ({$key}) is really {$mKey}" );
+
+                if ( ! in_array( $key, $exclude ) ) {
+
+                    $retVal[ $mKey ] = array(
+                        'value' => $value,
+                        'units' => ( $key != 'weight' ? 'reps' : $e20rClient->getWeightUnit() ) // $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
+                    );
+                }
+            }
+        }
+
+        return ( empty( $retVal ) ? $record : $retVal );
+    }
+*/
+
     public function loadUserActivityData( $userId, $programId = null ) {
 
         dbg("e20rWorkoutModel::loadUserActivityData() - Loading activity data for {$userId} in program {$programId}");
@@ -427,7 +562,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
                 $activities[$wr['exercise_id']]->when[$wr['for_date']]->group[$wr['group_no']]->reps = $wr['reps'];
             }
 
-            dbg("e20rWorkoutModel::loadUserActivityData() - Completed processing: Returnding data for " . count($activities) . " workouts");
+            dbg("e20rWorkoutModel::loadUserActivityData() - Completed processing: Returning data for " . count($activities) . " workouts");
             // dbg($activities);
         }
 
@@ -441,6 +576,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         global $e20rProgram;
 
         global $currentExercise;
+        global $currentProgram;
 
         $today = date_i18n( 'Y-m-d', current_time( 'timestamp' ) );
 
