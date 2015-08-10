@@ -243,7 +243,7 @@ class e20rWorkoutView extends e20rSettingsView {
 			<h2><?php echo $w->title; ?></h2>
 			<div class="e20r-activity-description">
 				<h4><?php _e( "Summary", "e20rtracker" ); ?></h4>
-				<p><?php echo $w->excerpt; ?></p>
+				<p><?php echo wpautop( $w->excerpt ); ?></p>
 			</div>
 			<form id="e20r-activity-input-form">
 				<?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
