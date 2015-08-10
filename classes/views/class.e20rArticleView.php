@@ -11,7 +11,7 @@ class e20rArticleView extends e20rSettingsView {
 
     private $article = null;
 
-    public function __construct( $data = null, $error = null ) {
+    public function e20rArticleView( $data = null, $error = null ) {
 
         parent::__construct( 'article', 'e20r_articles' );
 
