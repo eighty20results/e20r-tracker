@@ -294,6 +294,7 @@ class e20rTracker {
             add_action( 'wp_ajax_saveMeasurementForUser', array( &$e20rMeasurements, 'saveMeasurement_callback' ) );
             add_action( 'wp_ajax_checkCompletion', array( &$e20rMeasurements, 'checkProgressFormCompletion_callback' ) );
             add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$e20rMeasurements, 'ajax_getPlotDataForUser' ) );
+            add_action( 'wp_ajax_load_activity_stats', array( &$e20rWorkout, 'ajax_getPlotDataForUser' ) );
             add_action( 'wp_ajax_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
             add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
