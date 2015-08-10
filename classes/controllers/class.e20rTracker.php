@@ -3044,7 +3044,7 @@ class e20rTracker {
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'supports' => array('title','editor','thumbnail'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',
