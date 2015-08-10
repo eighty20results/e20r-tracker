@@ -104,6 +104,10 @@ Arguments:
 
 == ChangeLog ==
 
+== 0.9.25 ==
+
+* Fix erroneous static startdate in getExerciseHistory()
+
 == 0.9.24 ==
 
 * Fix PHP4 constructor to avoid deprecated warning in Wordpress 4.3.
