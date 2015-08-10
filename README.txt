@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 0.9.24
+Stable tag: 0.9.26
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,18 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 0.9.26 ==
+
+* Set/Group listing has ugly wrap in activity progress overview.
+* Fixed issue where the workout history would include workouts for the program that ocurred before the program started (shouldn't happen unless we're forcing it, but worth fixing)
+* Force resize/redraw of charts/graphs when the tabs for the progress overview page is clicked.
+* Fix issue where a hidden plot was attempted redrawn causing errors.
+* Set link for quick-nav class to blue and underlined.
+* Added styling fixes for responsive e20r-measurement-table
+* Made measurements history table responsive and translatable.
+* Return 'No answer recorded' for ranking fields if no answer is present.
+* Remove debug output
 
 == 0.9.25 ==
 
