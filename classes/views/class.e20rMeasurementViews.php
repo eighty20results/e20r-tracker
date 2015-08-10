@@ -558,24 +558,24 @@ class e20rMeasurementViews {
                 <h4>Measurements for <?php echo $user->first_name; ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav">
-                    <table class="e20r-measurement-table">
-                        <thead>
+                    <table class="e20r-measurement-table e20r-resp-table">
+                        <thead class="e20r-resp-table-header">
                             <tr>
                                 <th class="e20r_mHead rotate"></th>
-                                <th class="e20r_mHead rotate"><div><span>Weight (<?php echo $e20rClient->getWeightUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Neck (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Shoulder (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Chest (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Arm (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Waist (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Hip (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Thigh (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Calf (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Total Girth (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Photo</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php _e("Photo","e20rtracker"); ?></span></div></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="e20r-resp-table-body">
                             <?php
 
                             $counter = 0;
@@ -634,17 +634,17 @@ class e20rMeasurementViews {
 				                            <div
 					                            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
 			                            </td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
-			                            <td class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?>" class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php _e("Photo","e20rtracker"); ?>" class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
 		                            </tr>
 		                            <?php
 		                            $counter ++;
