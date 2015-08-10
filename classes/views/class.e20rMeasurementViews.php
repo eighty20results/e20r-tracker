@@ -531,15 +531,15 @@ class e20rMeasurementViews {
 
                         jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
 
-                            if ( (ui.newTab.index() === 0) && ( progMeasurements.wPlot._drawCount === 0 ) ) {
+                            if ( ui.newTab.index() === 0 ) {
 
                                 console.log("Redrawing wPlot");
-                                progMeasurements.wPlot.replot();
+                                progMeasurements.wPlot.replot({resetAxes: true});
                             }
-                            else if ( (ui.newTab.index() === 1 ) && (progMeasurements.gPlot._drawCount === 0) ) {
+                            else if ( ui.newTab.index() === 1 ) {
 
                                 console.log("Redrawing gPlot");
-                                progMeasurements.gPlot.replot();
+                                progMeasurements.gPlot.replot({resetAxes: true});
                             }
                         });
 
