@@ -508,10 +508,11 @@ class e20rWorkoutModel extends e20rSettingsModel {
             "SELECT exercise_id, UNIX_TIMESTAMP(for_date) AS for_date,
                     exercise_key, group_no, set_no, weight, reps
              FROM {$this->table}
-             WHERE user_id = %d AND program_id = %d
+             WHERE user_id = %d AND program_id = %d AND for_date >= %s
              ORDER BY exercise_id, for_date, group_no, set_no, exercise_key DESC",
             $userId,
-            $programId
+            $programId,
+            $currentProgram->startdate
         );
 
         dbg("e20rWorkoutModel::loadUserActivityData() - SQL: {$sql}");
