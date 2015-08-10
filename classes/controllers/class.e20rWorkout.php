@@ -113,7 +113,7 @@ class e20rWorkout extends e20rSettings {
         dbg('e20rWorkout::ajax_getPlotDataForUser() - Requesting workout data');
         check_ajax_referer('e20r-tracker-data', 'e20r-weight-rep-chart');
         dbg("e20rWorkout::ajax_getPlotDataForUser() - Nonce is OK");
-        dbg($_POST);
+        // dbg($_POST);
 
         $user_id = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
 
@@ -152,10 +152,10 @@ class e20rWorkout extends e20rSettings {
         }
 
         dbg("e20rWorkout::ajax_getPlotDataForuser() - Dimensions: ");
-        dbg($dimensions);
+        // dbg($dimensions);
 
         dbg("e20rWorkout::ajax_getPlotDataForuser() - Stats: ");
-        dbg($stats);
+        // dbg($stats);
 
         $html = $this->view->view_WorkoutStats( $user_id, $exercise_id, $dimensions );
 
@@ -174,7 +174,7 @@ class e20rWorkout extends e20rSettings {
         // global $e20rTables;
         // $fields = $this->model->getField();
 
-        dbg($data);
+        // dbg($data);
 
         $data_matrix = array();
 
@@ -257,7 +257,7 @@ class e20rWorkout extends e20rSettings {
         check_ajax_referer('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce');
 
 		dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
-		dbg($_POST);
+		// dbg($_POST);
 
 		$data = array();
 		$skip = array( 'action', 'e20r-tracker-activity-input-nonce' );
@@ -284,10 +284,10 @@ class e20rWorkout extends e20rSettings {
 		}
 
         dbg("e20rWorkout::saveExData_callback() - Data array to use");
-        dbg($data);
+        // dbg($data);
 
         $format = $e20rTracker->setFormatForRecord( $data );
-        dbg($format);
+        // dbg($format);
 
         if ( ( $id = $this->model->save_userData( $data, $format ) ) === false ) {
             dbg("e20rWorkout::saveExData_callback() - Error saving user data record!");
@@ -383,14 +383,14 @@ class e20rWorkout extends e20rSettings {
 
             }
 		    dbg("e20rWorkout::saveSettings() - Groups:");
-		    dbg($groups);
+		    // dbg($groups);
 	    }
 
 	    // Add workout group data/settings
 	    $workout->groups = $groups;
 
 	    dbg('e20rWorkout::saveSettings() - Workout data to save:');
-	    dbg($workout);
+	    // dbg($workout);
 
 	    if ( $this->model->saveSettings( $workout ) ) {
 
