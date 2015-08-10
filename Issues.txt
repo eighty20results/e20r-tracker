@@ -13,17 +13,11 @@
 
 07/25/2015
 
-Enh: P2 - Add graphs for the exercise history.
-
 07/26/2015
 
 07/27/2015:
 
-Fix: P2 - Make Achievements list responsive (from table to div & float:left)
-
 07/28/2015:
-
-
 
 == Completed / Fixed ==
 
@@ -48,6 +42,7 @@ Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the curre
 Fix: (P1) Clean up the client information page in the back-end.
 
 Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
+Fix: (P2) Make Achievements list responsive (from table to div & float:left)
 
 Fix: (P3) Add a "program_list" for the assignment definition
 
@@ -62,7 +57,7 @@ Enh: (P1) Specify "Day number" or date for start/end of activity.
 
 Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
 Enh: (P2) Add client message form for back-end.
-
+Enh: (P2) Add graphs for the exercise history. Max weight per exercise on each day
 
 == Won't fix ==
 
