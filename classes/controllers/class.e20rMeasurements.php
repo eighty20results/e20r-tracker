@@ -525,6 +525,7 @@ class e20rMeasurements {
 	    global $e20rCheckin;
 	    global $e20rAssignment;
 	    global $e20rWorkout;
+        global $e20rProgram;
         global $e20rTables;
 
         dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
@@ -545,6 +546,7 @@ class e20rMeasurements {
         if ( $e20rClient->validateAccess( $current_user->ID ) ) {
 
             $this->id = $current_user->ID;
+            $e20rProgram->getProgramIdForUser( $this->id );
         }
         else {
             dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
@@ -563,6 +565,7 @@ class e20rMeasurements {
             'Measurements' => '<div id="e20r-progress-measurements">' . $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false ) . '</div>',
             'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
             'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
+//            'Statistics' => '<div id="e20r-progress-statistics">' . $e20rWorkout->getStatistics( $this->id ) . '</div>',
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
         );
 
@@ -961,6 +964,7 @@ class e20rMeasurements {
                 }
             }
         }
+        // dbg( $data_matrix );
         return $data_matrix;
     }
 
