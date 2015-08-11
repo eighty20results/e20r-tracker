@@ -229,6 +229,8 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
+            add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
+
             // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
 
             add_filter( "post_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
@@ -1044,16 +1046,18 @@ class e20rTracker {
         }
     }
 
-    public function decryptData( $encData, $key, $enable = 0 ) {
+    public function decryptData( $encData, $key, $encrypted = null ) {
 
-        if ( is_null( $enable ) ) {
+        if ( is_null( $encrypted ) ) {
 
-            $enable = $this->loadOption('encrypt_surveys');
+            $encrypted = $this->loadOption('encrypt_surveys');
         }
 
-	    if ( ( $key === null ) || ( 0 == $enable ) ) {
+        dbg("e20rTracker::decryptData() - Encryption is " . ( $encrypted == 1 ? 'enabled' : 'disabled' ) );
 
-            dbg("e20rTracker::decryptData() - No decryption key - or encryption is disabled: {$enable}");
+	    if ( ( $key === null ) || ( ! $encrypted ) ) {
+
+            dbg("e20rTracker::decryptData() - No decryption key - or encryption is disabled: {$encrypted}");
 		    return base64_decode( $encData );
 	    }
 
@@ -2733,6 +2737,18 @@ class e20rTracker {
             global $e20rAssignment;
             dbg("e20rTracker::activate() -- Updating assignment programs key to program_ids key. ");
             // $e20rAssignment->update_metadata();
+        }
+
+        $user_ids = get_users(
+                array(
+	                'blog_id' => '',
+                    'fields'  => 'ID',
+                )
+        );
+
+        foreach ( $user_ids as $user_id ) {
+
+            update_user_meta( $user_id, '_e20r-tracker-last-login', 0 );
         }
 
         flush_rewrite_rules();
