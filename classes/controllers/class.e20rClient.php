@@ -57,6 +57,12 @@ class e20rClient {
 
     }
 
+	public function record_login( $user_login ) {
+
+		$user = get_user_by( 'login', $user_login );
+		update_user_meta( $user->ID, '_e20r-tracker-last-login', current_time('timestamp') );
+	}
+
     public function isNourishClient( $user_id = 0 ) {
 
 	    global $e20r_isClient;
@@ -300,19 +306,19 @@ class e20rClient {
 
 				foreach( $item['choices'] as $cId => $i ) {
 
-                    if  ( ( !isset( $c_data->{$item['label']})) || ( ( $c_data->{$item['label']} != 0 ) && empty( $c_data->{$item['label']} ) ) ) {
-                        dbg("e20rClient::loadClientInterviewData() - {$item['label']} is empty?");
-                        continue;
-                    }
-
 					// Split any checkbox list values in $c_data by semicolon...
 					$itArr = preg_split( '/;/', $c_data->{$item['label']} );
 
                     $msArr = preg_split( '/,/', $c_data->{$item['label']} );
 
+                    if  ( empty( $msArr) && !isset( $c_data->{$item['label']} ) && empty( $c_data->{$item['label']} ) && ( 0 !== $c_data->{$item['label']} ) ) {
+                        dbg("e20rClient::loadClientInterviewData() - {$item['label']} is empty? ". $c_data->{$item['label']});
+                        continue;
+                    }
+
                     // dbg("e20rClient::loadClientInterviewData() - Is value {$c_data->{$item['label']}} for object {$item['label']} numeric? " . ( is_numeric( $c_data->{$item['label']}) ? 'Yes' : 'No' ) );
 					/** Process special cases where the DB field is numeric but the value in the form is text (Yes/No values) */
-					if ( is_numeric( $c_data->{$item['label']}) && ( 'likert' != $item['inputType'] ) ) {
+					if ( ( 'GF_Field_MultiSelect' != $classType ) && is_numeric( $c_data->{$item['label']}) && ( 'likert' != $item['inputType'] ) ) {
 
 						switch ( $c_data->{$item['label']} ) {
 
@@ -355,7 +361,7 @@ class e20rClient {
 						$key = 'value';
 					}
 
-					if ( ( !empty( $c_data->{$item['label']} ) ) && ( $c_data->{$item['label']} == $i[ $key ] ) ) {
+					if ( ( ( 0 === $c_data->{$item['label']} ) || !empty( $c_data->{$item['label']} ) ) && ( $c_data->{$item['label']} == $i[ $key ] ) ) {
 
 						dbg( "e20rClient::loadClientInterviewData() - Choosing value " . $i[ $key ] . " for {$item['label']} - it's supposed to have key # {$cId}" );
 						dbg( "e20rClient::loadClientInterviewData() - Form value: {$form['fields'][ $id ]['choices'][ $cId ][$key]}");
@@ -364,7 +370,7 @@ class e20rClient {
 
 					}
 
-                    if ( is_array( $msArr ) && ( count( $msArr ) ) ) {
+                    if ( is_array( $msArr ) && ( count( $msArr ) > 0) ) {
 
                         dbg( "e20rClient::loadClientInterviewData() - List of values. Processing {$choiceField[$cId][$key]}" );
 
@@ -395,8 +401,8 @@ class e20rClient {
 
 				if ( !empty( $c_data->{$item['label']} ) )  {
 
-					dbg("e20rClient::loadClientInterviewData() - Restoring value: " . htmlentities2( $c_data->{$item['label']} ) . " for field: " . $item['label']);
-					$form['fields'][ $id ]['defaultValue'] = htmlentities2( $c_data->{$item['label']} );
+					dbg("e20rClient::loadClientInterviewData() - Restoring value: " . $c_data->{$item['label']}  . " for field: " . $item['label']);
+                    $form['fields'][ $id ]['defaultValue'] = $c_data->{$item['label']};
 				}
 			}
 		}
@@ -557,7 +563,7 @@ class e20rClient {
 		$db_Data = array(
 			'user_id' => $userId,
 			'program_id' => $currentProgram->id,
-            'page_id' => isset( $page->ID ) ? $page->ID : null,
+            'page_id' => ( isset( $page->ID ) ? $page->ID : CONST_NULL_ARTICLE ),
 			'article_id' => $currentArticle->id,
 			'program_start' => $currentProgram->startdate,
 	        'user_enc_key' => $eKey,
@@ -708,7 +714,7 @@ class e20rClient {
 
                     dbg("e20rClient::save_interview() - Processing MultiSelect");
 
-                    if (!empty( $entry[$subm_key]) ) {
+                    if ( isset( $entry[$subm_key]) ) {
 
 //                        $selections = explode(",", $entry[$subm_key]);
 //                        dbg( $selections );
@@ -782,7 +788,7 @@ class e20rClient {
 
 					if ( 'textarea' == $item['type'] ) {
 
-						$data = htmlspecialchars( $data );
+						$data = wp_kses( $data );
 					}
 
 					// Encrypt the data.
