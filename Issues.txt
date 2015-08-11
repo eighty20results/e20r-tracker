@@ -21,7 +21,7 @@
 
 08/10/2015:
 
-Enh: (P0) - Log and show last login for user on client information page (color coded - red  more than 10 days, Yellow 3-10 days, green: 1-2 days..
+Fix: (P0) Prevent user from accessing the client interview page if their membership is > 1 month long and the interview contains data.
 
 == Completed / Fixed ==
 
@@ -57,6 +57,7 @@ Fix: (P3) Add a "program_list" for the assignment definition
 
 Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
 Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
+Enh: (P0) Log and show last login for user on client information page
 
 Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.
