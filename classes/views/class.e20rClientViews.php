@@ -223,6 +223,47 @@ class e20rClientViews {
         return $html;
     }
 
+    public function show_lastLogin( $clientId ) {
+
+        global $e20rTracker;
+
+        $when = __( 'Never.', 'e20rtracker' );
+        $last_login = (int) get_user_meta( $clientId, '_e20r-tracker-last-login', true );
+        $today = current_time( 'timestamp' );
+        $user = get_user_by( 'id', $clientId );
+
+        if ( false !== $last_login ) {
+
+            $format = apply_filters( "e20r-tracker-date-format", get_option( 'date_format') );
+            $when = date_i18n( $format, $last_login );
+
+            if ( 0 != $last_login ) {
+
+                $days_since_login = $e20rTracker->daysBetween( $last_login, $today );
+            }
+        }
+        ob_start();
+
+        if ( 10 >= $days_since_login ) { ?>
+            <div class="red-notice">
+                <h3><?php echo sprintf( __("Send a reminder to ", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+        }
+
+        if ( 10 > $days_since_login && 3 < $days_since_login ) { ?>
+            <div class="orange-notice">
+            <h3><?php echo sprintf( __("Send a reminder to ", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+        }
+
+        if ( 3 <= $days_since_login ) { ?>
+            <div class="green-notice"><?php
+        }?>
+                <?php echo sprintf( __("Last recorded access to system by %s: %s", "e20rtracker"), $user->user_firstname, $when );?>
+        ?>  </div><?php
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
     public function viewClientDetail( $clientId ) {
 
         global $e20rProgram;
@@ -244,7 +285,10 @@ class e20rClientViews {
 
         dbg("e20rClientViews::viewClientDetail() - Loaded interview/survey data for {$currentClient->user_id}");
 
-        ob_start(); ?>
+        ob_start();
+
+        $this->show_lastLogin( $clientId );
+        ?>
         <table class="e20r-client-information-table">
             <thead>
                 <tr>
