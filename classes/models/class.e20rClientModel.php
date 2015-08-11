@@ -631,7 +631,7 @@ class e20rClientModel {
 
         if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'], $data['page_id'] ) ) !== false ) {
 
-            dbg('e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing an existing record.' );
+            dbg("e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing an existing record: {$id}" );
             $data['edited_date'] = date_i18n('Y-m-d H:i:s', current_time('timestamp') );
             $data['id'] = $id;
         }
@@ -651,6 +651,11 @@ class e20rClientModel {
 
             // Clean (empty) the client_info for everything except what we need in order to load various forms, etc.
             $to_save[$field] = $data[$field];
+        }
+
+        if ( isset( $data['id'] ) ) {
+
+            $to_save['id'] = $data['id'];
         }
 
         dbg("e20rClientModel::save_client_interview() - We will save the following data to the client_info table:");
@@ -689,6 +694,7 @@ class e20rClientModel {
         dbg("e20rClientModel::recordExists() - Checking whether {$table_name} record exists for {$userId} in {$programId}");
 
         if ( !is_null( $postId ) ) {
+            dbg("e20rClientModel::recordExists() - Including post ID in search");
             $sql = $wpdb->prepare("
                 SELECT id
                 FROM {$table_name}
@@ -701,6 +707,7 @@ class e20rClientModel {
             );
         }
         else {
+            dbg("e20rClientModel::recordExists() - NOT including post ID in search");
             $sql = $wpdb->prepare("
                 SELECT id
                 FROM {$table_name}
