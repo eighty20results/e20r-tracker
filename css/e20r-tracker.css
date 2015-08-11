@@ -69,6 +69,11 @@ div#e20r-progress-achievements {
     min-width:300px;
     width: 97%;
 }
+.e20r-confirmation-background {
+    background-color: rgba( 0, 76, 255, 0.2);
+    padding: 20px;
+    border: 2px solid #c5c5c5;
+}
 /*
 .float_center {
     float: right;
@@ -2601,10 +2606,11 @@ span.e20r-required {
 .e20r-survey-input input[type="email"],
 .e20r-survey-input input[type="text"],
 .e20r-survey-input input[type="tel"],
+.e20r-survey-input select[multiple=multiple],
 .e20r-checkbox input[type="text"],
 .e20r-radio input[type="text"],
 .e20r-survey-input select {
-    height: 33px;
+    height: 33px !important;
     vertical-align: baseline !important;
     border: 2px solid rgba(0, 76, 255, 0.1);
     padding: 0 !important;
