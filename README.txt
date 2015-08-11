@@ -104,6 +104,11 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.1 ==
+
+* Update DB version number to 9 (from 7)
+* Clean up DB updates, etc.
+
 == 1.1 ==
 
 * Style the Welcome Interview (e20r-confirmation-background) confirmation information

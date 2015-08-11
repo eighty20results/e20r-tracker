@@ -1,14 +1,2 @@
-Style the Welcome Interview (e20r-confirmation-background) confirmation information
-Fix style of multi-select in interview forms
-Show color coded warning in the client info tab in wp-admin if user hasn't logged in for a while
-Didn't include ID of existing record so would save a new one when saving to e20r_client_info table.
-Record the  current timestamp for a user upon login
-Only skip actually empty entries when loading the client Interview data.
-Don't process multiselect fields for Yes/No substitution
-Show the actual value if the saved data is set to the number 0.
-Correct how we escape content in an input or textarea.
-Correct how we display escaped content in a textarea.
-Force a page ID (Set to -9999) if no page is found.
-Hook into the wp_login action to save user login timestamp.
-Fix test for encrypted survey data in decryptData()
-Force last login time to be set for all users on activation
+Update DB version number to 9 (from 7)
+Clean up DB updates, etc.
