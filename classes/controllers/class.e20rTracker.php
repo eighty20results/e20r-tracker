@@ -38,7 +38,7 @@ class e20rTracker {
                             'auth_timeout' => 3600*3,
                             'remember_me_auth_timeout' => 3600*24,
                             'encrypt_surveys' => 0,
-                            'e20r_db_version' => 0,
+                            'e20r_db_version' => E20R_DB_VERSION,
                             'unserialize_notice' => null,
                             'run_unserialize' => 0,
                             'converted_metadata_e20r_articles' => false,
@@ -2300,7 +2300,7 @@ class e20rTracker {
         global $wpdb;
         global $e20r_db_version;
 
-        $current_db_version = '2';
+        $current_db_version = $this->loadOption( 'e20r_db_version' );
 
         if ( $current_db_version == $e20r_db_version ) {
 
@@ -2761,7 +2761,7 @@ class e20rTracker {
 
         $options = get_option( $this->setting_name );
 
-        dbg("e20rTracker::deactivate() - Deactivation options: " . print_r( $options, true ) );
+        dbg("e20rTracker::deactivate() - Current options: " . print_r( $options, true ) );
 
         $tables = array(
             $wpdb->prefix . 'e20r_checkin',
@@ -2800,7 +2800,7 @@ class e20rTracker {
         // $this->unserialize_deactivate();
 
         // Remove existing options
-        delete_option( $this->setting_name );
+        // delete_option( $this->setting_name );
 
     }
 
