@@ -21,7 +21,7 @@
 
 08/10/2015:
 
-Fix: (P0) Prevent user from accessing the client interview page if their membership is > 1 month long and the interview contains data.
+Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
 
 == Completed / Fixed ==
 
