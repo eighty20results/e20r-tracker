@@ -33,10 +33,10 @@ class e20rTracker {
                             'delete_tables' => false,
                             'purge_tables' => false,
                             // 'measurement_day' => CONST_SATURDAY,
-                            'lesson_source' => null,
+//                            'lesson_source' => null,
                             'roles_are_set' => false,
-                            'auth_timeout' => 3600*3,
-                            'remember_me_auth_timeout' => 3600*24,
+                            'auth_timeout' => 3,
+                            'remember_me_auth_timeout' => 1,
                             'encrypt_surveys' => 0,
                             'e20r_db_version' => E20R_DB_VERSION,
                             'unserialize_notice' => null,
@@ -218,6 +218,7 @@ class e20rTracker {
 
             add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
 
+            add_action( 'init', array( &$this, 'auth_timeout_reset'), 10 );
             add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
@@ -438,6 +439,48 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+    public function auth_timeout_reset() {
+
+        global $current_user;
+        $cookie_arr = null;
+
+        if ( is_user_logged_in() ) {
+
+            foreach( $_COOKIE as $cKey => $cookie ) {
+
+                if ( FALSE !== stripos( $cKey, "wordpress_logged_in_" ) ) {
+
+                    $cookie_arr = preg_split( "/\|/", $cookie);
+
+                    if ( !empty( $cookie_arr) && ( $current_user->user_login == $cookie_arr[0] ) ) {
+
+                        $max_days = (int)$this->loadOption('remember_me_auth_timeout');
+
+                        dbg("e20rTracker::auth_timeout_reset() - Found login cookie for user ID {$current_user->ID}");
+
+                        $timeout = $cookie_arr[1];
+
+                        if ( $timeout > ( current_time('timestamp') + $max_days*3600*24 ) ) {
+
+                            $days_since = $this->daysBetween( current_time('timestamp'), $timeout );
+
+                            dbg("e20rTracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
+
+                            if ( $days_since > $max_days ) {
+
+                                dbg("e20rTracker::auth_timeout_reset() - It will be {$days_since} days until the user ({$current_user->ID}) has to log in... Resetting the login cookie.");
+                                wp_set_auth_cookie( $current_user->ID, false );
+                            }
+                        }
+                    }
+                }
+
+                $cookie_arr = null;
+                $cookie = null;
+            }
+        }
+    }
+
     public function login_timeout( $seconds, $user_id, $remember ) {
 
         $expire_in = 0;
@@ -448,7 +491,7 @@ class e20rTracker {
         if ( $remember ) {
 
             dbg( "e20rTracker::login_timeout() - Remember me value: " . $this->loadOption('remember_me_auth_timeout') );
-            $expire_in = 60 * 60 * 24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+            $expire_in = 60*60*24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
 
@@ -461,7 +504,6 @@ class e20rTracker {
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
 
-            dbg("e20rTracker::login_timeout() - Setting session timeout for user to: {$expire_in}");
         }
 
         // check for Year 2038 problem - http://en.wikipedia.org/wiki/Year_2038_problem
@@ -469,6 +511,8 @@ class e20rTracker {
 
             $expire_in =  PHP_INT_MAX - time() - 5;
         }
+
+        dbg("e20rTracker::login_timeout() - Setting session timeout for user {$user_id} to: {$expire_in}");
 
         return $expire_in;
     }
@@ -562,6 +606,11 @@ class e20rTracker {
         dbg( $post->post_content );
 
         if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
 
             dbg("e20rTracker::shortcode_check() - Found the activity shortcode. Save the ID ({$post_id}) for it!");
             $ePostId = $this->loadOption('e20r_activity_post');
@@ -1239,14 +1288,41 @@ class e20rTracker {
 
     public function validate( $input ) {
 
-        $valid = array();
+        dbg('e20rTracker::validate() - Running validation: ' . print_r( $input, true ) );
 
-        dbg('Running validation: ' . print_r( $input, true ) );
+        $valid = $this->settings;
 
         foreach ( $input as $key => $value ) {
 
-            $valid[$key] = apply_filters( 'e20r_settings_validation_' . $key, $value );
+           if ( ( FALSE !== stripos( $key, 'converted_metadata' ) ) ||
+                ( FALSE !== stripos( $key, '_tables' ) ) ||
+                 ( FALSE !== stripos( $key, 'roles_' ) )) {
 
+                if ( FALSE !== stripos( $key, 'converted_metadata' ) ) {
+
+                    $value = false;
+                }
+                else {
+                    $value = $this->validate_bool( $value );
+                }
+           }
+           elseif ( ( FALSE !== stripos( $key, 'unserialize_notice' ) ) ) {
+
+                $value = sanitize_text_field( $value );
+           }
+           else {
+                $value = intval($value);
+           }
+
+            if ( FALSE !== stripos( $key, 'e20r_db_version' ) ) {
+                $value = E20R_DB_VERSION;
+            }
+
+            if ( FALSE !== stripos( $key, 'run_unserialize') ) {
+                $value = E20R_RUN_UNSERIALIZE;
+            }
+
+           $valid[$key] = apply_filters( 'e20r_settings_validation_' . $key, $value );
         }
 
         /*
@@ -1254,6 +1330,7 @@ class e20rTracker {
          */
 
         unset( $input ); // Free.
+        dbg('e20rTracker::validate() - Returning validation: ' . print_r( $valid, true ) );
 
         return $valid;
     }
@@ -1277,14 +1354,14 @@ class e20rTracker {
         register_setting( 'e20r_options', $this->setting_name, array( $this, 'validate' ) );
 
         /* Add fields for the settings */
-        add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
-        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_section( 'e20r_tracker_timeouts', 'User Settings', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_login_timeout', __("Default login", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended login", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
         add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Surveys", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
-        add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
+        // add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
         // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
-        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
 
         add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
@@ -1329,8 +1406,8 @@ class e20rTracker {
         </select><?php
     }
 
-    // TODO: Make this a program setting and not a global setting!
-    public function render_lessons_select() {
+    // Fixed: Make this a program setting and not a global setting!
+/*    public function render_lessons_select() {
 
         $options = get_option( $this->setting_name );
         $sequences = new WP_Query( array(
@@ -1348,7 +1425,7 @@ class e20rTracker {
 
         wp_reset_postdata();
     }
-
+*/
     public function render_delete_checkbox() {
 
 
@@ -1660,6 +1737,11 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
             $e20rProgram->getProgramIdForUser( $current_user->ID );
             // $e20rArticle->init( $post->ID );
 
@@ -1870,6 +1952,11 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'e20r_exercise' ) ) {
 
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
 			dbg("e20rTracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
 
 			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), E20R_VERSION, false );
@@ -1902,6 +1989,11 @@ class e20rTracker {
         }
 
         if ( ( has_shortcode( $post->post_content, 'e20r_activity' ) || ( has_shortcode( $post->post_content, 'e20r_activity_archive' ) ) ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
 
             $e20rProgram->getProgramIdForUser( $current_user->ID );
 
@@ -1940,6 +2032,11 @@ class e20rTracker {
         $e20rProgram->getProgramIdForUser( $current_user->ID );
 
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
             wp_register_style( 'e20r-assignments', E20R_PLUGINS_URL . '/css/e20r-assignments.css', false, E20R_VERSION );
@@ -1993,6 +2090,11 @@ class e20rTracker {
         dbg("e20rTracker::has_weeklyProgress_shortcode() -- pagenow is '{$pagenow}'. ");
 
         if ( has_shortcode( $post->post_content, 'weekly_progress' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
 
@@ -3756,7 +3858,7 @@ class e20rTracker {
 
             if ( null === $result ) {
                 dbg("e20rTracker::define_e20rtracker_roles() - Error adding 'coach' role!");
-                return false;
+                return;
             }
 
             $this->updateSetting('roles_are_set',true);
