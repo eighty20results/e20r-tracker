@@ -2831,3 +2831,26 @@ input.e20r-message-input {
 table.e20r-client-information-table {
     width: 100%;
 }
+.e20r-bit-better-coaching-gender-selector {
+    background-color: rgba( 0, 76, 0, 0.3);
+    border: 2px solid #e5e5e5;
+    padding: 30px;
+    /* height: 1000px; */
+}
+div.e20r-center-elements {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+h2.e20r-bit-better-coaching-headline {
+    color: #004CFF;
+    text-align: center;
+    padding-bottom: 30px;
+}
+a.e20r-bit-better-coaching-gender-button {
+    color: #004CFF;
+    width: 130px;
+    text-align: center;
+    padding: 10px;
+    margin: 10px;
+}
