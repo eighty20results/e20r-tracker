@@ -104,6 +104,16 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.2 ==
+
+* Saving options sometimes caused the DB updater to run
+* Incorrect default timeout values when logging in caused really long sessions to be allowed.
+* Reset long sessions to correct timeouts for the user.
+* Redirect to login page if user isn't logged in and attempts to load a page containing one of our short codes.
+* Fix validation of settings on save.
+* Remove program specific settings from settings page
+* Remove the lesson (drip-feed) render function for settings.
+
 == 1.1.1 ==
 
 * Update DB version number to 9 (from 7)
