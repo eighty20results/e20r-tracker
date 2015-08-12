@@ -12,6 +12,7 @@ var $old_Description;
 var $old_membershipId;
 */
 jQuery.noConflict();
+
 jQuery(document).ready( function($) {
 
     console.log("WP-Admin script for E20R Tracker loaded");
@@ -28,7 +29,6 @@ jQuery(document).ready( function($) {
 
     var $loadItem = $("#e20r-load-checkin-items");
     var $spinner = $('#e20r-postmeta-setprogram').find('e20r_spinner');
-
 
     $(document).on('click', '#e20r-new-group-button', function() {
 
@@ -209,6 +209,34 @@ jQuery(document).ready( function($) {
     });
 
 
+    $(document).on( "click", '.e20r-faq-question', function() {
+
+        console.log("Configure event(s) for the Activity container");
+
+        // $(this).unbind().on('click', function(){
+
+            console.log("Opening activity info in back-end");
+            var $this_heading = $(this);
+            var $module = $this_heading.closest('.e20r-faq-container');
+            var $content = $module.find('.e20r-faq-answer-container');
+
+            if ( $content.is( ':animated' ) ) {
+                return;
+            }
+
+            $content.slideToggle( 700, function() {
+
+                if ( $module.hasClass('e20r-toggle-close') ) {
+
+                    $module.removeClass('e20r-toggle-close').addClass('e20r-toggle-open');
+                }
+                else {
+
+                    $module.removeClass('e20r-toggle-open').addClass('e20r-toggle-close');
+                }
+            });
+        //});
+    });
 /*    $('input:checkbox').change( function() {
 
         console.log("Processing the list of programs.")
