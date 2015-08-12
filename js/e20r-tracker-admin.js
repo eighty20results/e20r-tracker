@@ -215,26 +215,48 @@ jQuery(document).ready( function($) {
 
         // $(this).unbind().on('click', function(){
 
-            console.log("Opening activity info in back-end");
-            var $this_heading = $(this);
-            var $module = $this_heading.closest('.e20r-faq-container');
-            var $content = $module.find('.e20r-faq-answer-container');
+        $('button.e20r-workout-statistics-loader').each( function() {
 
-            if ( $content.is( ':animated' ) ) {
-                return;
-            }
+            var $loadBtn = jQuery(this);
 
-            $content.slideToggle( 700, function() {
+            jQuery.bindEvents({
+                self: progMeasurements,
+                elem: $loadBtn,
+                events: {
+                    click: function(self, e) {
+                        console.log("Loading statistics for exercise", this);
 
-                if ( $module.hasClass('e20r-toggle-close') ) {
+                        var $exercise_id = $loadBtn.closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
+                        var $client_id = jQuery('#user_id').val();
+                        var $graph = $loadBtn.closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
 
-                    $module.removeClass('e20r-toggle-close').addClass('e20r-toggle-open');
-                }
-                else {
-
-                    $module.removeClass('e20r-toggle-open').addClass('e20r-toggle-close');
+                        console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
+                        progMeasurements.loadActivityStats( $client_id, $exercise_id, $graph );
+                    }
                 }
             });
+        });
+
+        console.log("Opening activity info in back-end");
+        var $this_heading = $(this);
+        var $module = $this_heading.closest('.e20r-faq-container');
+        var $content = $module.find('.e20r-faq-answer-container');
+
+        if ( $content.is( ':animated' ) ) {
+            return;
+        }
+
+        $content.slideToggle( 700, function() {
+
+            if ( $module.hasClass('e20r-toggle-close') ) {
+
+                $module.removeClass('e20r-toggle-close').addClass('e20r-toggle-open');
+            }
+            else {
+
+                $module.removeClass('e20r-toggle-open').addClass('e20r-toggle-close');
+            }
+        });
         //});
     });
 /*    $('input:checkbox').change( function() {
