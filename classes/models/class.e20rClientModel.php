@@ -67,6 +67,39 @@ class e20rClientModel {
 
     }
 
+    public function interview_complete( $userId ) {
+
+        global $currentProgram;
+        global $e20rProgram;
+
+        global $wpdb;
+
+        if ( empty( $currentProgram->id ) ) {
+            $e20rProgram->getProgramIdForUser( $userId );
+        }
+
+        $sql = $wpdb->prepare( "
+                SELECT COUNT(NULLIF(user_id, '')) + COUNT(NULLIF(program_id, '')) + COUNT(NULLIF(page_id, '')) +
+                  COUNT(NULLIF(program_start, '')) + COUNT(NULLIF(progress_photo_dir, '')) + COUNT(NULLIF(gender, '')) +
+                  COUNT(NULLIF(first_name, '')) + COUNT(NULLIF(last_name, '')) + COUNT(NULLIF(birthdate, '')) +
+                  COUNT(NULLIF(lengthunits, '')) + COUNT(NULLIF(weightunits, '')) AS completed_fields
+                FROM {$this->table}
+                WHERE program_id = %d AND
+                user_id = %d
+                ORDER BY program_start DESC
+                LIMIT 1",
+            $currentProgram->id,
+            $userId
+        );
+
+        $count = $wpdb->get_var( $sql );
+
+        if ( empty( $count ) || $count == 0 || $count < 11 ) {
+            return false;
+        }
+
+        return true;
+    }
     public function load_client_settings( $clientId ) {
 
         if ( ! is_user_logged_in() ) {
