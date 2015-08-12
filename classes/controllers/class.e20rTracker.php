@@ -2424,6 +2424,19 @@ class e20rTracker {
 
         dbg("e20rTracker::manage_tables() - Loading table SQL...");
 
+        $message_history = "
+            CREATE TABLE {$wpdb->prefix}e20r_client_messages (
+                id int not null auto_increment,
+				user_id int not null,
+				program_id int not null,
+				subject varchar(255) null,
+				message text null,
+                sent datetime null,
+				transmitted timestamp not null default current_timestamp,
+                primary key (id) ,
+                index cm_user_program ( user_id, program_id ),
+                {$charset_collate}
+        ";
         $surveyTable = "
             CREATE TABLE {$wpdb->prefix}e20r_surveys (
                 id int not null auto_increment,
@@ -2722,6 +2735,8 @@ class e20rTracker {
         dbg('e20rTracker::manage_tables() - Activity table');
         dbDelta( $surveyTable );
         dbg('e20rTracker::manage_tables() - Survey table');
+        dbDelta( $message_history );
+        dbg('e20rTracker::manage_tables() - Message history table');
 
         // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
