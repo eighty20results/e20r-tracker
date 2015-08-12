@@ -311,7 +311,7 @@ class e20rCheckin extends e20rSettings {
 
 		if ( empty( $currentProgram->id ) ) {
 
-			$e20rProgram->getUserProgramIdForUser( $userId );
+			$e20rProgram->getProgramIdForUser( $userId );
 		}
 
 		$programId = $currentProgram->id;
