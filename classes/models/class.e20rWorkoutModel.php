@@ -147,7 +147,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
             $this->settings->id          = $id;
 
             dbg("e20rWorkoutModel::loadSettings() - Analyzing group content");
-            dbg( $this->settings );
+            // dbg( $this->settings );
 
             $ex = array();
             $g_def = $this->defaultGroup();
