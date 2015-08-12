@@ -226,41 +226,35 @@ class e20rClientViews {
     public function show_lastLogin( $clientId ) {
 
         global $e20rTracker;
-        global $currentProgram;
 
         $when = __( 'Never.', 'e20rtracker' );
         $last_login = (int) get_user_meta( $clientId, '_e20r-tracker-last-login', true );
         $today = current_time( 'timestamp' );
         $user = get_user_by( 'id', $clientId );
 
-        $days_since_login = 0;
-
-        $program_length = $e20rTracker->getDateFromDelay( 'now', $clientId );
-
         if ( false !== $last_login ) {
 
             $format = apply_filters( "e20r-tracker-date-format", get_option( 'date_format') );
 
+
             if ( 0 != $last_login ) {
                 $when = date_i18n( 'l, F j, Y', $last_login );
                 $days_since_login = $e20rTracker->daysBetween( $last_login, $today );
-
             }
         }
         ob_start();
 
-
-        if ( ( $program_length >= 2 ) && ( 10 <= $days_since_login ) ) { ?>
+        if ( 10 >= $days_since_login ) { ?>
             <div class="red-notice">
                 <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
         }
 
-        if ( ( $program_length >= 2 ) && ( 10 > $days_since_login && 3 < $days_since_login ) ) { ?>
+        if ( 10 > $days_since_login && 3 < $days_since_login ) { ?>
             <div class="orange-notice">
             <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
         }
 
-        if ( ( $program_length >= 2 ) && ( 3 >= $days_since_login ) ) { ?>
+        if ( 3 <= $days_since_login ) { ?>
             <div class="green-notice"><?php
         }?>
                 <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20rtracker"), $user->user_firstname, $when );?></p>
