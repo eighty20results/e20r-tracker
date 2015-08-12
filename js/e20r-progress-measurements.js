@@ -196,25 +196,6 @@ var progMeasurements = {
                 jQuery(this).hide();
             });
 
-            $class.$loadStatsBtn.each( function() {
-                jQuery.bindEvents({
-                    self: $class,
-                    elem: jQuery(this),
-                    events: {
-                        click: function(self, e) {
-                            console.log("Loading statistics for exercise", this);
-
-                            var $exercise_id = jQuery(this).closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
-                            var $client_id = jQuery('#user_id').val();
-                            var $graph = jQuery(this).closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
-
-                            console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
-                            $class.loadActivityStats( $client_id, $exercise_id, $graph );
-                        }
-                    }
-                });
-            });
-
             setTimeout(function() {
                 $class.loadMeasurementData();
             }, 10);
@@ -242,6 +223,26 @@ var progMeasurements = {
         }
 
         var $resizeId;
+
+        // Process click on load Statistics button(s)
+        $class.$loadStatsBtn.each( function() {
+            jQuery.bindEvents({
+                self: $class,
+                elem: jQuery(this),
+                events: {
+                    click: function(self, e) {
+                        console.log("Loading statistics for exercise", this);
+
+                        var $exercise_id = jQuery(this).closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
+                        var $client_id = jQuery('#user_id').val();
+                        var $graph = jQuery(this).closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
+
+                        console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
+                        $class.loadActivityStats( $client_id, $exercise_id, $graph );
+                    }
+                }
+            });
+        });
 
         jQuery(window).on('resize', function() {
 
