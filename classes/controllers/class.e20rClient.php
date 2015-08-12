@@ -211,16 +211,24 @@ class e20rClient {
 		return strtolower( $this->model->get_data( $currentClient->user_id, 'gender') );
 	}
 
+	public function get_client_info( $client_id ) {
+
+		return $this->model->load_client_settings( $client_id );
+	}
+
     public function completeInterview( $userId ) {
 
         global $e20rTracker;
 
-        $data = $this->model->get_data( $userId, 'completed_date');
+		dbg("e20rClient::completeInterview() - Checking if interview was completed");
+        // $data = $this->model->get_data( $userId, 'completed_date');
 
-        dbg("e20rClient::completeInterview() - completed_date field contains: ");
+		$is_complete = $this->model->interview_complete( $userId );
+
+        // dbg("e20rClient::completeInterview() - completed_date field contains: ");
         // dbg($data);
 
-        return ( empty( $data ) ? 0 : 1 );
+        return ( !$is_complete ? false : true );
     }
 
 	public function load_interview( $form ) {
