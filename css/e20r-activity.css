@@ -494,30 +494,35 @@ div.e20r-activity-history-row {
     background: #FFFFFF;
 }
 .e20r-activity-container-inner {
+    display: flex;
     float: left;
     background: #f4f4f4;
-    position: relative;
-    right: 75%;
+    /* position: relative; */
+    /* right: 75%; */
 }
 .e20r-activity-container-date-col {
+    order: 1;
     float: left;
-    width: 25%;
-    position: relative;
-    left: 75%;
+    /* width: 25%; */
+    /* position: relative; */
+    /* left: 75%; */
     padding-right: 15px;
 }
 .e20r-activity-container-info-col {
-    float: left;
-    width: 75%;
-    position: relative;
-    left: 75%;
+    order: 2;
+    background: #FFF;
+    /* float: left; */
+    /* width: 75%; */
+    /* position: relative; */
+    /* left: 75%; */
     /* border: 1px solid #e5e5e5; */
 }
 div.e20r-history-date {
     font-size: 1.2rem;
     color: #004CFF;
     min-width: 150px;
-    float: left;
+    padding: 5px;
+    text-align: center;
     margin-top: 20px;
 }
 .e20r-activity-history-sets {
