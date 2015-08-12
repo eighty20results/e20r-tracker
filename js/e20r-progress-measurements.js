@@ -639,7 +639,7 @@ var progMeasurements = {
 
         var $class = this;
 
-        if ( $class.loadActivityStats.arguments.length != 1 ) {
+        if ( $clientId === null ) {
             console.log("No arguments specified?");
             $clientId = $class.clientId
         };
