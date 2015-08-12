@@ -387,7 +387,7 @@ jQuery(document).ready( function(){
 });
 jQuery(document).ready(function($) {
 
-    $('.e20r-faq-question').click( function(){
+    $('.e20r-faq-question').unbind().on('click', function(){
 
         var $this_heading = $(this);
         var $module = $this_heading.closest('.e20r-faq-container');
