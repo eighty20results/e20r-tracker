@@ -24,6 +24,8 @@
 08/12/2015:
 
 Enh: (P2) Ability to assign users (clients) of a program to a coach.
+Fix: (P1) Load data for statistics by max weight (if the type is a weight type) then the max no of reps.
+Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 
 == Completed / Fixed ==
 

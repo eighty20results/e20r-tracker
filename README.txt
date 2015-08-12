@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 1.1.4
+Stable tag: 1.1.7
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,16 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.1.7 ==
+
+* Test whether the clientId variable was received. If not, try to load it from the page.
+* Load client specific exercise statistics on /wp-admin/e20r-client-info page.
+
+== 1.1.6 ==
+
+* Move click event for Statistics button in Activity overview to apply to both front & back end.
+* Fix last login warning for client data page in wp-admin/
 
 == 1.1.5 ==
 
