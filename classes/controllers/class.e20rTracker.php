@@ -1903,7 +1903,7 @@ class e20rTracker {
 
 	            if ( !empty( $is_in_program ) ) {
 
-                    if ( $currentProgram->startdate > $today ) {
+                    if ( strtotime( $currentProgram->startdate )  > strtotime( $today ) ) {
 
                         $substitute = "Your membership account is active, <strong>but access to the Virtual Private Trainer content - including your daily workout routine - will <em>not</em> be available until Monday {$available_when}</strong>.<br/>In the mean time, why not take a peak in the Help Menu items and read through the Frequently Asked Questions?";
 
