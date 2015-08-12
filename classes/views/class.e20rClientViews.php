@@ -150,7 +150,7 @@ class e20rClientViews {
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
             <?php if ( true === $incomplete ) { ?>
                 <div class="red-notice">
-                    <?php _e("Incomplete client interview. Please ask them to complete their welcome interview as quickly as possible", "e20rtracker" ); ?>
+                    <?php _e("Incomplete client interview. Please ask {$first_name} to complete the welcome interview as quickly as possible", "e20rtracker" ); ?>
                 </div><?php
             }?>
             <table id="e20r-send-message">
@@ -235,10 +235,10 @@ class e20rClientViews {
         if ( false !== $last_login ) {
 
             $format = apply_filters( "e20r-tracker-date-format", get_option( 'date_format') );
-            $when = date_i18n( $format, $last_login );
+
 
             if ( 0 != $last_login ) {
-
+                $when = date_i18n( 'l, F j, Y', $last_login );
                 $days_since_login = $e20rTracker->daysBetween( $last_login, $today );
             }
         }
@@ -246,19 +246,19 @@ class e20rClientViews {
 
         if ( 10 >= $days_since_login ) { ?>
             <div class="red-notice">
-                <h3><?php echo sprintf( __("Send a reminder to ", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+                <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
         }
 
         if ( 10 > $days_since_login && 3 < $days_since_login ) { ?>
             <div class="orange-notice">
-            <h3><?php echo sprintf( __("Send a reminder to ", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+            <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
         }
 
         if ( 3 <= $days_since_login ) { ?>
             <div class="green-notice"><?php
         }?>
-                <?php echo sprintf( __("Last recorded access to system by %s: %s", "e20rtracker"), $user->user_firstname, $when );?>
-        ?>  </div><?php
+                <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20rtracker"), $user->user_firstname, $when );?></p>
+            </div><?php
         $html = ob_get_clean();
 
         return $html;
@@ -287,8 +287,7 @@ class e20rClientViews {
 
         ob_start();
 
-        $this->show_lastLogin( $clientId );
-        ?>
+        echo $this->show_lastLogin( $clientId ); ?>
         <table class="e20r-client-information-table">
             <thead>
                 <tr>
@@ -327,6 +326,8 @@ class e20rClientViews {
 
             add_thickbox();
         }
+
+        ob_start();
         ?>
         <H1>Client Data</H1>
         <div class="e20r-client-service-select">
@@ -397,8 +398,9 @@ class e20rClientViews {
             </div>
 
         </div>
-	    <!-- <div class="modal"> --><!-- At end of form --><!-- </div> -->
-    <?php
+	    <!-- <div class="modal"> --><!-- At end of form --><!-- </div> --><?php
+        dbg("e20rClientView::viewClientAdminPage() - Returning content for admin page.");
+        return ob_get_clean();
     }
 
     public function viewCompliance( $clientId = null, $shortname = null ) {
