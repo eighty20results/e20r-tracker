@@ -1308,7 +1308,7 @@ class e20rTracker {
            }
            elseif ( ( FALSE !== stripos( $key, 'unserialize_notice' ) ) ) {
 
-                $value = sanitize_text_field( $value );
+                $value = $value;
            }
            else {
                 $value = intval($value);
@@ -4068,22 +4068,23 @@ class e20rTracker {
     }
 
     /**
-     * cc_postmeta_notice function.
-     * Displays an appropriate notice based on the results of the cc_unserialize_postmeta function.
+     * postmeta_notice function.
+     * Displays an appropriate notice based on the results of the unserialize_postmeta function.
      * @access public
      * @return void
      */
-    public function convert_postmeta_notice()
-    {
-        if ( $notice = $this->loadOption('unserialize_notice') )
-        {
+    public function convert_postmeta_notice() {
+
+        if ( $notice = $this->loadOption('unserialize_notice') ) {
+
+            dbg("e20rTracker::convert_postmeta_notice() - Loading error message");
             echo $notice;
             $this->updateSetting('unserialize_notice', null);
         }
     }
 
     /**
-     * cc_unserialize_deactivate function.
+     * unserialize_deactivate function.
      * Cleanup plugin when deactivated
      * @access public
      * @return void
