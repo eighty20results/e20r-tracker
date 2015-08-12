@@ -21,7 +21,9 @@
 
 08/10/2015:
 
-Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
+08/12/2015:
+
+Enh: (P2) Ability to assign users (clients) of a program to a coach.
 
 == Completed / Fixed ==
 
@@ -41,6 +43,7 @@ Fix: (P0) Showing program pages before a users startdate (redirect to a preview 
 Fix: (P0) List of exercise statistics in archive can start before the users program startdate. Graph does not.
 Fix: (P0) Activity settings didn't always get loaded correctly.
 Fix: (P0) Activity description is being saved twice
+Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).

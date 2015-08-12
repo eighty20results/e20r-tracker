@@ -104,6 +104,19 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.5 ==
+
+* Fix warning message (syntax was odd) Only show date when there's a last_login recorded.
+* Actually display the last login info on the client detail page
+* Fix buffering for admin interface.
+* Correctly save the error notice option (don't sanitize the HTML)
+* Clean up convert_postmeta_notice
+* Remove debug info
+* Show admin error notice if user who isn't a coach is attempting to access the client data.
+* Add unbind to .on event.
+* Fix ability to open/close activities in wp-admin
+* Make activity set/group boxes flexible & aligned.
+
 == 1.1.4 ==
 
 * Fix the interview completion check.
