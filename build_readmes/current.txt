@@ -1,4 +1,3 @@
-Remove unused styles
-Add background image for gender selector landing page info (proprietary)
-Make headline location for gender selector landing page info relative
-Add Facebook app page styles for gender selection landing page.
+Fix the interview completion check.
+Add expiry for whether to allow editing the Program welcome interview survey.
+Check client_info table to see if the interview was completed or not.
