@@ -949,6 +949,12 @@ class e20rClient {
 		if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
 
 			dbg("e20rClient::render_client_page() - User isn't a coach. Return error & force redirect");
+
+            $error = '<div class="error">';
+            $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access Client information.", "e20rtracker") . '</p>';
+            $error .= '</div><!-- /.error -->';
+
+            $e20rTracker->updateSetting( 'unserialize_notice', $error );
 			wp_redirect( admin_url() );
 		}
 
@@ -964,6 +970,7 @@ class e20rClient {
 
         dbg("e20rClient::render_client_page() - Loading admin page for the Client {$client_id}");
         echo $this->view->viewClientAdminPage( $lvlName );
+		dbg("e20rClient::render_client_page() - Admin page for client {$client_id} has been loaded");
     }
 
     public function updateUnitTypes() {
