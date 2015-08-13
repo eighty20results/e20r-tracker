@@ -66,6 +66,7 @@ var progMeasurements = {
             $class.$clientActivityInfo = jQuery("#e20r-progress-activities");
 
             $class.clientMsgForm = jQuery("div#e20r-client-contact");
+            $class.clientMsgHistory = jQuery("table.e20r-client-message-history-table");
 
             $class.$clientMessageTab = jQuery("#ui-id-5");
             $class.$clientMessageForm = jQuery("#e20r-client-contact");
@@ -331,6 +332,7 @@ var progMeasurements = {
         this.loadActivityData(id);
         this.loadClientInfo(id);
         this.loadClientMessages(id);
+        this.loadClientMessageHistory(id);
 
         jQuery("div#status-tabs").removeClass("startHidden");
 
@@ -468,6 +470,65 @@ var progMeasurements = {
                         $class.$spinner.hide();
                     });
 
+                }
+
+            },
+            complete: function () {
+
+                // Disable the spinner again
+                $class.$spinner.hide();
+            }
+        });
+    },
+    loadClientMessageHistory: function( $clientId ) {
+
+        var $class = this;
+
+        $class.$spinner.show();
+
+        jQuery.ajax({
+            url: $class.$ajaxUrl,
+            type: 'POST',
+            timeout: 10000,
+            dataType: 'JSON',
+            data: {
+                action: 'e20r_showMessageHistory',
+                'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
+                'client-id': $clientId
+            },
+            error: function( $response, $errString, $errType ) {
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to load the message history. If you\'d like to try again, please ";
+                $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using our Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
+                $class.$spinner.hide();
+
+                return;
+
+            },
+            success: function (res) {
+
+                if ( ( res.success ) ) {
+
+                    console.log("Returned for client Messages: ", res.data );
+                    // console.log( res.data.html );
+
+                    $class.clientMsgHistory.html( res.data.html );
                 }
 
             },
