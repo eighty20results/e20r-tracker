@@ -52,6 +52,7 @@ class e20rTables {
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->workout       = $wpdb->prefix . 'e20r_workout';
         $this->tables->surveys       = $wpdb->prefix . 'e20r_surveys';
+        $this->tables->message_history = $wpdb->prefix . 'e20r_client_messages';
         // $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
 	    //        $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
 
@@ -79,6 +80,20 @@ class e20rTables {
         return $this->inBeta;
     }
 
+    private function loadClientMessageFields() {
+
+        $this->fields['message_history'] = array(
+            'id'            => 'id',
+            'user_id'       => 'user_id',
+            'program_id'    => 'program_id',
+            'sender_id'     => 'sender_id',
+            'topic'         => 'topic',
+            'message'       => 'message',
+            'sent'          => 'sent',
+            'transmitted'   => 'transmitted',
+        );
+
+    }
 	private function loadWorkoutFields() {
 
 		$this->fields['workout'] = array(
@@ -386,6 +401,11 @@ class e20rTables {
 
             case 'surveys':
                 $this->loadSurveyFields();
+                break;
+
+            case 'message_history':
+
+                $this->loadClientMessageFields();
                 break;
 
 	        default:
