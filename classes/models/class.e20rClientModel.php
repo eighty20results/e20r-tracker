@@ -67,6 +67,93 @@ class e20rClientModel {
 
     }
 
+    public function save_message_to_history( $userId, $message, $topic ) {
+
+        global $wpdb;
+        global $current_user;
+
+        global $e20rTables;
+        global $e20rTracker;
+
+        global $currentProgram;
+
+        $table = $e20rTables->getTable('message_history');
+        $fields = $e20rTables->getFields('message_history');
+        $sent = date_i18n( 'Y-m-d H:i:s', current_time('timestamp') );
+
+        dbg("e20rClientModel::save_message_to_history() - Saving message '{$topic}' to user ID {$userId} from user ID {$current_user->ID} sent at {$sent}");
+
+        $sql = "
+            INSERT INTO {$table}
+              ( {$fields['user_id']}, {$fields['program_id']}, {$fields['sender_id']}, {$fields['topic']}, {$fields['message']}, {$fields['sent']} )
+            VALUES ( {$userId}, {$currentProgram->id}, {$current_user->ID}, '" . esc_sql( $topic ) . "', '" . esc_sql( $message ) ."', '". esc_sql( $sent ) ."' )";
+
+
+        dbg("e20rClientModel::save_message_to_history: {$sql}");
+        $status = $wpdb->query( $sql );
+
+        if ( false === $status ) {
+
+            $user = get_user_by('id', $userId);
+            $error = '<div class="error">';
+            $error .= '    <p>' . sprintf( __("Error while saving the message history for %s %s: %s ", "e20rtracker"), $user->user_firstname, $user->user_lastname, $wpdb->print_error() ) . '</p>';
+            $error .= '</div><!-- /.error -->';
+
+            $e20rTracker->updateSetting( 'unserialize_notice', $error );
+
+            dbg("e20rClientModel::save_message_to_history() - ERROR: Could not save message to {$user->user_firstname}  {$user->user_lastname}: " . $wpdb->print_error() );
+            return false;
+        }
+
+        dbg("e20rClientModel::save_message_to_history() - Saved message to message history for {$userId}");
+        return true;
+    }
+
+    public function load_message_history( $userId ) {
+
+        dbg("e20rClientModel::load_message_history() - Looking for a message history for {$userId}");
+        global $wpdb;
+
+        global $e20rTables;
+
+        global $currentProgram;
+
+        $table = $e20rTables->getTable('message_history');
+        $fields = $e20rTables->getFields('message_history');
+
+        $sql = $wpdb->prepare("
+            SELECT  {$fields['id']},
+                    {$fields['sender_id']},
+                    {$fields['topic']},
+                    {$fields['message']},
+                    {$fields['sent']}
+            FROM {$table}
+            WHERE {$fields['user_id']} = %d AND {$fields['program_id']} = %d
+            ",
+            $userId,
+            $currentProgram->id );
+
+        // dbg("e20rClientModel::load_message_history() - SQL for message history: {$sql}");
+
+        $messages = $wpdb->get_results( $sql );
+
+        dbg("e20rClientModel::load_message_history() - Found " . count( $messages) . " messages for user with ID {$userId}");
+
+        $history = array();
+
+        if ( !empty( $messages ) ) {
+
+            foreach ( $messages as $message ) {
+
+                $sent_date = date_i18n('Y-m-d \a\t H:i', strtotime($message->sent));
+                unset($message->sent); // Make the date for the sent message the format we want.
+                $history[$sent_date] = $message;
+            }
+        }
+
+        return $history; // Empty array if there is no message history.
+    }
+
     public function interview_complete( $userId ) {
 
         global $currentProgram;
@@ -100,6 +187,7 @@ class e20rClientModel {
 
         return true;
     }
+
     public function load_client_settings( $clientId ) {
 
         if ( ! is_user_logged_in() ) {
