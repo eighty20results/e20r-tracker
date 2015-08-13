@@ -971,7 +971,7 @@ class e20rClient {
 			dbg("e20rClient::render_client_page() - User isn't a coach. Return error & force redirect");
 
             $error = '<div class="error">';
-            $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access Client information.", "e20rtracker") . '</p>';
+            $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20rtracker") . '</p>';
             $error .= '</div><!-- /.error -->';
 
             $e20rTracker->updateSetting( 'unserialize_notice', $error );
