@@ -73,6 +73,7 @@ table.e20r-client-message-history-table {
     border: 1px solid #d3d3d3;
 }
 table.e20r-client-message-history-table th {
+    text-align: left;
     border-top: none;
 }
 .e20r-client-message-history-table tbody {
