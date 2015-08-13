@@ -267,6 +267,26 @@ class e20rClient {
 		// return $form;
 	}
 
+    public function loadClientMessages( $clientId ) {
+
+        global $currentClient;
+        global $currentProgram;
+
+        if ( !isset( $currentClient->id ) ) {
+            $this->setClient($clientId);
+        }
+
+        if ( !isset( $currentProgram->id ) ) {
+            global $e20rProgram;
+
+            $e20rProgram->getProgramIdForUser( $clientId );
+        }
+
+        $client_messages = $this->model->load_message_history( $clientId );
+
+        return $this->view->viewMessageHistory( $clientId, $client_messages );
+    }
+
 	public function loadClientInterviewData( $clientId, $form ) {
 
 		$this->setClient($clientId);
@@ -1125,6 +1145,7 @@ class e20rClient {
     public function ajax_sendClientMessage() {
 
         global $e20rTracker;
+        global $e20rProgram;
 
         $headers = array();
 
@@ -1150,8 +1171,11 @@ class e20rClient {
         $message = $this->createEmailBody( $subject, $content );
 
         if (! is_null( $from_uid ) ) {
-            $f= get_user_by( 'id', $from_uid );
+            $f = get_user_by( 'id', $from_uid );
         }
+
+        $to_user = get_user_by( 'email', $to_email );
+        $e20rProgram->getProgramIdForUser( $to_user->ID );
 
         // $sendTo = "{$to->display_name} <{$to_email}>";
 
@@ -1175,6 +1199,13 @@ class e20rClient {
 
 		if ( true ==  $status ) {
             dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
+
+            if ( ! $this->model->save_message_to_history( $to_user->ID, $message, $subject ) ) {
+                dbg("e20rClient::ajax_sendClientMessage() - Error while saving message history for {$to_user->ID}");
+                wp_send_json_error();
+            }
+
+            dbg("e20rClient::ajax_sendClientMessage() - Successfully saved the message to the user message history table");
             wp_send_json_success();
             wp_die();
         }
@@ -1194,7 +1225,43 @@ class e20rClient {
         dbg($debug);
     }
 
+    public function ajax_ClientMessageHistory() {
+
+        dbg('e20rClient::ajax_ClientMessageHistory() - Requesting client detail');
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
+
+        dbg("e20rClient::ajax_ClientMessageHistory() - Nonce is OK");
+
+        dbg("e20rClient::ajax_ClientMessageHistory() - Request: " . print_r($_REQUEST, true));
+
+        global $current_user;
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $currentProgram;
+        global $currentClient;
+
+        if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
+
+            dbg("e20rClient::ajax_showClientMessage() - User isn't a coach. Return error & force redirect");
+            wp_send_json_error( array( 'error' => 403 ) );
+        }
+
+        $userId = isset( $_POST['client-id'] ) ? $e20rTracker->sanitize( $_POST['client-id']) : $current_user->ID;
+        $e20rProgram->getProgramIdForUser( $userId );
+
+        dbg("e20rClient::ajax_showClientMessage() - Loading message history from DB for {$userId}");
+        $html = $this->loadClientMessages( $userId );
+
+        dbg("e20rClient::ajax_showClientMessage() - Generating message history HTML");
+        // $html = $this->view->viewMessageHistory( $userId, $messages );
+
+        wp_send_json_success( array( 'html' => $html ) );
+    }
+
     public function ajax_showClientMessage() {
+
         dbg('e20rClient::ajax_showClientMessage() - Requesting client detail');
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
