@@ -68,3 +68,16 @@ th.e20r-label {
     background-color: #c5c5c5;
     font-weight: bold;
 }
+table.e20r-client-message-history-table {
+    width: 100%;
+    border: 1px solid #d3d3d3;
+}
+table.e20r-client-message-history-table th {
+    border-top: none;
+}
+.e20r-client-message-history-table tbody {
+    border: none;
+}
+tr.e20r-client-message-history-entry td {
+    padding: 5px 0 10px 10px;
+}
