@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,28 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.1.8 ==
+
+* Reload the updated message history after successfully sending a new message.
+* Renaming 'Client Info'  to 'Coach's page'
+* Left align heading on message history tab
+* Add formatting for client message history tab on Coaching page
+* Add e20r_client_messages table definition.
+* Add client message history support for Coach's page.
+* Record message information when sending from Coaching page
+* Support fetching message history by AJAX call
+* Show table of sent messages for a specific client.
+* Record the fact that v10 of the DB adds the e20r_message_history table.
+* Rename convert_postmeta_notice() to display_admin_notice().
+* Add support for fetching message history from Coach interface
+* Fix logic error in how manage_tables() works (to make sure it updates table structures if needed)
+* Add e20r_client_messages table & add sender_id column
+* Print status from dbDelta() in manage_tables().
+* ClientModel - Record and retrieve messages sent from the Coach interface
+* Add support for message history in Coach interface
+* Typo in function name when configuring the currentProject in listUserAccomplishments().
+* Add message history table to DB
 
 == 1.1.7 ==
 

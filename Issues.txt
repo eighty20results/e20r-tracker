@@ -63,6 +63,7 @@ Fix: (P3) Add a "program_list" for the assignment definition
 Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
 Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
 Enh: (P0) Log and show last login for user on client information page
+Enh: (P0) Add sent email message to client information page (so other coaches can see what's happened/been sent).
 
 Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.
