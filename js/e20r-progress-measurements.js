@@ -470,6 +470,7 @@ var progMeasurements = {
                         $class.$spinner.hide();
                     });
 
+                    $class.loadClientMessageHistory( $clientId );
                 }
 
             },
