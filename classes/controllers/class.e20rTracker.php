@@ -238,7 +238,7 @@ class e20rTracker {
             add_filter( "page_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
             add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
 
-            add_action( 'admin_notices', array( &$this, 'convert_postmeta_notice'  ) );
+            add_action( 'admin_notices', array( &$this, 'display_admin_notice'  ) );
 
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 
@@ -287,6 +287,7 @@ class e20rTracker {
             // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
             add_action( 'wp_ajax_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
+            add_action( 'wp_ajax_e20r_showMessageHistory', array( &$e20rClient, 'ajax_ClientMessageHistory') );
             add_action( 'wp_ajax_e20r_showClientMessage', array( &$e20rClient, 'ajax_showClientMessage' ) );
             add_action( 'wp_ajax_e20r_sendClientMessage', array( &$e20rClient, 'ajax_sendClientMessage' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
@@ -2404,7 +2405,7 @@ class e20rTracker {
 
         $current_db_version = $this->loadOption( 'e20r_db_version' );
 
-        if ( $current_db_version == $e20r_db_version ) {
+        if ( $current_db_version == E20R_DB_VERSION ) {
 
             dbg("e20rTracker::manage_tables() - No change in DB structure. Continuing...");
             return;
@@ -2429,12 +2430,13 @@ class e20rTracker {
                 id int not null auto_increment,
 				user_id int not null,
 				program_id int not null,
-				subject varchar(255) null,
+				sender_id int not null,
+				topic varchar(255) null,
 				message text null,
                 sent datetime null,
 				transmitted timestamp not null default current_timestamp,
                 primary key (id) ,
-                index cm_user_program ( user_id, program_id ),
+                index cm_user_program ( user_id, program_id ) )
                 {$charset_collate}
         ";
         $surveyTable = "
@@ -2723,24 +2725,32 @@ class e20rTracker {
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
         dbg('e20rTracker::manage_tables() - Loading/updating tables in database...');
-        dbDelta( $checkinSql );
-        dbg('e20rTracker::manage_tables() - Check-in table');
-        dbDelta( $measurementTableSql );
-        dbg('e20rTracker::manage_tables() - Measurements table');
-        dbDelta( $intakeTableSql );
-        dbg('e20rTracker::manage_tables() - Client Information table');
-        dbDelta( $assignmentAsSql );
-        dbg('e20rTracker::manage_tables() - Assignments table');
-        dbDelta( $activityTable );
-        dbg('e20rTracker::manage_tables() - Activity table');
-        dbDelta( $surveyTable );
-        dbg('e20rTracker::manage_tables() - Survey table');
-        dbDelta( $message_history );
-        dbg('e20rTracker::manage_tables() - Message history table');
+        $result = dbDelta( $checkinSql );
+        dbg("e20rTracker::manage_tables() - Check-in table: ");
+        dbg($result);
+        $result = dbDelta( $measurementTableSql );
+        dbg("e20rTracker::manage_tables() - Measurements table: ");
+        dbg($result);
+        $result = dbDelta( $intakeTableSql );
+        dbg("e20rTracker::manage_tables() - Client Information table:");
+        dbg($result);
+        $result = dbDelta( $assignmentAsSql );
+        dbg("e20rTracker::manage_tables() - Assignments table:");
+        dbg($result);
+        $result = dbDelta( $activityTable );
+        dbg("e20rTracker::manage_tables() - Activity table:");
+        dbg($result);
+        $result = dbDelta( $surveyTable );
+        dbg("e20rTracker::manage_tables() - Survey table:");
+        dbg($result);
+        $result = dbDelta( $message_history );
+        dbg("e20rTracker::manage_tables() - Message history table:");
+        dbg($result);
 
         // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
+        // IMPORTANT: Always do this in the e20r_update_db_to_*() function!
         // $this->updateSetting( 'e20r_db_version', $e20r_db_version );
     }
 
@@ -2788,12 +2798,19 @@ class e20rTracker {
         global $e20r_db_version;
 
         // Set the requested DB version.
-        $e20r_db_version = E20R_DB_VERSION;
+        // $e20r_db_version = E20R_DB_VERSION;
 
-        // Create settings with default values
-        update_option( $this->setting_name, $this->settings );
+        $e20r_db_version = $this->loadOption( 'e20r_db_version' );
+/**
+        if ( empty( $e20r_db_version ) ) {
 
-        $this->manage_tables();
+            update_option( $this->setting_name, $this->settings );
+            $e20r_db_version = $this->loadOption( 'e20r_db_version' );
+        }
+**/
+        if ( $e20r_db_version < E20R_DB_VERSION ) {
+            $this->manage_tables();
+        }
 
         $this->updateSetting( 'e20r_db_version', $e20r_db_version );
 
@@ -2940,7 +2957,6 @@ class e20rTracker {
             )
         );
     }
-
 
     public function e20r_tracker_assignmentsCPT() {
 
@@ -4083,12 +4099,12 @@ class e20rTracker {
     }
 
     /**
-     * postmeta_notice function.
-     * Displays an appropriate notice based on the results of the unserialize_postmeta function.
+     * display_admin_notice function.
+     * Displays an appropriate notice based on the results of the saved unserialize_notice option.
      * @access public
      * @return void
      */
-    public function convert_postmeta_notice() {
+    public function display_admin_notice() {
 
         if ( $notice = $this->loadOption('unserialize_notice') ) {
 
