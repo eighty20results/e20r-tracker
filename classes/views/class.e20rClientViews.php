@@ -12,8 +12,69 @@ class e20rClientViews {
 
             $this->client_id = $id;
         }
+    }
 
+    public function viewMessageHistory( $client_id, $messages ) {
 
+        /*
+         * $messages[$when] = stdClass()
+         *                  sender_id
+         *                  topic
+         *                  message
+         *                  sent
+         */
+         ob_start();
+         // add_thickbox(); // Load thickbox to enable display of full message.
+         ?>
+         <table class="e20r-client-message-history-table">
+            <thead>
+                <tr>
+                    <th><?php _e("Sent", "e20rtracker"); ?></th>
+                    <th><?php _e("Subject", "e20rtracker"); ?></th>
+                    <th><?php _e("From", "e20rtracker");?></th>
+                </tr>
+            </thead>
+            <tbody><?php
+            if ( empty( $messages ) ) { ?>
+                <tr class="e20r-client-message-history-entry">
+                    <td colspan="3">
+                        <h3><?php _e("No message history found", "e20rtracker" ); ?></h3>
+                    </td>
+                </tr><?php
+            }
+            else {
+
+                foreach( $messages as $when => $message ) {
+
+                    $sender = get_user_by('id', $message->sender_id ); ?>
+
+                <tr class="e20r-client-message-history-entry">
+                    <td class="e20r-client-message-history-date">
+                        <?php echo esc_html( $when ); ?>
+                    </td>
+                    <td class="e20r-client-message-history-subject">
+                        <a href="#TB_inline?width=500&height=300&inlineId=message_<?php echo $message->id; ?>" class="thickbox"><?php echo esc_html( $message->topic ); ?></a>
+                        <div id="message_<?php echo $message->id; ?>" class="e20r-message-history-content" style="display:none">
+                            <div class="e20r-message-content">
+                                <h3 class="e20r-client-message-title"><?php echo esc_html($message->topic); ?></h3>
+                                <hr/>
+                                <p><?php echo $message->message; ?></p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="e20r-client-message-history-sender">
+                        <?php echo esc_html( $sender->user_firstname ); ?>
+                    </td>
+                </tr>
+                <?php
+                }
+            } ?>
+            </tbody>
+        </table><?php
+
+        $html = ob_get_clean();
+
+        return $html;
     }
 
     public function displayData() {
@@ -327,6 +388,7 @@ class e20rClientViews {
         global $currentClient;
 	    global $e20rAssignment;
         global $e20rWorkout;
+        global $e20rClient;
 
         if ( is_admin() ) {
 
@@ -371,6 +433,7 @@ class e20rClientViews {
 			    <li><a href="#tabs-4">Activities</a></li>
                 <li><a href="#tabs-5">Client Info</a></li>
                 <li><a href="#tabs-6">Send Message</a></li>
+                <li><a href="#tabs-7">Message History</a></li>
 		    </ul>
 	        <div id="tabs-1">
 		        <div id="e20r-progress-measurements">
@@ -400,6 +463,11 @@ class e20rClientViews {
             <div id="tabs-6">
                 <div id="e20r-client-contact">
                     <?php echo $this->viewClientContact( $currentClient->user_id ); ?>
+                </div>
+            </div>
+            <div id="tabs-7">
+                <div id="e20r-client-message-history">
+                    <?php echo $e20rClient->loadClientMessages( $currentClient->user_id ); ?>
                 </div>
             </div>
 
