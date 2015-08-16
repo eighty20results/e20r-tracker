@@ -445,6 +445,8 @@ class e20rTracker {
         global $current_user;
         $cookie_arr = null;
 
+        dbg("e20rTracker::auth_timeout_reset() - Testing whether user's auth cookie needs to be reset");
+
         if ( is_user_logged_in() ) {
 
             foreach( $_COOKIE as $cKey => $cookie ) {
@@ -462,6 +464,8 @@ class e20rTracker {
                         $timeout = $cookie_arr[1];
 
                         if ( $timeout > ( current_time('timestamp') + $max_days*3600*24 ) ) {
+
+                            dbg("e20rTracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
 
                             $days_since = $this->daysBetween( current_time('timestamp'), $timeout );
 
@@ -486,12 +490,12 @@ class e20rTracker {
 
         $expire_in = 0;
 
-        dbg("e20rTracker::login_timeout() - Length requested: {$seconds}, User: {$user_id}, Remember: {$remember}");
+        dbg("e20rTracker::login_timeout() - Length requested by login process: {$seconds}, User: {$user_id}, Remember: {$remember}");
 
         /* "remember me" is checked */
         if ( $remember ) {
 
-            dbg( "e20rTracker::login_timeout() - Remember me value: " . $this->loadOption('remember_me_auth_timeout') );
+            dbg( "e20rTracker::login_timeout() - Remember me timeout value: " . $this->loadOption('remember_me_auth_timeout') );
             $expire_in = 60*60*24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
@@ -500,10 +504,13 @@ class e20rTracker {
 
         } else {
 
-            dbg( "e20rTracker::login_timeout() - Timeout value: " . $this->loadOption('auth_timeout') );
+            dbg( "e20rTracker::login_timeout() - Timeout value in hours: " . $this->loadOption('auth_timeout') );
             $expire_in = 60 * 60 * intval( $this->loadOption( 'auth_timeout' ) );
 
-            if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
+            if ( $expire_in <= 0 ) {
+
+                $expire_in = 60*60*3;
+            } // 3 Hours is the default.
 
         }
 
