@@ -95,22 +95,29 @@ var progMeasurements = {
 
             jQuery.bindEvents({
                 self: $class,
-                elem: jQuery('select#e20r_members'),
+                elem: $class.$memberSelector,
                 events: {
                     click: function(self) {
+                        console.log("Saving client ID");
                         // jQuery("div#status-tabs").addClass("startHidden");
                         self.saveClientId();
                     },
-                    change: function(self, e) {
+                }
+            });
 
-                        jQuery("div#status-tabs").addClass("startHidden");
+            jQuery.bindEvents({
+                self: $class,
+                elem: $class.$memberSelector,
+                events: {
+                    change: function (self, e) {
+
+                        jQuery("div.e20r-data-choices").hide();
                         console.log("Loading user data after drop-down change");
                         // self.$spinner.show();
+                        // var $id = self.$memberSelector.find('option:selected').val();
 
-                        var $id = self.$memberSelector.find('option:selected').val();
-
-                        self.saveClientId(self);
-                        self.adminLoadData( $id )
+                        // self.saveClientId(self);
+                        // self.adminLoadData( $id )
                     }
                 }
             });
@@ -264,6 +271,49 @@ var progMeasurements = {
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
 
+    },
+    _bind_memberselect: function() {
+
+        var $class = this;
+
+        $class.$memberSelect = jQuery("#e20r-selectMember");
+        $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
+        $class.$oldClientId = $class.$memberSelector.find('option:selected').val();
+
+        jQuery.bindEvents({
+            self: $class,
+            elem: $class.$memberSelector,
+            events: {
+                click: function(self) {
+                    console.log("Saving client ID");
+                    // jQuery("div#status-tabs").addClass("startHidden");
+                    self.saveClientId();
+                },
+            }
+        });
+
+        jQuery.bindEvents({
+            self: $class,
+            elem: $class.$memberSelector,
+            events: {
+                change: function (self, e) {
+
+                    console.log("Loading user data after drop-down change");
+                    self._hide_client_info();
+                    // self.$spinner.show();
+                    var $id = self.$memberSelector.find('option:selected').val();
+
+                    self.saveClientId(self);
+                    self.adminLoadData( $id )
+                }
+            }
+        });
+    },
+    _hide_client_info: function() {
+        jQuery('div#status_tabs').hide();
+    },
+    _show_client_info: function() {
+        jQuery('div#status_tabs').show();
     },
     _resize_chart: function() {
 
@@ -1203,6 +1253,9 @@ var progMeasurements = {
                     $class.$memberSelect.html($data.data);
 
                     console.log("Loading member select drop-down");
+
+                    $class._bind_memberselect();
+
                     $class.$memberSelect.show();
                     $class.$btnRow.show();
 
@@ -1210,6 +1263,9 @@ var progMeasurements = {
                     $class.$complianceBtn.prop('disabled', false);
                     $class.$assignBtn.prop('disabled', false);
                     $class.$measureBtn.prop('disabled', false);
+
+                    self._show_client_info();
+
                 }
             },
             complete: function () {
