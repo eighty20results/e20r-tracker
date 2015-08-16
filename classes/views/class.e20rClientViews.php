@@ -304,7 +304,7 @@ class e20rClientViews {
 
             if ( 0 != $last_login ) {
                 $when = date_i18n( 'l, F j, Y', $last_login );
-                $days_since_login = $e20rTracker->daysBetween( $last_login, $today );
+                $days_since_login = $e20rTracker->daysBetween( $last_login, $today, get_option('timezone_string') );
 
             }
         }
@@ -354,7 +354,7 @@ class e20rClientViews {
 
         ob_start();
 
-        echo $this->show_lastLogin( $clientId ); ?>
+        echo $this->show_lastLogin( $currentClient->user_id ); ?>
         <table class="e20r-client-information-table">
             <thead>
                 <tr>
