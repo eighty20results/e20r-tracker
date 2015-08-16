@@ -1060,7 +1060,7 @@ class e20rClient {
 
         $this->init();
 
-        dbg("e20rClient::getMemberListForLevel() - Level requested: {$levelId}");
+        dbg("e20rClient::getMemberListForLevel() - Program requested: {$levelId}");
 
         if ( $levelId != 0 ) {
 
