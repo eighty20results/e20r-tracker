@@ -463,11 +463,11 @@ class e20rTracker {
 
                         $timeout = $cookie_arr[1];
 
-                        if ( $timeout > ( current_time('timestamp') + $max_days*3600*24 ) ) {
+                        if ( $timeout > ( current_time('timestamp', true ) + $max_days*3600*24 ) ) {
 
                             dbg("e20rTracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
 
-                            $days_since = $this->daysBetween( current_time('timestamp'), $timeout, get_option('timezone_string') );
+                            $days_since = $this->daysBetween( current_time('timestamp', true ), $timeout );
 
                             dbg("e20rTracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
 
