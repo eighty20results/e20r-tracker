@@ -103,7 +103,9 @@ class e20rClientViews {
 
     public function viewLevelSelect() {
 
-        global $e20rClient, $e20rTracker;
+        global $e20rClient;
+        global $e20rProgram;
+        global $e20rTracker;
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
@@ -117,16 +119,16 @@ class e20rClientViews {
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                 <div class="e20r-select">
                     <input type="hidden" name="hidden_e20r_level" id="hidden_e20r_level" value="0" >
-                    <label for="e20r_levels">Filter by Membership Level:</label>
+                    <label for="e20r_levels"><?php _e("Program", "e20rtracker"); ?>:</label>
                     <span class="e20r-level-select-span">
                         <select name="e20r_levels" id="e20r_levels">
-                            <option value="-1"></option>
-                            <option value="0">All levels</option>
+                            <option value="-1"><?php _e("None", "e20tracker");?></option>
+                            <option value="0"><?php _e("All Programs", "e20rtracker" ); ?></option>
                         <?php
 
-                        $level_list = $e20rTracker->getMembershipLevels( null, false );
+                        $program_list = $e20rProgram->get_programs();
 
-                        foreach( $level_list as $key => $name ) {
+                        foreach( $program_list as $key => $name ) {
                             ?><option value="<?php echo esc_attr( $key ); ?>"  ><?php echo esc_attr( $name ); ?></option><?php
                         }
                 ?>
@@ -144,7 +146,9 @@ class e20rClientViews {
 
     public function viewMemberSelect( $levelId = null ) {
 
-        global $e20rClient, $e20rTracker;
+        global $e20rClient;
+        global $e20rTracker;
+        global $e20rProgram;
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
@@ -156,15 +160,16 @@ class e20rClientViews {
                 <form action="<?php echo admin_url('admin-ajax.php'); ?>" method="post">
                     <?php // wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                     <div class="e20r-select">
-                        <label for="e20r_tracker_client">Select client to view data for:</label>
+                        <label for="e20r_members">Select client to view data for:</label>
                         <select name="e20r_tracker_client" id="e20r_members">
                         <?php
 
-                        $user_list = $e20rTracker->getUserList( $levelId );
+                        // $user_list = $e20rTracker->getUserList( $levelId );
+                        $user_list = $e20rProgram->get_program_members( $levelId );
 
                         foreach ( $user_list as $user ) {
 
-                            ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->name); ?></option><?php
+                            ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->display_name); ?></option><?php
                         } ?>
                         </select>
                         <!-- <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span> -->
