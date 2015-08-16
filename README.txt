@@ -104,6 +104,11 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.10 ==
+
+* Would allow users to see all content in program(s) if their membership start date wasn't configured.
+* Filter to set UNIX epoch timestamp for program start date ('e20r-tracker-program-start-timestamp')
+
 == 1.1.9 ==
 
 * Add language (i18n) info to plugin header.
