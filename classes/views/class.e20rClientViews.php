@@ -397,7 +397,7 @@ class e20rClientViews {
 
         ob_start();
         ?>
-        <H1><?php _e( "Coach's Page", "e20rtracker" ); ?></H1>
+        <H1><?php _e( "Coaching Page", "e20rtracker" ); ?></H1>
         <div class="e20r-client-service-select">
             <div id="spinner" class="e20r-spinner"></div>
             <?php echo $this->viewLevelSelect(); ?>
