@@ -94,6 +94,37 @@ class e20rProgramModel extends e20rSettingsModel {
         return $settings;
     }
 
+    public function load_program_members( $programId ) {
+
+        dbg("e20rProgram::load_program_members() - Loading users with Program ID: {$programId}");
+
+        if ( 0 == $programId ) {
+            $args = array(
+                'order_by' => 'display_name'
+            );
+
+        }
+        elseif ( -1 == $programId ) {
+
+            return array();
+        }
+        else {
+            $args = array(
+                'meta_key' => 'e20r-tracker-program-id',
+                'meta_value' => $programId,
+                'order_by' => 'user_nicename'
+            );
+
+        }
+
+        $user_list = get_users( $args );
+
+        dbg("e20rProgram::load_program_members() - User Objects returned");
+        dbg($user_list);
+
+        return $user_list;
+    }
+
     /**
      * Save the Program Settings to the metadata table.
      *
