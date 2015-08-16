@@ -56,6 +56,24 @@ class e20rProgram extends e20rSettings {
 	    return false;
     }
 
+    public function get_programs() {
+
+        $program_array = array();
+
+        $programs = $this->model->loadAllSettings('published');
+
+        foreach( $programs as $program ) {
+
+            $program_array[ $program->id ] = $program->title;
+        }
+        return $program_array;
+    }
+
+    public function get_program_members( $program_id ) {
+
+        return $this->model->load_program_members( $program_id );
+    }
+
     public function isActive( $program_shortname ) {
 
         $program = $this->findByName( $program_shortname );
