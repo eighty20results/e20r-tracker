@@ -4,15 +4,33 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.1.8
+Version: 1.1.9
 Author: Thomas Sjolshagen <thomas@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
+Text Domain: pmprosequence
+Domain Path: /languages
 License: GPLv2
 */
+/*
+    Copyright 2015 Wicked Strong Chicks, LLC (info@eighty20results.com)
+    Copyright 2013 Stranger Studios (jason@strangerstudios.com)
 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 // TODO: run unserialize functionality from the Tools section?
 
-define( 'E20R_VERSION', '1.1.8' );
+define( 'E20R_VERSION', '1.1.9' );
 define( 'E20R_RUN_UNSERIALIZE', 0 ); // 0 == Do NOT Run, 1 == Run
 define( 'E20R_DB_VERSION', '10');
 define( 'E20R_NEW_DB_VERSION', '9');
