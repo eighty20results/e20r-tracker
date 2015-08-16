@@ -247,8 +247,15 @@ class e20rProgram extends e20rSettings {
 
             dbg( "e20rProgram::configure_startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
 
-            $currentProgram->startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
+            if ( 0 == ( $startTS = apply_filters( "e20r-tracker-program-start-timestamp", pmpro_getMemberStartdate( $userId ) ) ) ) {
+
+                dbg("e20rProgram::configure_startdate() - No start timestamp found in membership system. Setting to 'today'");
+                $startTS = current_time('timestamp');
+            }
+
+            $currentProgram->startdate = date_i18n( 'Y-m-d', $startTS );
             dbg("e20rProgram::configure_startdate() - Startdate set to the member's start date for the program: {$currentProgram->startdate} for {$userId}");
+
         }
 
     }
