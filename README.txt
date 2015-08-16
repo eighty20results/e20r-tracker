@@ -104,6 +104,12 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.9 ==
+
+* Add language (i18n) info to plugin header.
+* Add license text to e20r-tracker.php file.
+* Add debug info for auth_timeout_reset() function Clean up login_timeout() function
+
 == 1.1.8 ==
 
 * Reload the updated message history after successfully sending a new message.
