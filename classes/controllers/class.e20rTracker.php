@@ -467,7 +467,7 @@ class e20rTracker {
 
                             dbg("e20rTracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
 
-                            $days_since = $this->daysBetween( current_time('timestamp'), $timeout );
+                            $days_since = $this->daysBetween( current_time('timestamp'), $timeout, get_option('timezone_string') );
 
                             dbg("e20rTracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
 
