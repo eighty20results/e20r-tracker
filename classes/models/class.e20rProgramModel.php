@@ -119,8 +119,7 @@ class e20rProgramModel extends e20rSettingsModel {
 
         $user_list = get_users( $args );
 
-        dbg("e20rProgram::load_program_members() - User Objects returned");
-        dbg($user_list);
+        dbg("e20rProgram::load_program_members() - User Objects returned: " . count( $user_list ) );
 
         return $user_list;
     }
