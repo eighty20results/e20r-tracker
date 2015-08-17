@@ -1,2 +1,4 @@
-Use received variable values when updating message history table, not globals
-Save program ID in $email_args array for use when updating message history.
+get_user_by() calls to lower case 'id'
+Don't use deprecated 'id' when getting the id from the WP_User object
+Fix deprecated 'id' use for $current_user
+Use user_id when indicating the $currentClient's ID
