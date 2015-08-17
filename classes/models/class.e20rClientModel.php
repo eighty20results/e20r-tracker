@@ -67,15 +67,12 @@ class e20rClientModel {
 
     }
 
-    public function save_message_to_history( $userId, $message, $topic ) {
+    public function save_message_to_history( $userId, $programId, $senderId, $message, $topic ) {
 
         global $wpdb;
-        global $current_user;
 
         global $e20rTables;
         global $e20rTracker;
-
-        global $currentProgram;
 
         $table = $e20rTables->getTable('message_history');
         $fields = $e20rTables->getFields('message_history');
@@ -86,10 +83,10 @@ class e20rClientModel {
         $sql = "
             INSERT INTO {$table}
               ( {$fields['user_id']}, {$fields['program_id']}, {$fields['sender_id']}, {$fields['topic']}, {$fields['message']}, {$fields['sent']} )
-            VALUES ( {$userId}, {$currentProgram->id}, {$current_user->ID}, '" . esc_sql( $topic ) . "', '" . esc_sql( $message ) ."', '". esc_sql( $sent ) ."' )";
+            VALUES ( {$userId}, {$programId}, {$senderId}, '" . esc_sql( $topic ) . "', '" . esc_sql( $message ) ."', '". esc_sql( $sent ) ."' )";
 
 
-        dbg("e20rClientModel::save_message_to_history: {$sql}");
+        // dbg("e20rClientModel::save_message_to_history: {$sql}");
         $status = $wpdb->query( $sql );
 
         if ( false === $status ) {

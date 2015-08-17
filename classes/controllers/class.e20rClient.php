@@ -1188,7 +1188,7 @@ class e20rClient {
 		if ( true ==  $status ) {
 			dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
 
-			if ( ! $this->model->save_message_to_history( $email_array['to_user']->ID, $message, $email_array['subject'] ) ) {
+			if ( ! $this->model->save_message_to_history( $email_array['to_user']->ID, $email_array['program_id'], $email_array['from_uid'], $message, $email_array['subject'] ) ) {
 				dbg("e20rClient::ajax_sendClientMessage() - Error while saving message history for {$email_array['to_user']->ID}");
 				return false;
 			}
@@ -1204,6 +1204,8 @@ class e20rClient {
 
         global $e20rTracker;
         global $e20rProgram;
+
+        global $currentProgram;
 
         $headers = array();
 		$when = null;
@@ -1245,6 +1247,8 @@ class e20rClient {
 		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the receiver");
         $email_args['to_user'] = get_user_by( 'email', $email_args['to_email'] );
         $e20rProgram->getProgramIdForUser( $email_args['to_user']->ID );
+
+        $email_args['program_id'] = $currentProgram->id;
 
         // $sendTo = "{$to->display_name} <{$to_email}>";
 		dbg("e20rClient::ajax_sendClientMessage() - Try to schedule the email for transmission");
