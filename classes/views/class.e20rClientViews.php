@@ -46,7 +46,7 @@ class e20rClientViews {
 
                 foreach( $messages as $when => $message ) {
 
-                    $sender = get_user_by('id', $message->sender_id ); ?>
+                    $sender = get_user_by('ID', $message->sender_id ); ?>
 
                 <tr class="e20r-client-message-history-entry">
                     <td class="e20r-client-message-history-date">
@@ -201,7 +201,7 @@ class e20rClientViews {
         dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
         // dbg( $currentClient );
 
-        $client = get_user_by( 'id', $clientId );
+        $client = get_user_by( 'ID', $clientId );
 
         $first_name = ( isset( $currentClient) && empty( $currentClient->first_name ) ? $client->user_firstname : $currentClient->first_name );
         $last_name = ( isset( $currentClient) && empty( $currentClient->last_name ) ? $client->user_lastname : $currentClient->last_name );
@@ -297,11 +297,12 @@ class e20rClientViews {
 
         global $e20rTracker;
         global $currentProgram;
+        global $currentUser;
 
         $when = __( 'Never.', 'e20rtracker' );
         $last_login = (int) get_user_meta( $clientId, '_e20r-tracker-last-login', true );
         $today = current_time( 'timestamp' );
-        $user = get_user_by( 'id', $clientId );
+        $user = get_user_by( 'ID', $currentUser->id );
 
         $days_since_login = 0;
 
