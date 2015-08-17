@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 1.1.15
+Stable tag: 1.1.16
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,12 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.1.16 ==
+
+* Fix formatting for datetimepicker() info in Client Message schedule fields
+* Configure allowed times for the Client message scheduling datetimepicker() fields
+* Add a group tempo setting of 'Varying'
 
 == 1.1.15 ==
 

@@ -1,4 +1,3 @@
-get_user_by() calls to lower case 'id'
-Don't use deprecated 'id' when getting the id from the WP_User object
-Fix deprecated 'id' use for $current_user
-Use user_id when indicating the $currentClient's ID
+Fix formatting for datetimepicker() info in Client Message schedule fields
+Configure allowed times for the Client message scheduling datetimepicker() fields
+Add a group tempo setting of "Varying"
