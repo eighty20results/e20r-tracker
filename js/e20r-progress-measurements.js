@@ -520,6 +520,14 @@ var progMeasurements = {
                         $class.$spinner.hide();
                     });
 
+                    var $datePicker = jQuery('#e20r-tracker-send-message-datetime');
+
+                    console.log("Loading datepicker() function in back-end");
+                    $datePicker.datetimepicker({
+                        format: "Y-m-d H:i",
+                        minDate: 0
+                    });
+
                     $class.loadClientMessageHistory( $clientId );
                 }
 
@@ -1333,11 +1341,8 @@ jQuery(document).ready( function($) {
     }
     else {
         var $clientId = null;
-    }
 
-    jQuery('input#e20r-tracker-send-message-datetime').datetimepicker({
-        format: "Y-m-d H:i:s",
-    });
+    }
 
     progMeasurements.init( $('#e20r-progress-measurements'), { id: $clientId } );
 
