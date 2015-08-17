@@ -481,7 +481,7 @@ class e20rMeasurementViews {
         $width = $width . $dimensions['wtype'];
 
         $this->id = $clientId;
-        $user = get_user_by( 'ID', $this->id );
+        $user = get_user_by( 'id', $this->id );
 
         $reloadBtn = '
             <div id="e20r_reload_btn">
