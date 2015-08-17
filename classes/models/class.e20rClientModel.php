@@ -78,7 +78,7 @@ class e20rClientModel {
         $fields = $e20rTables->getFields('message_history');
         $sent = date_i18n( 'Y-m-d H:i:s', current_time('timestamp') );
 
-        dbg("e20rClientModel::save_message_to_history() - Saving message '{$topic}' to user ID {$userId} from user ID {$current_user->ID} sent at {$sent}");
+        dbg("e20rClientModel::save_message_to_history() - Saving message '{$topic}' to user ID {$userId} from user ID {$senderId} sent at {$sent}");
 
         $sql = "
             INSERT INTO {$table}
@@ -91,7 +91,7 @@ class e20rClientModel {
 
         if ( false === $status ) {
 
-            $user = get_user_by('ID', $userId);
+            $user = get_user_by('id', $userId);
             $error = '<div class="error">';
             $error .= '    <p>' . sprintf( __("Error while saving the message history for %s %s: %s ", "e20rtracker"), $user->user_firstname, $user->user_lastname, $wpdb->print_error() ) . '</p>';
             $error .= '</div><!-- /.error -->';
