@@ -272,7 +272,7 @@ class e20rClient {
         global $currentClient;
         global $currentProgram;
 
-        if ( !isset( $currentClient->id ) ) {
+        if ( !isset( $currentClient->user_id ) ) {
             $this->setClient($clientId);
         }
 
@@ -1114,7 +1114,7 @@ class e20rClient {
 
         dbg("e20rTracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}");
 
-        $u = get_user_by('ID', $userId );
+        $u = get_user_by('id', $userId );
 
         if ( !is_null( $role_name ) ) {
 
@@ -1241,7 +1241,7 @@ class e20rClient {
 
 		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the sender");
         if (! is_null( $email_args['from_uid'] ) ) {
-            $f = get_user_by( 'ID', $email_args['from_uid'] );
+            $f = get_user_by( 'id', $email_args['from_uid'] );
         }
 
 		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the receiver");
@@ -1515,7 +1515,7 @@ class e20rClient {
 
         if ( $clientId ) {
 
-            $client = get_user_by("ID", $clientId );
+            $client = get_user_by( 'id', $clientId );
             dbg("e20rClient::validateAccess() - Real user Id provided ");
 
             if ( ($current_user->ID != $clientId ) &&
