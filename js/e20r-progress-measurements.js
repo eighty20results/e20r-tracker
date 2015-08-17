@@ -601,10 +601,21 @@ var progMeasurements = {
 
         var $clientId = jQuery("input#e20r-send-to-id").val();
 
+        var $when = jQuery('#e20r-tracker-send-message-datetime').val();
+
+        if ( $when == '' ) {
+            console.log("No date/time specified. Setting to NULL");
+            $when = null;
+        }
+        else {
+            console.log("When: ", $when);
+        }
+
         var $data = {
             action: 'e20r_sendClientMessage',
             'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
             'subject': jQuery('input#e20r-email-subject').val(),
+            'when-to-send': $when,
             'content': $class.get_tinymce_content(),
             'email-to': jQuery("input#e20r-send-message-to").val(),
             'email-cc': jQuery("input#e20r-send-message-cc").val(),
@@ -612,6 +623,8 @@ var progMeasurements = {
             'email-from-id': jQuery("input#e20r-send-from-id").val(),
             'email-from-name': jQuery("input#e20r-email-from-name").val()
         };
+
+        console.log( 'Data to transmit for message: ', $data );
 
         jQuery.ajax({
             url: $class.$ajaxUrl,
@@ -740,10 +753,11 @@ var progMeasurements = {
     },
     saveClientId: function(self) {
 
-        var $currId = self.$memberSelector.find('option:selected').val();
+        var $class = this;
+        var $currId = $class.$memberSelector.find('option:selected').val();
 
-        if ( $currId != self.$oldClientId ) {
-            self.$hClientId.val($currId);
+        if ( $currId != $class.$oldClientId ) {
+            $class.$hClientId.val($currId);
         }
 
     },
@@ -1264,7 +1278,7 @@ var progMeasurements = {
                     $class.$assignBtn.prop('disabled', false);
                     $class.$measureBtn.prop('disabled', false);
 
-                    self._show_client_info();
+                    $class._show_client_info();
 
                 }
             },
@@ -1320,6 +1334,10 @@ jQuery(document).ready( function($) {
     else {
         var $clientId = null;
     }
+
+    jQuery('input#e20r-tracker-send-message-datetime').datetimepicker({
+        format: "Y-m-d H:i:s",
+    });
 
     progMeasurements.init( $('#e20r-progress-measurements'), { id: $clientId } );
 
