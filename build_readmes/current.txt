@@ -1,2 +1,2 @@
-Would allow users to see all content in program(s) if their membership startdate wasn't configured.
-Filter to set UNIX epoch timestamp for program start date ("e20r-tracker-program-start-timestamp")
+Use $currentUser->id in place of $clientId (which could be empty?)
+Use 'ID' in get_user_by()

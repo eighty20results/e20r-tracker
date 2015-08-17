@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 1.1.8
+Stable tag: 1.1.13
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,42 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.1.13 ==
+
+* Use $currentUser->id in place of $clientId (which could be empty?)
+* Use 'ID' in get_user_by()
+
+== 1.1.12 ==
+
+* Attempt to fix array passing to send_email_to_client when scheduling message.
+* Add help text for 'send on date/time'.
+* Change type of input field for datetimepicker() field
+* Fix loading datepicker() in back-end
+* Add error handling to time conversion for entered schedule
+
+== 1.1.11 ==
+
+* Add hook for scheduled client messages by coaches
+* Add datetimepicker jQuery-ui library
+* Add CSS for datetimepicker functionality.
+* Add support for scheduled messages to clients by a coach.
+* Remove extra debug info
+* Add scheduling of email message to coaching clients by the coach(es)
+* Support scheduling messages to clients by the coaches.
+* Use UTC when calculating auth timeout values (keep it consistent)
+* Load change & click events after updating the program list using AJAX.
+* Add bind function for member select dialogs
+* Now filtering Coaching page's client info by program name & not membership level
+* Add support for loading programs in an array (programID => program name)
+* Add support for loading users belonging to the specified programID
+* Handle special program IDs (-1= All, 0 = None)
+* Load users for a program (not membership level) on coaching page.
+* Fix label for drop-down when loading members belonging to the same program ID
+* Fix typo in headline for Coaching page
+* Use Wordpress timezone setting for last_login()
+* Use currentUser->user_id rather than clientId
+* Set timezone for auth cookie calculations
 
 == 1.1.10 ==
 
