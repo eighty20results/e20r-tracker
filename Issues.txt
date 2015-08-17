@@ -24,8 +24,13 @@
 08/12/2015:
 
 Enh: (P2) Ability to assign users (clients) of a program to a coach.
+            In user profile page (if "coach" checkbox is checked, allow admin to assign programs for which the user is a coach).
+            May need to modify Coaching Page to reflect programs & not membership level(s).
 Fix: (P1) Load data for statistics by max weight (if the type is a weight type) then the max no of reps.
 Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
+
+08/16/2015:
+
 
 == Completed / Fixed ==
 
@@ -64,6 +69,7 @@ Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
 Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
 Enh: (P0) Log and show last login for user on client information page
 Enh: (P0) Add sent email message to client information page (so other coaches can see what's happened/been sent).
+Enh: (P0) Add ability to schedule an email message to a coaching client.
 
 Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.
