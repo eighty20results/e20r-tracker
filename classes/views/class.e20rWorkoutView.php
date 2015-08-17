@@ -884,7 +884,7 @@ class e20rWorkoutView extends e20rSettingsView {
         $minWidth = $minWidth . $dimensions['wtype'];
         $width = $width . $dimensions['wtype'];
 
-        $user = get_user_by( 'id', $clientId );
+        $user = get_user_by( 'ID', $clientId );
 
         $reloadBtn = '
                     <div id="e20r_reload_btn">

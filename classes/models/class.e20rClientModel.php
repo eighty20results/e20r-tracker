@@ -94,7 +94,7 @@ class e20rClientModel {
 
         if ( false === $status ) {
 
-            $user = get_user_by('id', $userId);
+            $user = get_user_by('ID', $userId);
             $error = '<div class="error">';
             $error .= '    <p>' . sprintf( __("Error while saving the message history for %s %s: %s ", "e20rtracker"), $user->user_firstname, $user->user_lastname, $wpdb->print_error() ) . '</p>';
             $error .= '</div><!-- /.error -->';

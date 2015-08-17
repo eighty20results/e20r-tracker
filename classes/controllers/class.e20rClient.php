@@ -1114,7 +1114,7 @@ class e20rClient {
 
         dbg("e20rTracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}");
 
-        $u = get_user_by('id', $userId );
+        $u = get_user_by('ID', $userId );
 
         if ( !is_null( $role_name ) ) {
 
@@ -1511,7 +1511,7 @@ class e20rClient {
 
         if ( $clientId ) {
 
-            $client = get_user_by("id", $clientId );
+            $client = get_user_by("ID", $clientId );
             dbg("e20rClient::validateAccess() - Real user Id provided ");
 
             if ( ($current_user->ID != $clientId ) &&
