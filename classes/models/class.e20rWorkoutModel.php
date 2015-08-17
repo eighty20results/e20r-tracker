@@ -25,7 +25,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			0 => '',
 			1 => __("Slow", "e20rtracker"),
 			2 => __("Normal", "e20rtracker"),
-			3 => __("Fast", "e20rtracker")
+			3 => __("Fast", "e20rtracker"),
+            4 => __("Varying", "e20rtracker")
 		);
 
         $this->settings = new stdClass();
