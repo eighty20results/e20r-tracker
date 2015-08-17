@@ -278,9 +278,10 @@ class e20rClientViews {
                         submit_button( __("Send message", "e20rtracker"), 'primary', 'e20r-send-email-message', true, $btn_attrs );
                         ?>
                     </td>
-                    <td style="font-size: 0.8rem; text-align: right;"><?php _e("When to send (empty = immediately)", "e20rtracker"); ?></td>
-                    <td>
+                    <td style="font-size: 0.7rem; text-align: right;"><?php _e("When to send (empty = now)", "e20rtracker"); ?></td>
+                    <td style="font-size: 0.7rem;">
                         <input type="text" name="e20r-tracker-send-message-datetime" id="e20r-tracker-send-message-datetime">
+                        <?php echo sprintf( __( "TZ: %s", "e20rtracker" ),  get_option( 'timezone_string' ) ); ?>
                     </td>
                 </tr>
                 </tfoot>
