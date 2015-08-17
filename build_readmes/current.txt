@@ -1,2 +1,2 @@
-Use $currentUser->id in place of $clientId (which could be empty?)
-Use 'ID' in get_user_by()
+Use received variable values when updating message history table, not globals
+Save program ID in $email_args array for use when updating message history.
