@@ -1151,7 +1151,7 @@ class e20rClient {
 		else {
 			// Send message to user at specified time.
 			dbg("e20rClient::schedule_email() - Schedule the email for transmission. {$when}");
-			$ret = wp_schedule_single_event( $when, 'e20r_schedule_email_for_client', $email_args );
+			$ret = wp_schedule_single_event( $when, 'e20r_schedule_email_for_client', array( $email_args ));
 
 			if ( is_null( $ret ) ) {
 				return true;
