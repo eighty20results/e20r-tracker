@@ -434,6 +434,8 @@ class e20rTracker {
             add_filter('auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3);
 
             add_filter( 'pmpro_email_data', array( &$this, 'filter_changeConfirmationMessage' ), 10, 2 );
+
+            add_action('e20r_schedule_email_for_client', array( &$e20rClient, 'send_email_to_client' ), 10, 2 );
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
 
@@ -1698,14 +1700,21 @@ class e20rTracker {
             global $e20r_plot_jscript;
 
 	        wp_enqueue_style( "jquery-ui-tabs", "https://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+
             wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.css", false, E20R_VERSION );
             wp_enqueue_style( "e20r-activity", E20R_PLUGINS_URL . "/css/e20r-activity.css", false, E20R_VERSION );
             wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
+            wp_enqueue_style('jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.css", FALSE, E20R_VERSION);
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
             wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
+            wp_register_script( 'jquery-ui-timepicker', "//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.8.1/jquery.timepicker.min.js", array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
+            wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
+            // wp_register_script( 'jquery-ui-timepicker-addon-slider', "//cdn.jsdelivr.net/jquery.ui.timepicker.addon/1.4.5/jquery-ui-sliderAccess.js", array( 'jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
+
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
             wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
@@ -1718,6 +1727,11 @@ class e20rTracker {
             wp_print_scripts( 'select2' );
             wp_print_scripts( 'jquery.timeago' );
             wp_print_scripts( 'jquery-ui-tabs' );
+            wp_enqueue_script( 'jquery-ui-datepicker');
+            wp_enqueue_script( 'jquery-ui-slider' );
+            wp_print_scripts( 'jquery-ui-timepicker' );
+            wp_print_scripts( 'jquery-ui-datetimepicker' );
+            // wp_print_scripts( 'jquery-ui-timepicker-addon-slider' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
             wp_print_scripts( 'e20r_tracker_admin' );
