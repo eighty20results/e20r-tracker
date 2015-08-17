@@ -926,7 +926,7 @@ class e20rTracker {
 
             if ( current_user_can( 'upload_files' )) {
                 global $current_user;
-                $wp_query->set( 'author', $current_user->id );
+                $wp_query->set( 'author', $current_user->ID);
             }
         }
     }
