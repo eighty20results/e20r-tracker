@@ -1711,7 +1711,7 @@ class e20rTracker {
             wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
-            wp_register_script( 'jquery-ui-timepicker', "//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.8.1/jquery.timepicker.min.js", array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
+            // wp_register_script( 'jquery-ui-timepicker', "//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.8.1/jquery.timepicker.min.js", array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
             wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
             // wp_register_script( 'jquery-ui-timepicker-addon-slider', "//cdn.jsdelivr.net/jquery.ui.timepicker.addon/1.4.5/jquery-ui-sliderAccess.js", array( 'jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
 
@@ -1727,9 +1727,9 @@ class e20rTracker {
             wp_print_scripts( 'select2' );
             wp_print_scripts( 'jquery.timeago' );
             wp_print_scripts( 'jquery-ui-tabs' );
-            wp_enqueue_script( 'jquery-ui-datepicker');
-            wp_enqueue_script( 'jquery-ui-slider' );
-            wp_print_scripts( 'jquery-ui-timepicker' );
+            // wp_enqueue_script( 'jquery-ui-datepicker');
+            // wp_enqueue_script( 'jquery-ui-slider' );
+            // wp_print_scripts( 'jquery-ui-timepicker' );
             wp_print_scripts( 'jquery-ui-datetimepicker' );
             // wp_print_scripts( 'jquery-ui-timepicker-addon-slider' );
             wp_print_scripts( 'e20r-tracker-js' );
