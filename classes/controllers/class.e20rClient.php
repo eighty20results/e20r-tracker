@@ -1142,13 +1142,71 @@ class e20rClient {
         echo $this->view->view_userProfile( $user->ID );
     }
 
+	public function schedule_email( $email_args, $when = null ) {
+
+		if ( is_null( $when ) ) {
+			dbg("e20rClient::schedule_email() - No need to schedule the email for transmission. We're sending it right away.");
+			return $this->send_email_to_client( $email_args );
+		}
+		else {
+			// Send message to user at specified time.
+			dbg("e20rClient::schedule_email() - Schedule the email for transmission. {$when}");
+			$ret = wp_schedule_single_event( $when, 'e20r_schedule_email_for_client', $email_args );
+
+			if ( is_null( $ret ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function send_email_to_client( $email_array ) {
+
+		dbg( $email_array );
+		$headers[] = "Content-type: text/html";
+		$headers[] = "Cc: " . $email_array['cc'];
+		$headers[] = "From: " . $email_array['from'];
+
+		$message = $this->createEmailBody( $email_array['subject'], $email_array['content'] );
+
+		// $headers[] = "From: \"{$from_name}\" <{$from}>";
+
+		dbg($email_array['to_email']);
+		dbg($headers);
+		dbg($email_array['subject']);
+		dbg($message);
+
+		add_filter('wp_mail', array( $this, 'test_wp_mail') );
+
+		add_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
+
+		$status = wp_mail( $email_array['to_email'], $email_array['subject'], $message, $headers, null );
+
+		remove_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
+
+		if ( true ==  $status ) {
+			dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
+
+			if ( ! $this->model->save_message_to_history( $email_array['to_user']->ID, $message, $email_array['subject'] ) ) {
+				dbg("e20rClient::ajax_sendClientMessage() - Error while saving message history for {$email_array['to_user']->ID}");
+				return false;
+			}
+
+			dbg("e20rClient::ajax_sendClientMessage() - Successfully saved the message to the user message history table");
+			return true;
+		}
+
+		return false;
+	}
+
     public function ajax_sendClientMessage() {
 
         global $e20rTracker;
         global $e20rProgram;
 
         $headers = array();
-
+		$when = null;
         dbg('e20rClient::ajax_sendClientMessage() - Requesting client detail');
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
@@ -1158,59 +1216,44 @@ class e20rClient {
         dbg("e20rClient::ajax_sendClientMessage() - Request: " . print_r($_REQUEST, true));
 
         // $to_uid = isset( $_POST['email-to-id']) ? $e20rTracker->sanitize( $_POST['email-to-id']) : null;
-        $to_email = isset( $_POST['email-to'] ) ? $e20rTracker->sanitize( $_POST['email-to']) : null;
-        $cc = isset( $_POST['email-cc'] ) ? $e20rTracker->sanitize( $_POST['email-cc']) : null;
-        $from_uid = isset( $_POST['email-from-id'] ) ? $e20rTracker->sanitize( $_POST['email-from-id']) : null;
-        $from = isset( $_POST['email-from'] ) ? $e20rTracker->sanitize( $_POST['email-from']) : null;
-        $from_name = isset( $_POST['email-from-name'] ) ? $e20rTracker->sanitize( $_POST['email-from-name']) : null;
-        $subject = isset( $_POST['subject'] ) ? $e20rTracker->sanitize( $_POST['subject']) : ' ';
-        $content = isset( $_POST['content'] ) ? wp_kses_post( $_POST['content'] ) : null;
+        $email_args['to_email'] = isset( $_POST['email-to'] ) ? $e20rTracker->sanitize( $_POST['email-to']) : null;
+		$email_args['cc'] = isset( $_POST['email-cc'] ) ? $e20rTracker->sanitize( $_POST['email-cc']) : null;
+		$email_args['from_uid'] = isset( $_POST['email-from-id'] ) ? $e20rTracker->sanitize( $_POST['email-from-id']) : null;
+		$email_args['from'] = isset( $_POST['email-from'] ) ? $e20rTracker->sanitize( $_POST['email-from']) : null;
+		$email_args['from_name'] = isset( $_POST['email-from-name'] ) ? $e20rTracker->sanitize( $_POST['email-from-name']) : null;
+		$email_args['subject'] = isset( $_POST['subject'] ) ? $e20rTracker->sanitize( $_POST['subject']) : ' ';
+		$email_args['content'] = isset( $_POST['content'] ) ? wp_kses_post( $_POST['content'] ) : null;
+		$email_args['time'] = isset( $_POST['when-to-send'] ) ? $e20rTracker->sanitize( $_POST['when-to-send'] ) : null;
+		$email_args['content'] = stripslashes_deep( $email_args['content'] );
 
-        $content = stripslashes_deep( $content );
 
-        $message = $this->createEmailBody( $subject, $content );
+		dbg("e20rClient::ajax_sendClientMessage() - Checking whether to schedule sending this message: {$email_args['time']}");
+		if ( !empty( $email_args['time'] ) ) {
+			$when = strtotime( $email_args['time'] . " " . get_option('timezone_string') );
+			dbg("e20rClient::ajax_sendClientMessage() - Scheduled to be sent at: {$when}");
+		}
 
-        if (! is_null( $from_uid ) ) {
-            $f = get_user_by( 'id', $from_uid );
+		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the sender");
+        if (! is_null( $email_args['from_uid'] ) ) {
+            $f = get_user_by( 'ID', $email_args['from_uid'] );
         }
 
-        $to_user = get_user_by( 'email', $to_email );
-        $e20rProgram->getProgramIdForUser( $to_user->ID );
+		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the receiver");
+        $email_args['to_user'] = get_user_by( 'email', $email_args['to_email'] );
+        $e20rProgram->getProgramIdForUser( $email_args['to_user']->ID );
 
         // $sendTo = "{$to->display_name} <{$to_email}>";
-
-        $headers[] = "Content-type: text/html";
-        $headers[] = "Cc: " . $cc;
-        $headers[] = "From: " . $from;
-        // $headers[] = "From: \"{$from_name}\" <{$from}>";
-
-        dbg($to_email);
-        dbg($headers);
-        dbg($subject);
-        dbg($message);
-
-        add_filter('wp_mail', array( $this, 'test_wp_mail') );
-
-        add_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
-        // add_filter( 'wp_mail_charset', 'utf8' );
-        $status = wp_mail( $to_email, $subject, $message, $headers, null );
-        // remove_filter( 'wp_mail_charset', 'utf8' );
-        remove_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type') );
+		dbg("e20rClient::ajax_sendClientMessage() - Try to schedule the email for transmission");
+		$status = $this->schedule_email( $email_args, $when );
 
 		if ( true ==  $status ) {
-            dbg("e20rClient::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()");
+            dbg("e20rClient::ajax_sendClientMessage() - Successfully scheduled the message to be sent");
 
-            if ( ! $this->model->save_message_to_history( $to_user->ID, $message, $subject ) ) {
-                dbg("e20rClient::ajax_sendClientMessage() - Error while saving message history for {$to_user->ID}");
-                wp_send_json_error();
-            }
-
-            dbg("e20rClient::ajax_sendClientMessage() - Successfully saved the message to the user message history table");
             wp_send_json_success();
             wp_die();
         }
 
-        dbg("e20rClient::ajax_sendClientMessage() - Error while transferring info to wp_mail()");
+        dbg("e20rClient::ajax_sendClientMessage() - Error while scheduling message to be sent");
         wp_send_json_error();
     }
 
