@@ -1229,8 +1229,12 @@ class e20rClient {
 
 		dbg("e20rClient::ajax_sendClientMessage() - Checking whether to schedule sending this message: {$email_args['time']}");
 		if ( !empty( $email_args['time'] ) ) {
-			$when = strtotime( $email_args['time'] . " " . get_option('timezone_string') );
-			dbg("e20rClient::ajax_sendClientMessage() - Scheduled to be sent at: {$when}");
+
+			if ( false === ( $when = strtotime( $email_args['time'] . " " . get_option('timezone_string') ) ) ) {
+                wp_send_json_error( array( 'error' => 3 ) ); // 3 == 'Incorrect date/time provided'.
+            }
+
+            dbg("e20rClient::ajax_sendClientMessage() - Scheduled to be sent at: {$when}");
 		}
 
 		dbg("e20rClient::ajax_sendClientMessage() - Get the User info for the sender");
