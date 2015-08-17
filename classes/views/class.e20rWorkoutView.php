@@ -711,9 +711,10 @@ class e20rWorkoutView extends e20rSettingsView {
 						    <td class="text-input">
 							    <select class="e20r-select2-container select2" class="e20r-workout-groups-group_tempo" name="e20r-workout-groups-group_tempo[]" style="width: 100%;">
 								    <option value="0" <?php selected( 0, $group->group_tempo ); ?>></option>
-								    <option value="1" <?php selected( 1, $group->group_tempo ); ?>>Slow</option>
-								    <option value="2" <?php selected( 2, $group->group_tempo ); ?>>Normal</option>
-								    <option value="3" <?php selected( 3, $group->group_tempo ); ?>>Fast</option>
+								    <option value="1" <?php selected( 1, $group->group_tempo ); ?>><?php _e("Slow", "e20rtracker");?></option>
+								    <option value="2" <?php selected( 2, $group->group_tempo ); ?>><?php _e("Normal", "e20rtracker");?></option>
+								    <option value="3" <?php selected( 3, $group->group_tempo ); ?>><?php _e("Fast", "e20rtracker");?></option>
+								    <option value="4" <?php selected( 4, $group->group_tempo ); ?>><?php _e("Varying", "e20rtracker");?></option>
 							    </select>
 						    </td>
 					    </tr>
