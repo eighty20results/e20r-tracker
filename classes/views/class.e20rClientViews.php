@@ -271,13 +271,14 @@ class e20rClientViews {
                 </tbody>
                 <tfoot>
                 <tr>
-                    <td colspan="2">
+                    <td>
                         <?php
 
                         $btn_attrs = array( 'id' => 'e20r-send-email-message' );
                         submit_button( __("Send message", "e20rtracker"), 'primary', 'e20r-send-email-message', true, $btn_attrs );
                         ?>
                     </td>
+                    <td><?php _e("Schedule when to send (Date + time in HH:MM:SS format)", "e20rtracker"); ?></td>
                     <td>
                         <input type="datetime-local" name="e20r-tracker-send-message-datetime" id="e20r-tracker-send-message-datetime">
                     </td>
