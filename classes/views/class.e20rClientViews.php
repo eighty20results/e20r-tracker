@@ -46,7 +46,7 @@ class e20rClientViews {
 
                 foreach( $messages as $when => $message ) {
 
-                    $sender = get_user_by('ID', $message->sender_id ); ?>
+                    $sender = get_user_by('id', $message->sender_id ); ?>
 
                 <tr class="e20r-client-message-history-entry">
                     <td class="e20r-client-message-history-date">
@@ -169,7 +169,7 @@ class e20rClientViews {
 
                         foreach ( $user_list as $user ) {
 
-                            ?><option value="<?php echo esc_attr( $user->id ); ?>"  ><?php echo esc_attr($user->display_name); ?></option><?php
+                            ?><option value="<?php echo esc_attr( $user->ID ); ?>"  ><?php echo esc_attr($user->display_name); ?></option><?php
                         } ?>
                         </select>
                         <!-- <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span> -->
@@ -201,7 +201,7 @@ class e20rClientViews {
         dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
         // dbg( $currentClient );
 
-        $client = get_user_by( 'ID', $clientId );
+        $client = get_user_by('id', $clientId );
 
         $first_name = ( isset( $currentClient) && empty( $currentClient->first_name ) ? $client->user_firstname : $currentClient->first_name );
         $last_name = ( isset( $currentClient) && empty( $currentClient->last_name ) ? $client->user_lastname : $currentClient->last_name );
@@ -302,7 +302,7 @@ class e20rClientViews {
         $when = __( 'Never.', 'e20rtracker' );
         $last_login = (int) get_user_meta( $clientId, '_e20r-tracker-last-login', true );
         $today = current_time( 'timestamp' );
-        $user = get_user_by( 'ID', $currentUser->id );
+        $user = get_user_by( 'id', $clientId );
 
         $days_since_login = 0;
 
