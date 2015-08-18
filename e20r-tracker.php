@@ -12,7 +12,7 @@ Domain Path: /languages
 License: GPLv2
 */
 /*
-    Copyright 2015 Wicked Strong Chicks, LLC (info@eighty20results.com)
+    Copyright 2015 Thomas Sjolshagen / Wicked Strong Chicks, LLC (info@eighty20results.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
