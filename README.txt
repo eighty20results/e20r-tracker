@@ -104,6 +104,14 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.1.17 ==
+
+* Redirect to log-in URL if ajax call returns error code 3 (Not logged in)
+* Add login_url constant for client checkin page
+* Return error message to front end when user isn't logged in.
+* Fix copyright notice in license
+* Correct Text Domain
+
 == 1.1.16 ==
 
 * Fix formatting for datetimepicker() info in Client Message schedule fields
