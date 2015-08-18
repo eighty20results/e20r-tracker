@@ -337,6 +337,11 @@ jQuery(document).ready(function() {
                             alert( $string );
 
                         }
+
+                        if ( 3 == response.data.ecode ) {
+                            console.log("User needs to log in again.")
+                            location.href = e20r_checkin.login_url;
+                        }
                     }
                 },
                 error: function( $response, $errString, $errType ) { // function (jqx, errno, errtype) {
