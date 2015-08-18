@@ -283,7 +283,11 @@ if ( ! function_exists( 'e20r_ajaxUnprivError' ) ):
 
         dbg('Unprivileged ajax call attempted');
 
-        wp_send_json_error( __('You must be logged in to access/view tracker data', 'e20r_tracker') );
+        wp_send_json_error( array(
+            'ecode' => 3,
+            'errno' => 3,
+            'err_text' => __('You must be logged in to access/view tracker data', 'e20r_tracker')
+        ) );
     }
 
 
