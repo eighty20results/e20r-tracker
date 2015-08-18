@@ -8,8 +8,8 @@ jQuery(function() {
         init: function() {
 
             this.$selectProgram = jQuery('select.new-e20rprogram-select');
-            this.$selectLabelRow = this.$SelectProgram.parent().parent().prev();
-            this.$selectRow = this.$SelectProgram.parent().parent();
+            this.$selectLabelRow = this.$selectProgram.parent().parent().prev();
+            this.$selectRow = this.$selectProgram.parent().parent();
             this.$spinner = jQuery('#e20r-postmeta-setprogram').find('e20r_spinner');
             this.programMBox = jQuery('#e20r-program-list');
             this.$programList = jQuery('.e20r-tracker-memberof-programs');
@@ -215,7 +215,7 @@ jQuery(function() {
              }); */
 
             $class.$spinner.hide();
-            e20rPgm_showMetaControls();
+            // e20rPgm_showMetaControls();
             $class.lockMeta( false );
             $class.$newProgramRow.hide();
 
