@@ -321,6 +321,7 @@ class e20rClientViews {
         }
         ob_start();
 
+        $user_firstname = ( !isset( $user->user_firstname ) ? 'N/A': $user->user_firstname );
 
         if ( ( $program_length >= 2 ) && ( 10 <= $days_since_login ) ) { ?>
             <div class="red-notice">
@@ -335,7 +336,7 @@ class e20rClientViews {
         if ( ( $program_length >= 2 ) && ( 3 >= $days_since_login ) ) { ?>
             <div class="green-notice"><?php
         }?>
-                <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20rtracker"), $user->user_firstname, $when );?></p>
+                <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20rtracker"), $user_firstname, $when );?></p>
             </div><?php
         $html = ob_get_clean();
 
