@@ -76,7 +76,6 @@ jQuery(function() {
 
                     alert( $msg + $string + "\n\n" + $response.data );
 
-                    return;
                 },
                 success: function ($data) {
 
@@ -105,7 +104,7 @@ jQuery(function() {
             });
         }
 
-    } // End of ProgressMeasurements class
+    }; // End of ProgressMeasurements class
 
     var $Progress_Measurements = construct(ProgressView);
 });

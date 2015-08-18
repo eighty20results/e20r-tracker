@@ -101,7 +101,7 @@ var progMeasurements = {
                         console.log("Saving client ID");
                         // jQuery("div#status-tabs").addClass("startHidden");
                         self.saveClientId();
-                    },
+                    }
                 }
             });
 
@@ -129,7 +129,7 @@ var progMeasurements = {
                     click: function(self, e) {
                         console.log("Admin clicked Measurements button");
                         //self.$spinner.show();
-                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
                         console.log("Value: ",  $class.$memberSelector.find('option:selected') );
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
@@ -145,7 +145,7 @@ var progMeasurements = {
                     click: function(self, e) {
                         console.log("Admin clicked Client Info button");
                         //self.$spinner.show();
-                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
                         console.log("Value: ",  $class.$memberSelector.find('option:selected') );
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
@@ -161,7 +161,7 @@ var progMeasurements = {
                     click: function(self, e) {
                         console.log("Admin clicked Client Messages button");
                         //self.$spinner.show();
-                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members')
+                        $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
                         console.log("Value: ",  $class.$memberSelector.find('option:selected') );
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
@@ -288,7 +288,7 @@ var progMeasurements = {
                     console.log("Saving client ID");
                     // jQuery("div#status-tabs").addClass("startHidden");
                     self.saveClientId();
-                },
+                }
             }
         });
 
@@ -491,8 +491,6 @@ var progMeasurements = {
 
                 $class.$spinner.hide();
 
-                return;
-
             },
             success: function (res) {
 
@@ -583,8 +581,6 @@ var progMeasurements = {
                 alert( $msg + $string );
 
                 $class.$spinner.hide();
-
-                return;
 
             },
             success: function (res) {
@@ -783,7 +779,7 @@ var progMeasurements = {
         if ( $clientId === null ) {
             console.log("No arguments specified?");
             $clientId = $class.clientId
-        };
+        }
 
         var $data = {
             action: 'load_activity_stats',
@@ -938,7 +934,7 @@ var progMeasurements = {
                                 lineWidth: 2,
                                 markerOptions: {
                                     style: 'diamond',
-                                    size: 10,
+                                    size: 10
                                 },
                                 rendererOptions: {
                                     smooth: true
@@ -954,20 +950,20 @@ var progMeasurements = {
                                 markerOptions: {
                                     showLine: false,
                                     style: "circle",
-                                    size: 10,
+                                    size: 10
                                     },
                                     rendererOptions: {
                                         smooth: true
                                     }
                             }],
                             grid: {
-                                drawGridlines: false,
+                                drawGridlines: false
                             },
                             legend: {
                                 show: true,
                                 location: 'nw',
                                 labels: [ 'Max weight', 'Repetitions' ],
-                                placement: 'inside',
+                                placement: 'inside'
                             }
                         });
 
@@ -1007,7 +1003,7 @@ var progMeasurements = {
         if ( $class.loadMeasurementData.arguments.length != 1 ) {
             console.log("No arguments specified?");
             $clientId = $class.clientId
-        };
+        }
 
         $class.$spinner.show();
 

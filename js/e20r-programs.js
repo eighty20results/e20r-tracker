@@ -8,8 +8,8 @@ jQuery(function() {
         init: function() {
 
             this.$selectProgram = jQuery('select.new-e20rprogram-select');
-            this.$selectLabelRow = jQuery(this.$SelectProgram).parent().parent().prev();
-            this.$selectRow = jQuery(this.$SelectProgram).parent().parent();
+            this.$selectLabelRow = this.$SelectProgram.parent().parent().prev();
+            this.$selectRow = this.$SelectProgram.parent().parent();
             this.$spinner = jQuery('#e20r-postmeta-setprogram').find('e20r_spinner');
             this.programMBox = jQuery('#e20r-program-list');
             this.$programList = jQuery('.e20r-tracker-memberof-programs');
@@ -35,10 +35,11 @@ jQuery(function() {
         lockRow: function( state ) {
 
             var $count = 0;
+            var $class = this;
 
-            this.$programList.each( function() {
+            $class.$programList.each( function() {
 
-                this.visibility( 'all' );
+                $class.visibility( 'all' );
                 $count++;
             });
 
@@ -48,37 +49,39 @@ jQuery(function() {
             if ( $count >= 1 ) {
 
                 // Hide the 'new sequence' select and show the 'new' button.
-                this.visibility( 'none' );
+                $class.visibility( 'none' );
 
-                this.$newProgramRow.show();
-                this.$newProgramBtn.show();
-                this.$clearMetaBtn.hide();
+                $class.$newProgramRow.show();
+                $class.$newProgramBtn.show();
+                $class.$clearMetaBtn.hide();
             }
             else {
 
                 // Show the row for the 'Not defined' in the New sequence drop-down
-                this.visibility( 'select' );
+                $class.visibility( 'select' );
 
                 // Hide all buttons
-                this.$newProgramRow.hide();
+                $class.$newProgramRow.hide();
             }
         },
         lockMeta: function( state ) {
 
-            this.$programList.each( function() {
+            var $class = this;
+
+            $class.$programList.each( function() {
                 jQuery(this).attr( 'disabled', state );
             });
 
-            this.$selectProgram.each( function() {
+            $class.$selectProgram.each( function() {
                 jQuery(this).attr( 'disabled', state);
             });
 
-            this.$removeProgramBtn.each( function() {
+            $class.$removeProgramBtn.each( function() {
                 jQuery( this).attr( 'disabled', state );
             });
 
-            this.$newProgramBtn.attr( 'disabled', state );
-            this.$clearMetaBtn.attr( 'disabled', state );
+            $class.$newProgramBtn.attr( 'disabled', state );
+            $class.$clearMetaBtn.attr( 'disabled', state );
         },
         save: function( self, $programInfo ) {
 
@@ -123,8 +126,6 @@ jQuery(function() {
                     $string += "at the top of this page.";
 
                     alert( $msg + $string );
-
-                    return;
                 },
                 success: function (data) {
 
@@ -151,10 +152,12 @@ jQuery(function() {
         },
         postMetaChanged: function( handler ) {
 
-            this.lockMeta( true );
+            var $class = this;
+
+            $class.lockMeta( true );
 
             console.log("Changed the Program that this post is a member of");
-            self.$spinner.show();
+            $class.$spinner.show();
 
             var $program_id = jQuery( self ).val();
             var $oldId = jQuery( self ).next('.e20r-program-oldval');
@@ -211,10 +214,10 @@ jQuery(function() {
 
              }); */
 
-            this.$spinner.hide();
+            $class.$spinner.hide();
             e20rPgm_showMetaControls();
-            this.lockMeta( false );
-            this.$newProgramRow.hide();
+            $class.lockMeta( false );
+            $class.$newProgramRow.hide();
 
         },
         rowVisibility: function( handler ) {

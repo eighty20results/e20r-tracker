@@ -41,6 +41,8 @@ jQuery(function() {
                 },
                 error: function( $response, $errString, $errType ) {
 
+                    var $msg;
+
                     if ( 'timeout' === $errString ) {
 
                         $msg = "Error: Timeout while the server was processing data.\n\n";
@@ -53,8 +55,6 @@ jQuery(function() {
                     $string += "at the top of this page.";
 
                     alert( $msg + $string );
-
-                    return;
 
                 },
                 success: function (data) {

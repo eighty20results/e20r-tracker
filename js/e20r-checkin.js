@@ -43,7 +43,7 @@ jQuery(document).ready(function() {
 
             self.$tomorrowBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             self.$yesterdayBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
-            self.$activityLnk = jQuery("#e20r-daily-progress").find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk")
+            self.$activityLnk = jQuery("#e20r-daily-progress").find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk");
 
             jQuery("#e20r-daily-progress").find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
 
@@ -103,7 +103,7 @@ jQuery(document).ready(function() {
                     .addClass('concealed')
                     .parents('fieldset.did-you')
                     .append('<button class="e20r-button edit-selection">Edit check-in</button>');
-            }
+            };
 
             if (bool(jQuery(radioFieldsActivity).filter(':checked').length)) {
 
@@ -164,8 +164,6 @@ jQuery(document).ready(function() {
                     $string += "at the top of this page.";
 
                     alert($string);
-
-                    return;
                 }
                 else {
 
@@ -226,7 +224,7 @@ jQuery(document).ready(function() {
 
                                 });
                             });
-                    }
+                    };
 
                     var once = 0;
 
@@ -281,7 +279,7 @@ jQuery(document).ready(function() {
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
                 'e20r-checkin-day': navDay
-            }
+            };
 
             // console.log("toNext data: ", data);
 
@@ -303,8 +301,6 @@ jQuery(document).ready(function() {
 
                         console.log("Re-init for Note object(s)");
                         jQuery(Note.init());
-
-                        return;
                     }
                     else {
                         console.log("success == false returned from AJAX call");
@@ -339,7 +335,7 @@ jQuery(document).ready(function() {
                         }
 
                         if ( 3 == response.data.ecode ) {
-                            console.log("User needs to log in again.")
+                            console.log("User needs to log in again.");
                             location.href = e20r_checkin.login_url;
                         }
                     }
@@ -364,8 +360,6 @@ jQuery(document).ready(function() {
                     $string += "at the top of this page.";
 
                     alert( $msg + $string );
-
-                    return;
 
                 },
                 complete: function () {
@@ -467,7 +461,7 @@ jQuery(document).ready(function() {
             this.$checkinBtn.on('click', function(){
                 console.log("Clicked 'Read lesson' button");
                 self.lessonComplete( self );
-            })
+            });
 
 
             this.$inputs.each(function() {
@@ -548,8 +542,6 @@ jQuery(document).ready(function() {
 
                     alert( $msg + $string );
 
-                    return;
-
                 }
             });
 
@@ -606,8 +598,6 @@ jQuery(document).ready(function() {
                     $string += "at the top of this page.";
 
                     alert( $msg + $string );
-
-                    return;
                 }
             });
 
@@ -630,7 +620,7 @@ jQuery(document).ready(function() {
             this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
             this.note_actualdate = this.noteField.siblings('#e20r-checkin-checkedin_date').val();
             this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
-            this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val()
+            this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val();
 
             var self = this;
 
@@ -686,7 +676,7 @@ jQuery(document).ready(function() {
 
                 jQuery('#note-display-overflow-pad')
                     .height(overflowHeight);
-            }
+            };
 
             var setEditState = function() {
                 jQuery('#note-display')
@@ -718,8 +708,6 @@ jQuery(document).ready(function() {
 
                     Tooltip.event.mouseover.call(this, {}, { pos: 'left' });
                     Tooltip.unbindHandle(this, { timeout: 1500 });
-
-                    return;
                 });
 
             jQuery('#save-note')

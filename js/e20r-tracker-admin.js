@@ -62,7 +62,6 @@ jQuery(document).ready( function($) {
 
                 alert( $msg + $string + "\n\n" + $response.data );
 
-                return;
             },
             success: function( $retVal ) {
 
@@ -129,7 +128,7 @@ jQuery(document).ready( function($) {
             'exercise-type': $exType.find("option:selected").val(),
             'exercise-reps': $exReps.val(),
             'exercise-rest': $exRest.val()
-        }
+        };
 
         console.log("Action data: ", $data );
 

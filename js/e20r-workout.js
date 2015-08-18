@@ -186,16 +186,7 @@ var e20rActivity = {
         var $weight = $elem.find('.e20r-activity-input-weight').val();
         var $reps = $elem.find('.e20r-activity-input-reps').val();
 
-        if ( ( $hWeight != $weight ) || ( $hReps != $reps ) ) {
-/*
-            console.log("Need to save data...");
-            console.log("Reps: " + $reps + " hReps: " + $hReps);
-            console.log("Weight: " + $weight + " hWeight: " + $hWeight);
-*/
-            return true;
-        }
-
-        return false;
+        return ( ( $hWeight != $weight ) || ( $hReps != $reps ) )
     },
     attemptSave: function( $btn, activity ) {
 
@@ -320,7 +311,6 @@ var e20rActivity = {
 
                     alert( $msg + $string + "\n\n" + $response.data );
 
-                    return;
                 },
                 complete: function () {
                     console.log("Completed processing of activity set/rep update");
@@ -368,11 +358,7 @@ var e20rActivity = {
             return true;
         }
 
-        if ( $pct > 0.89 ) {
-            return true;
-        }
-
-        return false;
+        return ( 0.89 < $pct );
     },
     _clearLoading: function() {
         jQuery("body").removeClass("loading");

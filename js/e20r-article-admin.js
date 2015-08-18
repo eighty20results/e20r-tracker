@@ -44,6 +44,8 @@ jQuery(document).ready( function(){
             error: function( $response, $errString, $errType ) {
                 console.log($errString + ' error returned from getDelayValue action: ' + $errType );
 
+                var $msg;
+
                 if ( 'timeout' === $errString ) {
 
                     $msg = "Error: Timeout while the server was processing data.\n\n";
@@ -56,8 +58,6 @@ jQuery(document).ready( function(){
                 $string += "at the top of this page.";
 
                 alert( $msg + $string );
-
-                return;
             }
         });
 
@@ -72,7 +72,7 @@ function e20r_assignmentEdit( assignmentId, orderNum ) {
     jQuery('#e20r-add-assignment-order_num').val(orderNum);
     jQuery('#e20r-article-assignment-save').empty().append(e20r_tracker.lang.edit);
 
-};
+}
 
 function e20r_assignmentRemove( assignmentId ) {
 
@@ -120,7 +120,7 @@ function e20r_assignmentRemove( assignmentId ) {
 
         }
     });
-};
+}
 
 function e20r_assignmentSave() {
 

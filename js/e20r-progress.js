@@ -360,7 +360,6 @@ jQuery(function() {
                 data: $data,
                 error: function($response, $errString, $errType) {
                     console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                    return;
                 },
                 success: function( $retVal ) {
                     console.log($retVal.data);
@@ -448,7 +447,7 @@ jQuery(function() {
         var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
         var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
         var photosMissing = bool( jQuery('.validate-photos').find('img.photo.null').length );
-        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 ) ? true: false;
+        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 );
 
         if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
 
@@ -530,7 +529,6 @@ jQuery(function() {
 
                     alert( $msg + $string + "\n\n" + $response.data );
 
-                    return;
                 },
                 success: function($response) {
                     // location.href = e20r_progress.settings.measurementSaved;
@@ -554,7 +552,7 @@ jQuery(function() {
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
                         'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val(),
+                        'program-id': jQuery('#program_id').val()
                     };
 
                     jQuery.ajax({
@@ -583,7 +581,6 @@ jQuery(function() {
 
                             alert( $msg + $string + "\n\n" + $response.data );
 
-                            return;
                         }
                     });
                 });
@@ -627,7 +624,6 @@ jQuery(function() {
 
                             alert( $msg + $string + "\n\n" + $response.data );
 
-                            return;
                         },
                         success: function($response) {
                             console.dir($response);
@@ -696,7 +692,6 @@ jQuery(function() {
 
                     alert( $msg + $string + "\n\n" + $response.data );
 
-                    return;
                 },
                 success: function() {
                     console.log("Updated all old values in DB")
@@ -775,7 +770,6 @@ jQuery(function() {
 
                             alert( $msg + $string + "\n\n" + $response.data );
 
-                            return;
                         },
                         success: function( $response ) {
 
@@ -893,7 +887,6 @@ jQuery(function() {
 
                             alert( $msg + $string + "\n\n" + $response.data );
 
-                            return;
                         },
                         success: function( $repsponse ) {
 
@@ -940,7 +933,7 @@ jQuery(function() {
                 .closest('.photo-container')
                 .prev('.photo-upload-notifier');
         }
-    }
+    };
 
     PhotoUploader.init();
 
@@ -983,10 +976,8 @@ jQuery(function() {
             for(var i = 0, length = fieldObjectArr.length; i < length; i++) {
                 var measurementField = fieldObjectArr[i];
 
-                var newMeasurementValue = measurementField.convertUnit(newUnitAbbr);
-
                 // update last week measurement hash table to avoid users getting "large difference from last week" alert
-                LAST_WEEK_MEASUREMENTS[measurementField.type] = newMeasurementValue;
+                LAST_WEEK_MEASUREMENTS[measurementField.type] = measurementField.convertUnit(newUnitAbbr);
             }
 
             /* Saving & updating measurements & unit type if the user chooses to change it */
@@ -1026,7 +1017,6 @@ jQuery(function() {
 
                     alert( $msg + $string + "\n\n" + $response.data );
 
-                    return;
                 },
                 success: function($response) {
                     console.log('Response: ' + $response);
@@ -1081,7 +1071,6 @@ jQuery(function() {
 
                 alert( $msg + $string + "\n\n" + $response.data );
 
-                return;
             },
             success: function($response) {
                 //var $resp = jQuery.map( $response, function(el){ return el; });
@@ -1122,6 +1111,6 @@ jQuery(function() {
         jQuery('#birth-date').hide();
     }
 
-    jQuery(".inline").colorbox({inline: true, width: '60%'})
+    jQuery(".inline").colorbox({inline: true, width: '60%'});
     checkFormCompletion();
 });

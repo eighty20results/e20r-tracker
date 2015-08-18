@@ -267,11 +267,11 @@ var e20rActivity = {
             // Process every row of the exercise list for the current group id.
             jQuery(this).closest('.e20r-exercise-group').find('.e20r-exercise-list tbody tr').each(function(){
 
-                groupInfo = '\'group:' + groupNum + '\'';
-                row = jQuery(this);
+                var groupInfo = '\'group:' + groupNum + '\'';
+                var row = jQuery(this);
 
-                ex_id = row.find('.e20r-workout-group_exercise_id').val();
-                ex_order = row.find('.e20r-workout-group_exercise_order').val();
+                var ex_id = row.find('.e20r-workout-group_exercise_id').val();
+                var ex_order = row.find('.e20r-workout-group_exercise_order').val();
 
                 if ( typeof(ex_id) != 'undefined') {
 
@@ -377,9 +377,8 @@ var e20rActivity = {
     _findExerciseRow: function( groupId, orderNo ) {
 
         var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + groupId + '"]').closest('.e20r-exercise-group');
-        var row = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + orderNo + '"]').closest('tr');
 
-        return row;
+        return group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + orderNo + '"]').closest('tr');
     },
     _createExRow: function( obj, order, group ) {
 
@@ -400,7 +399,7 @@ var e20rActivity = {
 
         return $row;
     }
-}
+};
 
 jQuery(document).ready( function(){
 
