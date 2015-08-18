@@ -2076,6 +2076,7 @@ class e20rTracker {
                 array(
                     'url' => admin_url('admin-ajax.php'),
                     'activity_url' => get_permalink( $currentProgram->activity_page_id ),
+                    'login_url' => wp_login_url( get_permalink( $currentProgram->dashboard_page_id ) ),
                 )
             );
 
