@@ -706,7 +706,9 @@ class e20rCheckin extends e20rSettings {
         dbg("e20rCheckin::nextCheckin_callback() - Checking ajax referrer has the right privileges");
 
 	    if ( ! is_user_logged_in() ) {
-		    auth_redirect();
+
+			dbg("e20rCheckin::nextCheckin_callback() - Return login error and force redirect to login page.");
+            wp_send_json_error( array( 'ecode' => 3 ) );
 	    }
 
         global $e20rArticle;
