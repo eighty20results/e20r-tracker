@@ -10,11 +10,6 @@
 
 jQuery.noConflict();
 
-function e20rAssignmentsConfigureSurveyFields(){
-
-    console.log("Do nothing...");
-}
-
 function setSurveyState( me ) {
     var elem = jQuery( me ),
         input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
