@@ -447,7 +447,7 @@ class e20rCheckinView extends e20rSettingsView {
             </div>
 		</div>
 		<?php
-
+        dbg("e20rCheckinView::view_user_achievement() - Finished generating view..");
 		$html = ob_get_clean();
 		return $html;
 	}
