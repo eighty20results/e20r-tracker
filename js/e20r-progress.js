@@ -270,6 +270,8 @@ jQuery(function() {
             // validate
 
             var value = self.$field.val();
+            var lastWeekValue;
+            var diff;
 
             if ('' === value) { // they focused and then unfocused the field without putting anything in... don't pester them with an error
                 return;
