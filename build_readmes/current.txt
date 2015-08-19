@@ -1,1 +1,6 @@
-Fix the unprivileged ajax call error info
+Make sure $currentProgram gets initiated.
+Remove defunct statistics tab.
+Added debug output to show end of achievement list.
+Didn't terminate div & caused issues w/showing achievements (4th tab)
+Fix non-object warning when displaying username
+Fixes following JSHint run
