@@ -139,6 +139,7 @@ class e20rWorkoutView extends e20rSettingsView {
                     </div> <!-- FAQ container -->
                 </div><!-- Column --> <?php
             } ?>
+            </div>
         </div><?php
 
         $html = ob_get_clean();
