@@ -730,9 +730,16 @@ class e20rCheckin extends e20rSettings {
 	    $config->maxDelayFlag = null;
 
         $config->userId = $current_user->ID;
-        $config->programId = ( ! isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId, $config->articleId ) : intval( $_POST['program-id'] ) );
+        $config->programId = ( !isset( $_POST['program-id'] ) ? $e20rProgram->getProgramIdForUser( $config->userId ) : intval( $_POST['program-id'] ) );
+
+        if (! isset( $currentProgram->id ) ) {
+            $e20rProgram->init($config->programId);
+        }
+
         // $config->programId = ( ! isset( $_POST['program-id'] ) ? $currentProgram->id : $e20rTracker->sanitize( $_POST['program-id'] ) );
         $config->startTS = strtotime( $currentProgram->startdate );
+
+
 
         $config->articleId = ( !isset( $_POST['article-id'] ) ? null : $e20rTracker->sanitize($_POST['article-id']) );
 	    $e20rArticle->init( ( $config->articleId !== null ? $config->articleId : $post->ID ) );
