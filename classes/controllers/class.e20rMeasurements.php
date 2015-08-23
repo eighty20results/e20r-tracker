@@ -291,6 +291,12 @@ class e20rMeasurements {
     private function conversionFactor( $oldUnit, $newUnit ) {
 
         $factors = array(
+            "lbs->lbs" => 1,
+            "kg-kg" => 1,
+            "st->st" => 1,
+            "st_uk->st_uk" => 1,
+            "cm->cm" => 1,
+            "in->in" => 1,
             "cm->in" => 0.3937007874,
             "in->cm" => 2.54,
             "lbs->kg" => 0.45359237,
