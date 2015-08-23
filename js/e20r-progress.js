@@ -945,6 +945,39 @@ jQuery(function() {
 
             jQuery('#selected-' + dimension + '-unit').css('display', 'inline');
             jQuery('#preferred-' + dimension + '-unit').css('display', 'none');
+
+            var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+            var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+
+            if ( $cancel.is(':hidden') ) {
+                $change.hide();
+                $cancel.show();
+            }
+            else {
+                $cancel.hide();
+                $change.show();
+            }
+        });
+    jQuery('.cancel-measurement-unit-update')
+        .each( function() {
+            console.log("Adding click event to cancel button for measurement unit update");
+            jQuery(this).on('click', function() {
+
+                console.log("Cancel button for measurement unit update clicked");
+                var dimension = jQuery(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
+
+                console.log("Dimension: " + dimension);
+                var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+                var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+
+                $cancel.hide();
+                $change.show();
+
+                jQuery('#selected-' + dimension + '-unit').hide();
+                jQuery('#preferred-' + dimension + '-unit')
+                    .css('display', 'inline');
+
+            });
         });
 
     jQuery('#selected-length-unit, #selected-weight-unit')
