@@ -371,6 +371,7 @@ jQuery(document).ready( function(){
     e20rActivity.init();
 
 });
+
 jQuery(document).ready(function($) {
 
     $('.e20r-faq-question').unbind().on('click', function(){

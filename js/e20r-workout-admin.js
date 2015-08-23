@@ -153,7 +153,6 @@ var e20rActivity = {
             return false;
         }
 
-
         // Disable save button
         $addBtn.attr('disabled', 'disabled');
         $addBtn.html(e20r_tracker.lang.adding);

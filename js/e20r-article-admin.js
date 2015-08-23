@@ -142,7 +142,7 @@ function e20r_assignmentSave() {
     saveBtn.empty().append(e20r_tracker.lang.saving);
 
     var resp = null;
-
+    
     //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
     wp.ajax.send({
         url: e20r_tracker.ajaxurl,
