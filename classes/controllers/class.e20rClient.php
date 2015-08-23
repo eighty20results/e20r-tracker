@@ -294,6 +294,7 @@ class e20rClient {
         return $this->view->viewMessageHistory( $clientId, $client_messages );
     }
 
+    // TODO: Should be in model file?
 	public function loadClientInterviewData( $clientId, $form ) {
 
 		$this->setClient($clientId);
@@ -924,7 +925,7 @@ class e20rClient {
 		$data = implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $data ) ) );
 		return $data;
 	}
-    /*
+
     public function saveNewUnit( $type, $unit ) {
 
         switch ($type) {
@@ -932,19 +933,19 @@ class e20rClient {
             case 'length':
 
                 dbg("e20rClient::saveNewUnit() - Saving new length unit: {$unit}");
-                $this->model->info->saveUnitInfo( $unit, $this->getWeightUnit() );
+                $this->model->saveUnitInfo( $unit, $this->getWeightUnit() );
                 break;
 
             case 'weight':
 
                 dbg("e20rClient::saveNewUnit() - Saving new weight unit: {$unit}");
-                $this->model->info->saveUnitInfo( $this->getLengthUnit(), $unit );
+                $this->model->saveUnitInfo( $this->getLengthUnit(), $unit );
                 break;
         }
 
         return true;
     }
-*/
+
     public function loadClientInfo( $user_id ) {
 
         try {
