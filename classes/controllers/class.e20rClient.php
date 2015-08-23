@@ -51,7 +51,7 @@ class e20rClient {
         if ( $this->client_loaded !== true ) {
 
             $this->model->setUser( $currentClient->user_id );
-            $this->model->load_client_settings( $currentClient->user_id );
+            $this->model->load_basic_clientdata( $currentClient->user_id );
             $this->client_loaded = true;
         }
 
@@ -145,7 +145,7 @@ class e20rClient {
         $this->init();
     }
 
-    public function get_data( $clientId, $private = false ) {
+    public function get_data( $clientId, $private = false, $basic = false ) {
 
         if ( ! $this->client_loaded ) {
 
@@ -154,9 +154,16 @@ class e20rClient {
             // $this->get_data( $clientId );
         }
 
-        $data = $this->model->get_data( $clientId );
+		if ( true === $basic ) {
+            dbg("e20rClient::get_data() - Loading basic client data - not full survey.");
+			$data = $this->model->load_basic_clientdata( $clientId );
+		}
+		else {
+            dbg("e20rClient::get_data() - Loading all client data including survey");
+			$data = $this->model->get_data($clientId);
+		}
 
-	    if ( $private ) {
+	    if ( true === $private ) {
 
 		    dbg("e20rClient::get_data() - Removing private data");
 		    $data = $this->strip_private_data( $data );
