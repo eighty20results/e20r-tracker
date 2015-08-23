@@ -628,16 +628,17 @@ input:hover[type="submit"],
     }
     #colorbox #cboxClose {
         top: 0;
-        right: 0;
+        right: 5px;
         padding: 0;
-        margin: 0 5px 0 5px;
-        border: none;
+        margin: 35px 5px 0 5px;
+        border: 1px solid #fff;
         box-shadow: none;
         position: absolute;
-        width: 35px;
+        width: 50px;
         height: auto;
-        /*    border-radius: 50%; */
+        /* border-radius: 50%; */
         font-size: 10px;
+        color: #fff;
     }
     #cboxLoadedContent {
         margin-top:28px;
@@ -980,16 +981,17 @@ input:hover[type="submit"],
 @media screen and (min-width: 534px) {
     #colorbox #cboxClose {
         top: 0;
-        right: 0;
-        padding: 0;
-        margin: 0 5px 0 5px;
-        border: none;
+        right: 15px;
+        padding: 0px 5px 0px 5px;
+        margin: 35px 5px 0 5px;
+        border: 1px solid #FFF;
         box-shadow: none;
         position: absolute;
-        width: 70px;
+        width: auto;
         height: auto;
-        /*    border-radius: 50%; */
+        /* border-radius: 50%; */
         font-size: 20px;
+        color: #fff;
     }
     #cboxLoadedContent {
         margin-top:28px;
@@ -2588,4 +2590,28 @@ a.e20r-bit-better-coaching-gender-button {
     text-align: center;
     padding: 10px;
     margin: 10px;
+}
+.e20r-measurement-setting {
+    font-size: 0.8rem;
+}
+span.e20r-change-units {
+    font-weight: bold;
+    display: inline;
+    font-size: 0.8rem;
+}
+span.e20r-change-unit-dropdown select {
+    font-size: 0.8rem;
+    width: 110px;
+    display: none;
+}
+span a.change-measurement-unit {
+    cursor: pointer;
+    display: inline;
+    font-weight: normal;
+    font-size: 0.8rem;
+}
+span.e20r-cancel-length-unit-link,
+span.e20r-cancel-weight-unit-link {
+    display: none;
+    cursor: pointer;
 }
