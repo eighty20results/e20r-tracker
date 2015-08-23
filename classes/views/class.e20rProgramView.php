@@ -368,9 +368,10 @@ class e20rProgramView {
                     <thead>
                     <tr>
 	                    <th class="e20r-label header"><label for="e20r-program-welcome_page_id"><strong><?php _e("Preparation Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-incomplete_intake_form_page"><strong><?php _e("Incomplete Intake Form", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="1"><hr width="100%"/></td>
+                        <td colspan="2"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
@@ -381,6 +382,15 @@ class e20rProgramView {
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->welcome_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-incomplete_intake_form_page" name="e20r-program-incomplete_intake_form_page">
+                                    <option value="-1" <?php selected( -1, $programData->incomplete_intake_form_page) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->incomplete_intake_form_page ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
                             </td>
