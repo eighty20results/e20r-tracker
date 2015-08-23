@@ -1114,14 +1114,15 @@ class e20rMeasurementViews {
         ?>
         <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred weight units:
-            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
-            <select id="selected-weight-unit" style="display: none;">
+            <span id="preferred-weight-unit" class="e20r-change-units"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
+            <span class="e20r-change-unit-dropdown"><select id="selected-weight-unit">
                 <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
                 <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
+            </select></span>
+            <span class="e20r-change-weight-unit-link">(<a class="change-measurement-unit" data-dimension="weight"><?php _e("change this", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-cancel-weight-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
@@ -1134,12 +1135,13 @@ class e20rMeasurementViews {
         ?>
         <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred length units:
-            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
-            <select id="selected-length-unit" style="display: none;">
+            <span id="preferred-length-unit" class="e20r-change-units"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
+            <span class="e20r-change-unit-dropdown"><select id="selected-length-unit">
                 <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
                 <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="length">change this</a>)
+            </select></span>
+            <span class="e20r-change-length-unit-link">(<a class="change-measurement-unit" data-dimension="length"><?php _e("change this", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-cancel-length-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
