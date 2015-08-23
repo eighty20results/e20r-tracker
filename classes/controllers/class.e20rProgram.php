@@ -35,8 +35,9 @@ class e20rProgram extends e20rSettings {
                 ( !empty( $programId ) && ( $currentProgram->id != $programId ) ) ) ) {
 
 			    dbg("e20rProgram::init() - Loading program settings for {$programId}.");
-
                 $currentProgram = $this->model->loadSettings( $programId );
+
+                $this->configure_startdate( $programId, $current_user->ID );
 
                 dbg("e20rProgram::init() - Program info has been loaded for: {$currentProgram->id}");
                 return true;
@@ -242,13 +243,13 @@ class e20rProgram extends e20rSettings {
 			    dbg("e20rProgram::getProgramIdForUser() - currentProgram getting set to default values");
 			    $this->init();
 		    }
-
+            /*
             if ( !empty( $articleId ) ) {
 
                 dbg("e20rProgram::getProgramIdForUser() - load Article ({$articleId}) too");
                 $e20rArticle->init( $articleId );
             }
-
+            */
         }
 
         dbg("e20rProgram::getProgramIdForUser() - Loaded program ID ($currentProgram->id) for user {$userId}");
@@ -418,6 +419,11 @@ class e20rProgram extends e20rSettings {
         echo $this->view->view_userProfile( $programlist, $activeProgram );
     }
 
+    // TODO: Implement this functionality & allow explanation page/post to be loaded, if configured.
+    public function incompleteIntakeForm() {
+
+    }
+
     /**
      * Calculates the startdate (as a 'seconds since epoch') value and returns it to the calling function.
      *
@@ -453,7 +459,7 @@ class e20rProgram extends e20rSettings {
 */
         }
 
-        dbg("e20rProgram::startdate() - Using startdate as configured for program with id {$currentProgram->id}: {$currentProgram->startdate}");
+        dbg("e20rProgram::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
         // dbg($currentProgram);
 
         // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
