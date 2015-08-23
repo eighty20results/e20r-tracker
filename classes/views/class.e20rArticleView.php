@@ -100,7 +100,7 @@ class e20rArticleView extends e20rSettingsView {
                             <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                         </form>
                         <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn"
-                           style="font-size: 18px; line-height: 20px; font-weight: bold; margin-top: 16px; display: block;">Begin &raquo;</a>
+                           style="font-size: 18px; line-height: 20px; font-weight: bold; margin-top: 16px; display: block;"><?php _e("Begin"); ?> &raquo;</a>
                     </div>
                 </div>
             </div>
