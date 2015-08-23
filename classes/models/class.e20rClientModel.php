@@ -907,8 +907,14 @@ class e20rClientModel {
     public function saveUnitInfo( $lengthunit, $weightunit ) {
 
         global $wpdb;
-        global $e20rProgram;
+        global $current_user;
+
         global $currentClient;
+
+        if ( !isset( $currentClient->user_id ) || ( !isset( $currentClient->programId ) ) ) {
+
+            $this->setUser( $current_user->ID );
+        }
 
         if ( $wpdb->update( $this->table,
             array( 'lengthunits' => $lengthunit, 'weightunits' => $weightunit ),
