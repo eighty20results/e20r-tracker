@@ -243,11 +243,18 @@ class e20rArticle extends e20rSettings {
         $mGroupId = $e20rTracker->getGroupIdForUser( $userId );
         $activities = $e20rWorkout->find( 'id', $aIds, 'numeric', -1, 'IN' );
 
-        $art_day_no = date( 'N', strtotime( $e20rTracker->getDateForPost( $delay ) ) );
-        dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
+        $post_date = $e20rTracker->getDateForPost( $delay, $userId );
 
+        dbg("e20rArticle::getActvitiy() - Date for post with delay {$delay} for user {$userId}: {$post_date}");
+
+        $art_day_no = date( 'N', strtotime( $post_date ) );
+        dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
+        dbg($activities);
         // Loop through all the defined activities for the $articleId
         foreach( $activities as $a ) {
+
+            dbg("e20rArticle::getActivity() - On day # {$delay} for article {$articleId} processing activity {$a->id}: {$art_day_no}");
+            // dbg($a->days);
 
             if ( in_array( $art_day_no, $a->days ) ) {
 
