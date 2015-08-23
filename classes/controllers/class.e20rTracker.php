@@ -2170,9 +2170,10 @@ class e20rTracker {
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
             if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
 
-	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
-                $url = $e20rProgram->get_welcomeSurveyLink( $userId );
+	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
+                // $url = $e20rProgram->get_welcomeSurveyLink( $userId );
 
+                $url = get_permalink( $currentProgram->incomplete_intake_form_page );
                 if ( ! empty( $url ) ) {
 
 	                wp_redirect( $url, 302 );
