@@ -881,7 +881,7 @@ class e20rMeasurements {
 
                     $retVal[ $mKey ] = array(
                         'value' => $value,
-                        'units' => ( $key != 'weight' ? $currentClient->lengthunits : $currentClient->weightUnits ) // $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
+                        'units' => ( $key != 'weight' ? $currentClient->lengthunits : $currentClient->weightunits ) // $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
                     );
                 }
             }
