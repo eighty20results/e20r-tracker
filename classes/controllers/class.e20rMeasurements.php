@@ -337,6 +337,12 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::updateMeasurementsForType() - All of the data for this user: " . print_r( $allData, true ) );
 
+        if ( empty( $allData ) ) {
+
+            dbg("e20rMeasurements::updateMeasurementsForType() - No data to convert. Returning success!" );
+            return true;
+        }
+
         foreach( $allData as $key => $record ) {
 
             if ( $unitType == 'weight' ) {
