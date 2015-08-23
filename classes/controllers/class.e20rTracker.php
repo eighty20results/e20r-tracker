@@ -2147,7 +2147,7 @@ class e20rTracker {
                 $e20rClient->init();
             }
 
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for {$measurementDate}");
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for: " . ( !isset( $measurementDate ) ? 'No date given' : $measurementDate ) );
             $e20rMeasurements->init( $measurementDate, $userId );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
@@ -2167,6 +2167,7 @@ class e20rTracker {
             $bDay = $e20rClient->getBirthdate( $userId );
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
 
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
             if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
 
 	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
@@ -2201,7 +2202,7 @@ class e20rTracker {
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->get_data( $userId, true ), JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->get_data( $userId, true, true ), JSON_NUMERIC_CHECK ),
 //                        'progress_pictures' => '',
 //                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
@@ -3649,7 +3650,7 @@ class e20rTracker {
         $startDate = date_i18n( 'Y-m-d', $startDateTS );
         dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
 
-        $releaseDate = date_i18n( 'Y-m-d', strtotime( "{$startDate} +" . ($days -1) ." days") );
+        $releaseDate = date_i18n( 'Y-m-d', strtotime( "{$startDate} +" . ($days -1 ) ." days") );
 
         dbg("e20rTracker::getDateForPost( {$days} ) -> Calculated date for delay of {$days}: {$releaseDate}");
         return $releaseDate;
