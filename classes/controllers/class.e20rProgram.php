@@ -419,9 +419,36 @@ class e20rProgram extends e20rSettings {
         echo $this->view->view_userProfile( $programlist, $activeProgram );
     }
 
-    // TODO: Implement this functionality & allow explanation page/post to be loaded, if configured.
     public function incompleteIntakeForm() {
 
+        global $currentProgram;
+        global $current_user;
+
+        if ( !isset( $currentProgram->id ) ) {
+
+            dbg("e20rProgram::incompleteIntakeForm() - Loading program ID");
+            $this->getProgramIdForUser( $current_user->ID );
+        }
+
+        if ( !empty( $currentProgram->incomplete_intake_form_page ) ) {
+
+            $post = get_post( $currentProgram->incomplete_intake_form_page );
+            $content = apply_filters('the_content', $post->post_content);
+        }
+        else {
+            $post = get_post( $currentProgram->intake_form );
+
+            $default_text = sprintf(
+                __('<p>Please complete %s (<a href="%s" target="_blank">link</a>)</p>', "e20rtracker"),
+                    $post->post_title,
+                    get_permalink( $post->ID )
+            );
+
+            $content = apply_filters('e20r_tracker_default_incomplete_form_text', $default_text );
+        }
+
+        wp_reset_postdata();
+        return $content;
     }
 
     /**
