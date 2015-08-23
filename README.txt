@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.2.4
-Stable tag: 1.1.19
+Stable tag: 1.1.20
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,35 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.1.20 ==
+
+* Whitespace changes to force minification
+* Save updated/changed weight/length unit setting
+* If the welcome interview is incomplete, redirect the user to a page describing the problem.
+* Configure user settings before changing & updating weight/length unit info.
+* If the welcome interview is incomplete, redirect the user to a page describing the problem.
+* Fix layout for weight/length unit change
+* Support cancel option for weight/length unit change
+* Fix typo in weight units setting
+* Return true if there is no data to convert in updateMeasurementsForType()
+* Add default conversion factors between same unit types
+* Add 'incomplete interview description' page setting
+* Add debug info for interview_complete() function
+* Fix warning message during load of weekly progress related data to front-end.
+* Load bare minimum of the client data for front-end JavaScript.
+* Add ability to only load the basic client data rather than the full survey.
+* getDateForPost() assumed calculations start on day 1 (they start on day 0)
+* Support returning HTML for incomplete measurements page if interview isn't completed yet.
+* Make text translatable.
+* Force setting of program startdate on init (allows startdate to be set by users startdate if needed)
+* Removed init of article object when loading program (Should be handled in Article class).
+* Added support for how to handle incomplete intake form(s).
+* Adds descriptive page for whenever the user hasn't completed the intake form(s)
+* Add support for simplified minimum DB load on init of e20rClient class.
+* Incorrect date calculated when looking for activities based on delay values.
+* Remove empty & unused function
+* Fix variable init
 
 == 1.1.19 ==
 
