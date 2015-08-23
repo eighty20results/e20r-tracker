@@ -561,8 +561,15 @@ class e20rMeasurements {
         dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
         $measurements = $this->getMeasurement( 'all', false );
 
+        if ( $e20rClient->completeInterview( $this->id ) ) {
+            $measurements = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
+        }
+        else {
+             $measurements = $e20rProgram->incompleteIntakeForm();
+        }
+
         $tabs = array(
-            'Measurements' => '<div id="e20r-progress-measurements">' . $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false ) . '</div>',
+            'Measurements' => '<div id="e20r-progress-measurements">' . $measurements . '</div>',
             'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
             'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
@@ -931,6 +938,7 @@ class e20rMeasurements {
 
         $html = ob_get_clean();
 
+        dbg("e20rMeasurements::load_EditProgress() - Weekly Measurements form has been loaded.");
         return $html;
     }
 
