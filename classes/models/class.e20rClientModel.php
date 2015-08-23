@@ -176,12 +176,15 @@ class e20rClientModel {
             $userId
         );
 
+        // dbg("SQL to check whether the interview was completed: {$sql}");
         $count = $wpdb->get_var( $sql );
 
         if ( empty( $count ) || $count == 0 || $count < 11 ) {
+            dbg("e20rClientModel::interview_complete() - Not enough answers given: {$count}");
             return false;
         }
 
+        dbg("e20rClientModel::interview_complete() - Interview has been completed");
         return true;
     }
 
@@ -282,6 +285,57 @@ class e20rClientModel {
 	    return false;
     }
 
+    public function load_basic_clientdata( $clientId, $program_id = null, $table = null )
+    {
+
+        global $wpdb;
+        global $post;
+
+        global $currentProgram;
+        global $currentClient;
+        global $currentArticle;
+
+        global $e20rProgram;
+        global $e20rTracker;
+        global $e20rArticle;
+
+        dbg("e20rClientModel::load_basic_clientdata() - Loading default currentClient structure");
+
+        // Init the unencrypted structure and load defaults.
+        $currentClient = $this->defaultSettings();
+
+        // $this->setUser( $currentClient->user_id );
+
+        if (is_null($table)) {
+
+            $table = $this->table;
+        }
+
+        // $key = $e20rTracker->getUserKey( $currentClient->user_id );
+
+        if (WP_DEBUG === true) {
+
+            $this->clearTransients();
+        }
+
+        dbg("e20rClientModel::load_basic_clientdata() - Client data wasn't cached. Loading from DB.");
+
+        $sql = $wpdb->prepare("
+                    SELECT user_id, program_id, page_id, program_start, progress_photo_dir, gender,
+                           first_name, last_name, birthdate, lengthunits, weightunits
+                    FROM {$table}
+                    WHERE program_id = %d AND
+                    user_id = %d
+                    ORDER BY program_start DESC
+                    LIMIT 1",
+            $currentClient->program_id,
+            $currentClient->user_id
+        );
+
+        $records = $wpdb->get_row($sql, ARRAY_A);
+        return $records;
+    }
+
     private function load_data( $clientId, $program_id = null, $table = null ) {
 
         if ( ! is_user_logged_in() ) {
@@ -300,7 +354,7 @@ class e20rClientModel {
         global $e20rTracker;
         global $e20rArticle;
 
-        dbg("e20rClientModel::get_data(): " . $e20rTracker->whoCalledMe() );
+        dbg("e20rClientModel::load_data(): " . $e20rTracker->whoCalledMe() );
 
         if ( empty( $currentClient->user_id ) || ( $clientId != $currentClient->user_id ) ) {
 
@@ -337,22 +391,7 @@ class e20rClientModel {
         if ( false === ( $tmpData = get_transient( "e20r_client_info_{$currentClient->user_id}_{$currentClient->program_id}" ) ) ) {
 
             dbg("e20rClientModel::load_data() - Client data wasn't cached. Loading from DB.");
-
-            $excluded = array_keys( (array) $currentClient );
-
-            $sql = $wpdb->prepare( "
-	                    SELECT user_id, program_id, page_id, program_start, progress_photo_dir, gender,
-	                           first_name, last_name, birthdate, lengthunits, weightunits
-	                    FROM {$table}
-	                    WHERE program_id = %d AND
-	                    user_id = %d
-	                    ORDER BY program_start DESC
-	                    LIMIT 1",
-                $currentClient->program_id,
-                $currentClient->user_id
-            );
-
-            $records = $wpdb->get_row( $sql, ARRAY_A );
+            $records = $this->load_basic_clientdata( $clientId, $program_id, $table );
 
             if ( ! empty( $records ) ) {
 
@@ -364,6 +403,12 @@ class e20rClientModel {
                     $postId = $post->ID;
                 }
 
+                /*
+                if ( CONST_NULL_ARTICLE == $postId ) {
+
+                    return $currentClient;
+                }
+                */
                 dbg("e20rClientModel::load_data() - Have a page Id to search for the article on behalf of");
                 $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $currentClient->program_id );
 
