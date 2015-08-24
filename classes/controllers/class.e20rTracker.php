@@ -2171,12 +2171,21 @@ class e20rTracker {
             if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
 
 	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
-                // $url = $e20rProgram->get_welcomeSurveyLink( $userId );
 
-                $url = get_permalink( $currentProgram->incomplete_intake_form_page );
-                if ( ! empty( $url ) ) {
+
+                if ( empty( $currentProgram->incomplete_intake_form_page ) ) {
+                    $url = $e20rProgram->get_welcomeSurveyLink( $userId );
+                }
+                else {
+                    $url = get_permalink( $currentProgram->incomplete_intake_form_page );
+                }
+
+                dbg("e20rTracker::has_weeklyProgress_shortcode() - URL to redirect to: {$url}");
+                if ( !empty( $url ) ) {
 
 	                wp_redirect( $url, 302 );
+	                exit;
+	                // wp_die("Tried to redirect to");
                 }
 	            else {
 		            dbg("e20rTracker::has_weeklyProgress_shortcode() - No URL defined! Can't redirect.");
