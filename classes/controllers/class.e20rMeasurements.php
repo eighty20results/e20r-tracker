@@ -574,14 +574,14 @@ class e20rMeasurements {
         $measurements = $this->getMeasurement( 'all', false );
 
         if ( $e20rClient->completeInterview( $this->id ) ) {
-            $measurements = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
+            $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
         }
         else {
-             $measurements = $e20rProgram->incompleteIntakeForm();
+            $measurement_view = $e20rProgram->incompleteIntakeForm();
         }
 
         $tabs = array(
-            'Measurements' => '<div id="e20r-progress-measurements">' . $measurements . '</div>',
+            'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
             'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
             'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
