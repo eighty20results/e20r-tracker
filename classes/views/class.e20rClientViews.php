@@ -489,6 +489,35 @@ class e20rClientViews {
         return ob_get_clean();
     }
 
+    public function view_clientProfile( $progressEntries ) {
+
+        ob_start(); ?>
+        <div id="profile-tabs">
+            <ul><?php
+
+            $count = 1;
+            foreach( $progressEntries as $label => $contentHtml ) { ?>
+
+                <li><a href="#profile-tabs-<?php echo $count++; ?>"><?php echo $label; ?></a></li><?php
+            } ?>
+
+            </ul><?php
+            $count = 1;
+            foreach( $progressEntries as $label => $contentHtml ) { ?>
+
+            <div id="profile-tabs-<?php echo $count++; ?>">
+                <?php echo $contentHtml; ?>
+            </div>
+
+    <?php   } ?>
+        </div> <!-- profile-tabs div -->
+	    <div class="modal"><!-- At end of form --></div><?php
+
+        $html = ob_get_clean();
+        return $html;
+
+    }
+
     public function viewCompliance( $clientId = null, $shortname = null ) {
 
         if ( empty( $clientId ) ) {
