@@ -65,7 +65,9 @@ class e20rClient {
 
     public function isNourishClient( $user_id = 0 ) {
 
-	    global $e20r_isClient;
+	    __return_false();
+/*
+        global $e20r_isClient;
 
 	    if ( ! is_user_logged_in() ) {
 
@@ -77,6 +79,7 @@ class e20rClient {
 
 		    $e20r_isClient = false;
 
+            /*
 		    if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
 			    dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
@@ -89,10 +92,12 @@ class e20rClient {
 				    $e20r_isClient = true;
 			    }
 		    }
+
 	    }
 
         dbg("e20rClient::isNourishClient() - Is user with id {$user_id} a nourish client? " . ( $e20r_isClient ? 'Yes' : 'No'));
         return $e20r_isClient;
+*/
     }
 
     public function clientId() {
@@ -297,7 +302,13 @@ class e20rClient {
     // TODO: Should be in model file?
 	public function loadClientInterviewData( $clientId, $form ) {
 
-		$this->setClient($clientId);
+        global $currentClient;
+
+		if ( $clientId !== $currentClient->user_id ) {
+
+            dbg("e20rClient::loadClientInterviewData() - Loading interview for a different user ID than what's previously defined. Changing to user ID {$clientId}");
+            $this->setClient($clientId);
+        }
 
 		$c_data = $this->model->get_data( $clientId );
 
@@ -1540,5 +1551,134 @@ class e20rClient {
         }
 
         return false;
+    }
+
+    public function view_interview() {
+
+        global $currentProgram;
+
+        $content = null;
+
+        if ( isset( $currentProgram->intake_form ) ) {
+
+            $interview = get_post( $currentProgram->intake_form );
+
+            if ( !empty( $interview->post_content ) ) {
+
+                $content = apply_filters('the_content', $interview->post_content);
+            }
+        }
+
+        return $content;
+    }
+
+    public function shortcode_clientProfile( $attributes = null ) {
+
+        dbg("e20rClient::shortcode_clientProfile() - Loading shortcode data for the client profile page.");
+
+        global $current_user;
+
+        global $e20rProgram;
+        global $e20rCheckin;
+        global $e20rAssignment;
+        global $e20rWorkout;
+        global $e20rArticle;
+        global $e20rMeasurements;
+
+        global $currentProgram;
+        global $currentArticle;
+
+        $tabs = array();
+
+        if ( ! is_user_logged_in() || ( ! $this->validateAccess( $current_user->ID ) ) ) {
+
+            auth_redirect();
+        }
+        else {
+
+            $userId = $current_user->ID;
+            $e20rProgram->getProgramIdForUser( $userId );
+        }
+
+        $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+        $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
+
+        /* Load views for the profile page tabs */
+        $config = $e20rCheckin->configure_dailyProgress();
+
+        $interview = $this->view_interview();
+
+        $lesson = $e20rArticle->load_lesson( $config->articleId );
+        $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
+
+        $incl_account = isset( $currentProgram->account_page_id ) && (!is_null( $currentProgram->account_page_id ) );
+        $incl_contact = isset( $currentProgram->contact_page_id ) && (!is_null( $currentProgram->contact_page_id ) );
+
+        if ( $incl_account ) {
+            $account = $e20rArticle->load_lesson($currentProgram->account_page_id, false);
+        }
+
+        if ( $incl_contact ) {
+            $contact = $e20rArticle->load_lesson($currentProgram->contact_page_id, false);
+        }
+
+        if ( ! $currentArticle->is_preview_day ) {
+
+            dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
+            $this->model->setUser( $userId );
+
+            $this->setClient( $userId );
+
+            dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
+            $measurements = $e20rMeasurements->getMeasurement( 'all', false );
+
+            if ( $this->completeInterview( $this->id ) ) {
+                $measurement_view = $e20rMeasurements->showTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
+            }
+            else {
+                $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
+            }
+
+            $dashboard = $e20rCheckin->dailyProgress( $config );
+            // $measurements = $e20rAssignment-> ( $config->userId );
+            $assignments = $e20rAssignment->listUserAssignments( $config->userId );
+            $activities = $e20rWorkout->listUserActivities( $config->userId );
+            $achievements = $e20rCheckin->listUserAccomplishments( $config->userId );
+
+            $progress = array(
+                'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
+                'Assignments' => '<div id="e20r-progress-assignments">' . $assignments . '</div>',
+                'Activities' => '<div id="e20r-progress-activities">' . $activities . '</div>',
+                'Achievements' => '<div id="e20r-progress-achievements">' . $achievements . '</div>',
+            );
+
+            $progress_html = $e20rMeasurements->show_progress( $progress, null, false );
+
+            $tabs = array(
+                'Dashboard'         => '<nav id="e20r-profile-dashboard">' . $dashboard . '</nav>',
+                $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
+                'Progress'          => '<nav id="e20r-profile-status">' . $progress_html . '</nav>',
+                'Welcome Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+            );
+        }
+        else {
+            $tabs = array(
+                $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
+                'Welcome Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+            );
+        }
+
+        if ( $incl_contact ) {
+            $tabs['Contact'] = '<nav id="e20r-profile-contact">' . $contact . '</nav>';
+        }
+
+        if ( $incl_account ) {
+            $tabs['Account'] = '<nav id="e20r-profile-account">' . $account . '</nav>';
+        }
+
+        $html = $this->view->view_clientProfile( $tabs );
+
+        return $html;
+
     }
 }
