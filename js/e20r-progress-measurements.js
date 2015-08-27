@@ -74,7 +74,7 @@ var progMeasurements = {
             $class.$clientComplianceTab = jQuery("#e20r-client-compliance");
             $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
 
-            jQuery(function(){
+            jQuery(function () {
                 console.log("Loading tabs for wp-admin page");
                 jQuery("#status-tabs").tabs({
                     heightStyle: "content"
@@ -214,11 +214,22 @@ var progMeasurements = {
                 });
             });
 
-            jQuery(function(){
+            if ( e20r_progress.is_profile_page ) {
+
+                console.log("Loading status and profile tabs");
                 jQuery("#status-tabs").tabs({
                     heightStyle: "content"
                 });
-            });
+
+                jQuery("#profile-tabs").tabs({
+                    heightStyle: "content"
+                }); //.addClass( 'tabs-right' );
+            }
+            else {
+                jQuery("#status-tabs").tabs({
+                    heightStyle: "content"
+                });
+            }
 
             jQuery(".exercise-stats-container").each(function() {
                 jQuery(this).hide();
