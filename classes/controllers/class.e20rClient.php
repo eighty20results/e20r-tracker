@@ -1640,7 +1640,6 @@ class e20rClient {
             }
 
             $dashboard = $e20rCheckin->dailyProgress( $config );
-            // $measurements = $e20rAssignment-> ( $config->userId );
             $assignments = $e20rAssignment->listUserAssignments( $config->userId );
             $activities = $e20rWorkout->listUserActivities( $config->userId );
             $achievements = $e20rCheckin->listUserAccomplishments( $config->userId );
