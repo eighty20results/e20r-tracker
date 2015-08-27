@@ -30,6 +30,7 @@ class e20rArticleModel extends e20rSettingsModel {
         $defaults->assignment_ids = array();
         $defaults->checkin_ids = array();
 		$defaults->is_survey = false;
+		$defaults->is_preview_day = false;
 //        $defaults->assignments = array();
 //        $defaults->checkins = array();
         $defaults->measurement_day = false;
