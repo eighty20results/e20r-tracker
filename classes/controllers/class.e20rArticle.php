@@ -1180,6 +1180,92 @@ class e20rArticle extends e20rSettings {
         return $content;
     }
 
+    public function load_lesson( $article_id = null, $reading_time = true ) {
+
+        global $currentArticle;
+
+        global $current_user;
+        $html = null;
+
+        if ( is_null( $article_id ) ) {
+
+            if ( !isset( $currentArticle->id ) ) {
+
+                return null;
+            }
+        }
+
+        if ( $article_id != $currentArticle->id ) {
+
+            dbg("e20rArticle::load_lesson() - Requested article ID != currentArticle id");
+
+            $this->init( $article_id );
+        }
+        global $e20rTracker;
+
+        $post = get_post( $currentArticle->post_id );
+        setup_postdata( $post );
+
+        ob_start(); ?>
+        <article class="e20r-article-lesson">
+            <div class="e20r-article-lesson-header clear-after">
+                <span class="e20r-article-lesson-date">
+                    <?php
+                    $when = $e20rTracker->getDateFromDelay( $currentArticle->release_day, $current_user->ID );
+                    echo date_i18n( get_option('date_format'), strtotime( $when ) );
+                    ?>
+                </span>
+                <span class="e20r-article-lesson-title">
+                    <h2><?php echo apply_filters( 'the_title', $post->post_title ); ?></h2>
+                </span>
+                <span class="e20r-article-lesson-author">Written by: <?php the_author_link(); ?></span>
+            </div>
+            <div class="e20r-article-lesson">
+                <?php
+                if ( $reading_time ) { ?>
+                    <div
+                        class="e20r-article-lesson-readingtime"><?php echo $this->reading_time($post->post_content); ?></div><?php
+                } ?>
+                <?php echo apply_filters( 'the_content', $post->post_content ); ?>
+            </div>
+        </article>
+        <?php
+
+        wp_reset_postdata();
+
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
+    public function reading_time( $content ) {
+
+        $words = str_word_count( strip_tags( $content ) );
+        $minutes = floor( $words / 180 );
+        $seconds = floor( $words % 180 / ( 180 / 60 ) );
+
+        $estimated_time = '<em>Time to read (approximately): </em> <strong>';
+
+        if ( 1 <= $minutes ) {
+
+            $estimated_time .= $minutes;
+
+            if ( $seconds >= 30 ) {
+                $estimated_time .= " &dash; " . ( $minutes + 1 );
+            }
+
+            $estimated_time .=  ' minute' . ($minutes <= 1 ? '' : 's') ;
+        }
+        else {
+
+            $estimated_time .= 'Less than a minute';
+        }
+
+        $estimated_time .= '</strong>';
+
+        return $estimated_time;
+    }
+
     /*
     public function addArticle( $obj ) {
 
