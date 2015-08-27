@@ -396,7 +396,7 @@ class e20rTracker {
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
 	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
-
+            add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
             // if ( function_exists( 'pmpro_activation' ) ) {
@@ -1757,7 +1757,7 @@ class e20rTracker {
             return;
         }
 
-        if ( has_shortcode( $post->post_content, 'progress_overview' ) ) {
+        if ( has_shortcode( $post->post_content, 'progress_overview' ) || has_shortcode( $post->post_content, 'e20r_profile' ) ) {
 
             if ( ! is_user_logged_in() ) {
 
@@ -1796,6 +1796,7 @@ class e20rTracker {
                 array(
                     'clientId' => $currentClient->user_id,
                     'ajaxurl' => admin_url('admin-ajax.php'),
+                    'is_profile_page' => has_shortcode( $post->post_content, 'e20r_profile' ),
                 )
             );
 
