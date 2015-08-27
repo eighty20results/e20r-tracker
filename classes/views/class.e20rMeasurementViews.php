@@ -412,7 +412,7 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function viewTabbedProgress( $progressEntries, $dimensions ) {
+    public function viewTabbedProgress( $progressEntries, $dimensions, $withModal = true ) {
 
         ob_start();
         ?>
@@ -436,9 +436,14 @@ class e20rMeasurementViews {
                 <?php
                 }
                 ?>
-        </div> <!-- tabs div -->
-	    <div class="modal"><!-- At end of form --></div>
-        <?php
+        </div> <!-- tabs div --><?php
+        if ( $withModal ) { ?>
+	        <div class="modal"><!-- At end of form --></div><?php
+        }
+
+        $html = ob_get_clean();
+        return $html;
+
     }
 
     public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
