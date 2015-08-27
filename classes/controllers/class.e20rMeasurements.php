@@ -577,7 +577,7 @@ class e20rMeasurements {
             $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
         }
         else {
-            $measurement_view = $e20rProgram->incompleteIntakeForm();
+            $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
         }
 
         $tabs = array(
@@ -587,7 +587,25 @@ class e20rMeasurements {
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
         );
 
-        return $this->view->viewTabbedProgress( $tabs, $pDimensions );
+        return $this->show_progress( $tabs, $pDimensions, true );
+    }
+
+    /**
+     * Loads the view for the users progress overview (used by profile & progress_overview shortcodes)
+     * @param array $progress_data - Array of tabs & tab content for progress view.
+     * @param array $dimensions - Array containing dimensions (not used)
+     *
+     * @returns string - HTML containing progress view w/tabs.
+     *
+     */
+    public function show_progress( $progress_data, $dimensions = null, $modal = true ) {
+
+        return $this->view->viewTabbedProgress( $progress_data, $dimensions, $modal );
+    }
+
+    public function showTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
+
+        return $this->view->viewTableOfMeasurements( $clientId, $measurements, $dimensions, $tabbed, $admin );
     }
 
     /*
