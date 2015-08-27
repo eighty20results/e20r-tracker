@@ -189,6 +189,8 @@ class e20rProgramView {
         $list = array_merge( $pages, $posts );
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
+        wp_reset_postdata();
+
         ?>
         <style>
             .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
@@ -369,6 +371,8 @@ class e20rProgramView {
                     <tr>
 	                    <th class="e20r-label header"><label for="e20r-program-welcome_page_id"><strong><?php _e("Preparation Page", "e20rtracker"); ?></strong></label></th>
 	                    <th class="e20r-label header"><label for="e20r-program-incomplete_intake_form_page"><strong><?php _e("Incomplete Intake Form", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-account_page_id"><strong><?php _e("Account Profile Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-contact_page_id"><strong><?php _e("Contact the Coach Page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="2"><hr width="100%"/></td>
@@ -391,6 +395,24 @@ class e20rProgramView {
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->incomplete_intake_form_page ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-account_page_id" name="e20r-program-account_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->account_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->account_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-contact_page_id" name="e20r-program-contact_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->contact_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->contact_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
                             </td>
