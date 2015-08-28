@@ -47,12 +47,12 @@ class e20rCheckinView extends e20rSettingsView {
         ob_start();
 
         if ( ( $config->delay < $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ){ ?>
-            <div class="date-past-future notice">You are viewing a day in the past.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
+            <div class="date-past-future notice"><?php echo sprintf( __('You are viewing a day in the past.  <a href="%s">Back to Today</a>', "e20rtracker"), $config->url );?></div>
             <?php
         }
 
         if ( ( $config->delay > $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ) { ?>
-            <div class="date-past-future notice">You are viewing a day in the future.  <a href="<?php echo $config->url; ?>">Back to Today</a></div>
+            <div class="date-past-future notice"><?php echo sprintf( __('You are viewing a day in the future.  <a href="%s">Back to Today</a>', "e20rtracker"), $config->url );?></div>
             <?php
         }
 
@@ -61,22 +61,22 @@ class e20rCheckinView extends e20rSettingsView {
             // The user is attempting to view a day >2 days after today.
             ?>
             <div class="date-past-future orange-notice">
-                <h4>We love that you're interested!</h4>
-                <p>However, we feel there's already plenty to keep yourself busy with for now, so please return
-                    <a href="<?php echo $config->url; ?>">to the dashboard</a> for today's lesson.</p>
+                <h4><?php _e("We love that you're interested!", "e20rtracker"); ?></h4>
+                <p><?php echo sprintf( __('However, we feel there\'s already plenty to keep yourself busy with for now, so please return
+                    <a href="%s">to the dashboard</a> for today\'s lesson.', "e20rtracker" ), $config->url ); ?></p>
             </div><?php
         }
 		else {
         ?>
         <noscript>
             <div class="red-notice" style="font-size: 18px; line-height: 22px;">
-                <strong style="display: block; margin-bottom: 8px;">There's a little problem...</strong>
-                You are using a web browser that doesn't have JavaScript enabled! <br/><br/>
+                <strong style="display: block; margin-bottom: 8px;"><?php _e("There's a little problem...", "e20rtracker"); ?></strong>
+                <?php _e('You are using a web browser that doesn\'t have JavaScript enabled! <br/><br/>
                 JavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
                 To get something useful from the Bit Better Coaching platform, you will need to enable JavaScript.
-                Start by checking your browser's help pages or support forums or "the Google". You'll probably find
+                Start by checking your browser\'s help pages or support forums or "the Google". You\'ll probably find
                 step by step instructions.<br/>
-                Or you can post a note in your Bit Better Coaching forum and we'll help you.</div>
+                Or you can contact your Bit Better Coach and we\'ll be happy to help you.', "e20rtracker"); ?></div>
         </noscript>
         <div class="clear-after"></div>
         <div id="e20r-checkin-daynav">
