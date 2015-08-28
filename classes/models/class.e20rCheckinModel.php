@@ -456,6 +456,49 @@ class e20rCheckinModel extends e20rSettingsModel {
         return $this->settings;
     }
 
+    public function isValid( $checkin_array ) {
+
+        if ( array_key_exists( 'descr_id', $checkin_array ) &&
+            array_key_exists( 'checkedin', $checkin_array ) &&
+            array_key_exists( 'program_id', $checkin_array ) &&
+            array_key_exists( 'user_id', $checkin_array ) &&
+            array_key_exists( 'action_id', $checkin_array ) &&
+            array_key_exists( 'checkin_type', $checkin_array ) &&
+            array_key_exists( 'checkin_date', $checkin_array ) ) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function saveCheckin( $checkin ) {
+
+        global $wpdb;
+
+        dbg("e20rCheckinModel::setCheckin() - Check if the record exists already");
+
+        if ( ( $result = $this->exists( $checkin ) ) !== false ) {
+
+            dbg("e20rCheckinModel::setCheckin() - found existing record: ");
+            dbg($result->id);
+
+            $checkin['id'] = $result->id;
+        }
+
+        dbg("e20rCheckinModel::setCheckin() - Checkin record:");
+        dbg($checkin);
+
+        if ( false !== $wpdb->replace( $this->table, $checkin ) ) {
+
+            $result = $this->exists( $checkin );
+
+            return $result->id;
+        }
+
+        return false;
+    }
+
     public function setCheckin( $checkin ) {
 
         global $wpdb;
