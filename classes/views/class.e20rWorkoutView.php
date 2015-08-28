@@ -254,6 +254,7 @@ class e20rWorkoutView extends e20rSettingsView {
 							<div class="e20r-activity-info-col">
 								<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" />
 								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" />
+								<input type="hidden" id="e20r-activity-input-article_id" name="e20r-activity-article_id" value="<?php echo $config->articleId; ?>" />
 								<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" />
 								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo ( !empty( $config->date ) ? $config->date : null ); ?>" />
 								<div class="e20r-int-table">
