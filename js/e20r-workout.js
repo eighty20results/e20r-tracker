@@ -325,17 +325,63 @@ var e20rActivity = {
     },
     saveAll: function() {
 
+        var $class = this;
         event.preventDefault();
 
-        // TODO: Figure out whether there's data for all of the set entries. If yes then set activity to 'complete' and submit the form.
-        var $data = jQuery("#e20r-activity-input-form").serialize();
+        // var $data = jQuery("#e20r-activity-input-form").serialize();
 
-        if ( ! this._complete() ) {
+        var $data = {
+            action: 'e20r_save_activity',
+            'e20r-tracker-activity-input-nonce': this.$nonce,
+            'user_id': $class.$userId,
+            'activity_id': $class.$activityId,
+            'article_id': jQuery('#e20r-activity-input-article_id').val(),
+            'program_id': $class.$programId,
+            'for_date': $class.$forDate,
+            'recorded': ( Math.floor( Date.now() / 1000) ),
+            'completed': $class._complete()
+        };
 
-            console.log("Incomplete form...")
+        if ( $class._complete() ) {
+
+            jQuery.ajax({
+                url: e20r_workout.url,
+                type: 'POST',
+                timeout: 10000,
+                data: $data,
+                success: function (resp) {
+
+                    var $id = resp.data.id;
+
+                },
+                error: function($response, $errString, $errType) {
+
+                    console.log("Error confirming completion of the activity");
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to confirm your completion of this activity. If you\'d like to try again, please ";
+                    $string += "try again.\n\nShould you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form. ";
+                    $string += "When you contact Technical Support, please include this message in its entirety.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                },
+                complete: function () {
+                    console.log("Completed processing of activity.");
+                }
+            });
         }
-        console.log("Serialized form: ", $data );
-        alert("Ooops!\n\nThis functionality is incomplete.\nPlease report this message to Technical Support.\nThanks!");
 
     },
     _complete: function() {
