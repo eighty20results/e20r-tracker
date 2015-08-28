@@ -187,6 +187,15 @@ class e20rCheckin extends e20rSettings {
 	    ");
 	}
 
+    public function get_shortname( $checkin_id ) {
+
+        global $currentCheckin;
+
+        $this->init( $checkin_id );
+
+        return $currentCheckin->short_name;
+    }
+
     public function findCheckinItemId( $articleId ) {
 
         global $e20rArticle;
@@ -549,6 +558,21 @@ class e20rCheckin extends e20rSettings {
 
         wp_send_json_success();
         wp_die();
+    }
+
+    public function save_check_in( $checkin_data, $type = null) {
+
+        if ( !isset( $checkin_data['checkin_type'] ) && ( !is_null( $type ) ) ) {
+
+            $checkin_data['checkin_type'] = $this->types[$type];
+        }
+
+        if ( $this->model->isValid( $checkin_data ) ) {
+
+            return $this->model->saveCheckin( $checkin_data );
+        }
+
+        return false;
     }
 
 	public function dailyProgress_callback() {
