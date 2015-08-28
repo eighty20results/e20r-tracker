@@ -1600,9 +1600,6 @@ class e20rClient {
             $e20rProgram->getProgramIdForUser( $userId );
         }
 
-        $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-        $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
-
         /* Load views for the profile page tabs */
         $config = $e20rCheckin->configure_dailyProgress();
 
@@ -1611,16 +1608,19 @@ class e20rClient {
         $lesson = $e20rArticle->load_lesson( $config->articleId );
         $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
 
+        /*
+         *
         $incl_account = isset( $currentProgram->account_page_id ) && (!is_null( $currentProgram->account_page_id ) );
         $incl_contact = isset( $currentProgram->contact_page_id ) && (!is_null( $currentProgram->contact_page_id ) );
 
         if ( $incl_account ) {
-            $account = $e20rArticle->load_lesson($currentProgram->account_page_id, false);
+            // $account = $e20rArticle->load_lesson($currentProgram->account_page_id, false);
         }
 
         if ( $incl_contact ) {
-            $contact = $e20rArticle->load_lesson($currentProgram->contact_page_id, false);
+            // $contact = $e20rArticle->load_lesson($currentProgram->contact_page_id, false);
         }
+        */
 
         if ( ! $currentArticle->is_preview_day ) {
 
@@ -1628,6 +1628,9 @@ class e20rClient {
             $this->model->setUser( $userId );
 
             $this->setClient( $userId );
+
+            $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+            $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
 
             dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
             $measurements = $e20rMeasurements->getMeasurement( 'all', false );
@@ -1667,6 +1670,7 @@ class e20rClient {
             );
         }
 
+        /*
         if ( $incl_contact ) {
             $tabs['Contact'] = '<nav id="e20r-profile-contact">' . $contact . '</nav>';
         }
@@ -1674,7 +1678,7 @@ class e20rClient {
         if ( $incl_account ) {
             $tabs['Account'] = '<nav id="e20r-profile-account">' . $account . '</nav>';
         }
-
+        */
         $html = $this->view->view_clientProfile( $tabs );
 
         return $html;
