@@ -27,6 +27,7 @@ class e20rCheckinView extends e20rSettingsView {
         global $e20rTracker;
         global $e20rArticle;
         global $currentArticle;
+        global $currentProgram;
 
         $skipYN = false;
 
@@ -71,12 +72,12 @@ class e20rCheckinView extends e20rSettingsView {
         <noscript>
             <div class="red-notice" style="font-size: 18px; line-height: 22px;">
                 <strong style="display: block; margin-bottom: 8px;"><?php _e("There's a little problem...", "e20rtracker"); ?></strong>
-                <?php _e('You are using a web browser that doesn\'t have JavaScript enabled! <br/><br/>
+                <?php echo sprintf( __('You are using a web browser that doesn\'t have JavaScript enabled! <br/><br/>
                 JavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
-                To get something useful from the Bit Better Coaching platform, you will need to enable JavaScript.
+                To get something useful from the %s platform, you will need to enable JavaScript.
                 Start by checking your browser\'s help pages or support forums or "the Google". You\'ll probably find
                 step by step instructions.<br/>
-                Or you can contact your Bit Better Coach and we\'ll be happy to help you.', "e20rtracker"); ?></div>
+                Or you can contact your coach and we\'ll be happy to help you.', "e20rtracker"), $currentProgram->title ); ?></div>
         </noscript>
         <div class="clear-after"></div>
         <div id="e20r-checkin-daynav">
@@ -96,10 +97,10 @@ class e20rCheckinView extends e20rSettingsView {
             <tbody>
             <tr>
                 <td id="e20r-checkin-activity" class="e20r-content-cell">
-                    <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">Activity</h4><p class="e20r-descr">No activity scheduled.</p>' : $config->activityExcerpt ); ?>
+                    <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">'.  __("Activity", "e20rtracker") . '</h4><p class="e20r-descr">' . __("No activity scheduled.", "e20rtracker") .'</p>' : $config->activityExcerpt ); ?>
                 </td>
                 <td id="e20r-checkin-lesson" class="e20r-content-cell">
-                    <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-checkin-header">Lesson</h4><p class="e20r-descr">No lesson scheduled.' : $config->actionExcerpt ); ?>
+                    <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-checkin-header">'. __("Lesson", "e20rtracker") . '</h4><p class="e20r-descr">' . __("No lesson scheduled", "e20rtracker") . '</p>' : $config->actionExcerpt ); ?>
                 </td>
             </tr>
             </tbody>
