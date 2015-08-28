@@ -1965,6 +1965,9 @@ td.e20r-group-header {
     }
 }
 @media screen and (max-width: 960px) {
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
+        font-size: 0.8rem;
+    }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {
         text-overflow: ellipsis;
         overflow: hidden;
@@ -1986,7 +1989,7 @@ td.e20r-group-header {
         font-family: "Lucida Grande", sans-serif;
         color: rgba(0, 72, 0, 0.75);
         /* font-weight: normal; */
-        font-size: 11px !important;
+        font-size: 0.9rem !important;
     }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
         width: 100%;
@@ -2705,23 +2708,30 @@ div.e20r-article-reading-time {
 .tabs-right .ui-tabs-nav li a {
     width: 100%;
 }
+nav#e20r-profile-lesson {
+    width: 100%;
+    overflow: hidden;
+}
 div.e20r-article-lesson-header {
     border: 1px solid #f5f5f5;
     vertical-align: text-bottom;
 }
 span.e20r-article-lesson-title {
     text-align: center;
+    display:inline-block;
 }
 span.e20r-article-lesson-title h2 {
     font-size: 1.8rem;
     color: #004C00;
 }
 span.e20r-article-lesson-date {
+    display:inline-block;
     float: left;
     text-align: left;
     font-size: 0.8rem;
     color: #d5d5d5;
-    width: 10%;
+    width: 15%;
+    padding-left: 5px;
     max-width: 150px;
     min-width: 100px;
 }
@@ -2730,7 +2740,8 @@ span.e20r-article-lesson-author a {
     color: #d5d5d5;
     text-align: right;
     float: right;
-    width: 10%;
+    width: 15%;
+    padding-right: 5px;
     max-width: 150px;
     min-width: 100px;
 }
@@ -2739,5 +2750,19 @@ span.e20r-article-lesson-author a {
 }
 .e20r-progress-no-measurement a {
     color: #004CFF !important;
+    text-decoration: underline;
+}
+.e20r-article-lesson-readingtime {
+    font-size: 0.7rem;
+    float: right;
+}
+.e20r-article-lesson-readingtime:after {
+    display: block;
+    clear: both;
+    margin-bottom: 15px;
+}
+a#e20r-action-read-lnk,
+a#e20r-activity-read-lnk {
+    color: #004CFF;
     text-decoration: underline;
 }
