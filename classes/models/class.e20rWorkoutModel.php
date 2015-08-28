@@ -368,6 +368,48 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return false;
     }
 
+    public function save_activity_status( $post_data ) {
+
+        global $e20rTracker;
+        global $e20rCheckin;
+        global $e20rArticle;
+
+        $completed = isset( $_POST['completed'] ) ? $e20rTracker->sanitize( $_POST['completed'] ) : false;
+        $userId = isset( $_POST['user_id'] ) ? $e20rTracker->sanitize( $_POST['user_id'] ) : null;
+        $activityId = isset( $_POST['activity_id']) ? $e20rTracker->sanitize( $_POST['activity_id'] ) : null;
+        $articleId = isset( $_POST['article_id']) ? $e20rTracker->sanitize( $_POST['article_id'] ) : null;
+        $programId = isset( $_POST['program_id'] ) ? $e20rTracker->sanitize( $_POST['program_id'] ) : null;
+        $checkedin_date = isset( $_POST['recorded'] ) ? $e20rTracker->sanitize( $_POST['recorded'] ) : null;
+        $checkin_date = isset( $_POST['for_date'] ) ? $e20rTracker->sanitize( $_POST['for_date'] ) : null;
+        $checkin_shortname = $e20rArticle->get_checkin_shortname( $articleId, CHECKIN_ACTIVITY );
+
+        if ( false == $completed ) {
+
+            $completed = 2;
+        }
+
+        $checkin = array(
+            'user_id' => $userId,
+            'activity_id' => $activityId,
+            'article_id' => $articleId,
+            'program_id' => $programId,
+            'descr_id' => $activityId, // descr_id is the assignment ID (no assignment for an activity so using $activityId )
+            'checkedin_date' => $checkedin_date,
+            'checkin_type' => CHECKIN_ACTIVITY,
+            'checkin_date' => $checkin_date,
+            'checkedin' => $completed,
+            'checkin_short_name' => $checkin_shortname,
+        );
+
+        if ( false === $e20rCheckin->save_check_in( $checkin, CHECKIN_ACTIVITY ) ) {
+
+            dbg("e20rWorkoutModel::save_activity_status() - Error saving activity check-in for user {$userId}");
+            return false;
+        }
+
+        return true;
+    }
+
     public function getExerciseHistory( $exercise_id, $userId, $programId = null, $start_date = 'all' ) {
 
         global $wpdb;
