@@ -213,6 +213,24 @@ class e20rArticle extends e20rSettings {
         return ( empty($url) ? false : $url );
     }
 
+    public function get_checkin_shortname( $articleId, $checkin_type ) {
+
+        global $e20rCheckin;
+
+        $article = $this->getSettings( $articleId );
+
+        foreach( $article->checkin_ids as $cId ) {
+
+            $activity = $e20rCheckin->init( $cId );
+
+            if ( $checkin_type == $activity->checkin_type ) {
+                return $activity->short_code;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Use the articleId to locate the
      * @param $articleId - The ID of the article containing the workout/activity for this lesson.
