@@ -1611,7 +1611,7 @@ a.load_progress_data {
     border-bottom: none;
 }
 .e20r-measurements-container {
-    margin-top: 20px;
+    /* margin-top: 20px; */
     margin-left: 4px;
     background-color: #004CFF;
     -moz-border-radius: 4px;
@@ -2765,4 +2765,10 @@ a#e20r-action-read-lnk,
 a#e20r-activity-read-lnk {
     color: #004CFF;
     text-decoration: underline;
+}
+.ui-helper-clearfix:before,
+.ui-helper-clearfix:after {
+    content: "";
+    display: inline-flex;
+    border-collapse: collapse;
 }
