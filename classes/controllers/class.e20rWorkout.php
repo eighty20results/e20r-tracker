@@ -259,6 +259,13 @@ class e20rWorkout extends e20rSettings {
 		dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
 		// dbg($_POST);
 
+        if ( isset( $POST['completed'] ) && ( intval( $_POST['completed'] == 1 ) ) ) {
+
+            dbg("e20rWorkout::saveExData_callback() - User indicated their workout is complete.");
+            $id = $this->model->save_activity_status( $_POST );
+            wp_send_json_success( array( 'id' => $id ) );
+        }
+
 		$data = array();
 		$skip = array( 'action', 'e20r-tracker-activity-input-nonce' );
 
@@ -885,6 +892,9 @@ class e20rWorkout extends e20rSettings {
                 }
             }
         }
+
+        $config->articleId = $currentArticle->id;
+
 /*
         if ( !isset( $article->id ) ) {
 
