@@ -1553,9 +1553,13 @@ class e20rClient {
         return false;
     }
 
-    public function view_interview() {
+    public function view_interview( $clientId ) {
+
+        global $e20rArticle;
 
         global $currentProgram;
+
+        global $current_user;
 
         $content = null;
 
@@ -1565,7 +1569,15 @@ class e20rClient {
 
             if ( !empty( $interview->post_content ) ) {
 
-                $content = apply_filters('the_content', $interview->post_content);
+                $content = apply_filters( 'the_content', $interview->post_content);
+
+                $complete = $this->completeInterview( $clientId );
+
+                dbg("e20rClient::view_interview() - Loading the Welcome interview page & the users interview is saved already");
+
+                $update_reminder = $e20rArticle->interviewCompleteLabel( $interview->post_title, $complete );
+
+                $content = $update_reminder . $content;
             }
         }
 
@@ -1603,11 +1615,6 @@ class e20rClient {
         /* Load views for the profile page tabs */
         $config = $e20rCheckin->configure_dailyProgress();
 
-        $interview = $this->view_interview();
-
-        $lesson = $e20rArticle->load_lesson( $config->articleId );
-        $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
-
         /*
          *
         $incl_account = isset( $currentProgram->account_page_id ) && (!is_null( $currentProgram->account_page_id ) );
@@ -1621,6 +1628,11 @@ class e20rClient {
             // $contact = $e20rArticle->load_lesson($currentProgram->contact_page_id, false);
         }
         */
+
+        $interview = $this->view_interview( $config->userId );
+
+        $lesson = $e20rArticle->load_lesson( $config->articleId );
+        $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
 
         if ( ! $currentArticle->is_preview_day ) {
 
@@ -1649,7 +1661,7 @@ class e20rClient {
 
             $progress = array(
                 'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
-                'Assignments' => '<div id="e20r-progress-assignments">' . $assignments . '</div>',
+                'Assignments' => '<div id="e20r-progress-assignments"><br/>' . $assignments . '</div>',
                 'Activities' => '<div id="e20r-progress-activities">' . $activities . '</div>',
                 'Achievements' => '<div id="e20r-progress-achievements">' . $achievements . '</div>',
             );
@@ -1657,16 +1669,16 @@ class e20rClient {
             $progress_html = $e20rMeasurements->show_progress( $progress, null, false );
 
             $tabs = array(
-                'Dashboard'         => '<nav id="e20r-profile-dashboard">' . $dashboard . '</nav>',
+                'Home'         => '<nav id="e20r-profile-dashboard">' . $dashboard . '</nav>',
                 $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
                 'Progress'          => '<nav id="e20r-profile-status">' . $progress_html . '</nav>',
-                'Welcome Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+                'Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
             );
         }
         else {
             $tabs = array(
                 $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
-                'Welcome Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+                'Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
             );
         }
 
