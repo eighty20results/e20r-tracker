@@ -33,6 +33,31 @@ class e20rArticleView extends e20rSettingsView {
 		return $html;
 	}
 
+    public function viewInterviewComplete( $page_title, $is_complete ) {
+
+        ob_start();
+        if ( $is_complete ) {
+            ?>
+            <div class="green-notice big"
+                 style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+                <p class="e20r-completed-notice"><?php echo sprintf(__("Thanks, you have already saved this '%s' interview.", 'e20rtracker'), $page_title) ?></p>
+                <p class="e20r-completed-notice"><?php _e("Please update any information you need to, and then save it again. Or simply navigate away from the page without updating anything.", "e20rTracker"); ?></p>
+            </div>
+            <?php
+        }
+        else { ?>
+            <div class="red-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/warning.png ); margin: 12px 0pt; background-position: 24px 9px;">
+                <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20rtracker'), $page_title) ?></p>
+                <p class="e20r-completed-notice"><?php _e("So we can fully understand your health and fitness levels, and use that information to help you achieve your health and fitness goals, please complete the interview now. Then save it.", "e20rTracker"); ?></p>
+            </div>
+            <?php
+        }
+        $html = ob_get_clean();
+
+        return $html;
+
+    }
+
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
