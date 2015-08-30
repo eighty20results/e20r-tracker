@@ -176,7 +176,7 @@ class e20rClientModel {
             $userId
         );
 
-        // dbg("SQL to check whether the interview was completed: {$sql}");
+        dbg("e20rClientModel::interview_complete() - SQL to check whether the interview was completed: {$sql}");
         $count = $wpdb->get_var( $sql );
 
         if ( empty( $count ) || $count == 0 || $count < 11 ) {
@@ -506,7 +506,7 @@ class e20rClientModel {
         global $wpdb;
         global $post;
 
-        $table = $e20rTables->getTable('surveys');
+        $table = $e20rTables->getTable( 'surveys' );
         $fields = $e20rTables->getFields( 'surveys' );
 
         /*
@@ -528,9 +528,11 @@ class e20rClientModel {
             $e20rProgram->init( $program_id );
         }
         */
-        if ( ( is_admin() && $e20rTracker->is_a_coach( $current_user->ID ) )|| ( $post->ID == $currentProgram->intake_form ) ) {
+        if ( ( is_admin() && $e20rTracker->is_a_coach( $current_user->ID ) )||
+            ( $post->ID == $currentProgram->intake_form ) ||
+            ( has_shortcode( $post->post_content, 'e20r_profile' ) ) ) {
 
-            dbg("e20rClientModel::load_from_survey_table() - Program config indicates we're on the same page as the welcome survey.");
+            dbg("e20rClientModel::load_from_survey_table() - Program config indicates we're loading for a welcome survey.");
             $survey_type = E20R_SURVEY_TYPE_WELCOME;
         }
         else {
@@ -540,19 +542,36 @@ class e20rClientModel {
         $current_date_ts = strtotime( $e20rTracker->getDateFromDelay( $currentArticle->release_day, $clientId ) );
         $record['for_date'] = date_i18n( 'Y-m-d H:i:s', $current_date_ts );
 
-        $sql = $wpdb->prepare(
-            "SELECT *
+        if ( !has_shortcode( $post->post_content, 'e20r_profile' ) ) {
+
+            $sql = $wpdb->prepare(
+                "SELECT *
                 FROM {$table}
                 WHERE {$fields['user_id']} = %d AND
                 {$fields['survey_type']} = %d AND
                 {$fields['program_id']} = %d AND
                 {$fields['article_id']} = %s
           ",
-            $clientId,
-            $survey_type,
-            $program_id,
-            ( !empty( $article_id ) ? $article_id : '%' )
-        );
+                $clientId,
+                $survey_type,
+                $program_id,
+                ( !empty( $article_id ) ? $article_id : '%' )
+            );
+        }
+        else {
+            $sql = $wpdb->prepare(
+                "SELECT *
+                FROM {$table}
+                WHERE {$fields['user_id']} = %d AND
+                {$fields['survey_type']} = %d AND
+                {$fields['program_id']} = %d
+          ",
+                $clientId,
+                $survey_type,
+                $program_id
+            );
+        }
+
 
         dbg($sql);
         $records = $wpdb->get_results( $sql, ARRAY_A );
@@ -991,7 +1010,7 @@ class e20rClientModel {
             $imageLink = $wpdb->get_row( $sql );
 
             if ( empty( $imageLink ) ) {
-                $imageUrl = E20R_PLUGINS_URL . '/images/no-image-uploaded.jpg';
+                $imageUrl = E20R_PLUGINS_URL . '/img/no-image-uploaded.jpg';
             }
             else {
                 $imageUrl = $imageLink->URL;
