@@ -701,6 +701,14 @@ class e20rTracker {
 
         dbg("e20rTracker::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 
+        $statuses = apply_filters( 'e20r_tracker_article_post_status', array( 'publish', 'future', 'private' ));
+
+        if ( !in_array( get_post_status( $activity->id ), $statuses ) ) {
+
+            dbg("e20rTracker::allowedActivityAccess() - Access denied since activity post isn't in an allowed status");
+            return $ret;
+        }
+
         // Check against list of users for the specified activity.
         dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$uId}");
         $ret['user'] = $this->inUserList( $uId, $activity->assigned_user_id );
