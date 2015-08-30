@@ -314,27 +314,28 @@ input:hover[type="submit"],
 #e20r_reload_btn {
     margin: 20px 20px;
 }
-#tabs-1 {
-    padding: 0;
-}
-#tabs-2 {
+div[class^="tabs-"], div[class*=" tabs-"] {
     padding: 0;
 }
 .quick-nav th {
     padding: 0;
 }
+#profile-tabs,
 #status-tabs {
     background: transparent;
 }
-#status-tabs > ul.ui-tabs-nav .ui-state-active a {
+#status-tabs > ul.ui-tabs-nav .ui-state-active a,
+#profile-tabs > ul.ui-tabs-nav .ui-state-active a {
     background-color: #004CFF;
     color: #FFFFFF;
 }
-#status-tabs {
+#status-tabs,
+#profile-tabs {
     padding: 0px;
     background: none;
     border-width: 0px;
 }
+#profile-tabs .ui-tabs-nav,
 #status-tabs .ui-tabs-nav {
     padding-left: 0px;
     background: transparent;
@@ -343,15 +344,19 @@ input:hover[type="submit"],
     -webkit-border-radius: 0px;
     border-radius: 0px;
 }
+#profile-tabs > ul.ui-tabs-nav > li.ui-state-default.ui-state-active,
+#profile-tabs > ul.ui-tabs-nav > li.ui-tabs-active
 #status-tabs > ul.ui-tabs-nav > li.ui-state-default.ui-state-active,
-#status-tabs > ul.ui-tabs-nav > li.ui-tabs-active,{
+#status-tabs > ul.ui-tabs-nav > li.ui-tabs-active{
     margin-top: 0em;
     font-size: 100%;
 }
+#profile-tabs > ul.ui-tabs-nav > li.ui-state-default,
 #status-tabs > ul.ui-tabs-nav > li.ui-state-default {
     margin-top: 0.6em;
     font-size: 80%;
 }
+#profile-tabs .ui-tabs-panel,
 #status-tabs .ui-tabs-panel {
     background: #f5f3e5 url(http://code.jquery.com/ui/1.8.23/themes/south-street/images/ui-bg_highlight-hard_100_f5f3e5_1x100.png) repeat-x scroll 50% top;
     border-width: 0px 1px 1px 1px;
@@ -374,7 +379,7 @@ input:hover[type="submit"],
     border: none;
 }
 #inner-tabs .ui-tabs-nav .ui-state-active {
-    background: transparent url(../images/uiArrow.png) no-repeat bottom center;
+    background: transparent url(../img/uiArrow.png) no-repeat bottom center;
     border: none;
 }
 #inner-tabs .ui-tabs-nav .ui-state-default a {
@@ -861,9 +866,9 @@ input:hover[type="submit"],
         color: #333;
     }
     div.e20r-tracker-bronze-badge,
-    div.e20r-tracker-no-badge { background: url('../images/bronze-badge.png') no-repeat center; }
-    div.e20r-tracker-silver-badge { background: url('../images/silver-badge.png') no-repeat center; }
-    div.e20r-tracker-gold-badge { background: url('../images/gold-badge.png') no-repeat center; }
+    div.e20r-tracker-no-badge { background: url('../img/bronze-badge.png') no-repeat center; }
+    div.e20r-tracker-silver-badge { background: url('../img/silver-badge.png') no-repeat center; }
+    div.e20r-tracker-gold-badge { background: url('../img/gold-badge.png') no-repeat center; }
     div.e20r-tracker-no-badge,
     div.e20r-tracker-bronze-badge,
     div.e20r-tracker-silver-badge,
@@ -902,7 +907,7 @@ input:hover[type="submit"],
     margin-bottom: 12px;
     margin-top: 4px;
     font-size: 24px;
-    background: url(../images/report_edit32.png) no-repeat;
+    background: url(../img/report_edit32.png) no-repeat;
     height: 32px;
     padding-left: 39px;
     line-height: 35px;
@@ -1197,20 +1202,20 @@ input:hover[type="submit"],
     }
     /*** For the Achievements page ***/
     div.e20r-tracker-bronze-badge {
-        background: url('../images/bronze-badge.png') no-repeat center;
+        background: url('../img/bronze-badge.png') no-repeat center;
         height: 100px;
     }
     div.e20r-tracker-silver-badge {
-        background: url('../images/silver-badge.png') no-repeat center;
+        background: url('../img/silver-badge.png') no-repeat center;
         height: 100px;
     }
     div.e20r-tracker-gold-badge {
         height: 100px;
-        background: url('../images/gold-badge.png') no-repeat center;
+        background: url('../img/gold-badge.png') no-repeat center;
     }
     div.e20r-tracker-no-badge {
         height: 100px;
-        background: url('../images/bronze-badge.png') no-repeat center;
+        background: url('../img/bronze-badge.png') no-repeat center;
     }
     div.e20r-activity-table,
     div.e20r-assignment-table,
@@ -1493,7 +1498,7 @@ table.e20r-progress-form tfoot button.submit div { padding: 4px; }
     padding-left: 33px;
     margin-left: 33px;
     padding-top: 4px;
-    /* background: url(../images/blockquote-bg.png) no-repeat; TODO: Fix with a blockquote character (See CSS for pmpro-customization ) */
+    /* background: url(../img/blockquote-bg.png) no-repeat; TODO: Fix with a blockquote character (See CSS for pmpro-customization ) */
     color: #666666;
 }
 a.load_progress_data {
@@ -1536,7 +1541,7 @@ a.load_progress_data {
     height: 30px;
     line-height: 32px;
     padding-left: 32px;
-    background: #deffdb url(../images/checkmark.png) no-repeat 8px center;
+    background: #deffdb url(../img/checkmark.png) no-repeat 8px center;
     color: #242a24;
     margin-bottom: 4px;
     border: 1px solid #84c37e;
@@ -2081,7 +2086,7 @@ td.e20r-group-header {
     margin-top: 1px;
     display: none;
     text-indent: 10px;
-    background: white url(../images/left-quote.png) no-repeat top left;
+    background: white url(../img/left-quote.png) no-repeat top left;
     background-size: 72px 72px;
     font-size: 16px;
     line-height: 22px;
@@ -2093,7 +2098,7 @@ td.e20r-group-header {
     word-wrap: break-word;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
-    background: white url(../images/right-quote.png) no-repeat top left;
+    background: white url(../img/right-quote.png) no-repeat top left;
     background-size: 72px 72px;
     position: absolute;
     width: 24px;
@@ -2150,12 +2155,12 @@ td.e20r-group-header {
     height: 30px;
     line-height: 30px;
     padding-left: 32px;
-    background: #deffdb url(../images/checkmark.png) no-repeat 8px center;
+    background: #deffdb url(../img/checkmark.png) no-repeat 8px center;
     color: #242a24;
     display: none;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
-    background: white url(../images/right-quote.png) no-repeat top left;
+    background: white url(../img/right-quote.png) no-repeat top left;
     position: absolute;
     width: 24px;
     height: 20px;
@@ -2242,7 +2247,7 @@ div#e20r-checkin-content {
     left:       0;
     height:     100%;
     width:      100%;
-    background: rgba( 255, 255, 255, .8 ) url('../images/saving.gif') 50% 50% no-repeat;
+    background: rgba( 255, 255, 255, .8 ) url('../img/saving.gif') 50% 50% no-repeat;
 }
 /* When the body has the loading class, we turn
    the scrollbar off with overflow:hidden */
@@ -2271,7 +2276,7 @@ body.loading .modal {
     padding-left: 34px;
     font-size: 14px;
     font-weight: normal;
-    background-image: url(../images/small-calendar.png);
+    background-image: url(../img/small-calendar.png);
 }
 .date-past-future .li { line-height: 150%; }
 .date-past-future { margin-bottom: 16px; }

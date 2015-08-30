@@ -133,13 +133,13 @@ table.e20r-assignment-ranking-question td input{
     left: -999em;
 }
 table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice{
-    background-image:url(../images/inactive.png);
+    background-image:url(../img/inactive.png);
     background-repeat:no-repeat;
     background-position:center center;
     height:26px
 }
 table.e20r-assignment-ranking-question td.e20r-assignment-ranking-question-choice.e20r-assignment-ranking-question-choice-selected{
-    background-image:url(../images/active.png);
+    background-image:url(../img/active.png);
     background-repeat:no-repeat;
     background-position:center center;
     background-color:#DFEFFF;
