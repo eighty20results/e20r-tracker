@@ -2777,3 +2777,16 @@ a#e20r-activity-read-lnk {
     display: inline-flex;
     border-collapse: collapse;
 }
+.z-tabs.horizontal.top.white.z-bordered > ul > li.z-active > a {
+    border-top: 3px solid #004CFF !important;
+    margin-top: 0;
+    margin-bottom: 0;
+    letter-spacing: 5px;
+}
+.z-tabs.medium.vertical.top-left.white.z-bordered > ul > li > a {
+    letter-spacing: 2px;
+    font-variant: small-caps;
+}
+.z-tabs.vertical.top-left.white.z-bordered > ul > li.z-active > a {
+    border-left: 3px solid #004CFF !important;
+}
