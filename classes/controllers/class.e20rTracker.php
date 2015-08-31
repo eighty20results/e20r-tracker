@@ -419,12 +419,16 @@ class e20rTracker {
 
             // Custom columns
             add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rCheckin, 'set_custom_edit_columns' ) );
+            add_filter( 'manage_edit-e20r_assignments_columns', array( &$e20rAssignment, 'set_custom_edit_columns' ) );
+
             add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rCheckin, 'custom_column'), 10, 2 );
+            add_action( 'manage_e20r_assignments_posts_custom_column' , array( &$e20rAssignment, 'custom_column'), 10, 2 );
 
             add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rCheckin, 'sortable_column' ) );
+            add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
 
-            add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
-            add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
+            add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
+            add_action('manage_e20r_assignments_posts_custom_column', array( &$e20rAssignment, 'assignment_col_content' ), 10, 2);
 
             add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
             add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
@@ -790,29 +794,6 @@ class e20rTracker {
 		return $links;
 	}
 
-	public function assignment_col_head( $defaults ) {
-
-		$defaults['used_day'] = 'Use on';
-		return $defaults;
-	}
-
-	public function assignment_col_content( $colName, $post_ID ) {
-
-		global $e20rAssignment;
-		global $currentAssignment;
-
-		dbg( "e20rTracker::assignment_col_content() - ID: {$post_ID}" );
-
-		if ( $colName == 'used_day' ) {
-
-			$post_releaseDay = $e20rAssignment->getDelay( $post_ID );
-
-			dbg( "e20rTracker::assignment_col_content() - Used on day #: {$post_releaseDay}" );
-			if ($post_releaseDay ) {
-				echo 'Day ' . $post_releaseDay;
-			}
-		}
-	}
 
     public function sanitize( $field ) {
 
@@ -1783,12 +1764,16 @@ class e20rTracker {
 
             $e20r_plot_jscript = true;
 
-            wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+            // wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+            wp_enqueue_style( "zozo-tabs", E20R_PLUGINS_URL . "/css/zozo.tabs.min.css", false, "6.5" );
+            wp_enqueue_style( "zozo-tabs-flat-ui", E20R_PLUGINS_URL . "/css/zozo.tabs.flat.min.css", false, "6.5" );
             wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
 
+            wp_register_script( 'zozo-tabs', E20R_PLUGINS_URL . '/js/libraries/zozo.tabs.min.js', array( 'jquery', 'jquery-effects-core' ), '6.5', true );
             wp_register_script( 'jquery.touchpunch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, true );
             // wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.min.js", array( 'jquery' ), '1.11.2', false);
+            wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'zozo-tabs', 'jquery.timeago' ), E20R_VERSION, true );
             wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery-ui-tabs', 'jquery.timeago' ), E20R_VERSION, true );
             wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), E20R_VERSION, true );
 
@@ -1813,12 +1798,12 @@ class e20rTracker {
 
             $e20r_plot_jscript = false;
 
-            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
+//            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
 
                 dbg("e20rTracker::has_measurementprogress_shortcode() - Need to load CSS for e20rTracker.");
                 wp_deregister_style("e20r-tracker");
                 wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
-            }
+//            }
 
             // $e20rMeasurements->init( $e20rArticle->releaseDate(), $e20rClient->clientId() );
 
@@ -2212,7 +2197,7 @@ class e20rTracker {
                         'lengthunit'        => $e20rClient->getLengthUnit(),
                         'weightunit'        => $e20rClient->getWeightUnit(),
 	                    'interview_url'     => $e20rProgram->get_welcomeSurveyLink($userId),
-                        'imagepath'         => E20R_PLUGINS_URL . '/images/',
+                        'imagepath'         => E20R_PLUGINS_URL . '/img/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
                         'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
                         'weekly_progress'   => get_permalink( $currentProgram->measurements_page_id ),
