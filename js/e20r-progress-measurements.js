@@ -217,17 +217,43 @@ var progMeasurements = {
             if ( e20r_progress.is_profile_page ) {
 
                 console.log("Loading status and profile tabs");
-                jQuery("#status-tabs").tabs({
-                    heightStyle: "content"
+
+                jQuery("#status-tabs").zozoTabs({
+                    theme: 'white',
+                    style: 'clean',
+                    select: progMeasurements._tab_selected,
+                    orientation: "vertical",
+                    animation: {
+                        duration: 800,
+                        effects: "slideH"
+                    }
                 });
 
-                jQuery("#profile-tabs").tabs({
-                    heightStyle: "content"
-                }); //.addClass( 'tabs-right' );
+                jQuery("#profile-tabs").zozoTabs({
+                    theme: 'white',
+                    style: 'clean',
+                    defaultTab: 'tab1',
+                    size: 'medium',
+                    multiline: true,
+                    orientation: 'horizontal',
+                    position: 'top-compact',
+                    rounded: false,
+                    animation: {
+                        duration: 800,
+                        effects: "slideH"
+                    }
+                });
             }
             else {
-                jQuery("#status-tabs").tabs({
-                    heightStyle: "content"
+                jQuery("#status-tabs").zozoTabs({
+                    theme: 'white',
+                    style: 'clean',
+                    defaultTab: 'tab1',
+                    select: progMeasurements._tab_selected,
+                    animation: {
+                        duration: 800,
+                        effects: "slideH"
+                    }
                 });
             }
 
@@ -244,20 +270,10 @@ var progMeasurements = {
                 $class._resize_chart();
             }, 1000 );
 
-            jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
+//            jQuery('#status-tabs').on('select', function(event, tab) {
 
-                if ( ui.newTab.index() === 2 ) {
 
-                    console.log("Resize the graphs on the Activities page");
-                    $class._resize_chart();
-                }
-                else if ( ui.newTab.index() === 0 ) {
-
-                    console.log("Redrawing weight/girth graphs");
-                    $class._resize_chart();
-                    //progMeasurements.gPlot.replot({resetAxes: true});
-                }
-            });
+//            });
             // $class._resize_chart();
         }
 
@@ -282,6 +298,23 @@ var progMeasurements = {
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
 
+    },
+    _tab_selected: function( event, tab ) {
+
+        console.dir( event );
+        console.dir( tab );
+
+        if ( tab.index === 2 ) {
+
+            console.log("Resize the graphs on the Activities page");
+            progMeasurements._resize_chart();
+        }
+        else if ( tab.index === 0 ) {
+
+            console.log("Redrawing weight/girth graphs");
+            progMeasurements._resize_chart();
+            //progMeasurements.gPlot.replot({resetAxes: true});
+        }
     },
     _bind_memberselect: function() {
 
