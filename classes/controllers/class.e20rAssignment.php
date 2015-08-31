@@ -613,4 +613,42 @@ class e20rAssignment extends e20rSettings {
         return true;
     }
 
+    public function assignment_col_head( $defaults ) {
+
+        $defaults['used_day'] = 'Use on';
+        return $defaults;
+    }
+
+    public function sortable_column( $columns ) {
+
+        $columns['used_day'] = 'used_day';
+
+        return $columns;
+    }
+
+    public function set_custom_edit_columns( $columns ) {
+
+        $columns['used_day'] = __("Use on (Day #)", "e20rtracker");
+        return $columns;
+    }
+
+    public function assignment_col_content( $colName, $post_ID ) {
+
+        global $e20rAssignment;
+        global $currentAssignment;
+
+        dbg( "e20rTracker::assignment_col_content() - ID: {$post_ID}" );
+
+        if ( $colName == 'used_day' ) {
+
+            $post_releaseDay = $e20rAssignment->getDelay( $post_ID );
+
+            dbg( "e20rTracker::assignment_col_content() - Used on day #: {$post_releaseDay}" );
+
+            if ($post_releaseDay ) {
+                echo $post_releaseDay;
+            }
+        }
+    }
+
 }
