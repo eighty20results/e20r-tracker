@@ -190,13 +190,17 @@ table.jqplot-table-legend td {
     background-image: -o-linear-gradient(#E5E5E5, #004CFF);
     background-image: linear-gradient(#E5E5E5, #004CFF);
 }
-input[type="button"], input[type="reset"], input[type="submit"], .button {
+.gform_button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+.button {
     background-color: #FFF;
     cursor: pointer;
     width: auto;
     display: inline-block;
     margin: 0 10px 0 0;
-    /* color: #004CFF !important; */
+    color: #004CFF !important;
     padding: 8px 15px;
     -moz-border-radius: 8px;
     border-radius: 8px;
@@ -206,10 +210,10 @@ input[type="button"], input[type="reset"], input[type="submit"], .button {
     text-align: center;
     text-decoration: none;
     box-shadow: none;
-    background-image: -webkit-linear-gradient(#FFF, #E5E5E5);
-    background-image: -moz-linear-gradient(#FFF, #E5E5E5);
-    background-image: -o-linear-gradient(#FFF, #E5E5E5);
-    background-image: linear-gradient(#FFF, #E5E5E5);
+    background-image: -webkit-linear-gradient(#FFF, #FFF);
+    background-image: -moz-linear-gradient(#FFF, #FFF);
+    background-image: -o-linear-gradient(#FFF, #FFF);
+    background-image: linear-gradient(#FFF, #FFF);
     border: 1px solid #C5C5C5;
     text-shadow: none;
 }
@@ -2115,7 +2119,7 @@ td.e20r-group-header {
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes .button-container button {
     position: absolute;
     right: 0;
-    z-index: 99;
+    z-index: 10;
     font-size: 14px;
 }
 .browserFirefox20 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend { font-size: 12px; }
@@ -2789,4 +2793,57 @@ a#e20r-activity-read-lnk {
 }
 .z-tabs.vertical.top-left.white.z-bordered > ul > li.z-active > a {
     border-left: 3px solid #004CFF !important;
+}
+.ui-state-active a {
+    border-bottom: 3px solid #FFF !important;
+    background-color: #FFF;
+}
+.ui-tabs-anchor {
+    text-align: center;
+}
+.ui-tabs-anchor > span {
+    font-size: 0.7rem;
+    clear: both;
+    display: block;
+    text-align: center;
+    padding-top: 5px;
+}
+
+#status-tabs .ui-corner-all,
+#profile-tabs .ui-corner-all {
+    border-radius: 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+
+}
+#status-tabs .ui-tabs-nav,
+#profile-tabs .ui-tabs-nav {
+    padding: 0em;
+    background: transparent;
+    border-width: 0px;
+}
+#status-tabs .ui-tabs-nav li,
+#profile-tabs .ui-tabs-nav li {
+    position: static;
+    margin: 0px;
+    border-bottom: 1px solid #004CFF !important;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+#status-tabs .ui-tabs-nav li:first-child,
+#profile-tabs .ui-tabs-nav li:first-child {
+    -moz-border-radius: 0px 0px 0px 0px;
+    -webkit-border-radius: 0px 0px 0px 0px;
+    border-radius: 0px 0px 0px 0px;
+}
+#status-tabs .ui-tabs-nav li:last-child,
+#profile-tabs .ui-tabs-nav li:last-child {
+    -moz-border-radius: 0px 0px 0px 0px;
+    -webkit-border-radius: 0px 0px 0px 0px;
+    border-radius: 0px 0px 0px 0px;
+}
+#status-tabs .ui-tabs-nav li.ui-tabs-selected {
+    padding-bottom: 0px;
+    border-bottom: 1px solid #d4ccb0 !important;
 }
