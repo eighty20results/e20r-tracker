@@ -230,7 +230,6 @@ class e20rClient {
 
     public function completeInterview( $userId ) {
 
-        global $e20rTracker;
 
 		dbg("e20rClient::completeInterview() - Checking if interview was completed");
         // $data = $this->model->get_data( $userId, 'completed_date');
@@ -313,7 +312,7 @@ class e20rClient {
 		$c_data = $this->model->get_data( $clientId );
 
 		dbg("e20rClient::loadClientInterviewData() - Client Data from DB:");
-		// dbg($c_data);
+		dbg($c_data);
 
 		if ( isset($c_data->incomplete_interview) && ( 1 == $c_data->incomplete_interview ) ) {
 
@@ -354,10 +353,11 @@ class e20rClient {
 				foreach( $item['choices'] as $cId => $i ) {
 
 					// Split any checkbox list values in $c_data by semicolon...
-					$itArr = preg_split( '/;/', $c_data->{$item['label']} );
+					if ( isset($c_data->{$item['label']} )) {
+                        $itArr = preg_split('/;/', $c_data->{$item['label']});
 
-                    $msArr = preg_split( '/,/', $c_data->{$item['label']} );
-
+                        $msArr = preg_split('/,/', $c_data->{$item['label']});
+                    }
                     if  ( empty( $msArr) && !isset( $c_data->{$item['label']} ) && empty( $c_data->{$item['label']} ) && ( 0 !== $c_data->{$item['label']} ) ) {
                         dbg("e20rClient::loadClientInterviewData() - {$item['label']} is empty? ". $c_data->{$item['label']});
                         continue;
@@ -365,7 +365,7 @@ class e20rClient {
 
                     // dbg("e20rClient::loadClientInterviewData() - Is value {$c_data->{$item['label']}} for object {$item['label']} numeric? " . ( is_numeric( $c_data->{$item['label']}) ? 'Yes' : 'No' ) );
 					/** Process special cases where the DB field is numeric but the value in the form is text (Yes/No values) */
-					if ( ( 'GF_Field_MultiSelect' != $classType ) && is_numeric( $c_data->{$item['label']}) && ( 'likert' != $item['inputType'] ) ) {
+					if ( ( 'GF_Field_MultiSelect' != $classType ) && isset( $c_data->{$item['label']} ) && is_numeric( $c_data->{$item['label']}) && ( 'likert' != $item['inputType'] ) ) {
 
 						switch ( $c_data->{$item['label']} ) {
 
@@ -382,7 +382,7 @@ class e20rClient {
 					}
 
 					/** Process special cases where the DB field to indicate gender */
-					if ( in_array( $c_data->{$item['label']}, array('m', 'f') ) )  {
+					if ( isset($c_data->{$item['label']}) && in_array( $c_data->{$item['label']}, array('m', 'f') ) )  {
 
 						dbg( "e20rClient::loadClientInterviewData() - Convert for gender: {$c_data->{$item['label']}}" );
 						switch( $c_data->{$item['label']}) {
@@ -408,7 +408,7 @@ class e20rClient {
 						$key = 'value';
 					}
 
-					if ( ( ( 0 === $c_data->{$item['label']} ) || !empty( $c_data->{$item['label']} ) ) && ( $c_data->{$item['label']} == $i[ $key ] ) ) {
+					if ( isset( $c_data->{$item['label']} ) && ( ( 0 === $c_data->{$item['label']} ) || !empty( $c_data->{$item['label']} ) ) && ( $c_data->{$item['label']} == $i[ $key ] ) ) {
 
 						dbg( "e20rClient::loadClientInterviewData() - Choosing value " . $i[ $key ] . " for {$item['label']} - it's supposed to have key # {$cId}" );
 						dbg( "e20rClient::loadClientInterviewData() - Form value: {$form['fields'][ $id ]['choices'][ $cId ][$key]}");
@@ -1569,6 +1569,7 @@ class e20rClient {
 
             if ( !empty( $interview->post_content ) ) {
 
+                dbg("e20rClient::view_interview() - Applying the content filter to the interview page content");
                 $content = apply_filters( 'the_content', $interview->post_content);
 
                 $complete = $this->completeInterview( $clientId );
@@ -1629,15 +1630,22 @@ class e20rClient {
         }
         */
 
-        $interview = $this->view_interview( $config->userId );
+        if ( $this->completeInterview( $config->userId ) ) {
+            $interview_descr = 'Your saved welcome interview responses';
+        }
+        else {
+            $interview_descr = "Please complete your interview";
+        }
 
-        $lesson = $e20rArticle->load_lesson( $config->articleId );
+        $interview = array( $interview_descr , '<nav id="e20r-profile-interview">' . $this->view_interview( $config->userId ) . '</nav>' );
+
         $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
+        $lesson = array( 'Your daily ' . lcfirst( $lesson_prefix ), '<nav id="e20r-profile-lesson">' . $e20rArticle->load_lesson( $config->articleId ) . '</nav>');
 
         if ( ! $currentArticle->is_preview_day ) {
 
             dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
-            $this->model->setUser( $userId );
+            $this->model->setUser( $config->userId );
 
             $this->setClient( $userId );
 
@@ -1647,14 +1655,16 @@ class e20rClient {
             dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
             $measurements = $e20rMeasurements->getMeasurement( 'all', false );
 
-            if ( $this->completeInterview( $this->id ) ) {
-                $measurement_view = $e20rMeasurements->showTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
+            if ( $this->completeInterview( $config->userId ) ) {
+                $measurement_view = $e20rMeasurements->showTableOfMeasurements( $config->userId, $measurements, $dimensions, null, true, false );
             }
             else {
                 $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
             }
 
-            $dashboard = $e20rCheckin->dailyProgress( $config );
+            $dashboard = array( 'Your dashboard', '<nav id="e20r-profile-dashboard">' . $e20rCheckin->dailyProgress( $config ) . '</nav>');
+            $activity = array( 'Your daily activity', '<nav id="e20r-profile-activity">' . $e20rWorkout->prepare_activity( $config ) . '</nav>');
+
             $assignments = $e20rAssignment->listUserAssignments( $config->userId );
             $activities = $e20rWorkout->listUserActivities( $config->userId );
             $achievements = $e20rCheckin->listUserAccomplishments( $config->userId );
@@ -1666,19 +1676,20 @@ class e20rClient {
                 'Achievements' => '<div id="e20r-progress-achievements">' . $achievements . '</div>',
             );
 
-            $progress_html = $e20rMeasurements->show_progress( $progress, null, false );
+            $progress_html = array( 'Your current progress & measurements', '<nav id="e20r-profile-status">' . $e20rMeasurements->show_progress( $progress, null, false ) . '</nav>');
 
             $tabs = array(
-                'Home'         => '<nav id="e20r-profile-dashboard">' . $dashboard . '</nav>',
-                $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
-                'Progress'          => '<nav id="e20r-profile-status">' . $progress_html . '</nav>',
-                'Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+               'Home'              => $dashboard,
+//                $lesson_prefix      => $lesson,
+//                'Activity'          => $activity,
+                'Progress'          => $progress_html ,
+                'Interview'         => $interview,
             );
         }
         else {
             $tabs = array(
-                $lesson_prefix      => '<nav id="e20r-profile-lesson">' . $lesson . '</nav>',
-                'Interview' => '<nav id="e20r-profile-interview">' . $interview . '</nav>',
+                $lesson_prefix      => $lesson,
+                'Interview' => $interview,
             );
         }
 
@@ -1692,6 +1703,7 @@ class e20rClient {
         }
         */
         $html = $this->view->view_clientProfile( $tabs );
+		dbg("e20rClient::shortcode_clientProfile() - Display the HTML for the e20r_profile short code");
 
         return $html;
 
