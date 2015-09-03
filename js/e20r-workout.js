@@ -260,7 +260,7 @@ var e20rActivity = {
             // console.log("Sending data: ", $data );
 
             jQuery.ajax({
-                url: e20r_workout.url,
+                url: e20r_workout.ajaxurl,
                 type: 'POST',
                 timeout: 10000,
                 data: $data,
@@ -345,7 +345,7 @@ var e20rActivity = {
         if ( $class._complete() ) {
 
             jQuery.ajax({
-                url: e20r_workout.url,
+                url: e20r_workout.ajaxurl,
                 type: 'POST',
                 timeout: 10000,
                 data: $data,
