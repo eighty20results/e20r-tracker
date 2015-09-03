@@ -254,7 +254,7 @@ class e20rWorkoutView extends e20rSettingsView {
 							<div class="e20r-activity-info-col">
 								<input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo $config->userId; ?>" />
 								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo $config->programId; ?>" />
-								<input type="hidden" id="e20r-activity-input-article_id" name="e20r-activity-article_id" value="<?php echo $config->articleId; ?>" />
+								<input type="hidden" id="e20r-activity-input-article_id" name="e20r-activity-article_id" value="<?php echo isset( $config->articleId ) ? $config->articleId : null; ?>" />
 								<input type="hidden" id="e20r-activity-input-activity_id" name="e20r-activity-exercise-activity_id" value="<?php echo $w->id; ?>" />
 								<input type="hidden" id="e20r-activity-input-for_date" name="e20r-activity-exercise-for_date" value="<?php echo ( !empty( $config->date ) ? $config->date : null ); ?>" />
 								<div class="e20r-int-table">
@@ -331,7 +331,7 @@ class e20rWorkoutView extends e20rSettingsView {
 						</div><!-- End of exercise-row -->
 						<div class="spacer">&nbsp;</div><?php
 
-                                if ( 1 == $config->show_tracking ) {
+                                if ( ( isset( $config->show_tracking) ) && ( 1 == $config->show_tracking ) ) {
                         ?>
 						<div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
 							<div class="e20r-activity-info-col">
@@ -712,11 +712,11 @@ class e20rWorkoutView extends e20rSettingsView {
 						    </td>
 						    <td class="text-input">
 							    <select class="e20r-select2-container select2" class="e20r-workout-groups-group_tempo" name="e20r-workout-groups-group_tempo[]" style="width: 100%;">
-								    <option value="0" <?php selected( 0, $group->group_tempo ); ?>></option>
-								    <option value="1" <?php selected( 1, $group->group_tempo ); ?>><?php _e("Slow", "e20rtracker");?></option>
-								    <option value="2" <?php selected( 2, $group->group_tempo ); ?>><?php _e("Normal", "e20rtracker");?></option>
-								    <option value="3" <?php selected( 3, $group->group_tempo ); ?>><?php _e("Fast", "e20rtracker");?></option>
-								    <option value="4" <?php selected( 4, $group->group_tempo ); ?>><?php _e("Varying", "e20rtracker");?></option>
+								    <option value="0" <?php selected( 0, $group->tempo ); ?>></option>
+								    <option value="1" <?php selected( 1, $group->tempo ); ?>><?php _e("Slow", "e20rtracker");?></option>
+								    <option value="2" <?php selected( 2, $group->tempo ); ?>><?php _e("Normal", "e20rtracker");?></option>
+								    <option value="3" <?php selected( 3, $group->tempo ); ?>><?php _e("Fast", "e20rtracker");?></option>
+								    <option value="4" <?php selected( 4, $group->tempo ); ?>><?php _e("Varying", "e20rtracker");?></option>
 							    </select>
 						    </td>
 					    </tr>
