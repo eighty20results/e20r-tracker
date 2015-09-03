@@ -49,11 +49,13 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	public function getType( $tId ) {
 
+        global $e20rTracker;
+
         if ( null == $tId ) {
             return $this->types[0];
         }
 
-        dbg("e20rWorkoutModel::getType() - Type ID: {$tId}");
+        dbg("e20rWorkoutModel::getType() - Type ID: {$tId}: " . $e20rTracker->whoCalledMe() );
 		return $this->types[$tId];
 	}
 
