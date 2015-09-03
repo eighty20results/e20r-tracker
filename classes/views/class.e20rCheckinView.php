@@ -345,17 +345,17 @@ class e20rCheckinView extends e20rSettingsView {
             <div class="e20r-description-row clear-after">
                 <div class="column_1_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Gold Ribbon", "e20rtracker" ); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/gold-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/gold-badge.png'; ?>">
                     <p class="achivement-descr-small"><?php _e("The gold ribbon is awarded when your consistency is greater than 80 percent", "e20rtracker" ); ?></p>
                 </div>
                 <div class="column_2_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Silver Ribbon", "e20rtracker"); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/silver-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/silver-badge.png'; ?>">
                     <p class="achivement-descr-small"><?php _e("The sliver ribbon is awarded when your consistency is between 70 and 80 percent", "e20rtracker" ); ?></p>
                 </div>
                 <div class="column_3_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Bronze Ribbon", "e20rtracker"); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/images/bronze-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/bronze-badge.png'; ?>">
                     <p class="achivement-descr-small"><?php _e("The bronze ribbon is awarded when your consistency is 70 percent or less", "e20rtracekr" ); ?></p>
                 </div>
             </div>
