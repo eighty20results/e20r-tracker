@@ -437,7 +437,7 @@ class e20rClientViews {
             </form>
         </div>
         <hr class="e20r-admin-hr" />
-	    <div id="status-tabs" style="max-width: 800px; width: 100%;" class="startHidden">
+	    <div id="status-tabs" style="max-width: 800px; width: 100%;" class="startHidden" data-role='z-tabs'>
 		    <ul>
 			    <li><a href="#tabs-1">Measurements</a></li>
 			    <li><a href="#tabs-2">Assignments</a></li>
@@ -492,26 +492,40 @@ class e20rClientViews {
     public function view_clientProfile( $progressEntries ) {
 
         ob_start(); ?>
-        <div id="profile-tabs">
+        <!-- <div id="profile-tabs" class="z-tabs-loading" data-role='z-tabs' data-options='{"theme": "white", "style": "clean", "defaultTab": "tab1", "size": "medium", "position": "top-compact", "multiline": true, "rounded": false, "orientation": "horizontal", "animation": {"duration": 800, "effects": "slideH"}}'> -->
+        <div id="profile-tabs" class="z-tabs-loading">
             <ul><?php
 
             $count = 1;
-            foreach( $progressEntries as $label => $contentHtml ) { ?>
+            foreach( $progressEntries as $label => $contentHtml ) {
 
-                <li><a href="#profile-tabs-<?php echo $count++; ?>"><?php echo $label; ?></a></li><?php
+                if ( ! is_array( $contentHtml ) ) { ?>
+
+                <li><a href="#profile-tab-<?php echo $count++; ?>"><?php echo $label; ?></a></li><?php
+                }
+                else {
+                    $span = $contentHtml[0];
+                    $contentHtml = $contentHtml[1];
+                ?>
+                    <li><a href="#profile-tab-<?php echo $count++; ?>"><?php echo $label; ?><span><?php echo $span; ?></span></a></li><?php
+                }
             } ?>
 
             </ul><?php
             $count = 1;
-            foreach( $progressEntries as $label => $contentHtml ) { ?>
+            foreach( $progressEntries as $label => $contentHtml ) {
 
-            <div id="profile-tabs-<?php echo $count++; ?>">
+            if (is_array( $contentHtml ) ) {
+                $span = $contentHtml[0];
+                $contentHtml = $contentHtml[1];
+            } ?>
+            <div id="profile-tab-<?php echo $count++; ?>">
                 <?php echo $contentHtml; ?>
             </div>
 
     <?php   } ?>
         </div> <!-- profile-tabs div -->
-	    <div class="modal"><!-- At end of form --></div><?php
+        <span class="z-spinner"></span><?php
 
         $html = ob_get_clean();
         return $html;
@@ -574,14 +588,13 @@ class e20rClientViews {
         $html = ob_get_clean();
         return $html;
     }
-
+/*
     private function viewAssignments( $clientId ) {
 
     }
 
     public function load_billing_data( $client_id = 0 ) {
 
-        // TODO: Build array wpdb objects containing the billing info for this client
         if ( $client_id == 0 ) {
 
             global $current_user;
@@ -616,7 +629,7 @@ class e20rClientViews {
 
         echo $data;
     }
-/*
+
     public function render_new_program_page() {
 
         $programs = new e20rProgram();
@@ -625,10 +638,8 @@ class e20rClientViews {
 
     }
 
-*/
-
     public function render_meals_page() {
 
     }
-
+*/
 } 
