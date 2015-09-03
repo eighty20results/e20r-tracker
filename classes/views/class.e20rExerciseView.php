@@ -42,7 +42,7 @@ class e20rExerciseView {
             if ( is_null( $data[0] ) && empty( $currentExercise->video_link ) ) {
 
                 dbg("e20rExerciseViews::printExercise() - Using default placeholder image...");
-                $currentExercise->image = '<img class="e20r-resize" src="'. E20R_PLUGINS_URL . '/images/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
+                $currentExercise->image = '<img class="e20r-resize" src="'. E20R_PLUGINS_URL . '/img/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
             }
             else {
 
