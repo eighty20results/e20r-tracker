@@ -23,7 +23,7 @@ class e20rArticleView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
 			<p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
 		</div>
 
@@ -39,14 +39,14 @@ class e20rArticleView extends e20rSettingsView {
         if ( $is_complete ) {
             ?>
             <div class="green-notice big"
-                 style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p class="e20r-completed-notice"><?php echo sprintf(__("Thanks, you have already saved this '%s' interview.", 'e20rtracker'), $page_title) ?></p>
-                <p class="e20r-completed-notice"><?php _e("Please update any information you need to, and then save it again. Or simply navigate away from the page without updating anything.", "e20rTracker"); ?></p>
+                 style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+                <p class="e20r-completed-notice"><?php echo sprintf(__("Great, you have already saved this '%s' interview.", 'e20rtracker'), $page_title) ?></p>
+                <p class="e20r-completed-notice"><?php _e("If you need to update any information, make sure to save it before you leave. Or you can simply navigate away from the page without updating anything.", "e20rTracker"); ?></p>
             </div>
             <?php
         }
         else { ?>
-            <div class="red-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/warning.png ); margin: 12px 0pt; background-position: 24px 9px;">
+            <div class="red-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/warning.png ); margin: 12px 0pt; background-position: 24px 9px;">
                 <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20rtracker'), $page_title) ?></p>
                 <p class="e20r-completed-notice"><?php _e("So we can fully understand your health and fitness levels, and use that information to help you achieve your health and fitness goals, please complete the interview now. Then save it.", "e20rTracker"); ?></p>
             </div>
@@ -68,7 +68,7 @@ class e20rArticleView extends e20rSettingsView {
 
         ob_start();
         ?>
-        <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+        <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
             <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong>
             <?php
                 if ( $measurements !== 0 ) { ?>
@@ -102,7 +102,7 @@ class e20rArticleView extends e20rSettingsView {
                 <h3>Weekly Progress <span>Update</span></h3>
 
                 <div id="e20r-progress-canvas" style="min-height: 255px;">
-                    <img src="<?php echo E20R_PLUGINS_URL; ?>/images/alert.png" class="tooltip-handle" data-tooltip=""
+                    <img src="<?php echo E20R_PLUGINS_URL; ?>/img/alert.png" class="tooltip-handle" data-tooltip=""
                          data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock" style="float: left;"/>
 
                     <div style="float: left; width: 360px;">
