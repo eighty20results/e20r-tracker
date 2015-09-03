@@ -441,7 +441,7 @@ class e20rMeasurements {
         dbg("e20rMeasurements::ajax_deletePhoto_callback() - Link: {$attLnk} ");
         if ( 'Missing Attachment' === $attLnk ) {
 
-            wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg" ) );
+            wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/img/no-image-uploaded.jpg" ) );
         }
 
         dbg("e20rMeasurements::ajax_deletePhoto_callback() - Not deleted");
@@ -559,6 +559,8 @@ class e20rMeasurements {
 
             $this->id = $current_user->ID;
             $e20rProgram->getProgramIdForUser( $this->id );
+
+            dbg( "e20rMeasurements::shortcode_progressOverview() - User {$this->id} has access." );
         }
         else {
             dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
@@ -570,10 +572,11 @@ class e20rMeasurements {
 
         $e20rClient->setClient( $this->id );
 
-        dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
+        dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data... for {$this->id}");
         $measurements = $this->getMeasurement( 'all', false );
 
         if ( $e20rClient->completeInterview( $this->id ) ) {
+
             $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
         }
         else {
@@ -582,7 +585,7 @@ class e20rMeasurements {
 
         $tabs = array(
             'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
-            'Assignments' => '<div id="e20r-progress-assignments">' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
+            'Assignments' => '<div id="e20r-progress-assignments"><br/>' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
             'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
             'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
         );
