@@ -154,7 +154,7 @@ jQuery(document).ready(function() {
                 'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_short_name:first').val()
             };
 
-            jQuery.post( e20r_checkin.url, $data, function(response) {
+            jQuery.post( e20r_checkin.ajaxurl, $data, function(response) {
 
                 if ( ! response.success ) {
 
@@ -284,7 +284,7 @@ jQuery(document).ready(function() {
             // console.log("toNext data: ", data);
 
             jQuery.ajax({
-                url: e20r_checkin.url,
+                url: e20r_checkin.ajaxurl,
                 type: 'POST',
                 timeout: 10000,
                 data: data,
@@ -368,7 +368,7 @@ jQuery(document).ready(function() {
             });
 
 /*
-            jQuery.post(e20r_checkin.url, data, function(response) {
+            jQuery.post(e20r_checkin.ajaxurl, data, function(response) {
 
                 console.log("Daily progress response: ", response );
 
@@ -414,7 +414,7 @@ jQuery(document).ready(function() {
 
             /*
             jQuery.ajax({
-                url: e20r_checkin.url,
+                url: e20r_checkin.ajaxurl,
                 type: 'POST',
                 timeout: 5000,
                 data: data,
@@ -507,7 +507,7 @@ jQuery(document).ready(function() {
             console.log("lessonComplete()...");
 
             jQuery.ajax({
-                url: e20r_checkin.url,
+                url: e20r_checkin.ajaxurl,
                 type: 'POST',
                 timeout: 10000,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
@@ -568,7 +568,7 @@ jQuery(document).ready(function() {
 
             jQuery.ajax({
                 'type': 'POST',
-                'url': e20r_checkin.url,
+                'url': e20r_checkin.ajaxurl,
                 timeout: 10000,
                 'data': 'action=save_daily_progress&' + answers,
                 success: function( $response ) {
@@ -757,7 +757,7 @@ jQuery(document).ready(function() {
 
                         jQuery('body').addClass("loading");
 
-                        jQuery.post( e20r_checkin.url, data, function( response, status ) {
+                        jQuery.post( e20r_checkin.ajaxurl, data, function( response, status ) {
 
                             if (status == 'success') {
 
