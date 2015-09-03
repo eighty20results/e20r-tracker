@@ -250,7 +250,7 @@ class e20rArticle extends e20rSettings {
         $aIds = $this->model->getSetting( $articleId, 'activity_id');
 
         // No activity defined
-        if ( !is_array( $aIds ) && ( false == $aIds ) ) {
+        if ( empty( $aIds ) || ( !is_array( $aIds ) && ( false == $aIds ) ) ) {
 
             dbg("e20rArticle::getActivity() - No defined activity for this article ({$articleId})");
             return false;
@@ -1001,6 +1001,11 @@ class e20rArticle extends e20rSettings {
         // ob_end_clean();
     }
 
+    public function interviewCompleteLabel( $title, $is_complete ) {
+
+        return $this->view->viewInterviewComplete( $title, $is_complete );
+    }
+
     /**
      * Filters the content for a post to check whether ot inject e20rTracker Article info in the post/page.
      *
@@ -1194,6 +1199,16 @@ class e20rArticle extends e20rSettings {
                 $content = $data . $content;
             }
         }
+
+        if ( $e20rClient->completeInterview( $current_user->ID ) && ( $post->ID == $currentProgram->intake_form ) ) {
+
+            dbg("e20rArticle::contentFilter() - User is viewing the Welcome interview page & their interview is saved already");
+            $interview_title = get_the_title( $currentProgram->intake_form );
+            $update_reminder = $this->view->viewInterviewComplete( $interview_title );
+
+            $content = $update_reminder . $content;
+        }
+
         dbg("e20rArticle::contentFilter() - Content being returned.");
         return $content;
     }
@@ -1270,7 +1285,7 @@ class e20rArticle extends e20rSettings {
                 $estimated_time .= " &dash; " . ( $minutes + 1 );
             }
 
-            $estimated_time .=  ' minute' . ($minutes <= 1 ? '' : 's') ;
+            $estimated_time .=  ' minute' . ( ($minutes <= 1 && $seconds < 30) ? '' : 's');
         }
         else {
 
