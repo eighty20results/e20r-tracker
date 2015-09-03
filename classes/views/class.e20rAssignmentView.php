@@ -273,7 +273,7 @@ class e20rAssignmentView extends e20rSettingsView {
                             foreach( $all as $id => $assignment ) {
 
 	                            if ( ( $id != 0 ) && ( $assignment->delay == $currentArticle->release_day ) ) { ?>
-		                            <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay})"; ?></option><?php
+		                            <option value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay}/{$assignment->order_num})"; ?></option><?php
 	                            }
 
                             } ?>
@@ -595,7 +595,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/images/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
 			<p><strong><?php _e( "You have completed this lesson.", "e20rTracker" ); ?></strong></p>
 		</div>
 		<?php
@@ -612,7 +612,6 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 		?>
-		<hr class="e20r-big-hr" />
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 		<h4>Assignments</h4>
 		<a class="close" href="#">X</a>
@@ -661,8 +660,7 @@ class e20rAssignmentView extends e20rSettingsView {
 									}
 									?>
 								</div>
-								<div
-									class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $when ) ); ?></div>
+								<div class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $when ) ); ?></div>
 							</td>
 							<td>
 								<table class="e20r-answers">
