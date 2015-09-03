@@ -98,7 +98,7 @@ class e20rMeasurementViews {
                 <fieldset>
                     <legend>
                         <a href="#load_help_girth" class="inline cboxElement">
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
                         </a>Girth Measurements
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
@@ -112,7 +112,7 @@ class e20rMeasurementViews {
                         <?php dbg("showGirthRow() -> type: {$girth->type}"); ?>
                         <h5 class="measurement-header">
                             <span class="title"><?php echo ucfirst($girth->type); ?> Girth</span>
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="measurement-descript-toggle">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="measurement-descript-toggle">
                         </h5>
 
                         <div class="girth-row-container">
@@ -232,7 +232,7 @@ class e20rMeasurementViews {
                 <fieldset>
                     <legend>
                         <a href="#load_help_photo" class="inline cboxElement">
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
                         </a>
                         Photos
                     </legend>
@@ -333,7 +333,7 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-                        <a href="#load_help_weight" class="inline cboxElement"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
+                        <a href="#load_help_weight" class="inline cboxElement"><img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
                         Body Weight Measurement
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
@@ -416,7 +416,8 @@ class e20rMeasurementViews {
 
         ob_start();
         ?>
-        <div id="status-tabs">
+        <!-- <div id="status-tabs" class="z-tabs-loading" data-role='z-tabs' data-options='{"theme": "white", "style": "clean", "rounded": "false", "defaultTab": "tab1", "orientation": "vertical", "animation": {"duration": 800, "effects": "slideH"}}'> -->
+        <div id="status-tabs" class="z-tabs-loading">
             <ul>
         <?php
             $count = 1;
@@ -514,7 +515,7 @@ class e20rMeasurementViews {
             <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
         <?php if ( $tabbed ): ?>
-            <div id="inner-tabs">
+            <div id="inner-tabs" class="z-tabs-loading">
                 <ul>
                     <li><a href="#inner-tab-1">Weight History</a></li>
                     <li><a href="#inner-tab-2">Total Girth</a></li>
@@ -532,7 +533,21 @@ class e20rMeasurementViews {
                 <script type="text/javascript">
                     <!-- jQuery(function() {
                         console.log("Configure tabs for weight/girth");
-                        jQuery("#inner-tabs").tabs();
+
+                        jQuery("#inner-tabs").zozoTabs({
+                            theme: 'white',
+                            style: 'clean',
+                            orientation: "horizontal",
+                            select: progMeasurements._tab_selected,
+                            animation: {
+                                duration: 800,
+                                effects: "slideH"
+                            }
+                        });
+/*
+                        jQuery('#inner-tabs').tabs({
+                            heightStyle: "content"
+                        });
 
                         jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
 
@@ -547,7 +562,7 @@ class e20rMeasurementViews {
                                 progMeasurements.gPlot.replot({resetAxes: true});
                             }
                         });
-
+                        */
                         jQuery('.load_progress_data').on("click", function() {
                             progMeasurements.loadProgressPage( this );
                         });
@@ -558,7 +573,7 @@ class e20rMeasurementViews {
             <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
             <div id="girth_chart" style="height: <?php echo $height; ?>;width: <?php echo $width; ?>;"></div>
         <?php endif; ?>
-            <hr class="e20r-big-hr" />
+        <br/>
             <div class="e20r-measurements-container">
                 <h4>Measurements for <?php echo $user->first_name; ?></h4>
                 <a class="close" href="#">X</a>
@@ -897,7 +912,7 @@ class e20rMeasurementViews {
                                 It's inexpensive, it's handy, and since the tape encircles the body part with a consistent
                                 tightness, it allows for more accurate and consistent readings.
                                 <p align="center">
-                                    <img class="alignnone" src="<?php echo E20R_PLUGINS_URL; ?>/images/myotape.png" alt="" width="302" height="267" />
+                                    <img class="alignnone" src="<?php echo E20R_PLUGINS_URL; ?>/img/myotape.png" alt="" width="302" height="267" />
                                 </p>
                             </td>
                             </tr>
@@ -1078,7 +1093,7 @@ class e20rMeasurementViews {
 
 	    global $e20rClient;
 
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/img/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
     }
 
     private function prettyUnit( $type ) {
@@ -1159,7 +1174,7 @@ class e20rMeasurementViews {
 
         if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
 
-            $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
+            $url = E20R_PLUGINS_URL . "/img/no-image-uploaded.jpg";
         }
 
         return $url;
