@@ -38,7 +38,7 @@ var progMeasurements = {
         if ( $class.clientId === null ) {
 
             console.log("We should be on a wp-admin page...");
-            $class.$ajaxUrl = ajaxurl;
+            $class.$ajaxUrl = e20r_progress.ajaxurl;
 
             // Used by admin UI only
             $class.$levelSelect = jQuery("#e20r-selectLevel");
@@ -74,11 +74,21 @@ var progMeasurements = {
             $class.$clientComplianceTab = jQuery("#e20r-client-compliance");
             $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
 
-            jQuery(function () {
-                console.log("Loading tabs for wp-admin page");
-                jQuery("#status-tabs").tabs({
-                    heightStyle: "content"
-                });
+            console.log("Loading tabs for wp-admin page");
+/*
+            jQuery('#status-tabs').tabs({
+                heightStyle: "content"
+            });
+*/
+            jQuery("#status-tabs").zozoTabs({
+                theme: 'white',
+                style: 'clean',
+                select: progMeasurements._tab_selected,
+                orientation: "vertical",
+                animation: {
+                    duration: 800,
+                    effects: "slideH"
+                }
             });
 
             /* Configure admin page events */
@@ -217,44 +227,71 @@ var progMeasurements = {
             if ( e20r_progress.is_profile_page ) {
 
                 console.log("Loading status and profile tabs");
+/*
+                jQuery('#status-tabs').tabs({
+                    heightStyle: "content"
+                });
+                jQuery('#profile-tabs').tabs({
+                    heightStyle: "content"
+                });
+*/
 
                 jQuery("#status-tabs").zozoTabs({
-                    theme: 'white',
-                    style: 'clean',
-                    select: progMeasurements._tab_selected,
-                    orientation: "vertical",
+                    "theme": "white",
+                    "style": "clean",
+                    // theme: 'flat-alizarin',
+                    // style: 'flat',
+                    "select": progMeasurements._tab_selected,
+                    "orientation": "vertical",
                     animation: {
                         duration: 800,
-                        effects: "slideH"
+                        effects: "slideV"
                     }
                 });
 
                 jQuery("#profile-tabs").zozoTabs({
-                    theme: 'white',
-                    style: 'clean',
-                    defaultTab: 'tab1',
-                    size: 'medium',
-                    multiline: true,
-                    orientation: 'horizontal',
-                    position: 'top-compact',
-                    rounded: false,
-                    animation: {
+                    select: progMeasurements._tab_selected,
+                    "theme": "white",
+                    "style": "clean",
+                    //"theme": "flat-alizarin",
+                    //"style": "flat",
+                    "defaultTab": "tab1",
+                    "size": "medium",
+                    "multiline": true,
+                    "orientation": "horizontal",
+                    "position": "top-compact",
+                    "rounded": false,
+                    "animation": {
                         duration: 800,
-                        effects: "slideH"
+                        effects: "slideV"
                     }
                 });
             }
             else {
+                console.log("Loading progress overview tabs");
+
                 jQuery("#status-tabs").zozoTabs({
-                    theme: 'white',
-                    style: 'clean',
-                    defaultTab: 'tab1',
-                    select: progMeasurements._tab_selected,
+                    "theme": "white",
+                    "style": "clean",
+                    // theme: 'flat-alizarin',
+                    // style: 'flat',
+                    "defaultTab": "tab1",
+                    "size": "medium",
+                    "multiline": true,
+                    "position": "top-compact",
+                    "rounded": false,
+                    "select": progMeasurements._tab_selected,
+                    "orientation": "horizontal",
                     animation: {
                         duration: 800,
-                        effects: "slideH"
+                        effects: "slideV"
                     }
                 });
+                /*
+                jQuery('#status-tabs').tabs({
+                    heightStyle: "content"
+                });
+                */
             }
 
             jQuery(".exercise-stats-container").each(function() {
@@ -270,11 +307,22 @@ var progMeasurements = {
                 $class._resize_chart();
             }, 1000 );
 
-//            jQuery('#status-tabs').on('select', function(event, tab) {
+/*
+            jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
 
+                if ( ui.newTab.index() === 2 ) {
 
-//            });
-            // $class._resize_chart();
+                    console.log("Resize the graphs on the Activities page");
+                    $class._resize_chart();
+                }
+                else if ( ui.newTab.index() === 0 ) {
+
+                    console.log("Redrawing weight/girth graphs");
+                    $class._resize_chart();
+                    //progMeasurements.gPlot.replot({resetAxes: true});
+                }
+            });
+*/
         }
 
         var $resizeId;
@@ -361,7 +409,7 @@ var progMeasurements = {
     },
     _resize_chart: function() {
 
-        // var $class = this;
+        var $class = this;
         // console.log("Iterating through the statPlot array()", this.statPlot );
         var $new_width;
 
@@ -387,15 +435,16 @@ var progMeasurements = {
 
         var $tabspace = jQuery('#e20r-progress-measurements').width() * 0.87;
 
-        if ( $tabspace > 0) {
+        if ( ( $tabspace > 0 ) &&
+            ( ( $class.wPlot !== null ) || ( $class.gPlot !== null ) ) ) {
 
             console.log("Width for Weight/Girth charts: ", $tabspace);
 
             jQuery("#weight_chart").width($tabspace);
             jQuery('#girth_chart').width($tabspace);
 
-            this.wPlot.replot({resetAxes: true});
-            this.gPlot.replot({resetAxes: true});
+            $class.wPlot.replot({resetAxes: true});
+            $class.gPlot.replot({resetAxes: true});
         }
     },
     _closestChild: function( $me, selector) {
