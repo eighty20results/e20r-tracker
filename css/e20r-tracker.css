@@ -221,8 +221,8 @@ button:hover,
 input:hover[type="button"],
 input:hover[type="reset"],
 input:hover[type="submit"],
-.button:hover, .footer-widgets
-.button,
+.button:hover,
+.footer-widgets .button,
 .footer-widgets button,
 .footer-widgets input[type="button"],
 .footer-widgets input[type="reset"],
@@ -265,7 +265,7 @@ input:hover[type="submit"],
 .e20r-select {
     max-width: 1024px;
     min-width: 300px;
-    padding: 20px 20px 0px 20px;
+    padding: 20px 20px 0 20px;
 }
 .e20r-select label {
     min-width:150px;
@@ -337,9 +337,9 @@ div[class*=" tabs-"] {
 }
 #status-tabs,
 #profile-tabs {
-    padding: 0px;
+    padding: 0;
     background: none;
-    border-width: 0px;
+    border-width: 0;
 }
 div#status-tabs.ct-flat>.ct-tab.ct-pag-hor.ct-pag-top,
 div#status-tabs.ct-flatbox>.ct-tab.ct-pag-hor.ct-pag-top {
@@ -355,7 +355,7 @@ div#status-tabs .ct-tab .ct-pagitem {
 }
 #profile-tabs .ct-classic>.ct-tab .ct-pagitem.ct-cur,
 #status-tabs .ct-classic>.ct-tab .ct-pagitem.ct-cur {
-    margin-top: 0em;
+    margin-top: 0;
     font-size: 100%;
 }
 #profile-tabs .ct-classic>.ct-tab .ct-pagitem.ct-cur,
@@ -381,17 +381,17 @@ div#inner-tabs .ui-widget-header {
     background: transparent;
     border: none;
     border-bottom: 1px solid #c0c0c0;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;
-    border-radius: 0px;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
 }
 div#inner-tabs .ui-tabs-nav {
-    padding-left: 0px;
+    padding-left: 0;
     background: transparent;
-    border-width: 0px 0px 1px 0px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;
-    border-radius: 0px;
+    border-width: 0 0 1px 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
 }
 div#inner-tabs .ui-tabs-nav .ui-state-default {
     background: transparent;
@@ -428,13 +428,13 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
 
 /************* For the E20RTracker Settings page ****************/
 .e20r-settings-table td {
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .e20r-settings-table td h3 {
-    padding: 5px 10px 0px 25px;
-    margin: 0px;
+    padding: 5px 10px 0 25px;
+    margin: 0;
 }
 
 .e20r-inline-table {
@@ -816,7 +816,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
         font-weight: normal;
     }
     table.e20r-progress-form textarea.e20r-note {
-        margin: 0px;
+        margin: 0;
         width: 90%;
         height: 122px;
         border: 2px solid #C5C5C5;
@@ -1017,7 +1017,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     #colorbox #cboxClose {
         top: 0;
         right: 15px;
-        padding: 0px 5px 0px 5px;
+        padding: 0 5px 0 5px;
         margin: 35px 5px 0 5px;
         border: 1px solid #FFF;
         box-shadow: none;
@@ -1138,7 +1138,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
         float: left;
     }
     table.e20r-progress-form textarea.e20r-note {
-        margin: 0px;
+        margin: 0;
         width: 80%;
         height: 100px;
         border: 2px solid #C5C5C5;
@@ -1667,7 +1667,7 @@ a.load_progress_data {
     font-weight: bold;
     width: 350px;
     top: 0;
-    left: 0px;
+    left: 0;
     margin-left: 10px;
     text-align: left;
     padding: 10px;
@@ -1749,7 +1749,7 @@ div.photo-overlay > h3 {
 div.photo-overlay > h3 > .timeagosize {
     font-size: 12px;
     padding: 0 !important;
-    margin: 0px 0px 3px 0px;
+    margin: 0 0 3px 0;
     /* line-height: 50%; */
     color: rgba( 0, 76, 255, 0.6);
 }
@@ -1786,7 +1786,7 @@ div.photo-overlay span.value {
 }
 .quick-nav table th.rotate > div {
     position: relative;
-    top: 0px;
+    top: 0;
     left: 30px;
     height: 100%;
     transform:skew(-45deg, 0deg);
@@ -1849,8 +1849,8 @@ div.timeagosize {
 #e20r-workout-settings .sub-table {
     width:100%;
     position: relative;
-    left: 0px;
-    min-width: 400px;
+    left: 0;
+    min-width: 300px;
     max-width: 700px;
 }
 #e20r-workout-settings .sub-table th {
@@ -2169,10 +2169,10 @@ td.e20r-group-header {
     z-index: 99;
     color: black;
     font-size: 14px;
-    font-family: Verdana;
+    font-family: Verdana, sans-serif;
 }
 #tooltip p {
-    font-family: Verdana;
+    font-family: Verdana, sans-serif;
     margin-bottom: 0;
     margin-top: 16px;
 }
@@ -2474,7 +2474,7 @@ tr.what-to-do-row {
 .nage-number-text {
     height: 90px;
     position: relative;
-    /* top: 0px; */
+    /* top:0; */
     color: #c5c5c5;
     font-weight: bold;
     font-size: 80px;
@@ -2507,8 +2507,8 @@ tr.what-to-do-row {
     background-color: #ffcc66;
     max-width: 600px;
     width: 80%;
-    margin: 0px auto 20px auto;
-    padding: 0px 25px 0px 25px;
+    margin:0 auto 20px auto;
+    padding:0 25px 0 25px;
 }
 .new-habit-box > h4 {
     padding-top: 10px !important;
@@ -2611,8 +2611,8 @@ table.e20r-client-information-table {
     position: absolute;
     max-height: none;
     max-width: none;
-    left: 0px;
-    top: 0px;
+    left:0;
+    top:0;
     /* height: 1000px; */
 }
 div.e20r-center-elements {
@@ -2730,9 +2730,9 @@ div.e20r-article-reading-time {
     width: 100%;
     border-left: none;
     border-bottom-width: 1px !important;
-    -moz-border-radius: 0px 4px 4px 0px;
-    -webkit-border-radius: 0px 4px 4px 0px;
-    border-radius: 0px 4px 4px 0px;
+    -moz-border-radius:0 4px 4px 0;
+    -webkit-border-radius: 0 4px 4px 0;
+    border-radius: 0 4px 4px 0;
     overflow: hidden;
 }
 .tabs-right .ui-tabs-nav li.ui-tabs-selected,

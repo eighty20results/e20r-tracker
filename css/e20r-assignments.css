@@ -48,7 +48,7 @@ div.e20r-assignment-descr {
     margin-left: 30px;
 }
 .assignment-btn {
-    right: 0px;
+    right: 0;
     width: 50%;
 }
 .e20r-assignments-question,
@@ -65,7 +65,7 @@ div.e20r-assignment-descr {
 .button-container .e20r-assignment-complete-text {
     display: none;
     text-align: center;
-    font-color: #000;
+    color: #000;
     font-weight: bold;
     vertical-align: middle;
 }
@@ -97,10 +97,10 @@ table.e20r-assignment-ranking-question{
 table.e20r-assignment-ranking-question td{
     text-align:center;
     vertical-align:middle;
-    border:1px solid silver;
+    /* border:1px solid silver; */
     overflow:hidden;
     padding:3px;
-    border:0;
+    border: none;
     position: relative;
 }
 table.e20r-assignment-ranking-question tr td:first-child{

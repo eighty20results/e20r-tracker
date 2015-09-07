@@ -2319,8 +2319,8 @@ class e20rTracker {
 
             $css_list = array( 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
-                "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.css',
-                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.css'
+                "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.min.css',
+                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css'
             );
 
             $scripts = array();
@@ -2361,7 +2361,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.js',
+                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
                         'dependencies' => array(
                             'jquery.codetabs' => array( 'jquery' ),
                         ),
