@@ -20,6 +20,8 @@ jQuery(document).ready(function() {
     var e20rCheckinEvent = {
         init: function() {
 
+            this.is_running = true;
+
             this.$body = jQuery("body");
             this.$checkinOptions = jQuery('#e20r-daily-checkin-canvas fieldset.did-you input:radio');
             this.$checkinDate = jQuery('#e20r-checkin-checkin_date').val();
@@ -797,6 +799,10 @@ jQuery(document).ready(function() {
                 }); // click
         }
     };
+
+    if ( e20rCheckinEvent.is_running ) {
+        return;
+    }
 
     if (jQuery('#e20r-article-assignment').length > 0) {
 
