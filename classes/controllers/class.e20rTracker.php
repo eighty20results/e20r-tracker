@@ -1674,26 +1674,26 @@ class e20rTracker {
 
             global $e20r_plot_jscript;
 
-	        wp_enqueue_style( "jquery-ui-tabs", "https://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
+	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
-            wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.css", false, E20R_VERSION );
-            wp_enqueue_style( "e20r-activity", E20R_PLUGINS_URL . "/css/e20r-activity.css", false, E20R_VERSION );
-            wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.min.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-activity", E20R_PLUGINS_URL . "/css/e20r-activity.min.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.min.css", false, E20R_VERSION );
             wp_enqueue_style('jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
-            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.css", FALSE, E20R_VERSION);
+            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", FALSE, E20R_VERSION);
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
-            wp_register_script( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
             // wp_register_script( 'jquery-ui-timepicker', "//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.8.1/jquery.timepicker.min.js", array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
-            wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
+            wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.min.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
             // wp_register_script( 'jquery-ui-timepicker-addon-slider', "//cdn.jsdelivr.net/jquery.ui.timepicker.addon/1.4.5/jquery-ui-sliderAccess.js", array( 'jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
 
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
-            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
-            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
-            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), E20R_VERSION, true);
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), '0.1', true );
+            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
 
             $e20r_plot_jscript = true;
 	        self::register_plotSW();
@@ -1737,9 +1737,9 @@ class e20rTracker {
             $e20rTracker->enqueue_plotSW( $hook );
             $e20r_plot_jscript = false;
 
-            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
-            // wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
-            wp_enqueue_style( 'select2', "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
+            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
+            // wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
+            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
 
@@ -1760,7 +1760,7 @@ class e20rTracker {
 
                 case 'e20r_programs':
 
-                    wp_enqueue_style( 'e20r-tracker-program-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
+                    wp_enqueue_style( 'e20r-tracker-program-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
 	                $type = 'program';
 					$deps = array('jquery', 'jquery-ui-core');
                     break;
@@ -1774,14 +1774,14 @@ class e20rTracker {
 
 	            case 'e20r_workout':
 
-		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
+		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
 		            $type = 'workout';
 					$deps = array( 'jquery', 'jquery-ui-core' );
 		            break;
 
                 case 'e20r_assignments':
 
-                    wp_enqueue_style( 'e20r-tracker-assignment-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css', false, E20R_VERSION );
+                    wp_enqueue_style( 'e20r-tracker-assignment-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
                     $type = 'assignment';
                     $deps = array( 'jquery', 'jquery-ui-core' );
                     break;
@@ -1794,7 +1794,7 @@ class e20rTracker {
 
 	        if ( $type !== null ) {
 
-		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, E20R_VERSION, true );
+		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.min.js", $deps, E20R_VERSION, true );
 
 		        /* Localize ajax script */
 		        wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
@@ -2063,7 +2063,7 @@ class e20rTracker {
         if ( has_shortcode( $post->post_content, 'e20r_profile' ) ) {
 
 			dbg("e20rTracker::has_profile_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
-            $this->load_frontend_scripts( array( 'exercise', 'activity', 'progress_overview', 'daily_progress', 'profile' ) );
+            $this->load_frontend_scripts( array( 'progress_overview', 'daily_progress', 'profile' ) );
 
         }
 
@@ -2133,10 +2133,10 @@ class e20rTracker {
 
             $this->enqueue_plotSW();
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
-            wp_register_script( 'jquery-colorbox', "https://cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
+            wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.min.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
@@ -2266,7 +2266,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
             wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, E20R_VERSION );
+            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
         }
 
     }
@@ -2382,7 +2382,7 @@ class e20rTracker {
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.css"
+                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
                     ) );
 
                         // 'e20r.checkin.js' => array( 'jquery', 'base64', 'select2', 'jquery.easing', 'jquery.touchpunch', 'jquery.timeago', 'jquery.redirect', 'jquery.ui.tabs', 'e20r.tracker.js', 'e20r.assignments.js' ),
@@ -2400,9 +2400,9 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'jquery-ui-tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
-                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js',
-                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.js',
-                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.js',
+                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
+                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
+                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2417,7 +2417,7 @@ class e20rTracker {
 
                     // 'e20r.progress.measurements' => array( 'jquery', 'jquery.touchpunch', 'jquery.timeago', 'jquery.ui.tabs', 'e20r.tracker.js' )
                     $scripts = array_replace( $scripts, array(
-                        'e20r-progress-measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
+                        'e20r-progress-measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
                         'dependencies' => array(
                             'e20r-progress-measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.codetabs', 'jquery-ui-tabs',  'e20r.tracker.js' )
                         )
@@ -2436,7 +2436,7 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
-                         'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.js',
+                         'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
                          'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2447,7 +2447,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r.exercise.js' => E20R_PLUGINS_URL . '/js/e20r-exercise.js',
+                        'e20r.exercise.js' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
                         'dependencies' => array(
                             'e20r.exercise.js' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r.tracker.js' )
                         )
@@ -2461,7 +2461,7 @@ class e20rTracker {
                     $load_jq_plot = false;
 
                     $css = array_replace( $css, array(
-                        "e20r-assignments" => E20R_PLUGINS_URL . '/css/e20r-assignments.css',
+                        "e20r-assignments" => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
                     ) );
 
                     $prereqs = array_replace( $prereqs, array(
@@ -2469,8 +2469,8 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
-                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.js',
-                        'e20r.exercise.js' => E20R_PLUGINS_URL . '/js/e20r-exercise.js',
+                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r.exercise.js' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2482,7 +2482,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r.workout.js' => E20R_PLUGINS_URL . '/js/e20r-workout.js',
+                        'e20r.workout.js' => E20R_PLUGINS_URL . '/js/e20r-workout.min.js',
                         'dependencies' => array(
                             'e20r.workout.js' => array( 'jquery', 'fitvids', 'e20r.tracker.js', 'e20r.exercise.js' )
                         )
@@ -2501,7 +2501,7 @@ class e20rTracker {
                         'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.css'
+                        'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css'
                     ) );
 
                     // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
@@ -2512,12 +2512,12 @@ class e20rTracker {
                         'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
                         'base64' => '//javascriptbase64.googlecode.com/files/base64.js',
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
-                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js',
-                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js',
-                        'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.js',
-                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.js',
-                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.js',
-                        'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
+                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.min.js',
+                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
+                        'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
+                        'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
+                        'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2534,7 +2534,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.js',
+                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.min.js',
                         'dependencies' => array(
                             'e20r.checkin.js' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r.tracker.js', 'e20r.assignments.js' ),
                         ),
