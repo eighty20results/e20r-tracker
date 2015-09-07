@@ -1,1 +1,3 @@
-Fix syntax error in e20r-progress-measurements.js
+Only load scripts that are needed for the e20r_profile shortcode.
+Always load minified CSS & Javascript.
+Add minified CSS to repository
