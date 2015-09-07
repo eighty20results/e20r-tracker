@@ -28,18 +28,30 @@ var progMeasurements = {
 
         var $class = this;
 
+        $class.is_running = true;
+
         $class.clientId = attrs.id;
         $class.$measurements = self;
+
+        $class.profiletabs = jQuery('div#profile-tabs.ct');
+        $class.statustabs = jQuery('div#status-tabs.ct');
+
         $class.wPlot = null;
         $class.gPlot = null;
         $class.statPlot = [];
         $class.$loadStatsBtn = jQuery(".e20r-workout-statistics-loader");
 
-        if ( $class.clientId === null ) {
+        if ($class.clientId === null) {
 
             console.log("We should be on a wp-admin page...");
-            $class.$ajaxUrl = e20r_progress.ajaxurl;
+            if (typeof( e20r_progress.clientId ) === 'undefined') {
+                $class.$tag = e20r_checkin;
+            }
+            else {
+                $class.$tag = e20r_progress;
+            }
 
+            $class.$ajaxUrl = $class.$tag.ajaxurl;
             // Used by admin UI only
             $class.$levelSelect = jQuery("#e20r-selectLevel");
             $class.$levelSelector = $class.$levelSelect.find('select#e20r_levels');
@@ -61,7 +73,7 @@ var progMeasurements = {
             $class.$measureBtn = jQuery("#e20r-client-load-measurements");
 
             $class.$clientInfo = jQuery("#e20r-client-info");
-            $class.$clientAssignmentsInfo = jQuery( "#e20r-progress-assignments");
+            $class.$clientAssignmentsInfo = jQuery("#e20r-progress-assignments");
             $class.$clientAchievementsInfo = jQuery("#e20r-progress-accomplishments");
             $class.$clientActivityInfo = jQuery("#e20r-progress-activities");
 
@@ -75,29 +87,42 @@ var progMeasurements = {
             $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
 
             console.log("Loading tabs for wp-admin page");
-/*
-            jQuery('#status-tabs').tabs({
-                heightStyle: "content"
-            });
-*/
-            jQuery("#status-tabs").zozoTabs({
-                theme: 'white',
-                style: 'clean',
-                select: progMeasurements._tab_selected,
-                orientation: "vertical",
-                animation: {
-                    duration: 800,
-                    effects: "slideH"
+            jQuery('div.status-tabs .ct').codetabs({
+                fxIn: 'roWheelDownIn',
+                fxOut: 'roWheelUpOut',
+                isAutoRun: true,
+                isKeyboard: true,
+                name: '.status-tab',
+                pag: {
+                    dirs: 'hor',
+                    pos: 'top',
+                    align: 'justified',
                 }
             });
 
+            /*
+             jQuery('#status-tabs').tabs({
+             heightStyle: "content"
+             });
+
+             jQuery("#status-tabs").zozoTabs({
+             theme: 'white',
+             style: 'clean',
+             select: progMeasurements._tab_selected,
+             orientation: "vertical",
+             animation: {
+             duration: 800,
+             effects: "slideH"
+             }
+             });
+             */
             /* Configure admin page events */
             jQuery.bindEvents({
                 self: $class,
                 elem: $class.$levelSelect,
                 events: {
-                    change: function(self, e) {
-                        jQuery("div#status-tabs").addClass("startHidden");
+                    change: function (self, e) {
+                        jQuery("div.status-tabs").addClass("startHidden");
                         self.loadMemberList();
                     }
                 }
@@ -107,7 +132,7 @@ var progMeasurements = {
                 self: $class,
                 elem: $class.$memberSelector,
                 events: {
-                    click: function(self) {
+                    click: function (self) {
                         console.log("Saving client ID");
                         // jQuery("div#status-tabs").addClass("startHidden");
                         self.saveClientId();
@@ -136,14 +161,14 @@ var progMeasurements = {
                 self: $class,
                 elem: $class.$measureBtn,
                 events: {
-                    click: function(self, e) {
+                    click: function (self, e) {
                         console.log("Admin clicked Measurements button");
                         //self.$spinner.show();
                         $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
-                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        console.log("Value: ", $class.$memberSelector.find('option:selected'));
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
-                        self.adminLoadData( $id )
+                        self.adminLoadData($id)
                     }
                 }
             });
@@ -152,14 +177,14 @@ var progMeasurements = {
                 self: $class,
                 elem: $class.$detailBtn,
                 events: {
-                    click: function(self, e) {
+                    click: function (self, e) {
                         console.log("Admin clicked Client Info button");
                         //self.$spinner.show();
                         $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
-                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        console.log("Value: ", $class.$memberSelector.find('option:selected'));
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
-                        self.adminLoadData( $id )
+                        self.adminLoadData($id)
                     }
                 }
             });
@@ -168,14 +193,14 @@ var progMeasurements = {
                 self: $class,
                 elem: $class.$clientMessageTab,
                 events: {
-                    click: function(self, e) {
+                    click: function (self, e) {
                         console.log("Admin clicked Client Messages button");
                         //self.$spinner.show();
                         $class.$memberSelector = $class.$memberSelect.find('#e20r_members');
-                        console.log("Value: ",  $class.$memberSelector.find('option:selected') );
+                        console.log("Value: ", $class.$memberSelector.find('option:selected'));
                         var $id = $class.$memberSelector.find('option:selected').val();
                         self.saveClientId(self);
-                        self.loadClientMessages( $id )
+                        self.loadClientMessages($id)
                     }
                 }
             });
@@ -184,14 +209,14 @@ var progMeasurements = {
                 self: $class,
                 elem: $class.$adminLoadBtn,
                 events: {
-                    click: function(self, e) {
+                    click: function (self, e) {
                         console.log("Loading data");
                         // self.$spinner.show();
 
                         var $id = self.$memberSelector.find('option:selected').val();
 
                         self.saveClientId(self);
-                        self.adminLoadData( $id )
+                        self.adminLoadData($id)
                     }
                 }
             });
@@ -199,130 +224,238 @@ var progMeasurements = {
             // TODO Bind click events to the assignments, etc. on the wp-admin page.
         }
         else {
-            $class.$ajaxUrl = e20r_progress.ajaxurl;
+            if (typeof( e20r_progress ) === 'undefined') {
+                $class.$tag = e20r_checkin;
+            }
+            else {
+                $class.$tag = e20r_progress;
+            }
+
+            $class.$ajaxUrl = $class.$tag.ajaxurl;
             $class.$spinner = jQuery('#spinner');
 
             // $class.$spinner.show();
 
             // Process click on load Statistics button(s)
-            $class.$loadStatsBtn.each( function() {
+            $class.$loadStatsBtn.each(function () {
                 jQuery.bindEvents({
                     self: $class,
                     elem: jQuery(this),
                     events: {
-                        click: function(self, e) {
+                        click: function (self, e) {
                             console.log("Loading statistics for exercise", this);
 
                             var $exercise_id = jQuery(this).closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
                             var $client_id = jQuery('#user_id').val();
-                            var $graph = jQuery(this).closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
+                            var $graph = jQuery(this).closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id);
 
                             console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
-                            $class.loadActivityStats( $client_id, $exercise_id, $graph );
+                            $class.loadActivityStats($client_id, $exercise_id, $graph);
                         }
                     }
                 });
             });
 
-            if ( e20r_progress.is_profile_page ) {
+            if ($class.$tag.is_profile_page) {
 
-                console.log("Loading status and profile tabs");
-/*
-                jQuery('#status-tabs').tabs({
-                    heightStyle: "content"
-                });
-                jQuery('#profile-tabs').tabs({
-                    heightStyle: "content"
-                });
-*/
+                console.log("Loading status and profile tabs in e20r_profile shortcode");
 
-                jQuery("#status-tabs").zozoTabs({
-                    "theme": "white",
-                    "style": "clean",
-                    // theme: 'flat-alizarin',
-                    // style: 'flat',
-                    "select": progMeasurements._tab_selected,
-                    "orientation": "vertical",
-                    animation: {
-                        duration: 800,
-                        effects: "slideV"
+                /*
+                 jQuery('#status-tabs').tabs({
+                 heightStyle: "content"
+                 });
+                 jQuery('#profile-tabs').tabs({
+                 heightStyle: "content"
+                 });
+                 */
+
+                $class.profiletabs.codetabs({
+                    fxOne: 'wheelVer',
+                    speed: 1600,
+                    isAutoRun: true,
+                    isKeyboard: true,
+                    idBegin: 0,
+                    margin: 10,
+                    name: '.profile-tab',
+                    pag: {
+                        dirs: 'hor',
+                        pos: 'top',
+                        align: 'justified'
                     }
                 });
 
-                jQuery("#profile-tabs").zozoTabs({
-                    select: progMeasurements._tab_selected,
-                    "theme": "white",
-                    "style": "clean",
-                    //"theme": "flat-alizarin",
-                    //"style": "flat",
-                    "defaultTab": "tab1",
-                    "size": "medium",
-                    "multiline": true,
-                    "orientation": "horizontal",
-                    "position": "top-compact",
-                    "rounded": false,
-                    "animation": {
-                        duration: 800,
-                        effects: "slideV"
+                $class.statustabs.codetabs({
+                    fxOne: 'foldHor',
+                    name: '.status-tab',
+                    speed: 800,
+                    idBegin: 0,
+                    margin: 10,
+                    isAutoRun: true,
+                    isKeyboard: true,
+                    pag: {
+                        dirs: 'hor',
+                        pos: 'top',
+                        align: 'justified'
                     }
                 });
-            }
-            else {
-                console.log("Loading progress overview tabs");
 
-                jQuery("#status-tabs").zozoTabs({
-                    "theme": "white",
-                    "style": "clean",
-                    // theme: 'flat-alizarin',
-                    // style: 'flat',
-                    "defaultTab": "tab1",
-                    "size": "medium",
-                    "multiline": true,
-                    "position": "top-compact",
-                    "rounded": false,
-                    "select": progMeasurements._tab_selected,
-                    "orientation": "horizontal",
-                    animation: {
-                        duration: 800,
-                        effects: "slideV"
+                $class.profiletabs.ev = $class.profiletabs.data('codetabs').ev;
+
+                $class.profiletabs.ev.on('loadEnd', function( e, $slide, ID ){
+
+                    console.log("Tabs for the profile-tabs have loaded. Showing slide #" + ID, $slide);
+
+                    /*
+                    if ( $class.statustabs.visible ) {
+
+                        console.log("Status tabs view is visible...");
+
+                        if (( 1 !== ID )) {
+                            console.log(" Progress overview slide (#" + ID + ") is visible so we should 'show' the overview stuffs ");
+
+                            jQuery('.e20r-measurements-container').each(function () {
+                                jQuery(this).show();
+                            });
+                        }
                     }
+                    else {
+                        console.log("Status tabs are invisible. Hiding the measurements containers too");
+                        jQuery('.e20r-measurements-container').each(function() {
+                            jQuery(this).hide();
+                        });
+                    }
+                    */
                 });
                 /*
-                jQuery('#status-tabs').tabs({
-                    heightStyle: "content"
+                 jQuery("#status-tabs").zozoTabs({
+                 "theme": "white",
+                 "style": "clean",
+                 // theme: 'flat-alizarin',
+                 // style: 'flat',
+                 "select": progMeasurements._tab_selected,
+                 "orientation": "vertical",
+                 animation: {
+                 duration: 800,
+                 effects: "slideV"
+                 }
+                 });
+
+                 jQuery("#profile-tabs").zozoTabs({
+                 select: progMeasurements._tab_selected,
+                 "theme": "white",
+                 "style": "clean",
+                 //"theme": "flat-alizarin",
+                 //"style": "flat",
+                 "defaultTab": "tab1",
+                 "size": "medium",
+                 "multiline": true,
+                 "orientation": "horizontal",
+                 "position": "top-compact",
+                 "rounded": false,
+                 "animation": {
+                 duration: 800,
+                 effects: "slideV"
+                 }
+                 });
+                 */
+            }
+            else {
+                console.log("Loading progress overview tabs while in /wp-admin/");
+
+                $class.statustabs.codetabs({
+                    fxOne: 'foldHor',
+                    isAutoRun: true,
+                    isKeyboard: true,
+                    name: '.status-tab',
+                    pag: {
+                        dirs: 'hor',
+                        pos: 'top',
+                        align: 'justified'
+                    }
                 });
-                */
+/*
+                 jQuery("#status-tabs").zozoTabs({
+                 "theme": "white",
+                 "style": "clean",
+                 // theme: 'flat-alizarin',
+                 // style: 'flat',
+                 "defaultTab": "tab1",
+                 "size": "medium",
+                 "multiline": true,
+                 "position": "top-compact",
+                 "rounded": false,
+                 "select": progMeasurements._tab_selected,
+                 "orientation": "horizontal",
+                 animation: {
+                 duration: 800,
+                 effects: "slideV"
+                 }
+                 });
+                 */
+                /*
+                 jQuery('#status-tabs').tabs({
+                 heightStyle: "content"
+                 });
+                 */
             }
 
-            jQuery(".exercise-stats-container").each(function() {
+            jQuery(".exercise-stats-container").each(function () {
                 jQuery(this).hide();
             });
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $class.loadMeasurementData();
             }, 10);
 
-            setTimeout(function() {
+            setTimeout(function () {
 
                 $class._resize_chart();
-            }, 1000 );
+            }, 1000);
 
-/*
-            jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
+            /*
+             jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
 
-                if ( ui.newTab.index() === 2 ) {
+             if ( ui.newTab.index() === 2 ) {
 
-                    console.log("Resize the graphs on the Activities page");
-                    $class._resize_chart();
-                }
-                else if ( ui.newTab.index() === 0 ) {
+             console.log("Resize the graphs on the Activities page");
+             $class._resize_chart();
+             }
+             else if ( ui.newTab.index() === 0 ) {
 
-                    console.log("Redrawing weight/girth graphs");
-                    $class._resize_chart();
-                    //progMeasurements.gPlot.replot({resetAxes: true});
-                }
+             console.log("Redrawing weight/girth graphs");
+             $class._resize_chart();
+             //progMeasurements.gPlot.replot({resetAxes: true});
+             }
+             });
+             */
+        }
+
+        if ( $class.profiletabs.length !== 0) {
+
+            console.log("Profile-Tabs: Loading event handler when selecting a tab");
+
+            if ( 'undefined' === typeof $class.profiletabs.ev ) {
+                $class.profiletabs.ev = $class.profiletabs.data('codetabs').ev;
+            }
+
+            $class.profiletabs.ev.on('selectID', function ($e, $id) {
+                console.log("Profile-tabs: SelectID for ", $id );
+                $class._tab_selected($e, $id);
             });
-*/
+        }
+
+        if ( $class.statustabs.length !== 0) {
+
+            console.log("Status-Tabs: Loading event handler when selecting a tab");
+
+            if ( 'undefined' === typeof $class.statustabs.ev ) {
+                $class.statustabs.ev = $class.statustabs.data('codetabs').ev;
+            }
+
+            $class.statustabs.ev.on('selectID', function ($e, $id) {
+                console.log("Status-Tabs: SelectID for ", $id );
+                $class._tab_selected($e, $id);
+            });
         }
 
         var $resizeId;
@@ -347,17 +480,17 @@ var progMeasurements = {
         });
 
     },
-    _tab_selected: function( event, tab ) {
+    _tab_selected: function( event, $id ) {
 
-        console.dir( event );
-        console.dir( tab );
+        console.log( "_tab_selected() triggered on event: ", event );
+        console.log( "for tab #: ", $id );
 
-        if ( tab.index === 2 ) {
+        if ( $id == 2 ) {
 
             console.log("Resize the graphs on the Activities page");
             progMeasurements._resize_chart();
         }
-        else if ( tab.index === 0 ) {
+        else if ( $id == 0 ) {
 
             console.log("Redrawing weight/girth graphs");
             progMeasurements._resize_chart();
@@ -378,7 +511,7 @@ var progMeasurements = {
             events: {
                 click: function(self) {
                     console.log("Saving client ID");
-                    // jQuery("div#status-tabs").addClass("startHidden");
+                    // jQuery("div.status-tabs").addClass("startHidden");
                     self.saveClientId();
                 }
             }
@@ -402,10 +535,10 @@ var progMeasurements = {
         });
     },
     _hide_client_info: function() {
-        jQuery('div#status_tabs').hide();
+        jQuery('div.status_tabs').hide();
     },
     _show_client_info: function() {
-        jQuery('div#status_tabs').show();
+        jQuery('div.status_tabs').show();
     },
     _resize_chart: function() {
 
@@ -1094,8 +1227,9 @@ var progMeasurements = {
         var $class = this;
 
         if ( $class.loadMeasurementData.arguments.length != 1 ) {
-            console.log("No arguments specified?");
+
             $clientId = $class.clientId
+            console.log("No arguments specified.. Loading for user ID: ", $class.clientId );
         }
 
         $class.$spinner.show();
@@ -1274,6 +1408,7 @@ var progMeasurements = {
 
                     }
                     else {
+
                         jQuery("div#inner-tabs").hide();
                         console.log("No measurement data found in database for user with ID: " + $clientId );
                         // alert("No measurement data found");
@@ -1410,7 +1545,7 @@ var progMeasurements = {
 
         $form.submit( function () {
             jQuery('.load_progress_data').post(
-                e20r_progress.settings.weekly_progress,
+                $class.$tag.settings.weekly_progress,
                 jQuery(this).serialize(),
                 function(data){
                     alert("Data sent: ")
@@ -1430,16 +1565,32 @@ var progMeasurements = {
 
 jQuery(document).ready( function($) {
 
-    if ( typeof e20r_progress !== 'undefined' ) {
+    if ( progMeasurements.is_running ) {
+        return;
+    }
+
+    if ( ( typeof e20r_progress.clientId !== 'undefined' ) || ( typeof e20r_checkin.clientId !== 'undefined' ) ) {
 
         console.log("User ID is defined so we're working from the front-end");
-        var $clientId = e20r_progress.clientId;
-    }
-    else {
         var $clientId = null;
 
+        if ( ( null === $clientId ) && ( typeof e20r_progress !== 'undefined') ) {
+
+            console.log("User ID is defined with the e20r_progress tag: ", e20r_progress.clientId);
+            var $clientId = e20r_progress.clientId;
+        }
+
+        if ( ( null === $clientId ) &&  ( typeof e20r_checkin !== 'undefined' ) ) {
+
+            console.log("User ID is defined with the e20r_checkin tag: " , e20r_checkin.clientId);
+            var $clientId = e20r_checkin.clientId;
+        }
+    }
+    else {
+        console.log("Client ID wasn't configured as a constant so assuming we're running from wp-admin");
+        var $clientId = null;
     }
 
-    progMeasurements.init( $('#e20r-progress-measurements'), { id: $clientId } );
+    progMeasurements.init( jQuery('#e20r-progress-measurements'), {id: $clientId});
 
 });
