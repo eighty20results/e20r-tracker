@@ -232,7 +232,7 @@ var progMeasurements = {
             }
 
             $class.$ajaxUrl = $class.$tag.ajaxurl;
-            $class.$spinner = jQuery('#spinner');
+            $class.$spinner = jQuery('#spinner');j
 
             // $class.$spinner.show();
 
@@ -259,15 +259,7 @@ var progMeasurements = {
             if ($class.$tag.is_profile_page) {
 
                 console.log("Loading status and profile tabs in e20r_profile shortcode");
-
-                /*
-                 jQuery('#status-tabs').tabs({
-                 heightStyle: "content"
-                 });
-                 jQuery('#profile-tabs').tabs({
-                 heightStyle: "content"
-                 });
-                 */
+                jQuery(".entry-header").hide();
 
                 $class.profiletabs.codetabs({
                     fxOne: 'wheelVer',
@@ -301,63 +293,11 @@ var progMeasurements = {
 
                 $class.profiletabs.ev = $class.profiletabs.data('codetabs').ev;
 
-                $class.profiletabs.ev.on('loadEnd', function( e, $slide, ID ){
+                $class.profiletabs.ev.on('selectID', function( e, ID ){
 
-                    console.log("Tabs for the profile-tabs have loaded. Showing slide #" + ID, $slide);
-
-                    /*
-                    if ( $class.statustabs.visible ) {
-
-                        console.log("Status tabs view is visible...");
-
-                        if (( 1 !== ID )) {
-                            console.log(" Progress overview slide (#" + ID + ") is visible so we should 'show' the overview stuffs ");
-
-                            jQuery('.e20r-measurements-container').each(function () {
-                                jQuery(this).show();
-                            });
-                        }
-                    }
-                    else {
-                        console.log("Status tabs are invisible. Hiding the measurements containers too");
-                        jQuery('.e20r-measurements-container').each(function() {
-                            jQuery(this).hide();
-                        });
-                    }
-                    */
+                    console.log("Tabs for the profile-tabs have loaded. Showing tab #" + ID );
+                    $class._hide_progress( ID );
                 });
-                /*
-                 jQuery("#status-tabs").zozoTabs({
-                 "theme": "white",
-                 "style": "clean",
-                 // theme: 'flat-alizarin',
-                 // style: 'flat',
-                 "select": progMeasurements._tab_selected,
-                 "orientation": "vertical",
-                 animation: {
-                 duration: 800,
-                 effects: "slideV"
-                 }
-                 });
-
-                 jQuery("#profile-tabs").zozoTabs({
-                 select: progMeasurements._tab_selected,
-                 "theme": "white",
-                 "style": "clean",
-                 //"theme": "flat-alizarin",
-                 //"style": "flat",
-                 "defaultTab": "tab1",
-                 "size": "medium",
-                 "multiline": true,
-                 "orientation": "horizontal",
-                 "position": "top-compact",
-                 "rounded": false,
-                 "animation": {
-                 duration: 800,
-                 effects: "slideV"
-                 }
-                 });
-                 */
             }
             else {
                 console.log("Loading progress overview tabs while in /wp-admin/");
@@ -411,23 +351,6 @@ var progMeasurements = {
 
                 $class._resize_chart();
             }, 1000);
-
-            /*
-             jQuery('#status-tabs').on('tabsactivate', function(event, ui) {
-
-             if ( ui.newTab.index() === 2 ) {
-
-             console.log("Resize the graphs on the Activities page");
-             $class._resize_chart();
-             }
-             else if ( ui.newTab.index() === 0 ) {
-
-             console.log("Redrawing weight/girth graphs");
-             $class._resize_chart();
-             //progMeasurements.gPlot.replot({resetAxes: true});
-             }
-             });
-             */
         }
 
         if ( $class.profiletabs.length !== 0) {
@@ -437,6 +360,12 @@ var progMeasurements = {
             if ( 'undefined' === typeof $class.profiletabs.ev ) {
                 $class.profiletabs.ev = $class.profiletabs.data('codetabs').ev;
             }
+
+            $class.profiletabs.ev.on( "loadEnd", function( e, $slide, ID) {
+
+                console.log("Profile-tabs: Hide the progress overview data when loading the e20r_profile shortcode tabs");
+                $class._hide_progress(ID);
+            });
 
             $class.profiletabs.ev.on('selectID', function ($e, $id) {
                 console.log("Profile-tabs: SelectID for ", $id );
@@ -480,10 +409,32 @@ var progMeasurements = {
         });
 
     },
-    _tab_selected: function( event, $id ) {
+    _hide_progress: function( ID ) {
 
-        console.log( "_tab_selected() triggered on event: ", event );
-        console.log( "for tab #: ", $id );
+        var $status = jQuery("#status-tabs").find('.ct-cur');
+
+        if ( 1 !== ID ) {
+
+            console.log("Profile tabs progress overview IS NOT visible");
+            $status.each(function() {
+
+                jQuery(this).removeClass( "ct-cur" );
+            });
+
+        }
+        else {
+            console.log("Status should be shown. On profile tab #" + ID);
+            var $tab = jQuery("div#status-tabs").find(".ct-pagitem:first");
+            var $panel = jQuery("#status-tabs").find("div#status-tab-1");
+
+            console.log("The tab: ", $tab );
+            console.log("The panel: ", $panel );
+
+            $tab.addClass("ct-cur");
+            $panel.addClass("ct-cur");
+        }
+    },
+    _tab_selected: function( event, $id ) {
 
         if ( $id == 2 ) {
 
