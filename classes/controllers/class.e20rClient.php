@@ -1601,6 +1601,7 @@ class e20rClient {
         global $currentProgram;
         global $currentArticle;
 
+		$html = null;
         $tabs = array();
 
         if ( ! is_user_logged_in() || ( ! $this->validateAccess( $current_user->ID ) ) ) {
@@ -1631,20 +1632,18 @@ class e20rClient {
         */
 
         if ( $this->completeInterview( $config->userId ) ) {
-            $interview_descr = 'Your saved welcome interview responses';
+            $interview_descr = 'Saved interview';
         }
         else {
-            $interview_descr = "Please complete your interview";
+            $interview_descr = '<div style="color: darkred; text-decoration: underline;">Incomplete interview</div>';
         }
 
-        $interview = array( $interview_descr , '<nav id="e20r-profile-interview">' . $this->view_interview( $config->userId ) . '</nav>' );
-
-        $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
-        $lesson = array( 'Your daily ' . lcfirst( $lesson_prefix ), '<nav id="e20r-profile-lesson">' . $e20rArticle->load_lesson( $config->articleId ) . '</nav>');
+        $interview = array( $interview_descr , '<div id="e20r-profile-interview">' . $this->view_interview( $config->userId ) . '</div>' );
 
         if ( ! $currentArticle->is_preview_day ) {
 
             dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
+
             $this->model->setUser( $config->userId );
 
             $this->setClient( $userId );
@@ -1656,14 +1655,11 @@ class e20rClient {
             $measurements = $e20rMeasurements->getMeasurement( 'all', false );
 
             if ( $this->completeInterview( $config->userId ) ) {
-                $measurement_view = $e20rMeasurements->showTableOfMeasurements( $config->userId, $measurements, $dimensions, null, true, false );
+                $measurement_view = $e20rMeasurements->showTableOfMeasurements( $config->userId, $measurements, $dimensions, true, false );
             }
             else {
                 $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
             }
-
-            $dashboard = array( 'Your dashboard', '<nav id="e20r-profile-dashboard">' . $e20rCheckin->dailyProgress( $config ) . '</nav>');
-            $activity = array( 'Your daily activity', '<nav id="e20r-profile-activity">' . $e20rWorkout->prepare_activity( $config ) . '</nav>');
 
             $assignments = $e20rAssignment->listUserAssignments( $config->userId );
             $activities = $e20rWorkout->listUserActivities( $config->userId );
@@ -1676,17 +1672,33 @@ class e20rClient {
                 'Achievements' => '<div id="e20r-progress-achievements">' . $achievements . '</div>',
             );
 
-            $progress_html = array( 'Your current progress & measurements', '<nav id="e20r-profile-status">' . $e20rMeasurements->show_progress( $progress, null, false ) . '</nav>');
+            $dashboard = array(
+                'Your dashboard',
+                '<div id="e20r-profile-dashboard">' . $e20rCheckin->dailyProgress( $config ) . '</div>'
+            );
+//            $activity = array( 'Your activity', '<div id="e20r-profile-activity">' . $e20rWorkout->prepare_activity( $config ) . '</div>');
+            $progress_html = array(
+                'Your progress',
+                '<div id="e20r-profile-status">' . $e20rMeasurements->show_progress( $progress, null, false ) . '</div>'
+            );
+
+
 
             $tabs = array(
                'Home'              => $dashboard,
-//                $lesson_prefix      => $lesson,
 //                'Activity'          => $activity,
-                'Progress'          => $progress_html ,
+                'Progress'          => $progress_html,
                 'Interview'         => $interview,
             );
         }
         else {
+
+            $lesson_prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
+            $lesson = array(
+                'Your ' . lcfirst( $lesson_prefix ),
+                '<div id="e20r-profile-lesson">' . $e20rArticle->load_lesson( $config->articleId ) . '</div>'
+            );
+
             $tabs = array(
                 $lesson_prefix      => $lesson,
                 'Interview' => $interview,
