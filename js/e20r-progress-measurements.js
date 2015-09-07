@@ -232,7 +232,7 @@ var progMeasurements = {
             }
 
             $class.$ajaxUrl = $class.$tag.ajaxurl;
-            $class.$spinner = jQuery('#spinner');j
+            $class.$spinner = jQuery('#spinner');
 
             // $class.$spinner.show();
 
