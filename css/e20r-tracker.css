@@ -601,6 +601,9 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     border-bottom: 3px solid #004CFF;
 }
 @media screen and ( max-width: 961px ) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 10px !important;
+    }
     img.e20r-ribbon-small {
         height: 40px;
         display: block;
@@ -621,6 +624,9 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     }
 }
 @media (max-width:1040px) and (min-width:380px) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 10px !important;
+    }
     .large-viewport { display: none; }
     .small-viewport { display: block; }
     div.e20r-achievement-row,
@@ -638,6 +644,9 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
 }
 /** The actual weekly progress measurement page container **/
 @media screen and (max-width: 533px) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 5px !important;
+    }
     div.column_1_3,
     div.column_2_3,
     div.column_3_3 {
@@ -2335,8 +2344,8 @@ table.e20r-nourish-infobox td.infobox-td {
 }
 .e20r-nourish-surveys {
     max-width: 750px;
-    width: 750px;
-    min-width: 450px;
+    width: 99%;
+    min-width: 310px;
     margin: 0 auto;
 }
 .e20r-nourish-surveys div.gform_body li label.gfield_label {
@@ -2381,8 +2390,8 @@ span.e20r-required {
     color: rgba(0, 77, 255, 0.5) !important;
 }
 .e20r-nourish-surveys div.ginput_container > table {
-    width: 80%;
-    min-width: 450px;
+    width: 97%;
+    min-width: 310px;
 }
 .e20r-dropdown {
     vertical-align: bottom !important;
@@ -2396,7 +2405,7 @@ span.e20r-required {
 }
 .e20r-hr-medium {
     max-width: 800px;
-    min-width: 480px;
+    min-width: 310px;
     width: 100%;
     margin: 0 auto;
 }
@@ -2814,15 +2823,19 @@ a#e20r-activity-read-lnk {
 #status-tabs .ct-pagitem,
 #profile-tabs .ct-pagitem {
     letter-spacing: 2px;
+    font-size: 80%;
     font-variant: small-caps;
 }
 #status-tabs .ct-pagitem > span.tab-desc,
 #profile-tabs .ct-pagitem > span.tab-desc {
-    font-size: 0.7rem;
+    font-size: 70%;
     clear: both;
     display: block;
     /* text-align: center; */
     padding-top: 5px;
+}
+.ct-underline>.ct-tab.ct-pag-hor {
+    overflow: hidden;
 }
 p.e20r-paragraph {
     color: #3C3C3C;
