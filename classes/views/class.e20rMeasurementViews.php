@@ -555,7 +555,6 @@ class e20rMeasurementViews {
                     $tabs.tabs({
                         heightStyle: "content"
                     });
-
 /*
                     $tabs.codetabs({
                         fxOne: 'soEdgeHor',
@@ -568,7 +567,7 @@ class e20rMeasurementViews {
                             align: 'justified'
                         }
                     });
-**/
+
                     if ($tabs.length !== 0) {
 
                         console.log("Inner tabs for weight/girth graphs exist.");
@@ -583,25 +582,13 @@ class e20rMeasurementViews {
                             });
                         }
                     }
-
+**/
                     jQuery('.load_progress_data').on("click", function() {
 
                         console.log("Loading progress data...", this );
                         progMeasurements.loadProgressPage( this );
                     });
 
-                    /*
-                    jQuery("#inner-tabs").zozoTabs({
-                        theme: 'white',
-                        style: 'clean',
-                        orientation: "horizontal",
-                        select: progMeasurements._tab_selected,
-                        animation: {
-                            duration: 800,
-                            effects: "slideH"
-                        }
-                    });
-**/
                     jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
 
                         if ( ui.newTab.index() === 0 ) {
