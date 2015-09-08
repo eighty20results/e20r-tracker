@@ -1,1 +1,1 @@
-Fix button coloring for presale button(s)
+Add e20r_exercises to list of CPTs that can be duplicated.
