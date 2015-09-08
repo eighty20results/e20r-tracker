@@ -712,11 +712,11 @@ class e20rWorkoutView extends e20rSettingsView {
 						    </td>
 						    <td class="text-input">
 							    <select class="e20r-select2-container select2" class="e20r-workout-groups-group_tempo" name="e20r-workout-groups-group_tempo[]" style="width: 100%;">
-								    <option value="0" <?php selected( 0, $group->tempo ); ?>></option>
-								    <option value="1" <?php selected( 1, $group->tempo ); ?>><?php _e("Slow", "e20rtracker");?></option>
-								    <option value="2" <?php selected( 2, $group->tempo ); ?>><?php _e("Normal", "e20rtracker");?></option>
-								    <option value="3" <?php selected( 3, $group->tempo ); ?>><?php _e("Fast", "e20rtracker");?></option>
-								    <option value="4" <?php selected( 4, $group->tempo ); ?>><?php _e("Varying", "e20rtracker");?></option>
+								    <option value="0" <?php selected( 0, $group->group_tempo ); ?>></option>
+								    <option value="1" <?php selected( 1, $group->group_tempo ); ?>><?php _e("Slow", "e20rtracker");?></option>
+								    <option value="2" <?php selected( 2, $group->group_tempo ); ?>><?php _e("Normal", "e20rtracker");?></option>
+								    <option value="3" <?php selected( 3, $group->group_tempo ); ?>><?php _e("Fast", "e20rtracker");?></option>
+								    <option value="4" <?php selected( 4, $group->group_tempo ); ?>><?php _e("Varying", "e20rtracker");?></option>
 							    </select>
 						    </td>
 					    </tr>
@@ -767,7 +767,7 @@ class e20rWorkoutView extends e20rSettingsView {
 						$exSettings = $e20rExercise->getExerciseSettings( $exId );
 
 						$type = $e20rExercise->getExerciseType( $exSettings->type );
-
+						dbg("e20rWorkoutView::generateExerciseList() - Setting type to: {$type}");
 						$exSettings->reps = empty( $exSettings->reps ) ? __( "None", "e20rtracker" ) : $exSettings->reps;
 						$exSettings->rest = empty( $exSettings->rest ) ? __( "None", "e20rtracker" ) : $exSettings->rest;
 
@@ -829,7 +829,7 @@ class e20rWorkoutView extends e20rSettingsView {
 							dbg("e20rWorkoutView::generateExerciseList() - Loaded " . count($all) . ' exercises');
 
 							foreach( $all as $exercise ) {
-								dbg("e20rWorkoutView::generateExerciseList() - Got  " . count($all) . ' exercises');
+								// dbg("e20rWorkoutView::generateExerciseList() - Got " . count($all) . ' exercises');
 								?>
 								<option value="<?php echo $exercise->id; ?>"><?php echo $exercise->title . " ({$exercise->shortcode})"; ?></option><?php
 							} ?>
