@@ -2551,11 +2551,18 @@ blockquote:before {
     margin: 0 auto;
     text-transform: none !important;
     font-size: 150% !important;
-    background-image: -webkit-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
-    background-image: -moz-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
-    background-image: -o-linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
-    background-image: linear-gradient(rgb(0, 77, 255), rgb(0, 77, 255));
+    background-image: -webkit-linear-gradient( #FFF, #FFF );
+    background-image: -moz-linear-gradient( #FFF, #FFF );
+    background-image: -o-linear-gradient( #FFF, #FFF );
+    background-image: linear-gradient( #FFF, #FFF );
     padding: 10px;
+}
+.e20r-coaching-presale input.button:hover {
+    background-image: -webkit-linear-gradient( #004CFF, #004CFF );
+    background-image: -moz-linear-gradient( #004CFF, #004CFF );
+    background-image: -o-linear-gradient( #004CFF, #004CFF );
+    background-image: linear-gradient( #004CFF, #004CFF );
+    color: #FFF !important;
 }
 .e20r-coaching-presale p {
     color: #5c5c5c !important;
