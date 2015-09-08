@@ -81,6 +81,7 @@ class e20rTracker {
                                                                 'e20r_workout',
                                                                 'e20r_articles',
                                                                 'e20r_assignments',
+                                                                'e20r_exercises',
                                                             )
                             );
 
