@@ -1,1 +1,3 @@
-Fix group tempo setting in backend
+Clear progress overview info from profile tabs where it's not supposed to appear.
+Include minified .js file for progress-measurements info
+Fix path to image(s) in post_type_icon()
