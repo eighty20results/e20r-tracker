@@ -175,3 +175,6 @@ tr.e20r-client-message-history-entry td {
 .wp-admin #status-tabs .ui-tabs-panel {
     margin: 1.1em 0.2em 0.2em 0.2em;
 }
+input#e20r-send-email-message {
+    color: #FFF !important;
+}
