@@ -415,9 +415,10 @@ var progMeasurements = {
 
         if ( 1 !== ID ) {
 
-            console.log("Profile tabs progress overview IS NOT visible");
+            console.log("Profile tabs progress overview IS NOT visible: ID = " + ID);
             $status.each(function() {
 
+                console.log("Removing ct-cur for: ", this);
                 jQuery(this).removeClass( "ct-cur" );
             });
 
@@ -1386,7 +1387,16 @@ var progMeasurements = {
                         jQuery(this).parent().removeClass("hover");
                         jQuery("colgroup").eq(jQuery(this).index()).removeClass("hover");
                     }
+
                 });
+
+                var current_tab = $class.profiletabs.data('codetabs').curId();
+
+                if ( 1 !== current_tab ) {
+
+                    console.log("Profile-Tab: Hiding the progress overview tab since we're on tab #" + current_tab );
+                    $class._hide_progress( current_tab )
+                }
 
                 // Disable the spinner again
                 $class.$spinner.hide();
@@ -1543,5 +1553,4 @@ jQuery(document).ready( function($) {
     }
 
     progMeasurements.init( jQuery('#e20r-progress-measurements'), {id: $clientId});
-
 });
