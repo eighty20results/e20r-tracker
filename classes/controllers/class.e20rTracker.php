@@ -1695,7 +1695,7 @@ class e20rTracker {
             // wp_register_script( 'jquery-ui-timepicker-addon-slider', "//cdn.jsdelivr.net/jquery.ui.timepicker.addon/1.4.5/jquery-ui-sliderAccess.js", array( 'jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
 
             wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), '0.1', true );
-            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
 
