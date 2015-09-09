@@ -44,14 +44,8 @@ var progMeasurements = {
         if ($class.clientId === null) {
 
             console.log("We should be on a wp-admin page...");
-            if (typeof( e20r_progress.clientId ) === 'undefined') {
-                $class.$tag = e20r_checkin;
-            }
-            else {
-                $class.$tag = e20r_progress;
-            }
+            $class.$ajaxUrl = ajaxurl;
 
-            $class.$ajaxUrl = $class.$tag.ajaxurl;
             // Used by admin UI only
             $class.$levelSelect = jQuery("#e20r-selectLevel");
             $class.$levelSelector = $class.$levelSelect.find('select#e20r_levels');
@@ -87,6 +81,7 @@ var progMeasurements = {
             $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
 
             console.log("Loading tabs for wp-admin page");
+/*
             jQuery('div.status-tabs .ct').codetabs({
                 fxIn: 'roWheelDownIn',
                 fxOut: 'roWheelUpOut',
@@ -99,12 +94,12 @@ var progMeasurements = {
                     align: 'justified',
                 }
             });
+*/
 
-            /*
              jQuery('#status-tabs').tabs({
-             heightStyle: "content"
+                 heightStyle: "content"
              });
-
+/*
              jQuery("#status-tabs").zozoTabs({
              theme: 'white',
              style: 'clean',
@@ -1390,14 +1385,16 @@ var progMeasurements = {
 
                 });
 
-                var current_tab = $class.profiletabs.data('codetabs').curId();
+                if ( typeof $class.profiletabs.data('codetabs') !== 'undefined' ) {
 
-                if ( 1 !== current_tab ) {
+                    var current_tab = $class.profiletabs.data('codetabs').curId();
 
-                    console.log("Profile-Tab: Hiding the progress overview tab since we're on tab #" + current_tab );
-                    $class._hide_progress( current_tab )
+                    if (1 !== current_tab) {
+
+                        console.log("Profile-Tab: Hiding the progress overview tab since we're on tab #" + current_tab);
+                        $class._hide_progress(current_tab)
+                    }
                 }
-
                 // Disable the spinner again
                 $class.$spinner.hide();
             }
@@ -1530,7 +1527,7 @@ jQuery(document).ready( function($) {
         return;
     }
 
-    if ( ( typeof e20r_progress.clientId !== 'undefined' ) || ( typeof e20r_checkin.clientId !== 'undefined' ) ) {
+    if ( ( typeof e20r_progress !== 'undefined' ) || ( typeof e20r_checkin !== 'undefined' ) ) {
 
         console.log("User ID is defined so we're working from the front-end");
         var $clientId = null;
