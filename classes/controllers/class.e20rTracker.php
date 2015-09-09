@@ -3645,14 +3645,14 @@ class e20rTracker {
         <style>
             /* Admin Menu - 16px */
             #menu-posts-e20r_tracker .wp-menu-image {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>/images/icon-sequence16-sprite.png") no-repeat 6px 6px !important;
+                background: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence16-sprite.png") no-repeat 6px 6px !important;
             }
             #menu-posts-e20r_tracker:hover .wp-menu-image, #menu-posts-e20r_tracker.wp-has-current-submenu .wp-menu-image {
                 background-position: 6px -26px !important;
             }
             /* Post Screen - 32px */
             .icon32-posts-pmpro_sequence {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence32.png") no-repeat left top !important;
+                background: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence32.png") no-repeat left top !important;
             }
             @media
             only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -3663,14 +3663,14 @@ class e20rTracker {
 
                 /* Admin Menu - 16px @2x */
                 #menu-posts-pmpro_sequence .wp-menu-image {
-                    background-image: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence16-sprite_2x.png") !important;
+                    background-image: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence16-sprite_2x.png") !important;
                     -webkit-background-size: 16px 48px;
                     -moz-background-size: 16px 48px;
                     background-size: 16px 48px;
                 }
                 /* Post Screen - 32px @2x */
                 .icon32-posts-pmpro_sequence {
-                    background-image:url("<?php echo E20R_PLUGINS_URL ?>images/icon-sequence32_2x.png") !important;
+                    background-image:url("<?php echo E20R_PLUGINS_URL ?>/img/icon-sequence32_2x.png") !important;
                     -webkit-background-size: 32px 32px;
                     -moz-background-size: 32px 32px;
                     background-size: 32px 32px;
