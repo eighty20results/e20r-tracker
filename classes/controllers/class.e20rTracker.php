@@ -1547,46 +1547,49 @@ class e20rTracker {
 
         $retVal = false;
 
+        dbg("e20rTracker::hasAccess() - Checking {$userId}'s access to {$postId}" );
+
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
             dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
-            $retVal = true;
+            return true;
         }
-
-        $current_delay = $this->getDelay( 'now', $userId );
-        $programId = $e20rProgram->getProgramIdForUser( $userId );
-
-        $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
-
-        if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
-
-            $article = $articles[0];
-
-            if ( $article->release_day <= $current_delay ) {
-                dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
-                $retVal = true;
-            }
-        }
-
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
 
             $levels = pmpro_getMembershipLevelsForUser( $userId );
             $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
 
-            if ( $result[0] && ( $retVal ) ) {
+            if ( $result[0] ) {
 
                 dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . $result[0]);
                 $retVal = apply_filters('pmpro_has_membership_access_filter', $result[0], $result[0], get_post($postId), get_user_by( 'ID', $userId ), $levels );
 
             }
-
-            $retVal = $result[0] && $retVal;
         }
         else {
             dbg("e20rTracker::hasAccess() - No membership access function found for Paid Memberships Pro");
         }
 
+        if ( !$retVal ) {
+
+            $current_delay = $this->getDelay( 'now', $userId );
+            $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+            $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
+
+            if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+
+                $article = $articles[0];
+
+                if ( $article->release_day <= $current_delay ) {
+                    dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
+                    $retVal = true;
+                }
+            }
+        }
+
+        dbg("e20rTracker::hasAccess() - Returning ({$retVal}) to calling function: " . $this->whoCalledMe() );
         return $retVal;
     }
 
