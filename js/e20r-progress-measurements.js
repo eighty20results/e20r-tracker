@@ -219,7 +219,9 @@ var progMeasurements = {
             // TODO Bind click events to the assignments, etc. on the wp-admin page.
         }
         else {
-            if (typeof( e20r_progress ) === 'undefined') {
+            if ( typeof( e20r_progress ) === 'undefined' ) {
+
+                console.log("e20r_progress constant not defined. using e20r_checkin instead");
                 $class.$tag = e20r_checkin;
             }
             else {
@@ -295,43 +297,22 @@ var progMeasurements = {
                 });
             }
             else {
-                console.log("Loading progress overview tabs while in /wp-admin/");
 
-                $class.statustabs.codetabs({
-                    fxOne: 'foldHor',
-                    isAutoRun: true,
-                    isKeyboard: true,
-                    name: '.status-tab',
-                    pag: {
-                        dirs: 'hor',
-                        pos: 'top',
-                        align: 'justified'
-                    }
-                });
-/*
-                 jQuery("#status-tabs").zozoTabs({
-                 "theme": "white",
-                 "style": "clean",
-                 // theme: 'flat-alizarin',
-                 // style: 'flat',
-                 "defaultTab": "tab1",
-                 "size": "medium",
-                 "multiline": true,
-                 "position": "top-compact",
-                 "rounded": false,
-                 "select": progMeasurements._tab_selected,
-                 "orientation": "horizontal",
-                 animation: {
-                 duration: 800,
-                 effects: "slideV"
-                 }
-                 });
-                 */
-                /*
-                 jQuery('#status-tabs').tabs({
-                 heightStyle: "content"
-                 });
-                 */
+                if ( 0 !== $class.statustabs.length ) {
+
+                    console.log("Loading progress overview tabs while in /wp-admin/");
+                    $class.statustabs.codetabs({
+                        fxOne: 'foldHor',
+                        isAutoRun: true,
+                        isKeyboard: true,
+                        name: '.status-tab',
+                        pag: {
+                            dirs: 'hor',
+                            pos: 'top',
+                            align: 'justified'
+                        }
+                    });
+                }
             }
 
             jQuery(".exercise-stats-container").each(function () {
