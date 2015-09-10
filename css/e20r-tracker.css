@@ -2080,9 +2080,11 @@ td.e20r-group-header {
     margin-left: 6px;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you .edit-selection {
+    border-radius: 0;
     margin: 8px 4px 0 -35px;
     padding: 4px 4px;
     font-size: 0.75rem;
+    letter-spacing: normal;
 }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes { padding: 0 4px; }
 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes legend {
