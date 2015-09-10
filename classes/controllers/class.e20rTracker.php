@@ -2528,7 +2528,7 @@ class e20rTracker {
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
                         'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
-                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.js',
+                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
                         // 'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
                         'dependencies' => array(
                             'jquery' => false,
@@ -2546,7 +2546,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.js',
+                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.min.js',
                         'dependencies' => array(
                             'e20r.checkin.js' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r.tracker.js', 'e20r.assignments.js' ),
                         ),
