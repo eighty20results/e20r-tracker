@@ -1617,20 +1617,6 @@ class e20rClient {
         /* Load views for the profile page tabs */
         $config = $e20rCheckin->configure_dailyProgress();
 
-        /*
-         *
-        $incl_account = isset( $currentProgram->account_page_id ) && (!is_null( $currentProgram->account_page_id ) );
-        $incl_contact = isset( $currentProgram->contact_page_id ) && (!is_null( $currentProgram->contact_page_id ) );
-
-        if ( $incl_account ) {
-            // $account = $e20rArticle->load_lesson($currentProgram->account_page_id, false);
-        }
-
-        if ( $incl_contact ) {
-            // $contact = $e20rArticle->load_lesson($currentProgram->contact_page_id, false);
-        }
-        */
-
         if ( $this->completeInterview( $config->userId ) ) {
             $interview_descr = 'Saved interview';
         }
@@ -1674,15 +1660,18 @@ class e20rClient {
 
             $dashboard = array(
                 'Your dashboard',
-                '<div id="e20r-profile-dashboard">' . $e20rCheckin->dailyProgress( $config ) . '</div>'
+                '<div id="e20r-daily-progress">' . $e20rCheckin->dailyProgress( $config ) . '</div>'
             );
-//            $activity = array( 'Your activity', '<div id="e20r-profile-activity">' . $e20rWorkout->prepare_activity( $config ) . '</div>');
+ /*
+            $activity = array(
+				'Your activity',
+				'<div id="e20r-profile-activity">' . $e20rWorkout->prepare_activity( $config ) . '</div>'
+			);
+ */
             $progress_html = array(
                 'Your progress',
                 '<div id="e20r-profile-status">' . $e20rMeasurements->show_progress( $progress, null, false ) . '</div>'
             );
-
-
 
             $tabs = array(
                'Home'              => $dashboard,
@@ -1700,20 +1689,11 @@ class e20rClient {
             );
 
             $tabs = array(
-                $lesson_prefix      => $lesson,
-                'Interview' => $interview,
+                $lesson_prefix  => $lesson,
+                'Interview' 	=> $interview,
             );
         }
 
-        /*
-        if ( $incl_contact ) {
-            $tabs['Contact'] = '<nav id="e20r-profile-contact">' . $contact . '</nav>';
-        }
-
-        if ( $incl_account ) {
-            $tabs['Account'] = '<nav id="e20r-profile-account">' . $account . '</nav>';
-        }
-        */
         $html = $this->view->view_clientProfile( $tabs );
 		dbg("e20rClient::shortcode_clientProfile() - Display the HTML for the e20r_profile short code");
 
