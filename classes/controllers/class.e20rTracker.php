@@ -1545,10 +1545,12 @@ class e20rTracker {
         global $e20rArticle;
         global $e20rProgram;
 
+        $retVal = false;
+
         if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
 
             dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
-            return true;
+            $retVal = true;
         }
 
         $current_delay = $this->getDelay( 'now', $userId );
@@ -1557,33 +1559,35 @@ class e20rTracker {
         $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
 
         if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
-            $article = $articles[0];
 
+            $article = $articles[0];
 
             if ( $article->release_day <= $current_delay ) {
                 dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
-                return true;
+                $retVal = true;
             }
         }
+
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
 
+            $levels = pmpro_getMembershipLevelsForUser( $userId );
             $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
 
-            if ( $result[0] ) {
+            if ( $result[0] && ( $retVal ) ) {
 
                 dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . $result[0]);
-                // $flt_access = apply_filters('pmpro_has_membership_access_filter', $result[0], $myPost, $myUser, $levels );
+                $retVal = apply_filters('pmpro_has_membership_access_filter', $result[0], $result[0], get_post($postId), get_user_by( 'ID', $userId ), $levels );
 
             }
 
-            return $result[0];
+            $retVal = $result[0] && $retVal;
         }
         else {
-            dbg("e20rTracker::hasAccess() - No membership access function found!");
+            dbg("e20rTracker::hasAccess() - No membership access function found for Paid Memberships Pro");
         }
 
-        return false;
+        return $retVal;
     }
 
     public function filter_changeConfirmationMessage( $data, $email ) {
@@ -2521,8 +2525,8 @@ class e20rTracker {
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
                         'e20r.tracker.js' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
-                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
-                        'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
+                        'e20r.assignments.js' => E20R_PLUGINS_URL . '/js/e20r-assignments.js',
+                        // 'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2534,12 +2538,12 @@ class e20rTracker {
                             'jquery.redirect' => array( 'jquery' ),
                             'e20r.tracker.js' => array( 'jquery' ),
                             'e20r.assignments.js' => array( 'jquery', 'select2', 'e20r.tracker.js' ),
-                            'e20r.progress.measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'e20r.tracker.js' ),
+                            // 'e20r.progress.measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'e20r.tracker.js' ),
                         )
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.min.js',
+                        'e20r.checkin.js' => E20R_PLUGINS_URL . '/js/e20r-checkin.js',
                         'dependencies' => array(
                             'e20r.checkin.js' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r.tracker.js', 'e20r.assignments.js' ),
                         ),
