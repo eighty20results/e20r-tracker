@@ -23,6 +23,7 @@ jQuery(document).ready(function() {
             this.is_running = true;
 
             this.$body = jQuery("body");
+            this.$header_tag = jQuery("#e20r-daily-progress");
             this.$checkinOptions = jQuery('#e20r-daily-checkin-canvas fieldset.did-you input:radio');
             this.$checkinDate = jQuery('#e20r-checkin-checkin_date').val();
             this.$checkedinDate = jQuery('#e20r-checkin-checkedin_date').val();
@@ -32,8 +33,9 @@ jQuery(document).ready(function() {
             this.$nonce = jQuery('#e20r-checkin-nonce').val();
             this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
-            this.$tomorrowBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
-            this.$yesterdayBtn = jQuery("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            this.$progressNav = jQuery("#e20r-checkin-daynav");
+            this.$tomorrowBtn = this.$progressNav.find("#e20r-checkin-tomorrow-lnk");
+            this.$yesterdayBtn = this.$progressNav.find("#e20r-checkin-yesterday-lnk");
             this.$activityLnk = jQuery("#e20r-checkin-activity").find("#e20r-activity-read-lnk");
             this.$allowActivityOverride = false;
 
@@ -43,11 +45,11 @@ jQuery(document).ready(function() {
         },
         bindProgressElements: function(self) {
 
-            self.$tomorrowBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
-            self.$yesterdayBtn = jQuery("#e20r-daily-progress").find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
-            self.$activityLnk = jQuery("#e20r-daily-progress").find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk");
+            self.$tomorrowBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
+            self.$yesterdayBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
+            self.$activityLnk = self.$header_tag.find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk");
 
-            jQuery("#e20r-daily-progress").find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
+            self.$header_tag.find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
 
                 var $radioBtn = this;
 
@@ -296,7 +298,7 @@ jQuery(document).ready(function() {
 
                     if ( response.success ) {
 
-                        jQuery('#e20r-daily-progress').html(response.data);
+                        self.$header_tag.html(response.data);
                         self.$allowActivityOverride = true;
 
                         self.init();
