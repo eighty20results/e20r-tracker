@@ -1033,7 +1033,8 @@ class e20rArticle extends e20rSettings {
 		    return $content;
 	    }
         */
-        if ( has_shortcode( $content, 'progress_overview' ) ||
+        if ( has_shortcode( $content, 'e20r_profile' ) ||
+            has_shortcode( $content, 'progress_overview' ) ||
             has_shortcode( $content, 'e20r_activity_archive') ) {
             // Process in shortcode actions
             return $content;
@@ -1171,7 +1172,7 @@ class e20rArticle extends e20rSettings {
 
         if ( $e20rCheckin->hasCompletedLesson( $currentArticle->id, $post->ID, $current_user->ID ) && ( !$md ) ) {
 
-            dbg("e20rArticle::contentFilter() - Processing a defined article, but it's not for measurements.");
+            dbg("e20rArticle::contentFilter() - Processing a defined article to see if lesson is completed. This is not for a measurement day.");
             $data = $this->view->viewLessonComplete( $rDay, false, $currentArticle->id );
             $content = $data . $content;
         }
