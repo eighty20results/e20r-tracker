@@ -1,3 +1,11 @@
-Load codetabs for back-end as well.
-Show progress info correctly on both front & back-end
-Fix tab formatting for back-end client info page
+Fix lookup of e20r_progress constant (for when in wp-admin).
+Only load status tabs if on a page where the tabs elements exist (i.e. not a daily_progress assignments page).
+Fix daily_progress javascript to allow navigating to next/previous days in dashboard.
+Don't process content filter for article if running on page with e20r_profile short code
+Clean up comments
+Fix article look-up when article ID or delay is defined in $_POST variable.
+Don't process content filter for article if running on page with e20r_profile short code
+Update formatting for edit buttons in check-in
+Make "Incomplete Interview" text more visible (bolder)
+Load minified e20r-progress-measurements.js script
+Fix text color for primary-button in back-end (Send Message)

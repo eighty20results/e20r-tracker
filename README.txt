@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.2 or later.
 Tested up to: 4.3
-Stable tag: 1.2.8
+Stable tag: 1.2.10
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,20 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.2.10 ==
+
+* Fix lookup of e20r_progress constant (for when in wp-admin).
+* Only load status tabs if on a page where the tabs elements exist (i.e. not a daily_progress assignments page).
+* Fix daily_progress javascript to allow navigating to next/previous days in dashboard.
+* Don't process content filter for article if running on page with e20r_profile short code
+* Clean up comments
+* Fix article look-up when article ID or delay is defined in $_POST variable.
+* Don't process content filter for article if running on page with e20r_profile short code
+* Update formatting for edit buttons in check-in
+* Make 'Incomplete Interview' text more visible (bolder)
+* Load minified e20r-progress-measurements.js script
+* Fix text color for primary-button in back-end (Send Message)
 
 == 1.2.8 ==
 
