@@ -734,6 +734,7 @@ class e20rCheckin extends e20rSettings {
 		global $current_user;
         global $post;
 
+		$articles = array();
 		$config = new stdClass();
 
 		$config->type = 'action';
@@ -754,59 +755,78 @@ class e20rCheckin extends e20rSettings {
 
 		$config->startTS = strtotime( $currentProgram->startdate );
 
-        $config->delay = ( ! isset( $_POST['e20r-checkin-day'] ) ?
-            $e20rTracker->getDelay( 'now', $config->userId ) : $e20rTracker->getDelay( intval( $_POST['e20r-checkin-day'] ), $config->userId ) );
+		if ( isset( $_POST['e20r-checkin-day'] ) ) {
 
+			$config->delay =  $e20rTracker->getDelay( $e20rTracker->sanitize( $_POST['e20r-checkin-day'] ), $config->userId );
+			dbg("e20rCheckin::configure_dailyProgress() - Was given a specific release_day to load the article for: {$config->delay}");
+		}
+
+		if ( isset( $_POST['article-id'] ) && !isset( $config->delay ) ) {
+
+			$config->articleId = $e20rTracker->sanitize($_POST['article-id']);
+			dbg("e20rCheckin::configure_dailyProgress() - Loading article based on specified article ID ({$config->articleId}) from POST variable");
+
+			// Article ID given in POST variable so load the requested article
+			$e20rArticle->init( $config->articleId );
+		}
+		else {
+
+			if ( !isset( $config->delay ) ) {
+
+				dbg("e20rCheckin::configure_dailyProgress() - Trying to load article based on post_id");
+
+				$articles = $e20rArticle->findArticles( 'post_id', $post->ID, 'numeric', $config->programId );
+
+				if ( empty( $articles ) ) {
+
+					dbg("e20rCheckin::configure_dailyProgress() - post_id got us nowhere so using the present ('now') as a delay value to try to find a valid article");
+					$config->delay = $e20rTracker->getDelay( 'now', $config->userId );
+				}
+			}
+
+			if ( isset( $config->delay ) && empty( $articles ) ) {
+
+				dbg("e20rCheckin::configure_dailyProgress() - Loading article (list?) based on the release day (delay value)");
+				$articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
+			}
+
+			if ( empty( $articles ) ) {
+
+				$articles = $e20rArticle->findArticlesNear( 'release_day', $config->delay, $config->programId, '<=' );
+
+				dbg("e20rCheckin::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to today");
+				$article = $articles[0];
+				// $article = $e20rArticle->emptyArticle();
+				// $article->id = CONST_NULL_ARTICLE;
+			}
+
+			if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
+
+				$article = $articles[0];
+			}
+			elseif ( 1 < count( $articles ) ) {
+				dbg("e20rCheckin::configure_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
+
+				foreach( $articles as $art ) {
+
+					if ( ( in_array( $currentProgram->id, $art->program_ids ) ) && ( $config->delay == $art->release_day ) ) {
+						dbg("e20rCheckin::configure_dailyProgress() - Found an article w/correct release_day and program ID. Using it: {$art->id}.");
+						$article = $art;
+					}
+				}
+			}
+			elseif ( is_object( $articles ) ) {
+				dbg("e20rCheckin::configure_dailyProgress() - Articles object: " . gettype( $articles ) );
+				dbg( $articles );
+				$article = $articles;
+
+			}
+
+			$currentArticle = $article;
+		}
+
+		$config->delay = $currentArticle->release_day;
 		$config->delay_byDate = $config->delay;
-        $config->url = ( $currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1 ) ?
-                        get_permalink( $currentProgram->dashboard_page_id ) : null;
-
-        $config->articleId = (!isset($_POST['article-id']) ? null : $e20rTracker->sanitize($_POST['article-id']));
-
-        // Article ID given in POST variable so load the default article
-        if ( isset( $config->articleId ) && ( null !== $config->articleId ) ) {
-
-            $e20rArticle->init( $config->articleId );
-        }
-        else {
-
-            $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
-
-            if ( empty( $articles ) ) {
-
-                $articles = $e20rArticle->findArticlesNear( 'release_day', $config->delay, $config->programId, '<=' );
-                dbg("e20rCheckin::configure_dailyProgress() - Empty article for the actual day, we're looking for the most recent now");
-                $article = $articles[0];
-                dbg($article);
-                // $article = $e20rArticle->emptyArticle();
-                // $article->id = CONST_NULL_ARTICLE;
-            }
-
-            if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
-
-                $article = $articles[0];
-            }
-            elseif ( 1 < count( $articles ) ) {
-                dbg("e20rCheckin::configure_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
-
-                foreach( $articles as $art ) {
-
-                    if ( ( in_array( $currentProgram->id, $art->program_ids ) ) && ( $config->delay == $art->release_day ) ) {
-                        dbg("e20rCheckin::configure_dailyProgress() - Continuing while using article ID {$art->id}.");
-                        $article = $art;
-                    }
-                }
-            }
-            elseif ( is_object( $articles ) ) {
-                dbg("e20rCheckin::configure_dailyProgress() - Articles object: " . gettype( $articles ) );
-                dbg( $articles );
-                $article = $articles;
-
-            }
-
-            $currentArticle = $article;
-        }
-
         $config->is_survey = isset( $currentArticle->is_survey) && ( $currentArticle->is_survey == 0 ) ? false : true;
         $config->articleId = isset( $currentArticle->id ) ? $currentArticle->id : CONST_NULL_ARTICLE;
 
@@ -879,6 +899,10 @@ class e20rCheckin extends e20rSettings {
 
         dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
 
+		if ( ! $e20rTracker->hasAccess( $config->userId, $currentArticle->post_id ) ) {
+			wp_send_json_error( array( 'ecode' => 1 ) );
+		}
+
         if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 
             dbg("e20rCheckin::nextCheckin_callback() - Sending new dailyProgress data (html)");
@@ -945,11 +969,10 @@ class e20rCheckin extends e20rSettings {
 		global $currentArticle;
 
 		dbg( "e20rCheckin::dailyProgress() - Start of dailyProgress(): " . $e20rTracker->whoCalledMe() );
-		dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId}");
-		dbg( "e20rCheckin::dailyProgress() - vs {$currentArticle->id} ");
+		dbg( "e20rCheckin::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
 		dbg( $config );
 
-		if ( $config->delay <= 0 ) {
+		if ( !isset( $config->delay) || $config->delay <= 0 ) {
 
 			dbg("e20rCheckin::dailyProgress() - Negative delay value. No article to be found.");
 			$config->articleId = CONST_NULL_ARTICLE;
@@ -1000,6 +1023,10 @@ class e20rCheckin extends e20rSettings {
 		dbg("e20rCheckin::dailyProgress() - currentArticle is {$currentArticle->id} ");
 		// dbg($currentArticle);
 
+/*		if ( ! $e20rTracker->hasAccess( $config->userId, $currentArticle->post_id ) ) {
+			return false;
+		}
+*/
 		$config->complete = $this->hasCompletedLesson( $config->articleId, $currentArticle->post_id, $config->userId );
 
 		if ( ( strtolower($config->type) == 'action' ) || ( strtolower($config->type) == 'activity' ) ) {
