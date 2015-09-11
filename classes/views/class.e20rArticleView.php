@@ -27,6 +27,8 @@ class e20rArticleView extends e20rSettingsView {
         dbg("e20rArticleView::viewLessonComplete() -  Assignment is complete: " . ( $currentArticle->complete ? 'Yes' : 'No'));
         dbg($currentArticle);
 
+        $prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
+
         if ( true == $currentArticle->complete ) { ?>
 
         <div class="e20r-assignment-complete"><?php
@@ -36,7 +38,7 @@ class e20rArticleView extends e20rSettingsView {
         <div class="e20r-assignment-complete" style="display: none;"><?php
         } ?>
             <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
+                <p><strong><?php echo sprintf( __("You have completed this %s.", "e20rTracker"), lcfirst( $prefix ) ); ?></strong></p>
             </div>
         </div>
 		<?php

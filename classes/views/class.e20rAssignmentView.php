@@ -591,12 +591,14 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function assignmentComplete() {
 
+        global $currentArticle;
 		$html = '';
 
 		ob_start();
+        $prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
 		?>
 		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-			<p><strong><?php _e( "You have completed this lesson.", "e20rTracker" ); ?></strong></p>
+            <p><strong><?php echo sprintf( __("You have completed this %s.", "e20rTracker"), lcfirst( $prefix ) ); ?></strong></p>
 		</div>
 		<?php
 
