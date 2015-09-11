@@ -1170,12 +1170,16 @@ class e20rArticle extends e20rSettings {
 
         $md = $this->isMeasurementDay( $currentArticle->id );
 
-        if ( $e20rCheckin->hasCompletedLesson( $currentArticle->id, $post->ID, $current_user->ID ) && ( !$md ) ) {
+        // && ( !$md )
+        if ( $e20rCheckin->hasCompletedLesson( $currentArticle->id, $post->ID, $current_user->ID )  ) {
 
             dbg("e20rArticle::contentFilter() - Processing a defined article to see if lesson is completed. This is not for a measurement day.");
-            $data = $this->view->viewLessonComplete( $rDay, false, $currentArticle->id );
-            $content = $data . $content;
+
+            $currentArticle->complete = true;
         }
+
+        $data = $this->view->viewLessonComplete( $rDay, false, $currentArticle->id );
+        $content = $data . $content;
 
         if ( $md ) {
 
