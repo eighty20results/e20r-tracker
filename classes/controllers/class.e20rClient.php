@@ -1621,7 +1621,7 @@ class e20rClient {
             $interview_descr = 'Saved interview';
         }
         else {
-            $interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;"">Incomplete interview</div>';
+            $interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;">' . __("Please complete interview", "e20rtracker" ) . '</div>';
         }
 
         $interview = array( $interview_descr , '<div id="e20r-profile-interview">' . $this->view_interview( $config->userId ) . '</div>' );
