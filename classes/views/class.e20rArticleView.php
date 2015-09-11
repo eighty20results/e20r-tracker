@@ -21,12 +21,24 @@ class e20rArticleView extends e20rSettingsView {
 
 	public function viewLessonComplete( $day, $articleId ) {
 
+        global $currentArticle;
 		ob_start();
-		?>
-		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-			<p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
-		</div>
 
+        dbg("e20rArticleView::viewLessonComplete() -  Assignment is complete: " . ( $currentArticle->complete ? 'Yes' : 'No'));
+        dbg($currentArticle);
+
+        if ( true == $currentArticle->complete ) { ?>
+
+        <div class="e20r-assignment-complete"><?php
+        }
+        else { ?>
+
+        <div class="e20r-assignment-complete" style="display: none;"><?php
+        } ?>
+            <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+                <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong></p>
+            </div>
+        </div>
 		<?php
 		$html = ob_get_clean();
 
