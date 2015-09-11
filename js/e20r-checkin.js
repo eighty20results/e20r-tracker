@@ -475,7 +475,9 @@ jQuery(document).ready(function() {
 
                     console.log("Gave focus to", this);
                     jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('#e20r-assignment-complete').hide();
+                    jQuery('.e20r-assignment-complete').each(function() {
+                        jQuery(this).hide();
+                    });
                 });
             });
 
@@ -487,7 +489,9 @@ jQuery(document).ready(function() {
 
                     console.log("Gave focus to", this);
                     jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('#e20r-assignment-complete').hide();
+                    jQuery('.e20r-assignment-complete').each(function() {
+                        jQuery(this).hide();
+                    });
                 })
             });
 
@@ -500,7 +504,9 @@ jQuery(document).ready(function() {
                     console.log("Clicked on:", this);
 
                     jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('#e20r-assignment-complete').hide();
+                    jQuery('.e20r-assignment-complete').each(function() {
+                        jQuery(this).hide();
+                    });
                 })
             });
 
@@ -520,7 +526,7 @@ jQuery(document).ready(function() {
 
                     jQuery('#e20r-lesson-complete').hide();
                     jQuery(".e20r-lesson-highlight").hide();
-                    jQuery('#e20r-assignment-complete').each(function() {
+                    jQuery('.e20r-assignment-complete').each(function() {
                         jQuery(this).show();
                     });
                 },
@@ -578,7 +584,7 @@ jQuery(document).ready(function() {
                 success: function( $response ) {
 
                     jQuery('#e20r-assignment-save-btn').hide();
-                    jQuery('#e20r-assignment-complete').each(function() {
+                    jQuery('.e20r-assignment-complete').each(function() {
                         jQuery(this).show();
                     });
 
