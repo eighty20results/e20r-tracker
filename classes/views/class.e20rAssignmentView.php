@@ -387,12 +387,12 @@ class e20rAssignmentView extends e20rSettingsView {
 
         if ( true == $articleConfig->complete ) { ?>
 
-                <div id="e20r-assignment-complete"><?php
+                <div class="e20r-assignment-complete"><?php
         }
         else {
             dbg("e20rAssignmentView::viewAssignment() -  Assignment isn't complete: " . ($articleConfig->complete ? 'Yes' : 'No'));?>
 
-                <div id="e20r-assignment-complete" style="display: none;"><?php
+                <div class="e20r-assignment-complete" style="display: none;"><?php
         }
                     echo $this->assignmentComplete() ;?>
                 </div>
