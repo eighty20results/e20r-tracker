@@ -2661,7 +2661,6 @@ class e20rTracker {
         // wp_print_scripts( $list );
     }
 
-
    /* Prepare graphing scripts */
     public function register_plotSW( $hook = null ) {
 
