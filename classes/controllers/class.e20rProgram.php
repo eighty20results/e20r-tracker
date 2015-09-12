@@ -528,6 +528,7 @@ class e20rProgram extends e20rSettings {
         }
 
         $programId = isset( $_POST['e20r-tracker-user-program'] ) ? intval( $_POST['e20r-tracker-user-program'] ) : 0;
+        $coachId = isset( $_POST['e20r-tracker-user-coach_id'] ) ? intval( $_POST['e20r-tracker-user-coach_id'] ) : 0;
 
         dbg("e20rProgram::updateProgramForUser() - Setting program ID = {$programId} for user with ID of {$userId}");
 
@@ -552,6 +553,16 @@ class e20rProgram extends e20rSettings {
             if ( !in_array( $userId, $currentProgram->users ) ) {
                 dbg("e20rProgram::updateProgramForUser() - Adding user to the program 'users' list");
                 $this->model->set('users', $currentProgram->users, $currentProgram->id);
+            }
+        }
+
+        if ( $coachId != 0 ) {
+
+            update_user_meta( $userId, 'e20r-tracker-user-coach_id', $coachId );
+
+            if ( get_user_meta( $userId, 'e20r-tracker-user-coach_id', true ) != $coachId ) {
+
+                wp_die("Unable to save the assigned coach for this user");
             }
         }
     }
