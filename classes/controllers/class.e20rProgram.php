@@ -409,14 +409,18 @@ class e20rProgram extends e20rSettings {
      */
     public function selectProgramForUser( $user ) {
 
+        global $e20rClient;
         dbg("e20rProgram::selectProgramForUser() - user: {$user->ID}");
 
         $programlist = $this->getProgramList();
         $activeProgram = $this->getProgramIdForUser( $user->ID, null );
 
+        $coach_id = $e20rClient->get_coach( $user->ID, $activeProgram );
+        $coachList = $e20rClient->get_coach();
+
         dbg("e20rProgram::selectProgramForUser() - Active Program: {$activeProgram}");
 
-        echo $this->view->view_userProfile( $programlist, $activeProgram );
+        echo $this->view->profile_view_client_settings( $programlist, $activeProgram, $coachList, $coach_id );
     }
 
     public function incompleteIntakeForm() {
@@ -491,6 +495,23 @@ class e20rProgram extends e20rSettings {
 
         // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
         return strtotime( $currentProgram->startdate );
+    }
+
+    public function get_coaches_for_program( $program_id ) {
+
+        $program = $this->init( $program_id );
+
+        $coach_ids  = array_merge( $program->male_coaches, $program->female_coaches );
+
+        $coaches = array();
+
+        foreach( $coach_ids as $id ) {
+
+            $tmp = get_user_by( $id );
+            $coaches[$id] = $tmp->display_name;
+        }
+
+        return $coaches;
     }
 
     /**
