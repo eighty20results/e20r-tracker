@@ -189,7 +189,7 @@ class e20rProgramView {
         $list = array_merge( $pages, $posts );
 
         // TODO: Load all users designated as coaches.
-        $coaches =
+        $coaches = array();
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
         wp_reset_postdata();
@@ -435,7 +435,7 @@ class e20rProgramView {
                     <tbody>
                         <tr class="program-inputs">
 	                        <td>
-                                <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches">
+                                <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches[]" multiple="multiple">
                                     <option value="-1" <?php selected( -1, $programData->male_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
 
                                 foreach( $coaches as $c ) { ?>
@@ -444,7 +444,7 @@ class e20rProgramView {
                                 </select>
                             </td>
                             <td>
-                                <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches">
+                                <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches[]" multiple="multiple">
                                     <option value="-1" <?php selected( -1, $programData->female_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
 
                                 foreach( $coaches as $c ) { ?>
