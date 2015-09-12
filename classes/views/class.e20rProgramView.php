@@ -188,7 +188,7 @@ class e20rProgramView {
 
         $list = array_merge( $pages, $posts );
 
-        // TODO: Load all users designated as coaches.
+        // FixMe: Load all users designated as coaches.
         $coaches = array();
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
@@ -261,7 +261,7 @@ class e20rProgramView {
 	                    <th class="e20r-label header"><label for="e20r-program-sales_page_ids"><strong><?php _e("Sales page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="3"><hr width="100%"/></td>
+                        <td colspan="4"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
@@ -378,7 +378,7 @@ class e20rProgramView {
 	                    <th class="e20r-label header"><label for="e20r-program-contact_page_id"><strong><?php _e("Contact the Coach Page", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
-                        <td colspan="2"><hr width="100%"/></td>
+                        <td colspan="4"><hr width="100%"/></td>
                     </tr>
                     </thead>
                     <tbody>
@@ -425,8 +425,8 @@ class e20rProgramView {
                 <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Women", "e20rtracker"); ?></strong></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Men", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Female clients", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Male clients", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="2"><hr width="100%"/></td>
