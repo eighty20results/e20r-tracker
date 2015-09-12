@@ -90,6 +90,8 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->account_page_id = null;
         $settings->group = -1;
         $settings->users = array(); // TODO: Figure out how to add current_user->ID to  this array.
+        $settings->female_coaches = array();
+        $settings->male_coaches = array();
         $settings->sequences = array();
         $settings->title = null;
         $settings->excerpt = null;

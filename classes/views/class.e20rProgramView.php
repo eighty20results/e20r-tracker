@@ -188,6 +188,9 @@ class e20rProgramView {
 
         $list = array_merge( $pages, $posts );
 
+        // TODO: Load all users designated as coaches.
+        $coaches =
+
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
         wp_reset_postdata();
 
@@ -413,6 +416,39 @@ class e20rProgramView {
 
                                 foreach( $list as $p ) { ?>
                                     <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->contact_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Women", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Men", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+	                        <td>
+                                <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches">
+                                    <option value="-1" <?php selected( -1, $programData->male_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+
+                                foreach( $coaches as $c ) { ?>
+                                    <option value="<?php echo $c->ID;?>"<?php selected( $c->ID, $programData->male_coaches ); ?>><?php echo esc_textarea($c->display_name);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches">
+                                    <option value="-1" <?php selected( -1, $programData->female_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+
+                                foreach( $coaches as $c ) { ?>
+                                    <option value="<?php echo $c->ID;?>"<?php selected( $c->ID, $programData->female_coaches ); ?>><?php echo esc_textarea($c->display_name);?></option><?php
                                 } ?>
                                 </select>
                             </td>
