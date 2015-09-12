@@ -16,11 +16,12 @@ class e20rProgramView {
 
     }
 
-    public function view_userProfile( $programList, $activePgm ) {
+    public function profile_view_client_settings( $programList, $activePgm, $coachList, $coach_id ) {
 
 	    if ( empty( $programList ) ) {
 		    $programList = array();
 	    }
+
 
         ob_start();
         ?>
@@ -40,6 +41,22 @@ class e20rProgramView {
                         ?>
                     </select>
                 </td>
+            </tr>
+            <tr>
+                <th><label for="e20r-tracker-user-coach_id"><?php _e( "Assigned Coach", "e20rtracker"); ?></label></th>
+                <td>
+                    <select id="e20r-tracker-user-coach_id" name="e20r-tracker-user-coach_id" class="select2-container">
+                        <option value="0" <?php selected( $activePgm, 0 ) ?>>Unassigned</option>
+                        <?php
+
+                        foreach( $coachList as $id => $name ) {
+                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $coach_id, $id ); ?>><?php echo esc_attr($name); ?></option> <?php
+                        }
+
+                        ?>
+                    </select>
+                </td>
+
             </tr>
         </table>
         <?php
