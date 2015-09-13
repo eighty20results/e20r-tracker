@@ -199,6 +199,7 @@ class e20rProgramView {
     public function viewSettingsBox( $programData, $feeds ) {
 
         global $e20rTracker;
+        global $e20rClient;
 
         $pages = get_pages();
         $posts = get_posts();
@@ -206,9 +207,12 @@ class e20rProgramView {
         $list = array_merge( $pages, $posts );
 
         // FixMe: Load all users designated as coaches.
-        $coaches = array();
+        $coaches = $e20rClient->get_coach();
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
+        dbg( "e20rProgramView::viewProgramSettingsBox() - Defined coaches in system: ");
+        dbg( $coaches );
+
         wp_reset_postdata();
 
         ?>
@@ -442,8 +446,8 @@ class e20rProgramView {
                 <table class="e20r-program-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Female clients", "e20rtracker"); ?></strong></label></th>
-	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Male clients", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Male clients", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Female clients", "e20rtracker"); ?></strong></label></th>
                     </tr>
                     <tr>
                         <td colspan="2"><hr width="100%"/></td>
@@ -455,8 +459,9 @@ class e20rProgramView {
                                 <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches[]" multiple="multiple">
                                     <option value="-1" <?php selected( -1, $programData->male_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
 
-                                foreach( $coaches as $c ) { ?>
-                                    <option value="<?php echo $c->ID;?>"<?php selected( $c->ID, $programData->male_coaches ); ?>><?php echo esc_textarea($c->display_name);?></option><?php
+                                foreach( $coaches as $cId => $cName ) {
+                                    $selected = (in_array( $cId, $programData->male_coaches ) ? 'selected="selected"' : null );?>
+                                    <option value="<?php echo $cId;?>" <?php echo $selected; ?>><?php echo esc_textarea($cName);?></option><?php
                                 } ?>
                                 </select>
                             </td>
@@ -464,8 +469,9 @@ class e20rProgramView {
                                 <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches[]" multiple="multiple">
                                     <option value="-1" <?php selected( -1, $programData->female_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
 
-                                foreach( $coaches as $c ) { ?>
-                                    <option value="<?php echo $c->ID;?>"<?php selected( $c->ID, $programData->female_coaches ); ?>><?php echo esc_textarea($c->display_name);?></option><?php
+                                foreach( $coaches as $cId => $cName ) {
+                                    $selected = (in_array( $cId, $programData->female_coaches ) ? 'selected="selected"' : null );?>
+                                    <option value="<?php echo $cId; ?>" <?php echo $selected; ?>><?php echo esc_textarea( $cName);?></option><?php
                                 } ?>
                                 </select>
                             </td>
