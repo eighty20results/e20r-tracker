@@ -22,13 +22,15 @@ class e20rProgramView {
 		    $programList = array();
 	    }
 
+        dbg("e20rProgramView::profile_view_client_settings() - Looking for coach: ");
+        dbg($coach_id);
 
         ob_start();
         ?>
-        <h3><?php _e("E20R Tracker Settings", "e20rtracker"); ?></h3>
+        <h3><?php _e("E20R Tracker - Program Settings", "e20rtracker"); ?></h3>
         <table class="form-table">
             <tr>
-                <th><label for="e20r-tracker-user-program"><?php _e( "Coaching program", "e20rtracker"); ?></label></th>
+                <th><label for="e20r-tracker-user-program"><?php _e( "Member of program", "e20rtracker"); ?></label></th>
                 <td>
                     <select id="e20r-tracker-user-program" name="e20r-tracker-user-program" class="select2-container">
                         <option value="0" <?php selected( $activePgm, 0 ) ?>>Not Applicable</option>
@@ -46,11 +48,11 @@ class e20rProgramView {
                 <th><label for="e20r-tracker-user-coach_id"><?php _e( "Assigned Coach", "e20rtracker"); ?></label></th>
                 <td>
                     <select id="e20r-tracker-user-coach_id" name="e20r-tracker-user-coach_id" class="select2-container">
-                        <option value="0" <?php selected( $activePgm, 0 ) ?>>Unassigned</option>
+                        <option value="0" <?php selected( key( $coach_id ), 0 ) ?>>Unassigned</option>
                         <?php
 
                         foreach( $coachList as $id => $name ) {
-                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $coach_id, $id ); ?>><?php echo esc_attr($name); ?></option> <?php
+                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( key( $coach_id ), $id ); ?>><?php echo esc_attr($name); ?></option> <?php
                         }
 
                         ?>
