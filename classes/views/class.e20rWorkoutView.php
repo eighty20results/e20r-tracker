@@ -179,7 +179,12 @@ class e20rWorkoutView extends e20rSettingsView {
         if ( empty( $activityList ) ) { ?>
             <div class="red-notice">
                 <h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date( 'l', current_time('timestamp') ) ); ?></h3>
-                <p><?php _e( "Sorry, we're not quite ready to share activities for this week.<br/>But maybe if you come back later in the week..? (Sunday)", "e20rtracker" ); ?></p>
+                <p><?php
+					$currentDate = date('Y-m-d', current_time( 'timestamp', true ) );
+					$sat = date( 'jS', strtotime( "next saturday {$currentDate} " ) );
+					$sun = date( 'jS', strtotime( "next sunday {$currentDate}" ) );
+
+					echo sprintf( __( "Sorry, we're not quite ready to share the activities for next week.<br/>Please come back on Saturday the %s, or Sunday the %s.", "e20rtracker" ), $sat, $sun, $month ); ?></p>
             </div><?php
         }
 
