@@ -112,6 +112,7 @@ class e20rSettings {
 
         return $this->cpt_slug;
     }
+
     public function get_cpt_type() {
 
         return $this->type;
