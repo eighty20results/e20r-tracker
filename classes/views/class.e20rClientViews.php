@@ -596,13 +596,19 @@ class e20rClientViews {
         // TODO: show a graph for the users compliance.
     }
 
-    public function view_userProfile( $userId ) {
+    public function profile_view_user_settings( $userId, $programs ) {
 
         $checked = null;
 
         if ( user_can( $userId, 'e20r_coach' ) ) {
             $checked = 'checked="checked"';
         }
+
+        $included = get_user_meta( $userId, "e20r-tracker-coaching-program_ids" );
+        //$included = $included;
+
+        dbg("e20rClientViews::profile_view_user_settings() - The current UserId ({$userId}) is a coach for the following program IDs: ");
+        dbg($included);
 
         ob_start();
         ?>
@@ -612,6 +618,19 @@ class e20rClientViews {
                 <th><label for="e20r-tracker-user-role"><?php _e( "User is a program coach", "e20rtracker"); ?></label></th>
                 <td>
                     <input type="checkbox" id="e20r-tracker-user-role" name="e20r-tracker-user-role" value="e20r_coach" <?php echo $checked; ?>>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="e20r-tracker-coaching-programs"><?php _e( "Programs this user is a coach for", "e20rtracker"); ?></label></th>
+                <td>
+                    <select id="e20r-tracker-coach-for-programs" name="e20r-tracker-coach-for-programs[]" multiple="multiple">
+                        <option value="0">None</option><?php
+                        foreach( $programs as $pid => $program ) { ?>
+
+                        <option value="<?php echo esc_attr( $pid ); ?>" <?php echo ( in_array( $pid, $included ) ? 'selected="selected"' : null ) ;?>><?php echo esc_attr( $program ); ?></option><?php
+
+                        } ?>
+                    </select>
                 </td>
             </tr>
         </table>
