@@ -435,7 +435,7 @@ class e20rWorkout extends e20rSettings {
         // $started = $currentProgram->startdate;
 
         $currentDay = $e20rTracker->getDelay('now', $userId );
-        $currentDate = date('Y-m-d', current_time( 'timestamp' ) );
+        $currentDate = date('Y-m-d', current_time( 'timestamp', true ) );
 
         dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
 
@@ -443,34 +443,53 @@ class e20rWorkout extends e20rSettings {
         switch ( $period ) {
 
             case E20R_UPCOMING_WEEK:
-                dbg("e20rWorkout::getActivityArchive() - For the upcoming (current) week");
-                $mondayTS = strtotime( "monday next week {$currentDate} " );
-                $sundayTS = strtotime( "sunday next week {$currentDate}" );
+                dbg("e20rWorkout::getActivityArchive() - For the upcoming (next) week");
+                if ( date('N', strtotime( $currentDate ) ) == 7 ) {
+                    $mondayTS = strtotime( "next monday {$currentDate}" );
+                    $sundayTS = strtotime( "next sunday {$currentDate}" );
+                }
+                else {
+                    $mondayTS = strtotime( "monday next week {$currentDate} " );
+                    $sundayTS = strtotime( "sunday next week {$currentDate}" );
+                }
 
                 $period_string = "Activities next week";
+                if ( date('N', strtotime( $currentDate ) ) <= 5 ) {
+                    dbg("e20rWorkout::getActivityArchive() - User requested archive for 'next week', but we've not yet reached Friday, so not returning anything" );
+                    return null;
+                }
+
                 break;
 
             case E20R_PREVIOUS_WEEK:
 
                 dbg("e20rWorkout::getActivityArchive() - For last week");
-                $mondayTS = strtotime( "monday last week {$currentDate}");
-                $sundayTS = strtotime( "sunday last week {$currentDate}" );
+                if ( date('N', strtotime( $currentDate ) ) == 7 ) {
+                    $mondayTS = strtotime( "monday -2 weeks {$currentDate}");
+                    $sundayTS = strtotime( "last sunday {$currentDate}" );
+                }
+                else {
+                    $mondayTS = strtotime( "monday last week {$currentDate}");
+                    $sundayTS = strtotime( "last sunday {$currentDate}" );
+                }
 
                 $period_string = "Activities previous week";
                 break;
 
             case E20R_CURRENT_WEEK:
 
-                dbg("e20rWorkout::getActivityArchive() - For the current week");
+                dbg("e20rWorkout::getActivityArchive() - For the current week including: {$currentDate}");
 
-                $sundayTS = strtotime( "next sunday {$currentDate}" );
-
-                if ( date('N') == 1 ) {
+                if ( date('N', strtotime( $currentDate ) ) == 1 ) {
                     // It's monday
-                    $mondayTS = strtotime( "{$currentDate}");
+
+                    $mondayTS = strtotime( "monday {$currentDate}" );
+                    $sundayTS = strtotime( "this sunday {$currentDate}" );
                 }
                 else {
-                    $mondayTS = strtotime( "last monday {$currentDate}");
+
+                    $mondayTS = strtotime( "last monday {$currentDate}" );
+                    $sundayTS = strtotime( "this sunday {$currentDate}" );
                 }
 
                 $period_string = "Activities this week";
@@ -518,11 +537,16 @@ class e20rWorkout extends e20rSettings {
 
             // Save activity list as a hash w/weekday => workout )
             dbg("e20rWorkout::getActivityArchive() - Getting " . count( $article->activity_id ). " activities for article ID: {$article->id}");
-            $act = $this->find( 'id', $article->activity_id, 'numeric', $programId, 'IN' );
+            if ( count( $article->activity_id ) != 0 ) {
+                $act = $this->find('id', $article->activity_id, 'numeric', $programId, 'IN');
 
-            foreach( $act as $a ) {
-                dbg("e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted");
-                $unsorted[] =  $a;
+                foreach ($act as $a) {
+                    dbg("e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted");
+                    $unsorted[] = $a;
+                }
+            }
+            else {
+                dbg("e20rWorkout::getActivityArchive() - No activities defined for article {$article->id}, moving on.");
             }
         }
 
