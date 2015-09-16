@@ -410,12 +410,39 @@ class e20rProgram extends e20rSettings {
     public function selectProgramForUser( $user ) {
 
         global $e20rClient;
+        global $currentClient;
+
+        $coach_id = null;
+
         dbg("e20rProgram::selectProgramForUser() - user: {$user->ID}");
 
         $programlist = $this->getProgramList();
         $activeProgram = $this->getProgramIdForUser( $user->ID, null );
 
+        dbg("e20rProgram::selectProgramForUser() - Loading coach for the specific user ({$user->ID})");
         $coach_id = $e20rClient->get_coach( $user->ID, $activeProgram );
+
+        if ( empty( $coach_id ) && ( false !== $activeProgram ) ) {
+
+            dbg("e20rProgram::selectProgramForUser() - No coach found for user {$user->ID}, but since they're members of a program we'll try to assign one automatically.");
+            $e20rClient->get_client_info( $user->ID );
+
+            if ( isset( $currentClient->loadedDefaults ) && ( false !== $currentClient->loadedDefaults ) ) {
+
+                dbg("e20rProgram::selectProgramForUser() - Didn't have a coach but is member of a program so assigning a coach to user {$user->ID} with gender {$currentClient->gender}");
+                $id = $e20rClient->assign_coach( $user->ID, $currentClient->gender );
+                $u = get_user_by( 'ID', $id );
+                $coach_id = array( $id => $u->display_name );
+            }
+            else {
+                dbg("e20rProgram::selectProgramForUser() - User hasn't completed their intake interview so can't select coach automatically");
+                $coach_id = array( -1 => 'Unassigned' );
+            }
+        }
+
+        dbg("e20rProgram::selectProgramForUser() - Located pre-assigned(?) coach for user {$user->ID}");
+
+        dbg("e20rProgram::selectProgramForUser() - Loading all coaches");
         $coachList = $e20rClient->get_coach();
 
         dbg("e20rProgram::selectProgramForUser() - Active Program: {$activeProgram}");
@@ -522,6 +549,7 @@ class e20rProgram extends e20rSettings {
     public function updateProgramForUser( $userId ) {
 
         global $currentProgram;
+        global $e20rClient;
 
         if ( ! current_user_can( 'edit_user', $userId ) ) {
             return false;
@@ -552,11 +580,15 @@ class e20rProgram extends e20rSettings {
 
             if ( !in_array( $userId, $currentProgram->users ) ) {
                 dbg("e20rProgram::updateProgramForUser() - Adding user to the program 'users' list");
-                $this->model->set('users', $currentProgram->users, $currentProgram->id);
+                $this->model->set( 'users', $currentProgram->users, $currentProgram->id);
             }
         }
 
         if ( $coachId != 0 ) {
+
+            dbg("e20rProgram::updateProgramForUser() - Assigning & saving coach {$coachId} for user with ID {$userId}");
+
+            $e20rClient->assign_client_to_coach( $programId, $coachId, $userId );
 
             update_user_meta( $userId, 'e20r-tracker-user-coach_id', $coachId );
 
