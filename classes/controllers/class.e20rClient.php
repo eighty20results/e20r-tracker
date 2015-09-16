@@ -83,7 +83,7 @@ class e20rClient {
 		    if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
 			    dbg("e20rClient::isNourishClient() - Checking against Paid Memberships Pro");
-			    // TODO: Fetch this from an option (multi-select on plugin settings page)
+			    // Fetch this from an option (multi-select on plugin settings page)
 			    $nourish_levels = array( 16, 21, 22, 23, 18 );
 
 			    if ( pmpro_hasMembershipLevel( $nourish_levels, $user_id ) ) {
@@ -853,6 +853,9 @@ class e20rClient {
             dbg($db_Data);
 		}
 
+		dbg("e20rClient::save_interview() - Assigning a coach for this user ");
+		$db_Data['coach_id'] = $this->assign_coach( $userId, $db_Data['gender'] );
+
 		dbg("e20rClient::save_interview() - Saving the client interview data to the DB. ");
 
 		if ( $this->model->save_client_interview( $db_Data ) ) {
@@ -867,6 +870,154 @@ class e20rClient {
 
 		return false;
 	}
+
+	public function assign_coach( $user_id, $gender = null ) {
+
+		global $e20rProgram;
+
+		global $currentProgram;
+
+		dbg("e20rClient::assign_coach() - Loading program settings for {$user_id}");
+
+		$old_program = $currentProgram;
+		$e20rProgram->getProgramIdForUser( $user_id );
+
+		$coach_id = false;
+
+		switch ( strtolower( $gender ) ) {
+			case 'm':
+				dbg("e20rClient::assign_coach() - attempting to find a male coach for {$user_id} in program {$currentProgram->id}");
+				dbg($currentProgram);
+
+				$coach = $this->find_next_coach( $currentProgram->male_coaches, $currentProgram->id );
+				break;
+
+			case 'f':
+				dbg("e20rClient::assign_coach() - attempting to find a female coach for {$user_id} in program {$currentProgram->id}");
+				$coach = $this->find_next_coach( $currentProgram->female_coaches, $currentProgram->id );
+				break;
+
+			default:
+				dbg("e20rClient::assign_coach() - attempting to find a coach for {$user_id} in program {$currentProgram->id}");
+				$coaches = array_merge( $currentProgram->male_coaches, $currentProgram->female_coaches );
+				$coach = $this->find_next_coach( $coaches, $currentProgram->id );
+		}
+
+		if ( false !==  $coach ) {
+			dbg("e20rClient::assign_coach() - Found coach: {$coach} for {$user_id}");
+			$this->assign_client_to_coach( $currentProgram->id, $coach, $user_id );
+			$coach_id = $coach;
+		}
+		$currentProgram = $old_program;
+		return $coach_id;
+	}
+
+	public function find_next_coach( $coach_arr, $program_id ) {
+
+
+		dbg("e20rClient::find_next_coach() - Searching for the coach with the fewest clients so far..");
+
+		$coaches = array();
+
+		foreach( $coach_arr as $cId ) {
+
+			$client_list = get_user_meta( $cId, 'e20r-tracker-client-program-list', true );
+			dbg("e20rClient::find_next_coach() - Client list for coach {$cId} consists of " . ( false === $client_list  ? 'None' : count( $client_list ) . " entries" ) );
+			dbg( $client_list );
+
+			if ( ( false !== $client_list ) && (!empty( $client_list ) ) )  {
+
+				$coaches[$cId] = count($client_list[$program_id]);
+			}
+			else {
+				$coaches[$cId] = 0;
+			}
+		}
+
+		dbg("e20rClient::find_next_coach() - List of coaches and the number of clients they have been assigned...");
+		dbg( $coaches );
+
+		if ( asort( $coaches ) ) {
+
+			reset( $coaches );
+			$coach_id = key( $coaches );
+
+			dbg("e20rClient::find_next_coach() - Selected coach with ID: {$coach_id} in program {$program_id}");
+			return $coach_id;
+		}
+
+		return false;
+	}
+
+	public function assign_client_to_coach( $program_id, $coach_id, $client_id ) {
+
+
+		$client_list = get_user_meta( $coach_id, 'e20r-tracker-client-program-list', true );
+		dbg("e20rClient::assign_client_to_coach() - Coach {$coach_id} has the following programs & clients he/she is coaching: ");
+		dbg( $client_list );
+
+		if ( $client_list == false ) {
+
+			$client_list = array();
+		}
+
+		if ( isset( $client_list[ $program_id ] ) ) {
+
+			$clients = $client_list[$program_id];
+		}
+		else {
+
+			$client_list[$program_id] = null;
+			$clients = $client_list[$program_id];
+		}
+
+		if ( empty( $clients ) ) {
+
+			$clients = array();
+		}
+
+		if (!in_array( $client_id, $clients ) ) {
+
+			$clients[] = $client_id;
+			$client_list[$program_id] = $clients;
+		}
+
+		dbg("e20rClient::assign_client_to_coach() - Assigned client list for program {$program_id}: ");
+		dbg( $client_list );
+
+		dbg("e20rClient::assign_client_to_coach() - Assigned user {$client_id} in program {$program_id} to coach {$coach_id}");
+		if ( false !== ( $clients = get_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids' ) ) ) {
+
+			if ( !in_array( $client_id, $clients ) ) {
+
+				dbg("e20rClient::assign_client_to_coach() - Saved client Id to the array of clients for this coach ($coach_id)");
+				add_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids', $client_id );
+			}
+		}
+
+		if ( false !== ( $programs = get_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids' ) ) ) {
+
+			if ( !in_array( $program_id, $programs ) ) {
+
+				dbg("e20rClient::assign_client_to_coach() - Saved program id to the array of programs for this coach ($coach_id)");
+				add_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids', $program_id );
+			}
+		}
+
+		return update_user_meta( $coach_id, 'e20r-tracker-client-program-list', $client_list );
+	}
+
+	public function get_coach( $client_id = null, $program_id = null ) {
+
+		dbg("e20rClient::get_coach() - Loading coach information for program with ID: " . ( is_null( $program_id ) ? 'Undefined' : $program_id ));
+
+		$coaches = $this->model->get_coach( $client_id, $program_id );
+		dbg("e20rClient::get_coach() - Returning coaches: ");
+		dbg( $coaches );
+
+		return $coaches;
+	}
+
 
 	public function process_gf_fields( $value, $field, $name ) {
 
@@ -987,14 +1138,7 @@ class e20rClient {
 
 		if ( !$e20rTracker->is_a_coach( $current_user->ID ) ) {
 
-			dbg("e20rClient::render_client_page() - User isn't a coach. Return error & force redirect");
-
-            $error = '<div class="error">';
-            $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20rtracker") . '</p>';
-            $error .= '</div><!-- /.error -->';
-
-            $e20rTracker->updateSetting( 'unserialize_notice', $error );
-			wp_redirect( admin_url() );
+			$this->set_not_coach_msg();
 		}
 
 		if ( $client_id != 0 ) {
@@ -1130,6 +1274,7 @@ class e20rClient {
         }
 
         $role_name = isset( $_POST['e20r-tracker-user-role'] ) ? $e20rTracker->sanitize( $_POST['e20r-tracker-user-role'] ) : null;
+		$programs = isset( $_POST['e20r-tracker-coach-for-programs'] ) ? $e20rTracker->sanitize( $_POST['e20r-tracker-coach-for-programs'] ) : array();
 
         dbg("e20rTracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}");
 
@@ -1141,24 +1286,51 @@ class e20rClient {
         }
         else {
             if ( $u->has_cap( 'e20r_coach' ) ) {
-                dbg("e20rTracker::updateRoleForUser() - Removing 'e20r_coach' capability/role for user {$userId}");
+
+                dbg("e20rClient::updateRoleForUser() - Removing 'e20r_coach' capability/role for user {$userId}");
                 $u->remove_cap( 'e20r_coach' );
             }
 
             // wp_die( "Unable to remove the {$role_name} role for this user ({$userId})" );
         }
 
-        dbg("e20rTracker::updateRoleForUser() - User roles are now: ");
+
+		if ( false !== ( $pgmList = get_user_meta( $userId, "e20r-tracker-coaching-program_ids" ) ) ) {
+
+			foreach( $programs as $p ) {
+
+				if ( !in_array( $p, $pgmList ) ) {
+					dbg("e20rClient::updateRoleForUser() - Adding program IDs this user is a coach for");
+					dbg( $programs );
+					add_user_meta( $userId, 'e20r-tracker-coaching-program_ids', $programs );
+				}
+			}
+		}
+
+
+		if ( false === ( $pgms = get_user_meta( $userId, 'e20r-tracker-coaching-program_ids' ) ) ) {
+
+			wp_die("Unable to save the list of programs this user is a coach for");
+		}
+
+        dbg("e20rClient::updateRoleForUser() - User roles are now: ");
         dbg( $u->caps );
+		dbg("e20rClient::updateRoleForUser() - And they are a coach for: ");
+		dbg( $pgms );
 
         return true;
     }
 
     public function selectRoleForUser( $user ) {
 
+		global $e20rProgram;
+
         dbg("e20rClient::selectRoleForUser() - Various roles & capabilities for user {$user->ID}");
 
-        echo $this->view->view_userProfile( $user->ID );
+		$allPrograms = $e20rProgram->get_programs();
+		dbg($allPrograms);
+
+        echo $this->view->profile_view_user_settings( $user->ID, $allPrograms );
     }
 
 	public function schedule_email( $email_args, $when = null ) {
@@ -1504,21 +1676,21 @@ class e20rClient {
         return $this->view->viewClientDetail( $clientId );
     }
 
-    function load_achievementsData( $clientId ) {
+    public function load_achievementsData( $clientId ) {
 
 		global $e20rCheckin;
 
         return $e20rCheckin->listUserAccomplishments( $clientId );
     }
 
-    function load_assignmentsData( $clientId ) {
+    public function load_assignmentsData( $clientId ) {
 
 		global $e20rAssignment;
 
         return $e20rAssignment->listUserAssignments( $clientId );
     }
 
-    function load_activityData( $clientId ) {
+    public function load_activityData( $clientId ) {
 
         global $e20rWorkout;
 
@@ -1700,4 +1872,52 @@ class e20rClient {
         return $html;
 
     }
+
+	private function set_not_coach_msg() {
+
+		global $e20rTracker;
+
+		dbg("e20rClient::set_not_coach_msg() - User isn't a coach. Return error & force redirect");
+
+		$error = '<div class="error">';
+		$error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20rtracker") . '</p>';
+		$error .= '</div><!-- /.error -->';
+
+		$e20rTracker->updateSetting( 'unserialize_notice', $error );
+		wp_redirect( admin_url() );
+
+	}
+
+	public function shortcode_clientList( $attributes = null ) {
+
+		dbg("e20rClient::shortcode_clientList() - Loading shortcode for the coach list of clients");
+
+		global $e20rCheckin;
+		global $e20rTracker;
+
+		global $current_user;
+
+		if ( !is_user_logged_in() ) {
+
+			auth_redirect();
+			wp_die();
+		}
+
+		if ( ( !$e20rTracker->is_a_coach( $current_user->ID ) ) ) {
+
+			$this->set_not_coach_msg();
+			wp_die();
+		}
+
+		$client_list = $this->get_clients( $current_user->ID );
+
+		foreach ( $client_list as $client ) {
+
+			$coach = $this->model->get_coach( $client->ID );
+
+			$client->status = new stdClass();
+			$client->status->coach = array( $coach->ID );
+			$client->status->recent_login = get_user_meta( $client->ID, '_e20r-tracker-last-login' );
+		}
+	}
 }
