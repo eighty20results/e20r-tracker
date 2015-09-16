@@ -50,6 +50,7 @@ class e20rClientModel {
 
         $defaults                       = new stdClass();
         $defaults->user_id              = !empty( $currentClient->user_id ) ? $currentClient->user_id : 0;
+        $defaults->coach_id             = null;
         $defaults->program_id           = !empty( $currentProgram->id ) ? $currentProgram->id : null;
         $defaults->page_id              = !empty( $post->ID ) ? $post->ID : CONST_NULL_ARTICLE;
         $defaults->article_id           = !empty( $currentArticle->id ) ? $currentArticle->id : CONST_NULL_ARTICLE;
@@ -202,9 +203,12 @@ class e20rClientModel {
         global $wpdb;
         global $e20rTracker;
 
-        $e20rProgram->getProgramIdForUser( $clientId );
+        if ( !isset( $currentProgram->id ) ) {
 
-        dbg("e20rClientModel::load_client_settings() - Loading client information from database for {$currentClient->user_id}");
+            $e20rProgram->getProgramIdForUser( $clientId );
+        }
+
+        dbg("e20rClientModel::load_client_settings() - Loading client information from database for {$clientId}");
 
         $sql = $wpdb->prepare( "
                 SELECT user_id, program_id, page_id, program_start, progress_photo_dir, gender,
@@ -215,7 +219,7 @@ class e20rClientModel {
                 ORDER BY program_start DESC
                 LIMIT 1",
             $currentProgram->id,
-            $currentClient->user_id
+            $clientId
         );
 
         $records = $wpdb->get_row( $sql, ARRAY_A );
@@ -1024,6 +1028,166 @@ class e20rClientModel {
         }
 
         return $imageUrl;
+    }
+
+    public function get_coach( $client_id = null, $program_id = null ) {
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        global $wpdb;
+
+        $saved = $currentProgram;
+
+        $coaches = array();
+
+        if ( is_null( $program_id ) && ( is_null( $client_id ) ) ) {
+            dbg("e20rClientModel::get_coach() - Neither program nor user ID is defined. Get everybody with a capability like 'e20r_coach'");
+            $coach_query = array(
+                'field' => array( 'ID', 'display_name' ),
+                'meta_query' => array(
+                    array(
+                        'key'       => $wpdb->prefix . 'capabilities',
+                        'value'     => 'e20r_coach',
+                        'compare'   => 'LIKE'
+                    ),
+                )
+            );
+        }
+        elseif ( is_null( $client_id ) && !is_null( $program_id ) ) {
+
+            dbg("e20rClientModel::get_coach() - Program ID is defined. User ID isn't. Get all coaches who coach for program # {$program_id}");
+            $coach_query = array(
+                'field' => array( 'ID', 'display_name' ),
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'       => $wpdb->prefix . 'capabilities',
+                        'value'     => 'e20r_coach',
+                        'compare'   => 'LIKE'
+                    ),
+                    array(
+                        'key'       => 'e20r-tracker-coaching-program_ids',
+                        'value'     => $program_id,
+                        'compare'   => 'IN'
+                    ),
+                )
+            );
+        }
+        elseif ( !is_null( $client_id ) && is_null( $program_id ) ) {
+
+            dbg("e20rClientModel::get_coach() - Program ID is NOT defined. User ID IS. Get all coaches who coach user with ID {$user_id}");
+            $coach_query = array(
+                'field' => array( 'ID', 'display_name' ),
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'       => $wpdb->prefix . 'capabilities',
+                        'value'     => 'e20r_coach',
+                        'compare'   => 'LIKE'
+                    ),
+                    array(
+                        'key'       => 'e20r-tracker-coaching-client_ids',
+                        'value'     => $client_id,
+                        'compare'   => 'IN'
+                    ),
+                )
+            );
+
+        }
+        elseif ( !is_null( $program_id ) && ( !is_null( $client_id )) ) {
+            dbg("e20rClientModel::get_coach() - Program ID is defined. User ID is defined. Get all coaches who coach for program # {$program_id} and user {$client_id}");
+            $coach_query = array(
+                'field' => array( 'ID', 'display_name' ),
+                'meta_query'   => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'       => $wpdb->prefix . 'capabilities',
+                        'value'     => 'e20r_coach',
+                        'compare'   => 'LIKE'
+                    ),
+                    array(
+                        'key'       => 'e20r-tracker-coaching-program-ids',
+                        'value'     => $program_id,
+                        'compare'   => 'IN'
+                    ),
+                    array(
+                        'key'       => 'e20r-tracker-coaching-client_ids',
+                        'value'     => $client_id,
+                        'compare'   => 'IN'
+                    ),
+                ),
+            );
+        }
+
+        $results = get_users( $coach_query );
+
+        dbg("e20rClientModel::get_coach() - Found " . count($results) . " coaches...");
+
+        if (!empty( $results ) ) {
+
+            $coaches = array();
+
+            foreach( $results as $coach ) {
+                $coaches[ $coach->ID ] = $coach->display_name;
+            }
+        }
+        $currentProgram = $saved;
+        return $coaches;
+    }
+
+    public function get_clients( $coach_id = null, $program_id = null ) {
+
+        global $wpdb;
+
+        dbg("e20rClientModel::get_clients_for_program() - Loading all of coach #{$coach_id} clients for program {$program_id} ");
+
+        if ( is_null( $program_id ) ) {
+
+            $user_query = array(
+                'meta_query'   => array(
+                    array(
+                        'key'       => 'e20r-tracker-coach-for-program',
+                        'value'     => $coach_id,
+                        'compare'   => '='
+                    )
+                ),
+            );
+        }
+        elseif ( is_null( $coach_id ) && !is_null( $program_id ) ) {
+
+            $user_query = array(
+                'meta_query'   => array(
+                    array(
+                        'key'       => 'e20r-tracker-program-id',
+                        'value'     => $program_id,
+                        'compare'   => '='
+                    )
+                )
+            );
+        }
+        else {
+            $user_query = array(
+                'meta_query'   => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'       => 'e20r-tracker-program-id',
+                        'value'     => $program_id,
+                        'compare'   => '='
+                    ),
+                    array(
+                        'key'       => 'e20r-tracker-coach-for-program',
+                        'value'     => $coach_id,
+                        'compare'   => '='
+                    )
+                ),
+            );
+        }
+
+        $users = get_users( $user_query );
+        dbg("e20rClientModel::get_clients_for_program() - Found " . count( $users ) . " clients for coach/program: {$coach_id}/{$program_id}");
+
+        return $users;
     }
 
 }
