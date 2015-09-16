@@ -1042,7 +1042,7 @@ class e20rClientModel {
         $coaches = array();
 
         if ( is_null( $program_id ) && ( is_null( $client_id ) ) ) {
-            dbg("e20rClientModel::get_coach() - Neither program nor user ID is defined. Get everybody with a capability like 'e20r_coach'");
+            dbg("e20rClientModel::get_coach() - Neither program nor user ID is defined. Get any user with a capability like 'e20r_coach'");
             $coach_query = array(
                 'field' => array( 'ID', 'display_name' ),
                 'meta_query' => array(
@@ -1107,7 +1107,7 @@ class e20rClientModel {
                         'compare'   => 'LIKE'
                     ),
                     array(
-                        'key'       => 'e20r-tracker-coaching-program-ids',
+                        'key'       => 'e20r-tracker-coaching-program_ids',
                         'value'     => $program_id,
                         'compare'   => 'IN'
                     ),
@@ -1120,9 +1120,11 @@ class e20rClientModel {
             );
         }
 
+        // dbg( $coach_query );
         $results = get_users( $coach_query );
 
         dbg("e20rClientModel::get_coach() - Found " . count($results) . " coaches...");
+        // dbg($results);
 
         if (!empty( $results ) ) {
 
@@ -1132,6 +1134,7 @@ class e20rClientModel {
                 $coaches[ $coach->ID ] = $coach->display_name;
             }
         }
+
         $currentProgram = $saved;
         return $coaches;
     }
