@@ -227,7 +227,7 @@ var progMeasurements = {
                 $class.$btnRow.show();
 
                 var $id = $class.$memberSelector.find('option:selected').val();
-                $class.loadMeasurementData( $id );
+                $class.adminLoadData( $id );
 
             }
             // TODO Bind click events to the assignments, etc. on the wp-admin page.
