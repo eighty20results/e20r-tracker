@@ -70,6 +70,27 @@ class e20rProgram extends e20rSettings {
         return $program_array;
     }
 
+    public function get_program_name( $program_id ) {
+
+        global $currentProgram;
+
+        if ( $program_id != $currentProgram->id ) {
+            $this->model->load_settings( $program_id );
+        }
+
+        dbg("e20rProgram::get_program_name() - Name for program with id {$program_id}: {$currentProgram->title}");
+        return $currentProgram->title;
+    }
+
+    public function get_program_start( $program_id, $user_id ) {
+
+        global $currentProgram;
+
+        $this->configure_startdate( $program_id, $user_id );
+
+        return $currentProgram->startdate;
+    }
+
     public function get_program_members( $program_id ) {
 
         return $this->model->load_program_members( $program_id );
@@ -107,6 +128,17 @@ class e20rProgram extends e20rSettings {
         }
 
         return false;
+    }
+
+    public function setProgram( $program_id ) {
+
+        global $currentProgram;
+
+        if ( !isset( $currentProgram->id) || ( $currentProgram->id !== $program_id ) ) {
+
+            dbg( "e20rProgram::loadProgram() - Need to init the program object");
+            $this->model->loadSettings($program_id);
+        }
     }
 
     public function getPeerPrograms( $programId = null ) {
@@ -264,7 +296,7 @@ class e20rProgram extends e20rSettings {
 
         if ( ( $currentProgram->id == $program_id ) && ( function_exists( 'pmpro_getMemberStartdate' ) ) ) {
 
-            dbg( "e20rProgram::configure_startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
+            dbg( "e20rProgram::configure_startdate() - Using PMPro's member startdate for user ID {$userId}");
 
             if ( 0 == ( $startTS = apply_filters( "e20r-tracker-program-start-timestamp", pmpro_getMemberStartdate( $userId ) ) ) ) {
 
@@ -274,9 +306,7 @@ class e20rProgram extends e20rSettings {
 
             $currentProgram->startdate = date_i18n( 'Y-m-d', $startTS );
             dbg("e20rProgram::configure_startdate() - Startdate set to the member's start date for the program: {$currentProgram->startdate} for {$userId}");
-
         }
-
     }
 
     public function setProgramForUser( $user_id, $membership_id ) {
