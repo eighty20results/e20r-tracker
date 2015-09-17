@@ -1018,7 +1018,6 @@ class e20rClient {
 		return $coaches;
 	}
 
-
 	public function process_gf_fields( $value, $field, $name ) {
 
         global $currentClient;
@@ -1141,18 +1140,26 @@ class e20rClient {
 			$this->set_not_coach_msg();
 		}
 
+		$w_client = isset( $_GET['e20r-client-id'] ) ? $e20rTracker->sanitize( $_GET['e20r-client-id'] ) : null;
+		$w_level = isset( $_GET['e20r-level-id'] ) ? $e20rTracker->sanitize( $_GET['e20r-level-id'] ) : -1;
+
+		if ( !is_null( $w_client ) ) {
+
+			$client_id = $w_client;
+		}
+
 		if ( $client_id != 0 ) {
 
 			dbg("e20rClient::render_client_page() - Forcing client ID to {$client_id}");
             $this->setClient( $client_id );
         }
 
-        $this->init();
+		$this->init();
 
         $this->model->get_data( $client_id );
 
         dbg("e20rClient::render_client_page() - Loading admin page for the Client {$client_id}");
-        echo $this->view->viewClientAdminPage( $lvlName );
+        echo $this->view->viewClientAdminPage( $lvlName, $w_level );
 		dbg("e20rClient::render_client_page() - Admin page for client {$client_id} has been loaded");
     }
 
@@ -1893,7 +1900,10 @@ class e20rClient {
 		dbg("e20rClient::shortcode_clientList() - Loading shortcode for the coach list of clients");
 
 		global $e20rCheckin;
+		global $e20rProgram;
 		global $e20rTracker;
+
+		global $currentProgram;
 
 		global $current_user;
 
@@ -1909,15 +1919,60 @@ class e20rClient {
 			wp_die();
 		}
 
-		$client_list = $this->get_clients( $current_user->ID );
+		$client_list = $this->model->get_clients( $current_user->ID );
+		$list = array();
 
-		foreach ( $client_list as $client ) {
+		foreach ( $client_list as $pId => $clients ) {
 
-			$coach = $this->model->get_coach( $client->ID );
+			foreach( $clients as $k => $client ) {
 
-			$client->status = new stdClass();
-			$client->status->coach = array( $coach->ID );
-			$client->status->recent_login = get_user_meta( $client->ID, '_e20r-tracker-last-login' );
+				// $e20rProgram->getProgramIdForUser( $client->ID );
+				// $e20rProgram->setProgram( $pId );
+
+				$coach = $this->model->get_coach( $client->ID );
+
+				$client->status = new stdClass();
+				$client->status->program_id = $e20rProgram->getProgramIdForUser( $client->ID );
+				$client->status->program_start = $e20rProgram->get_program_start( $client->status->program_id, $client->ID );
+				$client->status->coach = array( $currentProgram->id => key( $coach ) );
+				$client->status->recent_login = get_user_meta($client->ID, '_e20r-tracker-last-login', true);
+				$mHistory = $this->model->load_message_history($client->ID);
+
+				$client->status->total_messages = count($mHistory);
+
+				if (! empty( $mHistory ) ) {
+
+					ksort($mHistory);
+					reset($mHistory);
+
+					dbg("e20rClient::shortcode_clientList() - Sorted message history for user {$client->ID}");
+					$when = key( $mHistory );
+					$msg = isset( $mHistory[$when] ) ? $mHistory[$when] : null;
+
+					$client->status->last_message = array( $when => $msg->topic );
+					$client->status->last_message_sender = $msg->sender_id;
+				}
+				else {
+					$client->status->last_message = array( 'empty' => __( 'No message sent via this website', "e20rtracker" ) );
+					$client->status->last_message_sender = null;
+				}
+
+				dbg("e20rClient::shortcode_clientList() - Most recent message:");
+				dbg($client->status->last_message);
+
+				if ( ! isset( $list[$currentProgram->id] ) ) {
+
+					$list[$currentProgram->id] = array();
+				}
+
+				$list[$pId][$k] = $client;
+			}
 		}
+
+		dbg("e20rClient::shortcode_clientList() - Showing client information");
+		dbg($list);
+
+		return $this->view->display_client_list( $list );
+
 	}
 }
