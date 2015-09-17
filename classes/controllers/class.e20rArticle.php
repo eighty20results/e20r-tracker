@@ -1019,8 +1019,10 @@ class e20rArticle extends e20rSettings {
             return $content;
         }
 
+        dbg("e20rArticle::contentFilter() - Processing the_content() filter");
+
         // Quit if this isn't a single-post display and we're not in the main query of wordpress.
-        if ( ! ( is_singular() && is_main_query() ) ) {
+        if ( !is_singular() && !is_main_query() ) {
             return $content;
         }
 
@@ -1055,6 +1057,7 @@ class e20rArticle extends e20rSettings {
                     return $content;
                 }
         */
+
         $e20rProgram->getProgramIdForUser( $current_user->ID );
 
         dbg("e20rArticle::contentFilter() - Is the user attempting to access the intake form: {$currentProgram->intake_form}");
@@ -1131,6 +1134,19 @@ class e20rArticle extends e20rSettings {
 
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID}");
         $articles = $this->findArticles( 'post_id', $post->ID );
+
+        if ( empty( $articles ) ) {
+
+            dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
+            return $content;
+        }
+
+        if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+
+            dbg("e20rArticle::contentFilter() - User doesn't have access to this post/page. Exiting the filter.");
+            return $content;
+        }
+
         $dayNo = $e20rTracker->getDelay( 'now', $current_user->ID );
 
         foreach( $articles as $article ) {
@@ -1143,18 +1159,6 @@ class e20rArticle extends e20rSettings {
                     $this->init( $article->id );
                 }
             }
-        }
-
-        if ( empty( $articles ) ) {
-
-            dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
-            return $content;
-        }
-
-        if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
-
-            dbg("e20rArticle::contentFilter() - User doesn't have access to this post/page. Exiting the filter.");
-            return $content;
         }
 
         $measured = false;
@@ -1179,7 +1183,7 @@ class e20rArticle extends e20rSettings {
         }
 
         $data = $this->view->viewLessonComplete( $rDay, false, $currentArticle->id );
-        $content = $data . $content;
+        // $content = $data . $content;
 
         if ( $md ) {
 
@@ -1194,14 +1198,14 @@ class e20rArticle extends e20rSettings {
 
                 dbg("e20rArticle::contentFilter() - It's a measurement day!");
                 $data = $this->view->viewMeasurementAlert( $this->isPhotoDay( $currentArticle->id ), $rDay, $currentArticle->id );
-                $content = $data . $content;
+                // $content = $data . $content;
             }
 
             if ( $md && $measured['status'] ) {
 
                 dbg("e20rArticle::contentFilter() - Measurement day, and we've measured.");
                 $data = $this->view->viewMeasurementComplete( $rDay, $md, $currentArticle->id );
-                $content = $data . $content;
+                // $content = $data . $content;
             }
         }
 
@@ -1215,7 +1219,7 @@ class e20rArticle extends e20rSettings {
         }
 
         dbg("e20rArticle::contentFilter() - Content being returned.");
-        return $content;
+        return $data . $content;
     }
 
     public function load_lesson( $article_id = null, $reading_time = true ) {
