@@ -342,6 +342,7 @@ class e20rTracker {
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
 
             add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
@@ -399,6 +400,7 @@ class e20rTracker {
 	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
             add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
+            add_shortcode( 'e20r_client_overview', array( &$e20rClient, 'shortcode_clientList') );
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
 
             // if ( function_exists( 'pmpro_activation' ) ) {
@@ -2064,6 +2066,23 @@ class e20rTracker {
         }
     }
 
+    public function has_clientlist_shortcode() {
+
+        global $post;
+
+        if ( has_shortcode( $post->post_content, 'e20r_client_overview' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
+            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+
+            $this->load_frontend_scripts('client_overview');
+        }
+    }
+
     public function has_profile_shortcode() {
 
 		global $post;
@@ -2272,15 +2291,14 @@ class e20rTracker {
             </script>
             <?php
 
+            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
+
+                dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
+                wp_deregister_style("e20r-tracker");
+                wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
+            }
+
         } // End of shortcode check for weekly progress form
-
-        if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
-
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
-            wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
-        }
-
     }
 
     private function register_script( $script, $location, $deps ) {
@@ -2345,6 +2363,24 @@ class e20rTracker {
             $load_jq_plot = false;
 
             switch ( $event ) {
+
+                case 'client_overview':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");
+                    $load_jq_plot = false;
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                        )
+                    ) );
+
+                    break;
 
                 case 'profile':
 
@@ -2664,11 +2700,12 @@ class e20rTracker {
    /* Prepare graphing scripts */
     public function register_plotSW( $hook = null ) {
 
-        global $e20r_plot_jscript, $post;
+        global $e20r_plot_jscript;
+        global $post;
 	    global $e20rAdminPage;
 	    global $e20rClientInfoPage;
 
-        if ( $e20r_plot_jscript || $hook == $e20rClientInfoPage || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
+        if ( $e20r_plot_jscript || ( !is_null($hook) && $hook == $e20rClientInfoPage ) || ( !is_null($hook) && $hook == $e20rAdminPage ) || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 
             dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
 
@@ -3735,6 +3772,23 @@ class e20rTracker {
         dbg("e20rTracker::getUserList() - Users being loaded for the following level(s): " . print_r( $levels, true ) );
 
         return $this->model->loadUsers( $levels );
+    }
+
+    public function getLevelIdForUser( $userId = null ) {
+
+        global $e20rProgram;
+
+        $level_id = null;
+
+        if ( is_null( $userId ) ) {
+
+            global $current_user;
+            $userId = $current_user->ID;
+        }
+
+        $program_id = $e20rProgram->getProgramIdForUser( $userId );
+
+        return $program_id;
     }
 
 	public function getGroupIdForUser( $userId = null ) {
