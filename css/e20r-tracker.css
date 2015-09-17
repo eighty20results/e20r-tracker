@@ -2854,3 +2854,65 @@ p.e20r-paragraph {
     padding: 10px;
     border: 1px solid red;
 }
+.e20r-client-list-header-row {
+    font-size: 0.9rem;
+    font-weight: bold;
+    font-variant: small-caps;
+    background-color: #f5f5f5;
+}
+table#e20r-client-list-legend h5 {
+    color: #004CFF;
+    text-align: center;
+}
+table#e20r-client-list-legend {
+    width: 100%;
+    max-width: 300px;
+    margin-right: 0;
+    margin-left: auto;
+}
+table#e20r-client-list-legend tr {
+    font-size: 0.5rem;
+}
+table#e20r-client-list-legend td:first-child {
+    width: 33%;
+}
+table#e20r-client-list-legend > tbody > tr > td {
+    border-top: none;
+    margin: 0;
+    padding: 0;
+}
+table#e20r-client-list-legend > tbody {
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+}
+table#e20r-client-list-legend tbody,
+table#e20r-client-list-legend td,
+tr.e20r-client-list-row > td,
+tr.e20r-client-list-row > tbody {
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+}
+.e20r-client-name,
+.e20r-client-last-login,
+.e20r-client-last-message {
+    font-size: 0.8rem;
+}
+.e20r-strong-text {
+    color: black;
+}
+.e20r-weak-text {
+    color: #777;
+}
+.e20r-weakest-text {
+    color: #ccc;
+}
+.e20r-followup-normal {
+    background-color: rgba( 0, 76, 0, 0.1);
+}
+.e20r-followup-warning {
+    background-color: rgba( 255, 204, 0, 0.2 );
+}
+.e20r-followup-critical {
+    background-color: rgba( 255, 0, 0, 0.2 );
+}
