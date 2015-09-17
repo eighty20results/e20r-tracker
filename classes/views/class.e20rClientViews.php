@@ -45,7 +45,7 @@ class e20rClientViews {
             else {
 
                 foreach( $messages as $when => $message ) {
-
+                    $when = date_i18n('Y-m-d \a\t H:i', $when );
                     $sender = get_user_by('id', $message->sender_id ); ?>
 
                 <tr class="e20r-client-message-history-entry">
@@ -77,6 +77,137 @@ class e20rClientViews {
         return $html;
     }
 
+    public function display_client_list( $clients ) {
+
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $currentProgram;
+
+        global $current_user;
+
+        $today = current_time( 'timestamp', true );
+
+        ob_start(); ?>
+        <div class="e20r-coach-data">
+            <table id="e20r-client-list-legend">
+                <tbody>
+                    <tr>
+                        <td colspan="2"><h5>Legend</h5></td>
+                    </tr>
+                    <tr>
+                        <td class="e20r-strong-text"><?php _e("Strong text", "e20rtracker"); ?></td>
+                        <td class="e20r-strong-text"><?php _e("Client accessed system in the past 3 days", "e20rtracker"); ?></td>
+                    </tr>
+                    <tr>
+                        <td class="e20r-weak-text"><?php _e("Weaker text", "e20rtracker"); ?></td>
+                        <td class="e20r-weak-text"><?php _e("Client accessed system in the past 3 - 10 days", "e20rtracker"); ?></td>
+                    </tr>
+                    <tr>
+                        <td class="e20r-weakest-text"><?php _e("Weakest text", "e20rtracker"); ?></td>
+                        <td class="e20r-weakest-text"><?php _e("More than 10 days since the client accessed this system", "e20rtracker"); ?></td>
+                    </tr>
+                    <tr class="e20r-followup-critical">
+                        <td><?php _e("Critical", "e20rtracker"); ?></td>
+                        <td><?php _e("No recorded contact with this client in more than 14 days, or there's never been any recorded contact", "e20rtracker"); ?></td>
+                    </tr>
+                    <tr class="e20r-followup-warning">
+                        <td><?php _e("Warning", "e20rtracker"); ?></td>
+                        <td><?php _e("No recorded contact with this client in between 7 and 14 days", "e20rtracker"); ?></td>
+                    </tr>
+                    <tr class="e20r-followup-normal">
+                        <td><?php _e("Normal", "e20rtracker"); ?></td>
+                        <td><?php _e("Client contact recorded sometime in past 7 days", "e20rtracker"); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table id="e20r-client-list">
+            <tbody class="e20r-client-list-body"><?php
+                foreach( $clients as $programId => $clientList ) {
+
+                    dbg("e20rClientViews::display_client_list() - processing list of clients related to program # {$programId} for coach {$current_user->ID}");
+                    dbg($clientList);
+
+                    $program_name = $e20rProgram->get_program_name( $programId );
+                    ?>
+                <tr class="e20r-client-list-programs">
+                    <td class="e20r-client-list-program-name" colspan="3"><h4><?php echo $program_name; ?></h4></td>
+                </tr>
+                <tr class="e20r-client-list-header-row">
+                    <th class="e20r-client-name"><label><?php _e( "Client", "e20rtracker" ); ?></label></th>
+                    <th class="e20r-client-last-login"><label><?php _e("Last login by client", "e20rtracker"); ?></label></th>
+                    <th class="e20r-client-last-message"><label><?php _e("Last message from us", "e20rtracker"); ?></label></th>
+                </tr><?php
+
+                    foreach( $clientList as $client ) {
+
+                        dbg( $client );
+
+                        $level_id = $e20rTracker->getGroupIdForUser( $client->ID );
+
+                        $days_since_login = $e20rTracker->daysBetween( $client->status->recent_login, $today, get_option('timezone_string') );
+                        $program_length = $e20rTracker->daysbetween( strtotime( $client->status->program_start), $today );
+
+                        $css_flag = "e20r-strong-text";
+
+                        if ( ( $program_length >= 2 ) && ( 10 <= $days_since_login ) ) {
+                            $css_flag = "e20r-weakest-text";
+                        }
+
+                        if ( ( $program_length >= 2 ) && ( 10 > $days_since_login && 3 <= $days_since_login ) ) {
+                            $css_flag = "e20r-weak-text";
+                        }
+
+                        if ( ( $program_length >= 2 ) && ( 3 > $days_since_login ) ) {
+                            $css_flag = "e20r-strong-text";
+                        }
+
+                        $msg_when = key( $client->status->last_message );
+                        $msg_txt = $client->status->last_message[$msg_when];
+
+                        $days_since_msg = ( $msg_when != 'empty' ? $e20rTracker->daysBetween( $msg_when, $today, get_option('timezone_string') ) : null );
+                        $status_flag = 'e20r-followup-normal';
+
+                        dbg("e20rClientViews::display_client_list() - User: {$client->ID}. Days since last message: {$days_since_msg}. Program length: {$program_length}. And days since last login: {$days_since_login}");
+
+                        if ( ( $program_length >= 7 ) && ( $days_since_msg >= 7  ) ) {
+                            $status_flag = 'e20r-followup-warning';
+                        }
+
+                        if ( ( $program_length >= 7 ) && ( ( null === $days_since_msg ) || ( $days_since_msg > 14 ) ) ) {
+                            // Never sent a message to the client. Flag as "critical to follow up"
+                            $status_flag = 'e20r-followup-critical';
+                        }
+                        dbg("e20rClientViews::display_client_list() - Loading info about sender of the last message to user {$client->ID}");
+
+                        if ( !empty( $client->status->last_message_sender ) ) {
+
+                            dbg("e20rClientViews::display_client_list() - user info for the sender: {$client->status->last_message_sender}");
+                            $sender = get_user_by( 'id', $client->status->last_message_sender);
+                            $message_info = "By " . $sender->user_firstname . " on " . date( 'l F jS, Y', $msg_when );
+
+                        }
+                        else {
+                            $message_info = "No message sent";
+                            $msg_txt = null;
+                        }
+
+                        dbg( "e20rClientViews::display_client_list() - Info about last message sent to user: " . $message_info );
+                    ?>
+                    <tr class="e20r-client-list-row <?php echo $css_flag; ?> <?php echo $status_flag; ?>">
+                        <td class="e20r-client-name"><a href="<?php echo admin_url( "admin.php?page=e20r-client-info&e20r-client-id={$client->ID}&e20r-level-id={$programId}" );?>" target="_blank"><?php echo $client->display_name; ?></td>
+                        <td class="e20r-client-last-login"><?php echo date( 'l F jS, Y', $client->status->recent_login ); ?></td>
+                        <td class="e20r-client-last-message" <?php echo ( !is_null( $msg_txt) ? 'title="' .$msg_txt .'"' : null ); ?>><?php echo $message_info; ?></td>
+                    </tr><?php
+                    }
+                } ?>
+            </tbody>
+            </table>
+        </div><?php
+        $html = ob_get_clean();
+        return $html;
+    }
+
     public function displayData() {
 
         global $e20rClient;
@@ -101,7 +232,7 @@ class e20rClientViews {
 
     }
 
-    public function viewLevelSelect() {
+    public function viewLevelSelect( $levelId = -1 ) {
 
         global $e20rClient;
         global $e20rProgram;
@@ -112,6 +243,9 @@ class e20rClientViews {
             $e20rTracker->dependency_warnings();
         }
 
+        if ( !is_numeric( $levelId ) ) {
+            $levelId = -1;
+        }
         ob_start(); ?>
 
         <div id="e20r-selectLevel">
@@ -122,14 +256,14 @@ class e20rClientViews {
                     <label for="e20r_levels"><?php _e("Program", "e20rtracker"); ?>:</label>
                     <span class="e20r-level-select-span">
                         <select name="e20r_levels" id="e20r_levels">
-                            <option value="-1"><?php _e("None", "e20tracker");?></option>
-                            <option value="0"><?php _e("All Programs", "e20rtracker" ); ?></option>
+                            <option value="-1" <?php selected( -1, $levelId ); ?>><?php _e("None", "e20tracker");?></option>
+                            <option value="0" <?php selected( 0, $levelId ); ?>><?php _e("All Programs", "e20rtracker" ); ?></option>
                         <?php
 
                         $program_list = $e20rProgram->get_programs();
 
                         foreach( $program_list as $key => $name ) {
-                            ?><option value="<?php echo esc_attr( $key ); ?>"  ><?php echo esc_attr( $name ); ?></option><?php
+                            ?><option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $levelId ); ?>><?php echo esc_attr( $name ); ?></option><?php
                         }
                 ?>
                         </select>
@@ -150,6 +284,8 @@ class e20rClientViews {
         global $e20rTracker;
         global $e20rProgram;
 
+        global $currentClient;
+
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
             $e20rTracker->dependency_warnings();
@@ -165,15 +301,15 @@ class e20rClientViews {
                         <?php
 
                         // $user_list = $e20rTracker->getUserList( $levelId );
-                        $user_list = $e20rProgram->get_program_members( $levelId );
+                        $user_list = ( !is_null( $levelId ) ? $e20rProgram->get_program_members( $levelId ) : get_users() );
 
                         foreach ( $user_list as $user ) {
 
-                            ?><option value="<?php echo esc_attr( $user->ID ); ?>"  ><?php echo esc_attr($user->display_name); ?></option><?php
+                            ?><option value="<?php echo esc_attr( $user->ID ); ?>" <?php selected( $user->ID, $currentClient->user_id ); ?> ><?php echo esc_attr($user->display_name); ?></option><?php
                         } ?>
                         </select>
                         <!-- <span class="e20r-level-select-span"><a href="#" id="e20r-load-data" class="e20r-choice-button button"><?php _e('Load Progress', 'e20r-tracker'); ?></a></span> -->
-                        <input type="hidden" name="hidden_e20r_client_id" id="hidden_e20r_client_id" value="0" >
+                        <input type="hidden" name="hidden_e20r_client_id" id="hidden_e20r_client_id" value="<?php echo ( isset( $currentClient->user_id ) && $currentClient->user_id != 0 ) ? $currentClient->user_id : 0 ?>" >
                     </div>
                 </form>
             </div>
@@ -394,7 +530,7 @@ class e20rClientViews {
 
     }
 
-    public function viewClientAdminPage( $lvlName = '' ) {
+    public function viewClientAdminPage( $lvlName = '', $level_id = -1 ) {
 
 	    global $e20rCheckin;
         global $currentClient;
@@ -407,12 +543,17 @@ class e20rClientViews {
             add_thickbox();
         }
 
+        if ( is_numeric( $lvlName ) ) {
+
+            $level_id = $lvlName;
+        }
+
         ob_start();
         ?>
         <H1><?php _e( "Coaching Page", "e20rtracker" ); ?></H1>
         <div class="e20r-client-service-select">
             <div id="spinner" class="e20r-spinner"></div>
-            <?php echo $this->viewLevelSelect(); ?>
+            <?php echo $this->viewLevelSelect( $level_id ); ?>
             <div id="e20r-selectMember" class="startHidden">
             <?php echo $this->viewMemberSelect( $lvlName ); ?>
             </div>
