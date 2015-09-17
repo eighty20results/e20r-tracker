@@ -99,6 +99,8 @@ var progMeasurements = {
              jQuery('#status-tabs').tabs({
                  heightStyle: "content"
              });
+
+            $class.$statusTabs = jQuery('#status-tabs');
 /*
              jQuery("#status-tabs").zozoTabs({
              theme: 'white',
@@ -216,6 +218,18 @@ var progMeasurements = {
                 }
             });
 
+            if ( $class._loaded_from_coachpage() ) {
+
+                console.log("The coach has loaded this page by clicking the client link from the e20r_client_overview shortcode");
+                $class.saveClientId($class);
+                $class.$statusTabs.show();
+                $class.$memberSelect.show();
+                $class.$btnRow.show();
+
+                var $id = $class.$memberSelector.find('option:selected').val();
+                $class.loadMeasurementData( $id );
+
+            }
             // TODO Bind click events to the assignments, etc. on the wp-admin page.
         }
         else {
@@ -384,6 +398,15 @@ var progMeasurements = {
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
 
+    },
+    _loaded_from_coachpage: function() {
+        var field = 'e20r-client-id';
+        var url = window.location.href;
+        if(url.indexOf('?' + field + '=') != -1)
+            return true;
+        else if(url.indexOf('&' + field + '=') != -1)
+            return true;
+        return false
     },
     _hide_progress: function( ID ) {
 
