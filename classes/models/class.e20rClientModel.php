@@ -142,8 +142,8 @@ class e20rClientModel {
         if ( !empty( $messages ) ) {
 
             foreach ( $messages as $message ) {
-
-                $sent_date = date_i18n('Y-m-d \a\t H:i', strtotime($message->sent));
+                $sent_date = strtotime( $message->sent );
+                // $sent_date = date_i18n('Y-m-d \a\t H:i', strtotime($message->sent));
                 unset($message->sent); // Make the date for the sent message the format we want.
                 $history[$sent_date] = $message;
             }
@@ -1076,7 +1076,7 @@ class e20rClientModel {
         }
         elseif ( !is_null( $client_id ) && is_null( $program_id ) ) {
 
-            dbg("e20rClientModel::get_coach() - Program ID is NOT defined. User ID IS. Get all coaches who coach user with ID {$user_id}");
+            dbg("e20rClientModel::get_coach() - Program ID is NOT defined. User ID IS. Get all coaches who coach user with ID {$client_id}");
             $coach_query = array(
                 'field' => array( 'ID', 'display_name' ),
                 'meta_query' => array(
@@ -1143,54 +1143,55 @@ class e20rClientModel {
 
         global $wpdb;
 
-        dbg("e20rClientModel::get_clients_for_program() - Loading all of coach #{$coach_id} clients for program {$program_id} ");
+        dbg("e20rClientModel::get_clients() - Loading all of coach #{$coach_id} clients for program {$program_id} ");
 
-        if ( is_null( $program_id ) ) {
+        if ( !is_null( $coach_id ) ) {
+            $client_list = get_user_meta($coach_id, 'e20r-tracker-client-program-list', true);
 
-            $user_query = array(
-                'meta_query'   => array(
-                    array(
-                        'key'       => 'e20r-tracker-coach-for-program',
-                        'value'     => $coach_id,
-                        'compare'   => '='
-                    )
-                ),
-            );
-        }
-        elseif ( is_null( $coach_id ) && !is_null( $program_id ) ) {
+            if (!is_null($program_id) && (isset($client_list[$program_id]))) {
 
-            $user_query = array(
-                'meta_query'   => array(
-                    array(
-                        'key'       => 'e20r-tracker-program-id',
-                        'value'     => $program_id,
-                        'compare'   => '='
-                    )
-                )
-            );
+                dbg("e20rClientModel::get_clients() - Found client list for program with ID {$program_id}");
+                $uList[$program_id] = $client_list[$program_id];
+            } elseif (is_null($program_id)) {
+
+                dbg("e20rClientModel::get_clients() - No program ID specified. Returning all clients ");
+                $uList = $client_list;
+            } else {
+                $uList = array();
+            }
+
+            $programs = array();
+
+            if ( empty( $uList ) ) {
+
+                $programs[] = array();
+            }
+
+            foreach( $uList as $pgmId => $userList ) {
+
+                dbg("e20rClientModel::get_clients() - Program {$pgmId} has the following users associated: ");
+                dbg($userList);
+
+                $args = array(
+                    'include' => $userList,
+                    'fields' => array( 'ID', 'display_name' ),
+                );
+
+                $programs[$pgmId] = get_users( $args );
+            }
+
+            dbg("e20rClientModel::get_clients() - fetched user info: ");
+            dbg ( $programs );
+
         }
         else {
-            $user_query = array(
-                'meta_query'   => array(
-                    'relation' => 'AND',
-                    array(
-                        'key'       => 'e20r-tracker-program-id',
-                        'value'     => $program_id,
-                        'compare'   => '='
-                    ),
-                    array(
-                        'key'       => 'e20r-tracker-coach-for-program',
-                        'value'     => $coach_id,
-                        'compare'   => '='
-                    )
-                ),
-            );
+
+            $programs = array();
+            $programs[] = array();
         }
+        dbg("e20rClientModel::get_clients() - Found " . count( $programs ) . " programs for coach: {$coach_id}");
 
-        $users = get_users( $user_query );
-        dbg("e20rClientModel::get_clients_for_program() - Found " . count( $users ) . " clients for coach/program: {$coach_id}/{$program_id}");
-
-        return $users;
+        return $programs;
     }
 
 }
