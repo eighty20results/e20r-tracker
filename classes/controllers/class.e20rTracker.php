@@ -3725,33 +3725,6 @@ class e20rTracker {
                 font-family:  FontAwesome !important;
                 content: '\f1b0';
             }
-
-            /* Post Screen - 32px */
-            .icon32-posts-pmpro_sequence {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence32.png") no-repeat left top !important;
-            }
-            @media
-            only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (   min--moz-device-pixel-ratio: 1.5),
-            only screen and (     -o-min-device-pixel-ratio: 3/2),
-                /* only screen and (        min-device-pixel-ratio: 1.5), */
-            only screen and (                min-resolution: 1.5dppx) {
-
-                /* Admin Menu - 16px @2x */
-                #menu-posts-pmpro_sequence .wp-menu-image {
-                    background-image: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence16-sprite_2x.png") !important;
-                    -webkit-background-size: 16px 48px;
-                    -moz-background-size: 16px 48px;
-                    background-size: 16px 48px;
-                }
-                /* Post Screen - 32px @2x */
-                .icon32-posts-pmpro_sequence {
-                    background-image:url("<?php echo E20R_PLUGINS_URL ?>/img/icon-sequence32_2x.png") !important;
-                    -webkit-background-size: 32px 32px;
-                    -moz-background-size: 32px 32px;
-                    background-size: 32px 32px;
-                }
-            }
         </style>
     <?php
     }
