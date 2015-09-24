@@ -24,7 +24,7 @@ class e20rArticleView extends e20rSettingsView {
         global $currentArticle;
 		ob_start();
 
-        dbg("e20rArticleView::viewLessonComplete() -  Assignment is complete: " . ( $currentArticle->complete ? 'Yes' : 'No'));
+        dbg("e20rArticleView::viewLessonComplete() -  Assignment is complete: " . ( ( isset( $currentArticle->complete ) && ( $currentArticle->complete) ) ? 'Yes' : 'No') );
         dbg($currentArticle);
 
         $prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
