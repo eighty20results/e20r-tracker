@@ -1684,6 +1684,7 @@ class e20rTracker {
 
             global $e20r_plot_jscript;
 
+            wp_enqueue_style('fontawesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
             wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.min.css", false, E20R_VERSION );
@@ -3413,6 +3414,7 @@ class e20rTracker {
                    'public' => false,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title', 'excerpt'),
@@ -3455,6 +3457,7 @@ class e20rTracker {
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
@@ -3496,6 +3499,7 @@ class e20rTracker {
             array( 'labels' => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
+                   'menu_icon' => '',
                    // 'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
@@ -3538,6 +3542,7 @@ class e20rTracker {
             array( 'labels' => apply_filters( 'e20r-tracker-girth-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
+                   'menu_icon' => '',
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
@@ -3579,6 +3584,7 @@ class e20rTracker {
         $error = register_post_type('e20r_exercises',
             array( 'labels' => apply_filters( 'e20r-tracker-exercise-cpt-labels', $labels ),
                    'public' => true,
+                   'menu_icon' => '',
                    'show_ui' => true,
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
@@ -3623,6 +3629,7 @@ class e20rTracker {
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title','editor','thumbnail'),
@@ -3665,6 +3672,7 @@ class e20rTracker {
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
@@ -3688,15 +3696,36 @@ class e20rTracker {
      * Configure & display the icon for the Tracker (in the Dashboard)
      */
     function post_type_icon() {
+
+        wp_enqueue_style('fontawesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
+
         ?>
         <style>
-            /* Admin Menu - 16px */
-            #menu-posts-e20r_tracker .wp-menu-image {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence16-sprite.png") no-repeat 6px 6px !important;
+          @font-face {
+                font-family: FontAwesome;
+                src: url(https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css);
             }
-            #menu-posts-e20r_tracker:hover .wp-menu-image, #menu-posts-e20r_tracker.wp-has-current-submenu .wp-menu-image {
-                background-position: 6px -26px !important;
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-activities div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1e3';
             }
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-articles div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1ea';
+            }
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-programs div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f278';
+            }
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-info div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1b0';
+            }
+
             /* Post Screen - 32px */
             .icon32-posts-pmpro_sequence {
                 background: url("<?php echo E20R_PLUGINS_URL; ?>/img/icon-sequence32.png") no-repeat left top !important;
