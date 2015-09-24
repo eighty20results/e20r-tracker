@@ -36,6 +36,7 @@ class e20rArticleModel extends e20rSettingsModel {
         $defaults->measurement_day = false;
         $defaults->photo_day = false;
         $defaults->prefix = "Lesson";
+		$defaults->complete = false;
 
         // dbg("e20rArticleModel::defaultSettings() - Defaults loaded");
         return $defaults;
