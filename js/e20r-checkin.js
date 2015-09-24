@@ -290,7 +290,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: e20r_checkin.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_checkin.timeout,
                 data: data,
                 success: function (response) {
 
@@ -519,7 +519,7 @@ jQuery(document).ready(function() {
             jQuery.ajax({
                 url: e20r_checkin.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_checkin.timeout,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
                 data: 'action=save_daily_progress&' + self.$answerForm.serialize(),
                 success: function( $response ) {

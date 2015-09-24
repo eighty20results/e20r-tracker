@@ -213,7 +213,7 @@ var e20rAssignments = {
         jQuery.ajax({
             url: ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_tracker.timeout,
             dataType: 'JSON',
             data: $serialized_data,
             success: function ( $response ) {

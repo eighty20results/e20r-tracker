@@ -24,7 +24,7 @@ jQuery(function() {
             jQuery.ajax({
                 url: ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_checkin.timeout,
                 dataType: 'JSON',
                 data: {
                     action: 'save_item_data',

@@ -357,7 +357,7 @@ jQuery(function() {
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
@@ -498,7 +498,7 @@ jQuery(function() {
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: {
                     'article-id': jQuery('#article_id').val(),
@@ -560,7 +560,7 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
@@ -603,7 +603,7 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
@@ -671,7 +671,7 @@ jQuery(function() {
             jQuery.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
@@ -749,7 +749,7 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
@@ -866,7 +866,7 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
@@ -1029,7 +1029,7 @@ jQuery(function() {
             jQuery.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
@@ -1082,7 +1082,7 @@ jQuery(function() {
         jQuery.ajax({
             url: e20r_progress.ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             // async: false,
             data: $data,

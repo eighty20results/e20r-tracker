@@ -639,7 +639,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_showClientMessage',
@@ -730,7 +730,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_showMessageHistory',
@@ -817,7 +817,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: $data,
             error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
@@ -876,7 +876,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_clientDetail',
@@ -972,7 +972,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: $data,
             error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
@@ -1188,7 +1188,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_measurementDataForUser',
@@ -1426,7 +1426,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: this.$ajaxUrl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             data: {
                 action: 'get_memberlistForLevel',

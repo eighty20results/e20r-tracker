@@ -35,7 +35,7 @@ jQuery(document).ready( function($) {
         $.ajax({
             url: ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_tracer.timeout,
             dataType: 'JSON',
             data: {
                 action: 'addWorkoutGroup',
