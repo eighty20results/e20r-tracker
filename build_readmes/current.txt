@@ -1,1 +1,6 @@
-Load client-detail page the same way from both e20r_client_overview short-code and directly from the /wp-admin menu.
+Didn't always handle next/previous week for activity archive
+Sometimes cause warning while checking for e20r_client_overview shortcode
+Use new static function sequences_for_post() to obtain list of PMPro Sequences associated with the post id
+Use new static function post_details() to obtain sequence configuration for post_id from PMPro Sequences
+Use new all_sequences() static PMPro Sequences function to obtain list of available sequences
+Remove superfluous load of Font-Awesome css file

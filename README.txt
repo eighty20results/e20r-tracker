@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,24 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.3.3 ==
+
+* Didn't always handle next/previous week for activity archive
+* Sometimes cause warning while checking for e20r_client_overview shortcode
+* Use new static function sequences_for_post() to obtain list of PMPro Sequences associated with the post id
+* Use new static function post_details() to obtain sequence configuration for post_id from PMPro Sequences
+* Use new all_sequences() static PMPro Sequences function to obtain list of available sequences
+* Remove superfluous load of Font-Awesome css file
+
+== 1.3.2 ==
+
+* Configure default/global timeout setting for AJAX operations (currently 12 seconds)
+* Load jqPlot whenever it's needed
+* Clean up naming for javascript files
+* Include complete setting
+* Fix debug message
+* Add fontawesome icons to admin pages.
 
 == 1.3.1 ==
 
