@@ -444,7 +444,8 @@ class e20rWorkout extends e20rSettings {
 
             case E20R_UPCOMING_WEEK:
                 dbg("e20rWorkout::getActivityArchive() - For the upcoming (next) week");
-                if ( date('N', strtotime( $currentDate ) ) == 7 ) {
+
+                if ( date('N', current_time('timestamp') ) == 7 ) {
                     $mondayTS = strtotime( "next monday {$currentDate}" );
                     $sundayTS = strtotime( "next sunday {$currentDate}" );
                 }
@@ -454,7 +455,8 @@ class e20rWorkout extends e20rSettings {
                 }
 
                 $period_string = "Activities next week";
-                if ( date('N', strtotime( $currentDate ) ) <= 5 ) {
+                if ( date('N', current_time('timestamp') ) <= 5 ) {
+                    dbg("e20rWorkout::getActivityArchive() - Monday: {$mondayTS}, Sunday: {$sundayTS}, day number today: " . date('N') );
                     dbg("e20rWorkout::getActivityArchive() - User requested archive for 'next week', but we've not yet reached Friday, so not returning anything" );
                     return null;
                 }
@@ -464,7 +466,7 @@ class e20rWorkout extends e20rSettings {
             case E20R_PREVIOUS_WEEK:
 
                 dbg("e20rWorkout::getActivityArchive() - For last week");
-                if ( date('N', strtotime( $currentDate ) ) == 7 ) {
+                if ( date('N', current_time('timestamp') ) == 7 ) {
                     $mondayTS = strtotime( "monday -2 weeks {$currentDate}");
                     $sundayTS = strtotime( "last sunday {$currentDate}" );
                 }
@@ -480,7 +482,7 @@ class e20rWorkout extends e20rSettings {
 
                 dbg("e20rWorkout::getActivityArchive() - For the current week including: {$currentDate}");
 
-                if ( date('N', strtotime( $currentDate ) ) == 1 ) {
+                if ( date('N', current_time( 'timestamp' ) ) == 1 ) {
                     // It's monday
 
                     $mondayTS = strtotime( "monday {$currentDate}" );
