@@ -640,8 +640,7 @@ class e20rProgram extends e20rSettings {
 
         if ( class_exists( 'PMProSequence' ) ) {
 
-            $dripFeed = new PMProSequence();
-            return $dripFeed->getAllSequences('publish');
+            return PMProSequence::all_sequences('publish');
         }
 
         return false;
