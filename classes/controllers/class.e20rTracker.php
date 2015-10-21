@@ -2072,7 +2072,7 @@ class e20rTracker {
 
         global $post;
 
-        if ( has_shortcode( $post->post_content, 'e20r_client_overview' ) ) {
+        if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'e20r_client_overview' ) ) {
 
             if ( ! is_user_logged_in() ) {
 
@@ -4073,22 +4073,28 @@ class e20rTracker {
 
             dbg("e20rArticle::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
 
+/*
             if ( false === ( $sequenceIds = get_post_meta( $postId, '_post_sequences', true ) ) ) {
-                return false;
+                return array();
             }
+*/
+            $sequenceIds = PMProSequence::sequences_for_post( $postId );
 
             foreach ($sequenceIds as $id ) {
 
-                $seq = new PMProSequence( $id );
-                $details = $seq->get_postDetails( $postId );
+                $details = PMProSequence::post_details( $id, $postId );
+/*
+                $seq->get_options( $id );
+                $details = $seq->get_post_details( $postId );
 
                 unset($seq);
-
+*/
                 dbg("e20rArticle::getDripFeedDelay() - Delay details: " . print_r( $details, true  ) );
 
                 if ( $id != false ) {
-                    dbg("e20rArticle::getDripFeedDelay() - Returning {$details->delay}");
-                    return $details->delay;
+
+                    dbg("e20rArticle::getDripFeedDelay() - Returning {$details[0]->delay}");
+                    return $details[0]->delay;
                 }
             }
         }
