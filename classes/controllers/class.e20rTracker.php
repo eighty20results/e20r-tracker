@@ -1013,6 +1013,8 @@ class e20rTracker {
             $userId = $current_user->ID;
         }
 
+        dbg("e20rTracker::getUserKey() - Test if user ({$userId}) can access their AES key based on the post {$post->ID}.");
+
 		if ( $e20rTracker->hasAccess( $userId, $post->ID ) ) {
 			dbg('e20rTracker::getUserKey() - User is permitted to access their AES key.');
 
@@ -1559,14 +1561,16 @@ class e20rTracker {
 
         if ( function_exists( 'pmpro_has_membership_access' ) ) {
 
+            dbg("e20rTracker::hasAccess() - Preferring to use access check as provided bt PMPro");
             $levels = pmpro_getMembershipLevelsForUser( $userId );
             $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
 
             if ( $result[0] ) {
 
-                dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . $result[0]);
-                $retVal = apply_filters('pmpro_has_membership_access_filter', $result[0], $result[0], get_post($postId), get_user_by( 'ID', $userId ), $levels );
-
+                dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
+                // $retVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'ID', $userId ), $levels );
+                $retVal = $result[0];
+                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: {$retVal}");
             }
         }
         else {
