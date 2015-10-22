@@ -244,11 +244,11 @@ class e20rClient {
 
 	public function load_interview( $form ) {
 
-		dbg("e20rTracker::load_interview() - Start" );
-
 		global $e20rTracker;
 		global $current_user;
 		global $post;
+
+		dbg("e20rTracker::load_interview() - Start: " . $e20rTracker->whoCalledMe() );
 
         // dbg( $form );
 
@@ -261,15 +261,15 @@ class e20rClient {
 		if ( ! is_user_logged_in() ) {
 
 			dbg("e20rTracker::load_interview()  - User accessing form without being logged in.");
-			return;
+			return $form;
 		}
 
-		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
+/*		if ( ! $e20rTracker->hasAccess( $current_user->ID, $post->ID ) ) {
 
-			dbg("e20rTracker::load_interview()  - User doesn't have access to this form.");
-			return false;
+			dbg("e20rTracker::load_interview()  - User {$current_user->ID} doesn't have access to this form on {$post->ID}.");
+			return $form;
 		}
-
+*/
 		dbg("e20rTracker::load_interview() - Loading form data: ");
 		// dbg( "Form: " . print_r( $form, true) );
 
