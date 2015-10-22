@@ -255,7 +255,7 @@ class e20rClientModel {
         global $currentProgram;
 
         dbg("e20rClientModel::get_data(): " . $e20rTracker->whoCalledMe() );
-//        $e20rProgram->getProgramIdForUser( $userId );
+        $e20rProgram->getProgramIdForUser( $userId );
 
         if ( ( $currentClient->user_id != $userId ) && ( $e20rTracker->is_a_coach( $current_user->ID ) ) ) {
 
