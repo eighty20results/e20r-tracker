@@ -2916,3 +2916,4 @@ tr.e20r-client-list-row > tbody {
 .e20r-followup-critical {
     background-color: rgba( 255, 0, 0, 0.2 );
 }
+.fa-stack br { display: none; }
