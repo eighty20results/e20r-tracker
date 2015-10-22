@@ -178,3 +178,4 @@ tr.e20r-client-message-history-entry td {
 input#e20r-send-email-message {
     color: #FFF !important;
 }
+.fa-stack br { display: none; }
