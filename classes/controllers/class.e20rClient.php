@@ -249,11 +249,21 @@ class e20rClient
         dbg("e20rClient::completeInterview() - Checking if interview was completed");
         // $data = $this->model->get_data( $userId, 'completed_date');
 
-        $is_complete = $this->model->interview_complete($userId);
+        if ( !isset( $this->interview_status_loaded ) || ( false === $this->interview_status_loaded )) {
 
+            dbg("e20rClient::completeInterview() - Not previously checked for interview status. Doing so now.");
+            $is_complete = $this->model->interview_complete($userId);
+
+            $this->interview_status = $is_complete;
+            $this->interview_status_loaded = true;
+        }
+        else {
+            dbg("e20rClient::completeInterview() - Interview status has been checked already. Returning status");
+            $is_complete = $this->interview_status;
+        }
         // dbg("e20rClient::completeInterview() - completed_date field contains: ");
         // dbg($data);
-
+        dbg("e20rClient::completeInterview() - Returning interview status of: " . ( $is_complete ? 'true' : 'false' ) );
         return (!$is_complete ? false : true);
     }
 
@@ -261,17 +271,21 @@ class e20rClient
     {
 
         global $e20rTracker;
+        global $currentClient;
         global $current_user;
         global $post;
 
-        dbg("e20rTracker::load_interview() - Start: " . $e20rTracker->whoCalledMe());
+        dbg("e20rClient::load_interview() - Start: " . $e20rTracker->whoCalledMe());
 
         // dbg( $form );
 
         if (stripos($form['cssClass'], 'nourish-interview-identifier') === false) {
 
-            dbg('e20rTracker::load_interview()  - Not the BitBetter Interview form: ' . $form['cssClass']);
+            dbg('e20rClient::load_interview()  - Not the Program Interview form: ' . $form['cssClass']);
             return $form;
+        }
+        else {
+            dbg("e20rClient::load_interview() - Processing a Program Interview form");
         }
 
         if (!is_user_logged_in()) {
@@ -286,173 +300,20 @@ class e20rClient
                     return $form;
                 }
         */
-        dbg("e20rTracker::load_interview() - Loading form data: ");
+        dbg("e20rClient::load_interview() - Loading form data: " . count( $form ) . " elements");
         // dbg( "Form: " . print_r( $form, true) );
 
-        return $this->loadClientInterviewData($current_user->ID, $form);
+        dbg("e20rClient::load_interview() Processing form object as to load existing info if needed. ");
+
+        if (!isset($currentClient->user_id) || ($current_user->ID !== $currentClient->user_id)) {
+
+            dbg("e20rClient::load_interview_data_for_client() - Loading interview for user ID {$current_user->ID} (currentClient->user_id is either undefined or different)");
+            $this->setClient( $current_user->ID );
+        }
+
+        return $this->model->load_interview_data_for_client($current_user->ID, $form);
 
         // return $form;
-    }
-
-    // TODO: Should be in model file?
-    public function loadClientInterviewData($clientId, $form)
-    {
-
-        global $currentClient;
-
-        if (!isset($currentClient->user_id) || ($clientId !== $currentClient->user_id)) {
-
-            dbg("e20rClient::loadClientInterviewData() - Loading interview for user ID {$clientId} (currentClient->user_id is either undefined or different)");
-            $this->setClient($clientId);
-        }
-
-        $c_data = $this->model->get_data($clientId);
-
-        dbg("e20rClient::loadClientInterviewData() - Client Data from DB:");
-        dbg($c_data);
-
-        if (isset($c_data->incomplete_interview) && (1 == $c_data->incomplete_interview)) {
-
-            dbg("e20rClient::loadClientInterviewData() - No client data found in DB for user w/ID: {$clientId}");
-            return $form;
-        }
-
-        $cFields = array('GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select', 'GF_Field_MultiSelect');
-        $txtFields = array('GF_Field_Phone', 'GF_Field_Text', 'GF_Field_Email', 'GF_Field_Date', 'GF_Field_Number', 'GF_Field_Textarea');
-        $skipLabels = array('Comments', 'Name', 'Email', 'Phone');
-
-        foreach ($form['fields'] as $id => $item) {
-
-            $classType = get_class($item);
-
-            // if ( ( 'GF_Field_Section' == $classType ) || ( 'GF_Field_HTML' == $classType ) ) {
-            if (!(in_array($classType, $cFields) || in_array($classType, $txtFields))) {
-
-                dbg("e20rClient::loadClientInterviewData() - Skipping object: {$classType}");
-                continue;
-            }
-
-            if ($classType == 'GF_Field' && in_array($item['label'], $skipLabels)) {
-
-                dbg("e20rClient::loadClientInterviewData() - Skipping: {$item['label']}");
-                continue;
-            }
-
-            if (in_array($classType, $cFields)) {
-
-                // Option/select fields - Use ['choices'] to set the current/default value.
-                dbg("e20rClient::loadClientInterviewData() - Processing {$classType} object {$item['label']}");
-
-                if (!is_array($item['choices'])) {
-                    dbg("e20rClient::loadClientInterviewData() - Processing {$classType} object {$item['label']} Isn't an array of values?");
-                }
-
-                foreach ($item['choices'] as $cId => $i) {
-
-                    // Split any checkbox list values in $c_data by semicolon...
-                    if (isset($c_data->{$item['label']})) {
-                        $itArr = preg_split('/;/', $c_data->{$item['label']});
-
-                        $msArr = preg_split('/,/', $c_data->{$item['label']});
-                    }
-                    if (empty($msArr) && !isset($c_data->{$item['label']}) && empty($c_data->{$item['label']}) && (0 !== $c_data->{$item['label']})) {
-                        dbg("e20rClient::loadClientInterviewData() - {$item['label']} is empty? " . $c_data->{$item['label']});
-                        continue;
-                    }
-
-                    // dbg("e20rClient::loadClientInterviewData() - Is value {$c_data->{$item['label']}} for object {$item['label']} numeric? " . ( is_numeric( $c_data->{$item['label']}) ? 'Yes' : 'No' ) );
-                    /** Process special cases where the DB field is numeric but the value in the form is text (Yes/No values) */
-                    if (('GF_Field_MultiSelect' != $classType) && isset($c_data->{$item['label']}) && is_numeric($c_data->{$item['label']}) && ('likert' != $item['inputType'])) {
-
-                        switch ($c_data->{$item['label']}) {
-
-                            case 0:
-                                dbg("e20rClient::loadClientInterviewData() - Convert bit to text (N): {$c_data->{$item['label']}}");
-                                $c_data->{$item['label']} = 'No';
-                                break;
-
-                            case 1:
-                                dbg("e20rClient::loadClientInterviewData() - Convert bit to text (Y): {$c_data->{$item['label']}}");
-                                $c_data->{$item['label']} = 'Yes';
-                                break;
-                        }
-                    }
-
-                    /** Process special cases where the DB field to indicate gender */
-                    if (isset($c_data->{$item['label']}) && in_array($c_data->{$item['label']}, array('m', 'f'))) {
-
-                        dbg("e20rClient::loadClientInterviewData() - Convert for gender: {$c_data->{$item['label']}}");
-                        switch ($c_data->{$item['label']}) {
-
-                            case 'm':
-                                $c_data->{$item['label']} = 'M';
-                                break;
-
-                            case 'f':
-                                $c_data->{$item['label']} = 'F';
-                                break;
-                        }
-                    }
-
-                    $choiceField = $form['fields'][$id]['choices'];
-
-                    if ('likert' == $item['inputType']) {
-
-                        $key = 'score';
-                    } else {
-
-                        $key = 'value';
-                    }
-
-                    if (isset($c_data->{$item['label']}) && ((0 === $c_data->{$item['label']}) || !empty($c_data->{$item['label']})) && ($c_data->{$item['label']} == $i[$key])) {
-
-                        dbg("e20rClient::loadClientInterviewData() - Choosing value " . $i[$key] . " for {$item['label']} - it's supposed to have key # {$cId}");
-                        dbg("e20rClient::loadClientInterviewData() - Form value: {$form['fields'][ $id ]['choices'][ $cId ][$key]}");
-
-                        $choiceField[$cId]['isSelected'] = 1;
-
-                    }
-
-                    if (is_array($msArr) && (count($msArr) > 0)) {
-
-                        dbg("e20rClient::loadClientInterviewData() - List of values. Processing {$choiceField[$cId][$key]}");
-
-                        if (in_array($choiceField[$cId][$key], $msArr)) {
-                            dbg("e20rClient::loadClientInterviewData() - Found {$i[$key]} as a saved value!");
-                            $choiceField[$cId]['isSelected'] = 1;
-                        }
-                    }
-
-                    if (is_array($itArr) && (count($itArr) > 1)) {
-
-                        dbg("e20rClient::loadClientInterviewData() - List of values. Processing {$choiceField[$cId][$key]}");
-
-                        if (in_array($choiceField[$cId][$key], $itArr)) {
-
-                            dbg("e20rClient::loadClientInterviewData() - Found {$i[$key]} as a saved value!");
-                            $choiceField[$cId]['isSelected'] = 1;
-                        }
-                    }
-
-                    $form['fields'][$id]['choices'] = $choiceField;
-                }
-
-                $cId = null;
-            }
-
-            if (in_array($classType, $txtFields)) {
-
-                if (!empty($c_data->{$item['label']})) {
-
-                    dbg("e20rClient::loadClientInterviewData() - Restoring value: " . $c_data->{$item['label']} . " for field: " . $item['label']);
-                    $form['fields'][$id]['defaultValue'] = $c_data->{$item['label']};
-                }
-            }
-        }
-
-        dbg("e20rClient::loadClientInterviewData() - Returning form object with " . count($form) . " pieces for data");
-        // dbg($form);
-        return $form;
     }
 
     public function loadClientMessages($clientId)
@@ -1782,13 +1643,14 @@ class e20rClient
 
         if (isset($currentProgram->intake_form)) {
 
-            $interview = get_post($currentProgram->intake_form);
+            $interview = get_post( $currentProgram->intake_form );
 
             if (isset($interview->post_content) && !empty($interview->post_content)) {
 
                 dbg("e20rClient::view_interview() - Applying the content filter to the interview page content");
                 $content = apply_filters('the_content', $interview->post_content);
 
+                dbg("e20rClient::view_interview() - Validate whether the interview has been completed by the user");
                 $complete = $this->completeInterview($clientId);
 
                 dbg("e20rClient::view_interview() - Loading the Welcome interview page & the users interview is saved already");
@@ -1798,6 +1660,10 @@ class e20rClient
                 $content = $update_reminder . $content;
             }
         }
+        else {
+            dbg( "e20rClient::view_interview() - ERROR: No client Interview form has been configured! ");
+        }
+
         dbg("e20rClient::view_interview() - Returning HTML");
         return $content;
     }
@@ -1844,7 +1710,7 @@ class e20rClient
 
         if (!$currentArticle->is_preview_day) {
 
-            dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
+            dbg("e20rMeasurements::shortcode_clientProfile() - Configure user specific data");
 
             $this->model->setUser($config->userId);
 
@@ -1853,10 +1719,10 @@ class e20rClient
             $dimensions = array('width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px');
             $pDimensions = array('width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%');
 
-            dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data...");
+            dbg("e20rMeasurements::shortcode_clientProfile() - Loading progress data...");
             $measurements = $e20rMeasurements->getMeasurement('all', false);
 
-            if ($this->completeInterview($config->userId)) {
+            if ( true === $this->completeInterview($config->userId) ) {
                 $measurement_view = $e20rMeasurements->showTableOfMeasurements($config->userId, $measurements, $dimensions, true, false);
             } else {
                 $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
