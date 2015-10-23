@@ -31,6 +31,10 @@ Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 
 08/16/2015:
 
+10/22/2015:
+
+Fix: The gravity forms form on the interview page isn't loading (but loading the data for the interview and flagging that it's been completed (tsjolshagen)
+Enh: Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
 
 == Completed / Fixed ==
 
