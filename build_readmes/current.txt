@@ -1,6 +1,6 @@
-Didn't always handle next/previous week for activity archive
-Sometimes cause warning while checking for e20r_client_overview shortcode
-Use new static function sequences_for_post() to obtain list of PMPro Sequences associated with the post id
-Use new static function post_details() to obtain sequence configuration for post_id from PMPro Sequences
-Use new all_sequences() static PMPro Sequences function to obtain list of available sequences
-Remove superfluous load of Font-Awesome css file
+Add debug output to completeInterview()
+Add caching of interview completion status
+Move loading of client interview data to the model class (out of the controller class)
+Rename loadClientInterviewData to load_interview_data_for_client()
+Return debug output if the client interview form ID isn't available/not configured.
+Updated issues list

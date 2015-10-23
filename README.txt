@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.3.2
+Stable tag: 1.3.6
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,29 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.3.6 ==
+
+* Add debug output to completeInterview()
+* Add caching of interview completion status
+* Move loading of client interview data to the model class (out of the controller class)
+* Rename loadClientInterviewData to load_interview_data_for_client()
+* Return debug output if the client interview form ID isn't available/not configured.
+* Updated issues list
+
+== 1.3.5 ==
+
+* Change version number (1.3.5)
+* Refactored for style
+* Removed some variable dumps in debug output
+
+== 1.3.4 ==
+
+* Updated minified CSS files for font-awesome fix.
+* Ensure program ID is loaded for the requested user when loading client data.
+* Remove (likely) unneeded access check for post->ID and user ID.
+* Filter for hasAccess value (PMPro related) broke Gravity Forms load.
+* Add fontawesome CSS fix
 
 == 1.3.3 ==
 
