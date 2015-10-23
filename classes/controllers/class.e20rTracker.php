@@ -3995,7 +3995,7 @@ class e20rTracker {
         global $e20rProgram;
         global $currentProgram;
 
-        if ( ! $userId ) {
+        if ( is_null( $userId ) ) {
             $userId = $current_user->ID;
         }
 
@@ -4003,6 +4003,7 @@ class e20rTracker {
         $startTS = $e20rProgram->startdate( $userId );
 
         if ( 0 == $rDelay ) {
+
             $delay = 0;
         }
         elseif ( "now" == $rDelay ) {
@@ -4011,7 +4012,9 @@ class e20rTracker {
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
         }
         else {
-            $delay = $rDelay;
+
+            $delay = ($rDelay - 1);
+            dbg("e20rTracker::getDateFromDelay() - Adjusting delay value: {$rDelay} => {$delay}");
         }
 
 
