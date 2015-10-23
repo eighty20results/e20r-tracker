@@ -1194,4 +1194,155 @@ class e20rClientModel {
         return $programs;
     }
 
+    public function load_interview_data_for_client($clientId, $form)
+    {
+        $c_data = $this->get_data($clientId);
+
+        dbg("e20rClient::load_interview_data_for_client() - Client Data from DB:");
+        dbg($c_data);
+
+        if (isset($c_data->incomplete_interview) && (1 == $c_data->incomplete_interview)) {
+
+            dbg("e20rClient::load_interview_data_for_client() - No client data found in DB for user w/ID: {$clientId}");
+            return $form;
+        }
+
+        $cFields = array('GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select', 'GF_Field_MultiSelect');
+        $txtFields = array('GF_Field_Phone', 'GF_Field_Text', 'GF_Field_Email', 'GF_Field_Date', 'GF_Field_Number', 'GF_Field_Textarea');
+        $skipLabels = array('Comments', 'Name', 'Email', 'Phone');
+
+        foreach ($form['fields'] as $id => $item) {
+
+            $classType = get_class($item);
+
+            // if ( ( 'GF_Field_Section' == $classType ) || ( 'GF_Field_HTML' == $classType ) ) {
+            if (!(in_array($classType, $cFields) || in_array($classType, $txtFields))) {
+
+                dbg("e20rClient::load_interview_data_for_client() - Skipping object: {$classType}");
+                continue;
+            }
+
+            if ($classType == 'GF_Field' && in_array($item['label'], $skipLabels)) {
+
+                dbg("e20rClient::load_interview_data_for_client() - Skipping: {$item['label']}");
+                continue;
+            }
+
+            if (in_array($classType, $cFields)) {
+
+                // Option/select fields - Use ['choices'] to set the current/default value.
+                dbg("e20rClient::load_interview_data_for_client() - Processing {$classType} object {$item['label']}");
+
+                if (!is_array($item['choices'])) {
+                    dbg("e20rClient::load_interview_data_for_client() - Processing {$classType} object {$item['label']} Isn't an array of values?");
+                }
+
+                foreach ($item['choices'] as $cId => $i) {
+
+                    // Split any checkbox list values in $c_data by semicolon...
+                    if (isset($c_data->{$item['label']})) {
+                        $itArr = preg_split('/;/', $c_data->{$item['label']});
+
+                        $msArr = preg_split('/,/', $c_data->{$item['label']});
+                    }
+                    if (empty($msArr) && !isset($c_data->{$item['label']}) && empty($c_data->{$item['label']}) && (0 !== $c_data->{$item['label']})) {
+                        dbg("e20rClient::load_interview_data_for_client() - {$item['label']} is empty? " . $c_data->{$item['label']});
+                        continue;
+                    }
+
+                    // dbg("e20rClient::load_interview_data_for_client() - Is value {$c_data->{$item['label']}} for object {$item['label']} numeric? " . ( is_numeric( $c_data->{$item['label']}) ? 'Yes' : 'No' ) );
+                    /** Process special cases where the DB field is numeric but the value in the form is text (Yes/No values) */
+                    if (('GF_Field_MultiSelect' != $classType) && isset($c_data->{$item['label']}) && is_numeric($c_data->{$item['label']}) && ('likert' != $item['inputType'])) {
+
+                        switch ($c_data->{$item['label']}) {
+
+                            case 0:
+                                dbg("e20rClient::load_interview_data_for_client() - Convert bit to text (N): {$c_data->{$item['label']}}");
+                                $c_data->{$item['label']} = 'No';
+                                break;
+
+                            case 1:
+                                dbg("e20rClient::load_interview_data_for_client() - Convert bit to text (Y): {$c_data->{$item['label']}}");
+                                $c_data->{$item['label']} = 'Yes';
+                                break;
+                        }
+                    }
+
+                    /** Process special cases where the DB field to indicate gender */
+                    if (isset($c_data->{$item['label']}) && in_array($c_data->{$item['label']}, array('m', 'f'))) {
+
+                        dbg("e20rClient::load_interview_data_for_client() - Convert for gender: {$c_data->{$item['label']}}");
+                        switch ($c_data->{$item['label']}) {
+
+                            case 'm':
+                                $c_data->{$item['label']} = 'M';
+                                break;
+
+                            case 'f':
+                                $c_data->{$item['label']} = 'F';
+                                break;
+                        }
+                    }
+
+                    $choiceField = $form['fields'][$id]['choices'];
+
+                    if ('likert' == $item['inputType']) {
+
+                        $key = 'score';
+                    } else {
+
+                        $key = 'value';
+                    }
+
+                    if (isset($c_data->{$item['label']}) && ((0 === $c_data->{$item['label']}) || !empty($c_data->{$item['label']})) && ($c_data->{$item['label']} == $i[$key])) {
+
+                        dbg("e20rClient::load_interview_data_for_client() - Choosing value " . $i[$key] . " for {$item['label']} - it's supposed to have key # {$cId}");
+                        dbg("e20rClient::load_interview_data_for_client() - Form value: {$form['fields'][ $id ]['choices'][ $cId ][$key]}");
+
+                        $choiceField[$cId]['isSelected'] = 1;
+
+                    }
+
+                    if (is_array($msArr) && (count($msArr) > 0)) {
+
+                        dbg("e20rClient::load_interview_data_for_client() - List of values. Processing {$choiceField[$cId][$key]}");
+
+                        if (in_array($choiceField[$cId][$key], $msArr)) {
+                            dbg("e20rClient::load_interview_data_for_client() - Found {$i[$key]} as a saved value!");
+                            $choiceField[$cId]['isSelected'] = 1;
+                        }
+                    }
+
+                    if (is_array($itArr) && (count($itArr) > 1)) {
+
+                        dbg("e20rClient::load_interview_data_for_client() - List of values. Processing {$choiceField[$cId][$key]}");
+
+                        if (in_array($choiceField[$cId][$key], $itArr)) {
+
+                            dbg("e20rClient::load_interview_data_for_client() - Found {$i[$key]} as a saved value!");
+                            $choiceField[$cId]['isSelected'] = 1;
+                        }
+                    }
+
+                    $form['fields'][$id]['choices'] = $choiceField;
+                }
+
+                $cId = null;
+            }
+
+            if (in_array($classType, $txtFields)) {
+
+                if (!empty($c_data->{$item['label']})) {
+
+                    dbg("e20rClient::load_interview_data_for_client() - Restoring value: " . $c_data->{$item['label']} . " for field: " . $item['label']);
+                    $form['fields'][$id]['defaultValue'] = $c_data->{$item['label']};
+                }
+            }
+        }
+
+        dbg("e20rClient::load_interview_data_for_client() - Returning form object with " . count($form) . " pieces for data");
+        // dbg($form);
+        return $form;
+    }
+
 }
