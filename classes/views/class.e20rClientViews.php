@@ -334,7 +334,7 @@ class e20rClientViews {
         $e20rProgram->getProgramIdForUser( $clientId );
 
         // $interview = $e20rClient->loadClientInfo( $clientId );
-        dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
+        // dbg("e20rClientViews::viewClientContact() - Loaded interview/survey data for {$currentClient->user_id}");
         // dbg( $currentClient );
 
         $client = get_user_by('id', $clientId );
