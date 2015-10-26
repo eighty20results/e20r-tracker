@@ -1076,7 +1076,7 @@ class e20rArticle extends e20rSettings
 
         $e20rProgram->getProgramIdForUser($current_user->ID);
 
-        dbg("e20rArticle::contentFilter() - Is the user attempting to access the intake form: {$currentProgram->intake_form}");
+/*        dbg("e20rArticle::contentFilter() - Is the user attempting to access the intake form: {$currentProgram->intake_form}");
         if (isset($currentProgram->intake_form) && ($currentProgram->intake_form == $post->ID) && is_user_logged_in()) {
 
             dbg("e20rArticle::contentFilter() - Attempting to access the intake form...");
@@ -1089,6 +1089,26 @@ class e20rArticle extends e20rSettings
                 dbg("e20rArticle::contentFilter() - WARNING: User started program more than two months ago and is attempting to access the completed interview. Redirecting");
                 wp_redirect(get_permalink($currentProgram->dashboard_page_id));
             }
+        }
+*/
+
+        dbg("e20rArticle::contentFilter() - Checking whether to load pop-up warning for incomplete intake interview on page {$post->ID}");
+
+        $today = current_time('timestamp');
+        $two_weeks = strtotime("{$currentProgram->startdate} + 2 weeks");
+        $is_profile_page = has_shortcode( $post->post_content, 'e20r_profile' );
+        $complete_interview = $e20rClient->completeInterview( $current_user->ID );
+
+        dbg("e20rArticle::contentFilter() - On the profile page: " . ( false == $is_profile_page ? 'No' : 'Yes' ) . ", Interview incomplete: " . ( false === $complete_interview ? 'No' : 'Yes' )  . ", Membership length TS: {$two_weeks}");
+
+        if ( ( $two_weeks <= $today ) && ( false === $complete_interview ) && $is_profile_page ) {
+
+            dbg("e20rArticle::contentFilter() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
+
+            $my_user = get_user_by( 'ID', $current_user->ID );
+
+            $interview_warning = "Incomplete interview for " . $my_user->display_name;
+            $content = $content . $this->view->add_popup_overlay( $current_user->ID, $interview_warning );
         }
 
         if (!empty($currentProgram->sales_page_ids) && in_array($post->ID, $currentProgram->sales_page_ids) && is_user_logged_in()) {
