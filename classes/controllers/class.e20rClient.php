@@ -1703,18 +1703,19 @@ class e20rClient
         if ($this->completeInterview($config->userId)) {
             $interview_descr = 'Saved interview';
         } else {
+
             $interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;">' . __("Please complete interview", "e20rtracker") . '</div>';
         }
 
-        $interview = array($interview_descr, '<div id="e20r-profile-interview">' . $this->view_interview($config->userId) . '</div>');
+        $interview_html = '<div id="e20r-profile-interview">' . $this->view_interview($config->userId) . '</div>';
+        $interview = array($interview_descr, $interview_html );
 
         if (!$currentArticle->is_preview_day) {
 
             dbg("e20rMeasurements::shortcode_clientProfile() - Configure user specific data");
 
             $this->model->setUser($config->userId);
-
-            $this->setClient($userId);
+            // $this->setClient($userId);
 
             $dimensions = array('width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px');
             $pDimensions = array('width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%');
