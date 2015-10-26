@@ -7,19 +7,6 @@
  */
 
 
-/*
-id, user_id,
-    article_id, recorded_date,
-    weight, neck,
-    shoulder, chest,
-    arm, waist,
-    hip, thigh,
-    calf, girth,
-    essay1, behaviorprogress,
-    front_image, side_image,
-    back_image
-*/
-
 jQuery.noConflict();
 
 var progMeasurements = {
@@ -79,6 +66,7 @@ var progMeasurements = {
 
             $class.$clientComplianceTab = jQuery("#e20r-client-compliance");
             $class.$clientAssignmentsTab = jQuery("#e20r-client-assignments");
+            $class.timeout = e20r_admin.timeout;
 
             console.log("Loading tabs for wp-admin page");
 /*
@@ -245,6 +233,8 @@ var progMeasurements = {
             $class.$ajaxUrl = $class.$tag.ajaxurl;
             $class.$spinner = jQuery('#spinner');
 
+            $class.timeout = $class.$tag.timeout;
+
             // $class.$spinner.show();
 
             // Process click on load Statistics button(s)
@@ -398,6 +388,83 @@ var progMeasurements = {
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
 
+        if ( typeof( e20r_admin ) === 'undefined') {
+
+            $class.timeout = e20r_progress.timeout;
+
+            setTimeout(function () {
+
+                $class._trigger_pop_up();
+            }, 2000);
+        }
+    },
+    _trigger_pop_up: function() {
+
+        var $class = this;
+
+        if ( $class.$tag.is_profile_page && (  $class.$tag.interview_complete == false ) ) {
+
+            console.log("Loading pop-over for incomplete interview...");
+
+            jQuery('#e20r-popup-overlay-shade, .e20r-popup-overlay a').unbind().on( 'click', function(e) {
+
+                $class._close_overlay();
+                if ( jQuery(this).attr('href') == '#') {
+
+                    e.preventDefault();
+                }
+            });
+
+            console.log("Incomplete interview. Loading the Interview nag screen.")
+            $class._open_overlay( '#e20r-popup-overlay-in-box' );
+
+            console.log("Showing interview nag screen");
+        }
+    },
+    _open_overlay: function( pop_up_element ) {
+
+        $oLay = jQuery( pop_up_element );
+
+        console.log("Loading pop-up with shading");
+        var $overlay_shade = jQuery( '#e20r-popup-overlay-shade' );
+
+        if ( $overlay_shade.length == 0) {
+
+            jQuery('body').prepend('<div id="e20r-popup-overlay-shade"></div>');
+        }
+
+        $overlay_shade.fadeTo(300, 0.6, function() {
+            var props = {
+                oLayWidth       : $oLay.width(),
+                scrTop          : jQuery(window).scrollTop(),
+                viewPortWidth   : jQuery(window).width()
+            };
+
+            var leftPos = (props.viewPortWidth - props.oLayWidth) / 2;
+
+            $oLay
+                .css({
+                    display : 'block',
+                    opacity : 0,
+                    top : '-=300',
+                    left : leftPos+'px'
+                })
+                .animate({
+                    top : props.scrTop + 40,
+                    opacity : 1
+                }, 600);
+        });
+    },
+    _close_overlay: function() {
+
+        jQuery('.e20r-popup-overlay').animate({
+
+            top : '-=300',
+            opacity : 0
+        }, 400, function() {
+            jQuery('#e20r-popup-overlay-shade').fadeOut(300);
+            jQuery(this).css('display','none');
+        });
     },
     _loaded_from_coachpage: function() {
         var field = 'e20r-client-id';
@@ -639,7 +706,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_showClientMessage',
@@ -730,7 +797,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_showMessageHistory',
@@ -817,7 +884,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: $data,
             error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
@@ -876,7 +943,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_clientDetail',
@@ -972,7 +1039,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: $data,
             error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
@@ -1188,7 +1255,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: $class.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_measurementDataForUser',
@@ -1414,6 +1481,8 @@ var progMeasurements = {
             return;
         }
 
+        // console.log("e20r_progress value: ", e20r_progress );
+
         $class.$detailBtn.prop('disabled', true);
         $class.$complianceBtn.prop('disabled', true);
         $class.$assignBtn.prop('disabled', true);
@@ -1426,7 +1495,7 @@ var progMeasurements = {
         jQuery.ajax({
             url: this.$ajaxUrl,
             type: 'POST',
-            timeout: e20r_progress.timeout,
+            timeout: $class.timeout,
             dataType: 'JSON',
             data: {
                 action: 'get_memberlistForLevel',
