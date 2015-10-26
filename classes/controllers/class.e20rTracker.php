@@ -1713,6 +1713,14 @@ class e20rTracker {
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
 
+            // $this->load_frontend_scripts('progress_overview');
+            wp_localize_script( 'e20r-progress-page', 'e20r_admin',
+                    array(
+                        'timeout' => 12000,
+                    )
+                );
+
+
             $e20r_plot_jscript = true;
 	        self::register_plotSW();
             self::enqueue_plotSW();
@@ -2651,11 +2659,13 @@ class e20rTracker {
             if ( ( !empty( $script) ) && ( !empty($id) ) ) {
 
                 dbg("e20rTracker::load_frontendscripts() - localizing tag ({$script}) with name {$id}");
+                global $e20rClient;
 
                 wp_localize_script( $script, $id,
                     array(
                         'timeout' => 12000,
                         'ajaxurl' => admin_url('admin-ajax.php'),
+                        'interview_complete' => $e20rClient->completeInterview( $current_user->ID ),
                         'clientId' => $current_user->ID,
                         'is_profile_page' => has_shortcode( $post->post_content, 'e20r_profile' ),
                         'activity_url' => get_permalink( $currentProgram->activity_page_id ),
