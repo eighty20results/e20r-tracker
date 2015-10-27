@@ -435,7 +435,7 @@ class e20rWorkout extends e20rSettings {
         // $started = $currentProgram->startdate;
 
         $currentDay = $e20rTracker->getDelay('now', $userId );
-        $currentDate = date('Y-m-d', current_time( 'timestamp', true ) );
+        $currentDate = date('Y-m-d', current_time( 'timestamp' ) );
 
         dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
 
