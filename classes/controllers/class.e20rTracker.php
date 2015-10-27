@@ -4023,7 +4023,7 @@ class e20rTracker {
         }
         else {
 
-            $delay = ($rDelay - 1);
+            $delay = ($rDelay);
             dbg("e20rTracker::getDateFromDelay() - Adjusting delay value: {$rDelay} => {$delay}");
         }
 
