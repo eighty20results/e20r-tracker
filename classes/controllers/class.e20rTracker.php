@@ -1688,7 +1688,7 @@ class e20rTracker {
 
             global $e20r_plot_jscript;
 
-            wp_enqueue_style('fontawesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
+            wp_enqueue_style( 'fontawesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
             wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.min.css", false, E20R_VERSION );
@@ -3714,11 +3714,11 @@ class e20rTracker {
     function post_type_icon() {
         ?>
         <style>
-          @font-face {
+/*          @font-face {
                 font-family: FontAwesome;
-                src: url(https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css);
+                src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css);
             }
-
+*/
             #adminmenu .menu-top.toplevel_page_e20r-tracker-activities div.wp-menu-image:before {
                 font-family:  FontAwesome !important;
                 content: '\f1e3';
