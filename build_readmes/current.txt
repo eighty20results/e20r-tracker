@@ -1,6 +1,14 @@
-Add debug output to completeInterview()
-Add caching of interview completion status
-Move loading of client interview data to the model class (out of the controller class)
-Rename loadClientInterviewData to load_interview_data_for_client()
-Return debug output if the client interview form ID isn't available/not configured.
-Updated issues list
+Load FontAwesome from CDN (used by plugin for wp-admin icons)
+Removed debug output
+Add CSS for pop-up overlay
+Move pop-up for interview completion to e20rArticle classes.
+Add pop-up overlay view (can contain custom message and client related info).
+Load timeout value for back-end client info page.
+Add interview_complete boolean for front-end scripts
+Removed check of whether to skip the Intake form ( It's always loaded as part of the profile page so redirection, etc should be handled there )
+Added content filter check for whether Welcome interview is complete. If not, load NAG screen.
+Wouldn't load user info on back-end due to variable mismatch
+Made timeout variable for jQuery.ajax() calls more generic
+Add Pop-Up management functions (Init, open/close, etc).
+Didn't always return the correct date for getDateForPost()
+Make sure we test for a type specific value when checking the user's ID.

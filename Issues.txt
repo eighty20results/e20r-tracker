@@ -33,8 +33,8 @@ Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 
 10/22/2015:
 
-Fix: The gravity forms form on the interview page isn't loading (but loading the data for the interview and flagging that it's been completed (tsjolshagen)
 Enh: Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
+See: http://jsfiddle.net/istvanv/uQj7t/28/ for a pop-over option.
 
 == Completed / Fixed ==
 
@@ -55,6 +55,7 @@ Fix: (P0) List of exercise statistics in archive can start before the users prog
 Fix: (P0) Activity settings didn't always get loaded correctly.
 Fix: (P0) Activity description is being saved twice
 Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
+Fid: (P0) The gravity forms form on the interview page loads but is hidden (Caused by Cloudflare Rocket engine - Javascript optimization that doesn't quite work right)
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).

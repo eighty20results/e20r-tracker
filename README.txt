@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,23 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.3.7 ==
+
+* Load FontAwesome from CDN (used by plugin for wp-admin icons)
+* Removed debug output
+* Add CSS for pop-up overlay
+* Move pop-up for interview completion to e20rArticle classes.
+* Add pop-up overlay view (can contain custom message and client related info).
+* Load timeout value for back-end client info page.
+* Add interview_complete boolean for front-end scripts
+* Removed check of whether to skip the Intake form ( It's always loaded as part of the profile page so redirection, etc should be handled there )
+* Added content filter check for whether Welcome interview is complete. If not, load NAG screen.
+* Wouldn't load user info on back-end due to variable mismatch
+* Made timeout variable for jQuery.ajax() calls more generic
+* Add Pop-Up management functions (Init, open/close, etc).
+* Didn't always return the correct date for getDateForPost()
+* Make sure we test for a type specific value when checking the user's ID.
 
 == 1.3.6 ==
 
