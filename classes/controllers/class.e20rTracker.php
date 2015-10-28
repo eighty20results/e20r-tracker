@@ -237,12 +237,10 @@ class e20rTracker {
 
             add_filter( "post_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
             add_filter( "page_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+
             add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
-
             add_action( 'admin_notices', array( &$this, 'display_admin_notice'  ) );
-
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
-
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
 
 	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
@@ -278,14 +276,11 @@ class e20rTracker {
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
 
-            dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
-            /* Load scripts & CSS */
-            add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
             // add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
             // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
-
             // add_action( 'wp_print_scripts', array( &$e20rClient, 'load_scripts' ) );
             // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
+
             add_action( 'wp_ajax_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_showMessageHistory', array( &$e20rClient, 'ajax_ClientMessageHistory') );
@@ -314,49 +309,8 @@ class e20rTracker {
 	        add_action( 'wp_ajax_e20r_add_exercise', array( &$e20rWorkout, 'add_new_exercise_to_group_callback' ) );
 	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
 	        add_action( 'wp_ajax_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
-
             add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
             add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
-
-            // add_action( 'save_post', array( &$this, 'shortcode_check' ), 10, 2 );
-            add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
-            add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
-            add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
-
-            // add_action( 'post_updated', array( &$this, 'shortcode_check' ), 10, 2 );
-	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
-            add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
-
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
-
-            add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rCheckin, 'editor_metabox_setup') );
-
-            add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
-
-            add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
-            add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
-            add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
-            add_action( 'admin_menu', array( &$this, "renderGirthTypesMetabox" ) );
 
             /* AJAX call-backs if user is unprivileged */
             add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
@@ -378,8 +332,47 @@ class e20rTracker {
 	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
 	        add_action( 'wp_ajax_nopriv_manage_option_list', 'e20r_ajaxUnprivError' );
 
-	        // TODO: Investigate the need for this.
-            // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
+            add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
+
+	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
+            add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
+            add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
+
+            dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
+            /* Load scripts & CSS */
+            add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
+            add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
+	        // add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
+
+            add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rCheckin, 'editor_metabox_setup') );
+
+            add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
+
+            add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
+            add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
+            add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
+            add_action( 'admin_menu', array( &$this, "renderGirthTypesMetabox" ) );
 
             /* Allow admin to set the program ID for the user in their profile(s) */
             add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
@@ -392,7 +385,7 @@ class e20rTracker {
             add_action( 'edit_user_profile_update', array( &$e20rClient, 'updateRoleForUser') );
             add_action( 'personal_options_update', array( &$e20rClient, 'updateRoleForUser') );
 
-            dbg("e20rTracker::loadAllHooks() - Short Codes");
+            dbg("e20rTracker::loadAllHooks() - Loading Short Codes");
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
             add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
@@ -401,24 +394,25 @@ class e20rTracker {
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
             add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
             add_shortcode( 'e20r_client_overview', array( &$e20rClient, 'shortcode_clientList') );
+            add_shortcode( 'e20r_article_summary', array( &$e20rArticle, 'shortcode_article_summary') );
+
+            dbg("e20rTracker::loadAllHooks() - Article content filter");
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
-
-            // if ( function_exists( 'pmpro_activation' ) ) {
-
-                add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
-            // }
+            add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
-	        // add_action( 'gform_entry_post_save', array( &$e20rClient, 'save_interview'), 10, 2);
 	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
-//  	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
 	        add_filter( 'gform_field_value', array( &$e20rClient, 'process_gf_fields'), 10, 3);
+
+//	        add_action( 'gform_entry_post_save', array( &$e20rClient, 'save_interview'), 10, 2);
+//  	    add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
 //	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
 // 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
+//	        add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
+//	        add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
 
-	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
-	        // add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
+
 	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
             // Custom columns
@@ -594,7 +588,7 @@ class e20rTracker {
         return $param;
     }
 
-    public function shortcode_check( $post_id ) {
+/*    public function shortcode_check( $post_id ) {
 
         global $post;
 
@@ -643,7 +637,7 @@ class e20rTracker {
 
         return $post_id;
     }
-
+*/
     private function inGroup( $id, $grpList ) {
 
         if ( in_array( 0, $grpList ) ) {
@@ -1982,6 +1976,26 @@ class e20rTracker {
 
 	}
 
+    public function has_summary_shortcode() {
+
+        global $post;
+
+        if ( !isset( $post->ID ) ) {
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'e20r_article_summary' ) ) {
+
+            if ( !is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
+            dbg("e20rTracker::has_summary_shortcode() - Load CSS for weekly summary post");
+            $this->load_frontend_scripts('article_summary');
+        }
+    }
+
 	public function has_activity_shortcode() {
 
 		global $post;
@@ -2361,12 +2375,13 @@ class e20rTracker {
 
         $load_jq_plot = false;
 
+        dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
         foreach( $events as $event ) {
 
             $css_list = array( 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
                 "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.min.css',
-                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css'
+                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css',
             );
 
             $scripts = array();
@@ -2378,6 +2393,20 @@ class e20rTracker {
 
             switch ( $event ) {
 
+/*                case 'article_summary':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the article summary page.");
+
+                    $css = array_replace( $css, array(
+                            'e20r-article-summary' => E20R_PLUGINS_URL . '/css/e20r-article-summary.min.css',
+                        )
+                    );
+
+                    // $scripts = array();
+                    // $prereqs = array();
+
+                    break;
+*/
                 case 'client_overview':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");

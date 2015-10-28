@@ -811,7 +811,8 @@ class e20rCheckin extends e20rSettings
 
             if (is_array($articles) && (1 == count($articles))) {
 
-                $article = $articles[0];
+                $article = array_pop($articles);
+
             } elseif (1 < count($articles)) {
                 dbg("e20rCheckin::configure_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
 

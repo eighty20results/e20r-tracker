@@ -47,6 +47,33 @@ class e20rArticleView extends e20rSettingsView {
 		return $html;
 	}
 
+    public function view_article_history( $type, $articles, $start, $end ) {
+
+        global $currentProgram;
+
+        $startdate = date( get_option('date_format'), $start );
+        $enddate = date( get_option('date_format'), $end );
+
+        ob_start(); ?>
+        <div class="e20r-article-post-summary">
+            <h2 class="e20r-article-post-summary-heading"><?php echo sprintf( __("%s summary", "e20rtracker"), esc_attr( ucfirst($type) ) ); ?></h2>
+            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between: %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p><?php
+
+            foreach( $articles as $article ) {
+                $days = $article['day'] - 1;
+                $timestamp = strtotime("{$currentProgram->startdate} +{$days} days");
+                $day_name = date('l', $timestamp);
+            ?>
+            <div class="e20r-article-post-summary-tile">
+                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s your %s was titled '%s', and it was about:", "e20rtracker" ), $day_name, $type, $article['title']); ?></p>
+                <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ); ?></p>
+            </div><?php
+            } ?>
+        </div><?php
+        $html = ob_get_clean();
+
+        return $html;
+    }
     public function add_popup_overlay( $clientId, $popup_text ) {
 
         dbg("e20rArticleView::add_popup_overlay() - Loading pop-up for {$clientId}");
@@ -226,20 +253,13 @@ class e20rArticleView extends e20rSettingsView {
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-article-id" id="hidden-e20r-article-id"
                        value="<?php echo $post->ID; ?>">
-                <table id="e20r-article-settings" class="wp-list-table widefat fixed">
+                <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
                         <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Post/Page", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-release_day"><?php _e("Day of Release", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-is_survey"><?php _e("Survey", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20rtracker"); ?></label></th>
                     </tr>
-<!--                    <tr>
-                        <td colspan="5">
-                            <hr width="100%"/>
-                        </td>
-                    </tr> -->
                     </thead>
                     <tbody>
                     <tr id="<?php echo $settings->id; ?>" class="checkin-inputs">
@@ -261,13 +281,47 @@ class e20rArticleView extends e20rSettingsView {
                                     width: 99%;
                                 }
                             </style>
-                            <script>
-                                // jQuery('#e20r-article-post_id').select2();
-                            </script>
                         </td>
-                        <td style="width: 50px !important;">
-                            <input type="number" id="e20r-article-release_day" name="e20r-article-release_day" value="<?php echo $settings->release_day; ?>">
+                        <td style="min-width: 50px !important; width: 33%;">
+                            <input type="number" id="e20r-article-release_day" name="e20r-article-release_day" value="<?php echo esc_attr( $settings->release_day ); ?>">
                         </td>
+                        <td style="vertical-align: top;">
+                            <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo esc_attr( $settings->prefix ); ?>">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-article-settings wp-list-table widefat">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-article-summary_day"><?php _e("Summary Article", "e20rtracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-max_summaries"><?php _e("Articles to summarize", "e20rtracker"); ?></label></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- <tr><td colspan="3"><hr width="100%" /></td></tr> -->
+                    <tr>
+                        <td class="checkbox"  style="text-align: center;">
+                            <input type="checkbox" id="e20r-article-summary_day" name="e20r-article-summary_day" value="1"<?php checked( $settings->summary_day, 1); ?>>
+                        </td>
+                        <td colspan="2" style="min-width: 50px !important;">
+                            <input type="number" id="e20r-article-max_summaries" name="e20r-article-max_summaries" value="<?php echo esc_attr( $settings->max_summaries ); ?>">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-article-settings wp-list-table widefat">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-is_survey"><?php _e("Survey", "e20rtracker"); ?></label></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- <tr><td colspan="3"><hr width="100%" /></td></tr> -->
+
+                    <tr>
                         <td class="checkbox"  style="text-align: center;">
                             <input type="checkbox" id="e20r-article-measurement_day" name="e20r-article-measurement_day" value="1"<?php checked( $settings->measurement_day, 1); ?>>
                         </td>
@@ -278,17 +332,19 @@ class e20rArticleView extends e20rSettingsView {
                             <input type="checkbox" id="e20r-article-is_survey" name="e20r-article-is_survey" value="1"<?php checked( $settings->is_survey, 1); ?>>
                         </td>
                     </tr>
-                    <tr><td colspan="5"><hr width="100%" /></td></tr>
+                    </tbody>
+                </table>
+                <!-- <tr><td colspan="3"><hr width="100%" /></td></tr> -->
+                <table class="e20r-article-settings wp-list-table widefat">
+                    <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20rtracker"); ?></label></th>
-                        <th colspan="3" class="e20r-label header"><label for="e20r-article-program_ids"><?php _e("Programs", "e20rtracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-program_ids"><?php _e("Programs", "e20rtracker"); ?></label></th>
                         <th class="e20r-label header"><label for="e20r-article-is_preview_day"><?php _e("Preparation", "e20rtracker"); ?></label></th>
                     </tr>
+                    </thead>
+                    <tbody>
                     <tr>
-                        <td style="vertical-align: top;">
-                            <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo $settings->prefix; ?>">
-                        </td>
-                        <td colspan="3">
+                        <td colspan="2">
                             <select class="select2-container" id="e20r-article-program_ids" name="e20r-article-program_ids[]" multiple="multiple"> <?php
 
                                 wp_reset_query();
@@ -321,12 +377,19 @@ class e20rArticleView extends e20rSettingsView {
                             <input type="checkbox" id="e20r-article-is_preview_day" name="e20r-article-is_preview_day" value="1"<?php checked( $settings->is_preview_day, 1); ?>>
                         </td>
                     </tr>
-                    <tr><td colspan="5"><hr width="100%" /></td></tr>
+                    </tbody>
+                </table>
+                <!-- <tr><td colspan="3"><hr width="100%" /></td></tr> -->
+                <table class="e20r-article-settings wp-list-table widefat">
+                    <thead>
                     <tr>
                         <th colspan="2" class="e20r-label header"><label for="e20r-article-checkin_ids"><?php _e("Actions", "e20rtracker"); ?></label></th>
-	                    <th colspan="2" class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
+	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
                         <th></th>
                     </tr>
+                    </thead>
+                    <!-- <tr><td colspan="3"><hr width="100%" /></td></tr> -->
+                    <tbody>
                     <tr>
                         <td colspan="2">
                             <select class="select2-container" id="e20r-article-checkin_ids" name="e20r-article-checkin_ids[]" multiple="multiple"><?php
@@ -358,7 +421,7 @@ class e20rArticleView extends e20rSettingsView {
                                 ?>
                             </select>
                         </td>
-	                    <td colspan="2"><?php
+	                    <td><?php
 		                    if ( is_array( $settings->activity_id ) ) {
 
 			                    $selected = in_array( -1, $settings->activity_id ) ? 'selected="selected"' : null;
@@ -395,7 +458,6 @@ class e20rArticleView extends e20rSettingsView {
 			                    ?>
 		                    </select>
 	                    </td>
-                        <td></td>
                     </tr>
                     </tbody>
                 </table>

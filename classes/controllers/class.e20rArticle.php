@@ -436,11 +436,11 @@ class e20rArticle extends e20rSettings
 
             dbg("e20rArticle::getExcerpt() - Using the post summary.");
             $pExcerpt = $post->post_content;
+            $pExcerpt = wp_trim_words($pExcerpt, 30, " [...]");
         }
 
         $image = (has_post_thumbnail($post->ID) ? get_the_post_thumbnail($post->ID) : '<div class="noThumb"></div>');
 
-        $pExcerpt = wp_trim_words($pExcerpt, 30, " [...]");
         $pExcerpt = preg_replace("/\<br(\s+)\/\>/i", null, $pExcerpt);
 
         ob_start();
@@ -1076,39 +1076,39 @@ class e20rArticle extends e20rSettings
 
         $e20rProgram->getProgramIdForUser($current_user->ID);
 
-/*        dbg("e20rArticle::contentFilter() - Is the user attempting to access the intake form: {$currentProgram->intake_form}");
-        if (isset($currentProgram->intake_form) && ($currentProgram->intake_form == $post->ID) && is_user_logged_in()) {
+        /*        dbg("e20rArticle::contentFilter() - Is the user attempting to access the intake form: {$currentProgram->intake_form}");
+                if (isset($currentProgram->intake_form) && ($currentProgram->intake_form == $post->ID) && is_user_logged_in()) {
 
-            dbg("e20rArticle::contentFilter() - Attempting to access the intake form...");
+                    dbg("e20rArticle::contentFilter() - Attempting to access the intake form...");
 
-            $today = current_time('timestamp');
-            $two_months = strtotime("{$currentProgram->startdate} + 2 months");
+                    $today = current_time('timestamp');
+                    $two_months = strtotime("{$currentProgram->startdate} + 2 months");
 
-            if (($two_months < $today) && $e20rClient->completeInterview($current_user->ID)) {
+                    if (($two_months < $today) && $e20rClient->completeInterview($current_user->ID)) {
 
-                dbg("e20rArticle::contentFilter() - WARNING: User started program more than two months ago and is attempting to access the completed interview. Redirecting");
-                wp_redirect(get_permalink($currentProgram->dashboard_page_id));
-            }
-        }
-*/
+                        dbg("e20rArticle::contentFilter() - WARNING: User started program more than two months ago and is attempting to access the completed interview. Redirecting");
+                        wp_redirect(get_permalink($currentProgram->dashboard_page_id));
+                    }
+                }
+        */
 
         dbg("e20rArticle::contentFilter() - Checking whether to load pop-up warning for incomplete intake interview on page {$post->ID}");
 
         $today = current_time('timestamp');
         $two_weeks = strtotime("{$currentProgram->startdate} + 2 weeks");
-        $is_profile_page = has_shortcode( $post->post_content, 'e20r_profile' );
-        $complete_interview = $e20rClient->completeInterview( $current_user->ID );
+        $is_profile_page = has_shortcode($post->post_content, 'e20r_profile');
+        $complete_interview = $e20rClient->completeInterview($current_user->ID);
 
-        dbg("e20rArticle::contentFilter() - On the profile page: " . ( false == $is_profile_page ? 'No' : 'Yes' ) . ", Interview incomplete: " . ( false === $complete_interview ? 'No' : 'Yes' )  . ", Membership length TS: {$two_weeks}");
+        dbg("e20rArticle::contentFilter() - On the profile page: " . (false == $is_profile_page ? 'No' : 'Yes') . ", Interview incomplete: " . (false === $complete_interview ? 'No' : 'Yes') . ", Membership length TS: {$two_weeks}");
 
-        if ( ( $two_weeks <= $today ) && ( false === $complete_interview ) && $is_profile_page ) {
+        if (($two_weeks <= $today) && (false === $complete_interview) && $is_profile_page) {
 
             dbg("e20rArticle::contentFilter() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
 
-            $my_user = get_user_by( 'ID', $current_user->ID );
+            $my_user = get_user_by('ID', $current_user->ID);
 
             $interview_warning = "Incomplete interview for " . $my_user->display_name;
-            $content = $content . $this->view->add_popup_overlay( $current_user->ID, $interview_warning );
+            $content = $content . $this->view->add_popup_overlay($current_user->ID, $interview_warning);
         }
 
         if (!empty($currentProgram->sales_page_ids) && in_array($post->ID, $currentProgram->sales_page_ids) && is_user_logged_in()) {
@@ -1244,11 +1244,11 @@ class e20rArticle extends e20rSettings
             }
         }
 
-        if ( true === ( $is_complete = $e20rClient->completeInterview($current_user->ID) && ($post->ID == $currentProgram->intake_form ) ) ) {
+        if (true === ($is_complete = $e20rClient->completeInterview($current_user->ID) && ($post->ID == $currentProgram->intake_form))) {
 
             dbg("e20rArticle::contentFilter() - User is viewing the Welcome interview page & their interview is saved already");
             $interview_title = get_the_title($currentProgram->intake_form);
-            $update_reminder = $this->view->viewInterviewComplete($interview_title, $is_complete );
+            $update_reminder = $this->view->viewInterviewComplete($interview_title, $is_complete);
 
             $content = $update_reminder . $content;
         }
@@ -1344,6 +1344,140 @@ class e20rArticle extends e20rSettings
         return $estimated_time;
     }
 
+    public function shortcode_article_summary($attributes = null)
+    {
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $currentProgram;
+
+        global $current_user;
+        global $post;
+
+        $html = null;
+        $article = null;
+
+        if (!is_user_logged_in()) {
+
+            auth_redirect();
+            wp_die();
+        }
+
+        dbg("e20rArticle::shortcode_article_summary() - Loading article summary shortcode");
+
+        $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
+        $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+
+        $articles = $this->model->find( 'post_id', $post->ID, 'numeric', $program_id);
+
+        dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) for with post ID {$post->ID}");
+        dbg($articles);
+
+        foreach ($articles as $a) {
+
+            if ( ( 1 == count( $articles ) ) && ( $days_since_start <= $a->release_day) ) {
+
+                dbg("e20rArticle::shortcode_article_summary() - Using article # {$a->id} for post id (from article def): {$a->post_id} and release day: {$a->release_day}");
+                $article = $a;
+            }
+            elseif ( $days_since_start >= $a->release_day ) {
+                dbg("e20rArticle::shortcode_article_summary() - Using article # {$a->id} for post id (from article def): {$a->post_id} with release day: {$a->release_day}");
+                $article = $a;
+            }
+        }
+
+        if (!empty($article)) {
+            dbg("e20rArticle::shortcode_article_summary() - Configure article settings (not needed?) ");
+            $this->init( $article->id );
+        }
+
+        $days_of_summaries = $this->model->getSetting( $article->id, 'max_summaries');
+
+        $tmp = shortcode_atts(array(
+            'days' => $days_of_summaries,
+        ), $attributes);
+
+        dbg("e20rArticle::shortcode_article_summary() - Article # {$article->id} needs to locate {$days_of_summaries} worth of articles to pull summaries from");
+        $start_day = ( $article->release_day - $days_of_summaries);
+        $start_TS = strtotime("{$currentProgram->startdate} +{$start_day} days");
+        $end_TS = strtotime("{$currentProgram->startdate} +{$article->release_day} days");
+
+        dbg("e20rArticle::shortcode_article_summary() - Searching for articles with release_day between start: {$start_day} and end: {$article->release_day}");
+
+        $history = $this->find('release_day', array( ($start_day - 1) , $article->release_day), 'numeric', $program_id, 'BETWEEN');
+
+        dbg("e20rArticle::shortcode_article_summary() - Fetched " . count($history) . " articles to pull summaries from");
+        // dbg($history);
+
+        $summary = array();
+
+        foreach ( $history as $k => $a ) {
+
+            $new = array(
+                'title' => null,
+                'summary' => null,
+                'day' => null
+            );
+
+            if ( !empty( $a->post_id ) ) {
+
+                $p = get_post($a->post_id);
+                $art = get_post( $a->id );
+
+                dbg("e20rArticle::shortcode_article_summary() - Loading data for post {$a->post_id} vs {$p->ID}");
+
+                $new['day'] = $a->release_day;
+                $new['title'] = $p->post_title;
+
+                if (!empty($art->post_excerpt) ) {
+
+                    dbg("e20rArticle::shortcode_article_summary() - Using the article summary.");
+                    $new['summary'] = $art->post_excerpt;
+
+                } elseif (!empty($p->post_excerpt)) {
+
+                    dbg("e20rArticle::shortcode_article_summary() - Using the post excerpt.");
+                    $new['summary'] = $p->post_excerpt;
+                } else {
+
+                    dbg("e20rArticle::shortcode_article_summary() - Using the post summary.");
+                    $new['summary'] = $p->post_content;
+                    $new['summary'] = wp_trim_words( $new['summary'], 30, " [...]" );
+                }
+
+                // $new['summary'] = $this->getExcerpt( $a->id, $current_user->ID );
+
+                // if (!empty($new['title']) && !empty($new['summary'])) {
+
+                $gt_days = ( $article->release_day - $days_of_summaries );
+                dbg("e20rArticle::shortcode_article_summary() - Current day: {$article->release_day} + Last release day to include: {$gt_days}.");
+
+                if ( ( $new['day'] > $gt_days ) ) {
+
+                    if ( ( $a->measurement_day != true ) && ( $a->summary_day != true ) ) {
+
+                        dbg("e20rArticle::shortcode_article_summary() - Adding {$new['title']} (for day# {$new['day']}) to list of posts to summarize");
+                        $summary[$a->release_day] = $new;
+                    }
+                }
+
+                $new = array();
+                $a = null;
+                wp_reset_postdata();
+            }
+        }
+
+        ksort($summary);
+
+        dbg("e20rArticle::shortcode_article_summary() - Original prefix of {$article->prefix}");
+        $prefix = lcfirst( preg_replace('/\[|\]/', '', $article->prefix ) );
+        dbg("e20rArticle::shortcode_article_summary() - Scrubbed prefix: {$prefix}");
+        dbg($summary);
+
+        $html = $this->view->view_article_history( $prefix, $summary, $start_TS, $end_TS);
+
+        return $html;
+    }
     /*
     public function addArticle( $obj ) {
 

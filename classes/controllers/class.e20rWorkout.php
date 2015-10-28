@@ -705,7 +705,7 @@ class e20rWorkout extends e20rSettings {
         // Make sure we won't load anything but the short code requested activity
         if ( empty( $config->activity_id ) ) {
 
-            dbg("e20rWorkout::shortcode_activity() - No user specified activity ID in short code config");
+            dbg("e20rWorkout::prepare_activity() - No user specified activity ID in short code config");
             // dbg($_POST);
 
             // Check whether we go called via the dashboard and an activity Id is given to us from there.
@@ -715,8 +715,8 @@ class e20rWorkout extends e20rSettings {
                 $articleId = isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null;
                 $checkin_date = isset( $_POST['for-date']) ? $e20rTracker->sanitize( $_POST['for-date'] ) : null;
 
-                dbg("e20rWorkout::shortcode_activity() - Original activity ID is: " . ( isset( $config->activity_id ) ? $config->activity_id : 'Not defined' ) );
-                dbg("e20rWorkout::shortcode_activity() - Dashboard requested a specific activity ID:");
+                dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . ( isset( $config->activity_id ) ? $config->activity_id : 'Not defined' ) );
+                dbg("e20rWorkout::prepare_activity() - Dashboard requested a specific activity ID:");
                 dbg( $actId_from_dash );
 
                 if ( $act_override == true ) {
@@ -726,14 +726,14 @@ class e20rWorkout extends e20rSettings {
 
                     if ( !isset($currentArticle->id) || ( $currentArticle->id != $articleId ) ) {
 
-                        dbg("e20rWorkout::shortcode_activity() - Loading article with id {$articleId}");
+                        dbg("e20rWorkout::prepare_activity() - Loading article with id {$articleId}");
                         $e20rArticle->init( $articleId );
                     }
 
                     $config->date = $checkin_date;
                     $config->delay = $e20rTracker->getDelay( $config->date, $config->userId );
 
-                    dbg("e20rWorkout::shortcode_activity() - Overridden configuration: ");
+                    dbg("e20rWorkout::prepare_activity() - Overridden configuration: ");
                     dbg($config);
                 }
 
@@ -752,19 +752,19 @@ class e20rWorkout extends e20rSettings {
 
         // dbg( $config );
 
-        dbg("e20rWorkout::shortcode_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
+        dbg("e20rWorkout::prepare_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
         // dbg( $config->activity_id );
         // If the activity ID is set, don't worry about anything but loading that activity (assuming it's permitted).
 
         if ( !empty( $config->activity_id ) ) {
 
-            dbg("e20rWorkout::shortcode_activity() - Admin specified activity ID" );
+            dbg("e20rWorkout::prepare_activity() - Admin specified activity ID" );
             $articles = $e20rArticle->findArticles( 'activity_id', $config->activity_id, 'numeric', $config->programId, 'IN', true );
 
         }
         else {
 
-            dbg("e20rWorkout::shortcode_activity() - Attempting to locate article by configured delay value: {$config->delay}" );
+            dbg("e20rWorkout::prepare_activity() - Attempting to locate article by configured delay value: {$config->delay}" );
             $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
 
             /*            if ( false !== $articles ) {
@@ -781,7 +781,7 @@ class e20rWorkout extends e20rSettings {
 
         if ( !is_array( $articles ) ) {
 
-            dbg("e20rWorkout::shortcode_activity() - No articles found!");
+            dbg("e20rWorkout::prepare_activity() - No articles found!");
             $articles = array( $e20rArticle->emptyArticle() );
         }
 
@@ -790,18 +790,18 @@ class e20rWorkout extends e20rSettings {
 
             // if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
 
-            dbg( "e20rWorkout::shortcode_activity() - Activity count for article: " . isset($article->activity_id) ? count( $article->activity_id ) : 0 );
+            dbg( "e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count( $article->activity_id ) : 0 );
 
             $workoutData = $this->model->find( 'id', $article->activity_id, 'numeric', $config->programId, 'IN' );
 
             foreach ( $workoutData as $k => $workout ) {
 
-                dbg( "e20rWorkout::shortcode_activity() - Iterating through the fetched workout IDs. Now processing workoutData entry {$k}");
+                dbg( "e20rWorkout::prepare_activity() - Iterating through the fetched workout IDs. Now processing workoutData entry {$k}");
                 // dbg($workout);
 
                 if ( ! in_array( $config->programId, $workoutData[$k]->program_ids ) ) {
 
-                    dbg( "e20rWorkout::shortcode_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
+                    dbg( "e20rWorkout::prepare_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
                     unset( $workoutData[ $k ] );
                 }
 
@@ -809,13 +809,13 @@ class e20rWorkout extends e20rSettings {
 
                 if ( ! empty( $workoutData[$k]->assigned_user_id ) || ! empty( $workoutData[$k]->assigned_usergroups ) ) {
 
-                    dbg( "e20rWorkout::shortcode_activity() - User Group or user list defined for this workout..." );
+                    dbg( "e20rWorkout::prepare_activity() - User Group or user list defined for this workout..." );
                     $has_access = $e20rTracker->allowedActivityAccess( $workoutData[$k], $config->userId, $config->userGroup );
 
                     if ( !in_array( true, $has_access ) ) {
 
-                        dbg( "e20rWorkout::shortcode_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
-                        dbg( "e20rWorkout::shortcode_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: " );
+                        dbg( "e20rWorkout::prepare_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
+                        dbg( "e20rWorkout::prepare_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: " );
 
                         unset( $workoutData[ $k ] );
                         unset( $articles[$a_key] );
@@ -827,22 +827,22 @@ class e20rWorkout extends e20rSettings {
         $config->articleId = $currentArticle->id;
         $recorded = array();
 
-        dbg( "e20rWorkout::shortcode_activity() - WorkoutData prior to processing");
+        dbg( "e20rWorkout::prepare_activity() - WorkoutData prior to processing");
 
         foreach ( $workoutData as $k => $w ) {
 
-            dbg( "e20rWorkout::shortcode_activity() - Processing workoutData entry {$k} to test whether to load user data");
+            dbg( "e20rWorkout::prepare_activity() - Processing workoutData entry {$k} to test whether to load user data");
 
             if ( $k !== 'error' ) {
 
-                dbg( "e20rWorkout::shortcode_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
+                dbg( "e20rWorkout::prepare_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
                 $saved_data = $this->model->getRecordedActivity( $config, $w->id );
 
                 if ( ( false == $activity_override ) && isset( $w->days) && ( !empty( $w->days ) ) && ( ! in_array( $config->dayNo, $w->days ) ) ) {
 
-                    dbg( "e20rWorkout::shortcode_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
+                    dbg( "e20rWorkout::prepare_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
                     dbg( $w->days );
-                    dbg( "e20rWorkout::shortcode_activity() - Removing workout ID #{$w->id} as a result");
+                    dbg( "e20rWorkout::prepare_activity() - Removing workout ID #{$w->id} as a result");
                     unset( $workoutData[ $k ] );
                 }
                 else {
@@ -851,13 +851,13 @@ class e20rWorkout extends e20rSettings {
 
                         if ( !empty( $saved_data ) ) {
 
-                            dbg("e20rWorkout::shortcode_activity() - Integrating saved data for group # {$gid}");
+                            dbg("e20rWorkout::prepare_activity() - Integrating saved data for group # {$gid}");
                             $workoutData[ $k ]->groups[ $gid ]->saved_exercises = isset( $saved_data[$gid]->saved_exercises ) ? $saved_data[$gid]->saved_exercises : array();
                         }
 
 
                         if ( isset( $g->group_tempo ) ) {
-                            dbg("e20rWorkout::shortcode_activity() - Setting the tempo identifier");
+                            dbg("e20rWorkout::prepare_activity() - Setting the tempo identifier");
                             $workoutData[ $k ]->groups[ $gid ]->group_tempo = $this->model->getType( $g->group_tempo );
                         }
                     }
