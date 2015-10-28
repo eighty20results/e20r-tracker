@@ -56,8 +56,8 @@ class e20rArticleView extends e20rSettingsView {
 
         ob_start(); ?>
         <div class="e20r-article-post-summary">
-            <h2 class="e20r-article-post-summary-heading"><?php echo sprintf( __("%s summary", "e20rtracker"), esc_attr( ucfirst($type) ) ); ?></h2>
-            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between: %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p>
+            <h5 class="e20r-article-post-summary-heading"><?php echo sprintf( __("%s summary", "e20rtracker"), esc_attr( ucfirst($type) ) ); ?></h5>
+            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p>
             <?php if ( !empty( $article_summary ) ) {?>
             <div class="e20r-article-post-summary-info"><?php echo esc_html( $article_summary); ?></div><?php
             }
