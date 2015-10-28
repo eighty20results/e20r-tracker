@@ -1,17 +1,5 @@
-Add support in article definition for summary_day and max_summaries settings. summary_day is boolean, max_summaries is numeric.
-New shortcode: [e20r_article_summary days=""] - Generates a summary of articles for the specified # of days. #of days can be configured in the shortcode, or in the article that defines the lesson/reminder/action/activity.
-Only trim the excerpt if the content is being pulled from the post itself.
-Avoid warning message due to incorrect array element address assumption.
-Refactor loadAllHooks()
-Load article summary specific CSS file for article summary pages/posts. (in e20r-article-summary.css)
-Remove shortcode_check() as it’s now inactive.
-Add support for editor in e20_articles CPT definition
-Fix issue where dates on dashboard navigation was “off-by-one”.
-Fix cases where the activity archive would be empty due to timezone confusions.
-Rename debug for prepare_activity() function in e20rWorkout.php
-Reformatted e20rArticleModel.php
-Add display/view for article summary shortcode.
-Refactor the metabox for the article settings.
-Add onClick() event for “Read more” link for lesson/reminder/post/page on daily progress dashboard.
-Pass article ID and other config information to e20r_article_summary shortcode.
-Avoid duplicate event handler actions in onClick() events for daily progress dashboard.
+Make sure the "Assignment Complete" logic works for cases when posts are being repeated on different days in contentFilter()
+e20r_article_summary shortcode would sometimes cause page to go blank
+Return the date of the last post included in the post summary list, not the date of the article generating the list.
+Fix padding/spacing for article summary date values
+Make heading for the article summary list match the formatting for the [daily_progress type="assignment"] formatting.
