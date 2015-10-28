@@ -1,14 +1,17 @@
-Load FontAwesome from CDN (used by plugin for wp-admin icons)
-Removed debug output
-Add CSS for pop-up overlay
-Move pop-up for interview completion to e20rArticle classes.
-Add pop-up overlay view (can contain custom message and client related info).
-Load timeout value for back-end client info page.
-Add interview_complete boolean for front-end scripts
-Removed check of whether to skip the Intake form ( It's always loaded as part of the profile page so redirection, etc should be handled there )
-Added content filter check for whether Welcome interview is complete. If not, load NAG screen.
-Wouldn't load user info on back-end due to variable mismatch
-Made timeout variable for jQuery.ajax() calls more generic
-Add Pop-Up management functions (Init, open/close, etc).
-Didn't always return the correct date for getDateForPost()
-Make sure we test for a type specific value when checking the user's ID.
+Add support in article definition for summary_day and max_summaries settings. summary_day is boolean, max_summaries is numeric.
+New shortcode: [e20r_article_summary days=""] - Generates a summary of articles for the specified # of days. #of days can be configured in the shortcode, or in the article that defines the lesson/reminder/action/activity.
+Only trim the excerpt if the content is being pulled from the post itself.
+Avoid warning message due to incorrect array element address assumption.
+Refactor loadAllHooks()
+Load article summary specific CSS file for article summary pages/posts. (in e20r-article-summary.css)
+Remove shortcode_check() as it’s now inactive.
+Add support for editor in e20_articles CPT definition
+Fix issue where dates on dashboard navigation was “off-by-one”.
+Fix cases where the activity archive would be empty due to timezone confusions.
+Rename debug for prepare_activity() function in e20rWorkout.php
+Reformatted e20rArticleModel.php
+Add display/view for article summary shortcode.
+Refactor the metabox for the article settings.
+Add onClick() event for “Read more” link for lesson/reminder/post/page on daily progress dashboard.
+Pass article ID and other config information to e20r_article_summary shortcode.
+Avoid duplicate event handler actions in onClick() events for daily progress dashboard.

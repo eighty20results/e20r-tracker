@@ -1350,6 +1350,7 @@ class e20rArticle extends e20rSettings
         global $e20rTracker;
 
         global $currentProgram;
+        global $currentArticle;
 
         global $current_user;
         global $post;
@@ -1357,47 +1358,52 @@ class e20rArticle extends e20rSettings
         $html = null;
         $article = null;
 
+        dbg( $_REQUEST );
+
         if (!is_user_logged_in()) {
 
             auth_redirect();
             wp_die();
         }
 
-        dbg("e20rArticle::shortcode_article_summary() - Loading article summary shortcode");
+        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+        dbg("e20rArticle::shortcode_article_summary() - Received valid Nonce");
 
-        $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
-        $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+        $article_id = isset( $_REQUEST['article-id'] ) ? $e20rTracker->sanitize( $_REQUEST['article-id'] ) : null;
+        $for_date = isset( $_REQUEST['article-id'] ) ? $e20rTracker->sanitize( $_REQUEST['for-date'] ) : null;
+        $program_id = isset( $_REQUEST['program-id'] ) ? $e20rTracker->sanitize( $_REQUEST['program-id'] ) : null;
 
-        $articles = $this->model->find( 'post_id', $post->ID, 'numeric', $program_id);
+        if ( is_null( $article_id ) ) {
 
-        dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) for with post ID {$post->ID}");
-        dbg($articles);
-
-        foreach ($articles as $a) {
-
-            if ( ( 1 == count( $articles ) ) && ( $days_since_start <= $a->release_day) ) {
-
-                dbg("e20rArticle::shortcode_article_summary() - Using article # {$a->id} for post id (from article def): {$a->post_id} and release day: {$a->release_day}");
-                $article = $a;
-            }
-            elseif ( $days_since_start >= $a->release_day ) {
-                dbg("e20rArticle::shortcode_article_summary() - Using article # {$a->id} for post id (from article def): {$a->post_id} with release day: {$a->release_day}");
-                $article = $a;
-            }
+            dbg("e20rArticle::shortcode_article_summary() - No article ID specified by calling post/page. Not displaying anything");
+            return;
         }
 
-        if (!empty($article)) {
+        dbg("e20rArticle::shortcode_article_summary() - Loading article summary shortcode for: {$article_id}");
+
+        // $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
+        $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+
+        $articles = $this->model->find( 'id', $article_id, 'numeric', $program_id);
+        dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) for with post ID {$post->ID}");
+
+        $article = array_pop( $articles );
+
+        if ( !isset( $article->id ) ) {
+
             dbg("e20rArticle::shortcode_article_summary() - Configure article settings (not needed?) ");
             $this->init( $article->id );
         }
 
-        $days_of_summaries = $this->model->getSetting( $article->id, 'max_summaries');
+        $defaults = $this->model->defaultSettings();
+
+        $days_of_summaries = ( is_null( $article->max_summaries ) ? $defaults->max_summaries : $article->max_summaries );
 
         $tmp = shortcode_atts(array(
             'days' => $days_of_summaries,
         ), $attributes);
 
-        dbg("e20rArticle::shortcode_article_summary() - Article # {$article->id} needs to locate {$days_of_summaries} worth of articles to pull summaries from");
+        dbg("e20rArticle::shortcode_article_summary() - Article # {$article->id} needs to locate {$days_of_summaries} days worth of articles to pull summaries from");
         $start_day = ( $article->release_day - $days_of_summaries);
         $start_TS = strtotime("{$currentProgram->startdate} +{$start_day} days");
         $end_TS = strtotime("{$currentProgram->startdate} +{$article->release_day} days");
@@ -1472,9 +1478,20 @@ class e20rArticle extends e20rSettings
         dbg("e20rArticle::shortcode_article_summary() - Original prefix of {$article->prefix}");
         $prefix = lcfirst( preg_replace('/\[|\]/', '', $article->prefix ) );
         dbg("e20rArticle::shortcode_article_summary() - Scrubbed prefix: {$prefix}");
+
         dbg($summary);
 
-        $html = $this->view->view_article_history( $prefix, $summary, $start_TS, $end_TS);
+        $summary_post = get_post( $article->id );
+        $info = null;
+
+        wp_reset_postdata();
+
+        if (!empty( $summary_post->post_content ) ) {
+
+            $info = wpautop( $summary_post->post_content_filtered );
+        }
+
+        $html = $this->view->view_article_history( $prefix, $summary, $start_TS, $end_TS, $info );
 
         return $html;
     }

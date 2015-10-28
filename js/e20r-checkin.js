@@ -37,6 +37,7 @@ jQuery(document).ready(function() {
             this.$tomorrowBtn = this.$progressNav.find("#e20r-checkin-tomorrow-lnk");
             this.$yesterdayBtn = this.$progressNav.find("#e20r-checkin-yesterday-lnk");
             this.$activityLnk = jQuery("#e20r-checkin-activity").find("#e20r-activity-read-lnk");
+            self.$actionLnk = jQuery("#e20r-checkin-lesson").find("#e20r-action-read-lnk");
             this.$allowActivityOverride = false;
 
             var me = this;
@@ -48,6 +49,7 @@ jQuery(document).ready(function() {
             self.$tomorrowBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
             self.$yesterdayBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
             self.$activityLnk = self.$header_tag.find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk");
+            self.$actionLnk = self.$header_tag.find("td#e20r-checkin-lesson").find("#e20r-action-read-lnk");
 
             self.$header_tag.find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').on('click', function(){
 
@@ -61,7 +63,7 @@ jQuery(document).ready(function() {
 
             self.showBtn( self );
 
-            jQuery(self.$tomorrowBtn).on('click', function() {
+            jQuery(self.$tomorrowBtn).unbind().on('click', function() {
 
                 jQuery("body").addClass("loading");
 
@@ -70,7 +72,7 @@ jQuery(document).ready(function() {
 
             });
 
-            jQuery(self.$yesterdayBtn).on('click', function() {
+            jQuery(self.$yesterdayBtn).unbind().on('click', function() {
 
                 jQuery("body").addClass("loading");
 
@@ -79,7 +81,7 @@ jQuery(document).ready(function() {
 
             });
 
-            jQuery(self.$activityLnk).on("click", function() {
+            jQuery(self.$activityLnk).unbind().on("click", function() {
 
                 console.log("Clicked the 'Read more' link");
 
@@ -88,6 +90,17 @@ jQuery(document).ready(function() {
 
                 self.toActivity( self );
             });
+
+            jQuery(self.$actionLnk).unbind().on("click", function() {
+
+                console.log("Clicked the 'Read more' link for the action");
+
+                jQuery("body").addClass("loading");
+                event.preventDefault();
+
+                self.toAction( this, self );
+            });
+
         },
         showBtn: function( self ) {
 
@@ -399,6 +412,26 @@ jQuery(document).ready(function() {
 
             $body.removeClass("loading");
             */
+        },
+        toAction: function( elem, self ) {
+
+            console.log("Clicked the 'Read more' link for the action");
+            // jQuery('body').addClass("loading");
+
+            var $action_link = jQuery( elem );
+
+            console.log("Link for action link: ", $action_link.attr('href') );
+
+            var data = {
+                'e20r-checkin-nonce': self.$nonce,
+                'for-date': self.$checkinDate,
+                'article-id': self.$checkinArticleId,
+                'program-id': self.$checkinProgramId,
+            };
+
+            console.log("Data to possibly send to action page: ", data );
+
+            jQuery.redirect( $action_link.attr('href'), data );
         },
         toActivity: function( self ) {
 

@@ -266,6 +266,7 @@ class e20rTracker {
                     dbg("e20rTracker::loadAllHooks() - Loaded filter to change the upload directory for Nourish clients");
 
                     dbg("e20rTracker::loadAllHooks() - Control Access to media uploader for e20rTracker users");
+
                     /* Control access to the media uploader for Nourish users */
                     add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
                     add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
@@ -358,7 +359,7 @@ class e20rTracker {
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
-	        // add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
 
             add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
@@ -1992,7 +1993,7 @@ class e20rTracker {
             }
 
             dbg("e20rTracker::has_summary_shortcode() - Load CSS for weekly summary post");
-            $this->load_frontend_scripts('article_summary');
+            $this->load_frontend_scripts( 'article_summary' );
         }
     }
 
@@ -2393,7 +2394,7 @@ class e20rTracker {
 
             switch ( $event ) {
 
-/*                case 'article_summary':
+                case 'article_summary':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the article summary page.");
 
@@ -2406,7 +2407,7 @@ class e20rTracker {
                     // $prereqs = array();
 
                     break;
-*/
+
                 case 'client_overview':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");
@@ -3548,7 +3549,7 @@ class e20rTracker {
                    // 'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title', 'excerpt'),
+                   'supports' => array('title', 'excerpt', 'editor' ),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',

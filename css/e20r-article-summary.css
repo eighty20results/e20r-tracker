@@ -5,3 +5,18 @@ div.e20r-article-post-summary-tile {
     margin-left: 10%;
     margin-right: auto;
 }
+p.e20r-article-post-summary-text {
+    margin-left: 20px;
+    padding: 5px;
+    margin-bottom: 0;
+    list-style: disc outside none;
+    display: list-item;
+}
+p.e20r-article-post-summary-about {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+p.e20r-article-post-summary-dates {
+     font-size: 0.8rem;
+     font-style: italic;
+ }

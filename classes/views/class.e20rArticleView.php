@@ -47,7 +47,7 @@ class e20rArticleView extends e20rSettingsView {
 		return $html;
 	}
 
-    public function view_article_history( $type, $articles, $start, $end ) {
+    public function view_article_history( $type, $articles, $start, $end, $article_summary = null ) {
 
         global $currentProgram;
 
@@ -57,16 +57,18 @@ class e20rArticleView extends e20rSettingsView {
         ob_start(); ?>
         <div class="e20r-article-post-summary">
             <h2 class="e20r-article-post-summary-heading"><?php echo sprintf( __("%s summary", "e20rtracker"), esc_attr( ucfirst($type) ) ); ?></h2>
-            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between: %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p><?php
-
+            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between: %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p>
+            <?php if ( !empty( $article_summary ) ) {?>
+            <div class="e20r-article-post-summary-info"><?php echo esc_html( $article_summary); ?></div><?php
+            }
             foreach( $articles as $article ) {
                 $days = $article['day'] - 1;
                 $timestamp = strtotime("{$currentProgram->startdate} +{$days} days");
                 $day_name = date('l', $timestamp);
             ?>
             <div class="e20r-article-post-summary-tile">
-                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s your %s was titled '%s', and it was about:", "e20rtracker" ), $day_name, $type, $article['title']); ?></p>
-                <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ); ?></p>
+                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed how...", "e20rtracker" ), $day_name, $type, $article['title'] ); ?></p>
+                <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ) ; ?></p>
             </div><?php
             } ?>
         </div><?php
@@ -74,6 +76,7 @@ class e20rArticleView extends e20rSettingsView {
 
         return $html;
     }
+
     public function add_popup_overlay( $clientId, $popup_text ) {
 
         dbg("e20rArticleView::add_popup_overlay() - Loading pop-up for {$clientId}");
