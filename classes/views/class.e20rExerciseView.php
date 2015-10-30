@@ -94,8 +94,7 @@ class e20rExerciseView
                 </div>
             </div>
             <div class="spacer">&nbsp;</div>
-            <div
-                class="e20r-exercise-table-body<?php echo($show == true ? " show" : " startHidden"); ?> e20r-exercise-detail-row-2 clearfix">
+            <div class="e20r-exercise-table-body<?php echo($show == true ? " show" : " startHidden"); ?> e20r-exercise-detail-row-2 clearfix">
                 <div class="e20r-exercise-table-column first-column e20r-exercise-reps">
                     <p class="e20r-exercise-description">
                         <span
@@ -138,7 +137,7 @@ class e20rExerciseView
     }
 
     // Display the exercise entry for an activity page
-    public function view_exercise_as_row($show = true)
+    public function view_exercise_as_row($show = true, $show_reps = false )
     {
 
         global $currentExercise;
