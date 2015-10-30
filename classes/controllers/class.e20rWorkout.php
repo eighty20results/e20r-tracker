@@ -769,13 +769,13 @@ class e20rWorkout extends e20rSettings {
 
             /*            if ( false !== $articles ) {
 
-                            dbg("e20rWorkout::shortcode_activity() - Found the article ID {$articleId} based on the delay value: {$config->delay}" );
+                            dbg("e20rWorkout::prepare_activity() - Found the article ID {$articleId} based on the delay value: {$config->delay}" );
                             $articles = $e20rArticle->findArticles( 'id', $articleId, 'numeric', $config->programId, 'IN' );
                         }
             */
         }
 
-        // dbg("e20rWorkout::shortcode_activity() - (Hopefully located) article: ");
+        // dbg("e20rWorkout::prepare_activity() - (Hopefully located) article: ");
         // dbg($article);
 
 
@@ -823,6 +823,7 @@ class e20rWorkout extends e20rSettings {
                 }
             }
         }
+
 
         $config->articleId = $currentArticle->id;
         $recorded = array();
@@ -884,7 +885,7 @@ class e20rWorkout extends e20rSettings {
      * For the e20r_activity_archive shortcode.
      *
      * @param null $attributes
-     *
+     * @return html
      * @since 0.8.0
      */
     public function shortcode_act_archive( $attributes = null ) {
@@ -904,11 +905,13 @@ class e20rWorkout extends e20rSettings {
         $config->programId = $currentProgram->id;
         $config->expanded = false;
         $config->show_tracking = 0;
+        $config->phase = 0;
 
         $workoutData = array();
 
         $tmp = shortcode_atts( array(
             'period' => 'current',
+            'print_only' => null,
         ), $attributes );
 
         foreach ( $tmp as $key => $val ) {
@@ -916,6 +919,18 @@ class e20rWorkout extends e20rSettings {
             if ( !empty( $val ) ) {
                 $config->{$key} = $val;
             }
+        }
+
+        // Valid "false" responses for print_only atribute can include: array( 'no', 'false', 'null', '0', 0, false, null );
+        $true_responses = array( 'yes', 'true', '1', 1, true );
+
+        if ( in_array( $config->print_only, $true_responses ) ) {
+            dbg("e20rWorkout::shortcode_act_archive() - User requested the archive be printed (i.e. include all unique exercises for the week)");
+            $config->print_only = true;
+        }
+        else {
+            dbg("e20rWorkout::shortcode_act_archive() - User did NOT request the archive be printed");
+            $config->print_only = false;
         }
 
         if ( 'current' == $config->period ) {
@@ -934,6 +949,55 @@ class e20rWorkout extends e20rSettings {
 
         $activities = $this->getActivityArchive( $current_user->ID, $currentProgram->id, $period );
 
+        dbg("e20rWorkout::shortcode_act_archive() - Check whether we're generating the list of exercises for print only: " . ( $config->print_only ? 'Yes' : 'No') );
+
+        if ( true === $config->print_only ) {
+
+            $exercises = array(); // '$exercise_id' => $exercise_definition
+            dbg("e20rWorkout::shortcode_act_archive() - User requested this activity archive be printed. Listing unique exercises.");
+            // dbg( $activities );
+            $printable = array();
+            $already_processed = array();
+
+            foreach( $activities as $key => $workout ) {
+
+                if ( 'header' !== $key && (!in_array( $workout->id, $already_processed ) ) ) {
+
+                    $routine = new stdClass();
+
+                    if ( ( 0 == $config->phase ) || ( $config->phase < $workout->phase ) ) {
+
+                        $routine->phase = $workout->phase;
+                        dbg("e20rWorkout::shortcode_act_archive() - Setting phase number for the archive: {$config->phase}.");
+                    }
+
+                    $routine->id = $workout->id;
+                    $routine->name = $workout->title;
+                    $routine->description = $workout->excerpt;
+                    $routine->started = $workout->startdate;
+                    $routine->ends = $workout->enddate;
+                    $routine->days = $workout->days;
+
+                    $list = array();
+
+                    foreach ( $workout->groups as $grp ) {
+
+                        dbg("e20rWorkout::shortcode_act_archive() - Adding " . count( $grp->exercises ) . " to list of exercises for routine # {$routine->id}");
+                        $list = array_merge( $list, $grp->exercises );
+                    }
+
+                    $routine->exercises = array_unique( $list, SORT_NUMERIC );
+
+                    dbg("e20rWorkout::shortcode_act_archive() - Total number of exercises for  routine #{$routine->id}: " . count( $routine->exercises ) );
+                    $already_processed[] = $routine->id;
+                    $printable[] = $routine;
+                }
+            }
+
+            dbg( "e20rWorkout::shortcode_act_archive() - Will display " . count( $printable ) . " workouts and their respective exercises for print");
+            return $this->view->display_printable_list( $printable, $config );
+        }
+
         dbg("e20rWorkout::shortcode_act_archive() - Grabbed activity count: " . count( $activities ) );
 
         echo $this->view->displayArchive( $activities, $config );
@@ -949,7 +1013,7 @@ class e20rWorkout extends e20rSettings {
 			auth_redirect();
 		}
 
-		global $e20rArticle;
+/*		global $e20rArticle;
 		global $e20rProgram;
 		global $e20rTracker;
 
@@ -957,15 +1021,19 @@ class e20rWorkout extends e20rSettings {
 		global $currentArticle;
         global $currentProgram;
 		global $post;
-
-		$config = new stdClass();
 		$workoutData = array();
         $activity_override = false;
+*/
+
+		$config = new stdClass();
         $config->show_tracking = 1;
+        $config->display_type = 'row';
+        $config->print_only = false;
 
 		$tmp = shortcode_atts( array(
 			'activity_id' => null,
             'show_tracking' => 1,
+            'display_type' => 'row', // Valid types: 'row', 'column', 'print'
 		), $attributes );
 
         // dbg( $tmp );
@@ -987,7 +1055,18 @@ class e20rWorkout extends e20rSettings {
             }
 		}
 
-        echo $this->prepare_activity( $config );
+        if ( !in_array( $config->display_type, array( 'row', 'column', 'print' ) ) ) {
+
+            dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
+            return '<div class="error">Incorrect display_type specified in the e20r_activity shortcode!</div>';
+        }
+
+        if ( 'print' === $config->display_type ) {
+
+            $config->print_only = true;
+        }
+
+        echo $this->prepare_activity($config);
 	}
 
     public function getMemberGroups() {
