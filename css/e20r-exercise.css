@@ -119,7 +119,7 @@ div.play-button { height: 72px; width: 72px; left: 50%; top: 50%; margin-left: -
 @media print {
     body { background:white; color:black; margin:0 }
     p { margin: 0; padding: 0; }
-    .site-container { width: 7.5in; height: 10.5in; }
+    .site-container { width: 7.5in !important; height: 10.5in !important; }
     .site-inner { width: 100%; height: 100%; padding: 0; margin: 0; }
     .site-header { display: none; }
     .entry-header { display: none; }
@@ -140,10 +140,6 @@ div.play-button { height: 72px; width: 72px; left: 50%; top: 50%; margin-left: -
     div.youtube-player { width: 223px; }
     div.e20r-exercise-table { border: none; background-color: transparent; }
     div.e20r-exercise-description { margin: 0; padding: 0; }
-    .e20r-page {
-        width: 7.5in !important;
-        height: 10in !important;
-    }
     img.youtube-thumb {
         width: 223px !important;
     }
