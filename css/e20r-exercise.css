@@ -116,48 +116,6 @@ div.exercise-header {
 img.youtube-thumb { bottom: 0; display: block; left: 0; margin: auto; max-width: 100%; width: 100%; position: absolute; right: 0; top: 0; height: auto }
 div.play-button { height: 72px; width: 72px; left: 50%; top: 50%; margin-left: -36px; margin-top: -36px; position: absolute; background: url("http://i.imgur.com/TxzC70f.png") no-repeat; }
 #youtube-iframe { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-@media print {
-    body { background:white; color:black; margin:0 }
-    p { margin: 0; padding: 0; }
-    .site-container { width: 7.5in !important; height: 10.5in !important; }
-    .site-inner { width: 100%; height: 100%; padding: 0; margin: 0; }
-    .site-header { display: none; }
-    .entry-header { display: none; }
-    .entry-content { border: none; }
-    .entry-meta { display: none; }
-    .title-area { display: none; }
-    .after-entry { display: none; }
-    .footer-widgets { display: none; }
-    .site-footer { display: none; }
-    #content { }
-    #comments { display: none; }
-    #sidebar { display: none; }
-    .entry-footer { display: none; }
-    .breadcrumb { display: none; }
-    div.play-button { display: none; }
-    div.e20r-exercise-video { width: 223px; overflow: visible; }
-    div.e20r-youtube-container { width: 223px; }
-    div.youtube-player { width: 223px; }
-    div.e20r-exercise-table { border: none; background-color: transparent; }
-    div.e20r-exercise-description { margin: 0; padding: 0; }
-    img.youtube-thumb {
-        width: 223px !important;
-    }
-    div.first-column.e20r-exercise-video-column {
-        width: 223px !important;
-        flex: none !important;
-    }
-    div.second-column {
-        float: right;
-        text-align: left;
-    }
-    div.second-column.e20r-exercise-description {
-        border: none !important;
-    }
-    div.e20r-exercise-detail-row-3 {
-        border-bottom: 3px solid #c5c5c5;
-    }
-}
 div.first-column {
     float: left;
     /* text-align: right; */
