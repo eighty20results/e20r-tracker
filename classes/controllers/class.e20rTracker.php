@@ -2379,8 +2379,9 @@ class e20rTracker {
         dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
         foreach( $events as $event ) {
 
-            $css_list = array( 'e20r-tracker', 'e20r-tracker-activity' );
+            $css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
+                "e20r-print" => E20R_PLUGINS_URL . '/css/print.min.css',
                 "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.min.css',
                 "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css',
             );
@@ -2523,6 +2524,11 @@ class e20rTracker {
                 case 'exercise':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'exercise' shortcode");
+                    $css = array_replace( $css, array(
+                                'e20r-exercise' => E20R_PLUGINS_URL . "/css/e20r-exercise.min.css",
+                            )
+                        );
+
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
@@ -2544,6 +2550,9 @@ class e20rTracker {
                             'e20r_exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
                         )
                     ) );
+
+                    $script = 'e20r_exercise';
+                    $id = 'e20r_exercise';
 
                     break;
 
@@ -2568,8 +2577,8 @@ class e20rTracker {
                             'jquery-ui-core' => array( 'jquery' ),
                             'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
                             'fitvids' => array( 'jquery' ),
-                            'e20r.tracker' => array( 'jquery', 'fitvids' ),
-                            'e20r.exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
+                            'e20r_tracker' => array( 'jquery', 'fitvids' ),
+                            'e20r_exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
                         )
                     ) );
 
