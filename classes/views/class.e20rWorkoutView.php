@@ -18,6 +18,92 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+	public function display_printable_list( $activities, $config ) {
+
+		global $e20rExercise;
+		global $e20rTracker;
+
+		global $currentProgram;
+
+		if ( ! is_user_logged_in() ) {
+			auth_redirect();
+		}
+
+		ob_start(); ?>
+		<div class="e20r-activity-overview-printable">
+			<h1 class="e20r-activity-overview-h1"><?php _e("Activity summary for", "e20rtracker"); ?></h1>
+			<h2 class="e20r-activity-overview-h2"><?php echo esc_html( $currentProgram->title ); ?></h2>
+			<hr/><?php
+
+			if ( empty( $activities ) && ( 'upcoming' == $config->period ) ) { ?>
+				<div class="red-notice">
+				<h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date( 'l', current_time('timestamp') ) ); ?></h3>
+				<p><?php
+					$currentDate = date('Y-m-d', current_time( 'timestamp', true ) );
+					$sat = date( 'jS', strtotime( "next saturday {$currentDate} " ) );
+					$sun = date( 'jS', strtotime( "next sunday {$currentDate}" ) );
+
+					echo sprintf( __( "Sorry, we're not quite ready to share the activities for next week.<br/>Please come back on Saturday the %s, or Sunday the %s.", "e20rtracker" ), $sat, $sun ); ?></p>
+				</div><?php
+			}
+			elseif ( empty( $activities ) ) { ?>
+				<div class="red-notice">
+					<h3><?php _e( "Unexpected error!", "e20rtracker" ); ?></h3>
+					<p><?php
+
+						dbg("e20rWorkoutView::display_printable_list() - Period setting: {$config->period}");
+
+						if ( 'current' == $config->period ) {
+							$period = 'current week';
+						}
+						elseif ( 'previous' == $config->period ) {
+							$period = 'prior week';
+						}
+
+						echo sprintf( __( 'Sorry, there are no activities to found for the %s.<br/>Please report this error to the <a href="mailto:%s">webmaster</a>', "e20rtracker" ), $period, get_bloginfo('admin_email') ); ?>
+					</p>
+				</div><?php
+			}
+
+			foreach( $activities as $id => $activity_summary ) {
+
+				$day_list = array();
+
+				foreach( $activity_summary->days as $day ) {
+
+					$day_list[] = $e20rTracker->displayWeekdayName( $day );
+				}
+
+				?>
+				<div class="e20r-activity-summary-table">
+					<h3 class="e20r-activity-summary-routine-start"><?php echo esc_html( $activity_summary->name ); ?></h3>
+					<p class="e20r-activity-summary-routine-paragraph"><?php
+
+					if ( isset( $config->phase ) ) {
+						echo sprintf( __("Activity description for phase %s of this program.", "e20rtracker"), $config->phase );
+					}
+					?></p>
+					<div class="e20r-activity-summary-printable-row e20r-activity-summary-headline">
+						<?php echo sprintf( __("Starting on %s and until %s, this is the activity on %s."), date( 'F j', strtotime( $activity_summary->started ) ) , date('F j', strtotime( $activity_summary->ends ) ), join(", ", $day_list) ); ?>
+					</div>
+					<div class="e20r-activity-summary-printable-row e20r-activity-summary-description">
+						<?php echo wpautop( $activity_summary->description ); ?>
+					</div><?php
+					foreach( $activity_summary->exercises as $id ) { ?>
+					<div class="e20r-activity-summary-printable-row e20r-activity-summary-exercise"><?php
+						$e20rExercise->set_currentExercise( $id );
+						echo $e20rExercise->print_exercise( false, 'new' ); ?>
+					</div><?php
+					} ?>
+				</div>
+				<?php
+			} ?>
+		</div><?php
+		$html = ob_get_clean();
+		return $html;
+
+	}
+
     public function viewExerciseProgress( $activities = null, $error = null, $userId = null, $dimensions = null) {
 
         global $currentProgram;
@@ -176,7 +262,7 @@ class e20rWorkoutView extends e20rSettingsView {
         dbg("e20rWorkoutView::displayArchive() - Check whether the archive is empty");
         dbg( "e20rWorkoutView::displayArchive() - # of entries in archive: " . count( $activityList ) );
 
-        if ( empty( $activityList ) ) { ?>
+        if ( empty( $activityList ) && ( 'upcoming' == $config->period ) ) { ?>
             <div class="red-notice">
                 <h3><?php printf ( __( "Today is %s, so...", "e20rtracker" ), date( 'l', current_time('timestamp') ) ); ?></h3>
                 <p><?php
@@ -184,9 +270,17 @@ class e20rWorkoutView extends e20rSettingsView {
 					$sat = date( 'jS', strtotime( "next saturday {$currentDate} " ) );
 					$sun = date( 'jS', strtotime( "next sunday {$currentDate}" ) );
 
-					echo sprintf( __( "Sorry, we're not quite ready to share the activities for next week.<br/>Please come back on Saturday the %s, or Sunday the %s.", "e20rtracker" ), $sat, $sun, $month ); ?></p>
+					echo sprintf( __( "Sorry, we're not quite ready to share the activities for next week.<br/>Please come back on Saturday the %s, or Sunday the %s.", "e20rtracker" ), $sat, $sun ); ?></p>
             </div><?php
         }
+		elseif ( empty( $activityList ) ) { ?>
+            <div class="red-notice">
+                <h3><?php _e( "Unexpected error!", "e20rtracker" ); ?></h3>
+                <p><?php
+					$period = ( 'current' == $config->period ? 'current week' : 'prior week' );
+					echo sprintf( __( 'Sorry, there are no activities to found for the %s.<br/>Please report this error to the <a href="mailto:%s">webmaster</a>', "e20rtracker" ), $period, get_bloginfo('admin_email') ); ?>
+            </div><?php
+		}
 
         dbg("e20rWorkoutView::displayArchive() - Iterating through list of activities.");
         foreach( $activityList as $day => $activity ) { ?>
