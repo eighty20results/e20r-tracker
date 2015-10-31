@@ -360,6 +360,7 @@ class e20rTracker {
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_gravityforms_shortcode' ) );
 
             add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
             add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
@@ -1857,6 +1858,23 @@ class e20rTracker {
 
 	}
 */
+
+    public function has_gravityforms_shortcode() {
+
+        global $post;
+
+        if ( ! isset( $post->ID ) ) {
+
+            dbg("e20rTracker::has_measurementprogress_shortcode() - No post ID present?");
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'gravityform' ) ) {
+
+            $this->load_frontend_scripts('defaults');
+        }
+    }
+
     public function has_measurementprogress_shortcode() {
 
         global $post;
@@ -2644,6 +2662,11 @@ class e20rTracker {
                     $script = 'e20r_checkin';
                     $id = 'e20r_checkin';
 
+                    break;
+
+                case 'default':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the standard formatting & gravity forms pages.");
                     break;
 
             }
