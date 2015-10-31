@@ -600,328 +600,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     border-right: 3px solid #004CFF;
     border-bottom: 3px solid #004CFF;
 }
-@media screen and ( max-width: 961px ) {
-    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
-        padding: 10px !important;
-    }
-    img.e20r-ribbon-small {
-        height: 40px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    h4.e20r-ribbon-small {
-        font-size: 1rem;
-        color: #555;
-        text-align: center;
-    }
-    div.column_1_3,
-    div.column_2_3,
-    div.column_3_3 {
-        width: 30%;
-        min-width: 100px;
-        font-size: 0.7rem;
-    }
-}
-@media (max-width:1040px) and (min-width:380px) {
-    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
-        padding: 10px !important;
-    }
-    .large-viewport { display: none; }
-    .small-viewport { display: block; }
-    div.e20r-achievement-row,
-    div.e20r-achievement-row-header {
-        width: 230px;
-    }
-    .other {
-        padding: 20px 10px 10px 10px;
-    }
-}
-@media screen and (max-width: 640px ) {
-    a[id^="ui-id-"] {
-        font-size: 1.0rem;
-    }
-}
 /** The actual weekly progress measurement page container **/
-@media screen and (max-width: 533px) {
-    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
-        padding: 5px !important;
-    }
-    div.column_1_3,
-    div.column_2_3,
-    div.column_3_3 {
-        width: 100%;
-        min-width: 100px;
-        font-size: 0.7rem;
-        margin-left: 0;
-    }
-    .large-viewport {
-        display: none;
-    }
-    .small-viewport {
-        display: block;
-    }
-    #colorbox #cboxClose {
-        top: 0;
-        right: 5px;
-        padding: 0;
-        margin: 35px 5px 0 5px;
-        border: 1px solid #fff;
-        box-shadow: none;
-        position: absolute;
-        width: 50px;
-        height: auto;
-        /* border-radius: 50%; */
-        font-size: 10px;
-        color: #fff;
-    }
-    #cboxLoadedContent {
-        margin-top:28px;
-        margin-bottom:0;
-    }
-    .colorbox-guide-container {
-        background-color: #fdfdfd;
-        /* border: 3px solid #C5C5C5; */
-    }
-    .colorbox-guide-container h3 {
-        -moz-border-radius-topleft: 6px;
-        -moz-border-radius-topright: 6px;
-        -webkit-border-top-left-radius: 6px;
-        -webkit-border-top-right-radius: 6px;
-        padding: 0 16px;
-        padding-bottom: 0;
-        font-size: 14px;
-        height: 25px;
-        line-height: 26px;
-        color: #FFF;
-        background: #004CFF;
-        border-bottom: 1px solid #cccccc;
-    }
-    /* .colorbox-guide-container table.e20r-help-items {
-        background-color: #FFF;
-    }*/
-    .colorbox-guide-container table.e20r-help-items { clear: both; }
-    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
-    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
-    .colorbox-guide-container table.e20r-help-items td {
-        vertical-align: top;
-        padding: 4px;
-        padding-bottom: 22px;
-        border-bottom: 1px solid #e1e4e5;
-        padding-top: 22px;
-    }
-    .colorbox-guide-container table li {
-        padding-bottom: 20px;
-        padding-left: 10px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content {
-        vertical-align: top;
-        padding-left: 16px;
-        font-size: 14px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content h4 {
-        color: #004C00;
-        font-variant: small-caps;
-        font-size: 18px;
-        margin-bottom: 4px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
-    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
-    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
-    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
-        width: 20px;
-        border-right: 1px solid #d1b8b6;
-        text-align: center;
-        color: #4b4a4a;
-        padding-top: 2px;
-        font-size: 30px;
-        line-height: 32px;
-    }
-    .colorbox-guide-container .close { float: right; }
-    .site-inner {
-        padding-left: 0;
-        padding-right: 0;
-    }
-    h1.entry-title {
-        font-size: 23px !important;
-    }
-    #birth-date {
-        font-size: 0.85rem;
-    }
-    #birth-date select#bdmonth {
-        width: 80px;
-        font-size: 0.8rem;
-    }
-    #birth-date select#bdday {
-        width: 40px;
-        font-size: 0.8rem;
-    }
-    #birth-date select#bdyear {
-        width: 60px;
-        font-size: 0.8rem;
-    }
-    #saturday-progress-container #e20r-progress-canvas {
-        float: none;
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
-        background: #FFF;
-        min-height: 300px;
-        padding: 4px;
-    }
-    #saturday-progress-container.progress-container {
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
-        border-radius: 6px;
-        background: rgba( 0, 76, 255, 0.95 );
-        border: 1px solid rgb( 0, 76, 255);
-        padding: 14px;
-        /* max-width: 95%; */
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    #saturday-progress-container.progress-container table.e20r-progress-form {
-        width: 100%;
-    }
-    table.e20r-progress-form div.e20r-measurement-setting {
-        font-size: 80%;
-        padding-right: 20px;
-    }
-    table.e20r-progress-form div.e20r-measurement-setting > select {
-        font-size: 80%;
-        margin-top: 4px;
-    }
-    table.e20r-progress-form td.content {
-        padding-left: 16px;
-        width: 100%;
-    }
-    #saturday-progress-container .girth-row-container .girth-descript-container {
-        width: 100%;
-    }
-    #saturday-progress-container .girth-row-container .girth-descript-container.active {
-        width: 100%;
-    }
-    #saturday-progress-container .girth-image { display: none; }
-    #saturday-progress-container .girth-image.active { display: none; }
-    #saturday-progress-container.progress-container > h3 {
-        font-variant: small-caps;
-        color: #FFF !important;
-        font-size: 20px !important;
-        line-height: 50% !important;
-        font-weight: bold;
-        margin: 0 0 15px;
-    }
-    #saturday-progress-container.progress-container > h3 span {
-        font-size: 90%;
-        font-weight: normal;
-    }
-    table.e20r-progress-form textarea.e20r-note {
-        margin: 0;
-        width: 90%;
-        height: 122px;
-        border: 2px solid #C5C5C5;
-    }
-    #progress-questionnaire h5,
-    #progress-questionnaire li {
-        font-size: 90%;
-    }
-    table.e20r-progress-form .e20r-number-col {
-        width: 20px;
-        text-align: center;
-        padding-top: 8px;
-        line-height: 35px;
-        color: #666666;
-        font-size: 2.5em;
-        max-font-size: 58px;
-        min-font-size: 18px;
-    }
-    #saturday-progress-container legend {
-        float: left;
-        margin-bottom: 12px;
-        font-size: 100%;
-        font-variant: small-caps;
-        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
-        color: #004CFF;
-        margin-top: 2px;
-    }
-    #saturday-progress-container .help {
-        clear: left;
-        font-size: 85%;
-        line-height: 18px;
-        margin-bottom: 12px;
-        color: #000;
-    }
-    .weight-style {
-        width: 80px;
-        font-size: 14px;
-        text-align: center;
-    }
-    .girth-style {
-        width: 80px;
-        font-size: 14px;
-        text-align: center;
-    }
-    .measurement-saved-container {
-        width: 100%;
-    }
-    .measurement-field-container {
-        width: 100%;
-    }
-    .measurement-saved-container button.edit {
-        cursor: default;
-        line-height: normal;
-        font-size: 0.5rem;
-        float: left;
-        margin-left: 12px;
-        margin-bottom: 5px;
-    }
-    .measurement-field-container label {
-        -moz-border-radius: 3px;
-        -webkit-border-radius: 3px;
-        float: left;
-        display: block;
-        margin-left: 16px;
-        margin-bottom: 8px;
-        font-weight: bold;
-        padding: 0 2px;
-        font-size: 85%;
-        line-height: 12px;
-        background: #FFF;
-        margin-top: -5px;
-    }
-    .measurement-field-container span.unit {
-        float: left;
-        font-size: 90%;
-        margin: 8px;
-        color: #333;
-    }
-    div.e20r-tracker-bronze-badge,
-    div.e20r-tracker-no-badge { background: url('../img/bronze-badge.png') no-repeat center; }
-    div.e20r-tracker-silver-badge { background: url('../img/silver-badge.png') no-repeat center; }
-    div.e20r-tracker-gold-badge { background: url('../img/gold-badge.png') no-repeat center; }
-    div.e20r-tracker-no-badge,
-    div.e20r-tracker-bronze-badge,
-    div.e20r-tracker-silver-badge,
-    div.e20r-tracker-gold-badge {
-        height: 60px;
-        background-size: 50%;
-    }
-    div.e20r-achievement-header {
-        display: inherit;
-    }
-    div.e20r-activity-table,
-    div.e20r-assignment-table,
-    div.e20r-action-table {
-        /* height: 50px; */
-        font-size: 80%;
-    }
-    div.e20r-tracker-score {
-        white-space: nowrap;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
-        padding-bottom: 25px;
-    }
-}
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
     line-height: 1;
@@ -930,11 +609,9 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     float: left;
     width: 45%;
 }
-#saturday-progress-container.e20r-weekly-progress-reminder-text {
-    float: left;
-    width: 55%;
-}
 .e20r-weekly-progress-reminder-text {
+    float: left;
+    width: 45%;
     margin-left: 10px;
 }
 .e20r-weekly-progress-reminder-text h4 {
@@ -954,11 +631,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     font-weight: bold;
     margin-top: 16px;
     display: block;
-}
-@media screen and (max-width: 460px) {
-    a[id^="ui-id-"] {
-        font-size: 0.8rem;
-    }
+    color: #004CFF;
 }
 /*** TODO: Include or exclude Welcome banner? ****/
 #saturday-progress-container .welcome-initial { font-size: 16px; }
@@ -1042,246 +715,6 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     line-height: 1.5;
 }
 #saturday-progress-container .girth-row-container.active { padding-top: 6px; }
-@media screen and (min-width: 534px) {
-    #colorbox #cboxClose {
-        top: 0;
-        right: 15px;
-        padding: 0 5px 0 5px;
-        margin: 35px 5px 0 5px;
-        border: 1px solid #FFF;
-        box-shadow: none;
-        position: absolute;
-        width: auto;
-        height: auto;
-        /* border-radius: 50%; */
-        font-size: 20px;
-        color: #fff;
-    }
-    #cboxLoadedContent {
-        margin-top:28px;
-        margin-bottom:0;
-    }
-    .colorbox-guide-container {
-        background-color: #fdfdfd;
-        /* border: 3px solid #C5C5C5; */
-    }
-    .colorbox-guide-container h3 {
-        -moz-border-radius-topleft: 6px;
-        -moz-border-radius-topright: 6px;
-        -webkit-border-top-left-radius: 6px;
-        -webkit-border-top-right-radius: 6px;
-        padding: 0 16px;
-        padding-bottom: 0;
-        font-size: 22px;
-        height: 38px;
-        line-height: 40px;
-        color: #FFF;
-        background: #004CFF;
-        border-bottom: 1px solid #cccccc;
-    }
-    /* .colorbox-guide-container table.e20r-help-items {
-        background-color: #FFF;
-    }*/
-    .colorbox-guide-container table.e20r-help-items { clear: both; }
-    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
-    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
-    .colorbox-guide-container table.e20r-help-items td {
-        vertical-align: top;
-        padding: 4px;
-        padding-bottom: 22px;
-        border-bottom: 1px solid #e1e4e5;
-        padding-top: 22px;
-    }
-    .colorbox-guide-container table li {
-        padding-bottom: 20px;
-        padding-left: 10px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content {
-        vertical-align: top;
-        padding-left: 16px;
-        font-size: 14px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content h4 {
-        color: #004C00;
-        font-variant: small-caps;
-        font-size: 18px;
-        margin-bottom: 4px;
-    }
-    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
-    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
-    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
-    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
-        width: 62px;
-        border-right: 1px solid #d1b8b6;
-        text-align: center;
-        color: #4b4a4a;
-        padding-top: 4px;
-        font-size: 58px;
-        line-height: 50px;
-    }
-    .colorbox-guide-container .close { float: right; }
-    #birth-date {
-        font-size: 1rem;
-    }
-    #birth-date select#bdmonth {
-        width: 120px;
-        font-size: 1rem;
-    }
-    #birth-date select#bdday {
-        width: 70px;
-        font-size: 1rem;
-    }
-    #birth-date select#bdyear {
-        width: 80px;
-        font-size: 1rem;
-    }
-    #saturday-progress-container #e20r-progress-canvas {
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
-        background: #FFF;
-        min-height: 300px;
-        padding: 14px;
-    }
-    #saturday-progress-container.progress-container {
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
-        line-height: 1;
-        background: rgba( 0, 76, 255, 0.95 );
-        border: 1px solid rgb( 0, 76, 255);
-        padding: 14px;
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    table.e20r-progress-form td.content {
-        padding-left: 16px;
-        max-width: 100%;
-    }
-    table.e20r-progress-form div.e20r-measurement-setting > select {
-        font-size: 14px;
-        margin-top: 8px;
-    }
-    #saturday-progress-container .girth-row-container .girth-descript-container {
-        max-width: 362px;
-        width: 66%;
-        float: left;
-    }
-    table.e20r-progress-form textarea.e20r-note {
-        margin: 0;
-        width: 80%;
-        height: 100px;
-        border: 2px solid #C5C5C5;
-    }
-    #saturday-progress-container .girth-row-container .girth-descript-container.active {
-        width: 337px;
-    }
-    #saturday-progress-container .girth-image {
-        background-size: 61px 57px;
-        width: 60px;
-        height: 57px;
-        display: block;
-        border: 1px solid #0b3e56;
-        float: left;
-        margin-right: 8px;
-    }
-    .weight-style {
-        width: 120px;
-        font-size: 20px;
-        text-align: center;
-    }
-    .girth-style {
-        width: 120px;
-        font-size: 20px;
-        text-align: center;
-    }
-    #saturday-progress-container .girth-image.active {
-        background-size: 145px 138px;
-        width: 144px;
-        height: 137px;
-    }
-    #saturday-progress-container .girth-image.F { background-position: 60px 0; }
-    #saturday-progress-container .girth-image.active.F { background-position: 144px 0; }
-    table.e20r-progress-form .e20r-number-col {
-        width: 62px;
-        text-align: center;
-        padding-top: 8px;
-        line-height: 50px;
-        color: #666666;
-        font-size: 3.5em;
-        max-font-size: 58px;
-        min-font-size: 38px;
-    }
-    #saturday-progress-container.progress-container > h3 {
-        font-variant: small-caps;
-        color: #FFF !important;
-        font-size: 20px !important;
-        line-height: 50% !important;
-        font-weight: bold;
-        margin: 0 0 15px;
-    }
-    #saturday-progress-container.progress-container > h3 span {
-        font-size: 100%;
-        font-weight: normal;
-    }
-    #saturday-progress-container legend {
-        float: left;
-        margin-bottom: 12px;
-        font-size: 1.8rem;
-        font-variant: small-caps;
-        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
-        color: #004CFF;
-        margin-top: 2px;
-    }
-    #saturday-progress-container .help {
-        clear: left;
-        font-size: 14px;
-        line-height: 18px;
-        margin-bottom: 12px;
-        color: #000;
-    }
-    .measurement-field-container label {
-        -moz-border-radius: 3px;
-        -webkit-border-radius: 3px;
-        float: left;
-        display: block;
-        margin-left: 16px;
-        margin-bottom: 8px;
-        font-weight: bold;
-        padding: 0 2px;
-        font-size: 14px;
-        line-height: 12px;
-        background: #FFF;
-        margin-top: -5px;
-    }
-    .measurement-field-container span.unit {
-        float: left;
-        font-size: 16px;
-        margin: 8px;
-        color: #333;
-    }
-    /*** For the Achievements page ***/
-    div.e20r-tracker-bronze-badge {
-        background: url('../img/bronze-badge.png') no-repeat center;
-        height: 100px;
-    }
-    div.e20r-tracker-silver-badge {
-        background: url('../img/silver-badge.png') no-repeat center;
-        height: 100px;
-    }
-    div.e20r-tracker-gold-badge {
-        height: 100px;
-        background: url('../img/gold-badge.png') no-repeat center;
-    }
-    div.e20r-tracker-no-badge {
-        height: 100px;
-        background: url('../img/bronze-badge.png') no-repeat center;
-    }
-    div.e20r-activity-table,
-    div.e20r-assignment-table,
-    div.e20r-action-table {
-        height: 110px;
-    }
-}
 .measurement-field-container {
     -moz-border-radius: 3px;
     -webkit-border-right: 3px;
@@ -1997,79 +1430,6 @@ td.e20r-group-header {
     min-height: 300px;
     padding: 10px;
 }
-@media screen and (min-width: 961px) {
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
-        zoom: 1;
-        padding-bottom: 12px;
-        font-size: 13px !important;
-        text-transform: uppercase;
-        font-weight: bold;
-        font-family: "Lucida Grande", sans-serif;
-        color: rgba(0, 72, 0, 0.75);
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
-        max-width: 300px;
-        min-width: 235px;
-        width: 96%;
-        margin-bottom: 0;
-        margin-left: 0;
-        padding-left: 40px;
-        font-size: 0.7rem;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
-        width: 48%;
-        margin-right: 2%;
-        height: 184px;
-        font-size: 0.8rem;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
-        font-size: 0.8rem;
-        width: 48%;
-        height: 184px;
-    }
-}
-@media screen and (max-width: 960px) {
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
-        font-size: 0.8rem;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
-        max-width: 300px;
-        min-width: 96%;
-        width: 96%;
-        margin-bottom: 0;
-        margin-left: 0;
-        padding-left: 20px;
-        font-size: 0.7rem;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
-        zoom: 1;
-        padding-bottom: 12px;
-        text-transform: uppercase;
-        font-weight: normal;
-        font-family: "Lucida Grande", sans-serif;
-        color: rgba(0, 72, 0, 0.75);
-        /* font-weight: normal; */
-        font-size: 0.9rem !important;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
-        width: 100%;
-        margin-right: 2%;
-        height: 184px;
-        font-size: 0.8rem;
-        min-width: 260px;
-    }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
-        font-size: 0.8rem;
-        width: 100%;
-        height: 184px;
-        min-width: 260px;
-    }
-}
-
 .action-activity-row {
     /* display: inline-block; */
 }
@@ -3025,4 +2385,646 @@ a#overlaylaunch-inAbox {
 .e20r-popup-overlay .e20r-popup-toolbar a.close:hover span {
       background-color: #b90900;
       color: #fff;
+}
+@media screen and (max-width:1040px), screen and (min-width:380px) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 10px !important;
+    }
+    .large-viewport { display: none; }
+    .small-viewport { display: block; }
+    div.e20r-achievement-row,
+    div.e20r-achievement-row-header {
+        width: 230px;
+    }
+    .other {
+        padding: 20px 10px 10px 10px;
+    }
+}
+@media screen and (min-width: 961px) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 10px !important;
+    }
+    img.e20r-ribbon-small {
+        height: 40px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    h4.e20r-ribbon-small {
+        font-size: 1rem;
+        color: #555;
+        text-align: center;
+    }
+    div.column_1_3,
+    div.column_2_3,
+    div.column_3_3 {
+        width: 30%;
+        min-width: 100px;
+        font-size: 0.7rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+        zoom: 1;
+        padding-bottom: 12px;
+        font-size: 13px !important;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-family: "Lucida Grande", sans-serif;
+        color: rgba(0, 72, 0, 0.75);
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+        max-width: 300px;
+        min-width: 235px;
+        width: 96%;
+        margin-bottom: 0;
+        margin-left: 0;
+        padding-left: 40px;
+        font-size: 0.7rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        width: 48%;
+        margin-right: 2%;
+        height: 184px;
+        font-size: 0.8rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+        font-size: 0.8rem;
+        width: 48%;
+        height: 184px;
+    }
+}
+@media screen and (max-width: 960px) {
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
+        font-size: 0.8rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+        max-width: 300px;
+        min-width: 96%;
+        width: 96%;
+        margin-bottom: 0;
+        margin-left: 0;
+        padding-left: 20px;
+        font-size: 0.7rem;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+        zoom: 1;
+        padding-bottom: 12px;
+        text-transform: uppercase;
+        font-weight: normal;
+        font-family: "Lucida Grande", sans-serif;
+        color: rgba(0, 72, 0, 0.75);
+        /* font-weight: normal; */
+        font-size: 0.9rem !important;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        width: 100%;
+        margin-right: 2%;
+        height: 184px;
+        font-size: 0.8rem;
+        min-width: 260px;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+        font-size: 0.8rem;
+        width: 100%;
+        height: 184px;
+        min-width: 260px;
+    }
+}
+@media screen and (max-width: 640px) {
+    a[id^="ui-id-"] {
+        font-size: 1.0rem;
+    }
+}
+@media screen and (min-width: 534px) {
+    #colorbox #cboxClose {
+        top: 0;
+        right: 15px;
+        padding: 0 5px 0 5px;
+        margin: 35px 5px 0 5px;
+        border: 1px solid #FFF;
+        box-shadow: none;
+        position: absolute;
+        width: auto;
+        height: auto;
+        /* border-radius: 50%; */
+        font-size: 20px;
+        color: #fff;
+    }
+    #cboxLoadedContent {
+        margin-top:28px;
+        margin-bottom:0;
+    }
+    .colorbox-guide-container {
+        background-color: #fdfdfd;
+        /* border: 3px solid #C5C5C5; */
+    }
+    .colorbox-guide-container h3 {
+        -moz-border-radius-topleft: 6px;
+        -moz-border-radius-topright: 6px;
+        -webkit-border-top-left-radius: 6px;
+        -webkit-border-top-right-radius: 6px;
+        padding: 0 16px;
+        padding-bottom: 0;
+        font-size: 22px;
+        height: 38px;
+        line-height: 40px;
+        color: #FFF;
+        background: #004CFF;
+        border-bottom: 1px solid #cccccc;
+    }
+    /* .colorbox-guide-container table.e20r-help-items {
+        background-color: #FFF;
+    }*/
+    .colorbox-guide-container table.e20r-help-items { clear: both; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
+    .colorbox-guide-container table.e20r-help-items td {
+        vertical-align: top;
+        padding: 4px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e1e4e5;
+        padding-top: 22px;
+    }
+    .colorbox-guide-container table li {
+        padding-bottom: 20px;
+        padding-left: 10px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content {
+        vertical-align: top;
+        padding-left: 16px;
+        font-size: 14px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content h4 {
+        color: #004C00;
+        font-variant: small-caps;
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
+    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
+        width: 62px;
+        border-right: 1px solid #d1b8b6;
+        text-align: center;
+        color: #4b4a4a;
+        padding-top: 4px;
+        font-size: 58px;
+        line-height: 50px;
+    }
+    .colorbox-guide-container .close { float: right; }
+    #birth-date {
+        font-size: 1rem;
+    }
+    #birth-date select#bdmonth {
+        width: 120px;
+        font-size: 1rem;
+    }
+    #birth-date select#bdday {
+        width: 70px;
+        font-size: 1rem;
+    }
+    #birth-date select#bdyear {
+        width: 80px;
+        font-size: 1rem;
+    }
+    #saturday-progress-container #e20r-progress-canvas {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background: #FFF;
+        min-height: 300px;
+        padding: 14px;
+    }
+    #saturday-progress-container.progress-container {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        line-height: 1;
+        background: rgba( 0, 76, 255, 0.95 );
+        border: 1px solid rgb( 0, 76, 255);
+        padding: 14px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    table.e20r-progress-form td.content {
+        padding-left: 16px;
+        max-width: 100%;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting > select {
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container {
+        max-width: 362px;
+        width: 66%;
+        float: left;
+    }
+    table.e20r-progress-form textarea.e20r-note {
+        margin: 0;
+        width: 80%;
+        height: 100px;
+        border: 2px solid #C5C5C5;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container.active {
+        width: 337px;
+    }
+    #saturday-progress-container .girth-image {
+        background-size: 61px 57px;
+        width: 60px;
+        height: 57px;
+        display: block;
+        border: 1px solid #0b3e56;
+        float: left;
+        margin-right: 8px;
+    }
+    .weight-style {
+        width: 120px;
+        font-size: 20px;
+        text-align: center;
+    }
+    .girth-style {
+        width: 120px;
+        font-size: 20px;
+        text-align: center;
+    }
+    #saturday-progress-container .girth-image.active {
+        background-size: 145px 138px;
+        width: 144px;
+        height: 137px;
+    }
+    #saturday-progress-container .girth-image.F { background-position: 60px 0; }
+    #saturday-progress-container .girth-image.active.F { background-position: 144px 0; }
+    table.e20r-progress-form .e20r-number-col {
+        width: 62px;
+        text-align: center;
+        padding-top: 8px;
+        line-height: 50px;
+        color: #666666;
+        font-size: 3.5em;
+        max-font-size: 58px;
+        min-font-size: 38px;
+    }
+    #saturday-progress-container.progress-container > h3 {
+        font-variant: small-caps;
+        color: #FFF !important;
+        font-size: 20px !important;
+        line-height: 50% !important;
+        font-weight: bold;
+        margin: 0 0 15px;
+    }
+    #saturday-progress-container.progress-container > h3 span {
+        font-size: 100%;
+        font-weight: normal;
+    }
+    #saturday-progress-container legend {
+        float: left;
+        margin-bottom: 12px;
+        font-size: 1.8rem;
+        font-variant: small-caps;
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        color: #004CFF;
+        margin-top: 2px;
+    }
+    #saturday-progress-container .help {
+        clear: left;
+        font-size: 14px;
+        line-height: 18px;
+        margin-bottom: 12px;
+        color: #000;
+    }
+    .measurement-field-container label {
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        float: left;
+        display: block;
+        margin-left: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        padding: 0 2px;
+        font-size: 14px;
+        line-height: 12px;
+        background: #FFF;
+        margin-top: -5px;
+    }
+    .measurement-field-container span.unit {
+        float: left;
+        font-size: 16px;
+        margin: 8px;
+        color: #333;
+    }
+    /*** For the Achievements page ***/
+    div.e20r-tracker-bronze-badge {
+        background: url('../img/bronze-badge.png') no-repeat center;
+        height: 100px;
+    }
+    div.e20r-tracker-silver-badge {
+        background: url('../img/silver-badge.png') no-repeat center;
+        height: 100px;
+    }
+    div.e20r-tracker-gold-badge {
+        height: 100px;
+        background: url('../img/gold-badge.png') no-repeat center;
+    }
+    div.e20r-tracker-no-badge {
+        height: 100px;
+        background: url('../img/bronze-badge.png') no-repeat center;
+    }
+    div.e20r-activity-table,
+    div.e20r-assignment-table,
+    div.e20r-action-table {
+        height: 110px;
+    }
+}
+@media screen and (max-width: 533px) {
+    .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
+        padding: 5px !important;
+    }
+    div.column_1_3,
+    div.column_2_3,
+    div.column_3_3 {
+        width: 100%;
+        min-width: 100px;
+        font-size: 0.7rem;
+        margin-left: 0;
+    }
+    .large-viewport {
+        display: none;
+    }
+    .small-viewport {
+        display: block;
+    }
+    #colorbox #cboxClose {
+        top: 0;
+        right: 5px;
+        padding: 0;
+        margin: 35px 5px 0 5px;
+        border: 1px solid #fff;
+        box-shadow: none;
+        position: absolute;
+        width: 50px;
+        height: auto;
+        /* border-radius: 50%; */
+        font-size: 10px;
+        color: #fff;
+    }
+    #cboxLoadedContent {
+        margin-top:28px;
+        margin-bottom:0;
+    }
+    .colorbox-guide-container {
+        background-color: #fdfdfd;
+        /* border: 3px solid #C5C5C5; */
+    }
+    .colorbox-guide-container h3 {
+        -moz-border-radius-topleft: 6px;
+        -moz-border-radius-topright: 6px;
+        -webkit-border-top-left-radius: 6px;
+        -webkit-border-top-right-radius: 6px;
+        padding: 0 16px;
+        padding-bottom: 0;
+        font-size: 14px;
+        height: 25px;
+        line-height: 26px;
+        color: #FFF;
+        background: #004CFF;
+        border-bottom: 1px solid #cccccc;
+    }
+    /* .colorbox-guide-container table.e20r-help-items {
+        background-color: #FFF;
+    }*/
+    .colorbox-guide-container table.e20r-help-items { clear: both; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:first-child td { padding-top: 0; }
+    .colorbox-guide-container table.e20r-help-items tbody tr:last-child td { border-bottom: none; }
+    .colorbox-guide-container table.e20r-help-items td {
+        vertical-align: top;
+        padding: 4px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #e1e4e5;
+        padding-top: 22px;
+    }
+    .colorbox-guide-container table li {
+        padding-bottom: 20px;
+        padding-left: 10px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content {
+        vertical-align: top;
+        padding-left: 16px;
+        font-size: 14px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content h4 {
+        color: #004C00;
+        font-variant: small-caps;
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .colorbox-guide-container table.e20r-help-items td.content p { line-height: 20px; }
+    .colorbox-guide-container table.e20r-help-items td.content p:last-child { margin-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items tr:last-child td { padding-bottom: 0; }
+    .colorbox-guide-container table.e20r-help-items .e20r-number-col {
+        width: 20px;
+        border-right: 1px solid #d1b8b6;
+        text-align: center;
+        color: #4b4a4a;
+        padding-top: 2px;
+        font-size: 30px;
+        line-height: 32px;
+    }
+    .colorbox-guide-container .close { float: right; }
+    .site-inner {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    h1.entry-title {
+        font-size: 23px !important;
+    }
+    #birth-date {
+        font-size: 0.85rem;
+    }
+    #birth-date select#bdmonth {
+        width: 80px;
+        font-size: 0.8rem;
+    }
+    #birth-date select#bdday {
+        width: 40px;
+        font-size: 0.8rem;
+    }
+    #birth-date select#bdyear {
+        width: 60px;
+        font-size: 0.8rem;
+    }
+    #saturday-progress-container #e20r-progress-canvas {
+        float: none;
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background: #FFF;
+        min-height: 300px;
+        padding: 4px;
+    }
+    #saturday-progress-container.progress-container {
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        border-radius: 6px;
+        background: rgba( 0, 76, 255, 0.95 );
+        border: 1px solid rgb( 0, 76, 255);
+        padding: 14px;
+        /* max-width: 95%; */
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    #saturday-progress-container.progress-container table.e20r-progress-form {
+        width: 100%;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting {
+        font-size: 80%;
+        padding-right: 20px;
+    }
+    table.e20r-progress-form div.e20r-measurement-setting > select {
+        font-size: 80%;
+        margin-top: 4px;
+    }
+    table.e20r-progress-form td.content {
+        padding-left: 16px;
+        width: 100%;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container {
+        width: 100%;
+    }
+    #saturday-progress-container .girth-row-container .girth-descript-container.active {
+        width: 100%;
+    }
+    #saturday-progress-container .girth-image { display: none; }
+    #saturday-progress-container .girth-image.active { display: none; }
+    #saturday-progress-container.progress-container > h3 {
+        font-variant: small-caps;
+        color: #FFF !important;
+        font-size: 20px !important;
+        line-height: 50% !important;
+        font-weight: bold;
+        margin: 0 0 15px;
+    }
+    #saturday-progress-container.progress-container > h3 span {
+        font-size: 90%;
+        font-weight: normal;
+    }
+    table.e20r-progress-form textarea.e20r-note {
+        margin: 0;
+        width: 90%;
+        height: 122px;
+        border: 2px solid #C5C5C5;
+    }
+    #progress-questionnaire h5,
+    #progress-questionnaire li {
+        font-size: 90%;
+    }
+    table.e20r-progress-form .e20r-number-col {
+        width: 20px;
+        text-align: center;
+        padding-top: 8px;
+        line-height: 35px;
+        color: #666666;
+        font-size: 2.5em;
+        max-font-size: 58px;
+        min-font-size: 18px;
+    }
+    #saturday-progress-container legend {
+        float: left;
+        margin-bottom: 12px;
+        font-size: 100%;
+        font-variant: small-caps;
+        font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+        color: #004CFF;
+        margin-top: 2px;
+    }
+    #saturday-progress-container .help {
+        clear: left;
+        font-size: 85%;
+        line-height: 18px;
+        margin-bottom: 12px;
+        color: #000;
+    }
+    .weight-style {
+        width: 80px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .girth-style {
+        width: 80px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .measurement-saved-container {
+        width: 100%;
+    }
+    .measurement-field-container {
+        width: 100%;
+    }
+    .measurement-saved-container button.edit {
+        cursor: default;
+        line-height: normal;
+        font-size: 0.5rem;
+        float: left;
+        margin-left: 12px;
+        margin-bottom: 5px;
+    }
+    .measurement-field-container label {
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        float: left;
+        display: block;
+        margin-left: 16px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        padding: 0 2px;
+        font-size: 85%;
+        line-height: 12px;
+        background: #FFF;
+        margin-top: -5px;
+    }
+    .measurement-field-container span.unit {
+        float: left;
+        font-size: 90%;
+        margin: 8px;
+        color: #333;
+    }
+    div.e20r-tracker-bronze-badge,
+    div.e20r-tracker-no-badge { background: url('../img/bronze-badge.png') no-repeat center; }
+    div.e20r-tracker-silver-badge { background: url('../img/silver-badge.png') no-repeat center; }
+    div.e20r-tracker-gold-badge { background: url('../img/gold-badge.png') no-repeat center; }
+    div.e20r-tracker-no-badge,
+    div.e20r-tracker-bronze-badge,
+    div.e20r-tracker-silver-badge,
+    div.e20r-tracker-gold-badge {
+        height: 60px;
+        background-size: 50%;
+    }
+    div.e20r-achievement-header {
+        display: inherit;
+    }
+    div.e20r-activity-table,
+    div.e20r-assignment-table,
+    div.e20r-action-table {
+        /* height: 50px; */
+        font-size: 80%;
+    }
+    div.e20r-tracker-score {
+        white-space: nowrap;
+    }
+    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+        padding-bottom: 25px;
+    }
+}
+@media screen and (max-width: 460px) {
+    a[id^="ui-id-"] {
+        font-size: 0.8rem;
+    }
+    .e20r-weekly-progress-reminder-text h4 {
+        font-size: 18px;
+        margin-top: 8px;
+        height: 22px;
+        line-height: 22px;
+    }
 }
