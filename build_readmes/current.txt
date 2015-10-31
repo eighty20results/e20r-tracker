@@ -1,3 +1,1 @@
-Move styles from HTML to css for weekly progress reminder
-Make text translatable for the weekly progress reminder
-Update formatting for weekly progress reminder.
+Fix formatting for weekly progress reminder
