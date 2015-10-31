@@ -81,6 +81,13 @@
     .e20r-exercise-description > h2 {
         font-size: 18pt;
     }
+    .e20r-activity-summary-printable-row.e20r-activity-summary-description a,
+    .e20r-activity-summary-printable-row.e20r-activity-summary-description a:visited,
+    .e20r-exercise-description a,
+    .e20r-exercise-description a:visited {
+        font-size: 12pt;
+        text-decoration: underline;
+    }
     .e20r-activity-summary-printable-row.e20r-activity-summary-description > h3,
     .e20r-exercise-description > h3 {
         margin-top: 20px;
