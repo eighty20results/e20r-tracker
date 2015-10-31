@@ -922,9 +922,17 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
         padding-bottom: 25px;
     }
 }
+#saturday-progress-container.e20r-weekly-progress-reminder-text {
+    float: left;
+    width: 55%;
+}
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
     line-height: 1;
+}
+#saturday-progress-container #e20r-progress-canvas > img {
+    float: left;
+    width: 45%;
 }
 @media screen and (max-width: 460px) {
     a[id^="ui-id-"] {
