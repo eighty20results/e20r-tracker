@@ -922,17 +922,20 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
         padding-bottom: 25px;
     }
 }
-#saturday-progress-container.e20r-weekly-progress-reminder-text {
-    float: left;
-    width: 55%;
-}
 #saturday-progress-container #e20r-progress-canvas {
     padding-top: 10px;
     line-height: 1;
 }
-#saturday-progress-container #e20r-progress-canvas > img {
+#saturday-progress-container #e20r-progress-canvas img#weekly-alarm-clock {
     float: left;
     width: 45%;
+}
+#saturday-progress-container.e20r-weekly-progress-reminder-text {
+    float: left;
+    width: 55%;
+}
+.e20r-weekly-progress-reminder-text {
+    margin-left: 10px;
 }
 .e20r-weekly-progress-reminder-text h4 {
     font-size: 22px;
