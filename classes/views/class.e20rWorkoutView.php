@@ -18,6 +18,36 @@ class e20rWorkoutView extends e20rSettingsView {
 		$this->error = $error;
 	}
 
+	public function display_printable_activity( $config, $workoutData ) {
+
+		// TODO: Implement the activity display containing small image, reps/weights/set info, and input boxes (same as displayActivity())
+		if ( ! is_user_logged_in() ) {
+			auth_redirect();
+		}
+
+		global $current_user;
+		global $currentExercise;
+		global $e20rExercise;
+
+		dbg("e20rWorkoutView::display_printable_activity() - Display a single activity entry for print ");
+
+		if ( isset( $workoutData['error'] ) ) {
+			ob_start(); ?>
+			<div class="red-notice">
+				<h3><?php _e( "No planned activity", "e20rtracker" ); ?></h3>
+				<p><?php _e( "There are no scheduled/planned activities for your coaching program today, but don't let that stop you from enjoying nature!", "e20rtracker" ); ?></p>
+			</div><?php
+
+			return ob_get_clean();
+		}
+
+		ob_start();
+
+		$html = ob_get_clean();
+
+		return $html;
+	}
+
 	public function display_printable_list( $activities, $config ) {
 
 		global $e20rExercise;
