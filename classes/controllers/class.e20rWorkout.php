@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
@@ -6,80 +7,84 @@
  * License Information:
  *  the GPL v2 license(?)
  */
-
-class e20rWorkout extends e20rSettings {
+class e20rWorkout extends e20rSettings
+{
 
     private $workout = array();
     public $model = null;
     public $view = null;
 
-	protected $table;
-	protected $fields;
+    protected $table;
+    protected $fields;
 
-    public function __construct() {
+    public function __construct()
+    {
 
         dbg("e20rWorkout::__construct() - Initializing Workout class");
 
-	    $this->model = new e20rWorkoutModel();
-	    $this->view = new e20rWorkoutView();
+        $this->model = new e20rWorkoutModel();
+        $this->view = new e20rWorkoutView();
 
-	    parent::__construct( 'workout', 'e20r_workout', $this->model, $this->view );
+        parent::__construct('workout', 'e20r_workout', $this->model, $this->view);
     }
 
-    public function init( $id = null ) {
+    public function init($id = null)
+    {
 
-	    global $currentWorkout;
-	    global $e20rTables;
+        global $currentWorkout;
+        global $e20rTables;
 
-	    $this->table = $e20rTables->getTable('workout');
-	    $this->fields = $e20rTables->getFields( 'workout' );
+        $this->table = $e20rTables->getTable('workout');
+        $this->fields = $e20rTables->getFields('workout');
 
-	    if ( empty($currentWorkout) || ( isset( $currentWorkout->id ) && ($currentWorkout->id != $id ) ) ) {
-		    dbg("e20rWorkout::init() - received id value: {$id}" );
+        if (empty($currentWorkout) || (isset($currentWorkout->id) && ($currentWorkout->id != $id))) {
+            dbg("e20rWorkout::init() - received id value: {$id}");
 
-		    // $currentWorkout = parent::init( $id );
-		    $this->model->init( $id );
+            // $currentWorkout = parent::init( $id );
+            $this->model->init($id);
 
-		    dbg("e20rWorkout::init() - Loaded settings for {$id}:");
-		    // dbg($currentWorkout);
-	    }
+            dbg("e20rWorkout::init() - Loaded settings for {$id}:");
+            // dbg($currentWorkout);
+        }
     }
 
-	public function getActivity( $identifier ) {
+    public function getActivity($identifier)
+    {
 
         dbg("e20rWorkout::getActivity() - Loading Activity data for {$identifier}");
 
-		if ( !isset( $this->model ) ) {
-			$this->init();
-		}
-
-		$workout = array();
-
-		if ( is_numeric( $identifier ) ) {
-			// Given an ID
-			$workout = $this->model->loadWorkoutData( $identifier, 'any' );
-		}
-
-/*		if (is_string( $identifier ) ) {
-			// Given a short_name
-			$workout[] = $this->getWorkout( $identifier );
-		}
-*/
-        dbg("e20rWorkout::getActivity() - Returning Activity data for {$identifier}");
-		return $workout;
-
-	}
-
-    public function getWorkout( $shortName ) {
-
-        if ( ! isset( $this->model ) ) {
+        if (!isset($this->model)) {
             $this->init();
         }
 
-        $pgmList = $this->model->loadAllData( 'any' );
+        $workout = array();
 
-        foreach ($pgmList as $pgm ) {
-            if ( $pgm->shortname == $shortName ) {
+        if (is_numeric($identifier)) {
+            // Given an ID
+            $workout = $this->model->loadWorkoutData($identifier, 'any');
+        }
+
+        /*		if (is_string( $identifier ) ) {
+                    // Given a short_name
+                    $workout[] = $this->getWorkout( $identifier );
+                }
+        */
+        dbg("e20rWorkout::getActivity() - Returning Activity data for {$identifier}");
+        return $workout;
+
+    }
+
+    public function getWorkout($shortName)
+    {
+
+        if (!isset($this->model)) {
+            $this->init();
+        }
+
+        $pgmList = $this->model->loadAllData('any');
+
+        foreach ($pgmList as $pgm) {
+            if ($pgm->shortname == $shortName) {
                 unset($pgmList);
                 return $pgm;
             }
@@ -89,20 +94,22 @@ class e20rWorkout extends e20rSettings {
         return false; // Returns false if the program isn't found.
     }
 
-    public function editor_metabox_setup( $post ) {
+    public function editor_metabox_setup($post)
+    {
 
         // global $currentWorkout;
 
-        dbg("e20rWorkout::editor_metabox_setup() - Loading settings for workout page: " . $post->ID );
-        $this->init( $post->ID );
+        dbg("e20rWorkout::editor_metabox_setup() - Loading settings for workout page: " . $post->ID);
+        $this->init($post->ID);
 
         // $currentWorkout = $this->model->find( 'id', $post->ID );
 
-        add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array( &$this, "addMeta_WorkoutSettings" ), 'e20r_workout', 'normal', 'core');
+        add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array(&$this, "addMeta_WorkoutSettings"), 'e20r_workout', 'normal', 'core');
 
     }
 
-    public function ajax_getPlotDataForUser() {
+    public function ajax_getPlotDataForUser()
+    {
 
         global $e20rProgram;
         global $e20rClient;
@@ -115,40 +122,38 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::ajax_getPlotDataForUser() - Nonce is OK");
         // dbg($_POST);
 
-        $user_id = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
+        $user_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : null;
 
-        if ( $e20rClient->validateAccess( $user_id ) ) {
-            $e20rProgram->getProgramIdForuser( $user_id );
-        }
-        else {
-            dbg( "e20rWorkout::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$user_id}" );
-            wp_send_json_error( __("Your membership level prevents you from accessing this data. Please upgrade.", "e20rtracker" ) );
+        if ($e20rClient->validateAccess($user_id)) {
+            $e20rProgram->getProgramIdForuser($user_id);
+        } else {
+            dbg("e20rWorkout::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$user_id}");
+            wp_send_json_error(__("Your membership level prevents you from accessing this data. Please upgrade.", "e20rtracker"));
             wp_die();
         }
 
-        $exercise_id = isset( $_POST['exercise_id'] ) ? $e20rTracker->sanitize( $_POST['exercise_id'] ) : 0;
+        $exercise_id = isset($_POST['exercise_id']) ? $e20rTracker->sanitize($_POST['exercise_id']) : 0;
 
         dbg("e20rWorkout::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
 
-        $stats = $this->model->getExerciseHistory( $exercise_id, $user_id, $currentProgram->id, $currentProgram->startdate );
+        $stats = $this->model->getExerciseHistory($exercise_id, $user_id, $currentProgram->id, $currentProgram->startdate);
 
         // $stats = $this->generate_stats( $history );
 
-        if ( isset( $_POST['wh_h_dimension'] ) ) {
+        if (isset($_POST['wh_h_dimension'])) {
 
             dbg("e20rWorkout::ajax_getPlotDataForUser() - We're displaying the front-end user progress summary");
-            $dimensions = array( 'width' => intval( $_POST['wh_w_dimension'] ),
+            $dimensions = array('width' => intval($_POST['wh_w_dimension']),
                 'wtype' => sanitize_text_field($_POST['wh_w_dimension_type']),
-                'height' => intval( $_POST['wh_h_dimension'] ),
-                'htype' => sanitize_text_field( $_POST['wh_h_dimension_type'] )
+                'height' => intval($_POST['wh_h_dimension']),
+                'htype' => sanitize_text_field($_POST['wh_h_dimension_type'])
             );
 
             // $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-        }
-        else {
+        } else {
 
             dbg("e20rWorkout::ajax_getPlotDataForUser() - We're displaying on the admin page.");
-            $dimensions = array( 'width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px' );
+            $dimensions = array('width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px');
         }
 
         dbg("e20rWorkout::ajax_getPlotDataForuser() - Dimensions: ");
@@ -157,19 +162,20 @@ class e20rWorkout extends e20rSettings {
         dbg("e20rWorkout::ajax_getPlotDataForuser() - Stats: ");
         // dbg($stats);
 
-        $html = $this->view->view_WorkoutStats( $user_id, $exercise_id, $dimensions );
+        $html = $this->view->view_WorkoutStats($user_id, $exercise_id, $dimensions);
 
         // $stats = $this->generate_stats( $activities );
         // $reps = $this->generatePlotData( $workout_data, 'reps' );
 
         dbg("e20rWorkout::ajax_get_PlotDataForUser() - Generated plot data for measurements");
-        $data = json_encode( array( 'success' => true, 'html' => $html, 'stats' => $stats ), JSON_NUMERIC_CHECK );
+        $data = json_encode(array('success' => true, 'html' => $html, 'stats' => $stats), JSON_NUMERIC_CHECK);
         echo $data;
         // wp_send_json_success( array( 'html' => $data, 'weight' => $weight, 'girth' => $girth ) );
         wp_die();
     }
 
-    public function generate_stats( $data ) {
+    public function generate_stats($data)
+    {
 
         // global $e20rTables;
         // $fields = $this->model->getField();
@@ -178,24 +184,25 @@ class e20rWorkout extends e20rSettings {
 
         $data_matrix = array();
 
-        if ( empty( $data ) ) {
+        if (empty($data)) {
 
             return array();
         }
 
-        foreach ( $data as $exercise ) {
+        foreach ($data as $exercise) {
 
-            foreach ( $exercise as $workout )
-            if ( is_object( $exercise->history ) ) {
+            foreach ($exercise as $workout)
+                if (is_object($exercise->history)) {
 
-                $workout_weight[] = array( ( strtotime( $workout->for_date ) * 1000 ), number_format( (float) $workout->weight, 2) );
-                $workout_reps[] = array( ( strtotime( $workout->for_date ) * 1000 ), number_format( (float) $workout->reps, 2 ) );
-            }
+                    $workout_weight[] = array((strtotime($workout->for_date) * 1000), number_format((float)$workout->weight, 2));
+                    $workout_reps[] = array((strtotime($workout->for_date) * 1000), number_format((float)$workout->reps, 2));
+                }
         }
-        return array( $workout_weight, $workout_reps );
+        return array($workout_weight, $workout_reps);
     }
 
-	public function listUserActivities( $userId ) {
+    public function listUserActivities($userId)
+    {
 
         global $current_user;
         global $e20rProgram;
@@ -207,207 +214,210 @@ class e20rWorkout extends e20rSettings {
         $config->post_date = null;
 
         $config->userId = $userId; // $userId;
-        $config->startTS = $e20rProgram->startdate( $config->userId );
-        $config->delay = $e20rTracker->getDelay( 'now' );
+        $config->startTS = $e20rProgram->startdate($config->userId);
+        $config->delay = $e20rTracker->getDelay('now');
 
-        $activities = $this->model->loadAllUserActivities( $userId );
+        $activities = $this->model->loadAllUserActivities($userId);
 
         dbg("e20rWorkout::listUserActivities() - Received " . count($activities) . " activity records...");
         // dbg($activities);
 
         // Get and load the statistics for the user.
-        if ( isset( $_POST['wh_h_dimension'] ) ) {
+        if (isset($_POST['wh_h_dimension'])) {
 
             dbg("e20rWorkout::listUserActivities() - We're displaying the front-end user progress summary");
-            $dimensions = array( 'width' => intval( $_POST['wh_w_dimension'] ),
+            $dimensions = array('width' => intval($_POST['wh_w_dimension']),
                 'wtype' => sanitize_text_field($_POST['wh_w_dimension_type']),
-                'height' => intval( $_POST['wh_h_dimension'] ),
-                'htype' => sanitize_text_field( $_POST['wh_h_dimension_type'] )
+                'height' => intval($_POST['wh_h_dimension']),
+                'htype' => sanitize_text_field($_POST['wh_h_dimension_type'])
             );
 
             // $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-        }
-        else {
+        } else {
 
             dbg("e20rWorkout::listUserActivities() - We're displaying on the admin page.");
-            $dimensions = array( 'width' => '650', 'height' => '300', 'htype' => 'px', 'wtype' => 'px' );
+            $dimensions = array('width' => '650', 'height' => '300', 'htype' => 'px', 'wtype' => 'px');
         }
 
-/*        foreach( $activities as $key => $activity ) {
+        /*        foreach( $activities as $key => $activity ) {
 
-            //$activity->graph = $this->model->getExerciseDataByDate( $config->userId, date_i18n( 'Y-m-d', $config->startTS ), $currentProgram->id, $activity );
-            $activity->graph = $this->model->getExerciseDataByDate( $config->userId, '2015-06-01', $currentProgram->id, $activity );
+                    //$activity->graph = $this->model->getExerciseDataByDate( $config->userId, date_i18n( 'Y-m-d', $config->startTS ), $currentProgram->id, $activity );
+                    $activity->graph = $this->model->getExerciseDataByDate( $config->userId, '2015-06-01', $currentProgram->id, $activity );
 
-            $activities[$key] = $activity;
-        }
-*/
+                    $activities[$key] = $activity;
+                }
+        */
         // $html = $this->view->view_WorkoutStats( $config->userId, $data, $dimensions );
-        return $this->view->viewExerciseProgress( $activities, null, $userId, $dimensions );
-	}
+        return $this->view->viewExerciseProgress($activities, null, $userId, $dimensions);
+    }
 
-	public function saveExData_callback() {
+    public function saveExData_callback()
+    {
 
-		global $current_user;
-		global $e20rTracker;
+        global $current_user;
+        global $e20rTracker;
 
-        if ( ! is_user_logged_in() ) {
-            wp_send_json_error( 'Please log in to access this service');
+        if (!is_user_logged_in()) {
+            wp_send_json_error('Please log in to access this service');
         }
 
         check_ajax_referer('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce');
 
-		dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
-		// dbg($_POST);
+        dbg("e20rWorkout::saveExData_callback() - Has the right privs to save data: ");
+        // dbg($_POST);
 
-        if ( isset( $POST['completed'] ) && ( intval( $_POST['completed'] == 1 ) ) ) {
+        if (isset($POST['completed']) && (intval($_POST['completed'] == 1))) {
 
             dbg("e20rWorkout::saveExData_callback() - User indicated their workout is complete.");
-            $id = $this->model->save_activity_status( $_POST );
-            wp_send_json_success( array( 'id' => $id ) );
+            $id = $this->model->save_activity_status($_POST);
+            wp_send_json_success(array('id' => $id));
         }
 
-		$data = array();
-		$skip = array( 'action', 'e20r-tracker-activity-input-nonce' );
+        $data = array();
+        $skip = array('action', 'e20r-tracker-activity-input-nonce');
 
-		foreach( $_POST as $k => $v ) {
+        foreach ($_POST as $k => $v) {
 
-			if ( $k == 'recorded' ) {
+            if ($k == 'recorded') {
 
-				dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
-				$v = date_i18n('Y-m-d H:i:s', $e20rTracker->sanitize( $v ) );
-			}
+                dbg("e20rWorkout::saveExData_callback() - Saving date/time of record.");
+                $v = date_i18n('Y-m-d H:i:s', $e20rTracker->sanitize($v));
+            }
 
-			if ( $k == 'for_date' ) {
+            if ($k == 'for_date') {
 
-				dbg("e20rWorkout::saveExData_callback() - Saving date/time for when the record should have been recorded: {$v}.");
-				$v = date_i18n('Y-m-d H:i:s', strtotime( $e20rTracker->sanitize( $v ) ) );
-			}
-            if ( !in_array( $k, $skip ) ) {
+                dbg("e20rWorkout::saveExData_callback() - Saving date/time for when the record should have been recorded: {$v}.");
+                $v = date_i18n('Y-m-d H:i:s', strtotime($e20rTracker->sanitize($v)));
+            }
+            if (!in_array($k, $skip)) {
 
 
                 dbg("e20rWorkout::saveExData_callback() - Saving {$k} as {$v} for record.");
-                $data[$k] = $e20rTracker->sanitize( $v );
+                $data[$k] = $e20rTracker->sanitize($v);
             }
-		}
+        }
 
         dbg("e20rWorkout::saveExData_callback() - Data array to use");
         // dbg($data);
 
-        $format = $e20rTracker->setFormatForRecord( $data );
+        $format = $e20rTracker->setFormatForRecord($data);
         // dbg($format);
 
-        if ( ( $id = $this->model->save_userData( $data, $format ) ) === false ) {
+        if (($id = $this->model->save_userData($data, $format)) === false) {
             dbg("e20rWorkout::saveExData_callback() - Error saving user data record!");
             wp_send_json_error();
         }
         dbg("e20rWorkout::saveExData_callback() - Saved record with ID: {$id}");
-        wp_send_json_success( array( 'id' => $id ) );
-	}
-
-    public function loadUserData( $userId, $start = 'start', $end = 'end', $programId = null, $fields = null ) {
-
-        return $this->model->load_userData( $userId, $start, $end, $programId, $fields );
+        wp_send_json_success(array('id' => $id));
     }
-	/**
-	 * Save the Workout Settings to the metadata table.
-	 *
-	 * @param $post_id (int) - ID of CPT settings for the specific article.
-	 *
-	 * @return bool - True if successful at updating article settings
-	 */
-    public function saveSettings( $post_id ) {
+
+    public function loadUserData($userId, $start = 'start', $end = 'end', $programId = null, $fields = null)
+    {
+
+        return $this->model->load_userData($userId, $start, $end, $programId, $fields);
+    }
+
+    /**
+     * Save the Workout Settings to the metadata table.
+     *
+     * @param $post_id (int) - ID of CPT settings for the specific article.
+     *
+     * @return bool - True if successful at updating article settings
+     */
+    public function saveSettings($post_id)
+    {
 
         global $post;
-	    global $current_user;
-	    global $e20rTracker;
+        global $current_user;
+        global $e20rTracker;
 
-        if ( ( !isset($post->post_type) ) || ( $post->post_type != 'e20r_workout' ) ) {
+        if ((!isset($post->post_type)) || ($post->post_type != 'e20r_workout')) {
 
-	        dbg( "e20rWorkout::saveSettings() - Not a e20r_workout CPT: " );
+            dbg("e20rWorkout::saveSettings() - Not a e20r_workout CPT: ");
             return $post_id;
         }
 
-        if ( empty( $post_id ) ) {
+        if (empty($post_id)) {
 
             dbg("e20rWorkout::saveSettings() - No post ID supplied");
             return false;
         }
 
-        if ( wp_is_post_revision( $post_id ) ) {
+        if (wp_is_post_revision($post_id)) {
 
             return $post_id;
         }
 
-        if ( defined( 'DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
 
             return $post_id;
         }
 
-	    dbg("e20rWorkout::saveSettings()  - Saving workout to database.");
+        dbg("e20rWorkout::saveSettings()  - Saving workout to database.");
 
-	    $groups = array();
-	    $workout = $this->model->loadSettings( $post_id );
+        $groups = array();
+        $workout = $this->model->loadSettings($post_id);
 
-	    $groupData = isset( $_POST['e20r-workout-group'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group']) : array( $post_id => $this->model->defaultGroup() );
-	    $exData = isset( $_POST['e20r-workout-group_exercise_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_id'] ) : array();
-	    $orderData = isset( $_POST['e20r-workout-group_exercise_order'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_exercise_order'] ) : array();
-	    $groupSetCount = isset( $_POST['e20r-workout-group_set_count'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-group_set_count'] ) : array();
-	    $groupSetTempo = isset( $_POST['e20r-workout-groups-group_tempo'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_tempo'] ) : array();
-		$groupSetRest  = isset( $_POST['e20r-workout-groups-group_rest'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-groups-group_rest'] ) : array();
+        $groupData = isset($_POST['e20r-workout-group']) ? $e20rTracker->sanitize($_POST['e20r-workout-group']) : array($post_id => $this->model->defaultGroup());
+        $exData = isset($_POST['e20r-workout-group_exercise_id']) ? $e20rTracker->sanitize($_POST['e20r-workout-group_exercise_id']) : array();
+        $orderData = isset($_POST['e20r-workout-group_exercise_order']) ? $e20rTracker->sanitize($_POST['e20r-workout-group_exercise_order']) : array();
+        $groupSetCount = isset($_POST['e20r-workout-group_set_count']) ? $e20rTracker->sanitize($_POST['e20r-workout-group_set_count']) : array();
+        $groupSetTempo = isset($_POST['e20r-workout-groups-group_tempo']) ? $e20rTracker->sanitize($_POST['e20r-workout-groups-group_tempo']) : array();
+        $groupSetRest = isset($_POST['e20r-workout-groups-group_rest']) ? $e20rTracker->sanitize($_POST['e20r-workout-groups-group_rest']) : array();
 
-	    $workout->program_ids = isset( $_POST['e20r-workout-program_ids'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-program_ids'] ) : array( 0 ) ;
-	    $workout->days = isset( $_POST['e20r-workout-days'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-days'] ) : array();
-	    $workout->workout_ident = isset( $_POST['e20r-workout-workout_ident'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-workout_ident'] ) : 'A';
-	    $workout->phase = isset( $_POST['e20r-workout-phase'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-phase'] ) : 1;
-	    $workout->assigned_user_id = isset( $_POST['e20r-workout-assigned_user_id'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_user_id'] ) : array( -1 ); // Default is "everybody"
-	    $workout->assigned_usergroups = isset( $_POST['e20r-workout-assigned_usergroups'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-assigned_usergroups'] ) : array( -1 ) ;
-	    $workout->startdate = isset( $_POST['e20r-workout-startdate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startdate'] ) : null;
-	    $workout->enddate = isset( $_POST['e20r-workout-enddate'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-enddate'] ) : null;
-        $workout->startday = isset( $_POST['e20r-workout-startday'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-startday'] ) : null;
-        $workout->endday = isset( $_POST['e20r-workout-endday'] ) ? $e20rTracker->sanitize( $_POST['e20r-workout-endday'] ) : null;
+        $workout->program_ids = isset($_POST['e20r-workout-program_ids']) ? $e20rTracker->sanitize($_POST['e20r-workout-program_ids']) : array(0);
+        $workout->days = isset($_POST['e20r-workout-days']) ? $e20rTracker->sanitize($_POST['e20r-workout-days']) : array();
+        $workout->workout_ident = isset($_POST['e20r-workout-workout_ident']) ? $e20rTracker->sanitize($_POST['e20r-workout-workout_ident']) : 'A';
+        $workout->phase = isset($_POST['e20r-workout-phase']) ? $e20rTracker->sanitize($_POST['e20r-workout-phase']) : 1;
+        $workout->assigned_user_id = isset($_POST['e20r-workout-assigned_user_id']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_user_id']) : array(-1); // Default is "everybody"
+        $workout->assigned_usergroups = isset($_POST['e20r-workout-assigned_usergroups']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_usergroups']) : array(-1);
+        $workout->startdate = isset($_POST['e20r-workout-startdate']) ? $e20rTracker->sanitize($_POST['e20r-workout-startdate']) : null;
+        $workout->enddate = isset($_POST['e20r-workout-enddate']) ? $e20rTracker->sanitize($_POST['e20r-workout-enddate']) : null;
+        $workout->startday = isset($_POST['e20r-workout-startday']) ? $e20rTracker->sanitize($_POST['e20r-workout-startday']) : null;
+        $workout->endday = isset($_POST['e20r-workout-endday']) ? $e20rTracker->sanitize($_POST['e20r-workout-endday']) : null;
 
-	    $test = (array)$exData;
+        $test = (array)$exData;
 
-	    if ( !empty( $test ) ) {
+        if (!empty($test)) {
 
-		    foreach ($groupData as $key => $groupNo ) {
+            foreach ($groupData as $key => $groupNo) {
 
-                $groups[ $groupNo ]->group_set_count = $groupSetCount[ $groupNo ];
-                $groups[ $groupNo ]->group_tempo = $groupSetTempo[ $groupNo ];
-                $groups[ $groupNo ]->group_rest = $groupSetRest[ $groupNo ];
+                $groups[$groupNo]->group_set_count = $groupSetCount[$groupNo];
+                $groups[$groupNo]->group_tempo = $groupSetTempo[$groupNo];
+                $groups[$groupNo]->group_rest = $groupSetRest[$groupNo];
 
-                if ( isset( $exData[$key] ) ) {
+                if (isset($exData[$key])) {
                     dbg("e20rWorkout::saveSettings() - Adding exercise data from new definition");
-				    $groups[ $groupNo ]->exercises[ $orderData[ $key ] ] = $exData[$key];
-			    }
+                    $groups[$groupNo]->exercises[$orderData[$key]] = $exData[$key];
+                }
 
-                if (  ( count( $workout->groups[$groupNo]->exercises ) > 1 ) &&
-                    ( isset( $workout->groups[$groupNo]->exercises[0] ) ) ) {
+                if ((count($workout->groups[$groupNo]->exercises) > 1) &&
+                    (isset($workout->groups[$groupNo]->exercises[0]))
+                ) {
 
                     dbg("e20rWorkout::saveSettings() - Clearing data we don't need");
                     unset($groups[$groupNo]->exercises[$orderData[$key]][0]);
                 }
 
             }
-		    dbg("e20rWorkout::saveSettings() - Groups:");
-		    // dbg($groups);
-	    }
+            dbg("e20rWorkout::saveSettings() - Groups:");
+            // dbg($groups);
+        }
 
-	    // Add workout group data/settings
-	    $workout->groups = $groups;
+        // Add workout group data/settings
+        $workout->groups = $groups;
 
-	    dbg('e20rWorkout::saveSettings() - Workout data to save:');
-	    // dbg($workout);
+        dbg('e20rWorkout::saveSettings() - Workout data to save:');
+        // dbg($workout);
 
-	    if ( $this->model->saveSettings( $workout ) ) {
+        if ($this->model->saveSettings($workout)) {
 
-		    dbg('e20rWorkout::saveSettings() - Saved settings/metadata for this e20r_workout CPT');
-		    return $post_id;
-	    }
-	    else {
-		    dbg('e20rWorkout::saveSettings() - Error saving settings/metadata for this e20r_workout CPT');
-		    return false;
-	    }
+            dbg('e20rWorkout::saveSettings() - Saved settings/metadata for this e20r_workout CPT');
+            return $post_id;
+        } else {
+            dbg('e20rWorkout::saveSettings() - Error saving settings/metadata for this e20r_workout CPT');
+            return false;
+        }
 
 
     }
@@ -422,7 +432,8 @@ class e20rWorkout extends e20rSettings {
      * @param int $period -- The period (
      * @return array - list of activities keyed by day id (day 1 - 7, 1 == Monday)
      */
-	public function getActivityArchive( $userId, $programId, $period = E20R_CURRENT_WEEK ) {
+    public function getActivityArchive($userId, $programId, $period = E20R_CURRENT_WEEK)
+    {
 
         global $e20rProgram;
         global $e20rTracker;
@@ -430,34 +441,33 @@ class e20rWorkout extends e20rSettings {
 
         global $currentProgram;
 
-        $startedTS = $e20rProgram->startdate( $userId, $programId, true );
+        $startedTS = $e20rProgram->startdate($userId, $programId, true);
         $started = date('Y-m-d H:i:s', $startedTS);
         // $started = $currentProgram->startdate;
 
-        $currentDay = $e20rTracker->getDelay('now', $userId );
-        $currentDate = date('Y-m-d', current_time( 'timestamp' ) );
+        $currentDay = $e20rTracker->getDelay('now', $userId);
+        $currentDate = date('Y-m-d', current_time('timestamp'));
 
         dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
 
         // Calculate release_days to include for the $period
-        switch ( $period ) {
+        switch ($period) {
 
             case E20R_UPCOMING_WEEK:
                 dbg("e20rWorkout::getActivityArchive() - For the upcoming (next) week");
 
-                if ( date('N', current_time('timestamp') ) == 7 ) {
-                    $mondayTS = strtotime( "next monday {$currentDate}" );
-                    $sundayTS = strtotime( "next sunday {$currentDate}" );
-                }
-                else {
-                    $mondayTS = strtotime( "monday next week {$currentDate} " );
-                    $sundayTS = strtotime( "sunday next week {$currentDate}" );
+                if (date('N', current_time('timestamp')) == 7) {
+                    $mondayTS = strtotime("next monday {$currentDate}");
+                    $sundayTS = strtotime("next sunday {$currentDate}");
+                } else {
+                    $mondayTS = strtotime("monday next week {$currentDate} ");
+                    $sundayTS = strtotime("sunday next week {$currentDate}");
                 }
 
                 $period_string = "Activities next week";
-                if ( date('N', current_time('timestamp') ) <= 5 ) {
-                    dbg("e20rWorkout::getActivityArchive() - Monday: {$mondayTS}, Sunday: {$sundayTS}, day number today: " . date('N') );
-                    dbg("e20rWorkout::getActivityArchive() - User requested archive for 'next week', but we've not yet reached Friday, so not returning anything" );
+                if (date('N', current_time('timestamp')) <= 5) {
+                    dbg("e20rWorkout::getActivityArchive() - Monday: {$mondayTS}, Sunday: {$sundayTS}, day number today: " . date('N'));
+                    dbg("e20rWorkout::getActivityArchive() - User requested archive for 'next week', but we've not yet reached Friday, so not returning anything");
                     return null;
                 }
 
@@ -466,13 +476,12 @@ class e20rWorkout extends e20rSettings {
             case E20R_PREVIOUS_WEEK:
 
                 dbg("e20rWorkout::getActivityArchive() - For last week");
-                if ( date('N', current_time('timestamp') ) == 7 ) {
-                    $mondayTS = strtotime( "monday -2 weeks {$currentDate}");
-                    $sundayTS = strtotime( "last sunday {$currentDate}" );
-                }
-                else {
-                    $mondayTS = strtotime( "monday last week {$currentDate}");
-                    $sundayTS = strtotime( "last sunday {$currentDate}" );
+                if (date('N', current_time('timestamp')) == 7) {
+                    $mondayTS = strtotime("monday -2 weeks {$currentDate}");
+                    $sundayTS = strtotime("last sunday {$currentDate}");
+                } else {
+                    $mondayTS = strtotime("monday last week {$currentDate}");
+                    $sundayTS = strtotime("last sunday {$currentDate}");
                 }
 
                 $period_string = "Activities previous week";
@@ -482,16 +491,15 @@ class e20rWorkout extends e20rSettings {
 
                 dbg("e20rWorkout::getActivityArchive() - For the current week including: {$currentDate}");
 
-                if ( date('N', current_time( 'timestamp' ) ) == 1 ) {
+                if (date('N', current_time('timestamp')) == 1) {
                     // It's monday
 
-                    $mondayTS = strtotime( "monday {$currentDate}" );
-                    $sundayTS = strtotime( "this sunday {$currentDate}" );
-                }
-                else {
+                    $mondayTS = strtotime("monday {$currentDate}");
+                    $sundayTS = strtotime("this sunday {$currentDate}");
+                } else {
 
-                    $mondayTS = strtotime( "last monday {$currentDate}" );
-                    $sundayTS = strtotime( "this sunday {$currentDate}" );
+                    $mondayTS = strtotime("last monday {$currentDate}");
+                    $sundayTS = strtotime("this sunday {$currentDate}");
                 }
 
                 $period_string = "Activities this week";
@@ -504,78 +512,77 @@ class e20rWorkout extends e20rSettings {
 //        $startDelay = ($startDelay + $currentDay);
 //        $endDelay = ( $endDelay + $currentDay );
 
-        dbg( "e20rWorkout::getActivityArchive() - Monday TS: {$mondayTS}, Sunday TS: {$sundayTS}");
-        $startDelay = $e20rTracker->daysBetween( $startedTS, $mondayTS, get_option('timezone_string') );
-        $endDelay = $e20rTracker->daysBetween( $startedTS, $sundayTS, get_option('timezone_string') );
+        dbg("e20rWorkout::getActivityArchive() - Monday TS: {$mondayTS}, Sunday TS: {$sundayTS}");
+        $startDelay = $e20rTracker->daysBetween($startedTS, $mondayTS, get_option('timezone_string'));
+        $endDelay = $e20rTracker->daysBetween($startedTS, $sundayTS, get_option('timezone_string'));
 
-        if ( $startDelay < 0 ) {
+        if ($startDelay < 0) {
             $startDelay = 1;
         }
 
-        if ( $endDelay <= 0 ) {
+        if ($endDelay <= 0) {
             $endDelay = 6;
         }
 
 
         dbg("e20rWorkout::getActivityArchive() - Delay values -- start: {$startDelay}, end: {$endDelay}");
-        $val = array( $startDelay, $endDelay );
+        $val = array($startDelay, $endDelay);
 
         // Load articles in the program that have a release day value between the start/end delay values we calculated.
-        $articles = $e20rArticle->findArticles( 'release_day', $val, 'numeric', $programId, 'BETWEEN' );
+        $articles = $e20rArticle->findArticles('release_day', $val, 'numeric', $programId, 'BETWEEN');
 
         dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
         // dbg($articles);
 
-        $activities = array( 'header' => $period_string );
+        $activities = array('header' => $period_string);
         $unsorted = array();
 
         // Pull out all activities for the sequence list
-        if ( !is_array( $articles ) && ( false !== $articles ) ) {
+        if (!is_array($articles) && (false !== $articles)) {
 
-            $articles = array( $articles );
+            $articles = array($articles);
         }
 
         foreach ($articles as $id => $article) {
 
             // Save activity list as a hash w/weekday => workout )
-            dbg("e20rWorkout::getActivityArchive() - Getting " . count( $article->activity_id ). " activities for article ID: {$article->id}");
-            if ( count( $article->activity_id ) != 0 ) {
+            dbg("e20rWorkout::getActivityArchive() - Getting " . count($article->activity_id) . " activities for article ID: {$article->id}");
+            if (count($article->activity_id) != 0) {
                 $act = $this->find('id', $article->activity_id, 'numeric', $programId, 'IN');
 
                 foreach ($act as $a) {
                     dbg("e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted");
                     $unsorted[] = $a;
                 }
-            }
-            else {
+            } else {
                 dbg("e20rWorkout::getActivityArchive() - No activities defined for article {$article->id}, moving on.");
             }
         }
 
-/*        }
-        else {
-            dbg("e20rWorkout::getActivityArchive() - Single Article, activity ID: {$articles->activity_id}");
-            $unsorted[] = $this->getActivity( $articles->activity_id );
-        }
-*/
+        /*        }
+                else {
+                    dbg("e20rWorkout::getActivityArchive() - Single Article, activity ID: {$articles->activity_id}");
+                    $unsorted[] = $this->getActivity( $articles->activity_id );
+                }
+        */
 
-        dbg("e20rWorkout::getActivityArchive() - Have " . count( $unsorted ) . " workout objects to process/sort");
+        dbg("e20rWorkout::getActivityArchive() - Have " . count($unsorted) . " workout objects to process/sort");
 
         // Save activities in an hash keyed on the weekday the activity is scheduled for.
-        foreach( $unsorted as $activity ) {
+        foreach ($unsorted as $activity) {
 
             $mon = date('l', strtotime('monday'));
 
-            foreach( $activity->groups as $gID => $group ) {
+            foreach ($activity->groups as $gID => $group) {
 
-                $group->tempo = $this->model->getType( $group->group_tempo );
+                $group->tempo = $this->model->getType($group->group_tempo);
                 $activity->groups[$gID] = $group;
             }
 
-            foreach( $activity->days as $dayNo ) {
+            foreach ($activity->days as $dayNo) {
 
                 $dNo = $dayNo;
-                $day = date( 'l', strtotime( "monday + " . ($dNo - 1) ." days" ) );
+                $day = date('l', strtotime("monday + " . ($dNo - 1) . " days"));
                 dbg("e20rWorkout::getActivityArchive() - Saving workout for weekday: {$day} -> ID: {$activity->id}");
 
                 $activities[$dNo] = $activity;
@@ -584,46 +591,47 @@ class e20rWorkout extends e20rSettings {
 
 
         // Sort based on day id
-        ksort( $activities );
+        ksort($activities);
 
         // Return the hash of activities to the calling function.
         return $activities;
     }
 
-    public function getPeers( $workoutId = null ) {
+    public function getPeers($workoutId = null)
+    {
 
-        if ( is_null( $workoutId ) ) {
+        if (is_null($workoutId)) {
 
             global $post;
             // Use the parent value for the current post to get all of its peers.
             $workoutId = $post->post_parent;
         }
 
-        $workouts = new WP_Query( array(
+        $workouts = new WP_Query(array(
             'post_type' => 'page',
             'post_parent' => $workoutId,
             'posts_per_page' => -1,
             'orderby' => 'menu_order',
             'order' => 'ASC',
             'fields' => 'ids',
-        ) );
+        ));
 
         $workoutList = array(
             'pages' => $workouts->posts,
         );
 
-        foreach ( $workoutList->posts as $k => $v ) {
+        foreach ($workoutList->posts as $k => $v) {
 
-            if ( $v == get_the_ID() ) {
+            if ($v == get_the_ID()) {
 
-                if( isset( $workouts->posts[$k-1] ) ) {
+                if (isset($workouts->posts[$k - 1])) {
 
-                    $workoutList['prev'] = $workouts->posts[ $k - 1 ];
+                    $workoutList['prev'] = $workouts->posts[$k - 1];
                 }
 
-                if( isset( $workouts->posts[$k+1] ) ) {
+                if (isset($workouts->posts[$k + 1])) {
 
-                    $workoutList['next'] = $workouts->posts[ $k + 1 ];
+                    $workoutList['next'] = $workouts->posts[$k + 1];
                 }
             }
         }
@@ -633,51 +641,52 @@ class e20rWorkout extends e20rSettings {
         return $workoutList;
     }
 
-    public function addMeta_WorkoutSettings() {
+    public function addMeta_WorkoutSettings()
+    {
 
         // global $post;
-	    global $currentWorkout;
+        global $currentWorkout;
 
-        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page: " . $currentWorkout->id );
+        dbg("e20rWorkout::addMeta_WorkoutSettings() - Loading settings metabox for workout page: " . $currentWorkout->id);
         // $this->init( $post->ID );
-	    // $currentWorkout = $this->model->find( 'id', $post->ID );
+        // $currentWorkout = $this->model->find( 'id', $post->ID );
 
-	    if ( !empty( $currentWorkout ) ) {
+        if (!empty($currentWorkout)) {
 
-		    dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded a workout with settings...");
-		    echo $this->view->viewSettingsBox( $currentWorkout );
-	    }
-	    else {
+            dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded a workout with settings...");
+            echo $this->view->viewSettingsBox($currentWorkout);
+        } else {
 
-		    dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded an empty/defaul workout definition...");
-		    echo $this->view->viewSettingsBox( $this->model->defaultSettings() );
-	    }
+            dbg("e20rWorkout::addMeta_WorkoutSettings() - Loaded an empty/defaul workout definition...");
+            echo $this->view->viewSettingsBox($this->model->defaultSettings());
+        }
 
     }
 
-    public function getActivities( $aIds  = null) {
+    public function getActivities($aIds = null)
+    {
 
 //        global $currentProgram;
 
-	    if ( empty( $aIds ) ) {
-		    dbg('e20rWorkout::getActivities() - Loading all activities from DB');
-		    $activities = $this->model->find( 'id', 'any' ); // Will return all of the defined activities
-	    }
-/*        elseif ( is_array( $aIds ) ) {
+        if (empty($aIds)) {
+            dbg('e20rWorkout::getActivities() - Loading all activities from DB');
+            $activities = $this->model->find('id', 'any'); // Will return all of the defined activities
+        } /*        elseif ( is_array( $aIds ) ) {
             dbg("e20rWorkout::getActivities() - Supplied list of activity IDs, using 'IN' search");
             $activities = $this->model->find( 'delay', $aIds, 'numeric', $currentProgram->id, 'IN' );
         } */
-	    else {
-		    dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
-		    $activities = $this->model->find( 'id', $aIds );
-	    }
+        else {
+            dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
+            $activities = $this->model->find('id', $aIds);
+        }
 
         dbg("e20rWorkout::getActivities() - Found " . count($activities) . " activities.");
 
         return $activities;
     }
 
-    public function prepare_activity( $config ) {
+    public function prepare_activity($config)
+    {
 
         global $current_user;
 
@@ -690,48 +699,48 @@ class e20rWorkout extends e20rSettings {
 
         $activity_override = false;
 
-        $config->userId = ( !isset( $config->userId ) ? $current_user->ID : $config->userId );
-        $config->programId = ( !isset( $currentProgram->id ) ? $e20rProgram->getProgramIdForUser( $config->userId ) : $currentProgram->id );
-        $config->startTS = strtotime( $currentProgram->startdate );
-        $config->userGroup = $e20rTracker->getGroupIdForUser( $config->userId );
+        $config->userId = (!isset($config->userId) ? $current_user->ID : $config->userId);
+        $config->programId = (!isset($currentProgram->id) ? $e20rProgram->getProgramIdForUser($config->userId) : $currentProgram->id);
+        $config->startTS = strtotime($currentProgram->startdate);
+        $config->userGroup = $e20rTracker->getGroupIdForUser($config->userId);
         $config->expanded = false;
         $config->show_tracking = 1;
         // $config->hide_input = ( $tmp['hide_input'] == 0 ? false : true );
 
         dbg($config);
 
-        $actId_from_dash = isset( $_POST['activity-id'] ) ? array( $e20rTracker->sanitize( $_POST['activity-id'] ) ) : array();
+        $actId_from_dash = isset($_POST['activity-id']) ? array($e20rTracker->sanitize($_POST['activity-id'])) : array();
 
         // Make sure we won't load anything but the short code requested activity
-        if ( empty( $config->activity_id ) ) {
+        if (empty($config->activity_id)) {
 
             dbg("e20rWorkout::prepare_activity() - No user specified activity ID in short code config");
             // dbg($_POST);
 
             // Check whether we go called via the dashboard and an activity Id is given to us from there.
-            if ( !empty( $actId_from_dash ) ) {
+            if (!empty($actId_from_dash)) {
 
-                $act_override = isset( $_POST['activity-override']) ? $e20rTracker->sanitize( $_POST['activity-override'] ) : false;
-                $articleId = isset( $_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null;
-                $checkin_date = isset( $_POST['for-date']) ? $e20rTracker->sanitize( $_POST['for-date'] ) : null;
+                $act_override = isset($_POST['activity-override']) ? $e20rTracker->sanitize($_POST['activity-override']) : false;
+                $articleId = isset($_POST['article-id']) ? $e20rTracker->sanitize($_POST['article-id']) : null;
+                $checkin_date = isset($_POST['for-date']) ? $e20rTracker->sanitize($_POST['for-date']) : null;
 
-                dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . ( isset( $config->activity_id ) ? $config->activity_id : 'Not defined' ) );
+                dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . (isset($config->activity_id) ? $config->activity_id : 'Not defined'));
                 dbg("e20rWorkout::prepare_activity() - Dashboard requested a specific activity ID:");
-                dbg( $actId_from_dash );
+                dbg($actId_from_dash);
 
-                if ( $act_override == true ) {
+                if ($act_override == true) {
 
                     $activity_override = true;
                     $config->activity_id = $actId_from_dash;
 
-                    if ( !isset($currentArticle->id) || ( $currentArticle->id != $articleId ) ) {
+                    if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
 
                         dbg("e20rWorkout::prepare_activity() - Loading article with id {$articleId}");
-                        $e20rArticle->init( $articleId );
+                        $e20rArticle->init($articleId);
                     }
 
                     $config->date = $checkin_date;
-                    $config->delay = $e20rTracker->getDelay( $config->date, $config->userId );
+                    $config->delay = $e20rTracker->getDelay($config->date, $config->userId);
 
                     dbg("e20rWorkout::prepare_activity() - Overridden configuration: ");
                     dbg($config);
@@ -740,15 +749,15 @@ class e20rWorkout extends e20rSettings {
             }
         }
 
-        if ( !isset( $config->delay ) || empty( $config->delay ) ) {
+        if (!isset($config->delay) || empty($config->delay)) {
             $config->delay = $e20rTracker->getDelay('now');
         }
 
-        if ( !isset( $config->date ) || empty( $config->date ) ) {
+        if (!isset($config->date) || empty($config->date)) {
             $config->date = $e20rTracker->getDateForPost($config->delay);
         }
 
-        $config->dayNo = date_i18n( 'N', current_time('timestamp') );
+        $config->dayNo = date_i18n('N', current_time('timestamp'));
 
         // dbg( $config );
 
@@ -756,16 +765,15 @@ class e20rWorkout extends e20rSettings {
         // dbg( $config->activity_id );
         // If the activity ID is set, don't worry about anything but loading that activity (assuming it's permitted).
 
-        if ( !empty( $config->activity_id ) ) {
+        if (!empty($config->activity_id)) {
 
-            dbg("e20rWorkout::prepare_activity() - Admin specified activity ID" );
-            $articles = $e20rArticle->findArticles( 'activity_id', $config->activity_id, 'numeric', $config->programId, 'IN', true );
+            dbg("e20rWorkout::prepare_activity() - Admin specified activity ID");
+            $articles = $e20rArticle->findArticles('activity_id', $config->activity_id, 'numeric', $config->programId, 'IN', true);
 
-        }
-        else {
+        } else {
 
-            dbg("e20rWorkout::prepare_activity() - Attempting to locate article by configured delay value: {$config->delay}" );
-            $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
+            dbg("e20rWorkout::prepare_activity() - Attempting to locate article by configured delay value: {$config->delay}");
+            $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
 
             /*            if ( false !== $articles ) {
 
@@ -779,46 +787,46 @@ class e20rWorkout extends e20rSettings {
         // dbg($article);
 
 
-        if ( !is_array( $articles ) ) {
+        if (!is_array($articles)) {
 
             dbg("e20rWorkout::prepare_activity() - No articles found!");
-            $articles = array( $e20rArticle->emptyArticle() );
+            $articles = array($e20rArticle->emptyArticle());
         }
 
         // Process all articles we've found.
-        foreach( $articles as $a_key => $article ) {
+        foreach ($articles as $a_key => $article) {
 
             // if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
 
-            dbg( "e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count( $article->activity_id ) : 0 );
+            dbg("e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count($article->activity_id) : 0);
 
-            $workoutData = $this->model->find( 'id', $article->activity_id, 'numeric', $config->programId, 'IN' );
+            $workoutData = $this->model->find('id', $article->activity_id, 'numeric', $config->programId, 'IN');
 
-            foreach ( $workoutData as $k => $workout ) {
+            foreach ($workoutData as $k => $workout) {
 
-                dbg( "e20rWorkout::prepare_activity() - Iterating through the fetched workout IDs. Now processing workoutData entry {$k}");
+                dbg("e20rWorkout::prepare_activity() - Iterating through the fetched workout IDs. Now processing workoutData entry {$k}");
                 // dbg($workout);
 
-                if ( ! in_array( $config->programId, $workoutData[$k]->program_ids ) ) {
+                if (!in_array($config->programId, $workoutData[$k]->program_ids)) {
 
-                    dbg( "e20rWorkout::prepare_activity() - The workout is not part of the same program as the user - {$config->programId}: " );
-                    unset( $workoutData[ $k ] );
+                    dbg("e20rWorkout::prepare_activity() - The workout is not part of the same program as the user - {$config->programId}: ");
+                    unset($workoutData[$k]);
                 }
 
                 $has_access = array();
 
-                if ( ! empty( $workoutData[$k]->assigned_user_id ) || ! empty( $workoutData[$k]->assigned_usergroups ) ) {
+                if (!empty($workoutData[$k]->assigned_user_id) || !empty($workoutData[$k]->assigned_usergroups)) {
 
-                    dbg( "e20rWorkout::prepare_activity() - User Group or user list defined for this workout..." );
-                    $has_access = $e20rTracker->allowedActivityAccess( $workoutData[$k], $config->userId, $config->userGroup );
+                    dbg("e20rWorkout::prepare_activity() - User Group or user list defined for this workout...");
+                    $has_access = $e20rTracker->allowedActivityAccess($workoutData[$k], $config->userId, $config->userGroup);
 
-                    if ( !in_array( true, $has_access ) ) {
+                    if (!in_array(true, $has_access)) {
 
-                        dbg( "e20rWorkout::prepare_activity() - current user is NOT listed as a member of this activity: {$config->userId}" );
-                        dbg( "e20rWorkout::prepare_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: " );
+                        dbg("e20rWorkout::prepare_activity() - current user is NOT listed as a member of this activity: {$config->userId}");
+                        dbg("e20rWorkout::prepare_activity() - The activity is not part of the same group(s) as the user: {$config->userGroup}: ");
 
-                        unset( $workoutData[ $k ] );
-                        unset( $articles[$a_key] );
+                        unset($workoutData[$k]);
+                        unset($articles[$a_key]);
                     }
                 }
             }
@@ -828,52 +836,58 @@ class e20rWorkout extends e20rSettings {
         $config->articleId = $currentArticle->id;
         $recorded = array();
 
-        dbg( "e20rWorkout::prepare_activity() - WorkoutData prior to processing");
+        dbg("e20rWorkout::prepare_activity() - WorkoutData prior to processing");
 
-        foreach ( $workoutData as $k => $w ) {
+        foreach ($workoutData as $k => $w) {
 
-            dbg( "e20rWorkout::prepare_activity() - Processing workoutData entry {$k} to test whether to load user data");
+            dbg("e20rWorkout::prepare_activity() - Processing workoutData entry {$k} to test whether to load user data");
 
-            if ( $k !== 'error' ) {
+            if ($k !== 'error') {
 
-                dbg( "e20rWorkout::prepare_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
-                $saved_data = $this->model->getRecordedActivity( $config, $w->id );
+                dbg("e20rWorkout::prepare_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
+                $saved_data = $this->model->getRecordedActivity($config, $w->id);
 
-                if ( ( false == $activity_override ) && isset( $w->days) && ( !empty( $w->days ) ) && ( ! in_array( $config->dayNo, $w->days ) ) ) {
+                if ((false == $activity_override) && isset($w->days) && (!empty($w->days)) && (!in_array($config->dayNo, $w->days))) {
 
-                    dbg( "e20rWorkout::prepare_activity() - day {$config->dayNo} is wrong for this specific workout/activity" );
-                    dbg( $w->days );
-                    dbg( "e20rWorkout::prepare_activity() - Removing workout ID #{$w->id} as a result");
-                    unset( $workoutData[ $k ] );
-                }
-                else {
+                    dbg("e20rWorkout::prepare_activity() - day {$config->dayNo} is wrong for this specific workout/activity");
+                    dbg($w->days);
+                    dbg("e20rWorkout::prepare_activity() - Removing workout ID #{$w->id} as a result");
+                    unset($workoutData[$k]);
+                } else {
 
-                    foreach ( $w->groups as $gid => $g ) {
+                    foreach ($w->groups as $gid => $g) {
 
-                        if ( !empty( $saved_data ) ) {
+                        if (!empty($saved_data)) {
 
                             dbg("e20rWorkout::prepare_activity() - Integrating saved data for group # {$gid}");
-                            $workoutData[ $k ]->groups[ $gid ]->saved_exercises = isset( $saved_data[$gid]->saved_exercises ) ? $saved_data[$gid]->saved_exercises : array();
+                            $workoutData[$k]->groups[$gid]->saved_exercises = isset($saved_data[$gid]->saved_exercises) ? $saved_data[$gid]->saved_exercises : array();
                         }
 
 
-                        if ( isset( $g->group_tempo ) ) {
+                        if (isset($g->group_tempo)) {
                             dbg("e20rWorkout::prepare_activity() - Setting the tempo identifier");
-                            $workoutData[ $k ]->groups[ $gid ]->group_tempo = $this->model->getType( $g->group_tempo );
+                            $workoutData[$k]->groups[$gid]->group_tempo = $this->model->getType($g->group_tempo);
                         }
                     }
                 }
             }
         }
 
-        if ( empty( $workoutData ) ) {
+        if (empty($workoutData)) {
             $workoutData['error'] = 'No Activity found';
         }
 
         ob_start();
         ?>
         <div id="e20r-daily-activity-page">
-            <?php echo $this->view->displayActivity( $config, $workoutData ); ?>
+            <?php
+            if (isset($config->print_only) && (true === $config->print_only)) {
+
+                echo $this->view->display_printable_activity($config, $workoutData);
+            } else {
+                echo $this->view->displayActivity($config, $workoutData);
+            }
+            ?>
         </div>
         <?php
         $html = ob_get_clean();
@@ -888,14 +902,15 @@ class e20rWorkout extends e20rSettings {
      * @return html
      * @since 0.8.0
      */
-    public function shortcode_act_archive( $attributes = null ) {
+    public function shortcode_act_archive($attributes = null)
+    {
 
         dbg("e20rWorkout::shortcode_act_archive() - Loading shortcode data for the activity archive.");
 
         global $current_user;
         global $currentProgram;
 
-        if ( ! is_user_logged_in() ) {
+        if (!is_user_logged_in()) {
 
             auth_redirect();
         }
@@ -906,52 +921,52 @@ class e20rWorkout extends e20rSettings {
         $config->expanded = false;
         $config->show_tracking = 0;
         $config->phase = 0;
+        $config->print_only = null;
 
         $workoutData = array();
 
-        $tmp = shortcode_atts( array(
+        $tmp = shortcode_atts(array(
             'period' => 'current',
             'print_only' => null,
-        ), $attributes );
+        ), $attributes);
 
-        foreach ( $tmp as $key => $val ) {
+        foreach ($tmp as $key => $val) {
 
-            if ( !empty( $val ) ) {
+            if (!empty($val)) {
                 $config->{$key} = $val;
             }
         }
 
         // Valid "false" responses for print_only atribute can include: array( 'no', 'false', 'null', '0', 0, false, null );
-        $true_responses = array( 'yes', 'true', '1', 1, true );
+        $true_responses = array('yes', 'true', '1', 1, true);
 
-        if ( in_array( $config->print_only, $true_responses ) ) {
+        if (in_array($config->print_only, $true_responses)) {
             dbg("e20rWorkout::shortcode_act_archive() - User requested the archive be printed (i.e. include all unique exercises for the week)");
             $config->print_only = true;
-        }
-        else {
+        } else {
             dbg("e20rWorkout::shortcode_act_archive() - User did NOT request the archive be printed");
             $config->print_only = false;
         }
 
-        if ( 'current' == $config->period ) {
+        if ('current' == $config->period) {
             $period = E20R_CURRENT_WEEK;
         }
 
-        if ('previous' == $config->period ) {
+        if ('previous' == $config->period) {
             $period = E20R_PREVIOUS_WEEK;
         }
 
-        if ( 'next' == $config->period ) {
+        if ('next' == $config->period) {
             $period = E20R_UPCOMING_WEEK;
         }
 
         dbg("e20rWorkout::shortcode_act_archive() - Period set to {$config->period}.");
 
-        $activities = $this->getActivityArchive( $current_user->ID, $currentProgram->id, $period );
+        $activities = $this->getActivityArchive($current_user->ID, $currentProgram->id, $period);
 
-        dbg("e20rWorkout::shortcode_act_archive() - Check whether we're generating the list of exercises for print only: " . ( $config->print_only ? 'Yes' : 'No') );
+        dbg("e20rWorkout::shortcode_act_archive() - Check whether we're generating the list of exercises for print only: " . ($config->print_only ? 'Yes' : 'No'));
 
-        if ( true === $config->print_only ) {
+        if (true === $config->print_only) {
 
             $exercises = array(); // '$exercise_id' => $exercise_definition
             dbg("e20rWorkout::shortcode_act_archive() - User requested this activity archive be printed. Listing unique exercises.");
@@ -959,13 +974,13 @@ class e20rWorkout extends e20rSettings {
             $printable = array();
             $already_processed = array();
 
-            foreach( $activities as $key => $workout ) {
+            foreach ($activities as $key => $workout) {
 
-                if ( 'header' !== $key && (!in_array( $workout->id, $already_processed ) ) ) {
+                if ('header' !== $key && (!in_array($workout->id, $already_processed))) {
 
                     $routine = new stdClass();
 
-                    if ( ( 0 == $config->phase ) || ( $config->phase < $workout->phase ) ) {
+                    if ((0 == $config->phase) || ($config->phase < $workout->phase)) {
 
                         $routine->phase = $workout->phase;
                         dbg("e20rWorkout::shortcode_act_archive() - Setting phase number for the archive: {$config->phase}.");
@@ -980,105 +995,107 @@ class e20rWorkout extends e20rSettings {
 
                     $list = array();
 
-                    foreach ( $workout->groups as $grp ) {
+                    foreach ($workout->groups as $grp) {
 
-                        dbg("e20rWorkout::shortcode_act_archive() - Adding " . count( $grp->exercises ) . " to list of exercises for routine # {$routine->id}");
-                        $list = array_merge( $list, $grp->exercises );
+                        dbg("e20rWorkout::shortcode_act_archive() - Adding " . count($grp->exercises) . " to list of exercises for routine # {$routine->id}");
+                        $list = array_merge($list, $grp->exercises);
                     }
 
-                    $routine->exercises = array_unique( $list, SORT_NUMERIC );
+                    $routine->exercises = array_unique($list, SORT_NUMERIC);
 
-                    dbg("e20rWorkout::shortcode_act_archive() - Total number of exercises for  routine #{$routine->id}: " . count( $routine->exercises ) );
+                    dbg("e20rWorkout::shortcode_act_archive() - Total number of exercises for  routine #{$routine->id}: " . count($routine->exercises));
                     $already_processed[] = $routine->id;
                     $printable[] = $routine;
                 }
             }
 
-            dbg( "e20rWorkout::shortcode_act_archive() - Will display " . count( $printable ) . " workouts and their respective exercises for print");
-            return $this->view->display_printable_list( $printable, $config );
+            dbg("e20rWorkout::shortcode_act_archive() - Will display " . count($printable) . " workouts and their respective exercises for print");
+            return $this->view->display_printable_list($printable, $config);
         }
 
-        dbg("e20rWorkout::shortcode_act_archive() - Grabbed activity count: " . count( $activities ) );
+        dbg("e20rWorkout::shortcode_act_archive() - Grabbed activity count: " . count($activities));
 
-        echo $this->view->displayArchive( $activities, $config );
+        echo $this->view->displayArchive($activities, $config);
         // dbg($activities);
     }
 
-	public function shortcode_activity( $attributes = null ) {
+    public function shortcode_activity($attributes = null)
+    {
 
-		dbg("e20rWorkout::shortcode_activity() - Loading shortcode data for the activity.");
+        dbg("e20rWorkout::shortcode_activity() - Loading shortcode data for the activity.");
 
-		if ( ! is_user_logged_in() ) {
+        if (!is_user_logged_in()) {
 
-			auth_redirect();
-		}
+            auth_redirect();
+        }
 
-/*		global $e20rArticle;
-		global $e20rProgram;
-		global $e20rTracker;
+        /*		global $e20rArticle;
+                global $e20rProgram;
+                global $e20rTracker;
 
-		global $current_user;
-		global $currentArticle;
-        global $currentProgram;
-		global $post;
-		$workoutData = array();
-        $activity_override = false;
-*/
+                global $current_user;
+                global $currentArticle;
+                global $currentProgram;
+                global $post;
+                $workoutData = array();
+                $activity_override = false;
+        */
 
-		$config = new stdClass();
+        $config = new stdClass();
         $config->show_tracking = 1;
         $config->display_type = 'row';
-        $config->print_only = false;
+        $config->print_only = null;
 
-		$tmp = shortcode_atts( array(
-			'activity_id' => null,
+        $tmp = shortcode_atts(array(
+            'activity_id' => null,
             'show_tracking' => 1,
             'display_type' => 'row', // Valid types: 'row', 'column', 'print'
-		), $attributes );
+        ), $attributes);
 
         // dbg( $tmp );
 
-		foreach ( $tmp as $key => $val ) {
+        foreach ($tmp as $key => $val) {
 
-            if ( ( 'activity_id' == $key ) && ( !is_null( $val) ) ) {
-                $val = array( $val );
+            if (('activity_id' == $key) && (!is_null($val))) {
+                $val = array($val);
             }
 
-/*            if ( 'hide_input' == $key ) {
+            /*            if ( 'hide_input' == $key ) {
 
-                $val = ( $val == 0 ? 0 : 1 );
-            } */
+                            $val = ( $val == 0 ? 0 : 1 );
+                        } */
 
-            if ( !is_null( $val ) ) {
+            if (!is_null($val)) {
                 // dbg("e20rWorkout::shortcode_activity() - Setting {$key} to {$val}");
                 $config->{$key} = $val;
             }
-		}
+        }
 
-        if ( !in_array( $config->display_type, array( 'row', 'column', 'print' ) ) ) {
+        if (!in_array($config->display_type, array('row', 'column', 'print'))) {
 
             dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
             return '<div class="error">Incorrect display_type specified in the e20r_activity shortcode!</div>';
         }
 
-        if ( 'print' === $config->display_type ) {
+        if ('print' === $config->display_type) {
 
             $config->print_only = true;
         }
 
         echo $this->prepare_activity($config);
-	}
+    }
 
-    public function getMemberGroups() {
+    public function getMemberGroups()
+    {
 
         $membersGroups = array();
 
         // For Paid Memberships Pro.
-        if ( function_exists( 'pmpro_getAllLevels' ) ) {
+        if (function_exists('pmpro_getAllLevels')) {
 
             $memberships = pmpro_getAllLevels();
 
-            foreach ( $memberships as $mId => $mInfo ) {
+            foreach ($memberships as $mId => $mInfo) {
                 $memberGroups[$mId] = $mInfo->name;
             }
         }
@@ -1086,9 +1103,10 @@ class e20rWorkout extends e20rSettings {
         return $memberGroups;
     }
 
-    public function workout_attributes_dropdown_pages_args( $args, $post ) {
+    public function workout_attributes_dropdown_pages_args($args, $post)
+    {
 
-        if ( 'e20r_workout' == $post->post_type ) {
+        if ('e20r_workout' == $post->post_type) {
             dbg('e20rWorkout::changeSetParentType()...');
             $args['post_type'] = 'e20r_workout';
         }
@@ -1096,66 +1114,67 @@ class e20rWorkout extends e20rSettings {
         return $args;
     }
 
-	public function add_new_exercise_to_group_callback() {
+    public function add_new_exercise_to_group_callback()
+    {
 
-		dbg("e20rWorkout::add_new_exercise_to_group_callback() - add_to_group data");
+        dbg("e20rWorkout::add_new_exercise_to_group_callback() - add_to_group data");
 
-		check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
-		global $e20rTracker;
-		global $e20rExercise;
+        global $e20rTracker;
+        global $e20rExercise;
 
-		dbg("e20rWorkout::add_new_exercise_to_group_callback() - Received POST data:");
-		dbg($_POST);
+        dbg("e20rWorkout::add_new_exercise_to_group_callback() - Received POST data:");
+        dbg($_POST);
 
-		$exerciseId = isset( $_POST['e20r-exercise-id']) ? $e20rTracker->sanitize( $_POST['e20r-exercise-id']) : null;
+        $exerciseId = isset($_POST['e20r-exercise-id']) ? $e20rTracker->sanitize($_POST['e20r-exercise-id']) : null;
 
-		if ( $exerciseId ) {
+        if ($exerciseId) {
 
-			$exerciseData = $e20rExercise->getExerciseSettings( $exerciseId );
+            $exerciseData = $e20rExercise->getExerciseSettings($exerciseId);
 
-			// Replace the $type variable before sending to frontend (make it comprehensible).
-			$exerciseData->type = $e20rExercise->getExerciseType( $exerciseData->type );
+            // Replace the $type variable before sending to frontend (make it comprehensible).
+            $exerciseData->type = $e20rExercise->getExerciseType($exerciseData->type);
 
-			dbg( "e20rWorkout::add_new_exercise_to_group_callback() - loaded Workout info: " );
+            dbg("e20rWorkout::add_new_exercise_to_group_callback() - loaded Workout info: ");
 
-			wp_send_json_success( $exerciseData );
-		}
+            wp_send_json_success($exerciseData);
+        }
 
-		wp_send_json_error("Unknown error processing new exercise request.");
-	}
+        wp_send_json_error("Unknown error processing new exercise request.");
+    }
 
-    public function add_new_exercise_group_callback() {
+    public function add_new_exercise_group_callback()
+    {
 
         dbg("e20rWorkout::add_new_exercise_group_callback() - addGroup data");
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
-	    global $e20rTracker;
+        global $e20rTracker;
 
-	    dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
-	    dbg($_POST);
+        dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
+        dbg($_POST);
 
-        $groupId = isset( $_POST['e20r-workout-group-id']) ? $e20rTracker->sanitize( $_POST['e20r-workout-group-id']) : null;
+        $groupId = isset($_POST['e20r-workout-group-id']) ? $e20rTracker->sanitize($_POST['e20r-workout-group-id']) : null;
 
-	    if ( ! $groupId ) {
-		    wp_send_json_error( 'Unable to add more groups. Please contact support!');
-	    }
+        if (!$groupId) {
+            wp_send_json_error('Unable to add more groups. Please contact support!');
+        }
 
         dbg("e20rWorkout::add_new_exercise_group_callback() - Adding clean/default workout settings for new group. ID={$groupId}.");
 
-	    $workout = $this->model->defaultSettings();
-        $data = $this->view->newExerciseGroup( $workout->groups[0], $groupId );
+        $workout = $this->model->defaultSettings();
+        $data = $this->view->newExerciseGroup($workout->groups[0], $groupId);
 
-	    if ( $data ) {
+        if ($data) {
 
-		    dbg( "e20rWorkout::add_new_exercise_group_callback() - New group table completed. Sending..." );
-		    wp_send_json_success( array( 'html' => $data ) );
-	    }
-	    else {
+            dbg("e20rWorkout::add_new_exercise_group_callback() - New group table completed. Sending...");
+            wp_send_json_success(array('html' => $data));
+        } else {
 
-		    dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
-		    wp_send_json_error( "Error: Unable to generate new group");
-	    }
+            dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
+            wp_send_json_error("Error: Unable to generate new group");
+        }
     }
 } 
