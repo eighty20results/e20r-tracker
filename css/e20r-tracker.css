@@ -934,6 +934,24 @@ div#inner-tabs .ui-tabs-nav .ui-state-active {
     float: left;
     width: 45%;
 }
+.e20r-weekly-progress-reminder-text > h4 {
+    font-size: 22px;
+    margin-top: 8px;
+    height: 28px;
+    line-height: 30px;
+}
+.e20r-weekly-progress-reminder-text > p {
+    font-size: 16px; color: black;
+}
+.e20r-weekly-progress-reminder-text > ul { font-size: 16px; }
+.e20r-weekly-progress-reminder-text > ul > li { line-height: 20px; }
+.e20r-weekly-progress-reminder-text > a {
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: bold;
+    margin-top: 16px;
+    display: block;
+}
 @media screen and (max-width: 460px) {
     a[id^="ui-id-"] {
         font-size: 0.8rem;

@@ -164,33 +164,29 @@ class e20rArticleView extends e20rSettingsView {
             ob_start();
             ?>
             <div id="saturday-progress-container" class="progress-container" style="margin-bottom: 16px;">
-                <h3>Weekly Progress <span>Update</span></h3>
+                <h3><?php _e("Weekly Progress", "e20rtracker");?> <span><?php _e("Update", "e20tracker"); ?></span></h3>
 
-                <div id="e20r-progress-canvas" style="min-height: 255px;">
+                <div id="e20r-progress-canvas">
                     <img src="<?php echo E20R_PLUGINS_URL; ?>/img/alert.png" class="tooltip-handle" data-tooltip=""
                          data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock" style="float: left;"/>
 
-                    <div style="float: left; width: 360px;">
+                    <div class="e20r-weekly-progress-reminder-text">
 
-                        <h4 style="font-size: 22px; margin-top: 8px; height: 28px; line-height: 30px;"><span class="highlighted">We&nbsp;need&nbsp;your&nbsp;measurements.</span></h4>
+                        <h4><span class="highlighted"><?php _e("We need your measurements.", "e20rtracker"); ?></span></h4>
 
-                        <p style="font-size: 16px; color: black;">Today is a measurement day. Here's what we need you to
-                            collect:</p>
-
-                        <ul style="font-size: 16px;">
-                            <li style="line-height: 20px;">Body Weight</li>
-                            <li style="line-height: 20px;">Girth Measurements</li>
+                        <p><?php _e("Today is a measurement day. Here's what we need you to collect:", "e20rtracker"); ?></p>
+                        <ul>
+                            <li><?php _e("Body Weight", "e20rtracker"); ?></li>
+                            <li><?php _e("Girth Measurements", "e20tracker"); ?></li>
                             <?php if ($photos == 1): ?>
-                                <li style="line-height: 20px;">Photos</li>
+                                <li><?php _e("Photos", "e20rtracker");?></li>
                             <?php endif; ?>
                         </ul>
-                        <form action="<?php echo get_permalink($currentProgram->measurements_page_id); ?>" method="POST"
-                              id="e20r-start">
+                        <form action="<?php echo get_permalink($currentProgram->measurements_page_id); ?>" method="POST" id="e20r-start">
                             <input type="hidden" value="<?php echo $e20rTracker->getDateForPost($day); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
                             <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                         </form>
-                        <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn"
-                           style="font-size: 18px; line-height: 20px; font-weight: bold; margin-top: 16px; display: block;"><?php _e("Begin"); ?> &raquo;</a>
+                        <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn"><?php _e("Begin", "e20rtracker"); ?> &raquo;</a>
                     </div>
                 </div>
             </div>
