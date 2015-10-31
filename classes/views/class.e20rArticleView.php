@@ -168,7 +168,7 @@ class e20rArticleView extends e20rSettingsView {
 
                 <div id="e20r-progress-canvas">
                     <img src="<?php echo E20R_PLUGINS_URL; ?>/img/alert.png" class="tooltip-handle" data-tooltip=""
-                         data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock" style="float: left;"/>
+                         data-tooltip-mleft="-83" data-tooltip-mtop="126" id="weekly-alarm-clock"/>
 
                     <div class="e20r-weekly-progress-reminder-text">
 
