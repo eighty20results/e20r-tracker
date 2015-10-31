@@ -1,5 +1,3 @@
-Make sure the "Assignment Complete" logic works for cases when posts are being repeated on different days in contentFilter()
-e20r_article_summary shortcode would sometimes cause page to go blank
-Return the date of the last post included in the post summary list, not the date of the article generating the list.
-Fix padding/spacing for article summary date values
-Make heading for the article summary list match the formatting for the [daily_progress type="assignment"] formatting.
+Move styles from HTML to css for weekly progress reminder
+Make text translatable for the weekly progress reminder
+Update formatting for weekly progress reminder.

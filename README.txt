@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.4
+Stable tag: 1.4.2
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,44 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.4.2 ==
+
+* Move styles from HTML to css for weekly progress reminder
+* Make text translatable for the weekly progress reminder
+* Update formatting for weekly progress reminder.
+
+== 1.4.1 ==
+
+* Add e20rTracker formatting for gravity forms.
+* Refactor & format to comply w/Wordpress standards
+* Support a printable format for the activity display.
+* Fix formatting for links on printed pages.
+* Add initial framework for printable activity display
+* Add support for a show_reps setting in view_exercise_as_*() functions.
+* Add print_only attribute to activity archive shortcode
+* Use summary of activity list if user requests a printable list of activities
+* Remove unused variables from shortcode_activity()
+* Add 'display_type' attribute to e20r_activity shortcode.
+* Load print specific CSS file separately
+* Fix issue when loading css & javascript for exercise shortcode
+* Add print_only attribute to activity archive shortcode
+* Allow summary of activity list if user request printable list of activities
+* Remove unused variables from shortcode_activity()
+* Add 'display_type' attribute to e20r_activity shortcode.
+* Split print specific CSS to its own CSS file
+* Add print specific CSS for exercises and activities.
+* Add support for a printable list of activity descriptions as part of the e20r_activity_archive shortcode
+* Fix error message when there are no activities found for the specified period
+* Differentiate between upcoming weeks and current/previous weeks in archive display.
+* Include minified file in repo.
+* Update to reflect page dimensions for print view.
+* Refactor file to use Wordpress formatting
+* Refactor video content view
+* Split old-style (row based) and new-style (column based) exercise views.
+* Add support for old style or new-style display of exercise information in print_exercise( $show, $display )
+* Add support for specifying display type in e20r_exercise shortcode (i.e. 'display='column|row'')
+* Separate CSS for exercise display out from overall activity display.
 
 == 1.4 ==
 
