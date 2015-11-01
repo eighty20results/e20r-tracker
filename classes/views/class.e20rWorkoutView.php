@@ -344,6 +344,7 @@ class e20rWorkoutView extends e20rSettingsView {
                     case 1: // weight
                         $wType = __("Resistance");
                         $unit_pre = __("Weight", "e20rtracker");
+                        $wType = null;
                         $unit_post = null;
                         break;
 
@@ -353,6 +354,11 @@ class e20rWorkoutView extends e20rSettingsView {
                         $wType = $e20rExercise->getExerciseType($type);
                         $unit_post = __("seconds", "e20rtracker");
                         break;
+
+                    default:
+                        $wType = null;
+                        $unit_post = null;
+                        $unit_pre = null;
                 }
 
                 ?>
