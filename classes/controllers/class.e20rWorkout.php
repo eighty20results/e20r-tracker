@@ -1071,10 +1071,21 @@ class e20rWorkout extends e20rSettings
             }
         }
 
+        if ( !in_array($config->show_tracking, array( 'yes', 'no', 'true', 'false', 1, 0 ) ) ) {
+
+            dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
+            return '<div class="error">Incorrect show_tracking value in the e20r_activity shortcode! (Valid values are: "yes", "no", "true", "false", "1", "0")</div>';
+
+        }
         if (!in_array($config->display_type, array('row', 'column', 'print'))) {
 
             dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
-            return '<div class="error">Incorrect display_type specified in the e20r_activity shortcode!</div>';
+            return '<div class="error">Incorrect display_type value in the e20r_activity shortcode! (Valid values are "row", "column", "print")</div>';
+        }
+
+        if ( in_array( strtolower( $config->show_tracking ), array( 'no', 'false', '0' ) ) ) {
+
+            $config->show_tracking = 0;
         }
 
         if ('print' === $config->display_type) {
