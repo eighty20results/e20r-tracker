@@ -54,7 +54,7 @@ class e20rWorkoutView extends e20rSettingsView {
 				<?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
 				<div class="e20r-activity-overview-table e20r-print-activity">
 					<div class="e20r-activity-table-header">
-						<div class="e20r-exercise-row clearfix">
+						<div class="e20r-exercise-row clear-after">
 							<div class="e20r-activity-info-col e20r-workout-summary">
                                 <input type="hidden" id="e20r-activity-input-user_id" name="e20r-activity-exercise-user_id" value="<?php echo esc_attr( $config->userId ); ?>" />
 								<input type="hidden" id="e20r-activity-input-program_id" name="e20r-activity-exercise-program_id" value="<?php echo esc_attr( $config->programId ); ?>" />
@@ -92,7 +92,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
 							$recorded = isset( $g->saved_exercises ) ? $g->saved_exercises : array();
 							$gcount = $k + 1; ?>
-							<div class="e20r-int-table exercise-header clearfix">
+							<div class="e20r-int-table exercise-header clear-after">
 								<div class="e20r-act-content-row">
 									<p class="e20r-content-col">
 										<span class="e20r-activity-label"><?php _e( "Group", "e20rtracker"); ?>: </span>
@@ -396,7 +396,7 @@ class e20rWorkoutView extends e20rSettingsView {
                                             </div>
                                         </div><!-- history-sets --><?php
                                         } ?>
-                                <!-- <div class="clearfix"></div> -->
+                                <!-- <div class="clear-after"></div> -->
                                     </div><!-- Groups/sets (content) container -->
                                 </div><!-- Inner container -->
                             </div><?php
@@ -467,7 +467,7 @@ class e20rWorkoutView extends e20rSettingsView {
 
         <div class="e20r-faq-container e20r-toggle-close">
             <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName( $day ); ?></h3>
-            <div class="e20r-faq-answer-container clearfix">
+            <div class="e20r-faq-answer-container clear-after">
                 <?php echo $this->displayActivity( $config, array( $activity ) ); ?>
             </div>
         </div><?php
