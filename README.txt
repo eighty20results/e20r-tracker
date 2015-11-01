@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,20 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.4.4 ==
+
+* Handle multiple variable values for shortcode attributes in the affirmative (and return error message(s) if input isn't supported/understood)
+* Support print mode for [e20r_activity] Start escaping variables in HTML form(s)
+* Remove @media print formatting from the activities.css file and place it in print.css instead
+* Partially duplicate e20r_activity HTML in support of the display_printable_activity() view
+* Escape most attributes in web form(s) for activity.
+* Support display_type='print' for the [e20r_activity] shortcode
+* Add @media print formatting for individual activity listing (i.e. when e20r_activity shortcode has display_type='print')
+* Update background picture for the gender selector page CSS.
+* Updated dimensions of alert.png image
+* Refactor @media screen entries
+* Remove HTML element styling & place in .css file.
 
 == 1.4.3 ==
 
