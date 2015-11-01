@@ -213,16 +213,6 @@ div.e20r-display-exercise-div {
 tfoot.e20r-activity-table-footer {
     border: 0 hidden;
 }
-@media print {
-    table.e20r-print-activity {
-        page-break-after: always;
-    }
-    div.e20r-activity-description {
-        page-break-after: always;
-        margin-left: 2cm;
-        margin-right: 2cm;
-    }
-}
 @media screen and (min-width: 534px) {
 /*    .e20r-display-exercise-image > .wp-video-shortcode {
         display: block;
