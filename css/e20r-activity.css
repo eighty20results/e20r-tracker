@@ -18,8 +18,9 @@ table.e20r-resp-table {
     border-top: 1px solid #ddd;
     padding: 4px 8px;
 }
+table.e20r-resp-table td { vertical-align: middle; }
 table.e20r-resp-table th {background-color:rgba( 92, 92, 92, 0.3 );font-weight:bold;color:#004CFF;}
-table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
+table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee; }
 @media screen and (max-width: 1024px ) {
     table.e20r-measurement-table.e20r-resp-table {width:100%;}
     .e20r-measurement-table.e20r-resp-table thead {display: none;}
@@ -71,6 +72,13 @@ table.e20r-resp-table tbody tr:nth-child(even) td { background-color: #eee;}
     .e20r-exercise-value {
         padding: 0;
     }
+    #e20r-daily-activity-page .youtube-player > iframe {
+        width: 280px;
+        max-width: 280px;
+        height: 210px;
+        max-height: 210px;
+    }
+
 }
 table.e20r-measurement-table.e20r-resp-table th {
     background-color: transparent;
@@ -225,6 +233,13 @@ tfoot.e20r-activity-table-footer {
         height: 15ex;
     }
     */
+    #e20r-daily-activity-page .youtube-player > iframe {
+        width: 460px;
+        max-width: 460px;
+        height: 320px;
+        max-height: 320px;
+    }
+
 }
  img.e20r-resize {
      max-width: 100%;
@@ -414,4 +429,28 @@ p.e20r-history-reps {
 }
 .e20r-activity-list {
     background-color: #FFF;
+}
+#e20r-daily-activity-page h4.e20r-tracker-detail-h4 {
+    font-size: 20pt;
+}
+#e20r-daily-activity-page div.e20r-exercise-table-body.startHidden {
+    display: block;
+}
+#e20r-daily-activity-page span.e20r-activity-label,
+#e20r-daily-activity-page span.e20r-activity-var {
+    font-size: 13pt;
+    color: black;
+    border: none;
+}
+#e20r-daily-activity-page span.e20r-exercise-label,
+#e20r-daily-activity-page span.e20r-exercise-value {
+    padding-right: 20px;
+    font-size: 13pt;
+}
+#e20r-daily-activity-page span.e20r-exercise-value {
+    font-weight: 700;
+}
+#e20r-daily-activity-page div.e20r-act-content-row {
+    width: 100%;
+    margin: 0 10px 0 10px;
 }
