@@ -138,15 +138,6 @@
     #e20r-daily-activity-page .e20r-int-table.exercise-header {
         border-bottom: 1px solid #e5e5e5;
     }
-    #e20r-daily-activity-page .e20r-int-table.exercise-header:before {
-        content: "New Group";
-        font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
-        font-size: 18pt;
-        font-variant: small-caps;
-        text-rendering: optimizeLegibility;
-        color: #4c4c4c;
-        font-weight: bold;
-    }
     #e20r-daily-activity-page div.e20r-activity-table-body {
         padding: 0;
         color: black;
@@ -174,11 +165,6 @@
     }
     #e20r-daily-activity-page div.e20r-exercise-content {
         page-break-inside: avoid;
-    }
-    #e20r-daily-activity-page .e20r-int-table.exercise-header {
-        page-break-inside: avoid;
-        border-top: 20px solid #5c5c5c;
-        margin-top: 20px;
     }
     #e20r-daily-activity-page thead.e20r-resp-table-header th {
         padding-left: 5px;
