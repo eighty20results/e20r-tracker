@@ -1,11 +1,11 @@
-Handle multiple variable values for shortcode attributes in the affirmative (and return error message(s) if input isn't supported/understood)
-Support print mode for [e20r_activity] Start escaping variables in HTML form(s)
-Remove @media print formatting from the activities.css file and place it in print.css instead
-Partially duplicate e20r_activity HTML in support of the display_printable_activity() view
-Escape most attributes in web form(s) for activity.
-Support display_type="print" for the [e20r_activity] shortcode
-Add @media print formatting for individual activity listing (i.e. when e20r_activity shortcode has display_type="print")
-Update background picture for the gender selector page CSS.
-Updated dimensions of alert.png image
-Refactor @media screen entries
-Remove HTML element styling & place in .css file.
+Transision to .clear-after class (from .clearfix)
+Refactor @media screen formatting Add new group handling/formatting
+Make the new-group print independent
+Make new exercise header bar visible on screen & print
+Add link symbol for <a href>
+Make weight/rep updates work in printable view.
+Refactor CSS for print formatting
+Refactor for Wordpress formatted file(s)
+Fix formatting for saved data in weight/rep table inputs
+Fix small-screen video size (Phone in Portrait mode)
+Set font/display for "print_only" attribute based displays while @media == screen

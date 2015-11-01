@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -103,6 +103,20 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.4.5 ==
+
+* Transision to .clear-after class (from .clearfix)
+* Refactor @media screen formatting Add new group handling/formatting
+* Make the new-group print independent
+* Make new exercise header bar visible on screen & print
+* Add link symbol for <a href>
+* Make weight/rep updates work in printable view.
+* Refactor CSS for print formatting
+* Refactor for Wordpress formatted file(s)
+* Fix formatting for saved data in weight/rep table inputs
+* Fix small-screen video size (Phone in Portrait mode)
+* Set font/display for 'print_only' attribute based displays while @media == screen
 
 == 1.4.4 ==
 
