@@ -90,18 +90,18 @@ class e20rExercise extends e20rSettings
         return $this->model->loadSettings($id);
     }
 
-    public function print_exercise($show = true, $display = 'old')
+    public function print_exercise($show = true, $display = 'old', $printing = false )
     {
 
         switch ($display) {
 
             case 'new':
 
-                $html = $this->view->view_exercise_as_columns($show);
+                $html = $this->view->view_exercise_as_columns($show, $printing );
                 break;
 
             default:
-                $html = $this->view->view_exercise_as_row($show);
+                $html = $this->view->view_exercise_as_row($show, $printing );
         }
 
         return $html;
