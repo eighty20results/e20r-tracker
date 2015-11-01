@@ -66,7 +66,7 @@ class e20rExerciseView
         return $html;
     }
 
-    public function view_exercise_as_columns($show = true)
+    public function view_exercise_as_columns($show = true, $printing = false )
     {
 
         global $currentExercise;
@@ -94,14 +94,11 @@ class e20rExerciseView
                 </div>
             </div>
             <div class="spacer">&nbsp;</div>
-            <div class="e20r-exercise-table-body<?php echo($show == true ? " show" : " startHidden"); ?> e20r-exercise-detail-row-2 clearfix">
+            <div class="e20r-exercise-table-body<?php echo( ( ( $show === true ) ||  ( true === $printing ) ) ? " show" : " startHidden"); ?> e20r-exercise-detail-row-2 clearfix">
                 <div class="e20r-exercise-table-column first-column e20r-exercise-reps">
                     <p class="e20r-exercise-description">
-                        <span
-                            class="e20r-exercise-label"><?php echo $e20rExercise->getExerciseType($currentExercise->type); ?>
-                            :</span>
-                        <span
-                            class="e20r-exercise-value"><?php echo(!in_array($currentExercise->type, array(1, 3)) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}"); ?></span>
+                        <span class="e20r-exercise-label"><?php echo esc_html( $e20rExercise->getExerciseType($currentExercise->type) ); ?>:</span>
+                        <span class="e20r-exercise-value"><?php echo(!in_array($currentExercise->type, array(1, 3)) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}"); ?></span>
                     </p>
                 </div>
                 <div class="e20r-exercise-table-column second-column e20r-right e20r-exercise-rest-time">
@@ -117,6 +114,7 @@ class e20rExerciseView
                     </p>
                 </div>
             </div>
+            <?php if ( false === $printing ): ?>
             <div class="e20r-exercise-detail-row-3 clearfix">
                 <div class="e20r-video e20r-exercise-table-column first-column e20r-exercise-video-column clearfix">
                     <div class="e20r-exercise-video">
@@ -129,6 +127,7 @@ class e20rExerciseView
                     <p><?php echo wpautop($currentExercise->descr); ?></p>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
         <?php
         $html = ob_get_clean();
@@ -137,7 +136,7 @@ class e20rExerciseView
     }
 
     // Display the exercise entry for an activity page
-    public function view_exercise_as_row($show = true, $show_reps = false )
+    public function view_exercise_as_row($show = true, $printing = false )
     {
 
         global $currentExercise;
@@ -173,8 +172,7 @@ class e20rExerciseView
                         <div class="e20r-exercise-video">
                             <?php echo(!empty($display) ? $display : ''); ?>
                         </div>
-                        <input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]"
-                               value="<?php echo $currentExercise->id; ?>"/>
+                        <input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]" value="<?php echo $currentExercise->id; ?>"/>
                     </div>
                 </div>
                 <div class="spacer">&nbsp;</div>
@@ -208,6 +206,7 @@ class e20rExerciseView
                     </div>
                 </div>
                 <div class="spacer">&nbsp;</div>
+
             </div>
         </div>
         <?php
