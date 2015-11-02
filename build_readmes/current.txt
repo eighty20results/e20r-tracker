@@ -1,11 +1,7 @@
-Transision to .clear-after class (from .clearfix)
-Refactor @media screen formatting Add new group handling/formatting
-Make the new-group print independent
-Make new exercise header bar visible on screen & print
-Add link symbol for <a href>
-Make weight/rep updates work in printable view.
-Refactor CSS for print formatting
-Refactor for Wordpress formatted file(s)
-Fix formatting for saved data in weight/rep table inputs
-Fix small-screen video size (Phone in Portrait mode)
-Set font/display for "print_only" attribute based displays while @media == screen
+Add print icon to daily activity page
+Hide title on print page(s) for activities on load
+Add support for clicking print icon to print daily activity page.
+Hide printer icon when page is too small (i.e. on phone)
+Tentative CSS support for down arrow (to indicate scroll direction for additional content)
+Hide printer icon on page being printed
+Remove all navigation and header elements when printing the page
