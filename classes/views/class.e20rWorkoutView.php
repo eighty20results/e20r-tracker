@@ -266,7 +266,7 @@ class e20rWorkoutView extends e20rSettingsView {
 					<p class="e20r-activity-summary-routine-paragraph"><?php
 
 					if ( isset( $config->phase ) ) {
-						echo sprintf( __("Activity description for phase %s of this program.", "e20rtracker"), $config->phase );
+						echo sprintf( __("Activity description for phase %s of this program.", "e20rtracker"), $activity_summary->phase );
 					}
 					?></p>
 					<div class="e20r-activity-summary-printable-row e20r-activity-summary-headline">
