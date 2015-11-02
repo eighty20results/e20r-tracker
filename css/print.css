@@ -180,4 +180,14 @@
     #e20r-daily-activity-page div.e20r-activity-info-col.e20r-workout-user-summary > div.e20r-int-table {
         display: none;
     }
+    .e20r-activity-printer-icon {
+        display: none;
+    }
+    nav.nav-primary,
+    nav.nav-secondary {
+        display: none;
+    }
+    header.site-header {
+        display: none;
+    }
 }
