@@ -216,7 +216,11 @@ class e20rWorkoutView extends e20rSettingsView {
 		}
 
 		ob_start(); ?>
-		<div class="e20r-activity-overview-printable">
+        <div class="e20r-activity-printer-icon">
+            <img onClick="e20rActivity.print_page('<?php echo esc_url( $activity_page_url ); ?>');" id="e20r-activity-print" src="<?php echo E20R_PLUGINS_URL . '/img/printer-icon.png'?>">
+            <span class="e20r-activity-print-label"><?php _e("Click to print", "e20rtracker");?></span>
+        </div>
+        <div class="e20r-activity-overview-printable">
 			<h1 class="e20r-activity-overview-h1"><?php _e("Activity summary for", "e20rtracker"); ?></h1>
 			<h2 class="e20r-activity-overview-h2"><?php echo esc_html( $currentProgram->title ); ?></h2>
 			<hr/><?php
