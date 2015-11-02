@@ -25,6 +25,7 @@ class e20rWorkoutView extends e20rSettingsView {
 		}
 
 		global $current_user;
+        global $currentProgram;
 		global $currentExercise;
 		global $e20rExercise;
 
@@ -43,10 +44,15 @@ class e20rWorkoutView extends e20rSettingsView {
 		ob_start();
 		foreach ( $workoutData as $w ) {
 
+            $activity_page_url = get_permalink( $currentProgram->activity_page_id );
 			$groups = isset( $w->groups ) ? $w->groups : null; ?>
 
 			<h2><?php echo esc_attr( $w->title ); ?></h2>
-			<div class="e20r-activity-description">
+			<div class="e20r-activity-printer-icon">
+                <img onClick="e20rActivity.print_page('<?php echo esc_url( $activity_page_url ); ?>');" id="e20r-activity-print" src="<?php echo E20R_PLUGINS_URL . '/img/printer-icon.png'?>">
+                <span class="e20r-activity-print-label"><?php _e("Click to print", "e20rtracker");?></span>
+            </div>
+            <div class="e20r-activity-description">
 				<h4><?php _e( "Summary", "e20rtracker" ); ?></h4>
 				<p><?php echo wpautop( $w->excerpt ); ?></p>
 			</div>
