@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -104,9 +104,19 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.4.6 ==
+
+* Add print icon to daily activity page
+* Hide title on print page(s) for activities on load
+* Add support for clicking print icon to print daily activity page.
+* Hide printer icon when page is too small (i.e. on phone)
+* Tentative CSS support for down arrow (to indicate scroll direction for additional content)
+* Hide printer icon on page being printed
+* Remove all navigation and header elements when printing the page
+
 == 1.4.5 ==
 
-* Transision to .clear-after class (from .clearfix)
+* Transition to .clear-after class (from .clearfix)
 * Refactor @media screen formatting Add new group handling/formatting
 * Make the new-group print independent
 * Make new exercise header bar visible on screen & print
