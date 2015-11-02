@@ -19,6 +19,7 @@ var e20rActivity = {
         this.$weight_fields = jQuery('.e20r-activity-input-weight');
         this.$rep_fields = jQuery('.e20r-activity-input-reps');
         this.$rows = jQuery(".e20r-exercise-tracking-row");
+        this.$print = jQuery("#e20r-activity-print");
         this.$tracked = jQuery(".e20r-exercise-set-row");
         this.$nonce = jQuery('#e20r-tracker-activity-input-nonce').val();
         this.$saveBtn = jQuery('#e20r-activity-input-button');
@@ -54,7 +55,40 @@ var e20rActivity = {
             activity.saveAll();
         });
 
+        activity.$print.unbind('click').on('click', function() {
+            console.log("User requested print function");
+        });
+
         return activity;
+    },
+    close_print: function() {
+        document.body.removeChild(this.__container__);
+    },
+    set_print: function () {
+
+        var $class = this;
+
+        this.contentWindow.__container__ = this;
+
+        this.contentWindow.onbeforeunload = $class.close_print;
+        this.contentWindow.onafterprint = $class.close_print;
+
+        this.contentWindow.focus(); // Required for IE
+        this.contentWindow.print();
+    },
+    print_page: function( sURL ) {
+
+        var $class = this;
+        var oHiddFrame = document.createElement("iframe");
+
+        oHiddFrame.onload = $class.set_print;
+        oHiddFrame.style.visibility = "hidden";
+        oHiddFrame.style.position = "fixed";
+        oHiddFrame.style.right = "0";
+        oHiddFrame.style.bottom = "0";
+        oHiddFrame.src = sURL;
+
+        document.body.appendChild(oHiddFrame);
     },
     bindInput: function (me, activity) {
 
@@ -414,6 +448,13 @@ var e20rActivity = {
 jQuery(document).ready( function(){
 
     console.log("Loaded user script for the workout tracking form");
+
+    if ( jQuery('#e20r-daily-activity-page').length ) {
+
+        console.log("Hide the header for the [e20r_activity] shortcode page");
+        jQuery('header.entry-header').hide();
+    }
+
     e20rActivity.init();
 
 });
