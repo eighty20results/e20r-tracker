@@ -1,2 +1,1 @@
-Fix Phase description
-Refactor formatting for printable activity/activity summary pages.
+Limit link character to the pages where the link symbol should exist (i.e. not menus, back-end, etc)

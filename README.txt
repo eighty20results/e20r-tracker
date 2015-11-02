@@ -104,6 +104,10 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.4.8 ==
+
+* Limit link character to the pages where the link symbol should exist (i.e. not menus, back-end, etc)
+
 == 1.4.7 ==
 
 * Fix Phase description
