@@ -389,6 +389,22 @@ p.e20r-history-reps {
     border-top: 20px solid #5c5c5c;
     margin-top: 20px;
 }
+.e20r-activity-printer-icon:hover { cursor: pointer; cursor: hand; }
+.e20r-activity-printer-icon {
+    float: right;
+    width: 100px;
+    font-size: 9pt;
+    color: #9C0000;
+    font-weight: 700;
+    text-align: center;
+}
+img.e20r-front-page-arrow {
+    position: relative;
+    float: left;
+    margin-left: -45%;
+    margin-top: -20%;
+    opacity: 0.5;
+}
 @media screen and (max-width: 1024px ) {
     table.e20r-measurement-table.e20r-resp-table {width:100%;}
     .e20r-measurement-table.e20r-resp-table thead {display: none;}
@@ -446,7 +462,16 @@ p.e20r-history-reps {
         height: 210px;
         max-height: 210px;
     }
-
+    .e20r-activity-printer-icon {
+        display: none;
+    }
+    img.e20r-front-page-arrow {
+        position: relative;
+        float: left;
+        margin-left: -45%;
+        margin-top: -20%;
+        opacity: 0.5;
+    }
 }
 @media screen and (min-width: 534px) {
     #e20r-daily-activity-page .youtube-player > iframe {
