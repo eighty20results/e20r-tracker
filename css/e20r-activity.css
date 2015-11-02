@@ -351,6 +351,38 @@ p.e20r-history-reps {
 .e20r-activity-list {
     background-color: #FFF;
 }
+.e20r-activity-summary-printable-row.e20r-activity-summary-headline {
+    font-size: 10pt;
+    font-style: italic;
+}
+.e20r-activity-summary-printable-row.e20r-activity-summary-description > p,
+.e20r-exercise-description > p {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+.e20r-activity-summary-printable-row.e20r-activity-summary-description > h2,
+.e20r-exercise-description > h2 {
+    font-size: 18pt;
+}
+.e20r-activity-summary-printable-row.e20r-activity-summary-description a,
+.e20r-activity-summary-printable-row.e20r-activity-summary-description a:visited,
+.e20r-exercise-description a,
+.e20r-exercise-description a:visited {
+    font-size: 12pt;
+    text-decoration: underline;
+}
+.e20r-activity-summary-printable-row.e20r-activity-summary-description > h3,
+.e20r-exercise-description > h3 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 14pt;
+    font-weight: bold;
+}
+.e20r-activity-summary-printable-row.e20r-activity-summary-description {
+    font-size: 12pt;
+    padding: 10px;
+    border-bottom: 2px solid #c5c5c5;
+}
 #e20r-daily-activity-page h4.e20r-tracker-detail-h4 {
     font-size: 20pt;
 }
