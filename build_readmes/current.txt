@@ -1,7 +1,2 @@
-Add print icon to daily activity page
-Hide title on print page(s) for activities on load
-Add support for clicking print icon to print daily activity page.
-Hide printer icon when page is too small (i.e. on phone)
-Tentative CSS support for down arrow (to indicate scroll direction for additional content)
-Hide printer icon on page being printed
-Remove all navigation and header elements when printing the page
+Fix Phase description
+Refactor formatting for printable activity/activity summary pages.
