@@ -16,6 +16,7 @@
     clear: both;
     visibility: hidden;
 }
+/*
 article.entry a[href]:after {
     content: "\1f517";
     font-size: 0.5rem;
@@ -23,6 +24,7 @@ article.entry a[href]:after {
     vertical-align: super;
     text-decoration: none;
 }
+*/
 /*** For the Achievements entries *****/
 .large-viewport {
     display: block;
@@ -1344,7 +1346,7 @@ td.e20r-group-header {
     padding: 14px;
 }
 .progress-container > h3 {
-    color: #FFF !important;
+    color: #FFF;
     font-size: 20px !important;
     font-weight: bold;
     /* margin: 0 !important; */
@@ -1652,15 +1654,6 @@ div#e20r-checkin-content {
 #e20r-checkin-lesson > a {
     padding-left: 20px;
 }
-#e20r-checkin-activity {
-    border-right: 2px solid #004CFF;
-    padding-right: 10px;
-    padding-left: 20px;
-}
-#e20r-checkin-activity > a {
-    padding-left: 20px;
-}
-.e20r-checkin-header {}
 .e20r-descr { font-size: 0.9rem !important;}
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
@@ -2672,7 +2665,7 @@ a#overlaylaunch-inAbox {
     }
     #saturday-progress-container.progress-container > h3 {
         font-variant: small-caps;
-        color: #FFF !important;
+        color: #FFF;
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
@@ -2903,7 +2896,7 @@ a#overlaylaunch-inAbox {
     #saturday-progress-container .girth-image.active { display: none; }
     #saturday-progress-container.progress-container > h3 {
         font-variant: small-caps;
-        color: #FFF !important;
+        color: #FFF;
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
