@@ -159,8 +159,7 @@ class e20rWorkoutView extends e20rSettingsView
 
                                     $next_cnt = 1;
                                 }
-                                
-                                // TODO: Add link to go to "next" exercise tracking row until we're at the bottom. Then we'll add a "back to first exercise in group" again.
+
                                 dbg("e20rWorkoutView::display_printable_activity() - Generate link target for next exercise to track");
                                 $next_lnk = "e20r-exercise-tracking-input-{$next_grp}-{$next_cnt}";
                                 $tracking_input_id = "e20r-exercise-tracking-input-{$grp}-{$exercise_cnt}";
