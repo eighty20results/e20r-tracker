@@ -151,7 +151,7 @@ jQuery(document).ready(function () {
 
             console.log("Deciding what to do with action check-in", radioFieldsAction);
 
-            if ( Query(radioFieldsAction).filter(':checked').length ) {
+            if ( jQuery(radioFieldsAction).filter(':checked').length ) {
 
                 setEditState(radioFieldsAction);
 
