@@ -146,16 +146,19 @@
         width: 90%;
     }
     #e20r-daily-activity-page div.e20r-activity-info-col.e20r-workout-user-summary > div.e20r-int-table {
-        display: none;
+        display: none !important;
     }
     .e20r-activity-printer-icon {
-        display: none;
+        display: none !important;
     }
     nav.nav-primary,
     nav.nav-secondary {
-        display: none;
+        display: none !important;
     }
     header.site-header {
-        display: none;
+        display: none !important;
+    }
+    .e20r-activity-tracking-next {
+        display: none !important;
     }
 }
