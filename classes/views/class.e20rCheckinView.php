@@ -48,13 +48,15 @@ class e20rCheckinView extends e20rSettingsView {
 
     public function view_action_activity_cards( $config ) {
 
+        $action_type = empty( $config->action_type ) ? 'Update' : $config->action_type;
+
         ob_start(); ?>
         <div id="e20r-checkin-content">
-            <div class="e20r-checkin-lesson e20r-content-cell">
+            <div class="e20r-checkin-activity e20r-content-cell">
                 <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">'.  __("Activity", "e20rtracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20rtracker") .'</p>' : $config->activityExcerpt ); ?>
             </div>
             <div class="e20r-checkin-lesson e20r-content-cell">
-                <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-checkin-header">'. sprintf( __("%s", "e20rtracker"), esc_attr( $config->action_type ) ). '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __("No %s scheduled", "e20rtracker"), esc_attr( $config->action_type ) ) . '</p>' : wpautop( $config->actionExcerpt ) ); ?>
+                <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-checkin-header">'. sprintf( __("%s", "e20rtracker"), esc_attr( $action_type ) ). '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __("No %s scheduled", "e20rtracker"), esc_attr( lcfirst( $action_type ) ) ) . '</p>' : wpautop( $config->actionExcerpt ) ); ?>
             </div>
         </div><?php
 
@@ -464,6 +466,7 @@ class e20rCheckinView extends e20rSettingsView {
 
             echo $this->load_noscript_notice( $config->maxDelayFlag ); ?>
         <div id="e20r-checkin-daynav" class="clearfix">
+            <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
 	        <?php if ( $config->delay >= 1 ): ?>
                 <p class="e20r-checkin-yesterday-nav">
                     <a id="e20r-checkin-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
@@ -487,12 +490,12 @@ class e20rCheckinView extends e20rSettingsView {
                 <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
 	            <input type="hidden" name="e20r-checkin-checkedin_date" id="e20r-checkin-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-checkin-program_id" id="e20r-checkin-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
-                <div class="e20r-daily-checkin-row">
+                <div class="e20r-daily-checkin-row clearfix">
                     <?php echo $this->view_activity_checkin( $config, $activity ); ?>
                     <?php echo $this->view_action_checkin( $config, $action, $habitEntries ); ?>
                 </div> <!--Action/Activity row -->
                 <hr />
-                <div class="e20r-daily-checkin-row"?>
+                <div class="e20r-daily-checkin-row clearfix">
                     <?php echo $this->view_notes_card( $config, $action, $note_content  ); ?>
                 </div>
             </div><!--#e20r-daily-checkin-canvas-->
