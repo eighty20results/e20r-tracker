@@ -1668,7 +1668,7 @@ class e20rClient
         return $content;
     }
 
-    public function shortcode_clientProfile($attributes = null)
+    public function shortcode_clientProfile( $atts = null)
     {
 
         dbg("e20rClient::shortcode_clientProfile() - Loading shortcode data for the client profile page.");
@@ -1701,24 +1701,29 @@ class e20rClient
         /* Load views for the profile page tabs */
         $config = $e20rCheckin->configure_dailyProgress();
 
-        $tmp = shortcode_atts(array(
+        $code_atts = shortcode_atts(array(
             'use_cards' => false,
-        ), $attributes);
+        ), $atts);
 
-        foreach ($tmp as $key => $val) {
+        foreach ($code_atts as $key => $val) {
 
+            dbg("e20rClient::shortcode_clientProfile() - e20r_profile shortcode --> Key: {$key} -> {$val}");
             $config->{$key} = $val;
         }
 
-        if ( in_array( $config->use_cards, array( 'yes', 'true', '1', true ) ) ) {
+        if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
 
-            dbg("e20rCheckin::shortcode_clientProfile() - User requested card based display.");
+            dbg("e20rClient::shortcode_clientProfile() - User requested card based dashboard: {$config->use_cards}");
             $config->use_cards = true;
         }
 
-        if ( in_array( $config->use_cards, array( 'no', 'false', '0', false ) ) ) {
+        if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
 
-            dbg("e20rCheckin::shortcode_clientProfile() - User requested table based view.");
+            dbg("e20rClient::shortcode_clientProfile() - User requested old-style dashboard: {$config->use_cards}");
+            $config->use_cards = false;
+        }
+
+        if ( !isset( $config->use_cards ) ) {
             $config->use_cards = false;
         }
 
@@ -1734,7 +1739,7 @@ class e20rClient
 
         if (!$currentArticle->is_preview_day) {
 
-            dbg("e20rMeasurements::shortcode_clientProfile() - Configure user specific data");
+            dbg("e20rClient::shortcode_clientProfile() - Configure user specific data");
 
             $this->model->setUser($config->userId);
             // $this->setClient($userId);
@@ -1742,7 +1747,7 @@ class e20rClient
             $dimensions = array('width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px');
             $pDimensions = array('width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%');
 
-            dbg("e20rMeasurements::shortcode_clientProfile() - Loading progress data...");
+            dbg("e20rClient::shortcode_clientProfile() - Loading progress data...");
             $measurements = $e20rMeasurements->getMeasurement('all', false);
 
             if ( true === $this->completeInterview($config->userId) ) {
