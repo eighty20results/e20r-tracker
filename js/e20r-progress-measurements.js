@@ -273,7 +273,7 @@ var progMeasurements = {
                     pag: {
                         dirs: 'hor',
                         pos: 'top',
-                        align: 'justified'
+                        // align: 'justified'
                     }
                 });
 
@@ -288,7 +288,7 @@ var progMeasurements = {
                     pag: {
                         dirs: 'hor',
                         pos: 'top',
-                        align: 'justified'
+                        // align: 'justified'
                     }
                 });
 
