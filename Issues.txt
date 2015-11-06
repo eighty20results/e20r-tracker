@@ -36,6 +36,12 @@ Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 Enh: Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
 See: http://jsfiddle.net/istvanv/uQj7t/28/ for a pop-over option.
 
+11/02/2015:
+Make the action & activity portion of the dashboard DIVs so they'll float for any device.
+
+11/06/2015:
+Fix issue with codetabs in e20r_profile shortcode on small screens (doesn't wrap/resize).
+
 == Completed / Fixed ==
 
 Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
