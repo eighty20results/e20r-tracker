@@ -2620,7 +2620,8 @@ class e20rTracker {
                         'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css'
+                        'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
+                        'e20r-checkin'  => E20R_PLUGINS_URL . '/css/e20r-checkin.min.css',
                     ) );
 
                     // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
@@ -2631,7 +2632,7 @@ class e20rTracker {
                         'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
                         'base64' => '//javascriptbase64.googlecode.com/files/base64.js',
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
-                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.min.js',
+                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
