@@ -754,9 +754,12 @@ class e20rCheckin extends e20rSettings
 
         $config->complete = false;
         $config->userId = $current_user->ID;
+        $config->update_period = 'Today';
+
         $config->programId = (!isset($_POST['program-id']) ? $e20rProgram->getProgramIdForUser($config->userId) : intval($_POST['program-id']));
 
-        if (!isset($currentProgram->id)) {
+        if ( !isset($currentProgram->id) || ( $currentProgram->id !== $config->programId )) {
+
             $e20rProgram->init($config->programId);
         }
 
@@ -764,6 +767,12 @@ class e20rCheckin extends e20rSettings
         $config->url = $dashboard;
 
         $config->startTS = strtotime($currentProgram->startdate);
+
+        if ( isset( $_POST['e20r-use-card-based-display'] ) ) {
+
+            $config->use_cards = $e20rTracker->sanitize( $_POST['e20r-use-card-based-display']);
+            dbg("e20rCheckin::configure_dailyProgress() - using card-based display setting from calling page");
+        }
 
         if (isset($_POST['e20r-checkin-day'])) {
 
@@ -940,12 +949,28 @@ class e20rCheckin extends e20rSettings
 
         $tmp = shortcode_atts(array(
             'type' => 'action',
+            'use_cards' => 0,
         ), $attributes);
+
+        // For test purposes:
+        // $config->use_cards = true;
 
         // Add shortcode settings to the $config object
         foreach ($tmp as $key => $val) {
 
             $config->{$key} = $val;
+        }
+
+        if ( isset( $config->use_cards) && in_array( $config->use_cards, array( 'yes', 'true', '1', true ) ) ) {
+
+            dbg("e20rCheckin::shortcode_dailyProgress() - User requested card based display.");
+            $config->use_cards = true;
+        }
+
+        if ( isset( $config->use_cards) && in_array( $config->use_cards, array( 'no', 'false', '0', false ) ) ) {
+
+            dbg("e20rCheckin::shortcode_dailyProgress() - User requested card based display.");
+            $config->use_cards = false;
         }
 
         dbg("e20rCheckin::shortcode_dailyProgress() - Config is currently: ");
@@ -1070,10 +1095,10 @@ class e20rCheckin extends e20rSettings
             // if ( !is_array( $config->articleId ) && ( $config->articleId !== CONST_NULL_ARTICLE ) ) {
             // if ( $config->articleId !== CONST_NULL_ARTICLE ) {
             dbg("e20rCheckin::dailyProgress() - Generating excerpt for daily action lesson/reminder");
-            $config->actionExcerpt = $e20rArticle->getExcerpt($config->articleId, $config->userId, 'action');
+            $config->actionExcerpt = $e20rArticle->getExcerpt($config->articleId, $config->userId, 'action', $config->use_cards);
 
             dbg("e20rCheckin::dailyProgress() - Generating excerpt for daily activity");
-            $config->activityExcerpt = $e20rArticle->getExcerpt($config->articleId, $config->userId, 'activity');
+            $config->activityExcerpt = $e20rArticle->getExcerpt($config->articleId, $config->userId, 'activity', $config->use_cards );
             //}
 
             // Get the check-in id list for the specified article ID
@@ -1168,7 +1193,7 @@ class e20rCheckin extends e20rSettings
             } // End of foreach()
 
             dbg("e20rCheckin::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}..");
-            dbg($this->checkin);
+            // dbg($this->checkin);
 
             return $this->load_UserCheckin($config, $this->checkin);
         }
@@ -1280,7 +1305,16 @@ class e20rCheckin extends e20rSettings
             if ((!$e20rTracker->isEmpty($action)) && (!$e20rTracker->isEmpty($activity))) {
 
                 dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Dashboard");
-                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
+
+                if ( false === $config->use_cards ) {
+
+                    dbg("e20rCheckin::load_UserCheckin() - Using old view layout");
+                    $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
+                } else {
+
+                    dbg("e20rCheckin::load_UserCheckin() - Using new view layout");
+                    $view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
+                }
             }
 
         } // else if ( ( $config->type == 'action' ) || ( $config->type == 'activity' ) ) {
@@ -1289,7 +1323,15 @@ class e20rCheckin extends e20rSettings
         ) {
 
             dbg("e20rCheckin::load_UserCheckin() - An activity or action check-in requested...");
-            $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
+            if ( false === $config->use_cards ) {
+
+                dbg("e20rCheckin::load_UserCheckin() - Using old view layout");
+                $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
+            } else {
+
+                dbg("e20rCheckin::load_UserCheckin() - Using new view layout");
+                $view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
+            }
         }
 
         return $view;
