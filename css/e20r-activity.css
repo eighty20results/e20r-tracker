@@ -437,6 +437,40 @@ img.e20r-front-page-arrow {
     margin-top: -20%;
     opacity: 0.5;
 }
+.right {
+    float: right;
+}
+.e20r-activity-overview-table .e20r-exercise-row {
+    width: 100%;
+}
+.e20r-activity-overview-table .fullwidth {
+    width: 100%;
+    float: initial;
+}
+.e20r-activity-tracking-next {
+    border: 1px solid #c5c5c5;
+    margin: 10px 0 10px 10px;
+    padding: 8px;
+    max-width: 300px;
+    background-image: -webkit-linear-gradient(#FFF,#e5e5e5);
+    background-image: -moz-linear-gradient(#FFF,#e5e5e5);
+    background-image: -o-linear-gradient(#FFF,#e5e5e5);
+    background-image: linear-gradient(#FFF,#e5e5e5);
+    border-radius: 10px;
+}
+.e20r-activity-tracking-next a,
+.e20r-activity-tracking-next a:visited {
+    color: #004cff;
+    font-weight: 700;
+}
+.e20r-activity-tracking-next a:hover {
+    font-weight: initial;
+    color: #004cff;
+}
+.top-link {
+    margin-right: 5%;
+}
+
 @media screen and (max-width: 1024px ) {
     table.e20r-measurement-table.e20r-resp-table {width:100%;}
     .e20r-measurement-table.e20r-resp-table thead {display: none;}
