@@ -770,8 +770,8 @@ class e20rCheckin extends e20rSettings
 
         if ( isset( $_POST['e20r-use-card-based-display'] ) ) {
 
-            $config->use_cards = $e20rTracker->sanitize( $_POST['e20r-use-card-based-display']);
             dbg("e20rCheckin::configure_dailyProgress() - using card-based display setting from calling page");
+            $config->use_cards = $e20rTracker->sanitize( $_POST['e20r-use-card-based-display']);
         }
 
         if (isset($_POST['e20r-checkin-day'])) {
@@ -846,6 +846,7 @@ class e20rCheckin extends e20rSettings
         $config->delay_byDate = $config->delay;
         $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
         $config->articleId = isset($currentArticle->id) ? $currentArticle->id : CONST_NULL_ARTICLE;
+        $config->use_cards = ( isset( $config->use_cards ) ? $config->use_cards : false );
 
         return $config;
 
@@ -929,7 +930,7 @@ class e20rCheckin extends e20rSettings
         wp_send_json_error();
     }
 
-    public function shortcode_dailyProgress($attributes = null)
+    public function shortcode_dailyProgress( $atts = null)
     {
 
         global $e20rArticle;
@@ -947,29 +948,31 @@ class e20rCheckin extends e20rSettings
 
         $config = $this->configure_dailyProgress();
 
-        $tmp = shortcode_atts(array(
+        $code_atts = shortcode_atts(array(
             'type' => 'action',
-            'use_cards' => 0,
-        ), $attributes);
-
-        // For test purposes:
-        // $config->use_cards = true;
+            'use_cards' => false,
+        ), $atts);
 
         // Add shortcode settings to the $config object
-        foreach ($tmp as $key => $val) {
+        foreach ($code_atts as $key => $val) {
 
+            dbg("e20rCheckin::shortcode_dailyProgress() - daily_progress shortcode --> Key: {$key} -> {$val}");
             $config->{$key} = $val;
         }
 
-        if ( isset( $config->use_cards) && in_array( $config->use_cards, array( 'yes', 'true', '1', true ) ) ) {
+        if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
 
-            dbg("e20rCheckin::shortcode_dailyProgress() - User requested card based display.");
+            dbg("e20rCheckin::shortcode_dailyProgress() - User requested card based dashboard: {$config->use_cards}");
             $config->use_cards = true;
         }
 
-        if ( isset( $config->use_cards) && in_array( $config->use_cards, array( 'no', 'false', '0', false ) ) ) {
+        if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
 
-            dbg("e20rCheckin::shortcode_dailyProgress() - User requested card based display.");
+            dbg("e20rCheckin::shortcode_dailyProgress() - User requested old-style dashboard: {$config->use_cards}");
+            $config->use_cards = false;
+        }
+
+        if ( !isset( $config->use_cards ) ) {
             $config->use_cards = false;
         }
 
@@ -1306,11 +1309,11 @@ class e20rCheckin extends e20rSettings
 
                 dbg("e20rCheckin::load_UserCheckin() - Loading the view for the Dashboard");
 
-                if ( false === $config->use_cards ) {
+                if ( !isset( $config->use_cards) || ( false === $config->use_cards ) ) {
 
                     dbg("e20rCheckin::load_UserCheckin() - Using old view layout");
                     $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
-                } else {
+                } elseif (true === $config->use_cards) {
 
                     dbg("e20rCheckin::load_UserCheckin() - Using new view layout");
                     $view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
@@ -1323,11 +1326,11 @@ class e20rCheckin extends e20rSettings
         ) {
 
             dbg("e20rCheckin::load_UserCheckin() - An activity or action check-in requested...");
-            if ( false === $config->use_cards ) {
+            if ( !isset( $config->use_cards) || ( false === $config->use_cards ) ) {
 
                 dbg("e20rCheckin::load_UserCheckin() - Using old view layout");
                 $view = $this->view->view_actionAndActivityCheckin($config, $action, $activity, $action->actionList, $note);
-            } else {
+            } elseif (true === $config->use_cards) {
 
                 dbg("e20rCheckin::load_UserCheckin() - Using new view layout");
                 $view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
