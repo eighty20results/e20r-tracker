@@ -1697,8 +1697,30 @@ class e20rClient
             $e20rProgram->getProgramIdForUser($userId);
         }
 
+
         /* Load views for the profile page tabs */
         $config = $e20rCheckin->configure_dailyProgress();
+
+        $tmp = shortcode_atts(array(
+            'use_cards' => false,
+        ), $attributes);
+
+        foreach ($tmp as $key => $val) {
+
+            $config->{$key} = $val;
+        }
+
+        if ( in_array( $config->use_cards, array( 'yes', 'true', '1', true ) ) ) {
+
+            dbg("e20rCheckin::shortcode_clientProfile() - User requested card based display.");
+            $config->use_cards = true;
+        }
+
+        if ( in_array( $config->use_cards, array( 'no', 'false', '0', false ) ) ) {
+
+            dbg("e20rCheckin::shortcode_clientProfile() - User requested table based view.");
+            $config->use_cards = false;
+        }
 
         if ($this->completeInterview($config->userId)) {
             $interview_descr = 'Saved interview';
