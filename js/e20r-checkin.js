@@ -43,6 +43,7 @@ jQuery(document).ready(function () {
             this.$activityLnk = jQuery(".e20r-checkin-activity").find("#e20r-activity-read-lnk");
             this.$actionLnk = jQuery(".e20r-checkin-lesson").find("#e20r-action-read-lnk");
             this.$allowActivityOverride = false;
+            this.$cardSetting = jQuery('input[type="e20r-use-card-based-display"').val();
 
             var me = this;
 
@@ -309,6 +310,7 @@ jQuery(document).ready(function () {
                 'checkin-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
+                'e20r-use-card-based-display': self.$cardSetting,
                 'e20r-checkin-day': navDay
             };
 
@@ -667,15 +669,15 @@ jQuery(document).ready(function () {
 
             this.noteField = jQuery('fieldset.notes');
             this.actionFields = jQuery('fieldset.did-you.habit');
-            // this.activityFields = jQuery('fieldset.did-you-workout');
+            this.activityFields = jQuery('fieldset.did-you.workout');
 
             this.note_id = this.noteField.find('.e20r-checkin-id').val();
             this.checkin_shortname = this.noteField.find('.e20r-checkin-checkin_short_name').val();
-            this.note_article = this.noteField.siblings('#e20r-checkin-article_id').val();
-            this.note_assignment = this.noteField.siblings('#e20r-checkin-assignment_id').val();
-            this.note_program = this.noteField.siblings('#e20r-checkin-program_id').val();
-            this.note_date = this.noteField.siblings('#e20r-checkin-checkin_date').val();
-            this.note_actualdate = this.noteField.siblings('#e20r-checkin-checkedin_date').val();
+            this.note_article = jQuery('#e20r-checkin-article_id').val();
+            this.note_assignment = jQuery('#e20r-checkin-assignment_id').val();
+            this.note_program = jQuery('#e20r-checkin-program_id').val();
+            this.note_date = jQuery('#e20r-checkin-checkin_date').val();
+            this.note_actualdate = jQuery('#e20r-checkin-checkedin_date').val();
             this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
             this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val();
 
@@ -683,79 +685,48 @@ jQuery(document).ready(function () {
 
             // console.log('Note object: ', self);
 
-            jQuery('#note-textarea').autogrow().trigger('keyup');
+            jQuery('#note-textarea').autoGrow();
+
+            self.noteValOnLoad = jQuery('#note-textarea').val().strip();
+            self.hadValPreviously = bool(self.noteValOnLoad);
 
             setTimeout(function () {
+
+                jQuery('#note-textarea')
+                    .css('height', function() {
+
+                        var height;
+
+                        if ( self.hadValPreviously ) {
+
+                            height = jQuery('#note-textarea').height() + 'px';
+                        }
+                        else {
+                            height = '2em';
+                        }
+
+                        return height;
+                    });
+
                 jQuery('#note-display')
-                    .css('height', 'auto')
-//                    .css('height', function () {
-//                        return jQuery('#note-textarea').outerHeight() + 'px';
-//                    })
-                    .css('color', '#757575')
+                    .css('height', function() {
+
+                        var noteArea = jQuery('div#e20r-checkin-notes').closest('.e20r-daily-checkin-row').outerHeight();
+                        console.log("Note area height: ", noteArea );
+                        return noteArea + 'px';
+                    })
+                    .css('color', 'rgba(92, 92, 92, 0.9 )')
                     .css('background-size', '40px 40px');
 
                 jQuery('#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display>div')
-                    .css('padding', '0 25px 25px 0');
+                    .css('padding-bottom', '20px');
             }, 200);
 
-            var noteValOnLoad = jQuery('#note-textarea').val().strip();
-            var hadValPreviously = bool(noteValOnLoad);
+            if ( self.noteValOnLoad.length != 0 ) {
 
-            var stickyNoteOverlay = function (fadeSpeed) {
-                fadeSpeed = fadeSpeed || 0;
+                self._stickyNoteOverlay();
+            }
 
-                var note = jQuery('#note-textarea')[0];
-
-                if ('' == jQuery(note).val().strip()) {
-                    return;
-                }
-
-                jQuery('#note-display')
-                    .children('div')
-                    .html(function () {
-                        return jQuery('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
-                    })
-                    .end()
-                    .css('height', function () {
-                        return jQuery('#note-textarea').outerHeight() + 'px';
-                    })
-                    .fadeIn(fadeSpeed);
-
-                setDisplayState();
-                jQuery('body').removeClass("loading");
-                return true;
-            };
-
-            var setDisplayState = function () {
-                jQuery('#save-note')
-                    .data('editMode', true)
-                    .text('Edit Note')
-                    .trigger('blur');
-
-                var noteDisplay = jQuery('#note-display');
-
-                var overflowHeight = noteDisplay.outerHeight() - parseInt(noteDisplay.css('height'));
-
-                jQuery('#note-display-overflow-pad')
-                    .height(overflowHeight);
-            };
-
-            var setEditState = function () {
-                jQuery('#note-display')
-                    .fadeOut('fast');
-
-                jQuery('#note-textarea')
-                    .trigger('focus');
-
-                jQuery('#save-note')
-                    .data('editMode', false)
-                    .text('Save Note');
-
-                jQuery('#note-display-overflow-pad')
-                    .height(0);
-            };
-
-            console.log("Attempting to save the note on behalf of the user.");
             jQuery('#save-note')
                 .bind('attempt_save_with_empty_textarea', function () {
                     var $this = jQuery(this);
@@ -770,148 +741,294 @@ jQuery(document).ready(function () {
                     Tooltip.unbindHandle(this, {timeout: 1500});
                 });
 
-            jQuery('#save-note')
-                .click(function () {
+            jQuery('#save-note').unbind('click').on( 'click', function() {
+                self.save_note( self );
+            }); // click
 
-                    var $class = jQuery(this);
-                    var $noteTextarea = jQuery('#note-textarea');
+            jQuery(window).resize( function() {
 
-                    // the note field is empty, and didn't have a value previously
-                    if (!hadValPreviously
-                        && '' == $noteTextarea.val().strip()) {
+                setTimeout(function () {
+                    self._stickyNoteOverlay(0);
+                }, 200 );
+            });
 
-                        console.log("Trigger the save operation while the textarea is empty logic");
-                        return $class.triggerHandler('attempt_save_with_empty_textarea');
-                    }
+        },
+        save_note: function ( self ) {
 
-                    // save
-                    if (false === bool($class.data('editMode'))) {
+            console.log("Content of 'self': ", self);
 
-                        // Unassigned (which is ok.
-                        if (self.note_assignment == '') {
+            var $elem = jQuery('#save-note');
+            var $noteTextarea = jQuery('#note-textarea');
 
-                            self.note_assignment = 0;
+            var notificationTimeout;
+
+            // the note field is empty, and didn't have a value previously
+            if (! self.hadValPreviously
+                && '' == $noteTextarea.val().strip()) {
+
+                console.log("Trigger the save operation while the textarea is empty logic");
+                return $elem.triggerHandler('attempt_save_with_empty_textarea');
+            }
+
+            // save
+            if (false === bool($elem.data('editMode'))) {
+
+                // Unassigned (which is ok.
+                if (self.note_assignment == '') {
+
+                    self.note_assignment = 0;
+                }
+
+                // No defined article for this date/delay value (which is ok)
+                if (self.note_article == '') {
+
+                    self.note_article = 0;
+                }
+
+                var data = {
+                    action: 'saveCheckin',
+                    'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
+                    'action-id': self.note_id,
+                    'checkin-short-name': self.checkin_shortname,
+                    'checkin-date': self.note_date,
+                    'checkedin-date': self.note_actualdate,
+                    'assignment-id': self.note_assignment,
+                    'article-id': self.note_article,
+                    'program-id': self.note_program,
+                    'checkin-note': Base64.encode($noteTextarea.val()),
+                    'checkedin': self.checkin_value,
+                    'checkin-type': self.checkin_type
+                };
+
+                console.log("Note --- Sending: ", data );
+
+                jQuery('body').addClass("loading");
+
+                jQuery.ajax({
+                    url: e20r_checkin.ajaxurl,
+                    type: 'POST',
+                    timeout: e20r_checkin.timeout,
+                    dataType: 'JSON',
+                    data: data,
+                    error: function( $response, $errString, $errType ) {
+
+                        var $msg = '';
+
+                        if ( 'timeout' === $errString ) {
+
+                            $msg = "Error: Timeout while the server was processing data.\n\n";
                         }
 
-                        // No defined article for this date/delay value (which is ok)
-                        if (self.note_article == '') {
+                        var $string;
+                        $string = "An error occurred while trying to save your notes.\n\n";
+                        $string += "Please contact Technical Support by using the Contact form ";
+                        $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
 
-                            self.note_article = 0;
+                        alert( $msg + $string + "\n\n" + $response.data );
+
+                    },
+                    success: function( $response ) {
+
+                        if ( $response.success === true ) {
+
+                            console.log("Returned from the web server: ", $response);
+
+                            // initial state
+                            // self._stickyNoteOverlay(0);
+
+                            $elem.data('__persisted', true);
+
+                            /* Show saved notification */
+
+                            // self.note_text_blurred();
+
+                            jQuery('fieldset.notes')
+                                .find('.notification-entry-saved')
+                                .children('div')
+                                .fadeIn('medium', function () {
+
+                                    var me = this;
+                                    notificationTimeout = setTimeout(function () {
+                                        jQuery(me)
+                                            .fadeOut('slow');
+                                    }, 3000);
+                                });
+
+                            setTimeout(function () {
+                                self._stickyNoteOverlay(300);
+                            }, 2000);
                         }
+                        else {
+                            var $string;
+                            var $msg = '';
 
-                        var data = {
-                            action: 'saveCheckin',
-                            'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
-                            'action-id': self.note_id,
-                            'checkin-short-name': self.checkin_shortname,
-                            'checkin-date': self.note_date,
-                            'checkedin-date': self.note_actualdate,
-                            'assignment-id': self.note_assignment,
-                            'article-id': self.note_article,
-                            'program-id': self.note_program,
-                            'checkin-note': Base64.encode($noteTextarea.val()),
-                            'checkedin': self.checkin_value,
-                            'checkin-type': self.checkin_type
-                        };
+                            $string = "An error occurred while trying to save your notes.\n\n";
+                            $string += "Please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
 
-                        // console.log("Sending: ", data );
+                            alert( $msg + $string + "\n\n" + $response.data );
+                            return false;
+                        }
+                    },
+                    complete: function() {
 
-                        jQuery('body').addClass("loading");
+/*                      if (bool($class.data('editMode'))) {
 
-                        jQuery.ajax({
-                            url: e20r_checkin.ajaxurl,
-                            type: 'POST',
-                            timeout: e20r_checkin.timeout,
-                            dataType: 'JSON',
-                            data: data,
-                            error: function( $response, $errString, $errType ) {
+                             self._setEditState();
 
-                                var $msg = '';
-
-                                if ( 'timeout' === $errString ) {
-
-                                    $msg = "Error: Timeout while the server was processing data.\n\n";
-                                }
-
-                                var $string;
-                                $string = "An error occurred while trying to save your notes.\n\n";
-                                $string += "Please contact Technical Support by using the Contact form ";
-                                $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
-
-                                alert( $msg + $string + "\n\n" + $response.data );
-
-                            },
-                            success: function( $response ) {
-
-                                if ( $response.success !== false ) {
-                                    console.log("Returned from the web server: ", $response);
-
-                                    console.log("Start by setting up the stickyNoteOverlay");
-                                    // initial state
-                                    stickyNoteOverlay(0);
-
-                                    $class.data('__persisted', true);
-
-                                    if (bool($class.data('editMode'))) {
-                                        setEditState();
-
-                                        return;
-                                    }
-
-                                    var notificationTimeout;
-
-                                    /* save notification */
-                                    jQuery('fieldset.notes')
-                                        .find('.notification-entry-saved')
-                                        .children('div')
-                                        .fadeIn('medium', function () {
-
-                                            var self = this;
-                                            notificationTimeout = setTimeout(function () {
-                                                jQuery(self)
-                                                    .fadeOut('slow');
-                                            }, 4200);
-                                        });
-
-                                    setTimeout(function () {
-                                        stickyNoteOverlay(300);
-                                    }, 2000);
-                                }
-                                else {
-                                    var $string;
-                                    var $msg = '';
-
-                                    $string = "An error occurred while trying to save your notes.\n\n";
-                                    $string += "Please contact Technical Support by using the Contact form ";
-                                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
-
-                                    alert( $msg + $string + "\n\n" + $response.data );
-                                    return false;
-                                }
-                            },
-                            complete: function() {
-                                console.log("Save operation is complete for user note");
-                            }
-                        });
-/*
-                        jQuery.post(e20r_checkin.ajaxurl, data, function (response, status) {
-
-                            if (status == 'success') {
-
-                                console.log("User notes saved");
-                                $class.data('__persisted', true);
-                            }
-                            else {
-                                console.log("Error saving note.");
-                                alert("Your notes were not saved to the database, sorry.")
-                                return false;
-                            }
-                        });
+                             console.log("Setting note section to edit state");
+                             return;
+                        }
 */
-                        $class.data('__attemptedSaveOnEmpty', null);
+                        console.log("Save operation is complete for user note");
+                    }
+                });
+
+                $elem.data('__attemptedSaveOnEmpty', null);
+
+            } else {
+
+                self._setEditState();
+
+                console.log("Changing edit state for note section");
+                return;
+            }
+        },
+        edit_note: function() {
+
+            var $class = this;
+            var $html = jQuery('#note-textarea').val();
+
+            var divHtml = jQuery('div#note-display').html();
+            var editableText = jQuery('<textarea />');
+
+            editableText.val(divHtml);
+
+            console.log("Content of editableText: ", editableText );
+            jQuery('div#note-display').replaceWith(editableText);
+
+            editableText.blur($class.note_text_blurred);
+        },
+        note_text_blurred: function() {
+
+            var html = jQuery('#note-textarea').val();
+            var viewableText = jQuery("<div>");
+
+            viewableText.html(html);
+            jQuery(this).replaceWith(viewableText);
+            viewableText.click($class.edit_note);
+        },
+        _setDisplayState: function () {
+
+            jQuery('#save-note')
+                .data('editMode', true)
+                .text('Edit Note')
+                .trigger('blur');
+
+            var noteDisplay = jQuery('#note-display');
+            var noteText = jQuery('#note-textarea');
+
+            var overflowHeight = (noteText.outerHeight() - noteDisplay.outerHeight());
+
+            console.log("Setting height for overflow: ", overflowHeight );
+            jQuery('#note-display-overflow-pad')
+                .height(overflowHeight);
+
+            noteText.focus();
+            var v= noteText.val();
+            noteText.val('');
+            noteText.val(v);
+        },
+        _stickyNoteOverlay: function (fadeSpeed) {
+
+            fadeSpeed = fadeSpeed || 0;
+
+            var $class = this;
+            var t_height;
+            var note = jQuery('#note-textarea')[0];
+
+            if ('' == jQuery(note).val().strip()) {
+                return;
+            }
+
+            jQuery('#note-display')
+                .children('div')
+                .html(function () {
+                    return jQuery('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
+                })
+                .end()
+                .css('width', function() {
+
+                    var t_width = jQuery('div.e20r-checkin-notes').innerWidth();
+                    var d_width = jQuery('#note-display').outerWidth();
+
+                    console.log("Width of textarea: ", t_width );
+                    console.log("Width of note area: ", d_width );
+
+                    return t_width + 'px';
+                })
+                .css('height', function () {
+
+                    var textarea = jQuery('#note-textarea');
+                    var area = jQuery('fieldset.notes').closest('.e20r-checkin-notes');
+                    var area_height = area.outerHeight();
+                    var legend = area.find('fieldset.notes > legend').outerHeight();
+                    var notification = area.find('.notification-entry-saved').outerHeight();
+                    var descr_height = area.find('fieldset.notes > p').outerHeight();
+                    var button_height = area.find('.button-container').outerHeight();
+                    var overflow_height = area.find('#note-display-overflow-pad').outerHeight();
+                    var text_height = textarea.height();
+                    var outer_height = textarea.outerHeight();
+
+                    if ( text_height > outer_height ) {
+                        console.log("Setting height to the value of the text height");
+                        t_height = text_height;
                     }
 
-                }); // click
+                    if ( outer_height > text_height ) {
+                        console.log("Setting height to the value of the outer height");
+                        t_height = outer_height;
+                    }
+
+                    t_height = ( area_height - legend - descr_height - overflow_height - notification - button_height );
+
+                    // var t_height = jQuery('#note-textarea').outerHeight();
+                    console.log("Area height: ", area_height);
+                    console.log("Legend height: ", legend );
+                    console.log("Description height: ", descr_height );
+
+                    console.log("Text height: ", text_height);
+                    console.log("Outer height: ", outer_height);
+                    console.log("Height value to use: ", t_height );
+
+                    return t_height + 'px';
+                })
+                .css('border-top', '2px solid #c5c5c5')
+                .css('overflow', 'hidden')
+                .css('padding-right', '10px')
+                .css('text-overflow', 'ellipsis')
+                .fadeIn(fadeSpeed);
+
+            // jQuery('#note-textarea').height( outer_height );
+
+            $class._setDisplayState();
+            jQuery('body').removeClass("loading");
+
+            return true;
+        },
+        _setEditState: function () {
+            jQuery('#note-display')
+                .fadeOut('fast');
+
+            jQuery('#note-textarea')
+                .trigger('focus');
+
+            jQuery('#save-note')
+                .data('editMode', false)
+                .text('Save Note');
+
+            jQuery('#note-display-overflow-pad')
+                .height(0);
         }
     };
 
