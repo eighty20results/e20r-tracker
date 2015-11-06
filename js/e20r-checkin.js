@@ -702,7 +702,7 @@ jQuery(document).ready(function () {
                             height = jQuery('#note-textarea').height() + 'px';
                         }
                         else {
-                            height = '2em';
+                            height = '4em';
                         }
 
                         return height;
