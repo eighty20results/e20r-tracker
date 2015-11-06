@@ -51,7 +51,7 @@ class e20rCheckinView extends e20rSettingsView {
         $action_type = empty( $config->action_type ) ? 'Update' : $config->action_type;
 
         ob_start(); ?>
-        <div id="e20r-checkin-content">
+        <div id="e20r-checkin-content" class="<?php echo ( $config->use_cards ? 'e20r-as-cards' : 'e20r-as-dashboard') ?>">
             <div class="e20r-checkin-activity e20r-content-cell">
                 <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-checkin-header">'.  __("Activity", "e20rtracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20rtracker") .'</p>' : $config->activityExcerpt ); ?>
             </div>
@@ -389,6 +389,7 @@ class e20rCheckinView extends e20rSettingsView {
         echo $this->load_noscript_notice($config->maxDelayFlag); ?>
         <div class="e20r-action-activity-overview e20r-as-cards">
             <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
+            <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
             <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
             <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
             <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
@@ -398,14 +399,14 @@ class e20rCheckinView extends e20rSettingsView {
                 <?php echo $this->view_card_header( $date  ); ?>
             </div><!-- end of row -->
             <div class="e20r-daily-checkin-row e20r-as-cards">
-                <?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
-            </div>
-            <div class="e20r-daily-checkin-row e20r-as-cards">
                 <?php echo $this->view_action_activity_cards($config); ?>
             </div><!-- end of row -->
             <div class="e20r-daily-checkin-row e20r-as-cards">
                 <?php echo $this->view_card_activity_checkin( $config, $activity ); ?>
                 <?php echo $this->view_card_action_checkin( $config, $action, $habit_entries ); ?>
+            </div>
+            <div class="e20r-daily-checkin-row e20r-as-cards">
+                <?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
             </div>
         </div>
             <?php
