@@ -2408,6 +2408,9 @@ div#e20r-daily-progress div.e20r-action-card {
     float: left;
     width: 49%;
 }
+#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you > div {
+    width: 100%;
+}
 div#e20r-daily-progress .e20r-checkin-activity,
 div#e20r-daily-progress .e20r-checkin-lesson,
 div#e20r-daily-progress .e20r-activity-card,
