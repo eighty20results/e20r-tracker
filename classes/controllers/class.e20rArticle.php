@@ -324,7 +324,29 @@ class e20rArticle extends e20rSettings
         return false;
     }
 
-    public function getExcerpt($articleId, $userId = null, $type = 'action')
+    public function get_card_info( $articleId, $userId = null, $type = 'action') {
+
+        global $post;
+        global $e20rTracker;
+        global $e20rWorkout;
+
+        global $current_user;
+        global $currentProgram;
+
+        $postId = null;
+        $activityField = null;
+
+        $oldPost = $post;
+
+        if (is_null($userId)) {
+            // Assuming current_user->ID..
+            $userId = $current_user->ID;
+        }
+
+
+    }
+
+    public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false )
     {
 
         global $post;
@@ -446,10 +468,10 @@ class e20rArticle extends e20rSettings
         ob_start();
         ?>
         <h4>
-            <span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php echo get_the_title($post->ID); ?>
+            <?php if ( false === $in_card ): ?><span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php endif; ?><?php echo get_the_title($post->ID); ?>
         </h4>
         <?php echo !is_null($activityField) ? $activityField : null; ?>
-        <p class="e20r-descr"><?php echo $pExcerpt; ?></p> <?php
+        <p class="e20r-descr e20r-descr-text"><?php echo $pExcerpt; ?></p> <?php
 
         if ($type == 'action') {
 
@@ -464,10 +486,10 @@ class e20rArticle extends e20rSettings
             dbg("e20rArticle::getExcerpt() - URL is: {$url}");
 
         } ?>
-        <p class="e20r-descr"><a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk"
-                                 title="<?php get_the_title($post->ID); ?>">
-            <?php _e('Click to read', 'e20tracker'); ?>
-        </a>
+        <p class="e20r-descr e20r-descr-link">
+            <a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title($post->ID); ?>">
+                <?php _e('Click to read', 'e20tracker'); ?>
+            </a>
         </p><?php
 
         wp_reset_postdata();
@@ -1115,9 +1137,9 @@ class e20rArticle extends e20rSettings
 
             dbg("e20rArticle::contentFilter() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
 
-            $my_user = get_user_by('ID', $current_user->ID);
+            // $my_user = get_user_by( 'ID', $current_user->display_name);
 
-            $interview_warning = "Incomplete interview for " . $my_user->display_name;
+            $interview_warning = "Incomplete interview for " . $current_user->display_name;
             $content = $content . $this->view->add_popup_overlay($current_user->ID, $interview_warning);
         }
 
