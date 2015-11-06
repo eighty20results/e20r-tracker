@@ -881,12 +881,12 @@ class e20rWorkout extends e20rSettings
         ?>
         <div id="e20r-daily-activity-page">
             <?php
-            if (isset($config->print_only) && (true === $config->print_only)) {
+//            if (isset($config->print_only) && (true === $config->print_only)) {
 
                 echo $this->view->display_printable_activity($config, $workoutData);
-            } else {
-                echo $this->view->displayActivity($config, $workoutData);
-            }
+//            } else {
+//                echo $this->view->displayActivity($config, $workoutData);
+//            }
             ?>
         </div>
         <?php
