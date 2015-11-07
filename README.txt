@@ -122,6 +122,15 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.2 ==
+
+* Would sometimes allow access to articles that were scheduled for a future date because the post in the article is a repeating posts that the user currently _does_ have access to (with a different Article ID)
+* Add pmpro_has_membership_access_filter processing back to has_access() function
+* Don't ignore current user 'days since start' (delay) value vs article release_date when checking for access and PMPro is installed
+* Find the closest release day to a specified key (delay) value for articles.
+* Add current day's delay value to the navigation $_REQUEST[]
+* Clarify debug info
+
 == 1.5.1 ==
 
 * Add clearfix so layout of page is correct.
