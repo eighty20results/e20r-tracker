@@ -1564,35 +1564,78 @@ class e20rTracker {
             if ( $result[0] ) {
 
                 dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
-                // $retVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'ID', $userId ), $levels );
-                $retVal = $result[0];
-                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: {$retVal}");
+                $filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
+                $retVal = ( $filterVal == 1 ? true : false );
+                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == 1 ? 'yes' : 'no' ));
             }
         }
         else {
             dbg("e20rTracker::hasAccess() - No membership access function found for Paid Memberships Pro");
         }
 
-        if ( !$retVal ) {
+//        if ( $retVal ) {
 
             $current_delay = $this->getDelay( 'now', $userId );
+            $found = false;
+
             $programId = $e20rProgram->getProgramIdForUser( $userId );
 
             $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
+            dbg( $articles);
 
-            if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+            // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+            if ( !empty( $articles ) ) {
 
-                $article = $articles[0];
+/*                $article = $articles[0];
 
                 if ( $article->release_day <= $current_delay ) {
                     dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
-                    $retVal = true;
+                    $found = $article;
                 }
+            }
+            elseif( !empty($articles ) ) {
+*/
+            $found = $this->get_closest_release_day( $current_delay, $articles );
+
+            dbg( $found );
+
+            if ( !is_null($found) && ( $found->release_day <= $current_delay ) ) {
+                dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$found->release_day} <= {$current_delay}");
+                $retVal = $retVal && true;
+            }
+            else {
+
+                $retVal = false;
+            }
+
+/*
+                foreach( $articles as $article ) {
+
+                    if ( $article->release_day <= $current_delay ) {
+                        $found = $article;
+                    }
+                }
+*/
+            }
+//        }
+
+        dbg("e20rTracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
+        return $retVal;
+    }
+
+    private function get_closest_release_day($search, $posts) {
+
+        $closest = null;
+
+        foreach ($posts as $item) {
+
+            if ( !isset($closest->release_day) || abs($search - $closest->release_day) > abs($item->release_day - $search)) {
+
+                $closest = $item;
             }
         }
 
-        dbg("e20rTracker::hasAccess() - Returning ({$retVal}) to calling function: " . $this->whoCalledMe() );
-        return $retVal;
+        return $closest;
     }
 
     public function filter_changeConfirmationMessage( $data, $email ) {
@@ -3321,11 +3364,11 @@ class e20rTracker {
 
         $e20r_db_version = $this->loadOption( 'e20r_db_version' );
 /**
-        if ( empty( $e20r_db_version ) ) {
-
-            update_option( $this->setting_name, $this->settings );
-            $e20r_db_version = $this->loadOption( 'e20r_db_version' );
-        }
+        * if ( empty( $e20r_db_version ) ) {
+ *
+* update_option( $this->setting_name, $this->settings );
+            * $e20r_db_version = $this->loadOption( 'e20r_db_version' );
+        * }
 **/
         if ( $e20r_db_version < E20R_DB_VERSION ) {
             $this->manage_tables();
