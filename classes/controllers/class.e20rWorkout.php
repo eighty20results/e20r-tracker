@@ -529,7 +529,7 @@ class e20rWorkout extends e20rSettings
         $val = array($startDelay, $endDelay);
 
         // Load articles in the program that have a release day value between the start/end delay values we calculated.
-        $articles = $e20rArticle->findArticles('release_day', $val, 'numeric', $programId, 'BETWEEN');
+        $articles = $e20rArticle->findArticles('release_day', $val, 'numeric', $programId, 'BETWEEN', true );
 
         dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
         // dbg($articles);
