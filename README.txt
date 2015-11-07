@@ -122,9 +122,13 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.1 ==
+
+* Add clearfix so layout of page is correct.
+* Don't throw warning when user isn't logged in and we're sending email messages.
+
 == 1.5.0 ==
 
-*
 * Limit size of the traditional daily check-in dashboard to 720px max width
 * Lesson and activity summary boxes weren't formatted correctly
 * Increase size of font for check-in text
