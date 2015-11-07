@@ -155,14 +155,14 @@ class e20rArticleModel extends e20rSettingsModel
 
         foreach ($result as $k => $data) {
 
-            if ((-9999 == $data->release_day) && ($dont_drop == false)) {
+            if ((-9999 == $data->release_day) && ($dont_drop === false)) {
 
                 // Dropping articles containing the "Always released" indicator ( -9999 )
                 dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's a 'default' article");
                 unset($result[$k]);
             }
 
-            if ( $data->release_day > $member_days ) {
+            if ( ( false === $dont_drop ) && ( $data->release_day > $member_days ) ){
 
                 dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's availability {$data->release_day} is after the current delay value for this user");
                 unset( $result[$k]);
