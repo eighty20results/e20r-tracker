@@ -1606,7 +1606,7 @@ class e20rTracker {
         if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
 
             // If this is a "checkout" e-mail and we have a current user
-            if (  !empty( $current_user ) ) {
+            if (  isset( $current_user->ID ) && ( 0 != $current_user->ID ) ) {
 
                 // Force the $currentProgram global to be populated
                 $e20rProgram->getProgramIdForUser( $current_user->ID );
@@ -1649,6 +1649,13 @@ class e20rTracker {
                     $data['e20r_status'] = $substitute;
                 }
             }
+/*            else {
+
+                dbg("e20rTracker::filter_changeConfirmationMessage() - WARNING - User ({$email} isn't logged in while attempting to cancel");
+                wp_mail( get_option( 'admin_email' ), 'Warning: Someone (not logged in to the site) attempted to update their membership status',  "User data: " . print_r( $current_user, true ) . "Data: " . print_r( $data, true ) . "User: " . print_r($email, true) );
+                auth_redirect();
+            }
+*/
         }
 
         return $data;
