@@ -469,6 +469,7 @@ class e20rCheckinView extends e20rSettingsView {
         <div id="e20r-checkin-daynav" class="clearfix">
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
 	        <?php if ( $config->delay >= 1 ): ?>
+                <input type="hidden" name="e20r-checkin-day-today" id="e20r-checkin-today" value="<?php echo $config->delay; ?>">
                 <p class="e20r-checkin-yesterday-nav">
                     <a id="e20r-checkin-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
                     <input type="hidden" name="e20r-checkin-day-yesterday" id="e20r-checkin-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
