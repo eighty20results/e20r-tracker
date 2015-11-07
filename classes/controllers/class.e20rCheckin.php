@@ -224,7 +224,7 @@ class e20rCheckin extends e20rSettings
             'checkedin' => $this->status['yes'],
             'article_id' => $articleId,
             'program_id' => $programId,
-            'checkin_date' => $e20rArticle->getReleaseDate($articleId),
+            'checkin_date' => $e20rArticle->releaseDate($articleId),
             'checkin_short_name' => null,
             'checkin_type' => $this->types['action'],
             'checkin_note' => null,
