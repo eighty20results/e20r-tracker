@@ -20,7 +20,7 @@ class e20rWorkoutView extends e20rSettingsView
         $this->error = $error;
     }
 
-    public function display_printable_activity($config, $workoutData)
+    public function display_printable_activity($config, $workoutData, $hide_print = false)
     {
 
         if (!is_user_logged_in()) {
@@ -52,19 +52,23 @@ class e20rWorkoutView extends e20rSettingsView
             $groups = isset($w->groups) ? $w->groups : null; ?>
 
             <h2><?php echo esc_attr($w->title); ?></h2>
+            <?php if ( false === $hide_print ): ?>
             <div class="e20r-activity-printer-icon">
                 <img onClick="e20rActivity.print_page('<?php echo esc_url($activity_page_url); ?>');"
                      id="e20r-activity-print" src="<?php echo E20R_PLUGINS_URL . '/img/printer-icon.png' ?>">
                 <span class="e20r-activity-print-label"><?php _e("Click to print", "e20rtracker"); ?></span>
             </div>
+            <?php endif; ?>
             <div class="e20r-activity-description">
                 <h4><?php _e("Summary", "e20rtracker"); ?></h4>
 
                 <p><?php echo wpautop($w->excerpt); ?></p>
             </div>
+            <?php if ( false === $hide_print ): ?>
             <div class="e20r-activity-tracking-next right clearfix top-link">
                 <a href="#e20r-exercise-tracking-input-1-1"><?php _e("Click to input tracking information", "e20rtracker"); ?></a>
             </div>
+            <?php endif; ?>
             <form id="e20r-activity-input-form">
             <?php wp_nonce_field('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce'); ?>
             <div class="e20r-activity-overview-table e20r-print-activity clearfix">
@@ -169,6 +173,7 @@ class e20rWorkoutView extends e20rSettingsView
                                     <div class="e20r-exercise-row fullwidth clearfix">
                                             <?php echo $e20rExercise->print_exercise(false, 'new', false); ?>
                                     </div><!-- End of exercise-row -->
+                                    <?php if ( false === $hide_print ): ?>
                                     <div id="<?php echo $tracking_input_id; ?>"></div>
                                     <div class="e20r-exercise-row e20r-exercise-tracking-row">
                                         <div class="e20r-activity-tracking-next right">
@@ -284,6 +289,7 @@ class e20rWorkoutView extends e20rSettingsView
                                             </div> <!-- end of activity-exercise-tracking -->
                                         </div> <!-- End of info-col -->
                                     </div> <!-- end of exercise tracking row -->
+                                    <?php endif; ?>
                                 </div><?php
 
                                 $exercise_cnt++;
@@ -593,14 +599,14 @@ class e20rWorkoutView extends e20rSettingsView
 
         dbg("e20rWorkoutView::displayArchive() - Iterating through list of activities.");
         foreach ($activityList as $day => $activity) { ?>
-
-            <div class="e20r-faq-container e20r-toggle-close">
-            <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
-
-            <div class="e20r-faq-answer-container clear-after">
-                <?php // echo $this->displayActivity($config, array($activity)); ?>
-                <?php echo $this->display_printable_activity($config, array($activity)); ?>
-            </div>
+            <div id="e20r-daily-activity-page">
+                <div class="e20r-faq-container e20r-toggle-close">
+                    <h3 class="e20r-faq-question"><?php echo $e20rTracker->displayWeekdayName($day); ?></h3>
+                    <div class="e20r-faq-answer-container clear-after">
+                        <?php // echo $this->displayActivity($config, array($activity)); ?>
+                        <?php echo $this->display_printable_activity($config, array($activity), true); ?>
+                    </div>
+                </div>
             </div><?php
         }
 
