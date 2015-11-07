@@ -120,7 +120,7 @@ class e20rArticle extends e20rSettings
             return false;
         }
 
-        if (empty($currentArticle)) {
+        if ( !isset( $currentArticle->id ) || ( $currentArticle->id != $articleId ) ) {
             dbg("e20rArticle::releaseDate() - currentArticle is NOT defined.");
             $release_date = $e20rTracker->getDateForPost($this->model->getSetting($articleId, 'release_day'));
         } else {
