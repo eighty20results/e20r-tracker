@@ -164,7 +164,7 @@ class e20rArticleModel extends e20rSettingsModel
 
             if ( $data->release_day > $member_days ) {
 
-                dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's availability is after the current delay value for this user");
+                dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's availability {$data->release_day} is after the current delay value for this user");
                 unset( $result[$k]);
             }
         }
