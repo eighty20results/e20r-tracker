@@ -28,7 +28,7 @@ class e20rMeasurementViews {
 
         ob_start();
         ?>
-        <div id="saturday-progress-container" class="progress-container">
+        <div id="saturday-progress-container" class="progress-container clearfix">
             <h3>Your Weekly Progress
                 <span>Update</span>
             </h3>

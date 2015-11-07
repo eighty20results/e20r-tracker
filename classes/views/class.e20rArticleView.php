@@ -163,7 +163,7 @@ class e20rArticleView extends e20rSettingsView {
 
             ob_start();
             ?>
-            <div id="saturday-progress-container" class="progress-container" style="margin-bottom: 16px;">
+            <div id="saturday-progress-container" class="progress-container clearfix" style="margin-bottom: 16px;">
                 <h3><?php _e("Weekly Progress", "e20rtracker");?> <span><?php _e("Update", "e20tracker"); ?></span></h3>
 
                 <div id="e20r-progress-canvas">
