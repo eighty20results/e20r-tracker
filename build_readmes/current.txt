@@ -1,2 +1,5 @@
-Didn't always respect the article Id passed to the releaseDate function.
-Fix whitescreen of death (undefined method)
+Respect dont_drop setting in e20rArticleModel::find()
+Don't drop future articles if we're processing the activity archives
+Archive page should not include tracking fields in display
+Hide buttons and tracking fields in activity definition on request (set $hide_print to true)
+Archive page didn't correctly format all of the layout on display

@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.5.3
+Stable tag: 1.5.5
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,21 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.5 ==
+
+* Respect dont_drop setting in e20rArticleModel::find()
+* Don't drop future articles if we're processing the activity archives
+* Archive page should not include tracking fields in display
+* Hide buttons and tracking fields in activity definition on request (set $hide_print to true)
+* Archive page didn't correctly format all of the layout on display
+
+== 1.5.4 ==
+
+* Fix warning during debug output
+* Would sometimes generate warning while loading daily_progress shortcode
+* Refactor for formatting purposes
+* Removed clearfix from date navigation bar
 
 == 1.5.3 ==
 
