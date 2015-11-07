@@ -755,6 +755,7 @@ class e20rCheckin extends e20rSettings
         $config->complete = false;
         $config->userId = $current_user->ID;
         $config->update_period = 'Today';
+        $config->using_closest = false;
 
         $config->programId = (!isset($_POST['program-id']) ? $e20rProgram->getProgramIdForUser($config->userId) : intval($_POST['program-id']));
 
@@ -777,7 +778,13 @@ class e20rCheckin extends e20rSettings
         if (isset($_POST['e20r-checkin-day'])) {
 
             $config->delay = $e20rTracker->getDelay($e20rTracker->sanitize($_POST['e20r-checkin-day']), $config->userId);
+            $config->today = isset($_POST['e20r-today']) ? $e20rTracker->sanitize($_POST['e20r-today']) : $e20rTracker->getDelay();
+
             dbg("e20rCheckin::configure_dailyProgress() - Was given a specific release_day to load the article for: {$config->delay}");
+        }
+
+        if (isset( $_POST['article-id'] ) ) {
+            dbg("e20rCheckin::configure_dailyProgress() - Article ID is specified: {$_POST['article-id']}");
         }
 
         if (isset($_POST['article-id']) && !isset($config->delay)) {
@@ -814,6 +821,7 @@ class e20rCheckin extends e20rSettings
 
                 dbg("e20rCheckin::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to today");
                 $article = $articles[0];
+                $config->using_closest = true;
                 // $article = $e20rArticle->emptyArticle();
                 // $article->id = CONST_NULL_ARTICLE;
             }
@@ -841,9 +849,9 @@ class e20rCheckin extends e20rSettings
 
             $currentArticle = $article;
         }
-
-        $config->delay = $currentArticle->release_day;
-        $config->delay_byDate = $config->delay;
+        dbg("e20rCheckin::configure_dailyProgress() - Loaded article info for {$article->id}");
+        $config->delay = isset( $currentArticle->release_day ) ? $currentArticle->release_day : 0;
+        $config->delay_byDate = $e20rTracker->getDelay();
         $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
         $config->articleId = isset($currentArticle->id) ? $currentArticle->id : CONST_NULL_ARTICLE;
         $config->use_cards = ( isset( $config->use_cards ) ? $config->use_cards : false );
@@ -916,7 +924,17 @@ class e20rCheckin extends e20rSettings
 
         dbg("e20rCheckin::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}");
 
-        if (!$e20rTracker->hasAccess($config->userId, $currentArticle->post_id)) {
+        $access = $e20rTracker->hasAccess($config->userId, $currentArticle->post_id);
+        dbg("e20rCheckin::nextCheckin_callback() - Access: " . ($access ? 'true' : 'false') . ". Using closest article and not current_day: " . ( $config->using_closest ? 'true' : 'false') . ". delay_byDate: {$config->delay_byDate} vs delay: {$config->delay}" );
+
+        if ( $access && $config->using_closest && ( $config->delay > $config->delay_byDate ) ) {
+
+            dbg("e20rCheckin::nextCheckin_callback( - Article & post isn't available to this user yet due to delay vs today");
+            wp_send_json_error(array('ecode' => 1));
+        }
+
+        if (!$access ) {
+            dbg("e20rCheckin::nextCheckin_callback( - User doesn't have access to article.");
             wp_send_json_error(array('ecode' => 1));
         }
 
