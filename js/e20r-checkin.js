@@ -301,6 +301,7 @@ jQuery(document).ready(function () {
         dayNav: function (self, elem) {
 
             var navDay = jQuery(elem).next("input[name^='e20r-checkin-day']").val();
+            var today = jQuery('#e20r-checkin-today').val();
 
             // console.log("Day Nav value: ", navDay );
 
@@ -311,7 +312,8 @@ jQuery(document).ready(function () {
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
                 'e20r-use-card-based-display': self.$cardSetting,
-                'e20r-checkin-day': navDay
+                'e20r-checkin-day': navDay,
+                'e20r-today': today
             };
 
             // console.log("toNext data: ", data);
