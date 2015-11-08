@@ -745,6 +745,8 @@ class e20rCheckin extends e20rSettings
         global $post;
 
         $articles = array();
+        $article_configured = false;
+
         $config = new stdClass();
 
         $config->type = 'action';
@@ -756,6 +758,12 @@ class e20rCheckin extends e20rSettings
         $config->userId = $current_user->ID;
         $config->update_period = 'Today';
         $config->using_closest = false;
+
+        if ( isset( $currentArticle->id) && ($post->ID == $currentArticle->post_id) ) {
+            dbg("e20rCheckin::configure_dailyProgress() - Article data already loaded: {$currentArticle->post_id} vs {$post->ID}");
+            dbg($currentArticle);
+            $article_configured = true;
+        }
 
         $config->programId = (!isset($_POST['program-id']) ? $e20rProgram->getProgramIdForUser($config->userId) : intval($_POST['program-id']));
 
@@ -796,7 +804,7 @@ class e20rCheckin extends e20rSettings
             $e20rArticle->init($config->articleId);
         } else {
 
-            if (!isset($config->delay)) {
+            if (!isset($config->delay) && (false === $article_configured)) {
 
                 dbg("e20rCheckin::configure_dailyProgress() - Trying to load article based on post_id");
 
@@ -809,13 +817,13 @@ class e20rCheckin extends e20rSettings
                 }
             }
 
-            if (isset($config->delay) && empty($articles)) {
+            if (isset($config->delay) && empty($articles) && (false === $article_configured)) {
 
                 dbg("e20rCheckin::configure_dailyProgress() - Loading article (list?) based on the release day (delay value)");
                 $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
             }
 
-            if (empty($articles)) {
+            if (empty($articles) && (false === $article_configured)) {
 
                 $articles = $e20rArticle->findArticlesNear('release_day', $config->delay, $config->programId, '<=');
 
@@ -826,11 +834,11 @@ class e20rCheckin extends e20rSettings
                 // $article->id = CONST_NULL_ARTICLE;
             }
 
-            if (is_array($articles) && (1 == count($articles))) {
+            if (is_array($articles) && (1 == count($articles)) && (false === $article_configured)) {
 
                 $article = array_pop($articles);
 
-            } elseif (1 < count($articles)) {
+            } elseif (1 < count($articles) && (false === $article_configured)) {
                 dbg("e20rCheckin::configure_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
 
                 if (!isset($config->delay)) {
@@ -848,14 +856,16 @@ class e20rCheckin extends e20rSettings
                         $article = $art;
                     }
                 }
-            } elseif (is_object($articles)) {
+            } elseif (is_object($articles) && (false === $article_configured)) {
                 dbg("e20rCheckin::con
 				figure_dailyProgress() - Articles object: " . gettype($articles));
                 dbg($articles);
                 $article = $articles;
             }
 
-            $currentArticle = $article;
+            if ( (false === $article_configured) && isset( $article->release_day ) ) {
+                $currentArticle = $article;
+            }
         }
         dbg("e20rCheckin::configure_dailyProgress() - Loaded article info for {$article->id}");
         $config->delay = isset($currentArticle->release_day) ? $currentArticle->release_day : 0;
@@ -1004,13 +1014,13 @@ class e20rCheckin extends e20rSettings
 
         dbg("e20rCheckin::shortcode_dailyProgress() - Config is currently: ");
         dbg($config);
-
+/*
         if ($config->type == 'assignment') {
 
             dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
             $articles = $e20rArticle->findArticles('post_id', $post->ID, 'numeric', $config->programId);
         }
-
+*/
         dbg("e20rCheckin::shortcode_dailyProgress() - Article ID is currently set to: {$config->articleId}");
 
         ob_start();
