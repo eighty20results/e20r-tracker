@@ -390,6 +390,7 @@ class e20rCheckinView extends e20rSettingsView {
         <div class="e20r-action-activity-overview e20r-as-cards">
             <?php wp_nonce_field('e20r-checkin-data', 'e20r-checkin-nonce'); ?>
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-checkin-day-today" id="e20r-checkin-today" value="<?php echo $config->delay; ?>">
             <input type="hidden" name="e20r-checkin-article_id" id="e20r-checkin-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
             <input type="hidden" name="e20r-checkin-assignment_id" id="e20r-checkin-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
             <input type="hidden" name="e20r-checkin-checkin_date" id="e20r-checkin-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
@@ -468,8 +469,8 @@ class e20rCheckinView extends e20rSettingsView {
             echo $this->load_noscript_notice( $config->maxDelayFlag ); ?>
         <div id="e20r-checkin-daynav" class="clearfix">
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-checkin-day-today" id="e20r-checkin-today" value="<?php echo $config->delay; ?>">
 	        <?php if ( $config->delay >= 1 ): ?>
-                <input type="hidden" name="e20r-checkin-day-today" id="e20r-checkin-today" value="<?php echo $config->delay; ?>">
                 <p class="e20r-checkin-yesterday-nav">
                     <a id="e20r-checkin-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
                     <input type="hidden" name="e20r-checkin-day-yesterday" id="e20r-checkin-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
