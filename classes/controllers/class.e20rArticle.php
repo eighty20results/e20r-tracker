@@ -1407,8 +1407,8 @@ class e20rArticle extends e20rSettings
         $article = null;
         $article_id = null;
 
-        dbg("e20rArticle::shortcode_article_summary() - Loading article summary based on shortcode");
-        dbg( $_REQUEST );
+        $for_date = $e20rTracker->sanitize( get_query_var('article_date') );
+        dbg("e20rArticle::shortcode_article_summary() - Loading article summary based on shortcode: {$for_date}");
 
         if (!is_user_logged_in()) {
 
@@ -1437,7 +1437,16 @@ class e20rArticle extends e20rSettings
             $e20rProgram->init( $program_id );
         }
 
-        $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+        if ( !empty( $for_date ) ) {
+
+            dbg("e20rArticle::shortcode_article_summary() - Received date: {$for_date} and will calculate # of days from that");
+            $days_since_start = $e20rTracker->daysBetween( strtotime( $currentProgram->startdate ), strtotime( $for_date ) );
+        }
+        else {
+            $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+        }
+
+        dbg("e20rArticle::shortcode_article_summary() - using delay value of: {$days_since_start}");
 
         if ( is_null( $article_id ) ) {
 
