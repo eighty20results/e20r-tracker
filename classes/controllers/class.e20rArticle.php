@@ -1486,16 +1486,21 @@ class e20rArticle extends e20rSettings
 
         $defaults = $this->model->defaultSettings();
 
-        $days_of_summaries = ( is_null( $currentArticle->max_summaries ) ? $defaults->max_summaries : $currentArticle->max_summaries );
+        $days_of_summaries = ( !isset( $currentArticle->max_summaries) || is_null( $currentArticle->max_summaries ) ? $defaults->max_summaries : $currentArticle->max_summaries );
 
         $tmp = shortcode_atts(array(
             'days' => $days_of_summaries,
         ), $attributes);
 
+        dbg("e20rArticle::shortcode_article_summary() - Article # {$currentArticle->id} needs to locate {$tmp['days']} or {$days_of_summaries} days worth of articles to pull summaries from, ending on day # {$currentArticle->release_day}");
 
-        dbg("e20rArticle::shortcode_article_summary() - Article # {$currentArticle->id} needs to locate {$tmp['days']} days worth of articles to pull summaries from, ending on day # { $currentArticle->release_day}");
-        $start_day = ( $currentArticle->release_day - $tmp['days']);
-        $gt_days = ( $currentArticle->release_day - $tmp['days'] );
+        if ( $days_of_summaries != $tmp['days'] ) {
+
+            $days_of_summaries = $tmp['days'];
+        }
+
+        $start_day = ( $currentArticle->release_day - $days_of_summaries );
+        $gt_days = ( $currentArticle->release_day - $days_of_summaries );
 
         $start_TS = strtotime("{$currentProgram->startdate} +{$start_day} days");
 
