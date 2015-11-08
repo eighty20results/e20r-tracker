@@ -240,6 +240,11 @@ class e20rTracker {
 
             add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
             add_action( 'admin_notices', array( &$this, 'display_admin_notice'  ) );
+
+            add_action('init', array(&$this, 'add_endpoint'));
+            add_action('init', array(&$this, 'add_rewrite_tags'));
+            add_filter('post_link', array(&$this, 'process_post_link'));
+
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
 
@@ -1621,6 +1626,58 @@ class e20rTracker {
 
         dbg("e20rTracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
         return $retVal;
+    }
+
+
+    public function add_endpoint() {
+
+        add_rewrite_rule(
+            '^([^/]*)/([0-9]{4}-[0-9]{2}-[0-9]{2})/?$',
+            'index.php?pagename=$matches[1]&article_date',
+            'top'
+        );
+    }
+
+    public function add_rewrite_tags() {
+
+        add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})');
+    }
+
+    public function process_post_link( $permalink ) {
+
+        global $currentArticle;
+
+        global $current_user;
+        global $post;
+
+        if ( false === strpos( $permalink, '%article_date%' ) ) {
+
+            dbg("e20rTracker::process_post_link() - No permalink containing the %article_date% tag");
+            return $permalink;
+        }
+
+        if ( isset( $currentArticle->post_id ) && ( $currentArticle->post_id == $post->ID ) ) {
+
+            $article_date = $this->getDateFromDelay( ($currentArticle->release_day -1), $current_user->ID );
+
+            $article_date = ( !empty( $article_date ) ? $article_date : date('Y-m-d', current_time('timestamp') ) );
+            $article_date = urlencode( $article_date );
+
+            $permalink = str_replace( '%article_date%', $article_date, $permalink );
+        }
+        else {
+            $permalink = str_replace( '%article_date%/', '', $permalink );
+        }
+
+        dbg("e20rTracker::process_post_link() - Using permalink: {$permalink}");
+        return $permalink;
+    }
+
+    public function add_query_vars( $vars ) {
+
+        $vars[] = "article_date";
+
+        return $vars;
     }
 
     private function get_closest_release_day($search, $posts) {
