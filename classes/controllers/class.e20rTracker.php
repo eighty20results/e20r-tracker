@@ -1568,10 +1568,10 @@ class e20rTracker {
 
             if ( $result[0] ) {
 
-                dbg( "e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
+                dbg("e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
                 $filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
                 $retVal = ( $filterVal == 1 ? true : false );
-                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == 1 ? 'yes' : 'no' ));
+                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == true ? 'yes' : 'no' ));
             }
         }
         else {
@@ -1586,7 +1586,7 @@ class e20rTracker {
             $programId = $e20rProgram->getProgramIdForUser( $userId );
 
             $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $programId, $comp = '=' );
-            dbg( $articles);
+            // dbg( $articles);
 
             // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
             if ( !empty( $articles ) ) {
@@ -1602,7 +1602,7 @@ class e20rTracker {
 */
             $found = $this->get_closest_release_day( $current_delay, $articles );
 
-            dbg( $found );
+            // dbg( $found );
 
             if ( !is_null($found) && ( $found->release_day <= $current_delay ) ) {
                 dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$found->release_day} <= {$current_delay}");
@@ -2464,6 +2464,12 @@ class e20rTracker {
     }
 
     public function load_frontend_scripts( $events ) {
+
+        if (defined('DOING_AJAX') && DOING_AJAX) {
+
+            dbg("e20rTracker::load_frontend_scripts() - Doing AJAX call. No need to load any scripts/styling");
+            return;
+        }
 
         global $e20r_plot_jscript;
         global $e20rTracker;
