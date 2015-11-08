@@ -467,7 +467,7 @@ class e20rCheckinView extends e20rSettingsView {
         if ( ! ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) ) {
 
             echo $this->load_noscript_notice( $config->maxDelayFlag ); ?>
-        <div id="e20r-checkin-daynav" class="clearfix">
+        <div id="e20r-checkin-daynav">
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
             <input type="hidden" name="e20r-checkin-day-today" id="e20r-checkin-today" value="<?php echo $config->delay; ?>">
 	        <?php if ( $config->delay >= 1 ): ?>
