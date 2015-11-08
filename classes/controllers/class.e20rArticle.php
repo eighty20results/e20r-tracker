@@ -1405,7 +1405,9 @@ class e20rArticle extends e20rSettings
 
         $html = null;
         $article = null;
+        $article_id = null;
 
+        dbg("e20rArticle::shortcode_article_summary() - Loading article summary based on shortcode");
         dbg( $_REQUEST );
 
         if (!is_user_logged_in()) {
@@ -1425,46 +1427,81 @@ class e20rArticle extends e20rSettings
 
         }
 
-        if ( is_null( $article_id ) ) {
+        if ( empty( $program_id ) ) {
 
-            dbg("e20rArticle::shortcode_article_summary() - No article ID specified by calling post/page. Not displaying anything");
-            return;
+            dbg("e20rArticle::shortcode_article_summary() - Loading program info for user {$current_user->ID}");
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
+        }
+        else {
+            dbg("e20rArticle::shortcode_article_summary() - Loading program config for {$program_id}");
+            $e20rProgram->init( $program_id );
         }
 
-        dbg("e20rArticle::shortcode_article_summary() - Loading article summary shortcode for: {$article_id}");
-
-        // $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
         $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
 
-        $articles = $this->model->find( 'id', $article_id, 'numeric', $program_id);
-        dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) for with post ID {$post->ID}");
+        if ( is_null( $article_id ) ) {
 
-        $article = array_pop( $articles );
+            global $post;
 
-        if ( !isset( $article->id ) ) {
+            $articles = $this->model->find('post_id', $post->ID, 'numeric', $currentProgram->id );
+
+            dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " for this post ID ({$post->ID})");
+
+            foreach( $articles as $a ) {
+
+                if ( $a->release_day == $days_since_start ) {
+
+                    dbg("e20rArticle::shortcode_article_summary() - Found article {$a->id} and release day {$a->release_day}");
+                    $currentArticle = $a;
+                    break;
+                }
+            }
+
+            if ( !isset( $currentArticle->id ) || ( $currentArticle->id == 0 ) ) {
+                dbg("e20rArticle::shortcode_article_summary() - No article ID specified by calling post/page. Not displaying anything");
+                return;
+            }
+        }
+
+        dbg("e20rArticle::shortcode_article_summary() - Loading article summary shortcode for: {$currentArticle->id}");
+
+        // $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
+        // $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
+
+        if ( !isset( $currentArticle->id ) ) { // || !empty( $article_id ) && ( $article_id != $currentArticle->id )
+
+            $articles = $this->model->find('id', $article_id, 'numeric', $currentProgram->id);
+            dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) with post ID {$post->ID}");
+            $article = array_pop( $articles );
+            $article_id = $article->id;
+            $currentArticle = $article;
+        }
+
+
+        if ( !isset( $currentArticle->id ) && ( !is_null($article_id) ) ) {
 
             dbg("e20rArticle::shortcode_article_summary() - Configure article settings (not needed?) ");
-            $this->init( $article->id );
+            $this->init( $currentArticle->id );
         }
 
         $defaults = $this->model->defaultSettings();
 
-        $days_of_summaries = ( is_null( $article->max_summaries ) ? $defaults->max_summaries : $article->max_summaries );
+        $days_of_summaries = ( is_null( $currentArticle->max_summaries ) ? $defaults->max_summaries : $currentArticle->max_summaries );
 
         $tmp = shortcode_atts(array(
             'days' => $days_of_summaries,
         ), $attributes);
 
 
-        dbg("e20rArticle::shortcode_article_summary() - Article # {$article->id} needs to locate {$days_of_summaries} days worth of articles to pull summaries from");
-        $start_day = ( $article->release_day - $days_of_summaries);
-        $gt_days = ( $article->release_day - $days_of_summaries );
+        dbg("e20rArticle::shortcode_article_summary() - Article # {$currentArticle->id} needs to locate {$tmp['days']} days worth of articles to pull summaries from, ending on day # { $currentArticle->release_day}");
+        $start_day = ( $currentArticle->release_day - $tmp['days']);
+        $gt_days = ( $currentArticle->release_day - $tmp['days'] );
 
         $start_TS = strtotime("{$currentProgram->startdate} +{$start_day} days");
 
-        dbg("e20rArticle::shortcode_article_summary() - Searching for articles with release_day between start: {$start_day} and end: {$article->release_day}");
+        dbg("e20rArticle::shortcode_article_summary() - Searching for articles with release_day between start: {$start_day} and end: {$currentArticle->release_day}");
 
-        $history = $this->find('release_day', array( ($start_day - 1) , $article->release_day), 'numeric', $program_id, 'BETWEEN');
+        $history = $this->find('release_day', array( ($start_day - 1) , $currentArticle->release_day), 'numeric', $currentProgram->id, 'BETWEEN');
 
         dbg("e20rArticle::shortcode_article_summary() - Fetched " . count($history) . " articles to pull summaries from");
         // dbg($history);
@@ -1509,7 +1546,7 @@ class e20rArticle extends e20rSettings
 
                 // if (!empty($new['title']) && !empty($new['summary'])) {
 
-                dbg("e20rArticle::shortcode_article_summary() - Current day: {$article->release_day} + Last release day to include: {$gt_days}.");
+                dbg("e20rArticle::shortcode_article_summary() - Current day: {$currentArticle->release_day} + Last release day to include: {$gt_days}.");
 
                 if ( ( $new['day'] > $gt_days ) ) {
 
@@ -1528,12 +1565,12 @@ class e20rArticle extends e20rSettings
 
         ksort($summary);
 
-        dbg("e20rArticle::shortcode_article_summary() - Original prefix of {$article->prefix}");
-        $prefix = lcfirst( preg_replace('/\[|\]/', '', $article->prefix ) );
+        dbg("e20rArticle::shortcode_article_summary() - Original prefix of {$currentArticle->prefix}");
+        $prefix = lcfirst( preg_replace('/\[|\]/', '', $currentArticle->prefix ) );
         dbg("e20rArticle::shortcode_article_summary() - Scrubbed prefix: {$prefix}");
         // dbg($summary);
 
-        $summary_post = get_post( $article->id );
+        $summary_post = get_post( $currentArticle->id );
         $info = null;
 
         wp_reset_postdata();
