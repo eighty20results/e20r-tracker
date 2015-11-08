@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,13 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.6 ==
+
+* Didn't include the shortcode attribute (days) override in e20r_article_summary shortcode
+* Didn't always load post summaries when using the e20r_article_summary shortcode
+* Remove inner border for activity archive
+* Remove the clearfix class from the day navigation bar in the traditional dashboard view
 
 == 1.5.5 ==
 

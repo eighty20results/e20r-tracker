@@ -1,5 +1,4 @@
-Respect dont_drop setting in e20rArticleModel::find()
-Don't drop future articles if we're processing the activity archives
-Archive page should not include tracking fields in display
-Hide buttons and tracking fields in activity definition on request (set $hide_print to true)
-Archive page didn't correctly format all of the layout on display
+Didn't include the shortcode attribute (days) override in e20r_article_summary shortcode
+Didn't always load post summaries when using the e20r_article_summary shortcode
+Remove inner border for activity archive
+Remove the clearfix class from the day navigation bar in the traditional dashboard view
