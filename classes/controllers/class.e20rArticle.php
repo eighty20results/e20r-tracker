@@ -346,6 +346,10 @@ class e20rArticle extends e20rSettings
 
     }
 
+    public function get_article_archive( ) {
+
+
+    }
     public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false )
     {
 
