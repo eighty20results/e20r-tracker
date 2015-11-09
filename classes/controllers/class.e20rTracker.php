@@ -1671,7 +1671,7 @@ class e20rTracker {
         }
 
         dbg("e20rTracker::process_post_link() - Using permalink: {$permalink}");
-        return $permalink;
+        return esc_url($permalink);
     }
 
     public function add_query_vars( $vars ) {
