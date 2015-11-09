@@ -243,7 +243,7 @@ class e20rTracker {
 
             add_action('init', array(&$this, 'add_endpoint'));
             add_action('init', array(&$this, 'add_rewrite_tags'));
-            add_filter('post_link', array(&$this, 'process_post_link'));
+            add_filter('post_link', array(&$this, 'process_post_link'), 10, 3);
 
 	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
@@ -1643,12 +1643,12 @@ class e20rTracker {
         add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})');
     }
 
-    public function process_post_link( $permalink ) {
+    public function process_post_link( $permalink, $post, $leavename ) {
 
         global $currentArticle;
 
         global $current_user;
-        global $post;
+        // global $post;
 
         if ( false === strpos( $permalink, '%article_date%' ) ) {
 
@@ -1664,8 +1664,9 @@ class e20rTracker {
             $article_date = urlencode( $article_date );
 
             $permalink = str_replace( '%article_date%', $article_date, $permalink );
-        }
-        else {
+
+        } else {
+
             $permalink = str_replace( '%article_date%/', '', $permalink );
         }
 
