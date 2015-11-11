@@ -145,13 +145,18 @@ class e20rArticleModel extends e20rSettingsModel
         }
     */
 
-    public function find($key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC', $dont_drop = false)
+    public function find($key, $value, $programId = -1, $comp = 'LIKE', $order = 'DESC', $dont_drop = false, $dataType = 'numeric' )
     {
         global $e20rTracker;
+        global $currentProgram;
+        global $currentClient;
 
-        $result = parent::find($key, $value, $dataType, $programId, $comp, $order);
+        if ( isset( $currentClient->user_id ) ) {
+            $user_id = $currentClient->user_id;
+        }
+        $result = parent::find($key, $value, $programId, $comp, $order, $dataType);
 
-        $member_days = $e20rTracker->getDelay( 'now' );
+        $member_days = $e20rTracker->getDelay( 'now', $user_id );
 
         foreach ($result as $k => $data) {
 
@@ -172,7 +177,7 @@ class e20rArticleModel extends e20rSettingsModel
         return $result;
     }
 
-    public function findClosestArticle($key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC')
+    public function findClosestArticle($key, $value, $programId = -1, $comp = '<=', $limit = 1, $sort_order = 'DESC', $type = 'numeric')
     {
 
         $args = array(
@@ -230,13 +235,13 @@ class e20rArticleModel extends e20rSettingsModel
         return $a_list;
     }
 
-    public function findArticle($key, $value, $type = 'NUMERIC', $programId = -1, $comp = '=', $order = 'DESC', $multi = NULL)
+    public function findArticle($key, $value, $programId = -1, $comp = '=', $order = 'DESC', $type = 'NUMERIC')
     {
 
         $article = null;
 
         // $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC'
-        $list = parent::find($key, $value, $type, $programId, $comp, $order);
+        $list = parent::find($key, $value, $programId, $comp, $order, $type );
 
         /*
 	    if ( $key != 'id' ) {
