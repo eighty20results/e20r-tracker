@@ -15,40 +15,112 @@ class e20rProgram extends e20rSettings {
 
         dbg("e20rProgram::init() - Initializing Program data");
         parent::__construct( 'program', 'e20r_programs', new e20rProgramModel(), new e20rProgramView() );
-
     }
 
+    /**
+     * Returns the value of the active_delay setting (for articles/records) OR null if it's not configured/set
+     *
+     * @return int|null - A nil or integer value
+     */
+    public function get_active_delay() {
+
+        if ( isset( $this->model->settings->active_delay ) ) {
+
+            // Preserve the previous delay value
+            $this->model->settings->previous_delay = $this->model->settings->active_delay;
+
+            $value = $this->model->settings->active_delay;
+        } else {
+            $value = null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Set the delay value to use as the active value for articles/results/assignments in this program.
+     *
+     * @param $value - Integer value (delay value for finding article in program )
+     */
+    public function set_active_delay( $value )
+    {
+
+        global $e20rTracker;
+
+        if ( is_object( $this->model->settings ) &&
+            isset( $this->model->settings->active_delay ) &&
+            ( null !== $this->model->settings->active_delay ) || ( '' !== $this->model->settings->active_delay ) ) {
+
+            dbg("e20rProgram::set_active_delay() - Saving pre-existing active_delay value: {$$this->model->settings->active_delay}");
+            $this->model->settings->previous_delay = $this->model->settings->active_delay;
+        }
+
+        $this->model->settings->active_delay = $e20rTracker->sanititze($value);
+    }
+
+    /**
+     * Returns the value of the previous_delay setting OR null if it's not configured/set
+     *
+     * @return int|null - A nil or integer value
+     */
+    public function get_previous_delay() {
+
+        if ( isset( $this->model->settings->previous_delay ) ) {
+            $value = $this->model->settings->previous_delay;
+        } else {
+            $value = null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Set the value we last used value for articles/results/assignments in this program.
+     *
+     * @param $value - Integer value (delay value for finding article in program )
+     */
+    public function set_previous_delay( $value ) {
+
+        global $e20rTracker;
+
+        $this->model->settings->previous_delay = $e20rTracker->sanititze( $value );
+    }
+
+    /**
+     * Configure the program (load settings, etc).
+     *
+     * @param null $programId - Optional argument containing the program ID value (integer)
+     * @return bool - True = initialized and configured parameters/settings for specified program ID
+     *                False = failed to init and configure parameters/settings for specified program ID
+     */
     public function init( $programId = null ) {
+
+        global $e20rTracker;
 
 	    global $currentProgram;
 	    global $current_user;
 
 	    if ( is_user_logged_in() ) {
 
-            if ( ( is_null( $programId ) ) ) {
+            if ((is_null($programId))) {
 
                 dbg("e20rProgram::init() - Fetching program ID for user {$current_user->ID}.");
                 $programId = get_user_meta($current_user->ID, 'e20r-tracker-program-id', true);
             }
 
-            if ( ( empty( $currentProgram->id) ||
-                ( !empty( $programId ) && ( $currentProgram->id != $programId ) ) ) ) {
+            if ((!isset($currentProgram->id) ||
+                (!empty($programId) && ($currentProgram->id != $programId)))
+            ) {
 
-			    dbg("e20rProgram::init() - Loading program settings for {$programId}.");
-                $currentProgram = $this->model->loadSettings( $programId );
+                dbg("e20rProgram::init() - Loading program settings for {$programId}.");
+                $currentProgram = $this->model->loadSettings($programId);
 
-                $this->configure_startdate( $programId, $current_user->ID );
+                $this->configure_startdate($programId, $current_user->ID);
 
                 dbg("e20rProgram::init() - Program info has been loaded for: {$currentProgram->id}");
                 return true;
-		    }
-
-/*		    if ( isset( $currentProgram->id ) && ( $currentProgram->id == $programId ) ) {
-
-			    $this->programTree = $this->getPeerPrograms( $currentProgram->id );
-		    }
-*/
-	    }
+            }
+        }
 
 	    $currentProgram = new stdClass();
 	    $currentProgram->id = null;
@@ -188,41 +260,9 @@ class e20rProgram extends e20rSettings {
 
 	    global $post;
 
-	    /*
-	    $bPost = $post;
-        $list = array();
-
-        $the_query = new WP_Query( array(
-            'post_type' => 'e20r_programs',
-            'posts_per_page' => -1,
-            'post_status' => array( 'publish', 'private' ),
-            'orderby' => 'menu_order',
-            'order' => 'ASC',
-            'fields' => 'ids',
-        ) );
-
-	    if ( $the_query->have_posts() ) {
-
-            dbg("e20rProgram::getProgramList() - Loaded " . count($the_query->post_count) . " program definitions from the DB");
-
-            while( $the_query->have_posts() ) {
-
-		        $the_query->the_post();
-
-		        dbg( "e20rProgram::getProgramList() - Adding " . get_the_title() );
-		        $list[ get_the_ID() ] = get_the_title();
-	        }
-	    }
-
-	    wp_reset_postdata();
-		*/
-
 	    $list = $this->model->loadAllSettings();
 
 	    dbg("e20rProgram::getProgramList() - Content of list being returned ");
-	    // dbg($list);
-
-//	    $post = $bPost;
 
         return $list;
     }
@@ -275,13 +315,6 @@ class e20rProgram extends e20rSettings {
 			    dbg("e20rProgram::getProgramIdForUser() - currentProgram getting set to default values");
 			    $this->init();
 		    }
-            /*
-            if ( !empty( $articleId ) ) {
-
-                dbg("e20rProgram::getProgramIdForUser() - load Article ({$articleId}) too");
-                $e20rArticle->init( $articleId );
-            }
-            */
         }
 
         dbg("e20rProgram::getProgramIdForUser() - Loaded program ID ($currentProgram->id) for user {$userId}");
@@ -408,30 +441,9 @@ class e20rProgram extends e20rSettings {
             $this->configure_startdate( $programId, $userId );
 		}
 
-
-/*		else {
-
-			$this->init();
-		}
-*/
-        // Set the program startdate based on the user's membership start.
-/*        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
-
-            dbg( "e20rProgram::startdate() - Using PMPro's member startdate for user ID {$userId}: {$currentProgram->startdate}");
-
-            // $from_mbr = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
-
-            // dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
-
-            // $actual_startTS = strtotime( "{$from_mbr} + 1 day");
-            // $currentProgram->startdate = date_i18n( 'Y-m-d', $actual_startTS );
-            $currentProgram->startdate = date_i18n( 'Y-m-d', pmpro_getMemberStartdate( $userId ) );
-            dbg("e20rProgram::startdate() - From membership plugin's startdate value: {$from_mbr}");
-            dbg("e20rProgram::startdate() - Forcing startTS to the day after (workaround): {$from_mbr} vs {$currentProgram->startdate} for {$userId}");
-        }
-*/
         dbg( "e20rProgram::loadProgram() - User's programID: " . isset( $currentProgram->id ) ? $currentProgram->id : 'null' );
 	}
+
     /**
      * Action Hook to add the E20R Tracker user specific settings (like adding a program for the user)
      *
@@ -538,13 +550,6 @@ class e20rProgram extends e20rSettings {
 
             // dbg( "e20rProgram::startdate() - Loading program for user with ID: {$userId}" );
             $this->getProgramIdForUser( $userId );
-
-/*            if ( ( $currentProgram->id != $program_id ) && ( $program_id !== false ) ) {
-
-                dbg( "e20rProgram::startdate() - User program not set! Loading settings by passed Program ID: {$program_id}" );
-                $this->model->loadSettings( $program_id );
-            }
-*/
         }
 
         dbg("e20rProgram::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
@@ -644,22 +649,6 @@ class e20rProgram extends e20rSettings {
         }
 
         return false;
-    }
-    /********************** OBSOLETE ***************************/
-
-    /**
-     * Function renders the page to add/edit/remove programs from the E20R tracker plugin
-     */
-    public function render_submenu_page() {
-
-        dbg("e20rProgram::render_submenu_page() - Loading program list...");
-        $this->init();
-
-        ?><div id="e20r-program-list"><?php
-
-        echo $this->view->view_listPrograms();
-
-        ?></div><?php
     }
 
     public function getValue( $fieldName = 'id' ) {
