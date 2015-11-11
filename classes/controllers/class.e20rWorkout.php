@@ -529,7 +529,7 @@ class e20rWorkout extends e20rSettings
         $val = array($startDelay, $endDelay);
 
         // Load articles in the program that have a release day value between the start/end delay values we calculated.
-        $articles = $e20rArticle->findArticles('release_day', $val, 'numeric', $programId, 'BETWEEN', true );
+        $articles = $e20rArticle->findArticles('release_day', $val, $programId, 'BETWEEN', true );
 
         dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
         // dbg($articles);
@@ -548,7 +548,7 @@ class e20rWorkout extends e20rSettings
             // Save activity list as a hash w/weekday => workout )
             dbg("e20rWorkout::getActivityArchive() - Getting " . count($article->activity_id) . " activities for article ID: {$article->id}");
             if (count($article->activity_id) != 0) {
-                $act = $this->find('id', $article->activity_id, 'numeric', $programId, 'IN');
+                $act = $this->find('id', $article->activity_id, $programId, 'IN');
 
                 foreach ($act as $a) {
                     dbg("e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted");
@@ -673,7 +673,7 @@ class e20rWorkout extends e20rSettings
             $activities = $this->model->find('id', 'any'); // Will return all of the defined activities
         } /*        elseif ( is_array( $aIds ) ) {
             dbg("e20rWorkout::getActivities() - Supplied list of activity IDs, using 'IN' search");
-            $activities = $this->model->find( 'delay', $aIds, 'numeric', $currentProgram->id, 'IN' );
+            $activities = $this->model->find( 'delay', $aIds, $currentProgram->id, 'IN' );
         } */
         else {
             dbg('e20rWorkout::getActivities() - Loading specific activity from DB');
@@ -768,12 +768,12 @@ class e20rWorkout extends e20rSettings
         if (!empty($config->activity_id)) {
 
             dbg("e20rWorkout::prepare_activity() - Admin specified activity ID");
-            $articles = $e20rArticle->findArticles('activity_id', $config->activity_id, 'numeric', $config->programId, 'IN', true);
+            $articles = $e20rArticle->findArticles('activity_id', $config->activity_id, $config->programId, 'IN', true);
 
         } else {
 
             dbg("e20rWorkout::prepare_activity() - Attempting to locate article by configured delay value: {$config->delay}");
-            $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
+            $articles = $e20rArticle->findArticles('release_day', $config->delay, $config->programId);
 
             /*            if ( false !== $articles ) {
 
@@ -800,7 +800,7 @@ class e20rWorkout extends e20rSettings
 
             dbg("e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count($article->activity_id) : 0);
 
-            $workoutData = $this->model->find('id', $article->activity_id, 'numeric', $config->programId, 'IN');
+            $workoutData = $this->model->find('id', $article->activity_id, $config->programId, 'IN');
 
             foreach ($workoutData as $k => $workout) {
 
