@@ -171,7 +171,7 @@ jQuery(document).ready(function () {
             jQuery('body').addClass("loading");
 
             var $data = {
-                action: 'saveCheckin',
+                action: 'e20r_saveCheckin',
                 'checkin-action': $a,
                 'e20r-checkin-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
@@ -306,7 +306,7 @@ jQuery(document).ready(function () {
             // console.log("Day Nav value: ", navDay );
 
             var data = {
-                action: 'daynav',
+                action: 'e20r_daynav',
                 'e20r-checkin-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
@@ -572,7 +572,7 @@ jQuery(document).ready(function () {
                 type: 'POST',
                 timeout: e20r_checkin.timeout,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
-                data: 'action=save_daily_progress&' + self.$answerForm.serialize(),
+                data: 'action=e20r_save_daily_progress&' + self.$answerForm.serialize(),
                 success: function ($response) {
 
                     jQuery('#e20r-lesson-complete').hide();
@@ -631,7 +631,7 @@ jQuery(document).ready(function () {
                 'type': 'POST',
                 'url': e20r_checkin.ajaxurl,
                 timeout: 10000,
-                'data': 'action=save_daily_progress&' + answers,
+                'data': 'action=e20r_save_daily_progress&' + answers,
                 success: function ($response) {
 
                     jQuery('#e20r-assignment-save-btn').hide();
@@ -788,7 +788,7 @@ jQuery(document).ready(function () {
                 }
 
                 var data = {
-                    action: 'saveCheckin',
+                    action: 'e20r_saveCheckin',
                     'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
                     'action-id': self.note_id,
                     'checkin-short-name': self.checkin_shortname,

@@ -22,13 +22,13 @@ jQuery(document).ready( function(){
             timeout: e20r_tracker.timeout,
             dataType: 'JSON',
             data: {
-                action: 'getDelayValue',
+                action: 'e20r_getDelayValue',
                 'post_ID': jQuery('#e20r-article-post_id').find('option:selected').val(),
                 'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val()
             },
             success: function( $response ) {
 
-                console.log("Received from getDelayValue: ", $response );
+                console.log("Received from e20r_getDelayValue: ", $response );
 
                 if ( $response.data.nodelay != 0) {
                     console.log("No delay specified. Exiting!");
@@ -42,7 +42,7 @@ jQuery(document).ready( function(){
                 }
             },
             error: function( $response, $errString, $errType ) {
-                console.log($errString + ' error returned from getDelayValue action: ' + $errType );
+                console.log($errString + ' error returned from e20r_getDelayValue action: ' + $errType );
 
                 var $msg;
 

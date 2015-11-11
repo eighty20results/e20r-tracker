@@ -38,14 +38,14 @@ jQuery(document).ready( function($) {
             timeout: e20r_tracer.timeout,
             dataType: 'JSON',
             data: {
-                action: 'addWorkoutGroup',
+                action: 'e20r_addWorkoutGroup',
                 'e20r-tracker-workout-settings-nonce': $('#e20r-tracker-workout-settings-nonce').val(),
                 'post_ID': $('#post_ID').val()
             },
             error: function($response, $errString, $errType) {
 
                 console.log("From server: ", $response );
-                console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_addWorkoutGroup()");
 
                 var $msg = '';
 
@@ -340,7 +340,7 @@ function saveItem( $valueArray ) {
         timeout: 5000,
         dataType: 'JSON',
         data: {
-            action: 'save_item_data',
+            action: 'e20r_save_item_data',
             e20r_tracker_edit_nonce: $valueArray['nonce'],
             e20r_checkin_item_id:  $valueArray['id'],
             e20r_checkin_item_order: $valueArray['order'],
@@ -674,7 +674,7 @@ function loadCheckinItem( $itemId ) {
         timeout: 5000,
         dataType: 'JSON',
         data: {
-            action: 'get_checkinItem',
+            action: 'e20r_get_checkinItem',
             e20r_tracker_checkin_items_nonce: jQuery('#e20r_tracker_checkin_items_nonce').val(),
             hidden_e20r_checkin_item_id: $itemId
         },

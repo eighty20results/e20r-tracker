@@ -27,7 +27,7 @@ jQuery(function() {
                 timeout: e20r_checkin.timeout,
                 dataType: 'JSON',
                 data: {
-                    action: 'save_item_data',
+                    action: 'e20r_save_item_data',
                     e20r_tracker_edit_nonce: $valueArray['nonce'],
                     e20r_checkin_item_id:  $valueArray['id'],
                     e20r_checkin_item_order: $valueArray['order'],

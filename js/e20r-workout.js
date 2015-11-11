@@ -328,7 +328,7 @@ var e20rActivity = {
                     $show.find('a.e20r-edit-weight-value').text($hWeight);
 
                     console.log("From server: ", $response );
-                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
 
                     var $msg = '';
 
@@ -393,7 +393,7 @@ var e20rActivity = {
                     console.log("Error confirming completion of the activity");
 
                     console.log("From server: ", $response );
-                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
 
                     var $msg = '';
 

@@ -344,7 +344,7 @@ jQuery(function() {
         save: function(self) {
 
             var $data = {
-                'action': 'saveMeasurementForUser',
+                'action': 'e20r_saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                 'article-id': jQuery('#article_id').val(),
                 'program-id': jQuery('#program_id').val(),
@@ -503,7 +503,7 @@ jQuery(function() {
                 data: {
                     'article-id': jQuery('#article_id').val(),
                     'program-id': jQuery('#program_id').val(),
-                    'action': 'saveMeasurementForUser',
+                    'action': 'e20r_saveMeasurementForUser',
                     'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                     'date': jQuery('#date').val(),
                     'user-id': NourishUser.user_id,
@@ -513,7 +513,7 @@ jQuery(function() {
                 error: function($response, $errString, $errType) {
 
                     console.log("From server: ", $response );
-                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from saveMeasurementForUser()");
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
 
                     var $msg = '';
 
@@ -547,7 +547,7 @@ jQuery(function() {
                 .find('input[name^=pquestion]')
                 .click(function() {
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
@@ -566,7 +566,7 @@ jQuery(function() {
                         error: function($response, $errString, $errType) {
 
                             console.log("From server: ", $response );
-                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
 
                             var $msg = '';
 
@@ -590,7 +590,7 @@ jQuery(function() {
             jQuery('textarea[name=essay1]')
                 .blur(function() {
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
@@ -609,7 +609,7 @@ jQuery(function() {
                         error: function($response, $errString, $errType) {
 
                             console.log("From server: ", $response );
-                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
 
                             var $msg = '';
 
@@ -662,7 +662,7 @@ jQuery(function() {
             console.log("Query String: " + queryString);
 
             var $data = {
-                'action': 'updateUnitTypes',
+                'action': 'e20r_updateUnitTypes',
                 'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'querystring': queryString,
                 'user-id': NourishUser.user_id
@@ -677,7 +677,7 @@ jQuery(function() {
                 error: function($response, $errString, $errType) {
 
                     console.log("From server: ", $response );
-                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
 
                     var $msg = '';
 
@@ -742,7 +742,7 @@ jQuery(function() {
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation,
-                        'action': 'deletePhoto',
+                        'action': 'e20r_deletePhoto',
                         'user-id': NourishUser.user_id
                     };
 
@@ -755,7 +755,7 @@ jQuery(function() {
                         error: function($response, $errString, $errType) {
 
                             console.log("From server: ", $response );
-                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_deletePhoto()");
 
                             var $msg = '';
 
@@ -852,7 +852,7 @@ jQuery(function() {
 
                     // Save the image value with the measurements data
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': orientation + '_image',
@@ -872,7 +872,7 @@ jQuery(function() {
                         error: function($response, $errString, $errType) {
 
                             console.log("From server: ", $response );
-                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
 
                             var $msg = '';
 
@@ -1018,7 +1018,7 @@ jQuery(function() {
             /* Saving & updating measurements & unit type if the user chooses to change it */
 
             var $data = {
-                'action': 'updateUnitTypes',
+                'action': 'e20r_updateUnitTypes',
                 'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'user-id': NourishUser.user_id,
                 'dimension': dimension, // "weight" or "length"
@@ -1035,7 +1035,7 @@ jQuery(function() {
                 error: function($response, $errString, $errType) {
 
                     console.log("From server: ", $response );
-                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
 
                     var $msg = '';
 
@@ -1071,7 +1071,7 @@ jQuery(function() {
 
     function checkFormCompletion() {
         var $data = {
-            'action': 'checkCompletion',
+            'action': 'e20r_checkCompletion',
             'article-id': jQuery('#article_id').val(),
             'program-id': jQuery('#program_id').val(),
             'date': jQuery('#date').val(),
@@ -1089,7 +1089,7 @@ jQuery(function() {
             error: function($response, $errString, $errType) {
 
                 console.log("From server: ", $response );
-                console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_checkCompletion()");
 
                 var $msg = '';
 

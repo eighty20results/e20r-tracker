@@ -1026,7 +1026,7 @@ var progMeasurements = {
         }
 
         var $data = {
-            action: 'load_activity_stats',
+            action: 'e20r_load_activity_stats',
             'e20r-weight-rep-chart': jQuery('#e20r-weight-rep-chart').val(),
             'wh_h_dimension': jQuery("#wh_h_dimension").val(),
             'wh_w_dimension': jQuery("#wh_w_dimension").val(),
@@ -1498,14 +1498,14 @@ var progMeasurements = {
             timeout: $class.timeout,
             dataType: 'JSON',
             data: {
-                action: 'get_memberlistForLevel',
+                action: 'e20r_getMemberListForLevel',
                 'e20r-tracker-clients-nonce': jQuery('#e20r-tracker-clients-nonce').val(),
                 'hidden_e20r_level': $class.$levelId
             },
             error: function( $response, $errString, $errType ) { //function (data, $errString, $errType) {
 
                 console.log("From server: ", $response );
-                console.log("Error String: " + $errString + " and errorType: " + $errType + " from get_memberlistForLevel()");
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_getMemberListForLevel()");
 
                 var $msg = '';
 
@@ -1524,7 +1524,7 @@ var progMeasurements = {
 
                 $class.$spinner.hide();
 
-                console.log($errString + ' error returned from get_memberlistForLevel action: ' + $errType );
+                console.log($errString + ' error returned from e20r_getMemberListForLevel action: ' + $errType );
 
             },
             success: function ($data) {
