@@ -337,7 +337,7 @@ class e20rCheckin extends e20rSettings
 
         $programId = $currentProgram->id;
 
-        $art_list = $e20rArticle->findArticles('release_day', $user_delay, 'numeric', $programId, '<=');
+        $art_list = $e20rArticle->findArticles('release_day', $user_delay, $programId, '<=');
 
         dbg("e20rCheckin::listUserAccomplishments() - Loading accomplishments related to " . count($art_list) . " articles related to user ({$userId}) in program {$programId}");
 
@@ -808,7 +808,7 @@ class e20rCheckin extends e20rSettings
 
                 dbg("e20rCheckin::configure_dailyProgress() - Trying to load article based on post_id");
 
-                $articles = $e20rArticle->findArticles('post_id', $post->ID, 'numeric', $config->programId);
+                $articles = $e20rArticle->findArticles('post_id', $post->ID, $config->programId);
 
                 if (empty($articles)) {
 
@@ -820,7 +820,7 @@ class e20rCheckin extends e20rSettings
             if (isset($config->delay) && empty($articles) && (false === $article_configured)) {
 
                 dbg("e20rCheckin::configure_dailyProgress() - Loading article (list?) based on the release day (delay value)");
-                $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
+                $articles = $e20rArticle->findArticles('release_day', $config->delay, $config->programId);
             }
 
             if (empty($articles) && (false === $article_configured)) {
@@ -903,7 +903,7 @@ class e20rCheckin extends e20rSettings
 
             dbg("e20rCheckin::nextCheckin_callback() - Need to load a new article (by delay)");
 
-            $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
+            $articles = $e20rArticle->findArticles('release_day', $config->delay, $config->programId);
             dbg("e20rCheckin::nextCheckin_callback() - Found " . count($articles) . " articles for program {$config->programId} and with a release day of {$config->delay}");
             dbg($articles);
 
@@ -1110,7 +1110,7 @@ class e20rCheckin extends e20rSettings
 
                 dbg("e20rCheckin::dailyProgress() -  No articleId specified. Searching...");
 
-                $articles = $e20rArticle->findArticles('release_day', $config->delay, 'numeric', $config->programId);
+                $articles = $e20rArticle->findArticles('release_day', $config->delay, $config->programId);
                 // dbg( $articles );
 
                 foreach ($articles as $article) {

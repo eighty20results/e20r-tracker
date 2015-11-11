@@ -52,9 +52,9 @@ class e20rSettings {
         return $settings;
     }
 
-    public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = '=', $order = 'DESC' ) {
+    public function find( $key, $value, $programId = -1, $comp = '=', $order = 'DESC', $dataType = 'numeric' ) {
 
-        return $this->model->find( $key, $value, $dataType, $programId, $comp, $order);
+        return $this->model->find( $key, $value, $programId, $comp, $order, $dataType);
     }
 
     public function findByName( $shortName ) {
