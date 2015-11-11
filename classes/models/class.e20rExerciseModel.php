@@ -90,7 +90,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 				$dType = 'char';
 		}
 
-		return parent::find( $type, $value, $dType );
+		return parent::find( $type, $value, 'LIKE', 'DESC', $dType );
 	}
 
 	public function loadSettings( $id = null ) {

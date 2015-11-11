@@ -411,7 +411,7 @@ class e20rSettingsModel {
 	 *
 	 * @return array|bool|mixed - An array of WP_Post objects for the query.
 	 */
-	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC' ) {
+	public function find( $key, $value, $programId = -1, $comp = 'LIKE', $order = 'DESC', $dataType = 'numeric' ) {
 
 		global $e20rProgram;
 
