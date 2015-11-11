@@ -70,13 +70,13 @@ class e20rArticle extends e20rSettings
     {
 
         // findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' )
-        return $this->model->findClosestArticle($key, $value, $programId, $comp, $limit, $type, $sort_order);
+        return $this->model->findClosestArticle($key, $value, $programId, $comp, $limit, $sort_order, $type);
     }
 
-    public function findArticles($key = 'id', $val = null, $type = 'numeric', $programId = -1, $comp = '=', $dont_drop = false)
+    public function findArticles($key = 'id', $val = null, $programId = -1, $comp = '=', $dont_drop = false, $type = 'numeric')
     {
 
-        return $this->model->find($key, $val, $type, $programId, $comp, 'DESC', $dont_drop);
+        return $this->model->find($key, $val, $programId, $comp, 'DESC', $dont_drop, $type );
     }
 
     public function getCheckins($aConfig)
@@ -120,7 +120,7 @@ class e20rArticle extends e20rSettings
             return false;
         }
 
-        if ( !isset( $currentArticle->id ) || ( $currentArticle->id != $articleId ) ) {
+        if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
             dbg("e20rArticle::releaseDate() - currentArticle is NOT defined.");
             $release_date = $e20rTracker->getDateForPost($this->model->getSetting($articleId, 'release_day'));
         } else {
@@ -271,7 +271,7 @@ class e20rArticle extends e20rSettings
         $delay = $this->model->getSetting($articleId, 'release_day');
 
         $mGroupId = $e20rTracker->getGroupIdForUser($userId);
-        $activities = $e20rWorkout->find('id', $aIds, 'numeric', -1, 'IN');
+        $activities = $e20rWorkout->find('id', $aIds, -1, 'IN');
 
         $post_date = $e20rTracker->getDateForPost($delay, $userId);
 
@@ -324,7 +324,8 @@ class e20rArticle extends e20rSettings
         return false;
     }
 
-    public function get_card_info( $articleId, $userId = null, $type = 'action') {
+    public function get_card_info($articleId, $userId = null, $type = 'action')
+    {
 
         global $post;
         global $e20rTracker;
@@ -346,11 +347,28 @@ class e20rArticle extends e20rSettings
 
     }
 
-    public function get_article_archive( ) {
+    public function get_article_archive($user_id = null)
+    {
 
+        if (is_null($user_id)) {
+
+            global $currentClient;
+            global $current_user;
+
+            if (!isset($currentClient->user_id)) {
+                $user_id = $current_user->ID;
+            } else {
+                $user_id = $currentClient->user_id;
+            }
+        }
+
+        dbg("e20rArticle::get_article_archive() - Loading article archive for user {$user_id}");
+
+        // $e20rTracker->get_closest_release_day( $array, $day );
 
     }
-    public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false )
+
+    public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false)
     {
 
         global $post;
@@ -472,7 +490,8 @@ class e20rArticle extends e20rSettings
         ob_start();
         ?>
         <h4>
-            <?php if ( false === $in_card ): ?><span class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php endif; ?><?php echo get_the_title($post->ID); ?>
+            <?php if (false === $in_card): ?><span
+                class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php endif; ?><?php echo get_the_title($post->ID); ?>
         </h4>
         <?php echo !is_null($activityField) ? $activityField : null; ?>
         <p class="e20r-descr e20r-descr-text"><?php echo $pExcerpt; ?></p> <?php
@@ -491,9 +510,10 @@ class e20rArticle extends e20rSettings
 
         } ?>
         <p class="e20r-descr e20r-descr-link">
-            <a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk" title="<?php get_the_title($post->ID); ?>">
-                <?php _e('Click to read', 'e20tracker'); ?>
-            </a>
+        <a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk"
+           title="<?php get_the_title($post->ID); ?>">
+            <?php _e('Click to read', 'e20tracker'); ?>
+        </a>
         </p><?php
 
         wp_reset_postdata();
@@ -1100,13 +1120,13 @@ class e20rArticle extends e20rSettings
                 }
         */
 
-        $article_id = isset( $_REQUEST['article-id'] ) ? $e20rTracker->sanitize( $_REQUEST['article-id'] ) : null;
-        $for_date = isset( $_REQUEST['for-date'] ) ? $e20rTracker->sanitize( $_REQUEST['for-date'] ) : null;
-        $program_id = isset( $_REQUEST['program-id'] ) ? $e20rTracker->sanitize( $_REQUEST['program-id'] ) : null;
+        $article_id = isset($_REQUEST['article-id']) ? $e20rTracker->sanitize($_REQUEST['article-id']) : null;
+        $for_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
+        $program_id = isset($_REQUEST['program-id']) ? $e20rTracker->sanitize($_REQUEST['program-id']) : null;
 
-        if ( !is_null( $program_id ) ) {
+        if (!is_null($program_id)) {
 
-            $e20rProgram->setProgram( $program_id );
+            $e20rProgram->setProgram($program_id);
         } else {
 
             $e20rProgram->getProgramIdForUser($current_user->ID);
@@ -1203,15 +1223,15 @@ class e20rArticle extends e20rSettings
             }
         }
 
-        dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID} and article id: " . ( is_null( $article_id ) ? 'null' : $article_id ) );
+        dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID} and article id: " . (is_null($article_id) ? 'null' : $article_id));
         $articles = array();
 
-        if ( is_null( $article_id ) ) {
+        if (is_null($article_id)) {
 
             $articles = $this->findArticles('post_id', $post->ID);
         }
 
-        if ( empty( $articles ) && ( is_null( $article_id ) ) ) {
+        if (empty($articles) && (is_null($article_id))) {
 
             dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
             return $content;
@@ -1223,7 +1243,7 @@ class e20rArticle extends e20rSettings
             return $content;
         }
 
-        if ( is_null( $article_id ) ) {
+        if (is_null($article_id)) {
             $dayNo = $e20rTracker->getDelay('now', $current_user->ID);
 
             foreach ($articles as $article) {
@@ -1237,14 +1257,13 @@ class e20rArticle extends e20rSettings
                     }
                 }
             }
-        }
-        else {
-            $articles = $this->find( 'id', $article_id, '', $currentProgram->id );
+        } else {
+            $articles = $this->find('id', $article_id, $currentProgram->id);
 
-            if ( !empty( $articles ) ) {
+            if (!empty($articles)) {
 
                 $article = array_pop($articles);
-                $this->init( $article->id );
+                $this->init($article->id);
             }
         }
 
@@ -1306,7 +1325,7 @@ class e20rArticle extends e20rSettings
         }
 
         dbg("e20rArticle::contentFilter() - Content being returned.");
-        return ( is_null( $data ) ? $content : $data . $content );
+        return (is_null($data) ? $content : $data . $content);
     }
 
     public function load_lesson($article_id = null, $reading_time = true)
@@ -1411,7 +1430,7 @@ class e20rArticle extends e20rSettings
         $article = null;
         $article_id = null;
 
-        $for_date = $e20rTracker->sanitize( get_query_var('article_date') );
+        $for_date = $e20rTracker->sanitize(get_query_var('article_date'));
         dbg("e20rArticle::shortcode_article_summary() - Loading article summary based on shortcode: {$for_date}");
 
         if (!is_user_logged_in()) {
@@ -1420,49 +1439,47 @@ class e20rArticle extends e20rSettings
             wp_die();
         }
 
-        if ( !empty( $_REQUEST ) ) {
+        if (!empty($_REQUEST)) {
 
             check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
             dbg("e20rArticle::shortcode_article_summary() - Received valid Nonce");
 
-            $article_id = isset( $_REQUEST['article-id'] ) ? $e20rTracker->sanitize( $_REQUEST['article-id'] ) : null;
-            $for_date = isset( $_REQUEST['for-date'] ) ? $e20rTracker->sanitize( $_REQUEST['for-date'] ) : null;
-            $program_id = isset( $_REQUEST['program-id'] ) ? $e20rTracker->sanitize( $_REQUEST['program-id'] ) : null;
+            $article_id = isset($_REQUEST['article-id']) ? $e20rTracker->sanitize($_REQUEST['article-id']) : null;
+            $for_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
+            $program_id = isset($_REQUEST['program-id']) ? $e20rTracker->sanitize($_REQUEST['program-id']) : null;
 
         }
 
-        if ( empty( $program_id ) ) {
+        if (empty($program_id)) {
 
             dbg("e20rArticle::shortcode_article_summary() - Loading program info for user {$current_user->ID}");
-            $e20rProgram->getProgramIdForUser( $current_user->ID );
-        }
-        else {
+            $e20rProgram->getProgramIdForUser($current_user->ID);
+        } else {
             dbg("e20rArticle::shortcode_article_summary() - Loading program config for {$program_id}");
-            $e20rProgram->init( $program_id );
+            $e20rProgram->init($program_id);
         }
 
-        if ( !empty( $for_date ) ) {
+        if (!empty($for_date)) {
 
             dbg("e20rArticle::shortcode_article_summary() - Received date: {$for_date} and will calculate # of days from that");
-            $days_since_start = $e20rTracker->daysBetween( strtotime( $currentProgram->startdate ), strtotime( $for_date ) );
-        }
-        else {
+            $days_since_start = $e20rTracker->daysBetween(strtotime($currentProgram->startdate), strtotime($for_date));
+        } else {
             $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
         }
 
         dbg("e20rArticle::shortcode_article_summary() - using delay value of: {$days_since_start}");
 
-        if ( is_null( $article_id ) ) {
+        if (is_null($article_id)) {
 
             global $post;
 
-            $articles = $this->model->find('post_id', $post->ID, 'numeric', $currentProgram->id );
+            $articles = $this->model->find('post_id', $post->ID, $currentProgram->id);
 
             dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " for this post ID ({$post->ID})");
 
-            foreach( $articles as $a ) {
+            foreach ($articles as $a) {
 
-                if ( $a->release_day == $days_since_start ) {
+                if ($a->release_day == $days_since_start) {
 
                     dbg("e20rArticle::shortcode_article_summary() - Found article {$a->id} and release day {$a->release_day}");
                     $currentArticle = $a;
@@ -1470,7 +1487,7 @@ class e20rArticle extends e20rSettings
                 }
             }
 
-            if ( !isset( $currentArticle->id ) || ( $currentArticle->id == 0 ) ) {
+            if (!isset($currentArticle->id) || ($currentArticle->id == 0)) {
                 dbg("e20rArticle::shortcode_article_summary() - No article ID specified by calling post/page. Not displaying anything");
                 return;
             }
@@ -1481,25 +1498,25 @@ class e20rArticle extends e20rSettings
         // $program_id = $e20rProgram->getProgramIdForUser($current_user->ID);
         // $days_since_start = $e20rTracker->getDelay('now', $current_user->ID);
 
-        if ( !isset( $currentArticle->id ) ) { // || !empty( $article_id ) && ( $article_id != $currentArticle->id )
+        if (!isset($currentArticle->id)) { // || !empty( $article_id ) && ( $article_id != $currentArticle->id )
 
-            $articles = $this->model->find('id', $article_id, 'numeric', $currentProgram->id);
+            $articles = $this->model->find('id', $article_id, $currentProgram->id);
             dbg("e20rArticle::shortcode_article_summary() - Found " . count($articles) . " article(s) with post ID {$post->ID}");
-            $article = array_pop( $articles );
+            $article = array_pop($articles);
             $article_id = $article->id;
             $currentArticle = $article;
         }
 
 
-        if ( !isset( $currentArticle->id ) && ( !is_null($article_id) ) ) {
+        if (!isset($currentArticle->id) && (!is_null($article_id))) {
 
             dbg("e20rArticle::shortcode_article_summary() - Configure article settings (not needed?) ");
-            $this->init( $currentArticle->id );
+            $this->init($currentArticle->id);
         }
 
         $defaults = $this->model->defaultSettings();
 
-        $days_of_summaries = ( !isset( $currentArticle->max_summaries) || is_null( $currentArticle->max_summaries ) ? $defaults->max_summaries : $currentArticle->max_summaries );
+        $days_of_summaries = (!isset($currentArticle->max_summaries) || is_null($currentArticle->max_summaries) ? $defaults->max_summaries : $currentArticle->max_summaries);
 
         $tmp = shortcode_atts(array(
             'days' => $days_of_summaries,
@@ -1507,26 +1524,26 @@ class e20rArticle extends e20rSettings
 
         dbg("e20rArticle::shortcode_article_summary() - Article # {$currentArticle->id} needs to locate {$tmp['days']} or {$days_of_summaries} days worth of articles to pull summaries from, ending on day # {$currentArticle->release_day}");
 
-        if ( $days_of_summaries != $tmp['days'] ) {
+        if ($days_of_summaries != $tmp['days']) {
 
             $days_of_summaries = $tmp['days'];
         }
 
-        $start_day = ( $currentArticle->release_day - $days_of_summaries );
-        $gt_days = ( $currentArticle->release_day - $days_of_summaries );
+        $start_day = ($currentArticle->release_day - $days_of_summaries);
+        $gt_days = ($currentArticle->release_day - $days_of_summaries);
 
         $start_TS = strtotime("{$currentProgram->startdate} +{$start_day} days");
 
         dbg("e20rArticle::shortcode_article_summary() - Searching for articles with release_day between start: {$start_day} and end: {$currentArticle->release_day}");
 
-        $history = $this->find('release_day', array( ($start_day - 1) , $currentArticle->release_day), 'numeric', $currentProgram->id, 'BETWEEN');
+        $history = $this->find('release_day', array(($start_day - 1), $currentArticle->release_day), $currentProgram->id, 'BETWEEN');
 
         dbg("e20rArticle::shortcode_article_summary() - Fetched " . count($history) . " articles to pull summaries from");
         // dbg($history);
 
         $summary = array();
 
-        foreach ( $history as $k => $a ) {
+        foreach ($history as $k => $a) {
 
             $new = array(
                 'title' => null,
@@ -1534,17 +1551,17 @@ class e20rArticle extends e20rSettings
                 'day' => null
             );
 
-            if ( !empty( $a->post_id ) ) {
+            if (!empty($a->post_id)) {
 
                 $p = get_post($a->post_id);
-                $art = get_post( $a->id );
+                $art = get_post($a->id);
 
                 dbg("e20rArticle::shortcode_article_summary() - Loading data for post {$a->post_id} vs {$p->ID}");
 
                 $new['day'] = $a->release_day;
                 $new['title'] = $p->post_title;
 
-                if (!empty($art->post_excerpt) ) {
+                if (!empty($art->post_excerpt)) {
 
                     dbg("e20rArticle::shortcode_article_summary() - Using the article summary.");
                     $new['summary'] = $art->post_excerpt;
@@ -1557,7 +1574,7 @@ class e20rArticle extends e20rSettings
 
                     dbg("e20rArticle::shortcode_article_summary() - Using the post summary.");
                     $new['summary'] = $p->post_content;
-                    $new['summary'] = wp_trim_words( $new['summary'], 30, " [...]" );
+                    $new['summary'] = wp_trim_words($new['summary'], 30, " [...]");
                 }
 
                 // $new['summary'] = $this->getExcerpt( $a->id, $current_user->ID );
@@ -1566,9 +1583,9 @@ class e20rArticle extends e20rSettings
 
                 dbg("e20rArticle::shortcode_article_summary() - Current day: {$currentArticle->release_day} + Last release day to include: {$gt_days}.");
 
-                if ( ( $new['day'] > $gt_days ) ) {
+                if (($new['day'] > $gt_days)) {
 
-                    if ( ( $a->measurement_day != true ) && ( $a->summary_day != true ) ) {
+                    if (($a->measurement_day != true) && ($a->summary_day != true)) {
 
                         dbg("e20rArticle::shortcode_article_summary() - Adding {$new['title']} (for day# {$new['day']}) to list of posts to summarize");
                         $summary[$a->release_day] = $new;
@@ -1584,24 +1601,24 @@ class e20rArticle extends e20rSettings
         ksort($summary);
 
         dbg("e20rArticle::shortcode_article_summary() - Original prefix of {$currentArticle->prefix}");
-        $prefix = lcfirst( preg_replace('/\[|\]/', '', $currentArticle->prefix ) );
+        $prefix = lcfirst(preg_replace('/\[|\]/', '', $currentArticle->prefix));
         dbg("e20rArticle::shortcode_article_summary() - Scrubbed prefix: {$prefix}");
         // dbg($summary);
 
-        $summary_post = get_post( $currentArticle->id );
+        $summary_post = get_post($currentArticle->id);
         $info = null;
 
         wp_reset_postdata();
 
-        if (!empty( $summary_post->post_content ) ) {
+        if (!empty($summary_post->post_content)) {
 
-            $info = wpautop( $summary_post->post_content_filtered );
+            $info = wpautop($summary_post->post_content_filtered);
         }
 
         // Since we're saving the array using the delay day as the key we'll have to do some jumping through hoops
         // to get the right key for the last day in the list.
-        $k_array = array_keys( $summary );
-        $last_day_key = $k_array[ ( count( $summary ) - 1 ) ];
+        $k_array = array_keys($summary);
+        $last_day_key = $k_array[(count($summary) - 1)];
         $last_day_summary = $summary[$last_day_key];
         $end_day = $last_day_summary['day'];
 
@@ -1610,7 +1627,7 @@ class e20rArticle extends e20rSettings
 
         $end_TS = strtotime("{$currentProgram->startdate} +{$end_day} days");
 
-        $html = $this->view->view_article_history( $prefix, $summary, $start_TS, $end_TS, $info );
+        $html = $this->view->view_article_history($prefix, $summary, $start_TS, $end_TS, $info);
 
         return $html;
     }
