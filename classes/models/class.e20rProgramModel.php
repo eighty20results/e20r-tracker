@@ -148,24 +148,10 @@ class e20rProgramModel extends e20rSettingsModel {
 
         foreach ( $defaults as $key => $value ) {
 
-            if ( in_array( $key, array( 'id', 'program_shortname', 'title', 'excerpt' ) ) ) {
+            if ( in_array( $key, array( 'id', 'program_shortname', 'title', 'excerpt', 'active_delay', 'previous_delay' ) ) ) {
                 continue;
             }
 
-            /*
-            if ( in_array( $key, array( 'group', 'sequences', 'users' ) ) ) {
-
-                dbg("e20rProgramModel::saveSettings() - Processing {$key}");
-
-                foreach( $settings->{$key} as $k => $pId ) {
-
-                    if ( ( -1 == $pId ) || ( 0 == $pId ) ) {
-
-                        unset( $settings->{$key}[$k] );
-                    }
-                }
-            }
-            */
             if ( false === $this->settings( $programId, 'update', $key, $settings->{$key} ) ) {
 
                 dbg( "e20rProgram::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for program definition with ID: {$programId}" );
@@ -180,6 +166,9 @@ class e20rProgramModel extends e20rSettingsModel {
 	public function loadSettings( $id ) {
 
 		global $post;
+
+        global $e20rTracker;
+
 		global $currentProgram;
 
 		if ( ! empty( $currentProgram ) && ( $currentProgram->id == $id ) ) {
@@ -234,6 +223,9 @@ class e20rProgramModel extends e20rSettingsModel {
 			wp_reset_postdata();
 			$post = $savePost;
 		}
+
+        $this->settings->active_delay = $e20rTracker->getDelay('now');
+        $this->settings->previous_delay = null;
 
 		$currentProgram = $this->settings;
 		return $currentProgram;
