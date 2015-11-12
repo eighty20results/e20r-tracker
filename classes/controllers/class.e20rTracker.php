@@ -1828,7 +1828,6 @@ class e20rTracker {
 
             global $e20r_plot_jscript;
 
-            wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
             wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.min.css", false, E20R_VERSION );
@@ -1888,6 +1887,8 @@ class e20rTracker {
         global $e20rTracker;
         global $post;
         global $e20rTracker;
+
+        wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 
         if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
 
