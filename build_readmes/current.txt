@@ -1,13 +1,4 @@
-Update change logs & version number (1.5.7)
-Rudimentary framework for generating an article/post archive for users.
-Attempt to shorten the amount of time spent loading data and leverage cached data instead
-Added the date of the post/article as part of the URL, using it in article_summary shortcode
-Skip loading of scripts & styles when doing AJAX calls
-Fix debug output in hasAccess()
-Remove clearfix class for day navigation bar
-Add day value as hidden input field for card based dashboard
-Always include today's 'release_day' for the user in the action and activity check-in dashboard
-Add filters that allow us to add date(s) to posts that have articles defined for them (used to help process shortcodes, etc)
-Added article_date query variable
-Added rewrite tag for article_date variable
-Adding rewrite rule to process date values when available
+Need to account for new find() argument order Removed unused variables from scope
+More precise debug info to help locate problems
+Would sometimes add the program ID to the search when searching for explicit post IDs
+Let filter override class name for dialog class
