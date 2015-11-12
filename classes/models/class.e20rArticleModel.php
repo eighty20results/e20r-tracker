@@ -151,9 +151,12 @@ class e20rArticleModel extends e20rSettingsModel
         global $currentProgram;
         global $currentClient;
 
+        $user_id = null;
+
         if ( isset( $currentClient->user_id ) ) {
             $user_id = $currentClient->user_id;
         }
+
         $result = parent::find($key, $value, $programId, $comp, $order, $dataType);
 
         $member_days = $e20rTracker->getDelay( 'now', $user_id );
@@ -233,6 +236,62 @@ class e20rArticleModel extends e20rSettingsModel
         dbg($a_list);
 
         return $a_list;
+    }
+
+    public function load_for_archive( $last_day = null, $order = 'ASC', $program_id = -1 )
+    {
+
+        global $e20rProgram;
+        global $e20rTracker;
+
+        global $currentClient;
+        global $currentProgram;
+
+        global $current_user;
+
+        if (is_null($last_day) || !is_numeric($last_day)) {
+            dbg("e20rArticleModel::load_for_archive() - No 'last-day' variable provided. Using user information");
+
+
+            if (!isset($currentClient->user_id) || (isset($currentClient->user_id) && ($currentClient->user_id == 0))) {
+                $user_id = $current_user->ID;
+            } else {
+                $user_id = $currentClient->user_id;
+            }
+
+            $last_day = $e20rTracker->getDelay('now', $user_id);
+        }
+
+        if ( !isset($currentProgram->id) || ( isset( $currentProgram->id) && ($program_id != $currentProgram->id) ) ) {
+
+            if ( $program_id === -1 ) {
+
+                $e20rProgram->getProgramIdForUser( $user_id );
+            }
+            else {
+                $e20rProgram->setProgram( $program_id );
+            }
+        }
+
+        if ( $program_id == -1) {
+            $program_id = $currentProgram->id;
+        }
+
+        $list = parent::find('release_day', $last_day, $program_id, '<=' );
+        $archive = array();
+        $post = null;
+
+        foreach( $list as $article ) {
+
+            $post = new stdClass();
+            $post->article_id = $article->id;
+            $post->release_day = $article->release_day;
+            $post->post_id = $article->post_id;
+
+            $archive[] = $post;
+        }
+
+        return $archive;
     }
 
     public function findArticle($key, $value, $programId = -1, $comp = '=', $order = 'DESC', $type = 'NUMERIC')
