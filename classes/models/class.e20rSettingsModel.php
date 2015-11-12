@@ -470,7 +470,7 @@ class e20rSettingsModel {
         }
 
 
-        if ( -1 != $programId ) {
+        if ( ( -1 != $programId ) && ( $key != 'id') ) {
 
             dbg("e20r" . ucfirst($this->type) . "Model::find() - Program ID is: $programId");
 
@@ -492,7 +492,7 @@ class e20rSettingsModel {
             }
         }
 
-		dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
+		// dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
 		// dbg($args);
 
 		$dataList = $this->loadForQuery( $args );
