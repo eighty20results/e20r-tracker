@@ -392,79 +392,142 @@ var progMeasurements = {
 
             $class.timeout = e20r_progress.timeout;
 
-            setTimeout(function () {
+            if ( jQuery('.e20r-boxes').length ) {
+                setTimeout(function () {
 
-                $class._trigger_pop_up();
-            }, 2000);
+                    $class.trigger_pop_up();
+                }, 900);
+            }
         }
     },
-    _trigger_pop_up: function() {
+    trigger_pop_up: function() {
 
         var $class = this;
 
         if ( $class.$tag.is_profile_page && (  $class.$tag.interview_complete == false ) ) {
 
-            console.log("Loading pop-over for incomplete interview...");
-
-            jQuery('#e20r-popup-overlay-shade, .e20r-popup-overlay a').unbind().on( 'click', function(e) {
-
-                $class._close_overlay();
-                if ( jQuery(this).attr('href') == '#') {
-
-                    e.preventDefault();
-                }
-            });
-
             console.log("Incomplete interview. Loading the Interview nag screen.")
-            $class._open_overlay( '#e20r-popup-overlay-in-box' );
+            jQuery('div.e20r-boxes').each(function() {
 
-            console.log("Showing interview nag screen");
-        }
-    },
-    _open_overlay: function( pop_up_element ) {
-
-        $oLay = jQuery( pop_up_element );
-
-        console.log("Loading pop-up with shading");
-        var $overlay_shade = jQuery( '#e20r-popup-overlay-shade' );
-
-        if ( $overlay_shade.length == 0) {
-
-            jQuery('body').prepend('<div id="e20r-popup-overlay-shade"></div>');
+                console.log("Showing interview nag screen for", this);
+                var box = jQuery(this);
+                $class.manage_overlay( box );
+            })
         }
 
-        $overlay_shade.fadeTo(300, 0.6, function() {
-            var props = {
-                oLayWidth       : $oLay.width(),
-                scrTop          : jQuery(window).scrollTop(),
-                viewPortWidth   : jQuery(window).width()
-            };
-
-            var leftPos = (props.viewPortWidth - props.oLayWidth) / 2;
-
-            $oLay
-                .css({
-                    display : 'block',
-                    opacity : 0,
-                    top : '-=300',
-                    left : leftPos+'px'
-                })
-                .animate({
-                    top : props.scrTop + 40,
-                    opacity : 1
-                }, 600);
-        });
+        console.log("Popup was processed...");
     },
-    _close_overlay: function() {
+    manage_overlay: function ( box ) {
 
-        jQuery('.e20r-popup-overlay').animate({
+        var $class = this;
 
-            top : '-=300',
-            opacity : 0
-        }, 400, function() {
-            jQuery('#e20r-popup-overlay-shade').fadeOut(300);
-            jQuery(this).css('display','none');
+        if ( ! (box instanceof jQuery ) ) {
+
+            box = jQuery(box);
+        }
+
+        var dialog = box.find('.e20r-dialog');
+        var cWindow = box.find('.window');
+        var mask = box.find('.e20r-mask');
+
+        var para = box.find('.e20r-popup-paragraph');
+
+        //Get the screen height and width
+        var maskHeight = jQuery(document).height();
+        var maskWidth = jQuery(window).width();
+
+        //Set heigth and width to mask to fill up the whole screen
+        mask.css({'width':maskWidth,'height':maskHeight});
+
+        //transition effect
+        mask.fadeIn(500);
+        mask.fadeTo("slow",0.9);
+
+        //Get the window height and width
+        var winH = jQuery(window).height();
+        var winW = jQuery(window).width();
+
+        //Set the popup window to center
+        dialog
+            .css('position', 'absolute')
+            .css('z-index', '9999')
+            .css('top',  function() {
+
+                var middleInPx;
+
+                if ( winW < 400 ) {
+                    console.log("On a small device. ");
+                    middleInPx = 40;
+                }
+                else {
+                    if ( winH < 400 ) {
+                        return '3%';
+                    }
+                    middleInPx = (winH / 2) - (dialog.height() / 2 );
+                }
+
+                return ( (middleInPx / winH) * 100 ) + '%';
+            })
+            .css('left', function() {
+                var middleInPx
+
+                if ( winW < 400 ) {
+                    middleInPx = 10;
+                }else {
+                    middleInPx = (winW/2)-(dialog.width()/2);
+                }
+
+                return ( (middleInPx / winW) * 100 ) + '%';
+            })
+            .fadeIn(900);
+
+        if ( winW < 400 ) {
+            dialog.css('width', '95%');
+        }
+
+        if ((winW < 400) || (winH < 400)) {
+            dialog.css('height', '95%');
+        }
+
+        para.css('padding-bottom', function() {
+
+            return (para.outerHeight() * 0.2) + 'px';
         });
+        //if close button is clicked
+        cWindow.find('.close').unbind('click').on('click', function (e) {
+
+            //Cancel the link behavior
+            e.preventDefault();
+
+            var interview = jQuery('div#profile-tabs.ct').data('codetabs');
+            mask.hide();
+            cWindow.hide();
+
+            interview.goTo(2);
+        });
+
+        //if mask is clicked
+        mask.unbind('click').on('click', function () {
+            cWindow.hide();
+            mask.hide();
+        });
+
+        box.find('.secondary').unbind('click').on('click', function() {
+
+            event.preventDefault();
+            dialog.hide();
+            mask.hide();
+        });
+
+        jQuery(document).keyup(function(e) {
+            if (e.keyCode == 27) {
+
+                dialog.hide();
+                mask.hide();
+            }
+        });
+
+        box.focus();
     },
     _loaded_from_coachpage: function() {
         var field = 'e20r-client-id';
@@ -1594,6 +1657,7 @@ var progMeasurements = {
     }
 };
 
+
 jQuery(document).ready( function($) {
 
     if ( progMeasurements.is_running ) {
@@ -1623,4 +1687,11 @@ jQuery(document).ready( function($) {
     }
 
     progMeasurements.init( jQuery('#e20r-progress-measurements'), {id: $clientId});
+});
+
+jQuery(window).load(function(){
+
+    if ( progMeasurements.is_running) {
+        progMeasurements.manage_overlay();
+    }
 });
