@@ -77,27 +77,6 @@ class e20rArticleView extends e20rSettingsView {
         return $html;
     }
 
-    public function add_popup_overlay( $clientId, $popup_text ) {
-
-        dbg("e20rArticleView::add_popup_overlay() - Loading pop-up for {$clientId}");
-
-        $client = get_user_by('ID', $clientId );
-
-        ob_start(); ?>
-<div id="e20r-popup-overlay-in-box" class="<?php echo apply_filters("e20r-tracker-article-popup-overlay", 'e20r-popup-overlay' );?>">
-    <div class="<?php echo apply_filters("e20r-tracker-article-popup-toolbar", 'e20r-popup-toolbar' );?>"><a class="close" href="#"><span>x</span> close</a></div>
-    <div class="<?php echo apply_filters("e20r-tracker-article-popup-wrapper", 'e20r-popup-wrapper' );?>">
-        <h3 class="<?php echo apply_filters("e20r-tracker-article-popup-h3", 'e20r-popup-h3' );?>">Warning</h3>
-        <p class="<?php echo apply_filters("e20r-tracker-article-popup-paragraph", 'e20r-popup-paragraph' );?>">
-            <?php echo $popup_text; ?>
-        </p>
-    </div>
-</div><?php
-        $html = ob_get_clean();
-
-        return $html;
-    }
-
     public function viewInterviewComplete( $page_title, $is_complete ) {
 
         ob_start();
