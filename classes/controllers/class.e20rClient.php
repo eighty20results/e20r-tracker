@@ -63,6 +63,7 @@ class e20rClient
     {
 
         $user = get_user_by('login', $user_login);
+        dbg("e20rClient::record_login() - Saving login information about {$user_login}");
         update_user_meta($user->ID, '_e20r-tracker-last-login', current_time('timestamp'));
     }
 
