@@ -2344,7 +2344,73 @@ a#overlaylaunch-inAbox {
     text-align: center;
 }
 /* More important stuff */
-.e20r-popup-overlay,
+div.e20r-mask {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9000;
+    background-color: #000;
+    display: none;
+}
+
+div.e20r-boxes .window {
+    position: absolute;
+    left: 0;
+    top: 0;
+    max-width: 440px;
+    max-height: 200px;
+    display: none;
+    z-index: 9999;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+div.e20r-boxes div.e20r-footer-placement {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 100%;
+}
+div.e20r-boxes .button {
+    padding:10px;
+    margin: 5px;
+}
+div.e20r-boxes .secondary:hover {
+    background-image: -webkit-linear-gradient( #9C0000, #9C0000 );
+    background-image: -moz-linear-gradient( #9C0000, #9C0000 );
+    background-image: -o-linear-gradient( #9C0000, #9C0000 );
+    background-image: linear-gradient( #9C0000, #9C0000 );
+    color: #FFF;
+}
+div.e20r-boxes div.e20r-dialog {
+    max-width: 750px;
+    width: 80%;
+    max-height: 400px;
+    padding: 10px;
+    background-color: #fff;
+    font-family: 'Segoe UI Light',sans-serif;
+    font-size: 12pt;
+    border: 6px solid #fb7502;
+}
+div.e20r-boxes h3.e20r-popup-h3 {
+    text-align: center;
+    font-size: 200%;
+    padding-top: 20px;
+}
+div.e20r-boxes div.e20r-popup-paragraph > h4 {
+    color: rgb(251, 117, 2);
+}
+div.e20r-boxes p.e20r-popup-paragraph {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+div.e20r-popupfoot {
+    font-size: 16pt;
+    position: relative;
+    left: -50%;
+}
+/*.e20r-popup-overlay,
 #e20r-popup-overlay-shade {
     display: none;
 }
@@ -2405,6 +2471,7 @@ a#overlaylaunch-inAbox {
       background-color: #b90900;
       color: #fff;
 }
+*/
 .e20r-daily-checkin-row {
     width: 100%;
 }
@@ -2420,7 +2487,7 @@ a#overlaylaunch-inAbox {
 .e20r-as-dashboard .e20r-checkin-lesson,
 #e20r-daily-checkin-container .e20r-activity-card,
 #e20r-daily-checkin-container .e20r-action-card {
-    display: inline-block;
+    /* display: inline-block; */
     position: relative;
 /*    height: 15.75em; */
     max-height: 15.75em;
@@ -3079,8 +3146,30 @@ a#overlaylaunch-inAbox {
     div.e20r-tracker-score {
         white-space: nowrap;
     }
+    .e20r-as-dashboard .e20r-checkin-activity,
+    .e20r-as-dashboard .e20r-checkin-lesson {
+        max-width: 99%;
+        border-right: none;
+    }
+    .e20r-as-dashboard .e20r-checkin-activity {
+        border-bottom: 2px solid #004cff
+    }
     #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
         padding-bottom: 25px;
+    }
+}
+@media screen and (max-width: 480px ) {
+    div.e20r-boxes .button {
+        font-size: 0.7rem;
+        padding: 4px;
+        margin: 3px;
+    }
+    div.e20r-boxes h3.e20r-popup-h3 {
+        font-size: 1.2rem;
+        padding-top: 2%;
+    }
+    div.e20r-boxes div.e20r-popup-paragraph {
+        font-size: 0.9rem;
     }
 }
 @media screen and (max-width: 460px) {
@@ -3092,5 +3181,24 @@ a#overlaylaunch-inAbox {
         margin-top: 8px;
         height: 22px;
         line-height: 22px;
+    }
+}
+@media screen and (max-width: 320px) {
+    .e20r-checkin-yesterday-nav,
+    .e20r-checkin-tomorrow-nav {
+        font-size: 0.7rem;
+    }
+    .progress-canvas {
+        padding: 0;
+    }
+    .e20r-as-dashboard .e20r-checkin-activity,
+    .e20r-as-dashboard .e20r-checkin-lesson,
+    #e20r-daily-checkin-container .e20r-activity-card,
+    #e20r-daily-checkin-container .e20r-action-card {
+        padding: 0;
+    }
+    .progress-container fieldset.did-you.workout,
+    .progress-container fieldset.did-you.habit {
+        min-width: 240px !important;
     }
 }
