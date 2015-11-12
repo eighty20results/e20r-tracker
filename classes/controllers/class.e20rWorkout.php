@@ -849,7 +849,7 @@ class e20rWorkout extends e20rSettings
 
                 if ((false == $activity_override) && isset($w->days) && (!empty($w->days)) && (!in_array($config->dayNo, $w->days))) {
 
-                    dbg("e20rWorkout::prepare_activity() - day {$config->dayNo} is wrong for this specific workout/activity");
+                    dbg("e20rWorkout::prepare_activity() - day {$config->dayNo} on day {$config->delay} is wrong for this specific workout/activity #{$w->id}");
                     dbg($w->days);
                     dbg("e20rWorkout::prepare_activity() - Removing workout ID #{$w->id} as a result");
                     unset($workoutData[$k]);
