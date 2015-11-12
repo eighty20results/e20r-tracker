@@ -696,7 +696,7 @@ class e20rClientViews {
 
         ob_start(); ?>
         <div class="e20r-boxes clearfix">
-          <div class="e20r-dialog window <?php echo apply_filters("e20r-tracker-article-popup-overlay", 'e20r-popup-overlay' );?>">
+          <div class="<?php echo apply_filters("e20r-tracker-dialog-class", 'e20r-dialog' );?> window">
             <h3 class="<?php echo apply_filters("e20r-tracker-article-popup-h3", 'e20r-popup-h3' );?>"><?php echo apply_filters('e20r-tracker-article-popup-header-text', __("Warning", "e20rtracker") ); ?></h3>
             <div class="<?php echo apply_filters("e20r-tracker-article-popup-paragraph", 'e20r-popup-paragraph' );?> clearfix">
                 <?php echo apply_filters('e20r-tracker-article-popup-message-text', $popup_text ); ?>
