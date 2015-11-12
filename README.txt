@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3
-Stable tag: 1.5.6
+Stable tag: 1.5.8
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,51 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.8 ==
+
+* Remove old add_popup_overlay from e20rArticleView class
+* Add formatting for pop-up dialog for incomplete interviews
+* Fix formatting on small screens when using default (old) daily checking page.
+* Add debug for record_login function
+* Fix uninitialized variable warning
+* Add load_for_archive() which returns an array of all articles w/post_id & release_day values available to the user at this time
+* Add more infrastructure for generating archive of articles (not yet implemented)
+* Removed old pop-up warning from contentFilter() and moved it to the ClientView class.
+* Don't attempt to add date variable to permalink if user isn't logged in
+* Add pop-up warning to profiles where the user hasn't completed the Client Interview within two weeks of starting the program
+* Add a functional 'incomplete interview' pop-over warning for end-users when accessing their profile page
+* Reordered arguments for find*() functions
+* Removed unused variable
+* Reorder hooks & load only what's needed based on users login status.
+* Simplify nopriv AJAX response (always an error if the action is one of ours)
+* Update all AJAX action names to add the e20r_ prefix
+* Update URL for fontawesome
+* Redirect to login page if user isn't logged in & is attempting to access one of our shortcodes
+* Would sometimes attempt to display dependency warning to users while they weren't on the dashboard page
+* Changed order for find() functions
+* Didn't redirect to login page if user who isn't logged in attempted to view the profile page.
+* Add e20r prefix to all AJAX calls
+* Add getters and setters for active_delay and previous_delay settings. Remove unused code
+* Don't save active_delay and previous_delay settings values
+* Remove inactive code from saveSettings();
+* Set active_delay and previous_delay to settings.
+* $active_delay is always the current delay value for the current active user.
+* Prevent XSS vector when manipulating permalinks
+
+== 1.5.7 ==
+
+* Attempt to shorten the amount of time spent loading data and leverage cached data instead.
+* Added the date of the post/article as part of the URL, using it in article_summary shortcode
+* Skip loading of scripts & styles when doing AJAX calls
+* Fix debug output in hasAccess()
+* Remove clearfix class for day navigation bar
+* Add day value as hidden input field for card based dashboard
+* Always include today's 'release_day' for the user in the action and activity check-in dashboard
+* Add filters that allow us to add date(s) to posts that have articles defined for them (used to help process shortcodes, etc)
+* Added article_date query variable
+* Added rewrite tag for article_date variable
+* Adding rewrite rule to process date values when available
 
 == 1.5.6 ==
 
