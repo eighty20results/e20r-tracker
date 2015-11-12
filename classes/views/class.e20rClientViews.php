@@ -632,6 +632,15 @@ class e20rClientViews {
 
     public function view_clientProfile( $progressEntries ) {
 
+        global $currentProgram;
+        global $current_user;
+
+        global $e20rClient;
+
+        $today = current_time('timestamp');
+        $two_weeks = strtotime("{$currentProgram->startdate} + 2 weeks");
+        $complete_interview = $e20rClient->completeInterview($current_user->ID);
+
         ob_start(); ?>
         <div id="profile-tabs" class="ct ct-underline"><?php
 
@@ -657,10 +666,55 @@ class e20rClientViews {
             } ?>
         </div> <!-- profile-tabs div -->
         <?php
+        dbg("e20rClientViews::view_clientProfile() - Checking whether to load pop-up warning for incomplete intake interview");
+
+        if ( ($two_weeks <= $today) && (false === $complete_interview) ) {
+
+            dbg("e20rClientViews::view_clientProfile() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
+
+            $message = apply_filters('e20r-tracker-interview-warning-message', sprintf(
+                __("We know these are annoying, but we <em>really</em> need you to complete your \"Welcome Interview\" soon. Please help us out by clicking the \"<strong>%s</strong>\" button (below), and complete your interview. It should only take about 20 minutes to complete, and will help us adapt your program to your current situation. Also it will make everything \"A-OK\", legally. (Added bonus:  You help us avoid getting stern letters from our legal eagles!)", "e20rtracker"), __("I'll fix it", "e20rtracker") ) );
+
+            $interview_warning = "<h4>" . __("Your Welcome Interview is incomplete", "e20rtracker") . "</h4>";
+            $interview_warning .= "<p>" . $message . "</p>";
+
+            echo $this->add_popup_overlay($current_user->ID, $interview_warning);
+        }
+
+        ?>
+        <?php
 
         $html = ob_get_clean();
         return $html;
     }
+
+    public function add_popup_overlay( $clientId, $popup_text ) {
+
+        dbg("e20rArticleView::add_popup_overlay() - Loading pop-up for {$clientId}");
+
+        $client = get_user_by('ID', $clientId );
+
+        ob_start(); ?>
+        <div class="e20r-boxes clearfix">
+          <div class="e20r-dialog window <?php echo apply_filters("e20r-tracker-article-popup-overlay", 'e20r-popup-overlay' );?>">
+            <h3 class="<?php echo apply_filters("e20r-tracker-article-popup-h3", 'e20r-popup-h3' );?>"><?php echo apply_filters('e20r-tracker-article-popup-header-text', __("Warning", "e20rtracker") ); ?></h3>
+            <div class="<?php echo apply_filters("e20r-tracker-article-popup-paragraph", 'e20r-popup-paragraph' );?> clearfix">
+                <?php echo apply_filters('e20r-tracker-article-popup-message-text', $popup_text ); ?>
+            </div>
+            <div class="e20r-footer-placement">
+                <div class="<?php echo apply_filters("e20r-tracker-article-popup-message-footer", 'e20r-popupfoot'); ?>">
+                    <a href="#" class="close button <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>"><?php echo apply_filters( 'e20r-tracker-article-popup-agree-text', __("I'll fix it", "e20rtracker") );?></a>
+                    <a class="button secondary <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>" href="#"><?php echo apply_filters( 'e20r-tracker-article-popup-disagree-text', __("Remind me", "e20rtracker") );?></a>
+                </div>
+            </div>
+          </div>
+          <div class="e20r-mask"></div>
+        </div><?php
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
 /*
     public function view_clientProfile( $progressEntries ) {
 
