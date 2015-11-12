@@ -347,8 +347,27 @@ class e20rArticle extends e20rSettings
 
     }
 
-    public function get_article_archive($user_id = null)
+    public function get_cards_for_day( $article, $user_id = null ) {
+
+        global $currentArticle;
+
+        if ( !isset( $article->activity_id ) ) {
+            $this->init( $article->article_id);
+        }
+
+        if ( isset( $article->article_id ) && ( $currentArticle->id != $article->article_id ) ){
+
+            $this->init( $article->article_id );
+        }
+
+
+    }
+
+    public function get_article_archive($user_id = null )
     {
+
+        global $e20rProgram;
+        global $currentProgram;
 
         if (is_null($user_id)) {
 
@@ -356,7 +375,11 @@ class e20rArticle extends e20rSettings
             global $current_user;
 
             if (!isset($currentClient->user_id)) {
-                $user_id = $current_user->ID;
+
+                global $e20rClient;
+                $user_id = $e20rClient->setClient( $current_user->ID );
+                $e20rClient->init();
+
             } else {
                 $user_id = $currentClient->user_id;
             }
@@ -364,8 +387,14 @@ class e20rArticle extends e20rSettings
 
         dbg("e20rArticle::get_article_archive() - Loading article archive for user {$user_id}");
 
-        // $e20rTracker->get_closest_release_day( $array, $day );
+        $e20rProgram->getProgramIdForUser( $user_id );
 
+        $archive = $this->model->load_for_archive( $currentProgram->current_delay );
+
+        dbg("e20rArticle::get_article_archive() - Returned " . count($archive) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->current_delay}");
+        return $archive;
+
+        // $e20rTracker->get_closest_release_day( $array, $day );
     }
 
     public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false)
@@ -1147,25 +1176,6 @@ class e20rArticle extends e20rSettings
                     }
                 }
         */
-
-        dbg("e20rArticle::contentFilter() - Checking whether to load pop-up warning for incomplete intake interview on page {$post->ID}");
-
-        $today = current_time('timestamp');
-        $two_weeks = strtotime("{$currentProgram->startdate} + 2 weeks");
-        $is_profile_page = has_shortcode($post->post_content, 'e20r_profile');
-        $complete_interview = $e20rClient->completeInterview($current_user->ID);
-
-        dbg("e20rArticle::contentFilter() - On the profile page: " . (false == $is_profile_page ? 'No' : 'Yes') . ", Interview incomplete: " . (false === $complete_interview ? 'No' : 'Yes') . ", Membership length TS: {$two_weeks}");
-
-        if (($two_weeks <= $today) && (false === $complete_interview) && $is_profile_page) {
-
-            dbg("e20rArticle::contentFilter() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
-
-            // $my_user = get_user_by( 'ID', $current_user->display_name);
-
-            $interview_warning = "Incomplete interview for " . $current_user->display_name;
-            $content = $content . $this->view->add_popup_overlay($current_user->ID, $interview_warning);
-        }
 
         if (!empty($currentProgram->sales_page_ids) && in_array($post->ID, $currentProgram->sales_page_ids) && is_user_logged_in()) {
 
