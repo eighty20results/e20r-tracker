@@ -64,6 +64,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 
 	public function get_activity_type( $typeId ) {
 
+		dbg("e20rExerciseModel::get_activity_type() - Requested Type #: " . $typeId);
 		return $this->exercise_types[$typeId];
 	}
 
@@ -74,8 +75,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 
 	public function findExercise( $type = 'id', $value ) {
 
-		global $e20rProgram;
-		global $current_user;
+		global $currentProgram;
 
 		// NUMERIC', 'BINARY', 'CHAR', 'DATE', 'DATETIME', 'DECIMAL', 'SIGNED', 'TIME', 'UNSIGNED'. Default value is 'CHAR'.
 		switch ($type) {
@@ -90,7 +90,7 @@ class e20rExerciseModel extends e20rSettingsModel {
 				$dType = 'char';
 		}
 
-		return parent::find( $type, $value, 'LIKE', 'DESC', $dType );
+		return parent::find( $type, $value, $currentProgram->id, 'LIKE', 'DESC', $dType );
 	}
 
 	public function loadSettings( $id = null ) {
