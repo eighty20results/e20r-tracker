@@ -1681,6 +1681,11 @@ class e20rTracker {
         global $current_user;
         // global $post;
 
+        if ( !is_user_logged_in() ) {
+
+            return str_replace( '%article_date%', '', $permalink );
+        }
+
         if ( false === strpos( $permalink, '%article_date%' ) ) {
 
             dbg("e20rTracker::process_post_link() - No permalink containing the %article_date% tag");
