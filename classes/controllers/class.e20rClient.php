@@ -6,6 +6,7 @@
  * Date: 10/22/14
  * Time: 1:16 PM
  */
+
 class e20rClient
 {
 
@@ -19,6 +20,7 @@ class e20rClient
     public $client_loaded = false;
     public $actionsLoaded = false;
     public $scriptsLoaded = false;
+
 
     public function __construct($user_id = null)
     {
