@@ -84,8 +84,6 @@ if ( !function_exists('e20r_autoloader')) {
         $base_path = E20R_PLUGIN_DIR . "classes";
         $types = array('models', 'controllers', 'views');
 
-        // $gv = ${$class_name};
-
         foreach ($types as $type) {
 
             if (file_exists("{$base_path}/{$type}/class.{$class_name}.php")) {
