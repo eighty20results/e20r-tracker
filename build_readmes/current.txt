@@ -1,4 +1,2 @@
-Need to account for new find() argument order Removed unused variables from scope
-More precise debug info to help locate problems
-Would sometimes add the program ID to the search when searching for explicit post IDs
-Let filter override class name for dialog class
+Not all instances of the getArticles() arguments were correct after the refactoring in v1.5.9
+Change when we load the font awesome library in wp-admin/
