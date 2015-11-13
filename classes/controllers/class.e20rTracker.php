@@ -462,6 +462,7 @@ class e20rTracker {
             add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
             add_shortcode( 'e20r_client_overview', array( &$e20rClient, 'shortcode_clientList') );
             add_shortcode( 'e20r_article_summary', array( &$e20rArticle, 'shortcode_article_summary') );
+            add_shortcode( 'e20r_article_archive', array( &$e20rArticle, 'article_archive_shortcode') );
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
