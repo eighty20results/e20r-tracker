@@ -1018,7 +1018,7 @@ class e20rCheckin extends e20rSettings
         if ($config->type == 'assignment') {
 
             dbg("e20rCheckin::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
-            $articles = $e20rArticle->findArticles('post_id', $post->ID, 'numeric', $config->programId);
+            $articles = $e20rArticle->findArticles('post_id', $post->ID, $config->programId);
         }
 */
         dbg("e20rCheckin::shortcode_dailyProgress() - Article ID is currently set to: {$config->articleId}");
@@ -1073,7 +1073,7 @@ class e20rCheckin extends e20rSettings
         $config->prev = $config->delay - 1;
         $config->next = $config->delay + 1;
 
-//        $articles = $e20rArticle->findArticles( 'release_day', $config->delay, 'numeric', $config->programId );
+//        $articles = $e20rArticle->findArticles( 'release_day', $config->delay, $config->programId );
 //        dbg("e20rCheckinView::view_actionAndActivityCheckin() - Articles found: " .count($articles) );
 
         dbg("e20rCheckin::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");

@@ -778,7 +778,7 @@ class e20rWorkout extends e20rSettings
             /*            if ( false !== $articles ) {
 
                             dbg("e20rWorkout::prepare_activity() - Found the article ID {$articleId} based on the delay value: {$config->delay}" );
-                            $articles = $e20rArticle->findArticles( 'id', $articleId, 'numeric', $config->programId, 'IN' );
+                            $articles = $e20rArticle->findArticles( 'id', $articleId, $config->programId, 'IN' );
                         }
             */
         }

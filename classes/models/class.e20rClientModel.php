@@ -414,7 +414,7 @@ class e20rClientModel {
                 }
                 */
                 dbg("e20rClientModel::load_data() - Have a page Id to search for the article on behalf of");
-                $articles = $e20rArticle->findArticles( 'post_id', $postId, 'numeric', $currentClient->program_id );
+                $articles = $e20rArticle->findArticles( 'post_id', $postId, $currentClient->program_id );
 
                 foreach ($articles as $article ) {
 

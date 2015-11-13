@@ -373,7 +373,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             if ( empty( $new->article_ids) || !isset( $new->article_ids ) || in_array( 0, $new->article_ids ) ) {
 
                 dbg("e20rAssignmentModel::loadAssignmentByMeta() - Loading articles which have had {$assignment_id} assigned to it");
-                $tmp = $e20rArticle->findArticles('assignment_ids', $assignment_id, 'numeric', $programId);
+                $tmp = $e20rArticle->findArticles('assignment_ids', $assignment_id, $programId);
                 $article_list = array();
 
                 foreach ($tmp as $art) {
