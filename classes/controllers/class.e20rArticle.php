@@ -226,13 +226,13 @@ class e20rArticle extends e20rSettings
     public function get_checkin_shortname($articleId, $checkin_type)
     {
 
-        global $e20rCheckin;
+        global $e20rAction;
 
         $article = $this->getSettings($articleId);
 
         foreach ($article->checkin_ids as $cId) {
 
-            $activity = $e20rCheckin->init($cId);
+            $activity = $e20rAction->init($cId);
 
             if ($checkin_type == $activity->checkin_type) {
                 return $activity->short_code;
@@ -324,7 +324,63 @@ class e20rArticle extends e20rSettings
         return false;
     }
 
-    public function get_card_info($articleId, $userId = null, $type = 'action')
+    public function article_archive_shortcode( $attr = null ) {
+
+
+        global $e20rClient;
+        global $currentClient;
+        global $current_user;
+
+        $e20rClient->setClient($current_user->ID);
+        $articles = $this->get_article_archive( $currentClient->user_id );
+
+        foreach ( $articles as $article ) {
+
+            $cards = $this->get_card_info( $article, $currentClient->user_id );
+            dbg("e20rArticle::article_archive_shortcode() - Received " . count($cards) . " cards for day # {$article->release_day}");
+        }
+
+        dbg($cards);
+    }
+
+    private function get_summary( WP_Post $post, WP_Post $article ) {
+
+        $excerpt = __("No information found", "e20rtracker");
+
+        $article_has_excerpt = ( empty( $article->post_excerpt ) ? false : true );
+        $article_has_content = ( empty( $article->post_content ) ? false : true );
+        $post_has_excerpt = ( empty( $post->post_excerpt ) ? false : true);
+        $post_has_content = ( empty( $post->post_content ) ? false : true );
+
+        if (( false === $article_has_content ) && ( false === $article_has_excerpt )) {
+
+            if ( true === $post_has_excerpt ) {
+                $excerpt = $post->post_excerpt;
+            }
+
+            if ( ( false === $post_has_excerpt ) && ( true == $post_has_content) ) {
+                $excerpt = wp_trim_words($post->post_excerpt, 20, " [...]");
+            }
+        }
+
+        if ( true === $article_has_excerpt ) {
+            $excerpt = $article->post_excerpt;
+        }
+
+        if ( (false === $article_has_excerpt) && (true === $article_has_content)) {
+            $excerpt = wp_trim_words( $article->post_content, 20, " [...]");
+        }
+
+        return $excerpt;
+    }
+
+    public function get_feedback( $article, $type ) {
+
+        // TODO: Implement get_feedback() for cards.
+        return null;
+    }
+
+    public function get_card_info($article, $userId = null, $type = 'action')
     {
 
         global $post;
@@ -337,6 +393,11 @@ class e20rArticle extends e20rSettings
         $postId = null;
         $activityField = null;
 
+        $cards = array();
+        $actions = array();
+        $activities = array();
+        $lessons = array();
+
         $oldPost = $post;
 
         if (is_null($userId)) {
@@ -344,7 +405,71 @@ class e20rArticle extends e20rSettings
             $userId = $current_user->ID;
         }
 
+        $lesson = new stdClass();
 
+        // Generate the post (lesson/reminder/text) card
+        if ( isset( $article->post_id) && ( !empty( $article->post_id) ) ) {
+
+            if (!is_array( $article->post_id)) {
+                $article->post_id = array( $article->post_id );
+            }
+
+            foreach( $article->post_id as $post_id ) {
+
+                $p = get_post($article->post_id);
+                $a = get_post($article->id);
+                wp_reset_postdata();
+
+                $lesson->summary = $this->get_summary($p, $a);
+                $lesson->feedback = $this->get_feedback($article, CONST_ARTICLE_FEEDBACK_LESSONS);
+
+                $lessons[] = $lesson;
+            }
+
+            $cards['lesson'] = $lessons;
+        }
+
+
+
+        if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
+
+            if ( !is_array( $article->activity_id)) {
+
+                $article->activity_id = array( $article->activity_id );
+            }
+
+            foreach ( $article->activity_id as $activity_id) {
+
+                $activity = new stdClass();
+            }
+
+            $cards['activity'] = $activities;
+        }
+
+
+
+        if ( isset( $article->action_ids ) && ( !empty( $article->action_ids ) ) ) {
+
+            global $e20rAction;
+
+            if (!is_array( $article->action_ids)) {
+                $article->action_ids = array( $article->action_ids);
+            }
+
+            foreach( $article->action_ids as $action_id ) {
+
+                $action = new stdClass();
+                $action->title = "Some title";
+                $actions[] = $action;
+            }
+
+            $cards['actions'] = $actions;
+        }
+
+        // Reset $post content
+        $post = $oldPost;
+
+        return $cards;
     }
 
     public function get_cards_for_day( $article, $user_id = null ) {
@@ -387,11 +512,14 @@ class e20rArticle extends e20rSettings
 
         dbg("e20rArticle::get_article_archive() - Loading article archive for user {$user_id}");
 
-        $e20rProgram->getProgramIdForUser( $user_id );
+        $program_id = $e20rProgram->getProgramIdForUser( $user_id );
 
-        $archive = $this->model->load_for_archive( $currentProgram->current_delay );
+        // The archive goes up to (but doesn't include) the current day.
+        $up_to = ( $currentProgram->active_delay - 1);
 
-        dbg("e20rArticle::get_article_archive() - Returned " . count($archive) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->current_delay}");
+        $archive = $this->model->load_for_archive( $up_to );
+
+        dbg("e20rArticle::get_article_archive() - Returned " . count($archive) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->active_delay}");
         return $archive;
 
         // $e20rTracker->get_closest_release_day( $array, $day );
@@ -1138,7 +1266,7 @@ class e20rArticle extends e20rSettings
         global $e20rMeasurements;
         global $e20rProgram;
         global $e20rTracker;
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rClient;
 
         global $currentArticle;
@@ -1291,7 +1419,7 @@ class e20rArticle extends e20rSettings
         $md = $this->isMeasurementDay($currentArticle->id);
 
         // && ( !$md )
-        if ($e20rCheckin->hasCompletedLesson($currentArticle->id, $post->ID, $current_user->ID)) {
+        if ($e20rAction->hasCompletedLesson($currentArticle->id, $post->ID, $current_user->ID)) {
 
             dbg("e20rArticle::contentFilter() - Processing a defined article to see if lesson is completed. This is not for a measurement day.");
 

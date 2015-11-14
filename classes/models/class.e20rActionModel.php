@@ -7,7 +7,7 @@
  *  the GPL v2 license(?)
  */
 
-class e20rCheckinModel extends e20rSettingsModel {
+class e20rActionModel extends e20rSettingsModel {
 
     private $settings;
 
@@ -41,7 +41,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
     public function findActionByDate( $date, $programId ) {
 
-        dbg("e20rCheckinModel::findActionByDate() - Searching by date: {$date}" );
+        dbg("e20rActionModel::findActionByDate() - Searching by date: {$date}" );
 
 	    $actions = array();
 
@@ -75,7 +75,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::findActionByDate() - Returned actions: {$query->post_count} for query... " );
+        dbg("e20rActionModel::findActionByDate() - Returned actions: {$query->post_count} for query... " );
 	    // dbg($args);
 
         while ( $query->have_posts() ) {
@@ -88,11 +88,11 @@ class e20rCheckinModel extends e20rSettingsModel {
             $id = get_the_ID();
 
 
-            dbg("e20rCheckinModel::findActionByDate() - Getting program info for action ID: {$id}");
+            dbg("e20rActionModel::findActionByDate() - Getting program info for action ID: {$id}");
 
             $programs = get_post_meta( $id, '_e20r-checkin-program_ids');
 
-            dbg("e20rCheckinModel::findActionByDate() - Getting program info... ");
+            dbg("e20rActionModel::findActionByDate() - Getting program info... ");
 
             if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
 
@@ -104,7 +104,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         wp_reset_postdata();
 
-	    dbg("e20rCheckinModel::findActionByDate() - Returning " . count($actions) . " action ids");
+	    dbg("e20rActionModel::findActionByDate() - Returning " . count($actions) . " action ids");
 	    // dbg( $actions );
 
         return $actions;
@@ -124,12 +124,12 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $currentProgram;
 
-        dbg("e20rCheckinModel::getActions() - id: {$id}, type: {$type}, records: {$numBack}");
+        dbg("e20rActionModel::getActions() - id: {$id}, type: {$type}, records: {$numBack}");
 
         $start_date = $this->getSetting( $id, 'startdate' );
         $checkins = array();
 
-        dbg("e20rCheckinModel::getActions() - Loaded startdate: {$start_date} for id {$id}");
+        dbg("e20rActionModel::getActions() - Loaded startdate: {$start_date} for id {$id}");
 
         $args = array(
             'posts_per_page' => $numBack,
@@ -161,7 +161,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         );
 
         $query = new WP_Query( $args );
-        dbg("e20rCheckinModel::getActions() - Returned checkins: {$query->post_count}" );
+        dbg("e20rActionModel::getActions() - Returned checkins: {$query->post_count}" );
 	    // dbg($args);
 
         while ( $query->have_posts() ) {
@@ -172,7 +172,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             /*
             if ( ! in_array( $currentProgram->id, $new->program_ids ) ) {
-                dbg( "e20rCheckinModel::getActions() - {$new->id} not part of program {$currentProgram->id}");
+                dbg( "e20rActionModel::getActions() - {$new->id} not part of program {$currentProgram->id}");
                 continue;
             }
             */
@@ -199,7 +199,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 		global $current_user;
 		global $e20rTracker;
 		global $e20rTables;
-		global $e20rCheckin;
+		global $e20rAction;
 
 		if ( is_null( $userId ) ) {
 
@@ -256,13 +256,13 @@ class e20rCheckinModel extends e20rSettingsModel {
 			$dateArr['max'] . " 23:59:59"
 		);
 
-        // dbg("e20rCheckinModel::loadCheckinsForUser() - SQL: {$sql}");
+        // dbg("e20rActionModel::loadCheckinsForUser() - SQL: {$sql}");
 
 		$results = $wpdb->get_results( $sql );
 
 		if ( empty( $results ) ) {
 
-			dbg("e20rCheckinModel::loadCheckinsForUser() - Error: {$wpdb->last_error}");
+			dbg("e20rActionModel::loadCheckinsForUser() - Error: {$wpdb->last_error}");
 			return array();
 		}
 
@@ -279,7 +279,7 @@ class e20rCheckinModel extends e20rSettingsModel {
         global $e20rArticle;
         global $e20rTracker;
 
-	    dbg("e20rCheckinModel::loadUserCheckin() - Loading type {$type} check-ins for user {$userId}");
+	    dbg("e20rActionModel::loadUserCheckin() - Loading type {$type} check-ins for user {$userId}");
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
@@ -292,11 +292,11 @@ class e20rCheckinModel extends e20rSettingsModel {
         }
 	    // if ( $currentCheckin->articleId )
 
-        dbg("e20rCheckinModel::loadUserCheckin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
+        dbg("e20rActionModel::loadUserCheckin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
 
         if ( is_null( $short_name ) ) {
 
-            dbg("e20rCheckinModel::loadUserCheckin() - No short_name defined...");
+            dbg("e20rActionModel::loadUserCheckin() - No short_name defined...");
             $sql = $wpdb->prepare(
                 "SELECT *
                  FROM {$this->table} AS c
@@ -313,7 +313,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             );
         }
         else {
-            dbg("e20rCheckinModel::loadUserCheckin() - short_name defined: {$short_name}");
+            dbg("e20rActionModel::loadUserCheckin() - short_name defined: {$short_name}");
             $sql = $wpdb->prepare(
                 "SELECT *
                  FROM {$this->table} AS c
@@ -332,21 +332,21 @@ class e20rCheckinModel extends e20rSettingsModel {
             );
         }
 
-        // dbg("e20rCheckinModel::loadUserCheckin() - SQL: {$sql}");
+        // dbg("e20rActionModel::loadUserCheckin() - SQL: {$sql}");
 
         $result = $wpdb->get_row( $sql );
 
         if ( $result === false ) {
 
-            dbg("e20rCheckinModel::loadUserCheckin() - Error loading check-in: " . $wpdb->last_error );
+            dbg("e20rActionModel::loadUserCheckin() - Error loading check-in: " . $wpdb->last_error );
             return null;
         }
 
-        dbg("e20rCheckinModel::loadUserCheckin() - Loaded {$wpdb->num_rows} check-in records");
+        dbg("e20rActionModel::loadUserCheckin() - Loaded {$wpdb->num_rows} check-in records");
 
         if ( empty( $result ) ) {
 
-            dbg( "e20rCheckinModel::loadUserCheckin() - No check-in records found for this user (ID: {$current_user->ID})");
+            dbg( "e20rActionModel::loadUserCheckin() - No check-in records found for this user (ID: {$current_user->ID})");
 
             /*
             if ( empty( $this->settings ) ) {
@@ -360,22 +360,22 @@ class e20rCheckinModel extends e20rSettingsModel {
 
 	        if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
 
-		        dbg( "e20rCheckinModel::loadUserCheckin() - Default action: Found one or more ids");
+		        dbg( "e20rActionModel::loadUserCheckin() - Default action: Found one or more ids");
 
 		        foreach ( $a as $i ) {
 
 			        $n_type = $this->getSetting( $i, 'checkin_type' );
 
-			        dbg( "e20rCheckinModel::loadUserCheckin() - Default action: Type settings for {$i}: {$n_type}");
+			        dbg( "e20rActionModel::loadUserCheckin() - Default action: Type settings for {$i}: {$n_type}");
 
 			        if ($n_type == $type ) {
 
-				        dbg('e20rCheckinModel::loadUserCheckin() - Default action: the type settings are correct. Using it...');
+				        dbg('e20rActionModel::loadUserCheckin() - Default action: the type settings are correct. Using it...');
 				        $result->id = $i;
 				        break;
 			        }
 
-			        dbg("e20rCheckinModel::loadUserCheckin() - Default action: the type mismatch {$n_type} != {$type}. Looping again.");
+			        dbg("e20rActionModel::loadUserCheckin() - Default action: the type mismatch {$n_type} != {$type}. Looping again.");
 		        }
 
 	        }
@@ -390,7 +390,7 @@ class e20rCheckinModel extends e20rSettingsModel {
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
 
-            dbg("e20rCheckinModel::loadUserCheckin() - Default action: No user record found");
+            dbg("e20rActionModel::loadUserCheckin() - Default action: No user record found");
             // dbg($result);
         }
 
@@ -401,7 +401,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
-        dbg("e20rCheckinModel::exists() -  Data: ");
+        dbg("e20rActionModel::exists() -  Data: ");
         dbg( $checkin );
 
         if ( ! is_array( $checkin ) ) {
@@ -431,7 +431,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         if ( ! empty( $result ) ) {
 
-            dbg("e20rCheckinModel::exists() - Got a result returned: ");
+            dbg("e20rActionModel::exists() - Got a result returned: ");
             dbg($result);
             return $result;
         }
@@ -476,17 +476,17 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
-        dbg("e20rCheckinModel::setCheckin() - Check if the record exists already");
+        dbg("e20rActionModel::setCheckin() - Check if the record exists already");
 
         if ( ( $result = $this->exists( $checkin ) ) !== false ) {
 
-            dbg("e20rCheckinModel::setCheckin() - found existing record: ");
+            dbg("e20rActionModel::setCheckin() - found existing record: ");
             dbg($result->id);
 
             $checkin['id'] = $result->id;
         }
 
-        dbg("e20rCheckinModel::setCheckin() - Checkin record:");
+        dbg("e20rActionModel::setCheckin() - Checkin record:");
         dbg($checkin);
 
         if ( false !== $wpdb->replace( $this->table, $checkin ) ) {
@@ -503,17 +503,17 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         global $wpdb;
 
-	    dbg("e20rCheckinModel::setCheckin() - Check if the record exists already");
+	    dbg("e20rActionModel::setCheckin() - Check if the record exists already");
 
         if ( ( $result = $this->exists( $checkin ) ) !== false ) {
 
-            dbg("e20rCheckinModel::setCheckin() - found existing record: ");
+            dbg("e20rActionModel::setCheckin() - found existing record: ");
             dbg($result->id);
 
             $checkin['id'] = $result->id;
         }
 
-        dbg("e20rCheckinModel::setCheckin() - Checkin record:");
+        dbg("e20rActionModel::setCheckin() - Checkin record:");
         dbg($checkin);
 
         return ( $wpdb->replace( $this->table, $checkin ) ? true : false );
@@ -532,7 +532,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
         $defaults = $this->defaultSettings();
 
-        dbg("e20rCheckinModel::saveSettings() - Saving checkin Metadata: " . print_r( $settings, true ) );
+        dbg("e20rActionModel::saveSettings() - Saving checkin Metadata: " . print_r( $settings, true ) );
 
         $error = false;
 
@@ -544,7 +544,7 @@ class e20rCheckinModel extends e20rSettingsModel {
 
             if ( false === $this->settings( $checkinId, 'update', $key, $settings->{$key} ) ) {
 
-                dbg( "e20rCheckin::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for check-in definition with ID: {$checkinId}" );
+                dbg( "e20rAction::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for check-in definition with ID: {$checkinId}" );
 
                 $error = true;
             }

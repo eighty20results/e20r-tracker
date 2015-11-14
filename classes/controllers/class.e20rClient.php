@@ -1583,9 +1583,9 @@ class e20rClient
     public function load_achievementsData($clientId)
     {
 
-        global $e20rCheckin;
+        global $e20rAction;
 
-        return $e20rCheckin->listUserAccomplishments($clientId);
+        return $e20rAction->listUserAccomplishments($clientId);
     }
 
     public function load_assignmentsData($clientId)
@@ -1679,7 +1679,7 @@ class e20rClient
         global $current_user;
 
         global $e20rProgram;
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rAssignment;
         global $e20rWorkout;
         global $e20rArticle;
@@ -1702,7 +1702,7 @@ class e20rClient
 
 
         /* Load views for the profile page tabs */
-        $config = $e20rCheckin->configure_dailyProgress();
+        $config = $e20rAction->configure_dailyProgress();
 
         $code_atts = shortcode_atts(array(
             'use_cards' => false,
@@ -1761,7 +1761,7 @@ class e20rClient
 
             $assignments = $e20rAssignment->listUserAssignments($config->userId);
             $activities = $e20rWorkout->listUserActivities($config->userId);
-            $achievements = $e20rCheckin->listUserAccomplishments($config->userId);
+            $achievements = $e20rAction->listUserAccomplishments($config->userId);
 
             $progress = array(
                 'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
@@ -1772,7 +1772,7 @@ class e20rClient
 
             $dashboard = array(
                 'Your dashboard',
-                '<div id="e20r-daily-progress">' . $e20rCheckin->dailyProgress($config) . '</div>'
+                '<div id="e20r-daily-progress">' . $e20rAction->dailyProgress($config) . '</div>'
             );
             /*
                        $activity = array(
@@ -1833,7 +1833,7 @@ class e20rClient
 
         dbg("e20rClient::shortcode_clientList() - Loading shortcode for the coach list of clients");
 
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rProgram;
         global $e20rTracker;
 

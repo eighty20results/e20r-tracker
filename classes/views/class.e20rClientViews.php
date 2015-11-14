@@ -532,7 +532,7 @@ class e20rClientViews {
 
     public function viewClientAdminPage( $lvlName = '', $level_id = -1 ) {
 
-	    global $e20rCheckin;
+	    global $e20rAction;
         global $currentClient;
 	    global $e20rAssignment;
         global $e20rWorkout;
@@ -599,7 +599,7 @@ class e20rClientViews {
 		    </div>
 		    <div id="tabs-3">
 		        <div id="e20r-progress-accomplishments">
-			        <?php echo $e20rCheckin->listUserAccomplishments( $currentClient->user_id ); ?>
+			        <?php echo $e20rAction->listUserAccomplishments( $currentClient->user_id ); ?>
 		        </div>
 		    </div>
             <div id="tabs-4">
@@ -785,8 +785,8 @@ class e20rClientViews {
         }
 
         // TODO: Implement compliance data loader.
-//        $checkins = new e20rCheckin();
-//        $items = $checkins->get_checkinItems( $shortname, $level_id );
+//        $actions = new e20rAction();
+//        $items = $actions->get_checkinItems( $shortname, $level_id );
 
         // TODO: show a graph for the users compliance.
     }
@@ -870,7 +870,7 @@ class e20rClientViews {
 
     public function render_new_item_page() {
 
-        $manage_checkin_items = new E20Rcheckin();
+        $manage_checkin_items = new e20rAction();
         $data = $manage_checkin_items->view_AddNewCheckinItem();
 
         echo $data;

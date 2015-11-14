@@ -373,7 +373,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
     public function save_activity_status( $post_data ) {
 
         global $e20rTracker;
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rArticle;
 
         $completed = isset( $_POST['completed'] ) ? $e20rTracker->sanitize( $_POST['completed'] ) : false;
@@ -403,7 +403,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
             'checkin_short_name' => $checkin_shortname,
         );
 
-        if ( false === $e20rCheckin->save_check_in( $checkin, CHECKIN_ACTIVITY ) ) {
+        if ( false === $e20rAction->save_check_in( $checkin, CHECKIN_ACTIVITY ) ) {
 
             dbg("e20rWorkoutModel::save_activity_status() - Error saving activity check-in for user {$userId}");
             return false;

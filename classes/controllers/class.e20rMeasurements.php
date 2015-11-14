@@ -534,7 +534,7 @@ class e20rMeasurements {
         global $e20rArticle;
         global $e20rTracker;
         global $e20rClient;
-	    global $e20rCheckin;
+	    global $e20rAction;
 	    global $e20rAssignment;
 	    global $e20rWorkout;
         global $e20rProgram;
@@ -587,7 +587,7 @@ class e20rMeasurements {
             'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
             'Assignments' => '<div id="e20r-progress-assignments"><br/>' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
             'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
-            'Achievements' => '<div id="e20r-progress-achievements">' . $e20rCheckin->listUserAccomplishments( $this->id ) . '</div>',
+            'Achievements' => '<div id="e20r-progress-achievements">' . $e20rAction->listUserAccomplishments( $this->id ) . '</div>',
         );
 
         return $this->show_progress( $tabs, $pDimensions, true );
@@ -1017,7 +1017,7 @@ class e20rMeasurements {
      */
     public function saveMeasurement_callback() {
 
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rProgram;
 
         dbg("e20rMeasurements::saveMeasurement() - Checking access");
@@ -1072,7 +1072,7 @@ class e20rMeasurements {
         if ( ( $measurementType == 'completed') && ( $measurementValue == 1) ){
 
             dbg("e20rMeasurements::saveMeasurement() - Measurement form is being saved by the user. TODO: Display with correct header to show completion");
-            if ( $e20rCheckin->setArticleAsComplete( $current_user->ID, $articleId, $programId ) ) {
+            if ( $e20rAction->setArticleAsComplete( $current_user->ID, $articleId, $programId ) ) {
                 wp_send_json_success( "Progress saved for {$post_date}" );
             }
             else {

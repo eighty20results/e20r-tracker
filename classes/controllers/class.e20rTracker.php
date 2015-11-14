@@ -206,7 +206,7 @@ class e20rTracker {
         global $e20rMeasurements;
         global $e20rArticle;
         global $e20rAssignment;
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rExercise;
         global $e20rProgram;
         global $e20rWorkout;
@@ -276,8 +276,8 @@ class e20rTracker {
             add_action( 'wp_ajax_nopriv_e20r_save_item_data', 'e20r_ajaxUnprivError' );
 
 
-            add_action( 'wp_ajax_e20r_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
-	        add_action( 'wp_ajax_save_daily_checkin', array( &$e20rCheckin, 'dailyCheckin_callback' ) );
+            add_action( 'wp_ajax_e20r_get_checkinItem', array( &$e20rAction, 'ajax_getCheckin_item' ) );
+	        add_action( 'wp_ajax_save_daily_checkin', array( &$e20rAction, 'dailyCheckin_callback' ) );
             add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
             */
 
@@ -352,10 +352,10 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
             add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
-            add_action( 'wp_ajax_e20r_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
-            add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
-            add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
-	        add_action( 'wp_ajax_e20r_save_daily_progress', array( &$e20rCheckin, 'dailyProgress_callback' ) );
+            add_action( 'wp_ajax_e20r_daynav', array( &$e20rAction, 'nextCheckin_callback' ) );
+            add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rAction, 'ajax_save_item_data' ) );
+            add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rAction, 'saveCheckin_callback' ) );
+	        add_action( 'wp_ajax_e20r_save_daily_progress', array( &$e20rAction, 'dailyProgress_callback' ) );
             add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rClient, 'ajax_assignmentData' ) );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
@@ -383,7 +383,7 @@ class e20rTracker {
                 add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
                 add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
                 add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
+                add_action( 'save_post', array( &$e20rAction, 'saveSettings' ), 10, 20);
                 add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
                 add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
@@ -391,7 +391,7 @@ class e20rTracker {
                 add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
                 add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
                 add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rAction, 'saveSettings' ) );
                 add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
                 add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
 
@@ -400,7 +400,7 @@ class e20rTracker {
                 add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
                 add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
                 add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rCheckin, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rAction, 'editor_metabox_setup') );
 
                 add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
@@ -422,13 +422,13 @@ class e20rTracker {
                 add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
                 // Custom columns
-                add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rCheckin, 'set_custom_edit_columns' ) );
+                add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rAction, 'set_custom_edit_columns' ) );
                 add_filter( 'manage_edit-e20r_assignments_columns', array( &$e20rAssignment, 'set_custom_edit_columns' ) );
 
-                add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rCheckin, 'custom_column'), 10, 2 );
+                add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rAction, 'custom_column'), 10, 2 );
                 add_action( 'manage_e20r_assignments_posts_custom_column' , array( &$e20rAssignment, 'custom_column'), 10, 2 );
 
-                add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rCheckin, 'sortable_column' ) );
+                add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
                 add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
 
                 add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
@@ -455,7 +455,7 @@ class e20rTracker {
             dbg("e20rTracker::loadAllHooks() - Loading Short Codes");
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
-            add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
+            add_shortcode( 'daily_progress', array( &$e20rAction, 'shortcode_dailyProgress' ) );
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
 	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
@@ -1396,7 +1396,7 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        global $e20rClient, $e20rProgram, $e20rCheckin;
+        global $e20rClient, $e20rProgram, $e20rAction;
         global $e20rAdminPage;
         global $e20rClientInfoPage;
 
@@ -4689,7 +4689,7 @@ class e20rTracker {
         $e20rWorkout = new e20rWorkout();
         $e20rAssignment = new e20rAssignment();
         $e20rProgram = new e20rProgram();
-        $e20rCheckin = new e20rCheckin();
+        $e20rAction = new e20rAction();
         $e20rArticle = new e20rArticle();
 
         $cpt_info = array(
@@ -4732,7 +4732,7 @@ class e20rTracker {
                     break;
 
                 case 'e20r_checkins':
-                    $cpt_info[$cpt]->type = $e20rCheckin->get_cpt_type();
+                    $cpt_info[$cpt]->type = $e20rAction->get_cpt_type();
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     break;
             }

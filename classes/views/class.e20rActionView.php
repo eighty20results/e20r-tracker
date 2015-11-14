@@ -7,7 +7,7 @@
  *  the GPL v2 license(?)
  */
 
-class e20rCheckinView extends e20rSettingsView {
+class e20rActionView extends e20rSettingsView {
 
     private $checkins = null;
 
@@ -207,7 +207,7 @@ class e20rCheckinView extends e20rSettingsView {
 
         if ( $habit_entries[0]->short_name == 'null_action') {
 
-            dbg("e20rCheckinView::view_actionAndActivityCheckin() - Have a null action, so skip Yes/No radio buttons");
+            dbg("e20rActionView::view_actionAndActivityCheckin() - Have a null action, so skip Yes/No radio buttons");
             $skip_yn = true;
         }
 
@@ -222,7 +222,7 @@ class e20rCheckinView extends e20rSettingsView {
                     <?php
 
                     $cnt = count($habit_entries);
-                    dbg("e20rCheckinView::viewCheckinField() - We're dealing with {$cnt} habits today");
+                    dbg("e20rActionView::viewCheckinField() - We're dealing with {$cnt} habits today");
 
                     switch ( $cnt ) {
                         case 3: ?>
@@ -261,7 +261,7 @@ class e20rCheckinView extends e20rSettingsView {
 
         if ( $habit_entries[0]->short_name == 'null_action') {
 
-            dbg("e20rCheckinView::view_card_action_checkin() - Have a null action, so skip Yes/No radio buttons");
+            dbg("e20rActionView::view_card_action_checkin() - Have a null action, so skip Yes/No radio buttons");
             $skip_yn = true;
         }
 
@@ -368,11 +368,11 @@ class e20rCheckinView extends e20rSettingsView {
         $action_date = $e20rTracker->getDateFromDelay( $config->delay );
         $today = $e20rTracker->getDateFromDelay();
 
-        dbg("e20rCheckinView::view_action_and_activity() - We're requesting info for: $today vs $action_date ");
+        dbg("e20rActionView::view_action_and_activity() - We're requesting info for: $today vs $action_date ");
 
         if ($action_date == $today ) {
 
-            //dbg("e20rCheckinView::view_action_and_activity() - We're requesting info for: $today vs $action_date ");
+            //dbg("e20rActionView::view_action_and_activity() - We're requesting info for: $today vs $action_date ");
             $date = __("Today", "e20rtracker");
         }
         else {
@@ -512,7 +512,7 @@ class e20rCheckinView extends e20rSettingsView {
 
     public function viewSettingsBox( $checkinData, $programs ) {
 
-        dbg( "e20rCheckinView::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
+        dbg( "e20rActionView::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
         ?>
         <form action="" method="post">
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-checkin-settings' ); ?>
@@ -662,7 +662,7 @@ class e20rCheckinView extends e20rSettingsView {
 
                 if ( ! empty( $achievements ) ) {
 
-                    dbg("e20rCheckinView::view_user_achievements() - User has supplied answers...");
+                    dbg("e20rActionView::view_user_achievements() - User has supplied answers...");
                     // dbg($achievements);
                     $achievements = array_reverse( $achievements, true);
 
@@ -734,7 +734,7 @@ class e20rCheckinView extends e20rSettingsView {
             </div>
 		</div>
 		<?php
-        dbg("e20rCheckinView::view_user_achievement() - Finished generating view..");
+        dbg("e20rActionView::view_user_achievement() - Finished generating view..");
 		$html = ob_get_clean();
 		return $html;
 	}

@@ -249,18 +249,18 @@ class e20rArticleModel extends e20rSettingsModel
 
         global $current_user;
 
+        if (!isset($currentClient->user_id) || (isset($currentClient->user_id) && ($currentClient->user_id == 0))) {
+            $user_id = $current_user->ID;
+        } else {
+            $user_id = $currentClient->user_id;
+        }
+
         if (is_null($last_day) || !is_numeric($last_day)) {
             dbg("e20rArticleModel::load_for_archive() - No 'last-day' variable provided. Using user information");
-
-
-            if (!isset($currentClient->user_id) || (isset($currentClient->user_id) && ($currentClient->user_id == 0))) {
-                $user_id = $current_user->ID;
-            } else {
-                $user_id = $currentClient->user_id;
-            }
-
-            $last_day = $e20rTracker->getDelay('now', $user_id);
+            $last_day = ( $e20rTracker->getDelay('now', $user_id) - 1);
         }
+
+        dbg("e20rArticleModel::load_for_article() - Last day of archive is: {$last_day}");
 
         if ( !isset($currentProgram->id) || ( isset( $currentProgram->id) && ($program_id != $currentProgram->id) ) ) {
 
@@ -277,7 +277,8 @@ class e20rArticleModel extends e20rSettingsModel
             $program_id = $currentProgram->id;
         }
 
-        $list = parent::find('release_day', $last_day, $program_id, '<=' );
+        $list = parent::find('release_day', array( 0, $last_day), $program_id, 'BETWEEN' );
+/*
         $archive = array();
         $post = null;
 
@@ -290,8 +291,8 @@ class e20rArticleModel extends e20rSettingsModel
 
             $archive[] = $post;
         }
-
-        return $archive;
+*/
+        return $list;
     }
 
     public function findArticle($key, $value, $programId = -1, $comp = '=', $order = 'DESC', $type = 'NUMERIC')
@@ -435,7 +436,7 @@ class e20rArticleModel extends e20rSettingsModel
     {
 
         global $e20rAssignment;
-        global $e20rCheckin;
+        global $e20rAction;
 
         $articleId = $settings->id;
 
@@ -479,7 +480,7 @@ class e20rArticleModel extends e20rSettingsModel
                         dbg($settings->program_ids);
                     }
 
-                    if (('checkin_ids' == $key) && (!$e20rCheckin->addPrograms($id, $settings->program_ids))) {
+                    if (('checkin_ids' == $key) && (!$e20rAction->addPrograms($id, $settings->program_ids))) {
 
                         dbg("e20rArticleModel::saveSettings() - ERROR: Unable to save program list for checkin {$id}");
                         dbg($settings->program_ids);

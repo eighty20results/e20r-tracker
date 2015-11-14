@@ -370,9 +370,9 @@ try {
     require_once(E20R_PLUGIN_DIR . "classes/controllers/class.e20rArticle.php");
     require_once(E20R_PLUGIN_DIR . "classes/views/class.e20rArticleView.php");
 
-    require_once(E20R_PLUGIN_DIR . "classes/controllers/class.e20rCheckin.php");
-    require_once(E20R_PLUGIN_DIR . "classes/models/class.e20rCheckinModel.php");
-    require_once(E20R_PLUGIN_DIR . "classes/views/class.e20rCheckinView.php");
+    require_once(E20R_PLUGIN_DIR . "classes/controllers/class.e20rAction.php");
+    require_once(E20R_PLUGIN_DIR . "classes/models/class.e20rActionModel.php");
+    require_once(E20R_PLUGIN_DIR . "classes/views/class.e20rActionView.php");
 
     require_once(E20R_PLUGIN_DIR . "classes/controllers/class.e20rAssignment.php");
     require_once(E20R_PLUGIN_DIR . "classes/models/class.e20rAssignmentModel.php");
