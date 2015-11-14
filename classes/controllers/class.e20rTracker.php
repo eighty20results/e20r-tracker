@@ -4780,6 +4780,10 @@ class e20rTracker {
 
         $results = $wpdb->get_results( $find_sql );
 
+        if ( count( $results ) == 0 ) {
+            return;
+        }
+
         dbg("e20rTracker::rename_action_cpt() - Found " . count($results) . " old metadata keys to convert");
 
         foreach ( $results as $record ) {
