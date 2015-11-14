@@ -325,7 +325,13 @@ class e20rProgram extends e20rSettings {
 
         global $currentProgram;
 
+        global $current_user;
+
         dbg("e20rProgram::configure_startdate() - Defined program startdate value: {$currentProgram->startdate}");
+
+        if ( is_admin() && ( $userId == $current_user->ID ) ) {
+            return;
+        }
 
         if ( ( $currentProgram->id == $program_id ) && ( function_exists( 'pmpro_getMemberStartdate' ) ) ) {
 
