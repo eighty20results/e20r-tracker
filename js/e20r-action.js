@@ -28,22 +28,22 @@ jQuery(document).ready(function () {
 
             this.$body = jQuery("body");
             this.$header_tag = jQuery("#e20r-daily-progress");
-            this.$checkinOptions = jQuery('#e20r-daily-checkin-canvas fieldset.did-you input:radio');
-            this.$checkinDate = jQuery('#e20r-checkin-checkin_date').val();
-            this.$checkedinDate = jQuery('#e20r-checkin-checkedin_date').val();
-            this.$checkinAssignmentId = jQuery('#e20r-checkin-assignment_id').val();
-            this.$checkinArticleId = jQuery('#e20r-checkin-article_id').val();
-            this.$checkinProgramId = jQuery('#e20r-checkin-program_id').val();
-            this.$nonce = jQuery('#e20r-checkin-nonce').val();
-            this.$itemHeight = jQuery('#e20r-daily-checkin-canvas fieldset.did-you ul li').outerHeight();
+            this.$checkinOptions = jQuery('#e20r-daily-action-canvas fieldset.did-you input:radio');
+            this.$checkinDate = jQuery('#e20r-action-checkin_date').val();
+            this.$checkedinDate = jQuery('#e20r-action-checkedin_date').val();
+            this.$checkinAssignmentId = jQuery('#e20r-action-assignment_id').val();
+            this.$checkinArticleId = jQuery('#e20r-action-article_id').val();
+            this.$checkinProgramId = jQuery('#e20r-action-program_id').val();
+            this.$nonce = jQuery('#e20r-action-nonce').val();
+            this.$itemHeight = jQuery('#e20r-daily-action-canvas fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
-            this.$progressNav = jQuery("#e20r-checkin-daynav");
-            this.$tomorrowBtn = this.$progressNav.find("#e20r-checkin-tomorrow-lnk");
-            this.$yesterdayBtn = this.$progressNav.find("#e20r-checkin-yesterday-lnk");
-            this.$activityLnk = jQuery(".e20r-checkin-activity").find("#e20r-activity-read-lnk");
-            this.$actionLnk = jQuery(".e20r-checkin-lesson").find("#e20r-action-read-lnk");
+            this.$progressNav = jQuery("#e20r-action-daynav");
+            this.$tomorrowBtn = this.$progressNav.find("#e20r-action-tomorrow-lnk");
+            this.$yesterdayBtn = this.$progressNav.find("#e20r-action-yesterday-lnk");
+            this.$activityLnk = jQuery(".e20r-action-activity").find("#e20r-activity-read-lnk");
+            this.$actionLnk = jQuery(".e20r-action-lesson").find("#e20r-action-read-lnk");
             this.$allowActivityOverride = false;
-            this.$cardSetting = jQuery('input[type="e20r-use-card-based-display"').val();
+            this.$cardSetting = jQuery('input[name="e20r-use-card-based-display"]').val();
 
             var me = this;
 
@@ -51,16 +51,16 @@ jQuery(document).ready(function () {
         },
         bindProgressElements: function (self) {
 
-            self.$tomorrowBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-tomorrow-lnk");
-            self.$yesterdayBtn = self.$header_tag.find("#e20r-checkin-daynav").find("#e20r-checkin-yesterday-lnk");
-            self.$activityLnk = self.$header_tag.find("td#e20r-checkin-activity").find("#e20r-activity-read-lnk");
-            self.$actionLnk = self.$header_tag.find("td#e20r-checkin-lesson").find("#e20r-action-read-lnk");
+            self.$tomorrowBtn = self.$header_tag.find("#e20r-action-daynav").find("#e20r-action-tomorrow-lnk");
+            self.$yesterdayBtn = self.$header_tag.find("#e20r-action-daynav").find("#e20r-action-yesterday-lnk");
+            self.$activityLnk = self.$header_tag.find("td#e20r-action-activity").find("#e20r-activity-read-lnk");
+            self.$actionLnk = self.$header_tag.find("td#e20r-action-lesson").find("#e20r-action-read-lnk");
 
-            self.$header_tag.find('#e20r-daily-checkin-canvas fieldset.did-you input:radio').unbind('click').on('click', function () {
+            self.$header_tag.find('#e20r-daily-action-canvas fieldset.did-you input:radio').unbind('click').on('click', function () {
 
                 var $radioBtn = this;
 
-                console.log("Checkin button: ", this);
+                console.log("Action button: ", this);
                 self.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
                 console.log("Action or activity? ", self.$actionOrActivity);
                 self.saveCheckin(this, self.$actionOrActivity, self);
@@ -109,8 +109,8 @@ jQuery(document).ready(function () {
         },
         showBtn: function (self) {
 
-            var radioFieldsActivity = jQuery('fieldset.did-you.workout input:radio', '#e20r-daily-checkin-canvas');
-            var radioFieldsAction = jQuery('fieldset.did-you.habit input:radio', '#e20r-daily-checkin-canvas');
+            var radioFieldsActivity = jQuery('fieldset.did-you.workout input:radio', '#e20r-daily-action-canvas');
+            var radioFieldsAction = jQuery('fieldset.did-you.habit input:radio', '#e20r-daily-action-canvas');
 
             radioFieldsActivity
                 .add(radioFieldsAction)
@@ -144,7 +144,7 @@ jQuery(document).ready(function () {
 
                 setEditState(radioFieldsActivity);
 
-                jQuery(document).unbind('click').on('click', '#e20r-daily-checkin-canvas .edit-selection', function () {
+                jQuery(document).unbind('click').on('click', '#e20r-daily-action-canvas .edit-selection', function () {
 
                     self.editCheckin(this);
                 });
@@ -156,7 +156,7 @@ jQuery(document).ready(function () {
 
                 setEditState(radioFieldsAction);
 
-                jQuery(document).unbind('click').on('click', '#e20r-daily-checkin-canvas .edit-selection', function () {
+                jQuery(document).unbind('click').on('click', '#e20r-daily-action-canvas .edit-selection', function () {
 
                     self.editCheckin(this);
                 });
@@ -166,26 +166,26 @@ jQuery(document).ready(function () {
 
 //            console.log("Element is: ", elem );
 
-//            console.log("Type: ", jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first') );
+//            console.log("Type: ", jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_type:first') );
 
             jQuery('body').addClass("loading");
 
             var $data = {
                 action: 'e20r_saveCheckin',
                 'checkin-action': $a,
-                'e20r-checkin-nonce': self.$nonce,
+                'e20r-action-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
                 'checkedin-date': self.$checkedinDate,
                 'descr-id': self.$checkinAssignmentId,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
                 'checkedin': jQuery(elem).val(),
-                'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_type:first').val(),
-                'action-id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-id:first').val(),
-                'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-checkin-checkin_short_name:first').val()
+                'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_type:first').val(),
+                'action-id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-id:first').val(),
+                'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_short_name:first').val()
             };
 
-            jQuery.post(e20r_checkin.ajaxurl, $data, function (response) {
+            jQuery.post(e20r_action.ajaxurl, $data, function (response) {
 
                 if (!response.success) {
 
@@ -247,7 +247,7 @@ jQuery(document).ready(function () {
                                         .parents('fieldset.did-you')
                                         .append('<button class="e20r-button edit-selection">Edit check-in</button>');
 
-                                    jQuery(document).on('click', '#e20r-daily-checkin-canvas .edit-selection', function () {
+                                    jQuery(document).on('click', '#e20r-daily-action-canvas .edit-selection', function () {
                                         console.log("Clicked the edit-selection button");
                                         console.log("This = ", this);
                                         console.log("Self = ", self);
@@ -300,28 +300,28 @@ jQuery(document).ready(function () {
         },
         dayNav: function (self, elem) {
 
-            var navDay = jQuery(elem).next("input[name^='e20r-checkin-day']").val();
-            var today = jQuery('#e20r-checkin-today').val();
+            var navDay = jQuery(elem).next("input[name^='e20r-action-day']").val();
+            var today = jQuery('#e20r-action-today').val();
 
             // console.log("Day Nav value: ", navDay );
 
             var data = {
                 action: 'e20r_daynav',
-                'e20r-checkin-nonce': self.$nonce,
+                'e20r-action-nonce': self.$nonce,
                 'checkin-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
                 'e20r-use-card-based-display': self.$cardSetting,
-                'e20r-checkin-day': navDay,
+                'e20r-action-day': navDay,
                 'e20r-today': today
             };
 
             // console.log("toNext data: ", data);
 
             jQuery.ajax({
-                url: e20r_checkin.ajaxurl,
+                url: e20r_action.ajaxurl,
                 type: 'POST',
-                timeout: e20r_checkin.timeout,
+                timeout: e20r_action.timeout,
                 data: data,
                 success: function (response) {
 
@@ -371,7 +371,7 @@ jQuery(document).ready(function () {
 
                         if (3 == response.data.ecode) {
                             console.log("User needs to log in again.");
-                            location.href = e20r_checkin.login_url;
+                            location.href = e20r_action.login_url;
                         }
                     }
                 },
@@ -403,7 +403,7 @@ jQuery(document).ready(function () {
             });
 
             /*
-             jQuery.post(e20r_checkin.ajaxurl, data, function(response) {
+             jQuery.post(e20r_action.ajaxurl, data, function(response) {
 
              console.log("Daily progress response: ", response );
 
@@ -441,7 +441,7 @@ jQuery(document).ready(function () {
             console.log("Link for action link: ", $action_link.attr('href'));
 
             var data = {
-                'e20r-checkin-nonce': self.$nonce,
+                'e20r-action-nonce': self.$nonce,
                 'for-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
@@ -457,19 +457,19 @@ jQuery(document).ready(function () {
             jQuery('body').addClass("loading");
 
             var data = {
-                'e20r-checkin-nonce': self.$nonce,
+                'e20r-action-nonce': self.$nonce,
                 'for-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
-                'activity-id': jQuery("#e20r-checkin-activity_id").val(),
+                'activity-id': jQuery("#e20r-action-activity_id").val(),
                 'activity-override': self.$allowActivityOverride
             };
 
-            jQuery.redirect(e20r_checkin.activity_url, data);
+            jQuery.redirect(e20r_action.activity_url, data);
 
             /*
              jQuery.ajax({
-             url: e20r_checkin.ajaxurl,
+             url: e20r_action.ajaxurl,
              type: 'POST',
              timeout: 5000,
              data: data,
@@ -568,9 +568,9 @@ jQuery(document).ready(function () {
             console.log("lessonComplete()...");
 
             jQuery.ajax({
-                url: e20r_checkin.ajaxurl,
+                url: e20r_action.ajaxurl,
                 type: 'POST',
-                timeout: e20r_checkin.timeout,
+                timeout: e20r_action.timeout,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
                 data: 'action=e20r_save_daily_progress&' + self.$answerForm.serialize(),
                 success: function ($response) {
@@ -629,7 +629,7 @@ jQuery(document).ready(function () {
 
             jQuery.ajax({
                 'type': 'POST',
-                'url': e20r_checkin.ajaxurl,
+                'url': e20r_action.ajaxurl,
                 timeout: 10000,
                 'data': 'action=e20r_save_daily_progress&' + answers,
                 success: function ($response) {
@@ -673,14 +673,14 @@ jQuery(document).ready(function () {
             this.actionFields = jQuery('fieldset.did-you.habit');
             this.activityFields = jQuery('fieldset.did-you.workout');
 
-            this.note_id = this.noteField.find('.e20r-checkin-id').val();
-            this.checkin_shortname = this.noteField.find('.e20r-checkin-checkin_short_name').val();
-            this.note_article = jQuery('#e20r-checkin-article_id').val();
-            this.note_assignment = jQuery('#e20r-checkin-assignment_id').val();
-            this.note_program = jQuery('#e20r-checkin-program_id').val();
-            this.note_date = jQuery('#e20r-checkin-checkin_date').val();
-            this.note_actualdate = jQuery('#e20r-checkin-checkedin_date').val();
-            this.checkin_type = this.noteField.find('.e20r-checkin-checkin_type').val();
+            this.note_id = this.noteField.find('.e20r-action-id').val();
+            this.checkin_shortname = this.noteField.find('.e20r-action-checkin_short_name').val();
+            this.note_article = jQuery('#e20r-action-article_id').val();
+            this.note_assignment = jQuery('#e20r-action-assignment_id').val();
+            this.note_program = jQuery('#e20r-action-program_id').val();
+            this.note_date = jQuery('#e20r-action-checkin_date').val();
+            this.note_actualdate = jQuery('#e20r-action-checkedin_date').val();
+            this.checkin_type = this.noteField.find('.e20r-action-checkin_type').val();
             this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val();
 
             var self = this;
@@ -713,14 +713,14 @@ jQuery(document).ready(function () {
                 jQuery('#note-display')
                     .css('height', function() {
 
-                        var noteArea = jQuery('div#e20r-checkin-notes').closest('.e20r-daily-checkin-row').outerHeight();
+                        var noteArea = jQuery('div#e20r-action-notes').closest('.e20r-daily-action-row').outerHeight();
                         console.log("Note area height: ", noteArea );
                         return noteArea + 'px';
                     })
                     .css('color', 'rgba(92, 92, 92, 0.9 )')
                     .css('background-size', '40px 40px');
 
-                jQuery('#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display>div')
+                jQuery('#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display>div')
                     .css('padding-bottom', '20px');
             }, 200);
 
@@ -789,7 +789,7 @@ jQuery(document).ready(function () {
 
                 var data = {
                     action: 'e20r_saveCheckin',
-                    'e20r-checkin-nonce': jQuery('#e20r-checkin-nonce').val(),
+                    'e20r-action-nonce': jQuery('#e20r-action-nonce').val(),
                     'action-id': self.note_id,
                     'checkin-short-name': self.checkin_shortname,
                     'checkin-date': self.note_date,
@@ -807,9 +807,9 @@ jQuery(document).ready(function () {
                 jQuery('body').addClass("loading");
 
                 jQuery.ajax({
-                    url: e20r_checkin.ajaxurl,
+                    url: e20r_action.ajaxurl,
                     type: 'POST',
-                    timeout: e20r_checkin.timeout,
+                    timeout: e20r_action.timeout,
                     dataType: 'JSON',
                     data: data,
                     error: function( $response, $errString, $errType ) {
@@ -961,7 +961,7 @@ jQuery(document).ready(function () {
                 .end()
                 .css('width', function() {
 
-                    var t_width = jQuery('div.e20r-checkin-notes').innerWidth();
+                    var t_width = jQuery('div.e20r-action-notes').innerWidth();
                     var d_width = jQuery('#note-display').outerWidth();
 
                     console.log("Width of textarea: ", t_width );
@@ -972,7 +972,7 @@ jQuery(document).ready(function () {
                 .css('height', function () {
 
                     var textarea = jQuery('#note-textarea');
-                    var area = jQuery('fieldset.notes').closest('.e20r-checkin-notes');
+                    var area = jQuery('fieldset.notes').closest('.e20r-action-notes');
                     var area_height = area.outerHeight();
                     var legend = area.find('fieldset.notes > legend').outerHeight();
                     var notification = area.find('.notification-entry-saved').outerHeight();
@@ -1043,7 +1043,7 @@ jQuery(document).ready(function () {
         jQuery(e20rDailyProgress.init(jQuery('#e20r-article-assignment')));
     }
 
-    if (jQuery("#e20r-daily-checkin-canvas").length > 0) {
+    if (jQuery("#e20r-daily-action-canvas").length > 0) {
 
         jQuery(e20rCheckinEvent.init());
     }

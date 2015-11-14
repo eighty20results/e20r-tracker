@@ -8,36 +8,36 @@
 
 jQuery(function() {
 
-    var checkinItem = {
+    var actionItem = {
         init: function() {
             var self = this;
-            self.$chekinList = jQuery('#e20r-checkin-items');
+            self.$actionList = jQuery('#e20r-action-items');
         },
         save: function( $valueArray ) {
             var $delete_action = false;
 
             if ( $valueArray['delete'] == true ) {
-                console.log("User requested we delete a check-in item.");
+                console.log("User requested we delete an action item.");
                 $delete_action = true;
             }
 
             jQuery.ajax({
                 url: ajaxurl,
                 type: 'POST',
-                timeout: e20r_checkin.timeout,
+                timeout: e20r_action.timeout,
                 dataType: 'JSON',
                 data: {
                     action: 'e20r_save_item_data',
                     e20r_tracker_edit_nonce: $valueArray['nonce'],
-                    e20r_checkin_item_id:  $valueArray['id'],
-                    e20r_checkin_item_order: $valueArray['order'],
-                    e20r_checkin_item_program_id: $valueArray['program_id'],
-                    e20r_checkin_item_short_name: $valueArray['short_name'],
-                    e20r_checkin_item_name: $valueArray['item_name'],
-                    e20r_checkin_item_startdate: $valueArray['startdate'],
-                    e20r_checkin_item_enddate: $valueArray['enddate'],
-                    e20r_checkin_item_maxcount: $valueArray['maxcount'],
-                    e20r_checkin_item_delete: $delete_action
+                    e20r_action_item_id:  $valueArray['id'],
+                    e20r_action_item_order: $valueArray['order'],
+                    e20r_action_item_program_id: $valueArray['program_id'],
+                    e20r_action_item_short_name: $valueArray['short_name'],
+                    e20r_action_item_name: $valueArray['item_name'],
+                    e20r_action_item_startdate: $valueArray['startdate'],
+                    e20r_action_item_enddate: $valueArray['enddate'],
+                    e20r_action_item_maxcount: $valueArray['maxcount'],
+                    e20r_action_item_delete: $delete_action
                 },
                 error: function( $response, $errString, $errType ) {
 
@@ -62,8 +62,8 @@ jQuery(function() {
                     // Refresh the sequence post list (include the new post.
                     if ( data.data !== '' ) {
                         console.dir( data );
-                        self.$checkinList.html(data.data);
-                        console.log("Data returned from save checkin item functionality");
+                        self.$actionList.html(data.data);
+                        console.log("Data returned from save action item functionality");
                     }
 
                 },

@@ -223,8 +223,8 @@ var progMeasurements = {
         else {
             if ( typeof( e20r_progress ) === 'undefined' ) {
 
-                console.log("e20r_progress constant not defined. using e20r_checkin instead");
-                $class.$tag = e20r_checkin;
+                console.log("e20r_progress constant not defined. using e20r_action instead");
+                $class.$tag = e20r_action;
             }
             else {
                 $class.$tag = e20r_progress;
@@ -1664,7 +1664,7 @@ jQuery(document).ready( function($) {
         return;
     }
 
-    if ( ( typeof e20r_progress !== 'undefined' ) || ( typeof e20r_checkin !== 'undefined' ) ) {
+    if ( ( typeof e20r_progress !== 'undefined' ) || ( typeof e20r_action !== 'undefined' ) ) {
 
         console.log("User ID is defined so we're working from the front-end");
         var $clientId = null;
@@ -1675,10 +1675,10 @@ jQuery(document).ready( function($) {
             var $clientId = e20r_progress.clientId;
         }
 
-        if ( ( null === $clientId ) &&  ( typeof e20r_checkin !== 'undefined' ) ) {
+        if ( ( null === $clientId ) &&  ( typeof e20r_action !== 'undefined' ) ) {
 
-            console.log("User ID is defined with the e20r_checkin tag: " , e20r_checkin.clientId);
-            var $clientId = e20r_checkin.clientId;
+            console.log("User ID is defined with the e20r_action tag: " , e20r_action.clientId);
+            var $clientId = e20r_action.clientId;
         }
     }
     else {
