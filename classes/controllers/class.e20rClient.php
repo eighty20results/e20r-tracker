@@ -1147,14 +1147,11 @@ class e20rClient
         ob_start(); ?>
         <html>
     <head>
-        <title><?php echo $subject; ?></title>
+        <title><?php echo esc_attr( stripslashes( $subject ) ); ?></title>
     </head>
     <body>
-    <!--        <h1 style="padding:5px 0 0 0; font-family:georgia;font-weight:500;font-size:16px;color:#000;border-bottom:1px solid #bbb">
-            <?php echo $subject; ?>
-        </h1> -->
     <div id="the_content">
-        <?php echo $content; ?>
+        <?php echo wp_kses_post( $content ); ?>
     </div>
     </body>
         </html><?php
@@ -1272,7 +1269,7 @@ class e20rClient
 
         add_filter('wp_mail_content_type', array($this, 'set_html_content_type'));
 
-        $status = wp_mail($email_array['to_email'], $email_array['subject'], $message, $headers, null);
+        $status = wp_mail( sanitize_email( $email_array['to_email'] ), sanitize_text_field( $email_array['subject']), $message, $headers, null);
 
         remove_filter('wp_mail_content_type', array($this, 'set_html_content_type'));
 
