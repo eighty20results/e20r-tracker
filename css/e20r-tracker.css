@@ -1447,24 +1447,24 @@ td.e20r-group-header {
 .action-activity-row {
     /* display: inline-block; */
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {  float: left; }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend:after {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you {  float: left; }
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you legend:after {
     content: ".";
     display: block;
     height: 0;
     clear: both;
     visibility: hidden;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li {
     white-space: nowrap;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li.active {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li.active {
     background: #fffdc0;
     border-bottom: 1px solid #c9c89a;
     border-top: 1px solid #c9c89a !important;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li {
     height: 30px;
     line-height: 30px;
     border-bottom: 1px solid #efefef;
@@ -1473,24 +1473,24 @@ td.e20r-group-header {
     list-style-type: none;
     margin-left: 20px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li label {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li label {
     float: left;
     margin-left: 4px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul > li input[type=radio] {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li input[type=radio] {
     float: left;
     margin-top: 8px;
     margin-left: 6px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you .edit-selection {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you .edit-selection {
     border-radius: 0;
     margin: 8px 4px 0 40px;
     padding: 4px 4px;
     font-size: 0.75rem;
     letter-spacing: normal;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes { padding: 0 4px; }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes legend {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes { padding: 0 4px; }
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes legend {
     margin-bottom: 12px;
     font-size: 13px;
     text-transform: uppercase;
@@ -1498,13 +1498,13 @@ td.e20r-group-header {
     color: rgba(0, 72, 0, 0.75);
     font-weight: normal;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes p {
     margin-bottom: 8px;
     max-width: 616px;
     color: #333333;
 }
 
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-textarea {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-textarea {
     width: 100%;
     max-width: 616px;
     font-family: sans-serif;
@@ -1516,7 +1516,7 @@ td.e20r-group-header {
     resize: vertical;
     border: 2px solid #c5c5c5;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display {
     position: absolute;
     width: 89%;
     margin-top: 0;
@@ -1529,11 +1529,11 @@ td.e20r-group-header {
     /* padding-top: 25px; */
     padding-left: 15px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display > div {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display > div {
     width: 100%;
     word-wrap: break-word;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display span#note-para-end {
     background: white url(../img/right-quote.png) no-repeat top left;
     background-size: 72px 72px;
     position: absolute;
@@ -1542,8 +1542,8 @@ td.e20r-group-header {
     margin-left: 4px;
     margin-top: 4px;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display-overflow-pad { height: 0; }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes .button-container {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display-overflow-pad { height: 0; }
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes .button-container {
     margin-top: 8px;
     height: 40px;
 /*
@@ -1552,15 +1552,15 @@ td.e20r-group-header {
     right: 20px;
 */
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes .button-container button {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes .button-container button {
     position: absolute;
     right: 0;
     z-index: 10;
     font-size: 14px;
 }
-.browserFirefox20 #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend { font-size: 12px; }
+.browserFirefox20 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you legend { font-size: 12px; }
 .browserIE #note-textarea { width: 611px !important; }
-.browserIE #e20r-daily-checkin-container fieldset > legend {
+.browserIE #e20r-daily-action-container fieldset > legend {
     margin-left: -8px;
     font-weight: bold;
 }
@@ -1591,7 +1591,7 @@ td.e20r-group-header {
     padding-left: 33px;
     border-left: 1px solid #d1d4b1;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas .notification-entry-saved > div {
+#e20r-daily-action-container #e20r-daily-action-canvas .notification-entry-saved > div {
     height: 30px;
     line-height: 30px;
     padding-left: 32px;
@@ -1599,7 +1599,7 @@ td.e20r-group-header {
     color: #242a24;
     display: none;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes #note-display span#note-para-end {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display span#note-para-end {
     background: white url(../img/right-quote.png) no-repeat top left;
     position: absolute;
     width: 24px;
@@ -1613,7 +1613,7 @@ td.e20r-group-header {
     margin-left: auto;
     margin-right: auto;
 }
-div#e20r-daily-progress #e20r-checkin-daynav {
+div#e20r-daily-progress #e20r-action-daynav {
     width: 100%;
     height: 40px;
     border: 1px solid #c4c5c5;
@@ -1622,7 +1622,7 @@ div#e20r-daily-progress #e20r-checkin-daynav {
     margin-left: auto;
     margin-right: auto;
 }
-.e20r-checkin-yesterday-nav {
+.e20r-action-yesterday-nav {
     font-size: 15px;
     text-decoration: underline;
     font-variant: small-caps;
@@ -1631,10 +1631,10 @@ div#e20r-daily-progress #e20r-checkin-daynav {
     float: left;
     padding-left: 25px;
 }
-/* #e20r-checkin-yesterday-nav > a {
+/* #e20r-action-yesterday-nav > a {
     text-decoration: none !important;
 }*/
-.e20r-checkin-tomorrow-nav {
+.e20r-action-tomorrow-nav {
     font-size: 15px;
     text-decoration: underline;
     font-weight: bold;
@@ -1643,23 +1643,23 @@ div#e20r-daily-progress #e20r-checkin-daynav {
     padding-right: 25px;
     float: right
 }
-/* #e20r-checkin-tomorrow-nav > a {
+/* #e20r-action-tomorrow-nav > a {
     text-decoration: none !important;
 }*/
-div#e20r-checkin-content {
+div#e20r-action-content {
     width: 100%;
     margin: 0 auto;
     padding-bottom: 10px;
     padding-top: 10px;
 }
-.e20r-as-dashboard div.e20r-checkin-activity,
-.e20r-as-dashboard div.e20r-checkin-lesson {
+.e20r-as-dashboard div.e20r-action-activity,
+.e20r-as-dashboard div.e20r-action-lesson {
     padding: 20px;
     margin-left: auto;
     margin-right: auto;
     width: 99%;
 }
-#e20r-daily-checkin-container div.e20r-content-cell {
+#e20r-daily-action-container div.e20r-content-cell {
     width: 50%;
     max-height: 150px;
     min-height: 150px;
@@ -1670,11 +1670,11 @@ div#e20r-checkin-content {
     min-width: 270px;
     max-width: 400px;
 }
-.e20r-checkin-lesson {
+.e20r-action-lesson {
     padding-right: 20px;
     padding-left: 10px;
 }
-.e20r-checkin-lesson > a {
+.e20r-action-lesson > a {
     padding-left: 20px;
 }
 .e20r-descr { font-size: 0.9rem !important;}
@@ -2472,21 +2472,21 @@ div.e20r-popupfoot {
       color: #fff;
 }
 */
-.e20r-daily-checkin-row {
+.e20r-daily-action-row {
     width: 100%;
 }
-#e20r-daily-checkin-container div.e20r-activity-card,
-#e20r-daily-checkin-container div.e20r-action-card {
+#e20r-daily-action-container div.e20r-activity-card,
+#e20r-daily-action-container div.e20r-action-card {
     float: left;
     width: 49%;
 }
-#e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you > div {
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you > div {
     width: 100%;
 }
-.e20r-as-dashboard .e20r-checkin-activity,
-.e20r-as-dashboard .e20r-checkin-lesson,
-#e20r-daily-checkin-container .e20r-activity-card,
-#e20r-daily-checkin-container .e20r-action-card {
+.e20r-as-dashboard .e20r-action-activity,
+.e20r-as-dashboard .e20r-action-lesson,
+#e20r-daily-action-container .e20r-activity-card,
+#e20r-daily-action-container .e20r-action-card {
     /* display: inline-block; */
     position: relative;
 /*    height: 15.75em; */
@@ -2498,20 +2498,20 @@ div.e20r-popupfoot {
     max-width: 48%;
     margin: .4rem 0.2rem .4rem 0.2rem;
 }
-.e20r-as-dashboard .e20r-checkin-activity {
+.e20r-as-dashboard .e20r-action-activity {
     border-right: 2px solid #004cff;
 }
 
-#e20r-daily-checkin-container a#e20r-activity-read-lnk,
-#e20r-daily-checkin-container a#e20r-action-read-lnk {
+#e20r-daily-action-container a#e20r-activity-read-lnk,
+#e20r-daily-action-container a#e20r-action-read-lnk {
     /* color: #fff; */
     font-weight: 700;
     text-decoration: initial;
     /* position: absolute; */
     bottom: 5px;
 }
-#e20r-daily-checkin-container a#e20r-activity-read-lnk:after,
-#e20r-daily-checkin-container a#e20r-action-read-lnk:after {
+#e20r-daily-action-container a#e20r-activity-read-lnk:after,
+#e20r-daily-action-container a#e20r-action-read-lnk:after {
     content: "\00BB";
     font-size: 100%;
     vertical-align: middle;
@@ -2554,7 +2554,7 @@ div.e20r-popupfoot {
         min-width: 100px;
         font-size: 0.7rem;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you legend {
         zoom: 1;
         padding-bottom: 12px;
         font-size: 13px !important;
@@ -2563,7 +2563,7 @@ div.e20r-popupfoot {
         font-family: "Lucida Grande", sans-serif;
         color: rgba(0, 72, 0, 0.75);
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul {
         max-width: 50%;
         min-width: 235px;
         width: 99%;
@@ -2573,26 +2573,26 @@ div.e20r-popupfoot {
         padding-left: 0;
         font-size: 0.85rem
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         margin-right: 2%;
         height: 184px;
         font-size: 1rem;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 1rem;
         margin-left: 2%;
         height: 184px;
     }
 }
 @media screen and (max-width: 960px) {
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.notes p {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes p {
         font-size: 0.8rem;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you {
         text-overflow: ellipsis;
         overflow: hidden;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you ul {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul {
         max-width: 300px;
         min-width: 96%;
         width: 96%;
@@ -2602,7 +2602,7 @@ div.e20r-popupfoot {
         padding-left: 0;
         font-size: 0.7rem;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you legend {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you legend {
         zoom: 1;
         padding-bottom: 12px;
         text-transform: uppercase;
@@ -2612,14 +2612,14 @@ div.e20r-popupfoot {
         /* font-weight: normal; */
         font-size: 0.9rem !important;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         width: 100%;
         margin-right: 2%;
         height: 184px;
         font-size: 0.8rem;
         min-width: 260px;
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.habit {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 0.8rem;
         width: 100%;
         height: 184px;
@@ -3146,15 +3146,15 @@ div.e20r-popupfoot {
     div.e20r-tracker-score {
         white-space: nowrap;
     }
-    .e20r-as-dashboard .e20r-checkin-activity,
-    .e20r-as-dashboard .e20r-checkin-lesson {
+    .e20r-as-dashboard .e20r-action-activity,
+    .e20r-as-dashboard .e20r-action-lesson {
         max-width: 99%;
         border-right: none;
     }
-    .e20r-as-dashboard .e20r-checkin-activity {
+    .e20r-as-dashboard .e20r-action-activity {
         border-bottom: 2px solid #004cff
     }
-    #e20r-daily-checkin-container #e20r-daily-checkin-canvas fieldset.did-you.workout {
+    #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         padding-bottom: 25px;
     }
 }
@@ -3184,17 +3184,17 @@ div.e20r-popupfoot {
     }
 }
 @media screen and (max-width: 320px) {
-    .e20r-checkin-yesterday-nav,
-    .e20r-checkin-tomorrow-nav {
+    .e20r-action-yesterday-nav,
+    .e20r-action-tomorrow-nav {
         font-size: 0.7rem;
     }
     .progress-canvas {
         padding: 0;
     }
-    .e20r-as-dashboard .e20r-checkin-activity,
-    .e20r-as-dashboard .e20r-checkin-lesson,
-    #e20r-daily-checkin-container .e20r-activity-card,
-    #e20r-daily-checkin-container .e20r-action-card {
+    .e20r-as-dashboard .e20r-action-activity,
+    .e20r-as-dashboard .e20r-action-lesson,
+    #e20r-daily-action-container .e20r-activity-card,
+    #e20r-daily-action-container .e20r-action-card {
         padding: 0;
     }
     .progress-container fieldset.did-you.workout,

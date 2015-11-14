@@ -28,8 +28,8 @@ div.e20r-as-cards div.e20r-activity-card,
 div.e20r-as-cards div.e20r-action-card {
     float: left;
 }
-div.e20r-as-cards .e20r-checkin-activity,
-div.e20r-as-cards .e20r-checkin-lesson,
+div.e20r-as-cards .e20r-action-activity,
+div.e20r-as-cards .e20r-action-lesson,
 div.e20r-as-cards .e20r-activity-card,
 div.e20r-as-cards .e20r-action-card {
     display: inline-block;
@@ -54,10 +54,10 @@ div.e20r-as-cards .e20r-action-activity-banner.today {
     padding: 10px;
     vertical-align: middle;
 }
-div.e20r-as-cards .e20r-checkin-activity {
+div.e20r-as-cards .e20r-action-activity {
     background-color: #00a000;
 }
-div.e20r-as-cards .e20r-checkin-lesson {
+div.e20r-as-cards .e20r-action-lesson {
     background-color: #00b5ff;
 }
 div.e20r-as-cards .e20r-action-card {
@@ -66,10 +66,10 @@ div.e20r-as-cards .e20r-action-card {
 div.e20r-as-cards .e20r-activity-card {
     background: #a000ff;
 }
-div.e20r-as-cards .e20r-checkin-activity h4,
+div.e20r-as-cards .e20r-action-activity h4,
 div.e20r-as-cards .e20r-activity-card legend,
 div.e20r-as-cards .e20r-action-card h4,
-div.e20r-as-cards .e20r-checkin-lesson h4,
+div.e20r-as-cards .e20r-action-lesson h4,
 h2.e20r-card-header {
     font-family: 'Lucida Grande', 'Verdana', 'Arial', sans-serif;
     font-weight: 600;
@@ -86,17 +86,17 @@ div.e20r-as-cards .e20r-action-card legend {
     height: 3em;
 }
 */
-div.e20r-as-cards .e20r-checkin-activity p,
+div.e20r-as-cards .e20r-action-activity p,
 div.e20r-as-cards .e20r-action-card p,
 div.e20r-as-cards .e20r-activity-card p,
-div.e20r-as-cards .e20r-checkin-lesson p {
+div.e20r-as-cards .e20r-action-lesson p {
     color: #e5e5e5;
     font-weight: 500;
     padding-top: 2em;
     font-size: 1.0rem !important;
 }
-div.e20r-as-cards .e20r-checkin-activity > a,
-div.e20r-as-cards .e20r-checkin-lesson > a {
+div.e20r-as-cards .e20r-action-activity > a,
+div.e20r-as-cards .e20r-action-lesson > a {
     padding-left: 20px;
 }
 div.e20r-as-cards a#e20r-activity-read-lnk,
@@ -122,10 +122,10 @@ div.e20r-as-cards p.e20r-card-description {
     height: 50%;
     overflow: hidden;
 }
-div.e20r-as-cards .e20r-daily-checkin-row {
+div.e20r-as-cards .e20r-daily-action-row {
     clear: both;
 }
-div.e20r-as-cards div.e20r-checkin-notes {
+div.e20r-as-cards div.e20r-action-notes {
     background: #fafafa;
     margin: 10px 0 10px 0;
     max-width: 650px;
