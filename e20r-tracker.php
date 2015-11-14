@@ -216,7 +216,7 @@ if ( !function_exists( 'e20r_load' ) ) {
             global $e20rTables;
             global $e20rExercise;
             global $e20rWorkout;
-            global $e20rCheckin;
+            global $e20rAction;
             global $e20rAssignment;
             global $e20r_isClient;
 
@@ -239,17 +239,15 @@ if ( !function_exists( 'e20r_load' ) ) {
                 $e20rMeasurements = new e20rMeasurements();
             }
 
-            if (!isset($e20rCheckin)) {
-                dbg("E20R Tracker Init: Loading e20rCheckin class");
-                $e20rCheckin = new e20rCheckin();
+            if (!isset($e20rAction)) {
+                dbg("E20R Tracker Init: Loading e20rAction class");
+                $e20rAction = new e20rAction();
             }
-
 
             if (!isset($e20rArticle)) {
                 dbg("E20R Tracker Init: Loading e20rArticle class");
                 $e20rArticle = new e20rArticle();
             }
-
 
             if (!isset($e20rExercise)) {
                 dbg("E20R Tracker Init: Loading e20rExercise class");
