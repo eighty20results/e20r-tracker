@@ -361,7 +361,7 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th colspan="2" class="e20r-label header"><label for="e20r-article-checkin_ids"><?php _e("Actions", "e20rtracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-action_ids"><?php _e("Actions", "e20rtracker"); ?></label></th>
 	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
                         <th></th>
                     </tr>
@@ -370,12 +370,12 @@ class e20rArticleView extends e20rSettingsView {
                     <tbody>
                     <tr>
                         <td colspan="2">
-                            <select class="select2-container" id="e20r-article-checkin_ids" name="e20r-article-checkin_ids[]" multiple="multiple"><?php
+                            <select class="select2-container" id="e20r-article-action_ids" name="e20r-article-action_ids[]" multiple="multiple"><?php
 
                                 wp_reset_query();
 
                                 $checkins = new WP_Query( array(
-                                    'post_type' => 'e20r_checkins',
+                                    'post_type' => 'e20r_actions',
                                     'posts_per_page' => -1,
                                     'order_by' => 'title',
 	                                'post_status' => 'publish',
@@ -391,7 +391,7 @@ class e20rArticleView extends e20rSettingsView {
 
                                     $checkins->the_post();
 
-                                    $selected = ( in_array( $checkins->post->ID, $settings->checkin_ids ) ? ' selected="selected"' : null );
+                                    $selected = ( in_array( $checkins->post->ID, $settings->action_ids ) ? ' selected="selected"' : null );
                                     ?><option value="<?php echo $checkins->post->ID; ?>" <?php echo $selected; ?>><?php echo $checkins->post->post_title; ?></option><?php
                                 }
 
@@ -418,7 +418,8 @@ class e20rArticleView extends e20rSettingsView {
 			                    $activities = $e20rWorkout->getActivities();
 
 			                    foreach( $activities as $activity ) {
-				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: ");
+
+				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: {$activity->id}");
 				                    // dbg($activity);
 
 				                    if ( is_array( $settings->activity_id ) ) {

@@ -13,12 +13,12 @@ class e20rActionModel extends e20rSettingsModel {
 
     public function __construct()  {
 
-        parent::__construct( 'checkin', 'e20r_checkins' );
+        parent::__construct( 'action', 'e20r_actions' );
 
 /*        global $e20rTables;
 
-        $this->table = $e20rTables->getTable('checkin');
-        $this->fields = $e20rTables->getFields('checkin');
+        $this->table = $e20rTables->getTable('action');
+        $this->fields = $e20rTables->getFields('action');
 */
     }
 
@@ -47,26 +47,26 @@ class e20rActionModel extends e20rSettingsModel {
 
         $args = array(
             'posts_per_page' => -1,
-            'post_type' => 'e20r_checkins',
+            'post_type' => 'e20r_actions',
             'post_status' => 'publish',
             'order_by' => 'meta_value',
             'order' => 'DESC',
             'meta_query' => array(
                 'relation' => 'AND',
                 array(
-                    'key' => '_e20r-checkin-startdate',
+                    'key' => '_e20r-action-startdate',
                     'value' => $date,
                     'compare' => '<=',
                     'type' => 'DATE',
                 ),
                 array(
-                    'key' => '_e20r-checkin-enddate',
+                    'key' => '_e20r-action-enddate',
                     'value' => $date,
                     'compare' => '>=',
                     'type' => 'DATE',
                 ),
                 array(
-                    'key' => '_e20r-checkin-program_ids',
+                    'key' => '_e20r-action-program_ids',
                     'value' => $programId,
                     'compare' => '=',
                     'type' => 'numeric'
@@ -90,7 +90,7 @@ class e20rActionModel extends e20rSettingsModel {
 
             dbg("e20rActionModel::findActionByDate() - Getting program info for action ID: {$id}");
 
-            $programs = get_post_meta( $id, '_e20r-checkin-program_ids');
+            $programs = get_post_meta( $id, '_e20r-action-program_ids');
 
             dbg("e20rActionModel::findActionByDate() - Getting program info... ");
 
@@ -133,26 +133,26 @@ class e20rActionModel extends e20rSettingsModel {
 
         $args = array(
             'posts_per_page' => $numBack,
-            'post_type' => 'e20r_checkins',
+            'post_type' => 'e20r_actions',
             'post_status' => 'publish',
             'order_by' => 'meta_value',
             'order' => 'DESC',
             'meta_query' => array(
                 'relation' => 'AND',
                 array(
-                    'key' => '_e20r-checkin-startdate',
+                    'key' => '_e20r-action-startdate',
                     'value' => $start_date,
                     'compare' => '<=',
                     'type' => 'DATE',
                 ),
                 array(
-                    'key' => '_e20r-checkin-checkin_type',
+                    'key' => '_e20r-action-checkin_type',
                     'value' => $type,
                     'compare' => '=',
                     'type' => 'numeric',
                 ),
                 array(
-                    'key' => '_e20r-checkin-program_ids',
+                    'key' => '_e20r-action-program_ids',
                     'value' => $currentProgram->id,
                     'compare' => '=',
                     'type' => 'numeric'
@@ -260,7 +260,7 @@ class e20rActionModel extends e20rSettingsModel {
 
 		$results = $wpdb->get_results( $sql );
 
-		if ( empty( $results ) ) {
+		if ( is_wp_error( $results ) ) {
 
 			dbg("e20rActionModel::loadCheckinsForUser() - Error: {$wpdb->last_error}");
 			return array();
@@ -273,7 +273,7 @@ class e20rActionModel extends e20rSettingsModel {
 
         global $wpdb;
         global $current_user;
-	    global $currentCheckin;
+	    global $currentAction;
 
         global $e20rProgram;
         global $e20rArticle;
@@ -290,7 +290,7 @@ class e20rActionModel extends e20rSettingsModel {
         else {
             $date = $e20rArticle->releaseDate( $config->articleId );
         }
-	    // if ( $currentCheckin->articleId )
+	    // if ( $currentAction->articleId )
 
         dbg("e20rActionModel::loadUserCheckin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
 

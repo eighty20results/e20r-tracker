@@ -43,7 +43,7 @@ class e20rAction extends e20rSettings
         $this->model = new e20rActionModel();
         $this->view = new e20rActionView();
 
-        parent::__construct('checkin', 'e20r_checkins', $this->model, $this->view);
+        parent::__construct('action', 'e20r_actions', $this->model, $this->view);
     }
 
     public function getTypeDescr($typeId)
@@ -184,7 +184,7 @@ class e20rAction extends e20rSettings
 
         $sql = $wpdb->prepare("
 	    		    SELECT checkedin
-	    		    FROM $e20rTables->getTable('checkin')
+	    		    FROM $e20rTables->getTable('action')
 	    		    WHERE article_id = %d AND user_id = %d AND
 	    		    	program_id = %d AND checkin_type =
 
@@ -328,6 +328,7 @@ class e20rAction extends e20rSettings
             }
 
         }
+
         $user_delay = $e20rTracker->getDelay('now', $userId);
 
         if (empty($currentProgram->id)) {
@@ -356,7 +357,7 @@ class e20rAction extends e20rSettings
             return $this->view->view_user_achievements($results);
         }
 
-        dbg("e20rAction::listUserAccomplishments() - Loaded " . count($art_list) . " articles between start of program #{$programId} and day #{$user_delay}:");
+        dbg("e20rAction::listUserAccomplishments() - Loaded " . count($art_list) . " articles between start of program #{$programId} and day #{$user_delay}");
 
         $results = array();
         $aIds = array();
@@ -367,10 +368,15 @@ class e20rAction extends e20rSettings
         // Get all articleIds to look for:
         foreach ($art_list as $article) {
 
-            if (isset($article->id)) {
+            if (isset($article->id) /* &&  ( isset( $article->is_preview_day) && ( 0 == $article->is_preview_day ) ) */ ) {
 
-                $aIds[] = $article->id;
-                $delays[] = $article->release_day;
+                if ( 0 < $article->release_day ) {
+
+                    $aIds[] = $article->id;
+                    $delays[] = $article->release_day;
+
+                    // dbg("e20rAction::listUserAccomplishments() - Article {$article->id} has a negative release day: {$article->release_day}");
+                }
             }
         }
 
@@ -378,8 +384,6 @@ class e20rAction extends e20rSettings
 
             // Sort the delays (to find min/max delays)
             sort($delays, SORT_NUMERIC);
-
-            // dbg("e20rAction::getAllUserAccomplishments() - Loading user check-in for {$article->id} with delay value: {$article->release_day}");
 
             $dates['min'] = $e20rTracker->getDateForPost($delays[0], $userId);
             $dates['max'] = $e20rTracker->getDateForPost($delays[(count($delays) - 1)], $userId);
@@ -512,7 +516,7 @@ class e20rAction extends e20rSettings
         dbg("e20rAction::saveCheckin_callback() - Attempting to save checkin for user.");
 
         dbg("e20rAction::saveCheckin_callback() - Checking ajax referrer privileges");
-        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+        check_ajax_referer('e20r-action-data', 'e20r-action-nonce');
 
         dbg("e20rAction::saveCheckin_callback() - Checking ajax referrer has the right privileges");
 
@@ -783,9 +787,9 @@ class e20rAction extends e20rSettings
             $config->use_cards = $e20rTracker->sanitize($_POST['e20r-use-card-based-display']);
         }
 
-        if (isset($_POST['e20r-checkin-day'])) {
+        if (isset($_POST['e20r-action-day'])) {
 
-            $config->delay = $e20rTracker->getDelay($e20rTracker->sanitize($_POST['e20r-checkin-day']), $config->userId);
+            $config->delay = $e20rTracker->getDelay($e20rTracker->sanitize($_POST['e20r-action-day']), $config->userId);
             $config->today = isset($_POST['e20r-today']) ? $e20rTracker->sanitize($_POST['e20r-today']) : $e20rTracker->getDelay();
 
             dbg("e20rAction::configure_dailyProgress() - Was given a specific release_day to load the article for: {$config->delay}");
@@ -867,7 +871,8 @@ class e20rAction extends e20rSettings
                 $currentArticle = $article;
             }
         }
-        dbg("e20rAction::configure_dailyProgress() - Loaded article info for {$article->id}");
+
+        dbg("e20rAction::configure_dailyProgress() - Loaded article info for {$currentArticle->id}");
         $config->delay = isset($currentArticle->release_day) ? $currentArticle->release_day : 0;
         $config->delay_byDate = $e20rTracker->getDelay();
         $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
@@ -882,7 +887,7 @@ class e20rAction extends e20rSettings
     {
 
         dbg("e20rAction::nextCheckin_callback() - Checking ajax referrer privileges");
-        check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
+        check_ajax_referer('e20r-action-data', 'e20r-action-nonce');
 
         dbg("e20rAction::nextCheckin_callback() - Checking ajax referrer has the right privileges");
 
@@ -1427,7 +1432,7 @@ class e20rAction extends e20rSettings
             $this->init($post->ID);
         }
 
-        add_meta_box('e20r-tracker-checkin-settings', __('Action Settings', 'e20rtracker'), array(&$this, "addMeta_Settings"), 'e20r_checkins', 'normal', 'high');
+        add_meta_box('e20r-tracker-checkin-settings', __('Action Settings', 'e20rtracker'), array(&$this, "addMeta_Settings"), 'e20r_actions', 'normal', 'high');
 
     }
 

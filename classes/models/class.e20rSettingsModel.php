@@ -277,8 +277,8 @@ class e20rSettingsModel {
     /**
      * Returns an array of all settings merged with their associated settings.
      *
-     * @param $statuses string|array - Statuses to return checkin data for.
-     * @return mixed - Array of checkin objects
+     * @param $statuses string|array - Statuses to return data for.
+     * @return mixed - Array of objects
      */
     public function loadAllSettings( $statuses = 'any' ) {
 
@@ -673,7 +673,7 @@ class e20rSettingsModel {
                     $this->settings->{$key} = $setting;
 
 					// "Unroll" a setting that's represented as an array of entries
-					if ( in_array( $key, array( 'program_ids', 'article_ids', 'checkin_ids', 'assignment_ids', 'select_options', 'activity_id' ) ) ) {
+					if ( in_array( $key, array( 'program_ids', 'article_ids', 'action_ids', 'assignment_ids', 'select_options', 'activity_id' ) ) ) {
 
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key}: Simplifying search operations in the metadata table.");
                         dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Clearing post meta for {$post_id} and key _e20r-{$this->type}-{$key}");
@@ -724,7 +724,7 @@ class e20rSettingsModel {
                 $asArray = false;
                 // $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
 
-                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'activity_id', 'checkin_ids', 'select_options');
+                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'activity_id', 'action_ids', 'select_options');
 
                 if ( !in_array( $key, $newAFields ) ) {
                     $asArray = true;

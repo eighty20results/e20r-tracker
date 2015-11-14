@@ -44,7 +44,7 @@ class e20rTracker {
                             'converted_metadata_e20r_articles' => false,
                             'converted_metadata_e20r_assignments' => false,
                             'converted_metadata_e20r_workout' => false,
-                            'converted_metadata_e20r_checkins' => false,
+                            'converted_metadata_e20r_actions' => false,
             )
         );
 
@@ -400,7 +400,7 @@ class e20rTracker {
                 add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
                 add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
                 add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rAction, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_actions', array( &$e20rAction, 'editor_metabox_setup') );
 
                 add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
 
@@ -422,13 +422,13 @@ class e20rTracker {
                 add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
 
                 // Custom columns
-                add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rAction, 'set_custom_edit_columns' ) );
+                add_filter( 'manage_edit-e20r_actions_columns', array( &$e20rAction, 'set_custom_edit_columns' ) );
                 add_filter( 'manage_edit-e20r_assignments_columns', array( &$e20rAssignment, 'set_custom_edit_columns' ) );
 
-                add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rAction, 'custom_column'), 10, 2 );
+                add_action( 'manage_e20r_actions_posts_custom_column' , array( &$e20rAction, 'custom_column'), 10, 2 );
                 add_action( 'manage_e20r_assignments_posts_custom_column' , array( &$e20rAssignment, 'custom_column'), 10, 2 );
 
-                add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
+                add_filter( 'manage_edit-e20r_actions_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
                 add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
 
                 add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
@@ -820,7 +820,7 @@ class e20rTracker {
 			'e20r_programs',
 			'e20r_articles',
 			'e20r_exercises',
-			'e20r_checkins'
+			'e20r_actions'
 		);
 	}
 
@@ -901,11 +901,11 @@ class e20rTracker {
 
 	            break;
 
-            case 'e20r_checkins':
+            case 'e20r_actions':
 
                 $title = 'Enter Action Short-code Here';
-                remove_meta_box( 'postexcerpt', 'e20r_checkins', 'side' );
-                add_meta_box('postexcerpt', __('Action text'), 'post_excerpt_meta_box', 'e20r_checkins', 'normal', 'high');
+                remove_meta_box( 'postexcerpt', 'e20r_actions', 'side' );
+                add_meta_box('postexcerpt', __('Action text'), 'post_excerpt_meta_box', 'e20r_actions', 'normal', 'high');
 
                 break;
 
@@ -1915,12 +1915,12 @@ class e20rTracker {
 
             switch( $e20rTracker->getCurrentPostType() ) {
 
-                case 'e20r_checkins':
+                case 'e20r_actions':
 
                     wp_enqueue_script( 'jquery-ui-datepicker' );
                     wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
-                    $type = 'checkin';
+                    $type = 'action';
                     $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
                     break;
 
@@ -2448,6 +2448,7 @@ class e20rTracker {
 
                 case 'article_summary':
 
+                    $load_jq_plot = false;
                     dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the article summary page.");
 
                     $css = array_replace( $css, array(
@@ -2481,6 +2482,7 @@ class e20rTracker {
                 case 'profile':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_profile' shortcode");
+                    $load_jq_plot = true;
 
                     $css = array_replace( $css, array(
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
@@ -2529,7 +2531,7 @@ class e20rTracker {
                         "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
                     ) );
 
-                        // 'e20r.checkin.js' => array( 'jquery', 'base64', 'select2', 'jquery.easing', 'jquery.touchpunch', 'jquery.timeago', 'jquery.redirect', 'jquery.ui.tabs', 'e20r.tracker.js', 'e20r.assignments.js' ),
+                        // 'e20r-action.js' => array( 'jquery', 'base64', 'select2', 'jquery.easing', 'jquery.touchpunch', 'jquery.timeago', 'jquery.redirect', 'jquery.ui.tabs', 'e20r.tracker.js', 'e20r.assignments.js' ),
                         // 'jquery-effects-core' => null,
                         // 'jquery.easing' => E20R_PLUGINS_URL . '/js/libraries/jquery.easing.min.js',
                         // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
@@ -2575,6 +2577,8 @@ class e20rTracker {
                 case 'exercise':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'exercise' shortcode");
+                    $load_jq_plot = false;
+
                     $css = array_replace( $css, array(
                                 'e20r-exercise' => E20R_PLUGINS_URL . "/css/e20r-exercise.min.css",
                             )
@@ -2648,13 +2652,14 @@ class e20rTracker {
                 case 'daily_progress':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'daily_progress' shortcode");
+                    $load_jq_plot = false;
 
                     $css = array_replace( $css, array(
                         'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
                         'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
-                        'e20r-checkin'  => E20R_PLUGINS_URL . '/css/e20r-checkin.min.css',
+                        'e20r_action'  => E20R_PLUGINS_URL . '/css/e20r-action.min.css',
                     ) );
 
                     // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
@@ -2687,19 +2692,19 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r_checkin' => E20R_PLUGINS_URL . '/js/e20r-checkin.min.js',
+                        'e20r_action' => E20R_PLUGINS_URL . '/js/e20r-action.min.js',
                         'dependencies' => array(
-                            'e20r_checkin' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker', 'e20r_assignments' ),
+                            'e20r_action' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker', 'e20r_assignments' ),
                         ),
                     ) );
 
-                    $script = 'e20r_checkin';
-                    $id = 'e20r_checkin';
+                    $script = 'e20r_action';
+                    $id = 'e20r_action';
 
                     break;
 
                 case 'default':
-
+                    $load_jq_plot = false;
                     dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the standard formatting & gravity forms pages.");
                     break;
 
@@ -3481,6 +3486,7 @@ class e20rTracker {
         // Remove existing options
         // delete_option( $this->setting_name );
 
+        $this->remove_old_files();
     }
 
     public function e20r_program_taxonomy() {
@@ -3763,44 +3769,46 @@ class e20rTracker {
 
 	public function e20r_tracker_actionCPT() {
 
+        $this->rename_action_cpt();
+
         $labels =  array(
-            'name' => __( 'Check-ins', 'e20rtracker'  ),
-            'singular_name' => __( 'Check-In', 'e20rtracker' ),
-            'slug' => 'e20r_checkins',
-            'add_new' => __( 'New Check-In', 'e20rtracker' ),
-            'add_new_item' => __( 'New Check-In', 'e20rtracker' ),
-            'edit' => __( 'Edit Check-In', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Check-In', 'e20rtracker'),
+            'name' => __( 'Actions', 'e20rtracker'  ),
+            'singular_name' => __( 'Action', 'e20rtracker' ),
+            'slug' => 'e20r_actions',
+            'add_new' => __( 'New Action', 'e20rtracker' ),
+            'add_new_item' => __( 'New Action', 'e20rtracker' ),
+            'edit' => __( 'Edit Action', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Action', 'e20rtracker'),
             'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Check-In', 'e20rtracker' ),
-            'view_item' => __( 'View This Check-Ins', 'e20rtracker' ),
-            'search_items' => __( 'Search Check-Ins', 'e20rtracker' ),
-            'not_found' => __( 'No Check-Ins Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Check-Ins Found In Trash', 'e20rtracker' )
+            'view' => __( 'View Action', 'e20rtracker' ),
+            'view_item' => __( 'View This Actions', 'e20rtracker' ),
+            'search_items' => __( 'Search Actions', 'e20rtracker' ),
+            'not_found' => __( 'No Actions Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Actions Found In Trash', 'e20rtracker' )
         );
 
-        $error = register_post_type('e20r_checkins',
-            array( 'labels' => apply_filters( 'e20r-tracker-checkin-cpt-labels', $labels ),
+        $error = register_post_type('e20r_actions',
+            array( 'labels' => apply_filters( 'e20r-tracker-action-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
                    'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'supports' => array('title','excerpt','thumbnail'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
-                       'slug' => apply_filters('e20r-tracker-checkin-cpt-slug', 'tracker-action'),
+                       'slug' => apply_filters('e20r-tracker-action-cpt-slug', 'tracker-action'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-checkin-cpt-archive-slug', 'tracker-action')
+                   'has_archive' => apply_filters('e20r-tracker-action-cpt-archive-slug', 'tracker-action')
             )
         );
 
         if ( is_wp_error($error) ) {
-            dbg('ERROR: Failed to register e20r_checkin CPT: ' . $error->get_error_message);
+            dbg('ERROR: Failed to register e20r_actions CPT: ' . $error->get_error_message);
         }
     }
 
@@ -4696,7 +4704,7 @@ class e20rTracker {
 			'e20r_workout' => null,
 			'e20r_assignments' => null,
             'e20r_articles' => null,
-			'e20r_checkins' => null,
+			'e20r_actions' => null,
 		);
 
         foreach( $cpt_info as $cpt => $data ) {
@@ -4718,7 +4726,7 @@ class e20rTracker {
                     $cpt_info[$cpt]->type = $e20rArticle->get_cpt_type();
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-assignments"] = "_e20r-{$cpt_info[$cpt]->type}-assignment_ids";
-                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-checkin_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-action_ids";
                     // $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-activity_id"] = "_e20r-{$cpt_info[$cpt]->type}-activity_id";
                     break;
 
@@ -4731,7 +4739,7 @@ class e20rTracker {
 
                     break;
 
-                case 'e20r_checkins':
+                case 'e20r_actions':
                     $cpt_info[$cpt]->type = $e20rAction->get_cpt_type();
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     break;
@@ -4745,4 +4753,107 @@ class e20rTracker {
         return $cpt_info;
     }
 
+    public function rename_action_cpt() {
+
+        $args = array(
+            'post_type' => 'e20r_checkins',
+            'posts_per_page' => -1,
+            'post_status' => 'any'
+        );
+
+        $old_posts = get_posts( $args );
+
+        foreach ( $old_posts as $p ) {
+
+            $update = array();
+            $update['ID'] = $p->ID;
+            $update['post_type'] = 'e20r_actions';
+
+            wp_update_post( $update );
+        }
+
+        global $wpdb;
+
+        $find_sql = "SELECT meta_id, meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE '_e20r-checkin-%'";
+
+        // $update_sql = "UPDATE {$wpdb->prefix}postmeta SET meta_key = %s WHERE meta_id = %d";
+
+        $results = $wpdb->get_results( $find_sql );
+
+        dbg("e20rTracker::rename_action_cpt() - Found " . count($results) . " old metadata keys to convert");
+
+        foreach ( $results as $record ) {
+
+            if ( false === $this->replace_metakey( $record, '_e20r-checkin', '_e20r-action' ) ) {
+                return;
+            }
+        }
+
+        $results = null;
+        $other_sql = "SELECT meta_id, meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE '%checkin_ids%'";
+        $results = $wpdb->get_results( $other_sql );
+
+        foreach( $results as $record ) {
+
+            if ( false === $this->replace_metakey( $record, '-checkin_ids', '-action_ids' ) ) {
+                return;
+            }
+
+        }
+
+    }
+    private function replace_metakey( $record, $old, $new ) {
+
+        global $wpdb;
+
+        $old_key = $record->meta_key;
+        $new_key = str_replace( $old, $new, $old_key);
+
+        dbg("e20rTracker::replace_metakey() - Changing key {$old_key} to {$new_key} for {$record->meta_id} in {$wpdb->postmeta}");
+
+        $upd = $wpdb->update( "{$wpdb->prefix}postmeta",
+            array( 'meta_key' => $new_key ),
+            array( 'meta_id' => $record->meta_id ),
+            array( '%s' ),
+            array( '%d' )
+         );
+
+        if ( false !== $upd ) {
+            dbg("e20rTracker::replace_metakey() - Changed key for {$record->meta_id} in {$wpdb->prefix}postmeta");
+            return true;
+        } else {
+            dbg("e20rTracker::replace_metakey() - Error for record {$record->meta_id}!!!");
+            return false;
+        }
+    }
+
+    public function remove_old_files() {
+
+        $files = array(
+            'classes/controllers/e20rCheckin.php',
+            'classes/models/e20rCheckinModel.php',
+            'classes/views/e20rCheckinView.php',
+            'css/e20r-checkin.css',
+            'css/e20r-checkin.min.css',
+            'js/e20r-checkin-admin.css',
+            'js/e20r-checkin-admin.min.css',
+            'js/e20r-checkin-items.css',
+            'js/e20r-checkin-items.min.css',
+            'js/e20r-checkin.css',
+            'js/e20r-checkin.min.css',
+        );
+
+        foreach( $files as $file ) {
+
+            if ( file_exists( E20R_PLUGIN_DIR . $file ) ) {
+
+                if ( FALSE === unlink( E20R_PLUGIN_DIR . $file ) ) {
+                    error_log("E20RTracker - Unable to remove requested file: {$file}");
+                }
+                else {
+                    dbg("e20rTracker::remove_old_files() - Removed: {$file}");
+                }
+            }
+        }
+    }
 }

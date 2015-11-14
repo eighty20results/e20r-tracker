@@ -84,7 +84,7 @@ class e20rArticle extends e20rSettings
 
         dbg("e20rArticle::getCheckins() - Get array of checkin IDs for {$aConfig->articleId}");
 
-        $checkin_ids = $this->model->getSetting($aConfig->articleId, 'checkin_ids');
+        $checkin_ids = $this->model->getSetting($aConfig->articleId, 'action_ids');
         // $activity = $this->model->getSetting( $aConfig->articleId, 'activity_id' );
 
         if (!is_array($checkin_ids)) {
@@ -230,7 +230,7 @@ class e20rArticle extends e20rSettings
 
         $article = $this->getSettings($articleId);
 
-        foreach ($article->checkin_ids as $cId) {
+        foreach ($article->action_ids as $cId) {
 
             $activity = $e20rAction->init($cId);
 
