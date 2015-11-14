@@ -238,21 +238,22 @@ class e20rProgramView {
                     </thead>
                     <tbody>
                     <?php
-                        if ( is_null( $programData->startdate ) ) {
+                        if ( empty( $programData->startdate ) ) {
                             $start = '';
                         } else {
-                            $start = new DateTime( $programData->startdate );
-                            $start = $start->format( 'Y-m-d' );
+
+                            $start = new DateTime( $programData->startdate);
+                            $start = $start->format('Y-m-d');
                         }
 
-                        if ( is_null( $programData->enddate ) ) {
+                        if ( empty( $programData->enddate ) ) {
                             $end = '';
                         } else {
                             $end = new DateTime( $programData->enddate );
                             $end = $end->format( 'Y-m-d' );
                         }
 
-                        dbg( "Program - Start: {$start}, End: {$end}" );
+                        dbg( "e20rProgramView::viewSettingsBox() - Program - Start: {$start}, End: {$end}" );
                         ?>
                         <tr id="<?php echo $programData->id; ?>" class="program-inputs">
                             <td class="text-input">
