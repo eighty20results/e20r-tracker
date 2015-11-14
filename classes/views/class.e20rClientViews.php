@@ -53,17 +53,17 @@ class e20rClientViews {
                         <?php echo esc_html( $when ); ?>
                     </td>
                     <td class="e20r-client-message-history-subject">
-                        <a href="#TB_inline?width=500&height=300&inlineId=message_<?php echo $message->id; ?>" class="thickbox"><?php echo esc_html( $message->topic ); ?></a>
+                        <a href="#TB_inline?width=500&height=300&inlineId=message_<?php echo $message->id; ?>" class="thickbox"><?php echo esc_attr( stripslashes($message->topic) ); ?></a>
                         <div id="message_<?php echo $message->id; ?>" class="e20r-message-history-content" style="display:none">
                             <div class="e20r-message-content">
-                                <h3 class="e20r-client-message-title"><?php echo esc_html($message->topic); ?></h3>
+                                <h3 class="e20r-client-message-title"><?php echo esc_attr(stripslashes($message->topic)); ?></h3>
                                 <hr/>
-                                <p><?php echo $message->message; ?></p>
+                                <?php echo wp_kses_post( $this->remove_html_comments( $message->message ) ); ?>
                             </div>
                         </div>
                     </td>
                     <td class="e20r-client-message-history-sender">
-                        <?php echo esc_html( $sender->user_firstname ); ?>
+                        <?php echo esc_attr( stripslashes($sender->user_firstname) ); ?>
                     </td>
                 </tr>
                 <?php
@@ -77,6 +77,9 @@ class e20rClientViews {
         return $html;
     }
 
+    private function remove_html_comments($content = '') {
+	    return preg_replace('/<!--(.|\s)*?-->/', '', $content);
+    }
     public function display_client_list( $clients ) {
 
         global $e20rProgram;
