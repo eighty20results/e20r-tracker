@@ -61,7 +61,7 @@ class e20rWorkout extends e20rSettings
 
         if (is_numeric($identifier)) {
             // Given an ID
-            $workout = $this->model->loadWorkoutData($identifier, 'any');
+            $workout = $this->model->load_activity($identifier, 'any');
         }
 
         /*		if (is_string( $identifier ) ) {
@@ -311,6 +311,14 @@ class e20rWorkout extends e20rSettings
         wp_send_json_success(array('id' => $id));
     }
 
+    public function load_user_activity($activity_id, $user_id)
+    {
+
+        $this->init( $activity_id );
+
+
+    }
+
     public function loadUserData($userId, $start = 'start', $end = 'end', $programId = null, $fields = null)
     {
 
@@ -529,7 +537,7 @@ class e20rWorkout extends e20rSettings
         $val = array($startDelay, $endDelay);
 
         // Load articles in the program that have a release day value between the start/end delay values we calculated.
-        $articles = $e20rArticle->findArticles('release_day', $val, $programId, 'BETWEEN', true );
+        $articles = $e20rArticle->findArticles('release_day', $val, $programId, 'BETWEEN', true);
 
         dbg("e20rWorkout::getActivityArchive() - Found " . count($articles) . " articles");
         // dbg($articles);
@@ -881,12 +889,12 @@ class e20rWorkout extends e20rSettings
         ?>
         <div id="e20r-daily-activity-page">
             <?php
-//            if (isset($config->print_only) && (true === $config->print_only)) {
+            //            if (isset($config->print_only) && (true === $config->print_only)) {
 
-                echo $this->view->display_printable_activity($config, $workoutData);
-//            } else {
-//                echo $this->view->displayActivity($config, $workoutData);
-//            }
+            echo $this->view->display_printable_activity($config, $workoutData);
+            //            } else {
+            //                echo $this->view->displayActivity($config, $workoutData);
+            //            }
             ?>
         </div>
         <?php
@@ -1071,7 +1079,7 @@ class e20rWorkout extends e20rSettings
             }
         }
 
-        if ( !in_array($config->show_tracking, array( 'yes', 'no', 'true', 'false', 1, 0 ) ) ) {
+        if (!in_array($config->show_tracking, array('yes', 'no', 'true', 'false', 1, 0))) {
 
             dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
             return '<div class="error">Incorrect show_tracking value in the e20r_activity shortcode! (Valid values are: "yes", "no", "true", "false", "1", "0")</div>';
@@ -1083,7 +1091,7 @@ class e20rWorkout extends e20rSettings
             return '<div class="error">Incorrect display_type value in the e20r_activity shortcode! (Valid values are "row", "column", "print")</div>';
         }
 
-        if ( in_array( strtolower( $config->show_tracking ), array( 'no', 'false', '0' ) ) ) {
+        if (in_array(strtolower($config->show_tracking), array('no', 'false', '0'))) {
 
             $config->show_tracking = 0;
         }
