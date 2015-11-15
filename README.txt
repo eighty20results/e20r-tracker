@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
-Tested up to: 4.3
-Stable tag: 1.5.10
+Tested up to: 4.3.1
+Stable tag: 1.5.13
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,36 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.13 ==
+
+* Didn't use specified post_id when looking up a post for the card configuration
+* Rename loadWorkoutData() to load_activity();
+* Didn't always include the exercise ID when saving workout record.
+* Rename loadWorkoutData() to load_activity();
+
+== 1.5.12 ==
+
+* Properly align text in email display when showing the sent email message
+* Remove old HTML Escape content in emails being sent to clients
+* Escape subject line (strip slashes, etc)
+
+== 1.5.11 ==
+
+* Transition to new class name for check-in actions
+* Fix JavaScript error in daily_checkin and e20r_profile shortcodes
+* If we have nothing to convert, exit from the conversion function early.
+* Rename e20rCheckin* classes to e20rAction*
+* Rename e20rCheckin variable to e20rAction (and currentCheckin to currentAction)
+* From Custom Post Type e20r_checkins to e20r_actions
+* Transition from *-checkin_ids to *-action_ids as meta data tag for articles
+* Only change the startdate to that of the user's program start if we're not in the back-end and we're not processing for another user (i.e. a coach looking up data for a user)
+* Correctly format the start/end date for a program if the startdate/enddate variables are configured
+* Add constants for feedback types on cards
+* Add hook for e20r_article_archive shortcode
+* Whitespace clean-up Remove unneeded loop in load_for_archive()
+* Remove unused variable ($gv)
+* Use autoloader for classes
 
 == 1.5.10 ==
 

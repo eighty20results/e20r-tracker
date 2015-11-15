@@ -1,2 +1,4 @@
-Not all instances of the getArticles() arguments were correct after the refactoring in v1.5.9
-Change when we load the font awesome library in wp-admin/
+Didn't use specified post_id when looking up a post for the card configuration
+Rename loadWorkoutData() to load_activity();
+Didn't always include the exercise ID when saving workout record.
+Rename loadWorkoutData() to load_activity();
