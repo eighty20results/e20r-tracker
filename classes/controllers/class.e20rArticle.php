@@ -416,7 +416,7 @@ class e20rArticle extends e20rSettings
 
             foreach( $article->post_id as $post_id ) {
 
-                $p = get_post($article->post_id);
+                $p = get_post($post_id);
                 $a = get_post($article->id);
                 wp_reset_postdata();
 
@@ -440,7 +440,10 @@ class e20rArticle extends e20rSettings
 
             foreach ( $article->activity_id as $activity_id) {
 
-                $activity = new stdClass();
+
+                $activity = $e20rWorkout->load_user_activity( $activity_id, $userId );
+                $activity->saved =
+                $activities[] = $activity;
             }
 
             $cards['activity'] = $activities;
@@ -458,8 +461,11 @@ class e20rArticle extends e20rSettings
 
             foreach( $article->action_ids as $action_id ) {
 
-                $action = new stdClass();
-                $action->title = "Some title";
+                $action = $e20rAction->find('id', $action_id, $currentProgram->id );
+                dbg("e20rArticle::get_card_info() - Found " . count( $action ) . " action(s) for article {$article->id}");
+
+                // $action = new stdClass();
+                // $action->title = "Some title";
                 $actions[] = $action;
             }
 
