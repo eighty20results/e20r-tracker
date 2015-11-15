@@ -111,7 +111,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			}
 		}
 		dbg("e20rWorkoutModel::init() - Loading workoutData for {$workoutId}");
-		$tmp = $this->loadWorkoutData( $workoutId );
+		$tmp = $this->load_activity( $workoutId );
 
 		$currentWorkout = $tmp[$workoutId];
 	}
@@ -683,6 +683,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return $userData;
     }
 
+
     private function loadWorkoutByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'startday' ) {
 
         global $current_user;
@@ -945,18 +946,18 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return $workout_list;
     }
 
-    public function loadWorkoutData( $id, $statuses = 'any' ) {
+    public function load_activity( $id, $statuses = 'any' ) {
 
 	    global $post;
 
 	    $savePost = $post;
 	    $workouts = array();
 
-	    dbg( "e20rWorkoutModel::loadWorkoutData() - Attempting to load workout settings for {$id}" );
+	    dbg( "e20rWorkoutModel::load_activity() - Attempting to load workout settings for {$id}" );
 
 	    if ( $id === null ) {
 
-		    dbg( "e20rWorkoutModel::loadWorkoutData() - Warning: Unable to load workout data. No ID specified!" );
+		    dbg( "e20rWorkoutModel::load_activity() - Warning: Unable to load workout data. No ID specified!" );
 
 		    return $this->defaultSettings();
 	    }
@@ -972,7 +973,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 		    $query = new WP_Query( $query );
 
 		    if ( $query->post_count <= 0 ) {
-			    dbg( "e20rWorkoutModel::loadWorkoutData() - No workout found!" );
+			    dbg( "e20rWorkoutModel::load_activity() - No workout found!" );
 
 			    return array( $post->ID => $this->defaultSettings() );
 		    }
@@ -981,7 +982,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 			    $query->the_post();
 
-			    dbg("e20rWorkoutModel::loadWorkoutData() - For Workout id: " . get_the_ID() );
+			    dbg("e20rWorkoutModel::load_activity() - For Workout id: " . get_the_ID() );
 			    $new = $this->loadSettings( get_the_ID() );
 
 			    $new->id         = $id;
