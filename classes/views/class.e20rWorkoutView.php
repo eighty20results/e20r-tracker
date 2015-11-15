@@ -214,7 +214,7 @@ class e20rWorkoutView extends e20rSettingsView
 
                                                         $reps = isset($recorded[$exKey]->set[$i]->reps) ? $recorded[$exKey]->set[$i]->reps : null;
                                                         $when = isset($recorded[$exKey]->set[$i]->recorded) ? $recorded[$exKey]->set[$i]->recorded : null;
-                                                        $ex_id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->ex_id : null;
+                                                        $ex_id = isset($recorded[$exKey]->set[$i]->ex_id) ? $recorded[$exKey]->set[$i]->ex_id : null;
                                                         $id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->id : null;
                                                         ?>
                                                         <tr class="e20r-edit e20r-exercise-set-row">
