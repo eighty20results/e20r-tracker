@@ -45,7 +45,8 @@ class e20rTables {
         $this->tables = new stdClass();
 
         /* The database tables used by this plugin */
-        $this->tables->action       = $wpdb->prefix . 'e20r_checkin';
+        $this->tables->action        = $wpdb->prefix . 'e20r_checkin';
+        $this->tables->response      = $wpdb->prefix . 'e20r_response';
         $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
@@ -94,6 +95,7 @@ class e20rTables {
         );
 
     }
+
 	private function loadWorkoutFields() {
 
 		$this->fields['workout'] = array(
@@ -125,6 +127,19 @@ class e20rTables {
             'field_type'    => 'field_type',
             'program_id'    => 'program_id',
             'delay'         => 'delay',
+        );
+    }
+
+    private function loadResponseFields() {
+
+        $this->fields['response'] = array(
+            'id'            => 'id',
+            'assignment_id' => 'assignment_id',
+            'article_id'    => 'article_id',
+            'program_id'    => 'program_id',
+            'user_id'       => 'user_id',
+            'message_time'  => 'message_time',
+            'message'       => 'message',
         );
     }
 
@@ -406,6 +421,10 @@ class e20rTables {
             case 'message_history':
 
                 $this->loadClientMessageFields();
+                break;
+
+            case 'response':
+                $this->loadResponseFields();
                 break;
 
 	        default:
