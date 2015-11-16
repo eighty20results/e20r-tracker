@@ -3254,6 +3254,8 @@ class e20rTracker {
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
+                    response text null,
+                    response_when datetime null,
                     field_type enum( 'button', 'input', 'textbox', 'checkbox', 'multichoice', 'rank', 'yesno' ),
                     primary key  (id),
                      index articles (article_id ),
