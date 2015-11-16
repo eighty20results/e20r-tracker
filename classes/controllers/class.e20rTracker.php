@@ -3254,8 +3254,7 @@ class e20rTracker {
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
-                    response text null,
-                    response_when datetime null,
+                    response_id int null,
                     field_type enum( 'button', 'input', 'textbox', 'checkbox', 'multichoice', 'rank', 'yesno' ),
                     primary key  (id),
                      index articles (article_id ),
@@ -3265,6 +3264,23 @@ class e20rTracker {
                     {$charset_collate}
         ";
 
+        $response_table =
+            "CREATE TABLE {$wpdb->prefix}e20r_response (
+                    id int not null auto_increment,
+                    assignment_id int not null,
+                    article_id int null,
+                    program_id int null,
+                    user_id int not null,
+                    message_time timestamp not null current_timestamp,
+                    message text null,
+                    primary key  (id),
+                     index articles (article_id ),
+                     index program_id (program_id ),
+                     index user_id ( user_id )
+                     )
+                    {$charset_collate}
+
+          ";
         // FixMe: The trigger works but can only be installed if using the mysqli_* function. That causes "Command out of sync" errors.
         /* $girthTriggerSql =
             "DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total;
@@ -3299,7 +3315,8 @@ class e20rTracker {
         $result = dbDelta( $message_history );
         dbg("e20rTracker::manage_tables() - Message history table:");
         dbg($result);
-
+        $result = dbDelta( $response_table );
+        dbg("e20rTracker::manage_tables() - Coach/Client response history table:");
         // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
