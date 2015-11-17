@@ -281,6 +281,15 @@ class e20rAssignment extends e20rSettings {
         // TODO: Complete implementation of this function.
     }
 
+    public function add_coach_reply() {
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-assignment-nonce');
+
+        dbg("e20rAssignment::add_coach_reply() - Showing the content of the REQUEST");
+        dbg($_REQUEST);
+
+    }
+
 	public function listUserAssignments( $userId ) {
 
 		global $current_user;
@@ -374,7 +383,10 @@ class e20rAssignment extends e20rSettings {
         echo $this->configureArticleMetabox( $post->ID );
     }
 
+    /* TODO: Make sure saveAssignment_callback() truly is an unused function
     public function saveAssignment_callback() {
+
+        // TODO: Add nonce to saveAssignment_callback()
 
         dbg("e20rAssignment::saveAssignment_callback() - Attempting to save assignment for user.");
 
@@ -408,6 +420,7 @@ class e20rAssignment extends e20rSettings {
         wp_send_json_success();
         wp_die();
     }
+    */
 
 	public function showAssignment($assignments, $articleConf) {
 
