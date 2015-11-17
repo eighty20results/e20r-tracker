@@ -1050,6 +1050,13 @@ var progMeasurements = {
 
                 // Disable the spinner again
                 $class.$spinner.hide();
+
+                if ( typeof e20rClientAssignment != 'undefined') {
+
+                    console.log("Loading the assignment handler for clients");
+                    e20rClientAssignment.init();
+                }
+
             }
         });
     },
