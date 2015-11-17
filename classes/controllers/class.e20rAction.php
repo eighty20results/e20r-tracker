@@ -974,6 +974,11 @@ class e20rAction extends e20rSettings
     public function shortcode_dailyProgress($atts = null)
     {
 
+        if (!is_user_logged_in()) {
+
+            auth_redirect();
+        }
+
         global $e20rArticle;
 
         global $post;
@@ -981,11 +986,6 @@ class e20rAction extends e20rSettings
         $articles = array();
 
         dbg("e20rAction::shortcode_dailyProgress() - Processing the daily_progress short code");
-
-        if (!is_user_logged_in()) {
-
-            auth_redirect();
-        }
 
         $config = $this->configure_dailyProgress();
 
