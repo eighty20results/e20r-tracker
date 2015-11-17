@@ -138,6 +138,7 @@ class e20rTables {
             'article_id'    => 'article_id',
             'program_id'    => 'program_id',
             'user_id'       => 'user_id',
+            'message_read'  => 'message_read',
             'message_time'  => 'message_time',
             'message'       => 'message',
         );
