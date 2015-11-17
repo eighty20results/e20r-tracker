@@ -612,12 +612,20 @@ class e20rAssignmentView extends e20rSettingsView {
 		global $e20rTracker;
 		global $e20rArticle;
 
+        $e20r_coach_ui = false;
+
+        if ( $e20rTracker->is_a_coach( $current_user->ID ) && is_admin() ) {
+            dbg("e20rAssignmentView::viewAssignmentList() - Include Coaching UI info.");
+            $e20r_coach_ui = true;
+        }
+
 		ob_start();
 		?>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 		<h4>Assignments</h4>
 		<a class="close" href="#">X</a>
 		<div class="quick-nav other">
+            <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-assignment-nonce'); ?>
 			<table class="e20r-measurement-table">
 				<tbody>
 				<?php
@@ -704,7 +712,43 @@ class e20rAssignmentView extends e20rSettingsView {
 									</tr>
 									</tbody>
 								</table>
-							</td>
+							</td><?php
+                            if ( true == $e20r_coach_ui ) { ?>
+                            <td class="e20r-coach-reply"><?php
+                                if ( !is_null( $answer->answer_date ) || !empty( $answer->answer) ) { ?>
+                                <a href="#TB_inline?width=500&height=300&inlineId=assignment_reply_<?php echo $answer->id; ?>" class="e20r-assignment-reply-link thickbox button secondary">
+                                    <?php
+                                    if ( isset( $answer->message ) && ( !empty( $answer->message ) ) ) {
+                                        echo sprintf( __("Last: %s", "e20rtracker"), date( 'Y-m-d', $answer->message_time ) );
+                                    } else {
+                                        _e("To respond", "e20rtracker");
+                                    } ?>
+                                </a>
+                                <div id="assignment_reply_<?php echo $answer->id; ?>" class="e20r-message-history-content" style="display:none">
+                                    <?php dbg("e20rAssignmentView::viewAssignmentList() - Loaded answer information:"); ?>
+                                    <?php dbg($answer); ?>
+                                    <input type="hidden" name="e20r-assignment-article_id[]" value="<?php echo esc_attr($answer->article_id); ?>">
+                                    <input type="hidden" name="e20r-assignment-assignment_id[]" value="<?php echo esc_attr($answer->id); ?>">
+                                    <input type="hidden" name="e20r-assignment-program_id[]" value="<?php echo esc_attr($config->programId); ?>">
+                                    <input type="hidden" name="e20r-assignment-message_date[]" value="<?php echo esc_attr( current_time('timestamp') ); ?>">
+                                    <input type="hidden" name="e20r-assignment-user_id[]" value="<?php echo esc_attr( $current_user->ID ); ?>">
+                                    <?php
+
+                                    if ( !isset( $answer->reply_history) || empty( $answer->reply_history ) ) { ?>
+                                        <textarea class="e20r-assignment-reply_area" name="e20r-assignment-message[]" placeholder="<?php echo sprintf(__("Please enter your response to '%s' here...", "e20rtracker"), $answer->question); ?>"></textarea><?php
+                                    } else { ?>
+                                        <div class="e20r-message-content">
+                                            <?php echo wp_kses_post($answer->reply_history); ?>
+                                        </div>
+                                        <textarea class="e20r-assignment-reply_area startHidden" name="e20r-assignment-message[]"><?php esc_textarea($answer->reply_history); ?></textarea>
+
+                                        <?php
+                                    } ?>
+                                    <button class="e20r-assignment-reply-button"><?php _e("Save", "e20rtracker"); ?></button>
+                                </div><?php
+                                } ?>
+                            </td><?php
+                            } ?>
 						</tr>
 						<?php
 						$counter ++;
