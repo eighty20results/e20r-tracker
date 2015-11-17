@@ -10,6 +10,142 @@
 
 jQuery.noConflict();
 
+var e20rClientAssignment = {
+    init: function() {
+
+        this.assignment_replies = jQuery('.e20r-message-history-content');
+
+        var self = this;
+
+        self._bind();
+    },
+    _bind: function() {
+        console.log("Running _bind() for e20rClientAssignment class");
+        var self = this;
+
+        jQuery(".e20r-assignment-reply-link").unbind('click').on('click', function() {
+            console.log("Clicked the 'Respond to' button");
+            self.assignment_replies = jQuery('.e20r-message-history-content');
+        });
+
+        self.assignment_replies.each(function() {
+
+            var entry = jQuery(this);
+            // var tab = entry.closest('#e20r-progress-assignments');
+            var button = entry.find('button.e20r-assignment-reply-button');
+            var reply = entry.find('a.e20r-assignment-reply-link');
+
+            // console.log("Entry info:", this);
+
+            /*
+            tab.unbind('contentchanged').bind("contentchanged", function(){
+
+                console.log("Content has changed for the assignments tab/page");
+                self._bind();
+            });
+            */
+
+            reply.unbind('click').on('click', function() {
+
+                console.log("User or coach clicked the 'Reply' button");
+            });
+
+            button.unbind('click').on('click', function() {
+
+                self.save_assignment_reply( this );
+            })
+        });
+
+
+    },
+    save_assignment_reply: function( element ) {
+        console.log("Attempting to save the reply from the coach to the DB");
+
+        if ( !( element instanceof jQuery ) ) {
+            element = jQuery(element);
+        }
+
+        console.log("Element is: ", element);
+
+        var top = element.closest('#TB_ajaxContent');
+        var assignment_id = top.find("input[name^='e20r-assignment-assignment_id']").val();
+        var article_id = top.find("input[name^='e20r-assignment-article_id']").val();
+        var message_date = top.find("input[name^='e20r-assignment-message_date']").val();
+        var program_id = top.find("input[name^='e20r-assignment-program_id']").val();
+        var user_id = top.find("input[name^='e20r-assignment-user_id']").val();
+        var reply_text = top.find("textarea[name^='e20r-assignment-message']").val();
+
+        console.log("Message container: ", top);
+
+        if ( typeof e20r_admin != 'undefined' ) {
+
+            var url = ajaxurl;
+            var ajax_timeout = e20r_admin.timeout;
+
+        } else {
+
+            var url = e20r_assignment.ajaxurl;
+            var ajax_timeout = e20r_assignment.timeout;
+        }
+
+        var data = {
+            action: 'e20r_add_reply',
+            'e20r-assignment-nonce': jQuery('#e20r-assignment-nonce').val(),
+            'assignment-id': assignment_id,
+            'article-id': article_id,
+            'program-id': program_id,
+            'message-date': message_date,
+            'user-id': user_id,
+            'reply-text': reply_text
+        };
+
+        console.log("Data to transmit: ", data);
+
+        jQuery.ajax({
+            url: url,
+            timeout: ajax_timeout,
+            type: 'POST',
+            dataType: 'JSON',
+            data: data,
+            success: function(res) {
+
+                if ( ( res.success ) ) {
+
+                    console.log("Successfully saved response for " + user_id );
+                    return true;
+                }
+            },
+            error: function( $response, $errString, $errType ) {
+
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType);
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to fetch client information. If you\'d like to try again, please ";
+                $string += "click the Load Information button once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
+
+                $class.$spinner.hide();
+                return false;
+            },
+            complete: function() {
+
+                return true;
+            }
+        });
+    }
+}
 function setSurveyState( me ) {
     var elem = jQuery( me ),
         input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
@@ -98,4 +234,11 @@ jQuery(document).ready(function() {
     }
 
     // e20rAssignmentsConfigureSurveyFields();
+
+    if ( typeof e20rClientAssignment != 'undefined') {
+
+        console.log("Loading the assignment handler for clients");
+        e20rClientAssignment.init();
+    }
+
 });
