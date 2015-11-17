@@ -352,6 +352,7 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
             add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
+            add_action( 'wp_ajax_e20r_add_reply', array( &$e20rAssignment, 'add_coach_reply') );
             add_action( 'wp_ajax_e20r_daynav', array( &$e20rAction, 'nextCheckin_callback' ) );
             add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rAction, 'ajax_save_item_data' ) );
             add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rAction, 'saveCheckin_callback' ) );
@@ -1853,6 +1854,7 @@ class e20rTracker {
             wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
+            wp_register_script( 'e20r-assignments', E20R_PLUGINS_URL . '/js/e20r-assignments.min.js', array( 'jquery' ), E20R_VERSION, true);
 
             // $this->load_frontend_scripts('progress_overview');
             wp_localize_script( 'e20r-progress-page', 'e20r_admin',
@@ -1874,6 +1876,7 @@ class e20rTracker {
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
             wp_print_scripts( 'e20r_tracker_admin' );
+            wp_print_scripts( 'e20r-assignments' );
             wp_print_scripts( 'e20r-assignment-admin' );
         }
     }
@@ -2674,7 +2677,7 @@ class e20rTracker {
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
-                        'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
+                        'e20r-assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
                         // 'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
                         'dependencies' => array(
                             'jquery' => false,
@@ -3271,7 +3274,8 @@ class e20rTracker {
                     article_id int null,
                     program_id int null,
                     user_id int not null,
-                    message_time timestamp not null current_timestamp,
+                    message_read tinyint not null default 0,
+                    message_time timestamp not null default current_timestamp,
                     message text null,
                     primary key  (id),
                      index articles (article_id ),
@@ -3316,12 +3320,16 @@ class e20rTracker {
         dbg("e20rTracker::manage_tables() - Message history table:");
         dbg($result);
         $result = dbDelta( $response_table );
-        dbg("e20rTracker::manage_tables() - Coach/Client response history table:");
+        dbg("e20rTracker::manage_tables() - Coach/Client response table:");
+        dbg($result);
         // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
         // IMPORTANT: Always do this in the e20r_update_db_to_*() function!
-        // $this->updateSetting( 'e20r_db_version', $e20r_db_version );
+        if ( $e20r_db_version != E20R_DB_VERSION ) {
+            $this->updateSetting( 'e20r_db_version', E20R_DB_VERSION );
+        }
+        //
     }
 
     public function update_db() {
