@@ -112,11 +112,12 @@ class e20rArticleView extends e20rSettingsView {
 
         $unread_messages = $e20rAssignment->client_has_unread_messages( $current_user->ID );
 
+        dbg("e20rArticleView::new_message_warning() - Found unread messages: {$unread_messages}");
 
         ob_start(); ?>
-        <div class="e20r-new-message-alert orange-notice <?php echo ( false === $unread_messages ? 'startHidden' : null );  ?>">
+        <div class="e20r-new-message-alert orange-notice <?php echo ( 0 == $unread_messages ? 'startHidden' : null );  ?>">
             <input type="hidden" name="e20r-message-user-id" value="<?php echo $current_user->ID;?>" id="e20r-message-user-id">
-            <input type="hidden" name="e20r-message-new-count" value="<?php echo ($unread_messages === false ? 0 : $unread_messages); ?>" id="e20r-messages-previous-count">
+            <input type="hidden" name="e20r-message-new-count" value="<?php echo $unread_messages; ?>" id="e20r-messages-previous-count">
             <h4><span class="highlighted"><?php _e("New message!", "e20rtracker"); ?></span></h4>
 
             <div class="e20r-tracker-new-message-alert-txt">
