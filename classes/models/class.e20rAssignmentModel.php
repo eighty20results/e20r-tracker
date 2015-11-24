@@ -185,6 +185,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
         $settings->answer_date = null;
         $settings->answer = null;
         $settings->select_options = array();
+        $settings->messages = array();
+        $settings->new_messages = false;
+        $settings->thread_is_archived = false;
 
         return $settings;
     }
@@ -230,20 +233,26 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
                 if ( count( $assignment->article_ids) < 1 ) {
 
-                    dbg("e20rAssignmentModel::loadAssUserAssignments() - ERROR: No user assignments defined for {$assignment->question_id}!");
+                    dbg("e20rAssignmentModel::loadAllUserAssignments() - ERROR: No user assignments defined for {$assignment->question_id}!");
                     $assignment->article_ids = array();
 
                 }
 
                 foreach( $assignment->article_ids as $userAId ) {
 
-                    $userInfo = $this->loadUserAssignment( $userAId, $userId, $assignment->delay, $assignment->id);
+                    // $userInfo = $this->loadUserAssignment( $userAId, $userId, $assignment->delay, $assignment->id);
+                    $userInfo = $this->load_user_assignment_info( $userId, $assignment->id, $userAId );
+                    dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned assignment info for user: {$userId} and assignment {$assignment->id}");
+                    // dbg($userInfo);
 
                     foreach( $userInfo as $k => $data ) {
 
                         $assignment->answer = isset( $data->answer ) ? $data->answer : null;
                         $assignment->answer_date = isset($data->answer_date) ? $data->answer_date : null;
                         $assignment->article_id = $userAId;
+                        $assignment->messages = isset($data->messages) ? $data->messages : null;
+                        $assignment->new_messages = isset($data->new_messages) ? $data->new_messages : false;
+                        $assignment->thread_is_archived = isset($data->thread_is_archived) ? $data->thread_is_archived : false ;
                         $answers[] = $assignment;
                     }
                 }
@@ -393,7 +402,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $new->article_ids = $article_list;
             }
 
-			$new->id = $assignment_id;
+            $new->id = $assignment_id;
 			$new->descr = $query->post->post_excerpt;
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;
@@ -446,6 +455,137 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $assignments;
     }
 
+    public function load_user_assignment_info( $user_id, $assignment_id, $article_id = null ) {
+
+        global $wpdb;
+        global $post;
+
+        global $currentProgram;
+
+        global $e20rProgram;
+        global $e20rTables;
+
+        dbg("e20rAssignmentModel::load_user_assignment_info() - Attempting to locate info for assignment {$assignment_id}, user {$user_id} and article {$article_id}");
+
+        $save_data = array(
+            $this->fields['id'],
+            $this->fields['answer_date'],
+            $this->fields['answer'],
+            $this->fields['user_id'],
+            $this->fields['article_id'],
+        );
+
+        $records = array();
+        $record_count = 0;
+
+/*        $r_table = $e20rTables->getTable('response');
+        $r_fields = $e20rTables->getFields('response');
+*/
+        $save_post = $post;
+
+        if ( !isset( $currentProgram->id) || (-1 == $currentProgram->id) ) {
+            $program_id = $e20rProgram->getProgramIdForUser($user_id);
+        }
+
+        dbg("e20rAssignmentModel::load_user_assignment_info() - Loading data for article # {$article_id} in program {$currentProgram->id} for user {$user_id}");
+
+        $assignment_sql =  "SELECT a.{$this->fields['id']} AS id,
+                            a.{$this->fields['answer_date']} AS answer_date,
+                            a.{$this->fields['answer']} AS answer,
+                            a.{$this->fields['user_id']} AS recipient_id,
+                            a.{$this->fields['question_id']} AS question_id,
+                            a.{$this->fields['article_id']} AS article_id
+                     FROM {$this->table} AS a
+                     WHERE ( ( a.{$this->fields['user_id']} = %d ) AND
+                      ( a.{$this->fields['question_id']} = %d ) AND
+                      ( a.{$this->fields['program_id']} = %d ) )
+                  ORDER BY a.{$this->fields['delay']}";
+
+        $assignment_sql = $wpdb->prepare( $assignment_sql, $user_id, $assignment_id, $currentProgram->id);
+
+        $assignments = $wpdb->get_results( $assignment_sql );
+
+        if (empty( $assignments) ) {
+
+            dbg("e20rAssignmentModel::load_user_assignment_info() - No records found for {$assignment_id} and user {$user_id}");
+            dbg("e20rAssignmentModel::load_user_assignment_info() - Error: " . ( empty( $wpdb->last_error ) ? 'N/A' : $wpdb->last_error ));
+
+            if (  CONST_DEFAULT_ASSIGNMENT != $assignment_id ) {
+
+                dbg("e20rAssignmentModel::load_user_assignment_info() - Loading regular settings ({$assignment_id})");
+                $assignment = $this->loadSettings( $assignment_id );
+            }
+
+            if ( !isset( $assignment->question_id ) ) {
+                dbg("e20rAssignmentModel::load_user_assignment_info() - Loading default settings");
+                $assignment = $this->defaultSettings();
+            }
+
+            unset($assignment->id);
+            return array( 0 => $assignment );
+        }
+
+        dbg("e20rAssignmentModel::load_user_assignment_info() - Found " . count( $assignments ) . " records for {$assignment_id} and user {$user_id}");
+        foreach( $assignments as $key => $r ) {
+
+            // dbg("e20rAssignmentModel::load_user_assignment_info() - Used SQL: {$assignment_sql}");
+
+            $assignment = $this->loadSettings( $r->question_id );
+
+            if ( !empty( $assignment->article_ids ) && !in_array( $article_id, $assignment->article_ids ) ) {
+                dbg("e20rAssignmentModel::load_user_assignment_info() - WARNING: Assignment {$r->question_id} is NOT included in article {$article_id}. Skipping it...");
+                dbg(  $assignment->article_ids );
+                continue;
+            }
+
+            foreach ( $assignment as $k => $val ) {
+
+                if ( !in_array( $k, $save_data ) ) {
+
+                    $r->{$k} = $val;
+
+                    // Special handling of field_type == 4
+                    if ( ( 'field_type' == $k ) && ( 4 == $val ) ) {
+
+                        dbg("e20rAssignmentModel::load_user_assignment_info() - Found a multi-choice answer. Restoring it as an array.");
+                        $r->assignment_answer = json_decode( stripslashes( $r->assignment_answer ) );
+                    }
+                }
+            }
+
+            dbg("e20rAssignmentModel::load_user_assignment_info()- Loading record ID {$r->id} from database result: {$key}");
+            $records[$record_count] = $r;
+
+            $post = get_post( $r->question_id );
+
+            setup_postdata( $post );
+
+            $records[$record_count]->id = $r->id;
+            $records[$record_count]->descr = $post->post_excerpt;
+            $records[$record_count]->question = $post->post_title;
+            $records[$record_count]->question_id = $assignment->question_id;
+            $records[$record_count]->article_ids = $assignment->article_ids;
+            $records[$record_count]->messages = $this->get_history( $assignment->question_id, $currentProgram->id, $article_id, $user_id );
+            $records[$record_count]->new_messages = $this->has_unread_messages( $records[$record_count]->messages );
+            $records[$record_count]->thread_is_archived = $this->thread_is_archived( $records[$record_count]->messages );
+
+            if ( !empty($records[$record_count]->article_ids) && !in_array( $article_id, $records[$record_count]->article_ids ) ) {
+                dbg("e20rAssignmentModel::load_user_assignment_info() - Assignment is NOT included in article {$article_id}}. Skipping it");
+                unset( $records[$record_count]);
+                continue;
+            }
+
+            $record_count++;
+            // unset($assignments[$key]);
+
+            wp_reset_postdata();
+        }
+
+        $post = $save_post;
+
+        return $records;
+    }
+
     public function loadUserAssignment( $articleId, $userId, $delay = null, $assignmentId = null ) {
 
         // TODO: Load the recorded user assignment answers by assignment ID.
@@ -484,7 +624,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
                             {$this->fields['answer']},
                             {$this->fields['user_id']},
                             {$this->fields['question_id']},
-                            {$this->fields['article_id']}
+                            {$this->fields['article_id']},
+                            {$this->fields['response_id']}
                      FROM {$this->table} AS a
                      WHERE ( ( a.{$this->fields['user_id']} = %d ) AND
                       ( a.{$this->fields['question_id']} = %d ) AND
@@ -507,6 +648,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         }
 
         dbg("e20rAssignmentModel::loadUserAssignment() - Loaded " . count($result) . " check-in records");
+        $record_count = 0;
 
         if ( ! empty($result) ) {
 
@@ -522,9 +664,23 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		            if ( ! in_array( $k, $resp ) ) {
 
-			            if ( 'article_ids' == $k ) {
+			            if ( 'article_ids' == $k )  {
 
-                            $data->{$k}[] = $val;
+                            if ( !empty( $val )) {
+
+                                $data->{$k}[] = $val;
+
+                                dbg( "{$k} => " . print_r( $val, true) );
+
+                                $data->new_messages[$val] = $this->has_unread_messages( $data->question_id, $data->program_id, $val, $userId );
+                                dbg("e20rAssignmentModel::loadUserAssignment()- Loading article {$val} based message history for user {$userId} regarding {$data->question_id}");
+                                $data->message_history[$val] = $this->get_history( $assignment->question_id, $programId, $val, $userId );
+
+                            } else {
+                                $data->{$k} = array();
+
+                            }
+
                         }
                         else {
                             $data->{$k} = $val;
@@ -539,20 +695,36 @@ class e20rAssignmentModel extends e20rSettingsModel {
                         }
 		            }
 	            }
+
                 dbg("e20rAssignmentModel::loadUserAssignment()- Loading record ID {$data->id} from database result: {$key}");
-	            $records[(count($result) - 1)] = $data;
+	            $records[$record_count] = $data;
 
 	            $post = get_post( $data->question_id );
 
                 setup_postdata( $post );
 
-                $records[(count($result) - 1)]->id = $data->id;
-                $records[(count($result) - 1)]->descr = $post->post_excerpt;
-                $records[(count($result) - 1)]->question = $post->post_title;
-                $records[(count($result) - 1)]->question_id = $assignment->question_id;
-                $records[(count($result) - 1)]->article_ids = $assignment->article_ids;
+                $records[$record_count]->id = $data->id;
+                $records[$record_count]->descr = $post->post_excerpt;
+                $records[$record_count]->question = $post->post_title;
+                $records[$record_count]->question_id = $assignment->question_id;
+                $records[$record_count]->article_ids = $assignment->article_ids;
+                $records[$record_count]->message_history = $data->message_history;
+                $records[$record_count]->new_messages = $data->new_messages;
+                // $records[$record_count]->message_history = array();
 
+/*                foreach( $assignment->article_ids as $a ) {
+
+                    if ( !empty( $a ) ) {
+
+                        $records[$record_count]->new_messages += $this->has_unread_message( $data->question_id, $data->program_id, $a, $userId );
+                        dbg("e20rAssignmentModel::loadUserAssignment()- Loading article {$a} based message history for user {$userId} regarding {$data->question_id}");
+                        $records[$record_count]->message_history[$a] = $this->get_history( $assignment->question_id, $programId, $a, $userId );
+                    }
+                }
+*/
                 unset($result[$key]);
+
+                $record_count++;
 
                 // Array is now indexed by record/post/assignment ID
                 wp_reset_postdata();
@@ -568,20 +740,231 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $assignment = $this->loadSettings( $assignmentId );
 	        }
 
-            if ( empty( $assignment->question_id ) ) {
+            if ( !isset( $assignment->question_id ) ) {
                 dbg("e20rAssignmentModel::loadUserAssignment() - Loading default settings");
                 $assignment = $this->defaultSettings();
             }
 
             unset($assignment->id);
             $records = array( 0 => $assignment );
-
         }
 
         // Restore
         $post = $save_post;
 
         return $records;
+    }
+
+    public function update_reply_status( $message_id, $status, $status_field ) {
+
+        global $wpdb;
+        global $e20rTables;
+
+        $table = $e20rTables->getTable('response');
+        $fields = $e20rTables->getFields('response');
+
+        $status = sprintf( '%d', $status );
+
+        $data = array( $status_field => $status );
+
+        if ( $status_field == $fields['archived']) {
+
+            $data = array(
+                $status_field => $status,
+                "{$fields['message_read']}" => 1
+            );
+        }
+
+
+        dbg("e20rAssignmentModel::update_reply_status() - Setting {$status_field} to: {$status} for message ID {$message_id}");
+
+        $result = $wpdb->update(
+                        $table,
+                        $data,
+                        array( "{$fields['id']}" => $message_id ),
+                        array( '%d' ),
+                        array( '%d' )
+                    );
+
+        if ( false === $result ) {
+            dbg("e20rAssignmnentModel::update_reply_status() - ERROR: Unable to update status to {$status} for record # {$message_id} in {$table}: {$wpdb->last_error}");
+            return false;
+        }
+
+        return true;
+    }
+
+    public function user_has_new_messages( $client_id ) {
+
+        global $e20rTables;
+
+        global $currentProgram;
+
+        global $current_user;
+        global $wpdb;
+
+        $fields = $e20rTables->getFields('response');
+        $table = $e20rTables->getTable('response');
+
+        $sql = "SELECT COUNT({$fields['id']}) AS unread_messages FROM {$table} WHERE (
+                  ({$fields['program_id']} = %d) AND
+                  ({$fields['recipient_id']} = %d) AND
+                  ({$fields['client_id']} = %d) AND
+                  ({$fields['sent_by_id']} <> %d) AND
+                  (({$fields['message_read']} = 0 AND {$fields['archived']} = 0) OR
+                  ({$fields['archived']} = 0 AND {$fields['archived']} = 1))
+                )";
+
+        $sql = $wpdb->prepare( $sql, $currentProgram->id, $client_id, $client_id, $current_user->ID );
+
+        $unread_messages = $wpdb->get_var( $sql );
+
+        dbg("e20rAssignmentModel::user_has_new_messages() - Has {$unread_messages} new/unread messages");
+        if (is_null( $unread_messages) ) {
+            return false;
+        }
+
+        return $unread_messages;
+    }
+
+    private function has_unread_messages( $messages ) {
+
+        global $current_user;
+
+        dbg("e20rAssignmentModel::has_unread_message() - Counting unread messages...");
+        foreach( $messages as $message ) {
+
+            dbg("e20rAssignmentModel::has_unread_message() - Checking if message # {$message->response_id} is read: {$message->read_status}");
+
+            if ( ( 0 == $message->read_status  ) && ( $current_user->ID != $message->message_sender_id ) && ( 0 == $message->archived ) ) {
+
+                dbg("e20rAssignmentModel::has_unread_message() - Found unread messages");
+                return true;
+            }
+        }
+
+        dbg("e20rAssignmentModel::has_unread_message() - Found no unread messages");
+        return false;
+    }
+
+    private function thread_is_archived( $messages ) {
+
+        foreach( $messages as $message ) {
+
+            if ( 1 == $message->archived ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function get_history( $assignment_id, $program_id, $article_id, $user_id ) {
+
+        global $wpdb;
+        global $current_user;
+
+        global $e20rTables;
+        global $e20rTracker;
+
+        $r_table = $e20rTables->getTable('response');
+        $r_fields = $e20rTables->getFields('response');
+
+        $user_field = $r_fields['recipient_id'];
+
+        if ( $e20rTracker->is_a_coach($current_user->ID) ) {
+
+            dbg("e20rAssignmentModel::get_history() - Setting the user_field to the coach's value");
+            $user_field = $r_fields['client_id'];
+        }
+
+        dbg("e20rAssignmentModel::get_history() - Loading message history for {$user_id}, assignment: {$assignment_id} in program: {$program_id} and article: {$article_id} with field {$user_field}");
+
+        $sql = $wpdb->prepare( "
+            SELECT
+                {$r_fields['id']} AS response_id,
+                {$r_fields['message_time']} AS message_time,
+                {$r_fields['sent_by_id']} AS message_sender_id,
+                {$r_fields['message_read']} AS read_status,
+                {$r_fields['archived']} AS archived,
+                {$r_fields['message']} AS message
+            FROM {$r_table}
+            WHERE ( {$r_fields['assignment_id']} = %d ) AND
+             ( {$r_fields['article_id']} = %d ) AND
+             ( {$r_fields['program_id']} = %d ) AND
+             ( {$user_field} = %d )
+            ORDER BY {$r_fields['message_time']}
+        ",
+            $assignment_id,
+            $article_id,
+            $program_id,
+            $user_id
+        );
+
+        $history = $wpdb->get_results( $sql );
+        // dbg("e20rAssignmentModel::get_history() - Using SQL: {$sql}");
+        dbg("e20rAssignmentModel::get_history() - Found " . count($history) . " message records for user {$user_id} about assignment {$assignment_id}");
+
+        if ( empty( $history ) ) {
+            dbg("e20rAssignmentModel::get_history() - No records found for {$assignment_id} and user {$user_id} as part of program {$program_id}");
+            dbg("e20rAssignmentModel::get_history() - Error: " . ( empty( $wpdb->last_error) ? 'N/A' : $wpdb->last_error ));
+        }
+
+        dbg("e20rAssignmentModel::get_history() - Returning message history for {$user_id} and {$assignment_id} as part of program {$program_id}: " . count( $history ) . " messages");
+        return $history;
+    }
+
+    public function save_response( $data ) {
+
+        global $e20rTracker;
+        global $e20rTables;
+
+        global $wpdb;
+
+        $reply_table = $e20rTables->getTable('response');
+        $assignment_table = $e20rTables->getTable('assignments');
+//        $reply_fields = $e20rTables->getFields('response');
+        $assignment_fields = $e20rTables->getFields('assignments');
+
+        $format = $e20rTracker->setFormatForRecord( $data );
+
+        if ( isset( $data['record_id'] ) ) {
+
+            $assignment_record_id = $data['record_id'];
+            unset( $data['record_id']);
+        }
+        else {
+            dbg("e20rAssignmentModel::save_response() - ERROR: No record ID found for existing (saved) assignment record in {$assignment_table}");
+            return false;
+        }
+
+        dbg("e20rAssignmentModel::save_response() - Attempting to add response to {$reply_table}");
+        dbg($data);
+        dbg($format);
+
+        if ( false === $wpdb->insert( $reply_table, $data, $format  ) ) {
+
+            dbg("e20rAssignmentModel::save_response() - ERROR: Unable to save response data: " . $wpdb->last_error . ' for query: ' . $wpdb->last_query );
+            return false;
+        }
+
+        $id = $wpdb->insert_id;
+        dbg("e20rAssignmentModel::save_response() - Successfully inserted new reply in {$reply_table} with ID {$id}");
+
+        dbg("e20rAssignmentModel::save_response() - Attempting to update saved assignment {$assignment_record_id} in {$assignment_table} to reflect new response {$id}");
+        $updated = $wpdb->update( $assignment_table,
+            array( "{$assignment_fields['response_id']}" => $id ),
+            array( 'id' => $assignment_record_id ),
+            array( '%d' ),
+            array( '%d' )
+            );
+
+        if ( false === $updated ) {
+            dbg("e20rAssignmentModel::save_response() - ERROR: Unable to update assignment record # {$data['assignment_id']} in {$assignment_table}: " . $wpdb->last_error . ' for query: ' . $wpdb->last_query );
+            return false;
+        }
+        dbg("e20rAssignmentModel::save_response() - Returning success to calling function: " . $e20rTracker->whoCalledMe());
+        return true;
     }
 
     public function loadSettings( $id = null ) {
@@ -617,15 +1000,22 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			    $this->settings->id          = $post->ID;
 		    }
 
-            if ( ! is_array( $this->settings->program_ids ) ) {
+            if ( !is_array( $this->settings->program_ids )&& ( !empty( $this->settings->program_ids )) ) {
                 $this->settings->program_ids = array( $this->settings->program_ids );
             }
 
-            if ( ! is_array( $this->settings->article_ids ) ) {
+            /*
+            if ( isset($this->settings->article_ids) && !is_array( $this->settings->article_ids ) && ( !empty( $this->settings->article_ids )) ) {
                 $this->settings->article_ids = array( $this->settings->article_ids );
             }
+            */
 
-            if ( !is_array( $this->settings->select_options ) ) {
+            if ( isset($this->settings->article_id) ) {
+                // Delete this (old setting and no longer used).
+                unset($this->settings->article_id);
+            }
+
+            if ( !is_array( $this->settings->select_options ) && (!empty( $this->settings->select_options )) ) {
                 $this->settings->select_options = array( $this->settings->select_options );
             }
 
