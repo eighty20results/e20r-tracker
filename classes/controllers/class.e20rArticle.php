@@ -1264,6 +1264,7 @@ class e20rArticle extends e20rSettings
             has_shortcode($content, 'e20r_activity_archive')
         ) {
             // Process in shortcode actions
+            $content = $this->view->new_message_warning() . $content;
             return $content;
         }
 
