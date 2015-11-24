@@ -611,16 +611,21 @@ class e20rAssignmentView extends e20rSettingsView {
 		global $current_user;
 		global $e20rTracker;
 		global $e20rArticle;
+        global $e20rClient;
 
-        $e20r_coach_ui = false;
+        $add_message = false;
+        $is_coach = $e20rTracker->is_a_coach( $current_user->ID );
+        $is_client = $is_coach ? false : true;
 
-        if ( $e20rTracker->is_a_coach( $current_user->ID ) && is_admin() ) {
+        if ( $is_coach && is_admin() ) {
             dbg("e20rAssignmentView::viewAssignmentList() - Include Coaching UI info.");
-            $e20r_coach_ui = true;
+            $add_message = true;
         }
 
 		ob_start();
-		?>
+
+        // TODO: Use $e20rArticle::get_feedback() function to load a feedback item for user (or coach).
+        ?>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
 		<h4>Assignments</h4>
 		<a class="close" href="#">X</a>
@@ -633,6 +638,7 @@ class e20rAssignmentView extends e20rSettingsView {
 				if ( ! empty( $answers ) ) {
 
 					dbg("e20rAssignmentView::viewAssignmentList() - User has supplied answers...");
+                    // dbg($answers);
 
 					foreach ( $answers as $key => $answer ) {
 
@@ -644,8 +650,107 @@ class e20rAssignmentView extends e20rSettingsView {
 
 						$when     = date_i18n( "Y-m-d", strtotime( $e20rTracker->getDateForPost( $answer->delay, $config->userId ) ) );
 						$showLink = ( $config->userId == $current_user->ID ? true : false );
+
+                        if ( !$is_coach && ( isset( $answer->new_messages ) && ( 1 >= $answer->new_messages ) ) ) {
+                            $add_message = true;
+                        }
+
+                        if (!$is_coach && ( isset( $answer->new_messages ) && ( false !== $answer->new_messages)) && ( $config->userId == $current_user->ID)) {
+
+                            $new_message_for_user = true;
+                        } else {
+                            $new_message_for_user = false;
+                        }
+
+                        if ($is_coach && (( isset( $answer->new_messages ) && (false !== $answer->new_messages)) || (empty( $answer->messages )) ) && ( $config->userId != $current_user->ID)) {
+                            $new_message_for_coach = true ;
+                        } else {
+                            $new_message_for_coach = false;
+                        }
+
+
+                        if ( 1 < count($answer->article_ids) ) {
+                            dbg("e20rAssignmentView::viewAssignmentList() - Error: Number of article IDs for answer # {$answer->id}/{$answer->question_id}: " . count( $answer->article_ids) . " Content: " . print_r( $answer->article_ids, true ) );
+                        } elseif ( 1 == count($answer->article_ids ) ) {
+                            $answer->article_ids = array_pop( $answer->article_ids );
+                        } else {
+                            $answer->article_ids = null;
+                        }
+
+                        /**
+                         *
+                         * case 0: Coach while in wp-admin and new message from client.
+                         * case 1: Coach, while in wp-admin and no new message from client.
+                         * case 2: Coach, on front-end WITH a new message from the client
+                         * case 3: Coach, on front-end WITHOUT a new message from the client.
+                         * case 4: User, on front-end and WITH a new message from the coach.
+                         * case 5: User, on front-end and WITHOUT a new message from the coach.
+                         *
+                         */
+
+                        $client_id = $config->userId;
+
+                        if ( false === $is_coach ) {
+
+                            $coaches = $e20rClient->get_coach( $current_user->ID, $config->programId );
+
+                            if ( empty( $coaches ) ) {
+
+                                $e20rClient->assign_coach( $current_user->ID );
+                                $coaches = $e20rClient->get_coach( $current_user->ID, $config->programId );
+                            }
+
+                            dbg("e20rAssignmentView::viewAssignmentList() - Found coach info for current_user->ID: ");
+                            dbg($coaches);
+
+                        } else {
+                            dbg("e20rAssignmentView::viewAssignmentList() - current_user->ID IS a coach: ");
+                            $coaches = array( $current_user->ID => $current_user->display_name );
+                            dbg($coaches);
+                        }
+
+                        foreach( $coaches as $c_id => $name ) {
+
+                            dbg("e20rAssignmentView::viewAssignmentList() - Assigned coach will be: {$c_id}");
+                            $coach_id = $c_id;
+                        }
+
+                        dbg("e20rAssignmentView::viewAssignmentList() - Client ID: {$client_id}, Coach ID: {$coach_id} ");
+
+                        $button_status = null;
+
+                        if ( (true === is_admin()) && (true === $is_coach) && (true === $new_message_for_coach) ) {
+                            $button_status = 0;
+                        }
+
+                        if ( (true === is_admin()) && (true === $is_coach) && (false === $new_message_for_coach) ) {
+                            $button_status = 1;
+                        }
+
+                        if ( (false === is_admin()) && (true === $is_coach) && (true === $new_message_for_coach) ) {
+                            $button_status = 2;
+                        }
+
+                        if ( (false === is_admin()) && (true === $is_coach) && (false === $new_message_for_coach) ) {
+                            $button_status = 3;
+                        }
+
+                        if ( (false === is_admin()) && (true === $is_client) && (true === $new_message_for_user) ) {
+                            $button_status = 4;
+                        }
+
+                        if ( (false === is_admin()) && (true === $is_client) && (false === $new_message_for_user) ) {
+                            $button_status = 5;
+                        }
+
+                        $not_from_self = true;
+
+                        dbg("e20rAssignmentView::viewAssignmentList() - Assignment/Question ID: {$answer->question_id}");
+                        dbg("e20rAssignmentView::viewAssignmentList() - New message for the coach: " . ( $new_message_for_coach ? 'true' : 'false' ));
+                        dbg("e20rAssignmentView::viewAssignmentList() - New message for the client: " . ( $new_message_for_user ? 'true' : 'false' ));
+
 						?>
-						<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+						<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?> <?php echo ( true == $answer->new_messages ? 'e20r-messages-new' : null); ?>">
 							<td class="measurement-date">
 								<div class="date">
 									<form method="POST" action="">
@@ -672,12 +777,12 @@ class e20rAssignmentView extends e20rSettingsView {
 								</div>
 								<div class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $when ) ); ?></div>
 							</td>
-							<td>
+							<td class="e20r-measurement-responses">
 								<table class="e20r-answers">
 									<tbody>
 									<tr>
 										<td>
-											<div class="e20r-assignments-question">
+											<div class="e20r-assignments-question" title="<?php echo preg_replace('/\"/', '\'', wp_strip_all_tags( stripslashes( $answer->descr) ) ); ?>">
 												<?php echo stripslashes($answer->question); ?>
 											</div>
 										</td>
@@ -713,41 +818,79 @@ class e20rAssignmentView extends e20rSettingsView {
 									</tbody>
 								</table>
 							</td><?php
-                            if ( true == $e20r_coach_ui ) { ?>
+                            if ( true == $add_message ) { ?>
                             <td class="e20r-coach-reply"><?php
-                                if ( !is_null( $answer->answer_date ) || !empty( $answer->answer) ) { ?>
-                                <a href="#TB_inline?width=500&height=300&inlineId=assignment_reply_<?php echo $answer->id; ?>" class="e20r-assignment-reply-link thickbox button secondary">
+                                if ( ($is_client && !empty( $answer->messages) ) || ( $is_coach && ( !is_null( $answer->answer ) || !empty( $answer->answer) ) ) ) { ?>
+                                <a href="#TB_inline?width=500&height=600&inlineId=assignment_reply_<?php echo $answer->id; ?>" class="e20r-assignment-reply-link thickbox button">
                                     <?php
-                                    if ( isset( $answer->message ) && ( !empty( $answer->message ) ) ) {
-                                        echo sprintf( __("Last: %s", "e20rtracker"), date( 'Y-m-d', $answer->message_time ) );
-                                    } else {
-                                        _e("To respond", "e20rtracker");
-                                    } ?>
+
+                                    switch($button_status) {
+                                        case 0:
+                                        case 2:
+                                        $button_text = __("Respond", "e20rtracker");
+                                            break;
+
+                                        case 1:
+                                        case 3:
+                                        $button_text = sprintf( __("Total: %d", "e20rtracker"), count($answer->messages) );
+                                            break;
+
+                                        case 4:
+                                            $button_text = __("Reply", "e20rtracker");
+                                            break;
+
+                                        case 5:
+                                            $button_text = __("Review", "e20rtracker");
+                                            break;
+
+                                        default:
+
+                                    }
+                                    echo $button_text;
+                                    ?>
                                 </a>
                                 <div id="assignment_reply_<?php echo $answer->id; ?>" class="e20r-message-history-content" style="display:none">
                                     <?php dbg("e20rAssignmentView::viewAssignmentList() - Loaded answer information:"); ?>
-                                    <?php dbg($answer); ?>
-                                    <input type="hidden" name="e20r-assignment-article_id[]" value="<?php echo esc_attr($answer->article_id); ?>">
+                                    <?php dbg($answer);
+
+                                    // I'm a coach, but not "the" coach, or I'm "the" coach; Use the coaches ID...
+                                    if ( !$is_coach ) {
+                                        $recipient_id = $coach_id;
+                                    } elseif ( $is_coach ) {
+                                        $recipient_id = $client_id;
+                                    }
+
+                                    dbg("e20rAssignmentView::viewAssignmentList() - Recipient Id: {$recipient_id}");
+                                    ?>
+                                    <input type="hidden" name="e20r-assignment-client_id[]" value="<?php echo esc_attr($client_id); ?>">
+                                    <input type="hidden" name="e20r-assignment-article_id[]" value="<?php echo esc_attr($answer->article_ids); ?>">
                                     <input type="hidden" name="e20r-assignment-assignment_id[]" value="<?php echo esc_attr($answer->id); ?>">
+                                    <input type="hidden" name="e20r-assignment-delay[]" value="<?php echo esc_attr($answer->delay); ?>">
                                     <input type="hidden" name="e20r-assignment-program_id[]" value="<?php echo esc_attr($config->programId); ?>">
-                                    <input type="hidden" name="e20r-assignment-message_date[]" value="<?php echo esc_attr( current_time('timestamp') ); ?>">
-                                    <input type="hidden" name="e20r-assignment-user_id[]" value="<?php echo esc_attr( $current_user->ID ); ?>">
-                                    <?php
+                                    <input type="hidden" name="e20r-assignment-message_date[]" value="<?php echo esc_attr( current_time('mysql') ); ?>">
+                                    <input type="hidden" name="e20r-assignment-sent_by_id[]" value="<?php echo esc_attr( $current_user->ID ); ?>">
+                                    <input type="hidden" name="e20r-assignment-replied_to_id[]" value="<?php echo ($recipient_id); ?>">
+                                    <input type="hidden" name="e20r-assignment-recipient_id[]" value="<?php echo esc_attr( $recipient_id ); ?>">
+                                    <input type="hidden" name="e20r-assignment-question[]" value="<?php echo esc_attr(stripslashes($answer->question)); ?>"><?php
 
-                                    if ( !isset( $answer->reply_history) || empty( $answer->reply_history ) ) { ?>
-                                        <textarea class="e20r-assignment-reply_area" name="e20r-assignment-message[]" placeholder="<?php echo sprintf(__("Please enter your response to '%s' here...", "e20rtracker"), $answer->question); ?>"></textarea><?php
-                                    } else { ?>
-                                        <div class="e20r-message-content">
-                                            <?php echo wp_kses_post($answer->reply_history); ?>
-                                        </div>
-                                        <textarea class="e20r-assignment-reply_area startHidden" name="e20r-assignment-message[]"><?php esc_textarea($answer->reply_history); ?></textarea>
-
-                                        <?php
+                                    if ( empty( $answer->messages ) ) { ?>
+                                        <input type="hidden" name="e20r-assignment-answer[]" value="<?php echo esc_attr( stripslashes($answer->answer)); ?>"><?php
                                     } ?>
-                                    <button class="e20r-assignment-reply-button"><?php _e("Save", "e20rtracker"); ?></button>
+                                    <div class="e20r-message-content">
+                                        <?php echo $this->message_history( $answer->messages, $recipient_id, $answer->article_ids ); ?>
+                                    </div>
+                                    <div class="e20r-message-reply">
+                                        <h3 class="e20r-message-reply-header"><?php _e("Write a reply", "e20rtracker"); ?></h3>
+                                        <div class="e20r-message-status-text startHidden"></div>
+                                        <textarea class="e20r-assignment-reply_area" name="e20r-assignment-message[]"></textarea>
+                                    </div>
+                                    <button class="button secondary e20r-assignment-reply-button"><?php _e("Send", "e20rtracker"); ?></button><?php
+//                                    } ?>
                                 </div><?php
                                 } ?>
                             </td><?php
+                            } else { ?>
+                            <td></td><?php
                             } ?>
 						</tr>
 						<?php
@@ -755,17 +898,149 @@ class e20rAssignmentView extends e20rSettingsView {
 					}
 				}
 				else { ?>
-					<tr>
-						<td colspan="2"><?php _e("No assignments or answers found.", "e20rtracker"); ?></td>
-					</tr>
+                        <tr>
+                            <td colspan="3"><?php _e("No assignments or answers found.", "e20rtracker"); ?></td>
+                        </tr>
 		<?php   } ?>
-					</tbody>
-				</table>
-			</div>
-		</div>
+                </tbody>
+            </table>
+        </div>
+        </div>
 		<?php
 
 		$html = ob_get_clean();
 		return $html;
 	}
+
+    public function message_history( $history, $user_id, $assignment_id ) {
+
+        global $e20rTables;
+        global $e20rTracker;
+
+        global $current_user;
+
+        // $reply_fields = $e20rTables->getFields('response');
+        $record_num = 0;
+        $total = count( $history ) - 1;
+
+        ob_start();
+
+        if ( !empty( $history) ) { ?>
+
+            <hr class="e20r-message-history-start"><?php
+
+            foreach ($history as $r) {
+
+                dbg("e20rAssignmentView::message_history() - Loading the view for message: {$r->response_id}, record # {$record_num}");
+                dbg($r);
+
+                $read_message = false;
+                $user = get_user_by('id', $r->message_sender_id);
+
+                if ( $r->message_sender_id == $current_user->ID ) {
+
+                    $from_me = true;
+                    $from = __("me", "e20rtracker");
+
+                } else {
+
+                    $from_me = false;
+                    $from = $user->display_name;
+                }
+
+                $is_archived = ($r->archived == 1 ? true : false);
+                $user_is_coach = $e20rTracker->is_a_coach( $current_user->ID );
+                $is_read = ($r->read_status == 1  ? true : false);
+                $is_last = (++$record_num <= $total ? false : true);
+
+                dbg("e20rAssignmentView::message_history() - For {$r->response_id}: is_read: " . ($is_read ? 'true' : 'false') );
+                dbg("e20rAssignmentView::message_history() -              : from_me: " . ($from_me ? 'true' : 'false') );
+                dbg("e20rAssignmentView::message_history() -              : is_archived: " . ($is_archived ? 'true' : 'false') );
+                dbg("e20rAssignmentView::message_history() -              : user_is_coach: " . ($user_is_coach ? 'true' : 'false') );
+                dbg("e20rAssignmentView::message_history() -              : is_last: " . ($is_last ? 'true' : 'false') );
+
+                if ( (( false === $is_archived ) && ( false === $user_is_coach ) ) || ( true === $user_is_coach )) {
+
+                    dbg("e20rAssignmentView::message_history() - Loading history HTML for non-archived messages");
+
+                    if ( false === $is_last ) {
+                        dbg("e20rAssignmentView::message_history() - Older unread message ID {$r->response_id} with timestamp: {$r->message_time}");?>
+                    <div class="e20r-message-history-message clearfix"><?php
+                    } else {
+                        dbg("e20rAssignmentView::message_history() - Most recent message: {$r->response_id} with timestamp: {$r->message_time}");?>
+                    <input type="hidden" name="e20r-assignment-answer[]" value="<?php echo esc_attr( stripslashes($r->message)); ?>">
+                    <div class="e20r-message-history-message clearfix e20r-message-most-recent"><?php
+                    } ?>
+
+                        <div class="<?php echo (false === $is_read ? 'e20r-message-history-unread ' : 'e20r-message-history '); ?><?php echo ( ($record_num <= $total) ? 'e20r-message-history-not-last ' : null); ?><?php echo ($from_me ? 'e20r-message-from-self ' : null); ?>clearfix">
+                            <div class="e20r-message-history-who">
+                                <input type="hidden" class="e20r-message-id-hidden" name="e20r-message-id[]" value="<?php echo esc_attr($r->response_id); ?>">
+                                <input type="hidden" name="e20r-message-sent-by-hidden[]" value="<?php echo esc_attr($r->message_sender_id); ?>">
+                                <input type="hidden" name="e20r-message-timestamp[]" value="<?php echo esc_attr($r->message_time); ?>">
+                                <?php echo sprintf(__("From %s on %s", "e20rtracker"), esc_attr($from), esc_attr($r->message_time)); ?>
+                            </div>
+                            <div class="e20r-message-history-message-body">
+                                <?php echo stripslashes($r->message); ?>
+                            </div><?php
+                            if ((false === $from_me) && (false === $is_archived)) { ?>
+                            <div class="e20r-message-ack">
+                                <button
+                                    class="button primary e20r-message-ack-button"><?php _e("Archive", "e20rtracker"); ?></button>
+                            </div><?php
+                            } ?>
+                        </div>
+                    </div><?php
+                }
+
+/*
+                if ( $e20rTracker->is_a_coach( $current_user->ID ) ) {
+
+                    dbg("e20rAssignmentView::message_history() - Loading history HTML for unread messages to the back-end coaching page");
+
+                    if ( false === $is_last ) {
+                        dbg("e20rAssignmentView::message_history() - Older message with ID {$r->response_id} and timestamp: {$r->message_time}");?>
+                    <div class="e20r-message-history-message clearfix"><?php
+                    } else {
+                        dbg("e20rAssignmentView::message_history() - Most recent message: {$r->response_id} with timestamp: {$r->message_time}");?>
+                    <input type="hidden" name="e20r-assignment-answer[]" value="<?php echo esc_attr(stripslashes( $r->message )); ?>">
+                    <div class="e20r-message-history-message clearfix e20r-message-most-recent"><?php
+                    }
+
+                    if ( false == $r->read_status ) {
+                        dbg("e20rAssignmentView::message_history() - Message is not acked by user/admin");?>
+                        <div class="<?php echo ($from_me == false ? 'e20r-message-history-unread ' : 'e20r-message-history '); ?><?php echo ( ($record_num <= $total) ? 'e20r-message-history-not-last ' : null); ?>clearfix"><?php
+                    }?>
+                            <div class="e20r-message-history-who">
+                                <input type="hidden" class="e20r-message-id-hidden" name="e20r-message-id[]" value="<?php echo esc_attr($r->response_id); ?>">
+                                <input type="hidden" name="e20r-message-sent-by-hidden[]" value="<?php echo esc_attr($r->message_sender_id); ?>">
+                                <input type="hidden" name="e20r-message-timestamp[]" value="<?php echo esc_attr($r->message_time); ?>">
+                                <?php echo sprintf(__("From %s on %s", "e20rtracker"), esc_attr($user->display_name), esc_attr($r->message_time)); ?>
+                            </div>
+                            <div class="e20r-message-history-message-body">
+                                <?php echo stripslashes($r->message); ?>
+                            </div><?php
+
+                    if ( ( false === $is_read ) && ( false == $from_me ) ) {
+                        dbg("e20rAssignmentView::message_history() - Adding Archive (button)"); ?>
+                            <div class="e20r-message-ack">
+                                <button class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20rtracker"); ?></button>
+                            </div><?php
+                    }
+
+                    if ( false === $r->read_status ) { ?>
+                        </div><?php
+                    } ?>
+                </div><?php
+                }
+*/
+            } // End of foreach loop
+        } else {
+            dbg("e20rAssignmentView::message_history() - No messages found for {$user_id} about {$assignment_id}");
+        }
+
+        $message_history = ob_get_clean();
+
+        dbg("e20rAssignmentView::message_history() - Returned message history for {$user_id} and {$assignment_id}");
+        return $message_history;
+    }
 }
