@@ -233,6 +233,8 @@ class e20rTracker {
             add_action( 'init', array( &$this, 'add_endpoint' ), 10 );
             add_action( 'init', array( &$this, 'add_rewrite_tags' ), 10);
 
+            add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
+
             add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
             add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
             add_action( 'e20r_schedule_email_for_client', array( &$e20rClient, 'send_email_to_client' ), 10, 2 );
@@ -351,13 +353,14 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
             add_action( 'wp_ajax_e20r_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
 	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
+            add_action( 'wp_ajax_e20r_add_reply', array( &$e20rAssignment, 'add_assignment_reply') );
+            add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rAssignment, 'ajax_assignmentData' ) );
             add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
-            add_action( 'wp_ajax_e20r_add_reply', array( &$e20rAssignment, 'add_coach_reply') );
+            add_action( 'wp_ajax_e20r_update_message_status', array( &$e20rAssignment, 'update_message_status') );
             add_action( 'wp_ajax_e20r_daynav', array( &$e20rAction, 'nextCheckin_callback' ) );
             add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rAction, 'ajax_save_item_data' ) );
             add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rAction, 'saveCheckin_callback' ) );
 	        add_action( 'wp_ajax_e20r_save_daily_progress', array( &$e20rAction, 'dailyProgress_callback' ) );
-            add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rClient, 'ajax_assignmentData' ) );
             add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
             add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
             add_action( 'wp_ajax_e20r_getMemberListForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
@@ -1708,7 +1711,7 @@ class e20rTracker {
             $permalink = str_replace( '%article_date%/', '', $permalink );
         }
 
-        dbg("e20rTracker::process_post_link() - Using permalink: {$permalink}");
+        // dbg("e20rTracker::process_post_link() - Using permalink: {$permalink}");
         return esc_url($permalink);
     }
 
@@ -1843,6 +1846,7 @@ class e20rTracker {
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
             wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'jquery.autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js' , array('jquery'), E20R_VERSION, true );
             wp_register_script( 'codetabs', E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js', array( 'jquery' ), E20R_VERSION, true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
             wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.min.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
@@ -1854,7 +1858,7 @@ class e20rTracker {
             wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
             wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
-            wp_register_script( 'e20r-assignments', E20R_PLUGINS_URL . '/js/e20r-assignments.min.js', array( 'jquery' ), E20R_VERSION, true);
+            wp_register_script( 'e20r-assignments', E20R_PLUGINS_URL . '/js/e20r-assignments.min.js', array( 'jquery', 'jquery.autoresize' ), E20R_VERSION, true);
 
             // $this->load_frontend_scripts('progress_overview');
             wp_localize_script( 'e20r-progress-page', 'e20r_admin',
@@ -1870,6 +1874,7 @@ class e20rTracker {
             $e20r_plot_jscript = false;
             wp_print_scripts( 'select2' );
             wp_print_scripts( 'jquery.timeago' );
+            wp_print_scripts( 'jquery.autoresize' );
             wp_print_scripts( 'jquery-ui-tabs' );
             wp_print_scripts( 'codetabs' );
             wp_print_scripts( 'jquery-ui-datetimepicker' );
@@ -2040,7 +2045,12 @@ class e20rTracker {
                 $e20rClient->init();
             }
 
-            $this->load_frontend_scripts( 'progress_overview' );
+            dbg("e20rTracker::has_measurementprogress_shortcode() - Loading scripts and styles for assignments and progress_overview");
+            $this->load_frontend_scripts( array(
+                            'assignments',
+                            'progress_overview'
+                        )
+                    );
         }
     }
 
@@ -2175,7 +2185,7 @@ class e20rTracker {
             }
 
 			dbg("e20rTracker::has_profile_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
-            $this->load_frontend_scripts( array( 'progress_overview', 'daily_progress', 'profile' ) );
+            $this->load_frontend_scripts( array( 'assignments', 'progress_overview', 'daily_progress', 'profile' ) );
         }
 
     }
@@ -2412,22 +2422,6 @@ class e20rTracker {
             $events = array( $events );
         }
 
-/*
-        $css = array(
-            "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.css',
-            "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.css'
-        );
-
-        $scripts = array();
-        $prereqs = array(
-            'jquery' => null,
-            'jquery-ui-core' => null,
-            'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js'
-        );
-
-        $list = array( 'jquery' => 'jquery', 'jquery-ui-core' => 'jquery-ui-core', 'jquery.touchpunch' => 'jquery.touchpunch' );
-*/
-
         $load_jq_plot = false;
 
         dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
@@ -2459,9 +2453,6 @@ class e20rTracker {
                         )
                     );
 
-                    // $scripts = array();
-                    // $prereqs = array();
-
                     break;
 
                 case 'client_overview':
@@ -2491,12 +2482,8 @@ class e20rTracker {
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        // "zozo-tabs" => E20R_PLUGINS_URL . "/css/zozo.tabs.min.css",
-                        // "zozo-tabs-flat-ui" => E20R_PLUGINS_URL . "/css/zozo.tabs.flat.min.css",
                     ) );
 
-// 'jquery.easing' => E20R_PLUGINS_URL . '/js/libraries/jquery.easing.min.js',
-// 'jquery.easing' => array( 'jquery' ),
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
@@ -2518,35 +2505,61 @@ class e20rTracker {
 
                     break;
 
+                case 'assignments':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading the assignments javascripts");
+
+                    $css = array_replace( $css, array(
+                        'thickbox.css' => '/'.WPINC.'/js/thickbox/thickbox.css' ,
+                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
+                    ) );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'heartbeat' => null,
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'thickbox' => null,
+                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
+                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'dependencies' => array(
+                            'heartbeat' => false,
+                            'jquery' => false,
+                            'jquery-ui-core' => array('jquery'),
+                            'jquery.autoresize' => array('jquery'),
+                            'jquery.touchpunch' => array('jquery', 'jquery-ui-core'),
+                            'thickbox' => array('jquery'),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
+                        'dependencies' => array(
+                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize'),
+                        )
+                    ) );
+
+                    $script = 'e20r_assignments';
+                    $id = 'e20r_assignments';
+
+                    break;
+
                 case 'progress_overview':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading for the 'progress_overview' shortcode");
 
                     $load_jq_plot = true;
 
-//                        "zozo-tabs" => E20R_PLUGINS_URL . "/css/zozo.tabs.min.css",
-//                        "zozo-tabs-flat-ui" => E20R_PLUGINS_URL . "/css/zozo.tabs.flat.min.css",
-
                     $css = array_replace( $css, array(
+                        'thickbox.css' => '/'.WPINC.'/js/thickbox/thickbox.css' ,
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
                     ) );
-
-                        // 'e20r-action.js' => array( 'jquery', 'base64', 'select2', 'jquery.easing', 'jquery.touchpunch', 'jquery.timeago', 'jquery.redirect', 'jquery.ui.tabs', 'e20r.tracker.js', 'e20r.assignments.js' ),
-                        // 'jquery-effects-core' => null,
-                        // 'jquery.easing' => E20R_PLUGINS_URL . '/js/libraries/jquery.easing.min.js',
-                        // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
-                        // 'zozo.tabs' => E20R_PLUGINS_URL . '/js/libraries/zozo.tabs.min.js',
-                            // 'jquery-effects-core' => array( 'jquery' ),
-                            // 'jquery.ui.tabs' => array( 'jquery', 'jquery.easing' ),
-                            // 'jquery.ui.tabs' => array( 'jquery' ),
-                            // 'jquery.easing' => array( 'jquery' ),
 
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
+                        'thickbox' => null,
                         'jquery-ui-tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
                         'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
@@ -2555,6 +2568,7 @@ class e20rTracker {
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
+                            'thickbox' => array('jquery'),
                             'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
                             'jquery-ui-tabs' => array( 'jquery', 'jquery-ui-core' ),
                             'jquery.easing' => array( 'jquery' ),
@@ -2564,7 +2578,6 @@ class e20rTracker {
                         )
                     ) );
 
-                    // 'e20r.progress.measurements' => array( 'jquery', 'jquery.touchpunch', 'jquery.timeago', 'jquery.ui.tabs', 'e20r.tracker.js' )
                     $scripts = array_replace( $scripts, array(
                         'e20r-progress-measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
                         'dependencies' => array(
@@ -2661,7 +2674,6 @@ class e20rTracker {
                         'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        'e20r-assignments' => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
                         'e20r_action'  => E20R_PLUGINS_URL . '/css/e20r-action.min.css',
                     ) );
 
@@ -2677,8 +2689,6 @@ class e20rTracker {
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
-                        'e20r-assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
-                        // 'e20r.progress.measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2689,15 +2699,13 @@ class e20rTracker {
                             'jquery.timeago' => array( 'jquery' ),
                             'jquery.redirect' => array( 'jquery' ),
                             'e20r_tracker' => array( 'jquery' ),
-                            'e20r_assignments' => array( 'jquery', 'select2', 'e20r_tracker' ),
-                            // 'e20r.progress.measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'e20r_tracker' ),
                         )
                     ) );
 
                     $scripts = array_replace( $scripts, array(
                         'e20r_action' => E20R_PLUGINS_URL . '/js/e20r-action.min.js',
                         'dependencies' => array(
-                            'e20r_action' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker', 'e20r_assignments' ),
+                            'e20r_action' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker'),
                         ),
                     ) );
 
@@ -3273,14 +3281,19 @@ class e20rTracker {
                     assignment_id int not null,
                     article_id int null,
                     program_id int null,
-                    user_id int not null,
+                    client_id int not null,
+                    recipient_id int not null,
+                    sent_by_id int not null,
+                    replied_to int null,
+                    archived tinyint not null default 0,
                     message_read tinyint not null default 0,
                     message_time timestamp not null default current_timestamp,
                     message text null,
                     primary key  (id),
                      index articles (article_id ),
                      index program_id (program_id ),
-                     index user_id ( user_id )
+                     index recipient_id ( recipient_id ),
+                     index client_id ( client_id )
                      )
                     {$charset_collate}
 
