@@ -4871,6 +4871,24 @@ class e20rTracker {
         }
     }
 
+    /**
+     * Sort the two posts in ascending order
+     *
+     * @param $a -- Post to compare (including time variable)
+     * @param $b -- Post to compare against (including time variable)
+     * @return int -- Return -1 if the Delay for post $a is greater than the delay for post $b
+     *
+     * @access private
+     */
+    public function sort_descending( $a, $b )
+    {
+        if ($a->sent == $b->sent)
+            return 0;
+
+        // Descending Sort Order
+        return ($a->sent > $b->sent) ? -1 : +1;
+    }
+
     public function remove_old_files() {
 
         $files = array(
