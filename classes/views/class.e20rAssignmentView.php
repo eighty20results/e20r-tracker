@@ -977,7 +977,7 @@ class e20rAssignmentView extends e20rSettingsView {
                                 <input type="hidden" class="e20r-message-id-hidden" name="e20r-message-id[]" value="<?php echo esc_attr($r->response_id); ?>">
                                 <input type="hidden" name="e20r-message-sent-by-hidden[]" value="<?php echo esc_attr($r->message_sender_id); ?>">
                                 <input type="hidden" name="e20r-message-timestamp[]" value="<?php echo esc_attr($r->message_time); ?>">
-                                <?php echo sprintf(__("From %s on %s", "e20rtracker"), esc_attr($from), esc_attr($r->message_time)); ?>
+                                <?php echo sprintf(__("From %s on %s", "e20rtracker"), esc_attr($from), esc_attr(date(get_option('dateformat'), strtotime( $r->message_time) )) ); ?>
                             </div>
                             <div class="e20r-message-history-message-body">
                                 <?php echo stripslashes($r->message); ?>
