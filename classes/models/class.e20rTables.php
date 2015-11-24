@@ -126,6 +126,7 @@ class e20rTables {
             'answer'        => 'answer',
             'field_type'    => 'field_type',
             'program_id'    => 'program_id',
+            'response_id'   => 'response_id',
             'delay'         => 'delay',
         );
     }
@@ -137,8 +138,12 @@ class e20rTables {
             'assignment_id' => 'assignment_id',
             'article_id'    => 'article_id',
             'program_id'    => 'program_id',
-            'user_id'       => 'user_id',
+            'client_id'     => 'client_id',
+            'recipient_id'  => 'recipient_id',
+            'replied_to'    => 'replied_to',
+            'sent_by_id'    => 'sent_by_id',
             'message_read'  => 'message_read',
+            'archived'      => 'archived',
             'message_time'  => 'message_time',
             'message'       => 'message',
         );
