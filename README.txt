@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3.1
-Stable tag: 1.5.14
+Stable tag: 1.5.15
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,19 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.15 ==
+
+* Send e-mail notice if user sends a message to their coach.
+* Remove inactive (no longer member) clients from list of clients to display in drop-down
+* Used wrong identifier in get_user_by()
+* Only attempt to update the login timestamp if the User ID is something other than 0
+* Didn't properly account for cases where the user's login timestamp wasn't correctly recorded.
+* Didn't include the date when displaying message summary in thickbox
+* Don't include timestamp (avoid UTC/TZ issues)
+* Include instant(ish) messaing history in back-end sorted message-history page/tab
+* Add method for extracting the Assignment question based on assignment_id value
+* Sort based on 'sent' attribute in array(s)
 
 == 1.5.14 ==
 
