@@ -1469,6 +1469,11 @@ class e20rArticle extends e20rSettings
             $content = $update_reminder . $content;
         }
 
+        if ( has_shortcode($content, 'daily_progress') ) {
+
+            $content = $this->view->new_message_warning() . $content;
+        }
+
         dbg("e20rArticle::contentFilter() - Content being returned.");
         return (is_null($data) ? $content : $data . $content);
     }
@@ -1656,7 +1661,7 @@ class e20rArticle extends e20rSettings
         if (!isset($currentArticle->id) && (!is_null($article_id))) {
 
             dbg("e20rArticle::shortcode_article_summary() - Configure article settings (not needed?) ");
-            $this->init($currentArticle->id);
+            $this->init($article_id);
         }
 
         $defaults = $this->model->defaultSettings();
