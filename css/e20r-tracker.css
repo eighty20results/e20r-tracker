@@ -2526,11 +2526,6 @@ div.e20r-popupfoot {
 div.e20r-message-content p {
     text-align: left;
 }
-textarea.e20r-assignment-reply_area {
-    width: 100%;
-    height: 90%;
-    margin: 0;
-}
 @media screen and (max-width:1040px), screen and (min-width:380px) {
     .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
         padding: 10px !important;
