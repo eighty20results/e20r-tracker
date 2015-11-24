@@ -19,11 +19,11 @@ class e20rAction extends e20rSettings
     // "Enum" for the types of check-ins
     protected $types = array(
         'none' => 0,
-        'action' => CHECKIN_ACTION,
-        'assignment' => CHECKIN_ASSIGNMENT,
-        'survey' => CHECKIN_SURVEY,
-        'activity' => CHECKIN_ACTIVITY,
-        'note' => CHECKIN_NOTE
+        'action' => CHECKIN_ACTION, // 1
+        'assignment' => CHECKIN_ASSIGNMENT, // 2
+        'survey' => CHECKIN_SURVEY, // 3
+        'activity' => CHECKIN_ACTIVITY, // 4
+        'note' => CHECKIN_NOTE // 5
     );
 
     // checkedin values: 0 - false, 1 - true, 2 - partial, 3 - not applicable
@@ -1095,6 +1095,8 @@ class e20rAction extends e20rSettings
             $config->userId = $current_user->ID;
         }
 
+        $this->checkin = $this->load_default_checkins();
+
 //		dbg("e20rAction::dailyProgress() - Config settings: ");
 //		dbg($config);
 
@@ -1237,7 +1239,7 @@ class e20rAction extends e20rSettings
             } // End of foreach()
 
             dbg("e20rAction::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}..");
-            // dbg($this->checkin);
+            dbg($this->checkin);
 
             return $this->load_UserCheckin($config, $this->checkin);
         }
@@ -1293,6 +1295,17 @@ class e20rAction extends e20rSettings
             return $e20rAssignment->showAssignment($assignments, $config);
 
         }
+    }
+
+    public function load_default_checkins() {
+
+        $defaults = array();
+
+        $defaults[CHECKIN_ACTION] = $this->model->defaultCheckin( CHECKIN_ACTION );
+        $defaults[CHECKIN_ASSIGNMENT] = $this->model->defaultCheckin( CHECKIN_ASSIGNMENT );
+        $defaults[CHECKIN_NOTE] = $this->model->defaultCheckin( CHECKIN_NOTE );
+
+        return $defaults;
     }
 
     public function load_UserCheckin($config, $checkinArr)
