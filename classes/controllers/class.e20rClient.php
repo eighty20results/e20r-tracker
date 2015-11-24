@@ -1668,10 +1668,11 @@ class e20rClient
         return $content;
     }
 
-    public function shortcode_clientProfile( $atts = null)
+    public function shortcode_clientProfile( $atts = null, $content = null )
     {
 
         dbg("e20rClient::shortcode_clientProfile() - Loading shortcode data for the client profile page.");
+		// dbg($content);
 
         global $current_user;
 
@@ -1803,7 +1804,7 @@ class e20rClient
         }
 
         $html = $this->view->view_clientProfile($tabs);
-        dbg("e20rClient::shortcode_clientProfile() - Display the HTML for the e20r_profile short code");
+        dbg("e20rClient::shortcode_clientProfile() - Display the HTML for the e20r_profile short code: " . strlen($html));
 
         return $html;
 
