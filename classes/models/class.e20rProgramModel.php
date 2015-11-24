@@ -101,6 +101,8 @@ class e20rProgramModel extends e20rSettingsModel {
 
     public function load_program_members( $programId ) {
 
+        global $e20rTracker;
+
         dbg("e20rProgram::load_program_members() - Loading users with Program ID: {$programId}");
 
         if ( 0 == $programId ) {
@@ -123,6 +125,13 @@ class e20rProgramModel extends e20rSettingsModel {
         }
 
         $user_list = get_users( $args );
+
+        foreach( $user_list as $k => $u ) {
+
+            if ( !$e20rTracker->isActiveClient( $u->ID ) ) {
+                unset( $user_list[$k] );
+            }
+        }
 
         dbg("e20rProgram::load_program_members() - User Objects returned: " . count( $user_list ) );
 
