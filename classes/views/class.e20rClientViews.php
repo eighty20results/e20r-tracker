@@ -45,7 +45,7 @@ class e20rClientViews {
             else {
 
                 foreach( $messages as $when => $message ) {
-                    $when = date_i18n('Y-m-d \a\t H:i', $when );
+                    $when = date_i18n('Y-m-d', $when );
                     $sender = get_user_by('id', $message->sender_id ); ?>
 
                 <tr class="e20r-client-message-history-entry">
@@ -80,6 +80,7 @@ class e20rClientViews {
     private function remove_html_comments($content = '') {
 	    return preg_replace('/<!--(.|\s)*?-->/', '', $content);
     }
+
     public function display_client_list( $clients ) {
 
         global $e20rProgram;
@@ -574,7 +575,7 @@ class e20rClientViews {
 <!--                        <td><a href="#" id="e20r-client-info" class="e20r-choice-button button" ><?php _e('Client Info', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-compliance" class="e20r-choice-button button" ><?php _e('Compliance', 'e20r-tracker'); ?></a></td>
                             <td><a href="#" id="e20r-client-assignments" class="e20r-choice-button button" ><?php _e('Assignments', 'e20r-tracker'); ?></a></td> -->
-                        <td><a href="#" id="e20r-client-load-measurements" class="e20r-choice-button button" ><?php _e('Load Information', 'e20r-tracker'); ?></a></td>
+                        <td><a href="#" id="e20r-client-load-measurements" class="e20r-choice-button button" ><?php _e('Load', 'e20r-tracker'); ?></a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -583,13 +584,13 @@ class e20rClientViews {
         <hr class="e20r-admin-hr" />
 	    <div id="status-tabs" style="max-width: 800px; width: 100%;" class="startHidden" data-role='z-tabs'>
 		    <ul>
-			    <li><a href="#tabs-1">Measurements</a></li>
-			    <li><a href="#tabs-2">Assignments</a></li>
-			    <li><a href="#tabs-3">Achievements</a></li>
-			    <li><a href="#tabs-4">Activities</a></li>
-                <li><a href="#tabs-5">Client Info</a></li>
-                <li><a href="#tabs-6">Send Message</a></li>
-                <li><a href="#tabs-7">Message History</a></li>
+			    <li><a href="#tabs-1"><?php _e("Measurements", "e20rtracker");?></a></li>
+			    <li><a href="#tabs-2"><?php _e("Assignments", "e20rtracker");?></a></li>
+			    <li><a href="#tabs-3"><?php _e("Achievements", "e20rtracker");?></a></li>
+			    <li><a href="#tabs-4"><?php _e("Activities", "e20rtracker");?></a></li>
+                <li><a href="#tabs-5"><?php _e("Client Info", "e20rtracker");?></a></li>
+                <li><a href="#tabs-6"><?php _e("Send E-Mail", "e20rtracker");?></a></li>
+                <li><a href="#tabs-7"><?php _e("Message History", "e20rtracker");?></a></li>
 		    </ul>
 	        <div id="tabs-1">
 		        <div id="e20r-progress-measurements">

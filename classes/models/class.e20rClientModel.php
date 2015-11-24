@@ -113,11 +113,16 @@ class e20rClientModel {
         global $wpdb;
 
         global $e20rTables;
+        global $e20rTracker;
+        global $e20rAssignment;
 
         global $currentProgram;
 
         $table = $e20rTables->getTable('message_history');
         $fields = $e20rTables->getFields('message_history');
+
+        $r_table = $e20rTables->getTable('response');
+        $r_fields = $e20rTables->getFields('response');
 
         $sql = $wpdb->prepare("
             SELECT  {$fields['id']},
@@ -127,6 +132,7 @@ class e20rClientModel {
                     {$fields['sent']}
             FROM {$table}
             WHERE {$fields['user_id']} = %d AND {$fields['program_id']} = %d
+            ORDER BY {$fields['sent']}
             ",
             $userId,
             $currentProgram->id );
@@ -137,11 +143,40 @@ class e20rClientModel {
 
         dbg("e20rClientModel::load_message_history() - Found " . count( $messages) . " messages for user with ID {$userId}");
 
+        $resp_sql = $wpdb->prepare("
+            SELECT  {$r_fields['id']} AS id,
+                    {$r_fields['sent_by_id']} AS sender_id,
+                    {$r_fields['assignment_id']} AS assignment_id,
+                    {$r_fields['message']} AS message,
+                    {$r_fields['message_time']} AS sent
+            FROM {$r_table}
+            WHERE {$r_fields['client_id']} = %d AND {$fields['program_id']} = %d
+            ORDER BY {$r_fields['message_time']}
+            ",
+            $userId,
+            $currentProgram->id
+        );
+
+        $responses = $wpdb->get_results( $resp_sql );
+
+        $merged = array_merge( $responses, $messages );
+
+        dbg("e20rClientModel::load_message_history() - Found " . count( $responses ) . " messages in response table for user with ID {$userId}");
+        dbg("e20rClientModel::load_message_history() - Total messages for {$userId}: " . count( $merged ));
+
+        usort( $merged, array(&$e20rTracker, 'sort_descending' ));
+
         $history = array();
 
-        if ( !empty( $messages ) ) {
+        if ( !empty( $merged ) ) {
 
-            foreach ( $messages as $message ) {
+            foreach ( $merged as $message ) {
+
+                if ( isset( $message->assignment_id)) {
+                    $message->topic = $e20rAssignment->get_assignment_question( $message->assignment_id );
+                }
+
+                $message->message = stripslashes( $message->message );
                 $sent_date = strtotime( $message->sent );
                 // $sent_date = date_i18n('Y-m-d \a\t H:i', strtotime($message->sent));
                 unset($message->sent); // Make the date for the sent message the format we want.
