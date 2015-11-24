@@ -811,8 +811,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                   ({$fields['recipient_id']} = %d) AND
                   ({$fields['client_id']} = %d) AND
                   ({$fields['sent_by_id']} <> %d) AND
-                  (({$fields['message_read']} = 0 AND {$fields['archived']} = 0) OR
-                  ({$fields['archived']} = 0 AND {$fields['archived']} = 1))
+                  ({$fields['message_read']} = 0 AND {$fields['archived']} = 0)
                 )";
 
         $sql = $wpdb->prepare( $sql, $currentProgram->id, $client_id, $client_id, $current_user->ID );
@@ -836,7 +835,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
             dbg("e20rAssignmentModel::has_unread_message() - Checking if message # {$message->response_id} is read: {$message->read_status}");
 
-            if ( ( 0 == $message->read_status  ) && ( $current_user->ID != $message->message_sender_id ) && ( 0 == $message->archived ) ) {
+            if ( ( 0 == $message->read_status  ) && ( $current_user->ID != $message->message_sender_id ) && ( 0 == $message->archived ) && ($current_user->ID == $message->recipient_id)) {
 
                 dbg("e20rAssignmentModel::has_unread_message() - Found unread messages");
                 return true;
@@ -849,9 +848,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     private function thread_is_archived( $messages ) {
 
+        global $current_user;
+
         foreach( $messages as $message ) {
 
-            if ( 1 == $message->archived ) {
+            if (( 1 == $message->archived ) && ( $current_user->ID == $message->recipient_id ) ) {
                 return true;
             }
         }
@@ -885,6 +886,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 {$r_fields['id']} AS response_id,
                 {$r_fields['message_time']} AS message_time,
                 {$r_fields['sent_by_id']} AS message_sender_id,
+                {$r_fields['recipient_id']} AS recipient_id,
                 {$r_fields['message_read']} AS read_status,
                 {$r_fields['archived']} AS archived,
                 {$r_fields['message']} AS message
