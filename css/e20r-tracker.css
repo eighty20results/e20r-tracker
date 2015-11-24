@@ -419,6 +419,7 @@ div#inner-tabs .ui-tabs-nav .ui-state-default {
 div#inner-tabs .ui-tabs-nav .ui-state-default a {
     color: #555;
     font-variant: small-caps;
+    font-weight: 700;
 }
 div#inner-tabs .ui-tabs-panel {
     background: transparent;
@@ -430,7 +431,11 @@ div#inner-tabs > ul.ui-tabs-nav .ui-state-active a {
 }
 div#inner-tabs .ui-tabs-nav .ui-state-active {
     background: transparent url(../img/uiArrow.png) no-repeat bottom center;
-    border: none;
+    /* border: 1px solid #c5c5c5; */
+    /* border-bottom: 1px solid #fff !important; */
+}
+div#inner-tabs div.inner-tab {
+    border-top: 1px solid #c5c5c5;
 }
 .expand {
     height: 28px;
