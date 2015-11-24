@@ -33,14 +33,16 @@ Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 
 10/22/2015:
 
-Enh: Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
 See: http://jsfiddle.net/istvanv/uQj7t/28/ for a pop-over option.
 
 11/02/2015:
 
 
 11/06/2015:
-Fix issue with codetabs in e20r_profile shortcode on small screens (doesn't wrap/resize).
+Fix: (P1) issue with codetabs in e20r_profile shortcode on small screens (doesn't wrap/resize).
+
+11/23/2015:
+
 
 == Completed / Fixed ==
 
@@ -61,7 +63,10 @@ Fix: (P0) List of exercise statistics in archive can start before the users prog
 Fix: (P0) Activity settings didn't always get loaded correctly.
 Fix: (P0) Activity description is being saved twice
 Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
-Fid: (P0) The gravity forms form on the interview page loads but is hidden (Caused by Cloudflare Rocket engine - Javascript optimization that doesn't quite work right)
+Fix: (P0) The gravity forms form on the interview page loads but is hidden (Caused by Cloudflare Rocket engine - Javascript optimization that doesn't quite work right)
+Fix: (P0) issue of not displaying e20r_profile when some of the check-in definitions are missing.
+Fix: (P0) issue where "showing day in the past" is listed when there is no defined article (should show undefined, etc)
+
 
 Fix: (P1) Client info not loading correctly (the data) for back-end form.
 Fix: (P1) Problems adding assignments to article (non-default ones).
@@ -81,6 +86,7 @@ Enh: (P0) Prevent the daily assignment short code from bleeding into the actual 
 Enh: (P0) Log and show last login for user on client information page
 Enh: (P0) Add sent email message to client information page (so other coaches can see what's happened/been sent).
 Enh: (P0) Add ability to schedule an email message to a coaching client.
+Enh: (P0) Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
 
 Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
 Enh: (P1) Fix measurements form.

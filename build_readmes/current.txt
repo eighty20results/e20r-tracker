@@ -1,4 +1,56 @@
-Didn't use specified post_id when looking up a post for the card configuration
-Rename loadWorkoutData() to load_activity();
-Didn't always include the exercise ID when saving workout record.
-Rename loadWorkoutData() to load_activity();
+Update version number (1.5.14)
+Add update functionality for v11 of the DB tables
+Would sometimes fail to display the profile/daily progress check-in content.
+Not displaying e20r_profile when some of the expected check-in definitions for the article are missing
+Showing "day in the past" warning when some of the expected check-in definitions for the article are missing
+Tweak border & font weight for inner tabs when displaying measurements, etc.
+Add debug for unread message count Correctly handle show/hide of new message alert on page load.
+Load new message alert to post if daily_progress shortcode is present in content
+Incorrect use of currentArticle->id before the article had been initialized/loaded
+Use new load_user_assignment_info() so we include message history as well
+Add AJAX handler for message status updates
+Add AJAX handler to save message replies from front/back-end
+Add AJAX handler to return assignment list (HTML, including messages & history) for a specific client ID
+Include controller functions for heartbeat handling and identifying how many new messages a client has
+Would return a positive message count for user, even when all messages were either read or archived has_unread_messages() included messages sent from the current user when looking for new messages
+thread_is_archvied() would include messages sent from the current user when reporting that a message wasn't archived
+Include recipient_id when looking up message history
+Include the new_message_warning() HTML in the content whenever we're looking at a page/post with a e20r_profile, e20_progress_overview or e20r_activity_archive shortcode.
+Working to isolate issue where profile isn't displaying if there isn't at least one action, activity and check-in included for dailyProgress in the article definition
+Process message history and insert in the Assignments list (feedback goes with assignments, for now(?))
+Refactor and move to e20r-assignments CSS file
+Refactor and handle message transmission/reception better
+Force initial heartbeat within 2 seconds of page loading.
+Add e20r_response fields to better manage to/from of messages
+Add support for archiving a message (by the recipient)
+Remove invalid null entries for settings that are arrays.
+Add handling for e20r_response table (messages between clients & coaches)
+Simplify loading of user assignment data & have it include any messages.
+Add formatting for message alert, history & transmission
+Add heartbeat handling so we can use the heartbeat to update new message status on front
+Add AJAX handler to reload assignment list on progress page/tabs
+Load e20r-assignments.js for back-end (handle messages)
+Add autoGrown for message input
+Include assignments scripts (message handling) to list of scripts to load for e20r_profile and progress_overview shortcodes
+Clean up unused code from load_frontend_scripts()
+Add handler for assignments to load_frontend_scripts()
+Add thickbox support to progress overview in load_frontend_scripts()
+Add e20r_response table to database & ensure client ID and recipient ID are indexed
+Add alert for new coach messages to pages with progress overview and profile view
+Refactored is_user_logged_in() for daily_progress shortcode
+Add basic handler for coach/client messaging AJAX
+Commented out the saveAssignment_callback() (apparantly unused?) function.
+Add handler for client/coach messaging system
+Init the e20rClientAssignment class when the AJAX load of the assignments table has been completed (if applicable)
+Fix color management for back-end buttons
+Format size of feedback textarea
+Add feedback messages/buttons for assignments
+Add AJAX handler for assignment replies/feedback
+Load assignments JavaScript in back-end to handle submitting/reading new assinment feedback
+Add 'read' flag in e20r_response table
+Return result of dbDelta() for the e20r_response table
+Add coach specific feedback buttons for assignments table.
+Update response table definition
+Move response fields out of assignments table, use response_id for the assignment and save response data in its own table (e20r_responses).
+Add response table definition
+Add response fields to e20r_assignments table
