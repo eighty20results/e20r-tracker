@@ -116,7 +116,8 @@ class e20rAssignment extends e20rSettings {
 		}
 
 		$delay = $e20rArticle->releaseDay( $articleID );
-		return $this->model->loadUserAssignment( $articleID, $userId, $delay, $assignmentId );
+		// return $this->model->loadUserAssignment( $articleID, $userId, $delay, $assignmentId );
+        return $this->model->load_user_assignment_info( $userId, $assignmentId, $articleID );
 	}
 
     public function findAssignmentItemId( $articleId ) {
@@ -281,13 +282,129 @@ class e20rAssignment extends e20rSettings {
         // TODO: Complete implementation of this function.
     }
 
-    public function add_coach_reply() {
+    public function update_message_status() {
+
+        global $e20rTracker;
+        global $e20rTables;
 
         check_ajax_referer('e20r-tracker-data', 'e20r-assignment-nonce');
 
-        dbg("e20rAssignment::add_coach_reply() - Showing the content of the REQUEST");
-        dbg($_REQUEST);
+        dbg("e20rAssignment::update_message_status() - Showing the content of the REQUEST");
+        // dbg($_POST );
 
+        $message_ids = isset($_POST['message-id']) ? json_decode( stripslashes( $_POST['message-id'])) : null;
+        $message_status = isset($_POST['message-status']) ? intval( $_POST['message-status'] ) : false;
+        $status_type = isset( $_POST['status-type']) ? $e20rTracker->sanitize( $_POST['status-type']) : null;
+
+
+        dbg("e20rAssignment::update_message_status() - Message ids: " . print_r($message_ids, true));
+        dbg("e20rAssignment::update_message_status() - Status type: {$status_type}");
+
+        if ( !is_null( $status_type ) ) {
+
+            $fields = $e20rTables->getFields('response');
+
+            switch ($status_type) {
+                case 'archive':
+                    $status_field = $fields['archived'];
+                    break;
+
+                case 'read':
+                    $status_field = $fields['message_read'];
+                    break;
+            }
+        }
+
+        if ( !empty( $message_ids ) ) {
+
+            dbg("e20rAssignment::update_message_status() - Found message ids to update status for!");
+
+            foreach( $message_ids as $message_id ) {
+
+                if ( false === $this->model->update_reply_status($message_id, $message_status, $status_field)) {
+
+                    dbg("e20rAssignment::update_message_status() - Error updating status for record #{$message_id}");
+
+                    wp_send_json_error(
+                        array(
+                            'message' =>
+                                sprintf( __("Error: Unable to update the status for message: (#%s}).", "e20rtracker"), $message_id )
+                        )
+                    );
+                }
+            }
+        }
+
+        dbg("e20rAssignment::update_message_status() - Completed status update...");
+        wp_send_json_success();
+    }
+
+    public function add_assignment_reply() {
+
+        global $e20rTracker;
+        global $current_user;
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-assignment-nonce');
+
+        dbg("e20rAssignment::add_assignment_reply() - Showing the content of the REQUEST");
+        dbg($_POST );
+
+        $data = array();
+        $data['assignment_id'] = isset($_POST['assignment-id']) ? $e20rTracker->sanitize( $_POST['assignment-id'] ) : null;
+        $data['article_id'] = isset($_POST['article-id']) ? $e20rTracker->sanitize( $_POST['article-id'] ) : null;
+        $data['program_id'] = isset($_POST['program-id']) ? $e20rTracker->sanitize( $_POST['program-id'] ) : null;
+        $data['client_id'] = isset($_POST['client-id']) ? $e20rTracker->sanitize( $_POST['client-id'] ) : null;
+        $data['recipient_id'] = isset($_POST['recipient-id']) ? $e20rTracker->sanitize( $_POST['recipient-id'] ) : null;
+        $data['sent_by_id'] = isset($_POST['sent-by-id']) ? $e20rTracker->sanitize( $_POST['sent-by-id'] ) : null;
+        $data['replied_to'] = isset($_POST['replied-to']) ? $e20rTracker->sanitize( $_POST['replied-to'] ) : null;
+        $data['message_time'] = isset($_POST['message-date']) ? $e20rTracker->sanitize( $_POST['message-date'] ) : current_time('mysql');
+        $data['message'] = isset($_POST['reply-text']) ? wpautop( sanitize_text_field( $_POST['reply-text']) ) : null;
+        $data['message_read'] = 0;
+        $data['archived'] = 0;
+
+        $delay = isset($_POST['assignment-delay']) ? $e20rTracker->sanitize( $_POST['assignment-delay'] ) : null;
+
+
+        if ( is_null($data['assignment_id']) || is_null($data['article_id']) || is_null( $data['program_id']) || is_null($data['message_time']) || is_null( $data['message']) ) {
+
+            dbg("e20rAssignment::add_assignment_reply() - ERROR: Missing data from front-end!!");
+            wp_send_json_error( array('message' => sprintf( __( "Error: Unable to save assignment reply for assignment ID %d and user ID %d", "e20rtracker"), $data['assignment_id'], $data['user_id'] ) ) );
+        }
+
+        // $am_coach = $e20rTracker->is_a_coach($current_user->ID);
+
+        dbg("e20rAssignment::add_assignment_reply() - We have data to process/update for {$data['client_id']}");
+        // $existing_assignment = $this->model->loadUserAssignment( $data['article_id'], $data['user_id'], $delay , $data['assignment_id'] );
+        $existing_assignment = $this->model->load_user_assignment_info( $data['client_id'], $data['assignment_id'], $data['article_id'] );
+
+        if ( empty( $existing_assignment ) ) {
+
+            dbg("e20rAssignment::add_assignment_reply() - ERROR: No previously existing assignment found, so shouldn't have been possible!");
+            wp_send_json_error( array('message' => __( "Error: No assignment found to reply to!", "e20rtracker")));
+        }
+
+        if ( count( $existing_assignment) > 1) {
+            dbg("e20rAssignment::add_assignment_reply() - ERROR: More than a single assignment record found for user/assignment");
+            wp_send_json_error( array('message' => sprintf( __( "Error: Multiple (%d) assignments found for %d reply for assignment ID %d and user %d", "e20rtracker" ), count($existing_assignment), $data['assignment_id'], $data['user_id']) ) );
+
+        }
+
+        $assignment_info = array_pop( $existing_assignment );
+        dbg($assignment_info);
+        $data['record_id'] = $assignment_info->id;
+
+        dbg('e20rAssignment::add_assignment_reply() - Assignment reply data: ');
+        dbg($data);
+
+        if ( false === $this->model->save_response( $data ) ) {
+
+            wp_send_json_error( array('message' => __( "Error: Unable to save response, or update assignment information", "e20rtracker") ) );
+        }
+
+        $history = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
+        $message_history = $this->view->message_history( $history, $data['recipient_id'], $data['assignment_id'] );
+
+        wp_send_json_success( array('message_history' => $message_history ));
     }
 
 	public function listUserAssignments( $userId ) {
@@ -309,6 +426,28 @@ class e20rAssignment extends e20rSettings {
 
 		return $this->view->viewAssignmentList( $config, $answers );
 	}
+
+    public function client_has_unread_messages( $client_id ) {
+
+        global $e20rProgram;
+
+        $e20rProgram->getProgramIdForUser( $client_id );
+
+        return $this->model->user_has_new_messages( $client_id );
+    }
+
+    public function heartbeat_received( $response, $data ) {
+
+        dbg("e20rAssignment::heartbeat_received() - Received heartbeat. Checking for new messages");
+        $client_id = isset( $data['e20r_message_request'] ) ? intval( $data['e20r_message_request'] ) : null;
+
+        if ( !is_null( $client_id ) ) {
+            dbg("e20rAssignment::heartbeat_received() - New message for user {$client_id}");
+            $response['e20r_message_status'] = $this->client_has_unread_messages( $client_id );
+        }
+
+        return $response;
+    }
 
     public function update_metadata() {
 
@@ -662,6 +801,25 @@ class e20rAssignment extends e20rSettings {
                 echo $post_releaseDay;
             }
         }
+    }
+
+    /** Load the assignments table via AJAX... */
+    public function ajax_assignmentData() {
+
+        global $e20rTracker;
+
+        check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce');
+        dbg("e20rAssignment::ajax_assignmentData() - Got a valid NONCE");
+
+        $client_id = isset($_POST['client-id']) ? $e20rTracker->sanitize( $_POST['client-id']) : null;
+
+        if ( !is_null( $client_id ) ) {
+
+            $html = $this->listUserAssignments( $client_id );
+            wp_send_json_success(array('assignments' => $html));
+        }
+
+        wp_send_json_error(array('message' => "No assignment data for client ({$client_id})"));
     }
 
 }
