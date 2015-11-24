@@ -22,6 +22,25 @@ class e20rActionModel extends e20rSettingsModel {
 */
     }
 
+    public function defaultCheckin( $type ) {
+
+        global $currentProgram;
+        global $current_user;
+
+        $default = new stdClass();
+        $default->id = null;
+        $default->user_id = $current_user->ID;
+        $default->program_id = $currentProgram->id;
+        $default->article_id = CONST_NULL_ARTICLE;
+        $default->checkin_date = date('Y-m-d', current_time('timestamp'));
+        $default->checkin_type = $type;
+        $default->checkin_note = null;
+        $default->checkedin = null;
+        $default->checkin_short_name = 'default_check_in';
+
+        return $default;
+    }
+
     public function defaultSettings() {
 
         global $post;
