@@ -738,16 +738,29 @@ class e20rSettingsModel {
                     // Clean up in case something isn't being returned correctly
                     $val = array( $val );
                 }
-/*
-				if ( ! is_array( $val ) ) {
-					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
-				}
-				else {
-					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
-					dbg($val);
-				}
-*/
-				if ( $val == false ) {
+
+                if ( is_array( $val ) && ( 1 == count($val))) {
+
+                    $copy = $val;
+                    $tmp = array_pop( $copy );
+
+                    if ( empty($tmp) ) {
+
+                        dbg("e20r" . ucfirst($this->type) ."Model::settings() - {$key} contains a single null array value/element");
+                        $val = array();
+                    }
+                }
+
+                /*
+                                if ( ! is_array( $val ) ) {
+                                    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
+                                }
+                                else {
+                                    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
+                                    dbg($val);
+                                }
+                */
+				if ( ( !is_array( $val ) ) && ( $val == false ) ) {
 
 					$this->settings->{$key} = null;
 				}
