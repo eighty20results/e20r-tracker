@@ -369,7 +369,6 @@ class e20rAssignment extends e20rSettings {
 
         $delay = isset($_POST['assignment-delay']) ? $e20rTracker->sanitize( $_POST['assignment-delay'] ) : null;
 
-
         if ( is_null($data['assignment_id']) || is_null($data['article_id']) || is_null( $data['program_id']) || is_null($data['message_time']) || is_null( $data['message']) ) {
 
             dbg("e20rAssignment::add_assignment_reply() - ERROR: Missing data from front-end!!");
@@ -395,7 +394,7 @@ class e20rAssignment extends e20rSettings {
         }
 
         $assignment_info = array_pop( $existing_assignment );
-        dbg($assignment_info);
+        // dbg($assignment_info);
         $data['record_id'] = $assignment_info->id;
 
         dbg('e20rAssignment::add_assignment_reply() - Assignment reply data: ');
@@ -408,6 +407,21 @@ class e20rAssignment extends e20rSettings {
 
         $history = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
         $message_history = $this->view->message_history( $history, $data['recipient_id'], $data['assignment_id'] );
+
+        if ( ( $data['client_id'] == $data['recipient_id'] ) && ( $e20rTracker->is_a_coach( $data['recipient_id']) ) ) {
+
+            $coach = get_user_by('id', $data['recipient_id']);
+            $client = get_user_by('id', $data['client_id']);
+
+            $header = array();
+            $client_assignment_lnk = admin_url( "?page=e20r-client-info&e20r-client-id={$data['client_id']}&e20r-level-id={$data['program_id']}");
+            $text = "%s has sent a new (instant) message via the %s website. Please <a href='%s' target='_blank'>log in<a/> and then click <a href='%s' target='_blank'>this link</a> to open the Assignment history for %s.";
+
+            $subject = sprintf( __("New message on %s from %s", "e20rtracker"), get_option('blogname'), $client->display_name);
+            $content = sprintf( __($text, "e20rtracker"), $client->display_name, get_option('blogname'), wp_login_url(), $client_assignment_lnk, $client->user_firstname );
+
+            wp_mail( $coach->user_email, $subject, $content, $header );
+        }
 
         wp_send_json_success( array('message_history' => $message_history ));
     }
