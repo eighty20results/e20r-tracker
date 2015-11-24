@@ -1,5 +1,23 @@
 <?php
 
+if ( !function_exists( "e20r_update_db_to_11" ) ) {
+
+    function e20r_update_db_to_11( $version )
+    {
+
+        if (!e20r_should_we_run($version)) {
+            return;
+        }
+
+        $real_version = $version[0];
+        global $wpdb;
+        global $e20rTracker;
+
+        dbg("e20r_update_db_to_11() - Updating version setting so we won't re-run");
+        $e20rTracker->updateSetting('e20r_db_version', $real_version );
+    }
+}
+
 if ( !function_exists( "e20r_update_db_to_10" ) ) {
 
     function e20r_update_db_to_10( $version )
