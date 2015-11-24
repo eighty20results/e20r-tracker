@@ -192,6 +192,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $settings;
     }
 
+    public function get_assignment_question( $assignment_id ) {
+
+        $text = get_the_title( $assignment_id );
+        wp_reset_postdata();
+
+        return $text;
+    }
 	public function loadAllUserAssignments( $userId ) {
 
 		global $e20rTracker;

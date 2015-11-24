@@ -45,6 +45,11 @@ class e20rAssignment extends e20rSettings {
         return $this->model->getArticleAssignments( $articleId );
     }
 
+    public function get_assignment_question( $assignment_id ) {
+
+        return $this->model->get_assignment_question( $assignment_id );
+    }
+
 	public function getInputType( $id ) {
 
 		return $this->model->getInputType( $id );
