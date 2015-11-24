@@ -479,7 +479,7 @@ class e20rProgram extends e20rSettings {
 
                 dbg("e20rProgram::selectProgramForUser() - Didn't have a coach but is member of a program so assigning a coach to user {$user->ID} with gender {$currentClient->gender}");
                 $id = $e20rClient->assign_coach( $user->ID, $currentClient->gender );
-                $u = get_user_by( 'ID', $id );
+                $u = get_user_by( 'id', $id );
                 $coach_id = array( $id => $u->display_name );
             }
             else {
@@ -575,7 +575,7 @@ class e20rProgram extends e20rSettings {
 
         foreach( $coach_ids as $id ) {
 
-            $tmp = get_user_by( $id );
+            $tmp = get_user_by( 'id', $id );
             $coaches[$id] = $tmp->display_name;
         }
 
