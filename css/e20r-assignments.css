@@ -154,3 +154,141 @@ td.measurement-date a {
     text-decoration: underline;
     color: #004CFF;
 }
+.e20r-message-history-message {
+    border: 1px solid #dedede;
+    margin: 4px;
+    text-align: left;
+    font-size: 10pt;
+    width: 100%;
+}
+.e20r-message-history {
+    background-color: #dedede !important;
+    /* padding: 10px; */
+    width: 100%;
+    font-weight: 600;
+}
+.e20r-message-history-unread {
+    background-color: rgba(58, 212, 22, 0.5);
+    font-weight: 600;
+    /* padding: 10px; */
+    width: 100%;
+}
+div.e20r-message-history-not-last {
+    background-color: rgba(255, 128, 0, 0.5);
+}
+.e20r-message-history-who {
+    font-size: 1.1rem;
+    padding-left: 10px;
+    padding-top: 10px;
+}
+.e20r-message-history-message-body {
+    padding: 10px;
+}
+h3.e20r-message-reply-header {
+    text-align: left;
+    border-bottom: 3px solid #c5c5c5;
+    color: #004CFF;
+    margin: 20px 0 0;
+}
+.e20r-message-ack {
+    float: right;
+    margin-right: 10px;
+    margin-top: -25px;
+}
+.e20r-message-ack-button {
+    float: right;
+    font-size: 10pt;
+    bottom: 10px;
+    position: relative;
+}
+textarea.e20r-assignment-reply_area {
+    width: 100%;
+    min-height: 5em !important;
+    margin: 0;
+    background: #efefef;
+    color: #000;
+    font-size: 12pt;
+    border: 4px solid #c5c5c5;
+}
+.e20r-message-most-recent {
+    width: 100%;
+    border: 4px solid rgb(251, 71, 2);
+}
+tr.e20r-messages-new {
+    background-color: rgba(251, 71, 2, 0.4 );
+}
+h3.e20r-new-message-alert-h3 {
+    color: #333;
+    text-align: center;
+    font-size: 1.0rem;
+}
+span.orange-background {
+    background-color: rgba(251,71,2, 0.4);
+    padding-left: 5px;
+    padding-right: 5px;
+    color: #333;
+    font-weight: 600;
+}
+div.e20r-tracker-new-message-alert-txt a {
+    font-weight: 700;
+}
+
+div.e20r-tracker-new-message-alert-txt li {
+    padding-bottom: 10px;
+}
+button#e20r-new-message-dismiss-button {
+    margin: auto;
+    background-color: #FFF;
+    border: 1px solid #c5c5c5;
+    text-align: center;
+    text-decoration: none;
+    text-transform: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: none;
+    text-shadow: none;
+    width: 150px;
+    padding: 4px 7px;
+    font-size: 10pt;
+    color: #999 !important;
+    display: block;
+    background-image: -webkit-linear-gradient(#FFF,#FFF);
+    background-image: -moz-linear-gradient(#FFF,#FFF);
+    background-image: -o-linear-gradient(#FFF,#FFF);
+    background-image: linear-gradient(#FFF,#FFF);
+}
+button#e20r-new-message-dismiss-button:hover {
+    color: #FFF !important;
+    background-color: #999 !important;
+    background-image: -webkit-linear-gradient(#999,#999);
+    background-image: -moz-linear-gradient(#999,#999);
+    background-image: -o-linear-gradient(#999,#999);
+    background-image: linear-gradient(#999,#999);
+}
+span.e20r-help-description-text {
+    padding-top: 20px;
+    font-size: 90%;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+}
+div.e20r-message-reply {
+    padding-bottom: 10px;
+}
+.e20r-message-status-text {
+    background-color: #c5c5c5;
+    text-align: left;
+    margin: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    width: auto;
+}
+div.e20r-message-status-text {
+    font-family: "Courier New";
+    font-size: 10pt;
+    font-style: italic;
+}
+div.e20r-message-from-self {
+    background-color: #efefef;
+}
