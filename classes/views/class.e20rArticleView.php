@@ -102,6 +102,43 @@ class e20rArticleView extends e20rSettingsView {
 
     }
 
+    public function new_message_warning() {
+
+        global $currentProgram;
+        global $currentArticle;
+
+        global $e20rAssignment;
+        global $current_user;
+
+        $unread_messages = $e20rAssignment->client_has_unread_messages( $current_user->ID );
+
+
+        ob_start(); ?>
+        <div class="e20r-new-message-alert orange-notice <?php echo ( false === $unread_messages ? 'startHidden' : null );  ?>">
+            <input type="hidden" name="e20r-message-user-id" value="<?php echo $current_user->ID;?>" id="e20r-message-user-id">
+            <input type="hidden" name="e20r-message-new-count" value="<?php echo ($unread_messages === false ? 0 : $unread_messages); ?>" id="e20r-messages-previous-count">
+            <h4><span class="highlighted"><?php _e("New message!", "e20rtracker"); ?></span></h4>
+
+            <div class="e20r-tracker-new-message-alert-txt">
+                <li><?php _e("Your coach has sent you a new message.", "e20rtracker");?> <a href="javascript:void(0);" id="e20r-read-messages-btn"><?php _e("Click to read message(s)", "e20rtracker"); ?> &raquo;</a></li>
+                <form action="<?php echo get_permalink($currentProgram->progress_page_id); ?>" method="POST" id="e20r-start">
+                    <input type="hidden" value="<?php echo ( isset( $currentArticle->id ) ? $currentArticle->id : null) ; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+                </form>
+                <button id="e20r-new-message-dismiss-button" class="e20r-dismiss-button button"><?php _e("Hide", "e20rtracker"); ?></button>
+                <li>
+                    <span class="e20r-help-description-text">
+                        <?php _e("You can read and reply to your messages via the 'Assignments' tab on the 'Progress' page/tab.", "e20rtracker"); ?>
+                        <?php _e("The assignment response row will be an <span class='orange-background'>orange row</span> wherever there are unread messages.", "e20rtracker"); ?>
+                    </span>
+                </li>
+
+            </div>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
+
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
