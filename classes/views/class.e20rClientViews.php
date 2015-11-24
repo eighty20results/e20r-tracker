@@ -449,16 +449,21 @@ class e20rClientViews {
 
         $program_length = $e20rTracker->getDateFromDelay( 'now', $clientId );
 
-        if ( false !== $last_login ) {
+        if ( !empty( $last_login ) ) {
 
             $format = apply_filters( "e20r-tracker-date-format", get_option( 'date_format') );
 
             if ( 0 != $last_login ) {
-                $when = date_i18n( 'l, F j, Y', $last_login );
+                $when = date_i18n( $format, $last_login );
                 $days_since_login = $e20rTracker->daysBetween( $last_login, $today, get_option('timezone_string') );
-
             }
         }
+        else {
+            dbg("e20rClientViews::show_lastLogin() - No last_login information found for {$clientId}!");
+            $when = 'Not recorded?';
+            $days_since_login = -1000;
+        }
+
         ob_start();
 
         $user_firstname = ( !isset( $user->user_firstname ) ? 'N/A': $user->user_firstname );
@@ -696,7 +701,7 @@ class e20rClientViews {
 
         dbg("e20rArticleView::add_popup_overlay() - Loading pop-up for {$clientId}");
 
-        $client = get_user_by('ID', $clientId );
+        $client = get_user_by('id', $clientId );
 
         ob_start(); ?>
         <div class="e20r-boxes clearfix">
