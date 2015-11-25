@@ -38,6 +38,12 @@ class e20rActionModel extends e20rSettingsModel {
         $default->checkedin = null;
         $default->checkin_short_name = 'default_check_in';
 
+        if ( CHECKIN_ACTION === $type ) {
+
+            $default->actionList = array();
+            $default->actionList[] = $this->defaultAction();
+        }
+
         return $default;
     }
 
