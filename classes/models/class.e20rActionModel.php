@@ -288,7 +288,7 @@ class e20rActionModel extends e20rSettingsModel {
 		return $results;
 	}
 
-    public function loadUserCheckin( $config, $userId, $type, $short_name = null ) {
+    public function get_user_checkin( $config, $userId, $type, $short_name = null ) {
 
         global $wpdb;
         global $current_user;
@@ -298,7 +298,7 @@ class e20rActionModel extends e20rSettingsModel {
         global $e20rArticle;
         global $e20rTracker;
 
-	    dbg("e20rActionModel::loadUserCheckin() - Loading type {$type} check-ins for user {$userId}");
+	    dbg("e20rActionModel::get_user_checkin() - Loading type {$type} check-ins for user {$userId}");
 
         $programId = $e20rProgram->getProgramIdForUser( $userId );
 
@@ -311,11 +311,11 @@ class e20rActionModel extends e20rSettingsModel {
         }
 	    // if ( $currentAction->articleId )
 
-        dbg("e20rActionModel::loadUserCheckin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
+        dbg("e20rActionModel::get_user_checkin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}");
 
         if ( is_null( $short_name ) ) {
 
-            dbg("e20rActionModel::loadUserCheckin() - No short_name defined...");
+            dbg("e20rActionModel::get_user_checkin() - No short_name defined...");
             $sql = $wpdb->prepare(
                 "SELECT *
                  FROM {$this->table} AS c
@@ -332,7 +332,7 @@ class e20rActionModel extends e20rSettingsModel {
             );
         }
         else {
-            dbg("e20rActionModel::loadUserCheckin() - short_name defined: {$short_name}");
+            dbg("e20rActionModel::get_user_checkin() - short_name defined: {$short_name}");
             $sql = $wpdb->prepare(
                 "SELECT *
                  FROM {$this->table} AS c
@@ -351,21 +351,21 @@ class e20rActionModel extends e20rSettingsModel {
             );
         }
 
-        // dbg("e20rActionModel::loadUserCheckin() - SQL: {$sql}");
+        // dbg("e20rActionModel::get_user_checkin() - SQL: {$sql}");
 
         $result = $wpdb->get_row( $sql );
 
         if ( $result === false ) {
 
-            dbg("e20rActionModel::loadUserCheckin() - Error loading check-in: " . $wpdb->last_error );
+            dbg("e20rActionModel::get_user_checkin() - Error loading check-in: " . $wpdb->last_error );
             return null;
         }
 
-        dbg("e20rActionModel::loadUserCheckin() - Loaded {$wpdb->num_rows} check-in records");
+        dbg("e20rActionModel::get_user_checkin() - Loaded {$wpdb->num_rows} check-in records");
 
         if ( empty( $result ) ) {
 
-            dbg( "e20rActionModel::loadUserCheckin() - No check-in records found for this user (ID: {$current_user->ID})");
+            dbg( "e20rActionModel::get_user_checkin() - No check-in records found for this user (ID: {$current_user->ID})");
 
             /*
             if ( empty( $this->settings ) ) {
@@ -379,22 +379,22 @@ class e20rActionModel extends e20rSettingsModel {
 
 	        if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
 
-		        dbg( "e20rActionModel::loadUserCheckin() - Default action: Found one or more ids");
+		        dbg( "e20rActionModel::get_user_checkin() - Default action: Found one or more ids");
 
 		        foreach ( $a as $i ) {
 
 			        $n_type = $this->getSetting( $i, 'checkin_type' );
 
-			        dbg( "e20rActionModel::loadUserCheckin() - Default action: Type settings for {$i}: {$n_type}");
+			        dbg( "e20rActionModel::get_user_checkin() - Default action: Type settings for {$i}: {$n_type}");
 
 			        if ($n_type == $type ) {
 
-				        dbg('e20rActionModel::loadUserCheckin() - Default action: the type settings are correct. Using it...');
+				        dbg('e20rActionModel::get_user_checkin() - Default action: the type settings are correct. Using it...');
 				        $result->id = $i;
 				        break;
 			        }
 
-			        dbg("e20rActionModel::loadUserCheckin() - Default action: the type mismatch {$n_type} != {$type}. Looping again.");
+			        dbg("e20rActionModel::get_user_checkin() - Default action: the type mismatch {$n_type} != {$type}. Looping again.");
 		        }
 
 	        }
@@ -409,7 +409,7 @@ class e20rActionModel extends e20rSettingsModel {
             $result->checkedin = null;
             $result->checkin_short_name = $short_name;
 
-            dbg("e20rActionModel::loadUserCheckin() - Default action: No user record found");
+            dbg("e20rActionModel::get_user_checkin() - Default action: No user record found");
             // dbg($result);
         }
 
