@@ -2148,7 +2148,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
 
-            $this->load_frontend_scripts('daily_progress');
+            $this->load_frontend_scripts('assignments', 'daily_progress');
         }
     }
 
