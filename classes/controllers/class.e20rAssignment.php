@@ -408,12 +408,16 @@ class e20rAssignment extends e20rSettings {
         $history = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
         $message_history = $this->view->message_history( $history, $data['recipient_id'], $data['assignment_id'] );
 
-        if ( ( $data['client_id'] == $data['recipient_id'] ) && ( $e20rTracker->is_a_coach( $data['recipient_id']) ) ) {
+        if ( ( $data['client_id'] != $data['recipient_id'] ) && ( $e20rTracker->is_a_coach( $data['recipient_id']) ) ) {
+
+            dbg('e20rAssignment::add_assignment_reply() - Sending notification email to coach');
 
             $coach = get_user_by('id', $data['recipient_id']);
             $client = get_user_by('id', $data['client_id']);
 
-            $header = array();
+            $header = array(
+                sprintf( 'From: %s, <%s>\r\n', $client->display_name, $client->user_email ),
+            );
             $client_assignment_lnk = admin_url( "?page=e20r-client-info&e20r-client-id={$data['client_id']}&e20r-level-id={$data['program_id']}");
             $text = "%s has sent a new (instant) message via the %s website. Please <a href='%s' target='_blank'>log in<a/> and then click <a href='%s' target='_blank'>this link</a> to open the Assignment history for %s.";
 
