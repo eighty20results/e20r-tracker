@@ -137,7 +137,7 @@ class e20rAction extends e20rSettings
         }
 
         dbg("e20rAction::hasCompletedLesson() - Check if the database indicates a completed lesson...");
-        $checkin = $this->model->loadUserCheckin($config, $userId, CHECKIN_ASSIGNMENT);
+        $checkin = $this->model->get_user_checkin($config, $userId, CHECKIN_ASSIGNMENT);
 
         if (isset($checkin->checkedin) && ($checkin->checkedin == 1)) {
 
@@ -781,10 +781,14 @@ class e20rAction extends e20rSettings
 
         $config->startTS = strtotime($currentProgram->startdate);
 
-        if (isset($_POST['e20r-use-card-based-display'])) {
+        dbg($_POST);
 
-            dbg("e20rAction::configure_dailyProgress() - using card-based display setting from calling page");
-            $config->use_cards = $e20rTracker->sanitize($_POST['e20r-use-card-based-display']);
+        if (isset($_POST['e20r-use-card-based-display'])) {
+            dbg("e20rAction::configure_dailyProgress() - From calling page/entity: {$_POST['e20r-use-card-based-display']}");
+            $card_setting = $e20rTracker->sanitize($_POST['e20r-use-card-based-display']);
+            $config->use_cards = ($card_setting ? true : false);
+
+            dbg("e20rAction::configure_dailyProgress() - using card-based display setting from calling page: {$config->use_cards}");
         }
 
         if (isset($_POST['e20r-action-day'])) {
@@ -1155,11 +1159,11 @@ class e20rAction extends e20rSettings
                 dbg("e20rAction::dailyProgress() - No check-in ids stored for this user/article Id...");
 
                 // Set default checkin data (to ensure rendering of form).
-                $this->checkin[CHECKIN_ACTION] = $this->model->loadUserCheckin($config, $config->userId, CHECKIN_ACTION);
+                $this->checkin[CHECKIN_ACTION] = $this->model->get_user_checkin($config, $config->userId, CHECKIN_ACTION);
                 $this->checkin[CHECKIN_ACTION]->actionList = array();
                 $this->checkin[CHECKIN_ACTION]->actionList[] = $this->model->defaultAction();
 
-                $this->checkin[CHECKIN_ACTIVITY] = $this->model->loadUserCheckin($config, $config->userId, CHECKIN_ACTIVITY);
+                $this->checkin[CHECKIN_ACTIVITY] = $this->model->get_user_checkin($config, $config->userId, CHECKIN_ACTIVITY);
 
                 $config->post_date = $e20rTracker->getDateForPost($config->delay);
                 $checkinIds = $this->model->findActionByDate($config->post_date, $config->programId);
@@ -1198,8 +1202,8 @@ class e20rAction extends e20rSettings
 
                         dbg("e20rAction::dailyProgress() - Loading data for daily action check-in & action list");
 
-                        $checkin = $this->model->loadUserCheckin($config, $config->userId, $settings->checkin_type, $settings->short_name);
-                        $note = $this->model->loadUserCheckin($config, $config->userId, CHECKIN_NOTE, $settings->short_name);
+                        $checkin = $this->model->get_user_checkin($config, $config->userId, $settings->checkin_type, $settings->short_name);
+                        $note = $this->model->get_user_checkin($config, $config->userId, CHECKIN_NOTE, $settings->short_name);
                         $checkin->actionList = $this->model->getActions($id, $settings->checkin_type, -3);
 
                         break;
@@ -1207,13 +1211,13 @@ class e20rAction extends e20rSettings
                     case $this->types['activity']:
 
                         dbg("e20rAction::dailyProgress() - Loading data for daily activity check-in");
-                        $checkin = $this->model->loadUserCheckin($config, $config->userId, $settings->checkin_type, $settings->short_name);
+                        $checkin = $this->model->get_user_checkin($config, $config->userId, $settings->checkin_type, $settings->short_name);
                         break;
 
                     case $this->types['note']:
                         // We handle this in the action check-in.
                         dbg("e20rAction::dailyProgress() - Explicitly loading data for daily activity note(s)");
-                        $note = $this->model->loadUserCheckin($config, $config->userId, CHECKIN_NOTE, $settings->short_name);
+                        $note = $this->model->get_user_checkin($config, $config->userId, CHECKIN_NOTE, $settings->short_name);
                         break;
 
                     default:
