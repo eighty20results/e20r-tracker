@@ -10,6 +10,7 @@ jQuery.noConflict();
 
 var $body = jQuery("body");
 
+/*
 jQuery(document).on({
     ajaxStart: function () {
         $body.addClass("loading");
@@ -18,7 +19,7 @@ jQuery(document).on({
         $body.removeClass("loading");
     }
 });
-
+*/
 jQuery(document).ready(function () {
 
     var e20rCheckinEvent = {
@@ -75,6 +76,8 @@ jQuery(document).ready(function () {
                 event.preventDefault();
                 self.dayNav(self, this);
 
+                jQuery("body").removeClass("loading");
+
             });
 
             jQuery(self.$yesterdayBtn).unbind('click').on('click', function () {
@@ -84,26 +87,32 @@ jQuery(document).ready(function () {
                 event.preventDefault();
                 self.dayNav(self, this);
 
+                jQuery("body").removeClass("loading");
+
             });
 
             jQuery(self.$activityLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for activity");
 
-                jQuery("body").addClass("loading");
+                // jQuery("body").addClass("loading");
                 event.preventDefault();
 
                 self.toActivity(self);
+
+                // jQuery("body").removeClass("loading");
             });
 
             jQuery(self.$actionLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for action");
 
-                jQuery("body").addClass("loading");
+//                jQuery("body").addClass("loading");
                 event.preventDefault();
 
                 self.toAction(this, self);
+
+//                jQuery("body").removeClass("loading");
             });
 
         },
@@ -168,7 +177,7 @@ jQuery(document).ready(function () {
 
 //            console.log("Type: ", jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_type:first') );
 
-            jQuery('body').addClass("loading");
+            // $body.addClass("loading");
 
             var $data = {
                 action: 'e20r_saveCheckin',
@@ -190,7 +199,7 @@ jQuery(document).ready(function () {
                 if (!response.success) {
 
                     var $string;
-                    $string = "An error occurred when trying to save your choice to the S3F Nourish Coaching database. If you\'d like to try again, reload ";
+                    $string = "An error occurred when trying to save your choice to the database. If you\'d like to try again, reload ";
                     $string += "this page, and click your selection once more. \n\nIf you get this error a second time, please contact Technical Support by using our Contact form ";
                     $string += "at the top of this page.";
 
@@ -281,7 +290,7 @@ jQuery(document).ready(function () {
 
             });
 
-            jQuery('body').removeClass("loading");
+            // $body.removeClass("loading");
         },
         editCheckin: function (elem) {
 
@@ -301,6 +310,8 @@ jQuery(document).ready(function () {
         dayNav: function (self, elem) {
 
             event.preventDefault();
+
+//            $body.addClass("loading");
 
             var navDay = jQuery(elem).next("input[name^='e20r-action-day']").val();
             var today = jQuery('#e20r-action-today').val();
@@ -400,7 +411,7 @@ jQuery(document).ready(function () {
 
                 },
                 complete: function () {
-                    jQuery("body").removeClass("loading");
+//                    $body.removeClass("loading");
                 }
             });
 
@@ -432,6 +443,8 @@ jQuery(document).ready(function () {
 
              $body.removeClass("loading");
              */
+
+//            $body.removeClass("loading");
         },
         toAction: function (elem, self) {
 
@@ -456,7 +469,7 @@ jQuery(document).ready(function () {
         toActivity: function (self) {
 
             console.log("Clicked the 'Read more' link for the activity");
-            jQuery('body').addClass("loading");
+//            jQuery('body').addClass("loading");
 
             var data = {
                 'e20r-action-nonce': self.$nonce,
@@ -613,6 +626,7 @@ jQuery(document).ready(function () {
         saveAnswers: function (self) {
 
             event.preventDefault();
+//            $body.addClass("loading");
 
             var $mc_answers = jQuery('.e20r-select2-assignment-options');
 
@@ -664,6 +678,7 @@ jQuery(document).ready(function () {
                 }
             });
 
+//            $body.removeClass("loading");
             return false;
         }
     };
@@ -760,6 +775,7 @@ jQuery(document).ready(function () {
         save_note: function ( self ) {
 
             console.log("Content of 'self': ", self);
+            jQuery('body').addClass("loading");
 
             var $elem = jQuery('#save-note');
             var $noteTextarea = jQuery('#note-textarea');
@@ -771,6 +787,7 @@ jQuery(document).ready(function () {
                 && '' == $noteTextarea.val().strip()) {
 
                 console.log("Trigger the save operation while the textarea is empty logic");
+                jQuery('body').removeClass("loading");
                 return $elem.triggerHandler('attempt_save_with_empty_textarea');
             }
 
@@ -805,8 +822,6 @@ jQuery(document).ready(function () {
                 };
 
                 console.log("Note --- Sending: ", data );
-
-                jQuery('body').addClass("loading");
 
                 jQuery.ajax({
                     url: e20r_action.ajaxurl,
@@ -884,6 +899,7 @@ jQuery(document).ready(function () {
                              return;
                         }
 */
+                        jQuery('body').removeClass("loading");
                         console.log("Save operation is complete for user note");
                     }
                 });
@@ -893,7 +909,7 @@ jQuery(document).ready(function () {
             } else {
 
                 self._setEditState();
-
+                jQuery('body').removeClass("loading");
                 console.log("Changing edit state for note section");
                 return;
             }
