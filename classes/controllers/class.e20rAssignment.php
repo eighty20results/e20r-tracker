@@ -418,7 +418,7 @@ class e20rAssignment extends e20rSettings {
             $header = array(
                 sprintf( 'From: %s, <%s>\r\n', $client->display_name, $client->user_email ),
             );
-            $client_assignment_lnk = admin_url( "?page=e20r-client-info&e20r-client-id={$data['client_id']}&e20r-level-id={$data['program_id']}");
+            $client_assignment_lnk = admin_url( "admin.php?page=e20r-client-info&e20r-client-id={$data['client_id']}&e20r-level-id={$data['program_id']}");
             $text = "%s has sent a new (instant) message via the %s website. Please <a href='%s' target='_blank'>log in<a/> and then click <a href='%s' target='_blank'>this link</a> to open the Assignment history for %s.";
 
             $subject = sprintf( __("New message on %s from %s", "e20rtracker"), get_option('blogname'), $client->display_name);
