@@ -784,11 +784,11 @@ class e20rAction extends e20rSettings
         dbg($_POST);
 
         if (isset($_POST['e20r-use-card-based-display'])) {
-            dbg("e20rAction::configure_dailyProgress() - From calling page/entity: {$_POST['e20r-use-card-based-display']}");
+            dbg("e20rAction::configure_dailyProgress() - Card status from the calling page/post: {$_POST['e20r-use-card-based-display']}");
             $card_setting = $e20rTracker->sanitize($_POST['e20r-use-card-based-display']);
             $config->use_cards = ($card_setting ? true : false);
 
-            dbg("e20rAction::configure_dailyProgress() - using card-based display setting from calling page: {$config->use_cards}");
+            dbg("e20rAction::configure_dailyProgress() - using card-based display setting from calling page: ". (false === $config->use_cards ? 'false' : 'true'));
         }
 
         if (isset($_POST['e20r-action-day'])) {
@@ -835,7 +835,7 @@ class e20rAction extends e20rSettings
 
                 $articles = $e20rArticle->findArticlesNear('release_day', $config->delay, $config->programId, '<=');
 
-                dbg("e20rAction::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to today");
+                dbg("e20rAction::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to requested day");
                 $article = $articles[0];
                 $config->using_closest = true;
                 // $article = $e20rArticle->emptyArticle();
