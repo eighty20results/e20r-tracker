@@ -1877,7 +1877,7 @@ class e20rClient
 
                 if (!empty($mHistory)) {
 
-                    ksort($mHistory);
+                    krsort($mHistory);
                     reset($mHistory);
 
                     dbg("e20rClient::shortcode_clientList() - Sorted message history for user {$client->ID}");
@@ -1904,7 +1904,7 @@ class e20rClient
         }
 
         dbg("e20rClient::shortcode_clientList() - Showing client information");
-        dbg($list);
+        // dbg($list);
 
         return $this->view->display_client_list($list);
 
