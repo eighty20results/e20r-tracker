@@ -1,6 +1,1 @@
-Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
-Add list of actions to default check-in structure if the check-in type is an action
-Update debug text to help clarify status
-Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
-Fix typo in error message during check-in save operation
-Fix URL to access new message from client in alert email
+Didn't always load assignments related CSS & JavaScript for daily_progress shortcode
