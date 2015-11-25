@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3.1
-Stable tag: 1.5.16
+Stable tag: 1.5.17
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,12 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.17 ==
+
+* Rename e20rActionModel::loadUserCheckin() to e20rActionModel::get_user_checkin()
+* Couldn't handle situations where the card setting was empty (i.e. default value)
+* Add preventDefault() for day/date navigation in dashboard (ensure the browser doesn't actually follow the link back to the dashboard)
 
 == 1.5.16 ==
 

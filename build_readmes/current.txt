@@ -1,2 +1,3 @@
-Wouldn't send e-mail alerts when client responded to coach.
-Would inadvertently return the first message as the last
+Rename e20rActionModel::loadUserCheckin() to e20rActionModel::get_user_checkin()
+Couldn't handle situations where the card setting was empty (i.e. default value)
+Add preventDefault() for day/date navigation in dashboard (ensure the browser doesn't actually follow the link back to the dashboard)
