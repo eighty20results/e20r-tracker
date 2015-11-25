@@ -300,6 +300,8 @@ jQuery(document).ready(function () {
         },
         dayNav: function (self, elem) {
 
+            event.preventDefault();
+
             var navDay = jQuery(elem).next("input[name^='e20r-action-day']").val();
             var today = jQuery('#e20r-action-today').val();
 
