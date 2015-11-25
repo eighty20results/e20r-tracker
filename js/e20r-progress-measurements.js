@@ -15,6 +15,7 @@ var progMeasurements = {
 
         var $class = this;
 
+        $class.$body = jQuery("body");
         $class.is_running = true;
 
         $class.clientId = attrs.id;
@@ -266,7 +267,7 @@ var progMeasurements = {
                     fxOne: 'wheelVer',
                     speed: 1600,
                     isAutoRun: true,
-                    isKeyboard: true,
+                    isKeyboard: false,
                     idBegin: 0,
                     margin: 10,
                     name: '.profile-tab',
@@ -284,7 +285,7 @@ var progMeasurements = {
                     idBegin: 0,
                     margin: 10,
                     isAutoRun: true,
-                    isKeyboard: true,
+                    isKeyboard: false,
                     pag: {
                         dirs: 'hor',
                         pos: 'top',
@@ -308,7 +309,7 @@ var progMeasurements = {
                     $class.statustabs.codetabs({
                         fxOne: 'foldHor',
                         isAutoRun: true,
-                        isKeyboard: true,
+                        isKeyboard: false,
                         name: '.status-tab',
                         pag: {
                             dirs: 'hor',
@@ -324,7 +325,9 @@ var progMeasurements = {
             });
 
             setTimeout(function () {
+                $class.$body.addClass("loading");
                 $class.loadMeasurementData();
+                $class.$body.removeClass("loading");
             }, 10);
 
             setTimeout(function () {
@@ -381,13 +384,11 @@ var progMeasurements = {
             }, 500);
         });
 
-        $class.$body = jQuery("body");
-
-        jQuery(document).on({
+/*        jQuery(document).on({
             ajaxStart: function() { $class.$body.addClass("loading");    },
             ajaxStop: function() { $class.$body.removeClass("loading"); }
         });
-
+*/
         if ( typeof( e20r_admin ) === 'undefined') {
 
             $class.timeout = e20r_progress.timeout;
@@ -1644,6 +1645,8 @@ var progMeasurements = {
         console.log("Found article field: ", $article);
         // console.log("Found program field: ", $program);
 
+        $class.$body.addClass("loading");
+
         $form.submit( function () {
             jQuery('.load_progress_data').post(
                 $class.$tag.settings.weekly_progress,
@@ -1654,9 +1657,12 @@ var progMeasurements = {
             );
             return false;
         });
-/*        jQuery().post(, $form.serialize(), function(data) {
-                alert("Sent data");
-            }); */
+
+        $class.$body.removeClass("loading");
+
+        /*        jQuery().post(, $form.serialize(), function(data) {
+                        alert("Sent data");
+                    }); */
 /*        $form.submit({
             'e20r-progress-form-date': $date,
             'e20r-progress-form-article': $article

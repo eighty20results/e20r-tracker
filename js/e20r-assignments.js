@@ -10,6 +10,8 @@
 
 jQuery.noConflict();
 
+var $body = jQuery('body');
+
 var e20rClientAssignment = {
     init: function() {
 
@@ -388,6 +390,8 @@ var e20rClientAssignment = {
 
         var $class = this;
 
+        $body.addClass("loading");
+
         console.log("Attempting to save the reply from the coach to the DB");
 
         if ( !( element instanceof jQuery ) ) {
@@ -510,6 +514,8 @@ var e20rClientAssignment = {
                 return true;
             }
         });
+
+        $body.removeClass("loading");
     },
     reload_assignments: function( client_id ) {
 

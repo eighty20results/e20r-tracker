@@ -343,6 +343,7 @@ jQuery(function() {
 
         save: function(self) {
 
+            jQuery(body).addClass("loading");
             var $data = {
                 'action': 'e20r_saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
@@ -368,6 +369,7 @@ jQuery(function() {
                 }
             });
 
+            jQuery(body).removeClass("loading");
             self.changeState('saved');
         },
 
@@ -494,6 +496,8 @@ jQuery(function() {
         }
         else {
 
+            jQuery(body).addClass("loading");
+
             // The user has completed enough of the progress form to let them proceed.
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
@@ -538,6 +542,8 @@ jQuery(function() {
                     location.href = e20r_progress.settings.measurementSaved;
                 }
             });
+
+            jQuery(body).removeClass("loading");
         }
     });
 

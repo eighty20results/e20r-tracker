@@ -4,11 +4,11 @@ jQuery.noConflict();
 
 var $body = jQuery("body");
 
-jQuery(document).on({
+/*jQuery(document).on({
     ajaxStart: function() { $body.addClass("loading");   },
     ajaxStop: function() { $body.removeClass("loading"); }
 });
-
+*/
 (function() {
 
     // prevent double loading

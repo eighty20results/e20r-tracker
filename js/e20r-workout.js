@@ -8,11 +8,12 @@
 
 var $body = jQuery("body");
 
+/*
 jQuery(document).on({
     ajaxStart: function() { $body.addClass("loading");   },
     ajaxStop: function() { $body.removeClass("loading"); }
 });
-
+*/
 var e20rActivity = {
     init: function () {
 
@@ -226,6 +227,8 @@ var e20rActivity = {
 
         event.preventDefault();
 
+        $body.addClass("loading");
+
 //        console.log("Getting ready to save data in the field...");
 
         if ( ! ( $btn instanceof jQuery ) ) {
@@ -246,7 +249,7 @@ var e20rActivity = {
         $rInput.removeClass("active");
         $wInput.removeClass("active");
 
-        jQuery("body").addClass("loading");
+        // jQuery("body").addClass("loading");
 
         /*
         if ( inp.val() != '' ) {
@@ -362,6 +365,8 @@ var e20rActivity = {
         var $class = this;
         event.preventDefault();
 
+        $body.addClass("loading");
+
         // var $data = jQuery("#e20r-activity-input-form").serialize();
 
         var $data = {
@@ -415,6 +420,8 @@ var e20rActivity = {
                     console.log("Completed processing of activity.");
                 }
             });
+
+            $class._clearLoading();
         }
 
     },
@@ -441,7 +448,7 @@ var e20rActivity = {
         return ( 0.89 < $pct );
     },
     _clearLoading: function() {
-        jQuery("body").removeClass("loading");
+        $body.removeClass("loading");
     }
 };
 
