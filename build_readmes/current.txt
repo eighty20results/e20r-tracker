@@ -1,3 +1,6 @@
-Rename e20rActionModel::loadUserCheckin() to e20rActionModel::get_user_checkin()
-Couldn't handle situations where the card setting was empty (i.e. default value)
-Add preventDefault() for day/date navigation in dashboard (ensure the browser doesn't actually follow the link back to the dashboard)
+Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
+Add list of actions to default check-in structure if the check-in type is an action
+Update debug text to help clarify status
+Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
+Fix typo in error message during check-in save operation
+Fix URL to access new message from client in alert email
