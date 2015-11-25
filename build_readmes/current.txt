@@ -1,1 +1,1 @@
-Didn't always load assignments related CSS & JavaScript for daily_progress shortcode
+Load the correct icon for active.png

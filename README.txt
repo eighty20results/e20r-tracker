@@ -122,6 +122,11 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.20 ==
+
+* Load the correct icon for active.png
+
+
 == 1.5.19 ==
 
 * Didn't always load assignments related CSS & JavaScript for daily_progress shortcode
