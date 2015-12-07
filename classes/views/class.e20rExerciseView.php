@@ -107,7 +107,7 @@ class e20rExerciseView
                         <?php
                         if (!empty($currentExercise->rest)) { ?>
                             <span
-                                class="e20r-exercise-value"><?php echo $currentExercise->rest; ?><?php _e('seconds', 'e20rtracker'); ?></span><?php
+                                class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
                         } else { ?>
                             <span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
                         } ?>
@@ -159,7 +159,7 @@ class e20rExerciseView
         ob_start();
         ?>
         <div class="e20r-exercise-table e20r-exercise-detail">
-            <div class="spacer">&nbsp;</div>
+            <div class="e20r-exercise-instructions"><?php _e("Click the image to play video demonstration", "e20rtracker"); ?></div>
             <div class="e20r-exercise-table-header e20r-exercise-detail-row">
                 <div class="e20r-exercise-table-column first-column e20r-exercise-title">
                     <h4 class="e20r-tracker-detail-h4"><?php echo $currentExercise->title; ?></h4>

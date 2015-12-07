@@ -9,7 +9,7 @@
 class e20rWorkoutModel extends e20rSettingsModel {
 
 	protected $settings;
-	protected $types;
+	protected $types = array();
 	protected $table;
 
 	public function __construct() {
@@ -47,7 +47,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         return $this->fields[$name];
     }
 
-	public function getType( $tId ) {
+	public function getType( $tId = null ) {
 
         global $e20rTracker;
 
@@ -55,7 +55,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
             return $this->types[0];
         }
 
-        dbg("e20rWorkoutModel::getType() - Type ID: {$tId}: " . $e20rTracker->whoCalledMe() );
+        dbg("e20rWorkoutModel::getType() - Type ID: {$tId}: {$this->types[$tId]} ->" . $e20rTracker->whoCalledMe() );
 		return $this->types[$tId];
 	}
 
