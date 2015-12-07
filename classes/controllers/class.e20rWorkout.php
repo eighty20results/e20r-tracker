@@ -583,7 +583,7 @@ class e20rWorkout extends e20rSettings
 
             foreach ($activity->groups as $gID => $group) {
 
-                $group->tempo = $this->model->getType($group->group_tempo);
+                $group->group_tempo = $this->model->getType($group->group_tempo);
                 $activity->groups[$gID] = $group;
             }
 
