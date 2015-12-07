@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3.1
-Stable tag: 1.5.19
+Stable tag: 1.5.22
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -122,10 +122,18 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.22 ==
+
+* Fix: The label for the tempo wasn't being printed
+* Fix: Init of the speed types for the Workout/Activity model
+* Fix: Spacing for text when printing exercise description(s)
+* Refactor obsolete CSS and JavaScript files
+* Changelog and version number updates
+
+
 == 1.5.20 ==
 
 * Load the correct icon for active.png
-
 
 == 1.5.19 ==
 
