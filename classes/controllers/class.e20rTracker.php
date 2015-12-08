@@ -2148,7 +2148,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
 
-            $this->load_frontend_scripts('assignments', 'daily_progress');
+            $this->load_frontend_scripts('daily_progress', 'assignments');
         }
     }
 
@@ -2520,7 +2520,7 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'thickbox' => null,
                         'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'dependencies' => array(
                             'heartbeat' => false,
                             'jquery' => false,
@@ -2534,7 +2534,7 @@ class e20rTracker {
                     $scripts = array_replace( $scripts, array(
                         'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
                         'dependencies' => array(
-                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize'),
+                            'e20r_assignments' => array('jquery', 'jquery-ui-core', 'thickbox', 'jquery.autoresize'),
                         )
                     ) );
 
