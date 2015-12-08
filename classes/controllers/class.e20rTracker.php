@@ -2438,7 +2438,7 @@ class e20rTracker {
             $prereqs = array(
                 'jquery' => null,
                 'jquery-ui-core' => null,
-                'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js'
+                'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js'
             );
 
             switch ( $event ) {
@@ -2463,7 +2463,7 @@ class e20rTracker {
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2561,7 +2561,7 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'thickbox' => null,
                         'jquery-ui-tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
@@ -2603,7 +2603,7 @@ class e20rTracker {
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
                         'dependencies' => array(
@@ -2639,7 +2639,7 @@ class e20rTracker {
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
                         'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
                         'e20r_exercise' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
@@ -2684,7 +2684,7 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
                         'base64' => '//javascriptbase64.googlecode.com/files/base64.js',
-                        'jquery.touchpunch' => '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
