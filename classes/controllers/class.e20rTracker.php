@@ -2510,7 +2510,7 @@ class e20rTracker {
                     dbg("e20rTracker::load_frontend_scripts() - Loading the assignments javascripts");
 
                     $css = array_replace( $css, array(
-                        'thickbox.css' => '/'.WPINC.'/js/thickbox/thickbox.css' ,
+                        "thickbox" => WP_SITEURL . '/' . WPINC . '/js/thickbox/thickbox.css',
                         "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
                     ) );
 
@@ -2534,7 +2534,7 @@ class e20rTracker {
                     $scripts = array_replace( $scripts, array(
                         'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
                         'dependencies' => array(
-                            'e20r_assignments' => array('jquery', 'jquery-ui-core', 'thickbox', 'jquery.autoresize'),
+                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize', 'heartbeat'),
                         )
                     ) );
 
