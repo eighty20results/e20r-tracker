@@ -2148,7 +2148,7 @@ class e20rTracker {
 
             dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
 
-            $this->load_frontend_scripts('daily_progress', 'assignments');
+            $this->load_frontend_scripts( array( 'daily_progress', 'assignments' ) );
         }
     }
 
@@ -2508,9 +2508,10 @@ class e20rTracker {
                 case 'assignments':
 
                     dbg("e20rTracker::load_frontend_scripts() - Loading the assignments javascripts");
+                    dbg("e20rTracker::load_frontend_scripts() - Path to thickbox: " . home_url( '/' . WPINC . "/js/thickbox/thickbox.css" ));
 
                     $css = array_replace( $css, array(
-                        "thickbox" => WP_SITEURL . '/' . WPINC . '/js/thickbox/thickbox.css',
+                        "thickbox" => null,
                         "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
                     ) );
 
@@ -2550,7 +2551,7 @@ class e20rTracker {
                     $load_jq_plot = true;
 
                     $css = array_replace( $css, array(
-                        'thickbox.css' => '/'.WPINC.'/js/thickbox/thickbox.css' ,
+                        'thickbox' => null,
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
@@ -2798,6 +2799,10 @@ class e20rTracker {
 
                     dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} CSS");
                     wp_enqueue_style( $tag, $url, false, E20R_VERSION );
+                }
+                else {
+
+                    wp_enqueue_style( $tag );
                 }
             }
 
