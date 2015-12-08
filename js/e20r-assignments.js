@@ -13,7 +13,7 @@ jQuery.noConflict();
 var $body = jQuery('body');
 
 var e20rClientAssignment = {
-    init: function() {
+    init: function () {
 
         this.assignment_replies = jQuery('.e20r-message-history-content');
         this.new_message_alert = jQuery('.e20r-new-message-alert');
@@ -21,7 +21,7 @@ var e20rClientAssignment = {
 
         this.heartbeat_counter = 'now';
 
-        if ( typeof e20r_admin != 'undefined' ) {
+        if (typeof e20r_admin != 'undefined') {
 
             this.url = ajaxurl;
             this.ajax_timeout = e20r_admin.timeout;
@@ -34,7 +34,7 @@ var e20rClientAssignment = {
 
         var self = this;
 
-        jQuery('.e20r-assignment-reply_area').each(function() {
+        jQuery('.e20r-assignment-reply_area').each(function () {
 
             jQuery(this).autoGrow({
                 extraLine: true // Adds an extra line at the end of the textarea. Try both and see what works best for you.
@@ -43,12 +43,12 @@ var e20rClientAssignment = {
 
         var $counter = 1;
 
-        jQuery('table.e20r-measurement-table > tbody > tr').each(function() {
+        jQuery('table.e20r-measurement-table > tbody > tr').each(function () {
 
             var repl_entry = jQuery(this).find('td.e20r-coach-reply');
             var answer = repl_entry.find('div.message-history-content .e20r-message-content');
 
-            if ( answer.length ) {
+            if (answer.length) {
                 console.log("Running through message history #" + answer.sibling('input[name^="e20r-assignment-assignment_id"]').val());
                 var top = answer.find('.e20r-message-most-recent');
 
@@ -65,7 +65,7 @@ var e20rClientAssignment = {
             }
         });
 
-        jQuery('#e20r-new-message-dismiss-button').unbind('click').on('click', function(){
+        jQuery('#e20r-new-message-dismiss-button').unbind('click').on('click', function () {
 
             event.preventDefault();
 
@@ -75,9 +75,9 @@ var e20rClientAssignment = {
         });
 
         // Set up heartbeat handling for message(s).
-        jQuery(document).on('heartbeat-send', function(e, data) {
+        jQuery(document).on('heartbeat-send', function (e, data) {
 
-            if ( typeof data != 'undefined') {
+            if (typeof data != 'undefined') {
 
                 var client_id = jQuery('#e20r-message-user-id').val();
 
@@ -89,14 +89,14 @@ var e20rClientAssignment = {
             }
         });
 
-        jQuery(document).on('heartbeat-error', function(e, jqHXR, textStatus, error) {
+        jQuery(document).on('heartbeat-error', function (e, jqHXR, textStatus, error) {
             self._heartbeat_error(e, jqHXR, textStatus, error);
         });
 
-        jQuery(document).on('heartbeat-tick', function(e, data){
+        jQuery(document).on('heartbeat-tick', function (e, data) {
 
-            var new_messages = int( data['e20r_message_status'] );
-            var old_count = int(jQuery("#e20r-messages-previous-count").val());
+            var new_messages = parseInt(data['e20r_message_status']);
+            var old_count = parseInt(jQuery("#e20r-messages-previous-count").val());
 
             console.log("Old message count: ", old_count);
             console.log("New message count: ", new_messages);
@@ -108,16 +108,16 @@ var e20rClientAssignment = {
                 var dismissed = self.new_message_alert.data('e20rHideWarnings');
                 var client_id = jQuery("#e20r-message-user-id").val();
 
-                if ( 1 == dismissed ) {
+                if (1 == dismissed) {
 
                     console.log("Another new message");
-                    self.reload_assignments( client_id );
-                    self.new_message_alert.fadeIn( 1500 );
+                    self.reload_assignments(client_id);
+                    self.new_message_alert.fadeIn(1500);
 
                 }
             }
 
-            if ( old_count > new_messages ) {
+            if (old_count > new_messages) {
 
                 console.log("Reset the old 'new messages' counter to", new_messages);
                 jQuery("#e20r-messages-previous-count").val(new_messages);
@@ -127,31 +127,31 @@ var e20rClientAssignment = {
 
         self._bind();
     },
-    _heartbeat_error: function(e, jqHXR, textStatus, error) {
+    _heartbeat_error: function (e, jqHXR, textStatus, error) {
         console.log("BEGIN HEARTBEAT ERROR");
         console.log(textStatus);
         console.log(error);
         console.log("END HEARTBEAT ERROR");
 
     },
-    _bind: function() {
+    _bind: function () {
 
         console.log("Running _bind() for e20rClientAssignment class");
 
         var self = this;
 
         /*
-        jQuery("#TB_window,#TB_overlay,#TB_HideSelect").on('unload', function(){
-            console.log("User closed box without sending...")
-            self._clear_textbox( this );
-        });
-        */
-        jQuery(".e20r-assignment-reply-link").unbind('click').on('click', function() {
+         jQuery("#TB_window,#TB_overlay,#TB_HideSelect").on('unload', function(){
+         console.log("User closed box without sending...")
+         self._clear_textbox( this );
+         });
+         */
+        jQuery(".e20r-assignment-reply-link").unbind('click').on('click', function () {
 
             var reply_lnk = jQuery(this);
             self.current_status_row = reply_lnk.closest('td.e20r-coach-reply').closest('tr');
 
-            setTimeout(function(){
+            setTimeout(function () {
 
                 console.log("Link is: ", reply_lnk);
 
@@ -165,7 +165,7 @@ var e20rClientAssignment = {
                 // var question_text = response_window.find('input[name^="e20r-assignment-question"]').val();
                 console.log("User/Coach clicking the 'See messages' button: ", answer_text);
 
-                if (typeof answer_text != 'undefined' ) {
+                if (typeof answer_text != 'undefined') {
 
                     answer_text = answer_text.replace("\"", "'");
 
@@ -180,12 +180,12 @@ var e20rClientAssignment = {
             }, 500);
         });
 
-        jQuery('#e20r-read-messages-btn').unbind('click').on('click', function() {
+        jQuery('#e20r-read-messages-btn').unbind('click').on('click', function () {
 
             var assignments = jQuery('div#profile-tabs.ct').data('codetabs');
             var messages_tab = jQuery('div#status-tabs.ct').data('codetabs');
 
-            setTimeout(function(){
+            setTimeout(function () {
                 self.new_message_alert.fadeOut();
             }, 4000);
 
@@ -196,7 +196,7 @@ var e20rClientAssignment = {
             jQuery('tr.e20r-messages-new:first').focus();
         });
 
-        self.assignment_replies.each(function() {
+        self.assignment_replies.each(function () {
 
             var entry = jQuery(this);
             // var tab = entry.closest('#e20r-progress-assignments');
@@ -204,27 +204,27 @@ var e20rClientAssignment = {
             var ack_button = entry.find('button.e20r-message-ack-button');
             var reply = entry.find('a.e20r-assignment-reply-link');
 
-            ack_button.unbind('click').on('click', function() {
+            ack_button.unbind('click').on('click', function () {
 
                 console.log("User is archiving feedback message");
-                self.update_archive_status( this );
+                self.update_archive_status(this);
             });
 
-            button.unbind('click').on('click', function() {
+            button.unbind('click').on('click', function () {
 
                 console.log("User or coach clicked the 'Send/Save' button");
-                self.save_assignment_reply( this );
+                self.save_assignment_reply(this);
             })
         });
     },
-    _update_status: function( message_ids, $status_type, button ) {
+    _update_status: function (message_ids, $status_type, button) {
 
         var $class = this;
 
         var data = {
             action: 'e20r_update_message_status',
             'e20r-assignment-nonce': jQuery('#e20r-assignment-nonce').val(),
-            'message-id': JSON.stringify( message_ids ),
+            'message-id': JSON.stringify(message_ids),
             'status-type': $status_type,
             'message-status': 1
         };
@@ -248,7 +248,7 @@ var e20rClientAssignment = {
 
                     message_history.removeClass('e20r-message-most-recent');
 
-                    unread_messages.each(function(){
+                    unread_messages.each(function () {
 
                         console.log("Updating message background color class");
                         jQuery(this).removeClass('e20r-message-history-unread')
@@ -256,21 +256,21 @@ var e20rClientAssignment = {
                     })
                 }
             },
-            error: function( $response, $errString, $errType ) {
+            error: function ($response, $errString, $errType) {
 
                 tb_remove();
 
-                console.log("From server: ", $response );
+                console.log("From server: ", $response);
                 console.log("Error String: " + $errString + " and errorType: " + $errType);
 
                 var $msg = '';
 
-                if ( 'timeout' === $errString ) {
+                if ('timeout' === $errString) {
 
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '' ) {
+                if ($response.message != '') {
                     $msg = $response.message;
                 }
                 var $string;
@@ -279,38 +279,38 @@ var e20rClientAssignment = {
                 $string += "please contact Technical Support by using the Contact form ";
                 $string += "at the top of this page.";
 
-                alert( $msg + $string );
+                alert($msg + $string);
 
                 $class.$spinner.hide();
                 return false;
             },
-            complete: function() {
+            complete: function () {
 
             }
         });
     },
-    _update_row_status: function( history, $btn_text ) {
+    _update_row_status: function (history, $btn_text) {
 
         var $class = this;
 
-        if ( typeof $btn_text == 'undefined') {
+        if (typeof $btn_text == 'undefined') {
             console.log("No button text specified. Using 'Review' as the default");
             $btn_text = 'Review';
         }
 
         var row = $class.current_status_row;
 
-        console.log("Number of rows found: ", row.length );
+        console.log("Number of rows found: ", row.length);
 
-        if (row.hasClass('e20rEven') ) {
+        if (row.hasClass('e20rEven')) {
             row.css('background-color', '#e5e5e5');
         }
 
-        if ( row.hasClass('e20rOdd')) {
+        if (row.hasClass('e20rOdd')) {
             row.css('background-color', '#c5c5c5');
         }
 
-        if ( $btn_text == 'nil') {
+        if ($btn_text == 'nil') {
 
             row.find('.e20r-assignment-reply-link').hide();
         }
@@ -319,21 +319,21 @@ var e20rClientAssignment = {
             row.find('.e20r-assignment-reply-link').text($btn_text);
         }
     },
-    update_read_status: function( element ) {
+    update_read_status: function (element) {
 
         var $class = this;
         var message_content;
         var reply_link;
 
-        console.log("Element given to update_read_status(): ", element );
+        console.log("Element given to update_read_status(): ", element);
 
-        if ( !(element instanceof  jQuery ) ) {
+        if (!(element instanceof jQuery )) {
             element = jQuery(element);
         }
 
         var found_id = jQuery(element).find('input[name^="e20r-message-id"]').val();
 
-        if ( typeof found_id == 'undefined' ) {
+        if (typeof found_id == 'undefined') {
 
             console.log("Running from thickbox");
             reply_link = jQuery('#TB_ajaxContent');
@@ -349,44 +349,44 @@ var e20rClientAssignment = {
 
         var message_ids = new Array();
 
-        message_history.each(function(){
+        message_history.each(function () {
             console.log("message_history entry: ", this);
-            message_ids.push( jQuery(this).find('input[name^="e20r-message-id"]').val());
+            message_ids.push(jQuery(this).find('input[name^="e20r-message-id"]').val());
         });
 
         console.log("Message IDs to process for is_read update: ", message_ids);
 
-        if ( message_ids.length != 0 ) {
+        if (message_ids.length != 0) {
 
             console.log("Updating read status for: ", message_ids);
             $class._update_status(message_ids, 'read', message_history.find('.e20r-assignment-reply-button'));
         }
     },
-    update_archive_status: function( button ) {
+    update_archive_status: function (button) {
 
         var $class = this;
 
-        if ( !(button instanceof  jQuery ) ) {
+        if (!(button instanceof jQuery )) {
             button = jQuery(button);
         }
 
         var message_ids = new Array();
-        message_ids.push( button.closest('.e20r-message-history-unread, .e20r-message-history').find('input[name^="e20r-message-id"]').val() );
+        message_ids.push(button.closest('.e20r-message-history-unread, .e20r-message-history').find('input[name^="e20r-message-id"]').val());
 
-        if ( message_ids.length != 0 ) {
+        if (message_ids.length != 0) {
 
             console.log("Updating archive status for message # ", message_ids);
-            $class._update_status( message_ids, 'archive', button );
+            $class._update_status(message_ids, 'archive', button);
 
             button.closest('.e20r-message-history-unread').css('background-color', '#fbfbfb');
             button.fadeOut();
-            setTimeout(function() {
+            setTimeout(function () {
 
                 button.closest('.e20r-message-history-message').fadeOut();
-            }, 3000 );
+            }, 3000);
         }
     },
-    save_assignment_reply: function( element ) {
+    save_assignment_reply: function (element) {
 
         var $class = this;
 
@@ -394,7 +394,7 @@ var e20rClientAssignment = {
 
         console.log("Attempting to save the reply from the coach to the DB");
 
-        if ( !( element instanceof jQuery ) ) {
+        if (!( element instanceof jQuery )) {
             element = jQuery(element);
         }
 
@@ -417,8 +417,8 @@ var e20rClientAssignment = {
 
         console.log("Client ID: " + client_id + " and Sent-by ID: " + sent_by_id);
 
-        if ( client_id == sent_by_id ) {
-            $class.update_read_status( element );
+        if (client_id == sent_by_id) {
+            $class.update_read_status(element);
         }
 
         var data = {
@@ -444,23 +444,23 @@ var e20rClientAssignment = {
             type: 'POST',
             dataType: 'JSON',
             data: data,
-            success: function(res) {
+            success: function (res) {
 
                 var message_area;
 
                 tb_remove();
 
-                if ( ( res.success ) ) {
+                if (( res.success )) {
 
-                    console.log("Successfully saved response for " + recipient_id );
+                    console.log("Successfully saved response for " + recipient_id);
                     console.log("Clearing the text field");
 
                     top.find("textarea[name^='e20r-assignment-message']").val('');
 
-                    console.log("Received data from save: ", res.data.message_history );
+                    console.log("Received data from save: ", res.data.message_history);
                     var $content = top.find('.e20r-message-content');
 
-                    if ( !$content.length ) {
+                    if (!$content.length) {
 
                         top.find('.e20r-message-history-content').find('textarea.e20r-assignment-reply_area').insertBefore('<div class="e20r-message-content"></div>');
                         message_area = top.find('.e20r-message-content');
@@ -475,27 +475,27 @@ var e20rClientAssignment = {
                     message_area.append(res.data.message_history);
 
                     console.log("Updating the status of the row - color & button text");
-                    $class._update_row_status( message_area, 'Review' );
+                    $class._update_row_status(message_area, 'Review');
                     // $class.update_read_status();
 
                     return true;
                 }
             },
-            error: function( $response, $errString, $errType ) {
+            error: function ($response, $errString, $errType) {
 
                 tb_remove();
 
-                console.log("From server: ", $response );
+                console.log("From server: ", $response);
                 console.log("Error String: " + $errString + " and errorType: " + $errType);
 
                 var $msg = '';
 
-                if ( 'timeout' === $errString ) {
+                if ('timeout' === $errString) {
 
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '' ) {
+                if ($response.message != '') {
                     $msg = $response.message;
                 }
                 var $string;
@@ -504,12 +504,12 @@ var e20rClientAssignment = {
                 $string += "please contact Technical Support by using the Contact form ";
                 $string += "at the top of this page.";
 
-                alert( $msg + $string );
+                alert($msg + $string);
 
                 $class.$spinner.hide();
                 return false;
             },
-            complete: function() {
+            complete: function () {
 
                 return true;
             }
@@ -517,7 +517,7 @@ var e20rClientAssignment = {
 
         $body.removeClass("loading");
     },
-    reload_assignments: function( client_id ) {
+    reload_assignments: function (client_id) {
 
         console.log("Load Assignments (using AJAX) for user: " + client_id);
 
@@ -539,7 +539,7 @@ var e20rClientAssignment = {
             data: data,
             success: function (res) {
 
-                if ( ( res.success ) ) {
+                if (( res.success )) {
 
                     console.log("Refreshing assignment data due to new messages being added");
 
@@ -582,67 +582,67 @@ var e20rClientAssignment = {
 
     }
 }
-function setSurveyState( me ) {
-    var elem = jQuery( me ),
-        input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
+function setSurveyState(me) {
+    var elem = jQuery(me),
+        input = elem.is('td.e20r-assignment-ranking-question-choice') ? elem.find('input') : elem;
 
-    if( input.is( ':disabled' ) )
+    if (input.is(':disabled'))
         return false;
 
-    input.prop( 'checked', true );
-    input.closest( 'tr' ).find( '.e20r-assignment-ranking-question-choice-selected' ).removeClass( 'e20r-assignment-ranking-question-choice-selected' );
-    input.parent().addClass( 'e20r-assignment-ranking-question-choice-selected' );
+    input.prop('checked', true);
+    input.closest('tr').find('.e20r-assignment-ranking-question-choice-selected').removeClass('e20r-assignment-ranking-question-choice-selected');
+    input.parent().addClass('e20r-assignment-ranking-question-choice-selected');
     input.focus().change();
 }
 
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
 
     var $multichoice = jQuery('select.e20r-select2-assignment-options');
 
-    if ( $multichoice.length ) {
+    if ($multichoice.length) {
 
         $multichoice.select2();
     }
 
     console.log("Loading Assignment Survey processing");
 
-    if (jQuery( "table.e20r-assignment-ranking-question").length > 0) {
+    if (jQuery("table.e20r-assignment-ranking-question").length > 0) {
 
         console.log("Found a Ranking request in the assignment");
 
         console.log("Processing checkboxes and radio inputs");
 
-        jQuery('td.e20r-assignment-ranking-question-choice').find('input[type="radio"], input[type="checkbox"]').each(function() {
+        jQuery('td.e20r-assignment-ranking-question-choice').find('input[type="radio"], input[type="checkbox"]').each(function () {
 
             var $elem = jQuery(this);
 
-            if ( $elem.is(':checked') ) {
-                $elem.parent().addClass( 'e20r-assignment-ranking-question-choice-selected' );
+            if ($elem.is(':checked')) {
+                $elem.parent().addClass('e20r-assignment-ranking-question-choice-selected');
             }
 
         });
 
-        jQuery( "table.e20r-assignment-ranking-question" ).find( 'td.e20r-assignment-ranking-question-choice, input[type="radio"], input[type="checkbox"]' ).on('click', function(e) {
+        jQuery("table.e20r-assignment-ranking-question").find('td.e20r-assignment-ranking-question-choice, input[type="radio"], input[type="checkbox"]').on('click', function (e) {
 
             console.log("Found a survey choice in the survey question");
 
-            setSurveyState( this );
+            setSurveyState(this);
             /*
-            var elem = jQuery( this ),
-                input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
+             var elem = jQuery( this ),
+             input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
 
-            if( input.is( ':disabled' ) )
-                return false;
+             if( input.is( ':disabled' ) )
+             return false;
 
-            input.prop( 'checked', true );
-            input.closest( 'tr' ).find( '.e20r-assignment-ranking-question-choice-selected' ).removeClass( 'e20r-assignment-survey-question-choice-selected' );
-            input.parent().addClass( 'e20r-assignment-ranking-question-choice-selected' );
-            input.focus().change();
-            */
+             input.prop( 'checked', true );
+             input.closest( 'tr' ).find( '.e20r-assignment-ranking-question-choice-selected' ).removeClass( 'e20r-assignment-survey-question-choice-selected' );
+             input.parent().addClass( 'e20r-assignment-ranking-question-choice-selected' );
+             input.focus().change();
+             */
         });
 
         // add a hover state
-        jQuery("table.e20r-assignment-ranking-question td").on( 'hover', function(e){
+        jQuery("table.e20r-assignment-ranking-question td").on('hover', function (e) {
 
             console.log("User is hovering above ranking option. Changing color");
 
@@ -652,8 +652,8 @@ jQuery(document).ready(function() {
                 jQuery(this).addClass("e20r-assignment-ranking-question-choice-hover");
             }
 
-        }, function(e){
-            if (jQuery(e.target).is("td.e20r-assignment-ranking-question-choice-label") || jQuery(this).find("input").is(':disabled')){
+        }, function (e) {
+            if (jQuery(e.target).is("td.e20r-assignment-ranking-question-choice-label") || jQuery(this).find("input").is(':disabled')) {
                 return false;
             } else {
                 jQuery(this).removeClass("e20r-assignment-ranking-question-choice-hover");
@@ -661,27 +661,27 @@ jQuery(document).ready(function() {
 
         });
 
-        jQuery( 'table.e20r-assignment-survey-question-choice input[type="radio"], input[type="checkbox"]' ).on( 'focus', function() {
-            jQuery( this ).parent().addClass( 'e20r-assignment-ranking-question-choice-hover' );
-        } ).on( 'blur', function() {
-            jQuery( this ).parent().removeClass( 'e20r-assignment-ranking-question-choice-hover' );
-        } );
+        jQuery('table.e20r-assignment-survey-question-choice input[type="radio"], input[type="checkbox"]').on('focus', function () {
+            jQuery(this).parent().addClass('e20r-assignment-ranking-question-choice-hover');
+        }).on('blur', function () {
+            jQuery(this).parent().removeClass('e20r-assignment-ranking-question-choice-hover');
+        });
 
     }
 
     // e20rAssignmentsConfigureSurveyFields();
 
-    if ( typeof e20rClientAssignment != 'undefined') {
+    if (typeof e20rClientAssignment != 'undefined') {
 
         // Reset any 'dismiss' requests on load.
-        wp.heartbeat.interval( 'slow' );
+        wp.heartbeat.interval('slow');
         var new_message_alert = jQuery('.e20r-new-message-alert');
         new_message_alert.data('e20rHideWarnings', 0);
 
         console.log("Loading the assignment handler for clients");
         e20rClientAssignment.init();
 
-        setTimeout(function() {
+        setTimeout(function () {
 
             console.log("Triggering initial heartbeat transmission");
 
@@ -693,11 +693,11 @@ jQuery(document).ready(function() {
 });
 
 /*
-var old_tb_remove = window.tb_remove;
+ var old_tb_remove = window.tb_remove;
 
-var tb_remove = function() {
+ var tb_remove = function() {
 
-    e20rClientAssignment._clear_textbox();
-    old_tb_remove(); // calls the tb_remove() of the Thickbox plugin
-};
-    */
+ e20rClientAssignment._clear_textbox();
+ old_tb_remove(); // calls the tb_remove() of the Thickbox plugin
+ };
+ */
