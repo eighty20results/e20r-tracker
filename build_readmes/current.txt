@@ -1,1 +1,3 @@
-Fix paths to jQuery.ui.touch-punch plug-in
+Fix: Would not load all required scripts for the daily_progress short code
+Fix: Handle default style (already included by Wordpress) dependencies
+Fix thickbox css load
