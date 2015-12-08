@@ -1,2 +1,3 @@
-Fix: Would not save assignments answers
-Refactored e20r-assignments.js
+Load local touch-punch plugin for jQuery.ui
+Force regneration of minified file & initial commit
+Initial commit for locally loaded jQuery.ui touch-punch plug-in.
