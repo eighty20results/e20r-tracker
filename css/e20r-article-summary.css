@@ -1,0 +1,31 @@
+div.e20r-article-post-summary-tile {
+    min-width: 280px;
+    max-width: 640px;
+    width:  80%;
+    margin-left: 10%;
+    margin-right: auto;
+}
+p.e20r-article-post-summary-text {
+    margin-left: 20px;
+    padding: 5px;
+    margin-bottom: 0;
+    list-style: disc outside none;
+    display: list-item;
+}
+p.e20r-article-post-summary-about {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+p.e20r-article-post-summary-dates {
+    font-size: 0.8rem;
+    font-style: italic;
+    margin: 0;
+ }
+h5.e20r-article-post-summary-heading {
+    margin-bottom: 0;
+    padding: 0;
+    font-size: 1.8rem;
+    color: #004c00;
+    font-weight: bold;
+    border-bottom: 1px solid #004c00;
+}

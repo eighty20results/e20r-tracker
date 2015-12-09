@@ -10,8 +10,8 @@ jQuery(document).ready( function(){
 
     jQuery('#e20r-assignments-id').select2();
     jQuery('#e20r-article-post_id').select2();
-    jQuery('#e20r-article-checkins').select2();
-    jQuery('#e20r-article-programs').select2();
+    jQuery('#e20r-article-action_ids').select2();
+    jQuery('#e20r-article-program_ids').select2();
     jQuery('#e20r-article-activity_id').select2();
 
     jQuery(document).on('change', '#e20r-article-post_id', function() {
@@ -19,16 +19,16 @@ jQuery(document).ready( function(){
         jQuery.ajax({
             url: ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_tracker.timeout,
             dataType: 'JSON',
             data: {
-                action: 'getDelayValue',
+                action: 'e20r_getDelayValue',
                 'post_ID': jQuery('#e20r-article-post_id').find('option:selected').val(),
                 'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val()
             },
             success: function( $response ) {
 
-                console.log("Received from getDelayValue: ", $response );
+                console.log("Received from e20r_getDelayValue: ", $response );
 
                 if ( $response.data.nodelay != 0) {
                     console.log("No delay specified. Exiting!");
@@ -42,7 +42,22 @@ jQuery(document).ready( function(){
                 }
             },
             error: function( $response, $errString, $errType ) {
-                console.log($errString + ' error returned from getDelayValue action: ' + $errType );
+                console.log($errString + ' error returned from e20r_getDelayValue action: ' + $errType );
+
+                var $msg;
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to save this data. If you\'d like to try again, please ";
+                $string += "click your selection once more. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using our Contact form ";
+                $string += "at the top of this page.";
+
+                alert( $msg + $string );
             }
         });
 
@@ -57,7 +72,7 @@ function e20r_assignmentEdit( assignmentId, orderNum ) {
     jQuery('#e20r-add-assignment-order_num').val(orderNum);
     jQuery('#e20r-article-assignment-save').empty().append(e20r_tracker.lang.edit);
 
-};
+}
 
 function e20r_assignmentRemove( assignmentId ) {
 
@@ -74,7 +89,7 @@ function e20r_assignmentRemove( assignmentId ) {
     wp.ajax.send({
         url: e20r_tracker.ajaxurl,
         type:'POST',
-        timeout:5000,
+        timeout: e20r_tracker.timeout,
         dataType: 'JSON',
         data: {
             action: "e20r_removeAssignment",
@@ -105,7 +120,7 @@ function e20r_assignmentRemove( assignmentId ) {
 
         }
     });
-};
+}
 
 function e20r_assignmentSave() {
 
@@ -127,12 +142,12 @@ function e20r_assignmentSave() {
     saveBtn.empty().append(e20r_tracker.lang.saving);
 
     var resp = null;
-
+    
     //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
     wp.ajax.send({
         url: e20r_tracker.ajaxurl,
         type:'POST',
-        timeout:5000,
+        timeout: e20r_tracker.timeout,
         dataType: 'JSON',
         data: {
             action: "e20r_addAssignment",
@@ -145,16 +160,22 @@ function e20r_assignmentSave() {
         success: function( resp ){
             console.log("success() - Returned data: ", resp );
 
-            if (resp != '') {
-                // console.log('Entry added to sequence & refreshing metabox content');
+            if ( resp.reload == true ) {
 
-                var mBox = jQuery('#e20r-assignment-settings');
-                // console.log(mBox);
-                mBox.empty().append(resp);
-            } else {
-                console.log('No HTML returned???');
+                location.reload();
             }
+            else {
 
+                if (resp.html != '') {
+                    // console.log('Entry added to sequence & refreshing metabox content');
+
+                    var mBox = jQuery('#e20r-assignment-settings');
+                    // console.log(mBox);
+                    mBox.empty().append(resp.html);
+                } else {
+                    console.log('No HTML returned???');
+                }
+            }
         },
         error: function(jqxhr, $errString, $errType){
             console.log("error() - Returned data: ", jqxhr );

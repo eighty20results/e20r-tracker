@@ -6,8 +6,8 @@ var UNIT = {
     kg: 'kilograms (kg)',
     lbs: 'pounds (lbs)',
     st: 'stone (st)',
-    'in': 'inches (in)',
-    'cm': 'centimeters (cm)',
+    in: 'inches (in)',
+    cm: 'centimeters (cm)',
 
 
     printAbbr: function(fullForm) {
@@ -270,6 +270,8 @@ jQuery(function() {
             // validate
 
             var value = self.$field.val();
+            var lastWeekValue;
+            var diff;
 
             if ('' === value) { // they focused and then unfocused the field without putting anything in... don't pester them with an error
                 return;
@@ -341,8 +343,9 @@ jQuery(function() {
 
         save: function(self) {
 
+            jQuery(body).addClass("loading");
             var $data = {
-                'action': 'saveMeasurementForUser',
+                'action': 'e20r_saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                 'article-id': jQuery('#article_id').val(),
                 'program-id': jQuery('#program_id').val(),
@@ -355,18 +358,18 @@ jQuery(function() {
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
                     console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                    return;
                 },
                 success: function( $retVal ) {
                     console.log($retVal.data);
                 }
             });
 
+            jQuery(body).removeClass("loading");
             self.changeState('saved');
         },
 
@@ -448,7 +451,7 @@ jQuery(function() {
         var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
         var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
         var photosMissing = bool( jQuery('.validate-photos').find('img.photo.null').length );
-        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 ) ? true: false;
+        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 );
 
         if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
 
@@ -493,16 +496,18 @@ jQuery(function() {
         }
         else {
 
+            jQuery(body).addClass("loading");
+
             // The user has completed enough of the progress form to let them proceed.
             jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: {
                     'article-id': jQuery('#article_id').val(),
                     'program-id': jQuery('#program_id').val(),
-                    'action': 'saveMeasurementForUser',
+                    'action': 'e20r_saveMeasurementForUser',
                     'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                     'date': jQuery('#date').val(),
                     'user-id': NourishUser.user_id,
@@ -510,8 +515,26 @@ jQuery(function() {
                     'measurement-value': 1
                 },
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from saveMeasurementForUser action: ' + $errType );
-                    return;
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the content on this page. If you\'d like to try again, please ";
+                    $string += "reload this page and re-enter your values. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.\n\n";
+                    $string += "We apologize for the inconvenience.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
                 },
                 success: function($response) {
                     // location.href = e20r_progress.settings.measurementSaved;
@@ -519,6 +542,8 @@ jQuery(function() {
                     location.href = e20r_progress.settings.measurementSaved;
                 }
             });
+
+            jQuery(body).removeClass("loading");
         }
     });
 
@@ -528,25 +553,42 @@ jQuery(function() {
                 .find('input[name^=pquestion]')
                 .click(function() {
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
                         'measurement-value': jQuery(this).val(),
                         'user-id': NourishUser.user_id,
                         'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val(),
+                        'program-id': jQuery('#program_id').val()
                     };
 
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                            return;
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save this measurement. If you\'d like to try again, please ";
+                            $string += "reload this page and enter this value again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                         }
                     });
                 });
@@ -554,7 +596,7 @@ jQuery(function() {
             jQuery('textarea[name=essay1]')
                 .blur(function() {
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': jQuery(this).attr('data-measurement-type'),
@@ -567,12 +609,29 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                            return;
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save your progress note. If you\'d like to try again, please ";
+                            $string += "reload this page and enter the note again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                         },
                         success: function($response) {
                             console.dir($response);
@@ -609,7 +668,7 @@ jQuery(function() {
             console.log("Query String: " + queryString);
 
             var $data = {
-                'action': 'updateUnitTypes',
+                'action': 'e20r_updateUnitTypes',
                 'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'querystring': queryString,
                 'user-id': NourishUser.user_id
@@ -618,11 +677,29 @@ jQuery(function() {
             jQuery.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the measurement unit type. If you\'d like to try again, please ";
+                    $string += "reload this page and select this value again. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
                 },
                 success: function() {
                     console.log("Updated all old values in DB")
@@ -671,18 +748,36 @@ jQuery(function() {
                         'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                         'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation,
-                        'action': 'deletePhoto',
+                        'action': 'e20r_deletePhoto',
                         'user-id': NourishUser.user_id
                     };
 
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_deletePhoto()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to delete this photo. If you\'d like to try again, please ";
+                            $string += "reload this page and retry the delete operation again. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                         },
                         success: function( $response ) {
 
@@ -763,7 +858,7 @@ jQuery(function() {
 
                     // Save the image value with the measurements data
                     var $data = {
-                        'action': 'saveMeasurementForUser',
+                        'action': 'e20r_saveMeasurementForUser',
                         'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
                         'date': jQuery('#date').val(),
                         'measurement-type': orientation + '_image',
@@ -777,11 +872,29 @@ jQuery(function() {
                     jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
-                        timeout: 10000,
+                        timeout: e20r_progress.timeout,
                         dataType: 'JSON',
                         data: $data,
                         error: function($response, $errString, $errType) {
-                            console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
+
+                            console.log("From server: ", $response );
+                            console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_saveMeasurementForUser()");
+
+                            var $msg = '';
+
+                            if ( 'timeout' === $errString ) {
+
+                                $msg = "Error: Timeout while the server was processing data.\n\n";
+                            }
+
+                            var $string;
+                            $string = "An error occurred while trying to save this photo. If you\'d like to try again, please ";
+                            $string += "reload this page and select or upload the correct photo. \n\nIf you get this error a second time, ";
+                            $string += "please contact Technical Support by using the Contact form ";
+                            $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                            alert( $msg + $string + "\n\n" + $response.data );
+
                         },
                         success: function( $repsponse ) {
 
@@ -828,7 +941,7 @@ jQuery(function() {
                 .closest('.photo-container')
                 .prev('.photo-upload-notifier');
         }
-    }
+    };
 
     PhotoUploader.init();
 
@@ -838,6 +951,39 @@ jQuery(function() {
 
             jQuery('#selected-' + dimension + '-unit').css('display', 'inline');
             jQuery('#preferred-' + dimension + '-unit').css('display', 'none');
+
+            var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+            var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+
+            if ( $cancel.is(':hidden') ) {
+                $change.hide();
+                $cancel.show();
+            }
+            else {
+                $cancel.hide();
+                $change.show();
+            }
+        });
+    jQuery('.cancel-measurement-unit-update')
+        .each( function() {
+            console.log("Adding click event to cancel button for measurement unit update");
+            jQuery(this).on('click', function() {
+
+                console.log("Cancel button for measurement unit update clicked");
+                var dimension = jQuery(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
+
+                console.log("Dimension: " + dimension);
+                var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+                var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+
+                $cancel.hide();
+                $change.show();
+
+                jQuery('#selected-' + dimension + '-unit').hide();
+                jQuery('#preferred-' + dimension + '-unit')
+                    .css('display', 'inline');
+
+            });
         });
 
     jQuery('#selected-length-unit, #selected-weight-unit')
@@ -871,16 +1017,14 @@ jQuery(function() {
             for(var i = 0, length = fieldObjectArr.length; i < length; i++) {
                 var measurementField = fieldObjectArr[i];
 
-                var newMeasurementValue = measurementField.convertUnit(newUnitAbbr);
-
                 // update last week measurement hash table to avoid users getting "large difference from last week" alert
-                LAST_WEEK_MEASUREMENTS[measurementField.type] = newMeasurementValue;
+                LAST_WEEK_MEASUREMENTS[measurementField.type] = measurementField.convertUnit(newUnitAbbr);
             }
 
             /* Saving & updating measurements & unit type if the user chooses to change it */
 
             var $data = {
-                'action': 'updateUnitTypes',
+                'action': 'e20r_updateUnitTypes',
                 'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'user-id': NourishUser.user_id,
                 'dimension': dimension, // "weight" or "length"
@@ -891,12 +1035,29 @@ jQuery(function() {
             jQuery.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
-                timeout: 10000,
+                timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: $data,
                 error: function($response, $errString, $errType) {
-                    console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                    return;
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save the measurement unit type. If you\'d like to try again, please ";
+                    $string += "reload this page and select this value again. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
                 },
                 success: function($response) {
                     console.log('Response: ' + $response);
@@ -916,7 +1077,7 @@ jQuery(function() {
 
     function checkFormCompletion() {
         var $data = {
-            'action': 'checkCompletion',
+            'action': 'e20r_checkCompletion',
             'article-id': jQuery('#article_id').val(),
             'program-id': jQuery('#program_id').val(),
             'date': jQuery('#date').val(),
@@ -927,13 +1088,30 @@ jQuery(function() {
         jQuery.ajax({
             url: e20r_progress.ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_progress.timeout,
             dataType: 'JSON',
             // async: false,
             data: $data,
             error: function($response, $errString, $errType) {
-                console.log($errString + ' error returned from ' + $data['action'] + ' action: ' + $errType );
-                return;
+
+                console.log("From server: ", $response );
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_checkCompletion()");
+
+                var $msg = '';
+
+                if ( 'timeout' === $errString ) {
+
+                    $msg = "Error: Timeout while the server was processing data.\n\n";
+                }
+
+                var $string;
+                $string = "An error occurred while trying to check whether you have completed the form. Please ";
+                $string += "reload this page. \n\nIf you get this error a second time, ";
+                $string += "please contact Technical Support by using the Contact form ";
+                $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                alert( $msg + $string + "\n\n" + $response.data );
+
             },
             success: function($response) {
                 //var $resp = jQuery.map( $response, function(el){ return el; });
@@ -974,6 +1152,6 @@ jQuery(function() {
         jQuery('#birth-date').hide();
     }
 
-    jQuery(".inline").colorbox({inline: true, width: '60%'})
+    jQuery(".inline").colorbox({inline: true, width: '60%'});
     checkFormCompletion();
 });

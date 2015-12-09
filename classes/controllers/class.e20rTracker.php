@@ -7,6 +7,9 @@
  *  the GPL v2 license(?)
  */
 
+use \Defuse\Crypto\Crypto as Crypt;
+use \Defuse\Crypto\Exception as Ex;
+
 class e20rTracker {
 
     private $client = null;
@@ -21,7 +24,7 @@ class e20rTracker {
 
     private $hooksLoaded = false;
 
-    public function e20rTracker() {
+    public function __construct() {
 
         $this->model = new e20rTrackerModel();
 
@@ -29,10 +32,19 @@ class e20rTracker {
         $this->settings = get_option( $this->setting_name, array(
                             'delete_tables' => false,
                             'purge_tables' => false,
-                            'measurement_day' => CONST_SATURDAY,
-                            'lesson_source' => null,
-                            'auth_timeout' => 3600*3,
-                            'remember_me_auth_timeout' => 3600*24,
+                            // 'measurement_day' => CONST_SATURDAY,
+//                            'lesson_source' => null,
+                            'roles_are_set' => false,
+                            'auth_timeout' => 3,
+                            'remember_me_auth_timeout' => 1,
+                            'encrypt_surveys' => 0,
+                            'e20r_db_version' => E20R_DB_VERSION,
+                            'unserialize_notice' => null,
+                            'run_unserialize' => 0,
+                            'converted_metadata_e20r_articles' => false,
+                            'converted_metadata_e20r_assignments' => false,
+                            'converted_metadata_e20r_workout' => false,
+                            'converted_metadata_e20r_actions' => false,
             )
         );
 
@@ -48,15 +60,142 @@ class e20rTracker {
     Give admin members access to everything.
     Add this to your active theme's functions.php or a custom plugin.
 	*/
-	public function admin_access_filter($access, $post, $user) {
+	public function admin_access_filter($access, $post, $user ) {
 
-		if ( ( !empty($user->membership_level) && $user->membership_level->ID == 2 ) || ( current_user_can('administrator') ) ) {
-			dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
+		if ( ( current_user_can('administrator') ) ) {
+			// dbg("e20rTracker::admin_access_filter() - Administrator is attempting to access protected content.");
 			return true;    //level 2 (and administrator) ALWAYS has access
 		}
 
 		return $access;
 	}
+
+    public function duplicate_cpt_link( $actions, $post ) {
+
+        global $current_user;
+
+        dbg("e20rTracker::duplicate_cpt_link() - Checking whether to add a 'Duplicate' link for the {$post->post_type} post type");
+
+        $managed_types = apply_filters( 'e20r_tracker_duplicate_types', array(
+                                                                'e20r_programs',
+                                                                'e20r_workout',
+                                                                'e20r_articles',
+                                                                'e20r_assignments',
+                                                                'e20r_exercises',
+                                                            )
+                            );
+
+        if ( in_array( $post->post_type, $managed_types ) &&
+                current_user_can( 'edit_posts' ) &&
+                $this->is_a_coach( $current_user->ID ) ) {
+
+            dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for the post type!");
+            $actions['duplicate'] = '<a href="admin.php?post=' . $post->ID . '&amp;action=e20r_duplicate_as_draft" title="' .__("Duplicate this item", "e20rtracker" ) .'" rel="permalink">' . __("Duplicate", "e20rtracker") . '</a>';
+        }
+
+        return $actions;
+    }
+    /**
+      * Duplicate a E20R Tracker CPT and save the duplicate as 'draft'
+      */
+    public function duplicate_cpt_as_draft() {
+
+        global $wpdb;
+
+        dbg("e20rTracker::duplicate_cpt_as_draft() - Requested duplication of a CPT");
+        dbg( $_GET['post'] );
+        // dbg( $_POST['post'] );
+        dbg( $_REQUEST['action'] );
+
+        if ( !isset( $_GET['post'] ) && !isset( $_POST['post'] ) ) {
+            dbg("e20rTracker::duplicate_cpt_as_draft() - One of the expected globals isn't set correctly?");
+            wp_die("No E20R Tracker Custom Post Type found to duplicate!");
+        }
+
+        /*
+         * Grab the old post (the one we're duplicating)
+         */
+
+        $e20r_post_id = ( isset( $_GET[ 'post'] ) ? $this->sanitize( $_GET[ 'post' ] ) : $this->sanitize( $_POST[ 'post' ] ) );
+        $e20r_post = get_post( $e20r_post_id );
+
+        /*
+         * Set author as the current user.
+         */
+        $user = wp_get_current_user();
+
+        if ( !$this->isEmpty( $e20r_post ) && !is_null( $e20r_post ) ) {
+
+             // Copy the data for the new post.
+            $new_post = array(
+                'comment_status' => $e20r_post->comment_status,
+                'ping_status'    => $e20r_post->ping_status,
+                'post_author'    => $user->ID,
+                'post_content'   => $e20r_post->post_content,
+                'post_excerpt'   => $e20r_post->post_excerpt,
+                'post_name'      => $e20r_post->post_name,
+                'post_parent'    => $e20r_post->post_parent,
+                'post_password'  => $e20r_post->post_password,
+                'post_status'    => 'draft',
+                'post_title'     => $e20r_post->post_title,
+                'post_type'      => $e20r_post->post_type,
+                'to_ping'        => $e20r_post->to_ping,
+                'menu_order'     => $e20r_post->menu_order
+            );
+
+
+            dbg("e20rTracker::duplicate_cpt_as_draft() - Content for new post: ");
+            dbg( $new_post );
+
+            $new_id = wp_insert_post( $new_post, true );
+
+            if ( is_wp_error( $new_id ) ) {
+                dbg("e20rTracker::duplicate_cpt_as_draft() - Error: ");
+                dbg( $new_id );
+                wp_die("Unable to save the duplicate post!");
+            }
+            $taxonomies = get_object_taxonomies( $e20r_post->post_type );
+
+            foreach( $taxonomies as $taxonomy ) {
+
+               $post_terms = wp_get_object_terms( $e20r_post_id, $taxonomy, array( 'fields' => 'slugs') );
+               wp_set_object_terms( $new_id, $post_terms, $taxonomy, false );
+            }
+
+            // Duplicate the post meta for the new post
+            $sql = "SELECT meta_key, meta_value
+                    FROM {$wpdb->postmeta}
+                    WHERE post_id = {$e20r_post_id} AND meta_key LIKE '%e20r-%';";
+
+            dbg( "e20rTracker::duplicate_cpt_as_draft() - SQL for postmeta: " . $sql );
+
+            $meta_data = $wpdb->get_results( $sql );
+
+            if ( !empty( $meta_data ) ) {
+
+                $sql = "INSERT INTO {$wpdb->postmeta} ( post_id, meta_key, meta_value )";
+
+                $query_sel = array();
+
+                foreach( $meta_data as $meta ) {
+
+                    $key = $meta->meta_key;
+                    $value = addslashes( $meta->meta_value );
+                    $query_sel[] = "SELECT {$new_id}, '{$key}', '{$value}'";
+                }
+
+                $sql .= implode( " UNION ALL ", $query_sel );
+
+                $wpdb->query( $sql );
+            }
+
+            wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_id ) );
+            exit;
+        }
+        else {
+            wp_die("Unable to create a duplicate of post with ID {$e20r_post_id}. We couldn't locate it!");
+        }
+    }
 
 	public function loadAllHooks() {
 
@@ -67,10 +206,11 @@ class e20rTracker {
         global $e20rMeasurements;
         global $e20rArticle;
         global $e20rAssignment;
-        global $e20rCheckin;
+        global $e20rAction;
         global $e20rExercise;
         global $e20rProgram;
         global $e20rWorkout;
+
 
         if ( ! $this->hooksLoaded ) {
 
@@ -78,6 +218,8 @@ class e20rTracker {
 
 	        $plugin = E20R_PLUGIN_NAME;
 
+            add_action( 'init', array( &$this, 'auth_timeout_reset'), 10 );
+            add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
             add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
             add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
@@ -88,8 +230,85 @@ class e20rTracker {
             add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
             add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
 
-	        add_filter("pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
+            add_action( 'init', array( &$this, 'add_endpoint' ), 10 );
+            add_action( 'init', array( &$this, 'add_rewrite_tags' ), 10);
 
+            add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
+
+            add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
+            add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
+            add_action( 'e20r_schedule_email_for_client', array( &$e20rClient, 'send_email_to_client' ), 10, 2 );
+
+            $action = ( isset( $_REQUEST['action'] ) && (false !== strpos($_REQUEST['action'], 'e20r')) ) ? $this->sanitize($_REQUEST['action']) : null;
+
+             if ( !is_null( $action ) ) {
+                add_action( "wp_ajax_nopriv_{$action}", "e20r_ajaxUnprivError" );
+             }
+
+            /*
+            add_action( 'wp_ajax_nopriv_e20r_updateUnitTypes', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_showMessageHistory', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_showClientMessage', "e20r_ajaxUnprivError" );
+            add_action( 'wp_ajax_nopriv_e20r_complianceData', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_assignmentData', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_measurementData', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_getMemberListForLevel', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_userinfo', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_loadProgress', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_saveMeasurementForUser', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_checkCompletion', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_measurementDataForUser', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_load_activity_stats', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_deletePhoto', 'e20r_ajaxUnprivError' );
+            // add_action( 'wp_ajax_nopriv_e20r_addPhoto', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_addWorkoutGroup', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_getDelayValue', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_saveCheckin', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_daynav', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_save_daily_progress', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_add_new_exercise_group', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_add_exercise', 'e20r_ajaxUnprivError' );
+	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
+	        add_action( 'wp_ajax_nopriv_e20r_manage_option_list', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_get_checkinItem', 'e20r_ajaxUnprivError' );
+            add_action( 'wp_ajax_nopriv_e20r_save_item_data', 'e20r_ajaxUnprivError' );
+
+
+            add_action( 'wp_ajax_e20r_get_checkinItem', array( &$e20rAction, 'ajax_getCheckin_item' ) );
+	        add_action( 'wp_ajax_save_daily_checkin', array( &$e20rAction, 'dailyCheckin_callback' ) );
+            add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
+            */
+
+
+	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
+	        add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
+
+            add_filter( 'post_link', array( &$this, 'process_post_link' ), 10, 3 );
+            add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
+            add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
+            add_filter( 'auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3 );
+            add_filter( 'pmpro_email_data', array( &$this, 'filter_changeConfirmationMessage' ), 10, 2 );
+
+            add_post_type_support( 'page', 'excerpt' );
+
+            if ( !is_user_logged_in() ) {
+                return;
+            }
+
+
+            // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+
+            add_filter( "post_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+            add_filter( "page_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+
+            add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
+            add_action( 'admin_notices', array( &$this, 'display_admin_notice'  ) );
+
+	        add_filter( "pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
 	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
 
 	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
@@ -115,6 +334,7 @@ class e20rTracker {
                     dbg("e20rTracker::loadAllHooks() - Loaded filter to change the upload directory for Nourish clients");
 
                     dbg("e20rTracker::loadAllHooks() - Control Access to media uploader for e20rTracker users");
+
                     /* Control access to the media uploader for Nourish users */
                     add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
                     add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
@@ -125,150 +345,141 @@ class e20rTracker {
             add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
             add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
 
+            // add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
+            // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
+            // add_action( 'wp_print_scripts', array( &$e20rClient, 'load_scripts' ) );
+            // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
+
+            add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
+            add_action( 'wp_ajax_e20r_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
+	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
+            add_action( 'wp_ajax_e20r_add_reply', array( &$e20rAssignment, 'add_assignment_reply') );
+            add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rAssignment, 'ajax_assignmentData' ) );
+            add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
+            add_action( 'wp_ajax_e20r_update_message_status', array( &$e20rAssignment, 'update_message_status') );
+            add_action( 'wp_ajax_e20r_daynav', array( &$e20rAction, 'nextCheckin_callback' ) );
+            add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rAction, 'ajax_save_item_data' ) );
+            add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rAction, 'saveCheckin_callback' ) );
+	        add_action( 'wp_ajax_e20r_save_daily_progress', array( &$e20rAction, 'dailyProgress_callback' ) );
+            add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
+            add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
+            add_action( 'wp_ajax_e20r_getMemberListForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
+            add_action( 'wp_ajax_e20r_sendClientMessage', array( &$e20rClient, 'ajax_sendClientMessage' ) );
+            add_action( 'wp_ajax_e20r_showClientMessage', array( &$e20rClient, 'ajax_showClientMessage' ) );
+            add_action( 'wp_ajax_e20r_showMessageHistory', array( &$e20rClient, 'ajax_ClientMessageHistory') );
+            add_action( 'wp_ajax_e20r_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
+            add_action( 'wp_ajax_e20r_userinfo', array( &$e20rClient, 'ajax_userInfo_callback' ) );
+            add_action( 'wp_ajax_e20r_checkCompletion', array( &$e20rMeasurements, 'checkProgressFormCompletion_callback' ) );
+            add_action( 'wp_ajax_e20r_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
+            add_action( 'wp_ajax_e20r_loadProgress', array( &$e20rMeasurements, 'ajax_loadProgressSummary' ) );
+            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$e20rMeasurements, 'ajax_getPlotDataForUser' ) );
+            add_action( 'wp_ajax_e20r_saveMeasurementForUser', array( &$e20rMeasurements, 'saveMeasurement_callback' ) );
+            add_action( 'wp_ajax_e20r_add_exercise', array( &$e20rWorkout, 'add_new_exercise_to_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( &$e20rWorkout, 'add_new_exercise_group_callback' ) );
+            add_action( 'wp_ajax_e20r_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
+            add_action( 'wp_ajax_e20r_load_activity_stats', array( &$e20rWorkout, 'ajax_getPlotDataForUser' ) );
+	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
+
+            /* AJAX call-backs if user is unprivileged */
+
+            if ( is_admin() ) {
+                add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
+                add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( &$e20rAction, 'saveSettings' ), 10, 20);
+                add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
+                add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
+
+                add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
+                add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rAction, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
+                add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
+
+                add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_actions', array( &$e20rAction, 'editor_metabox_setup') );
+
+                add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
+
+                add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
+                add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
+                add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
+                add_action( 'admin_menu', array( &$this, "renderGirthTypesMetabox" ) );
+
+                /* Allow admin to set the program ID for the user in their profile(s) */
+                add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
+                add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
+                add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
+                add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
+
+                add_action( 'show_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
+                add_action( 'edit_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
+                add_action( 'edit_user_profile_update', array( &$e20rClient, 'updateRoleForUser') );
+                add_action( 'personal_options_update', array( &$e20rClient, 'updateRoleForUser') );
+                add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
+
+                // Custom columns
+                add_filter( 'manage_edit-e20r_actions_columns', array( &$e20rAction, 'set_custom_edit_columns' ) );
+                add_filter( 'manage_edit-e20r_assignments_columns', array( &$e20rAssignment, 'set_custom_edit_columns' ) );
+
+                add_action( 'manage_e20r_actions_posts_custom_column' , array( &$e20rAction, 'custom_column'), 10, 2 );
+                add_action( 'manage_e20r_assignments_posts_custom_column' , array( &$e20rAssignment, 'custom_column'), 10, 2 );
+
+                add_filter( 'manage_edit-e20r_actions_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
+                add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
+
+                add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
+                add_action('manage_e20r_assignments_posts_custom_column', array( &$e20rAssignment, 'assignment_col_content' ), 10, 2);
+
+                add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
+                add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
+
+            }
+
             dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
             /* Load scripts & CSS */
             add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
-            // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
-
-            // add_action( 'wp_print_scripts', array( &$e20rClient, 'load_scripts' ) );
-            // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
-            add_action( 'wp_ajax_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
-            add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
-            add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
-            add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rClient, 'ajax_assignmentData' ) );
-            add_action( 'wp_ajax_get_memberlistForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
-            add_action( 'wp_ajax_e20r_userinfo', array( &$e20rClient, 'ajax_userInfo_callback' ) );
-            add_action( 'wp_ajax_e20r_loadProgress', array( &$e20rMeasurements, 'ajax_loadProgressSummary' ) );
-            add_action( 'wp_ajax_saveMeasurementForUser', array( &$e20rMeasurements, 'saveMeasurement_callback' ) );
-            add_action( 'wp_ajax_checkCompletion', array( &$e20rMeasurements, 'checkProgressFormCompletion_callback' ) );
-            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$e20rMeasurements, 'ajax_getPlotDataForUser' ) );
-            add_action( 'wp_ajax_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
-            add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
-            add_action( 'wp_ajax_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
-            add_action( 'wp_ajax_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
-            add_action( 'wp_ajax_saveCheckin', array( &$e20rCheckin, 'saveCheckin_callback' ) );
-            add_action( 'wp_ajax_daynav', array( &$e20rCheckin, 'nextCheckin_callback' ) );
-            add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
-	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
-	        add_action( 'wp_ajax_save_daily_progress', array( $e20rCheckin, 'dailyProgress_callback' ) );
-	        add_action( 'wp_ajax_save_daily_checkin', array( $e20rCheckin, 'dailyCheckin_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( $e20rWorkout, 'add_new_exercise_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_exercise', array( $e20rWorkout, 'add_new_exercise_to_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_save_activity', array( $e20rWorkout, 'saveExData_callback' ) );
-
-            add_action( 'wp_ajax_get_checkinItem', array( &$e20rCheckin, 'ajax_getCheckin_item' ) );
-            add_action( 'wp_ajax_save_item_data', array( &$e20rCheckin, 'ajax_save_item_data' ) );
-
-            add_action( 'save_post', array( &$this, 'shortcode_check' ), 10, 2 );
-            add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
-            add_action( 'save_post', array( &$e20rCheckin, 'saveSettings' ), 10, 20);
-            add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
-            add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
-
-            add_action( 'post_updated', array( &$this, 'shortcode_check' ), 10, 2 );
-	        add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
-            add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rCheckin, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
-            add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
-
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
 	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_gravityforms_shortcode' ) );
 
-            add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
-            add_action( 'add_meta_boxes_e20r_checkins', array( &$e20rCheckin, 'editor_metabox_setup') );
-
-            add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
-
-            add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
-            add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
-            add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
-            add_action( 'admin_menu', array( &$this, "renderGirthTypesMetabox" ) );
-
-            /* AJAX call-backs if user is unprivileged */
-            add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_complianceData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_assignmentData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_measurementData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_saveMeasurementForUser', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_checkCompletion', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_measurementDataForUser', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_deletePhoto', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_addPhoto', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_addWorkoutGroup', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_getDelayValue', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_saveCheckin', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_daynav', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
-
-
-	        // TODO: Investigate the need for this.
-            // add_action( 'add_meta_boxes', array( &$this, 'editor_metabox_setup') );
-
-            /* Allow admin to set the program ID for the user in their profile(s) */
-            add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
-            add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
-            add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
-            add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
-
-            dbg("e20rTracker::loadAllHooks() - Short Codes");
+            dbg("e20rTracker::loadAllHooks() - Loading Short Codes");
             add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
             add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
-            add_shortcode( 'daily_progress', array( &$e20rCheckin, 'shortcode_dailyProgress' ) );
+            add_shortcode( 'daily_progress', array( &$e20rAction, 'shortcode_dailyProgress' ) );
 	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
 	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
 	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
-
-            add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
-
-            // if ( function_exists( 'pmpro_activation' ) ) {
-
-                add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
-            // }
+            add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
+            add_shortcode( 'e20r_client_overview', array( &$e20rClient, 'shortcode_clientList') );
+            add_shortcode( 'e20r_article_summary', array( &$e20rArticle, 'shortcode_article_summary') );
+            add_shortcode( 'e20r_article_archive', array( &$e20rArticle, 'article_archive_shortcode') );
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
 	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
 	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
- 	        add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
 	        add_filter( 'gform_field_value', array( &$e20rClient, 'process_gf_fields'), 10, 3);
+
+//	        add_action( 'gform_entry_post_save', array( &$e20rClient, 'save_interview'), 10, 2);
+//  	    add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
 //	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
 // 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
+//	        add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
+//	        add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
 
-	        // add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
-	        // add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
-	        add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
-
-            // Custom columns
-            add_filter( 'manage_edit-e20r_checkins_columns', array( &$e20rCheckin, 'set_custom_edit_columns' ) );
-            add_action( 'manage_e20r_checkins_posts_custom_column' , array( &$e20rCheckin, 'custom_column'), 10, 2 );
-
-            add_filter( 'manage_edit-e20r_checkins_sortable_columns', array( &$e20rCheckin, 'sortable_column' ) );
-
-            add_filter('manage_e20r_assignments_posts_columns', array( &$this, 'assignment_col_head' ) );
-            add_action('manage_e20r_assignments_posts_custom_column', array( &$this, 'assignment_col_content' ), 10, 2);
-
-            add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
-            add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
-
-            add_post_type_support( 'page', 'excerpt' );
-
-            add_filter('auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3);
 
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
         }
@@ -276,17 +487,63 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+    public function auth_timeout_reset() {
+
+        global $current_user;
+        $cookie_arr = null;
+
+        dbg("e20rTracker::auth_timeout_reset() - Testing whether user's auth cookie needs to be reset");
+
+        if ( is_user_logged_in() ) {
+
+            foreach( $_COOKIE as $cKey => $cookie ) {
+
+                if ( FALSE !== stripos( $cKey, "wordpress_logged_in_" ) ) {
+
+                    $cookie_arr = preg_split( "/\|/", $cookie);
+
+                    if ( !empty( $cookie_arr) && ( $current_user->user_login == $cookie_arr[0] ) ) {
+
+                        $max_days = (int)$this->loadOption('remember_me_auth_timeout');
+
+                        dbg("e20rTracker::auth_timeout_reset() - Found login cookie for user ID {$current_user->ID}");
+
+                        $timeout = $cookie_arr[1];
+
+                        if ( $timeout > ( current_time('timestamp', true ) + $max_days*3600*24 ) ) {
+
+                            dbg("e20rTracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
+
+                            $days_since = $this->daysBetween( current_time('timestamp', true ), $timeout );
+
+                            dbg("e20rTracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
+
+                            if ( $days_since > $max_days ) {
+
+                                dbg("e20rTracker::auth_timeout_reset() - It will be {$days_since} days until the user ({$current_user->ID}) has to log in... Resetting the login cookie.");
+                                wp_set_auth_cookie( $current_user->ID, false );
+                            }
+                        }
+                    }
+                }
+
+                $cookie_arr = null;
+                $cookie = null;
+            }
+        }
+    }
+
     public function login_timeout( $seconds, $user_id, $remember ) {
 
         $expire_in = 0;
 
-        dbg("e20rTracker::login_timeout() - Length requested: {$seconds}, User: {$user_id}, Remember: {$remember}");
+        dbg("e20rTracker::login_timeout() - Length requested by login process: {$seconds}, User: {$user_id}, Remember: {$remember}");
 
         /* "remember me" is checked */
         if ( $remember ) {
 
-            dbg( "e20rTracker::login_timeout() - Remember me value: " . $this->loadOption('remember_me_auth_timeout') );
-            $expire_in = 60 * 60 * 24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+            dbg( "e20rTracker::login_timeout() - Remember me timeout value: " . $this->loadOption('remember_me_auth_timeout') );
+            $expire_in = 60*60*24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
 
             if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
 
@@ -294,12 +551,14 @@ class e20rTracker {
 
         } else {
 
-            dbg( "e20rTracker::login_timeout() - Timeout value: " . $this->loadOption('auth_timeout') );
+            dbg( "e20rTracker::login_timeout() - Timeout value in hours: " . $this->loadOption('auth_timeout') );
             $expire_in = 60 * 60 * intval( $this->loadOption( 'auth_timeout' ) );
 
-            if ( $expire_in <= 0 ) { $expire_in = 60*60*3; } // 3 Hours is the default.
+            if ( $expire_in <= 0 ) {
 
-            dbg("e20rTracker::login_timeout() - Setting session timeout for user to: {$expire_in}");
+                $expire_in = 60*60*3;
+            } // 3 Hours is the default.
+
         }
 
         // check for Year 2038 problem - http://en.wikipedia.org/wiki/Year_2038_problem
@@ -307,6 +566,8 @@ class e20rTracker {
 
             $expire_in =  PHP_INT_MAX - time() - 5;
         }
+
+        dbg("e20rTracker::login_timeout() - Setting session timeout for user {$user_id} to: {$expire_in}");
 
         return $expire_in;
     }
@@ -370,7 +631,7 @@ class e20rTracker {
         return $param;
     }
 
-    public function shortcode_check( $post_id ) {
+/*    public function shortcode_check( $post_id ) {
 
         global $post;
 
@@ -401,20 +662,25 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'e20r_activity' ) ) {
 
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
             dbg("e20rTracker::shortcode_check() - Found the activity shortcode. Save the ID ({$post_id}) for it!");
             $ePostId = $this->loadOption('e20r_activity_post');
 
-            if ( ( $ePostId != $post_id ) || ( false == $ePostId ) ) {
+            // if ( ( $ePostId != $post_id ) || ( false == $ePostId ) ) {
 
                 $this->settings['e20r_activity_post'] = $post_id;
                 $this->updateSetting( 'e20r_activity_post', $post_id );
                 return $post_id;
-            }
+            // }
         }
 
-        return;
+        return $post_id;
     }
-
+*/
     private function inGroup( $id, $grpList ) {
 
         if ( in_array( 0, $grpList ) ) {
@@ -466,50 +732,40 @@ class e20rTracker {
 
     /**
      * Check whether the user belongs to a group (membership level) or the user is directly specified in the list of users for the activity.
+     *
      * @param $activity - The Activity object
-     * @param $uId - The user ID (or array of user IDs)
-     * @param $grpId - The group ID (or array of group IDs)
-     * @return bool - True if the user is in the group list or user list for the activity
+     * @param $uId - The user ID
+     * @param $grpId - The group ID
+     *
+     * @return array - True if the user is in the group list or user list for the activity
      *
      */
     public function allowedActivityAccess( $activity, $uId, $grpId ) {
 
-        $retval = false;
-
-        $grpRet = false;
-        $usrRet = false;
+        $ret = array( 'user' => false, 'group' => false );
 
         dbg("e20rTracker::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 
-        if  ( ! is_array( $grpId ) ) {
+        $statuses = apply_filters( 'e20r_tracker_article_post_status', array( 'publish', 'future', 'private' ));
 
-            $grpId = array( $grpId );
+        if ( !in_array( get_post_status( $activity->id ), $statuses ) ) {
+
+            dbg("e20rTracker::allowedActivityAccess() - Access denied since activity post isn't in an allowed status");
+            return $ret;
         }
 
-        if ( ! is_array( $uId ) ) {
-
-            $uId = array( $uId );
-        }
+        // Check against list of users for the specified activity.
+        dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$uId}");
+        $ret['user'] = $this->inUserList( $uId, $activity->assigned_user_id );
 
         // Check against group list(s) first.
         // Loop through any list of groups the user belongs to
-        foreach( $grpId as $gid ) {
 
-            dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$gid}");
-
-            $grpRet = $this->inGroup( $gid, $activity->assigned_usergroups );
-        }
-
-        // Then check against list of users.
-        foreach ( $uId as $id ) {
-
-            dbg("e20rTracker::allowedActivityAccess() - Check access for user ID {$id}");
-
-            $usrRet = $this->inUserList( $id, $activity->assigned_user_id );
-        }
+        dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$grpId}");
+        $ret['group'] = $this->inGroup( $grpId, $activity->assigned_usergroups );
 
         // Return true if either user or group access is true.
-        return ( $usrRet || $grpRet );
+        return $ret;
     }
 
     public function getURLToPageWithShortcode( $short_code = '' ) {
@@ -568,7 +824,7 @@ class e20rTracker {
 			'e20r_programs',
 			'e20r_articles',
 			'e20r_exercises',
-			'e20r_checkins'
+			'e20r_actions'
 		);
 	}
 
@@ -579,29 +835,6 @@ class e20rTracker {
 		return $links;
 	}
 
-	public function assignment_col_head( $defaults ) {
-
-		$defaults['used_day'] = 'Use on';
-		return $defaults;
-	}
-
-	public function assignment_col_content( $colName, $post_ID ) {
-
-		global $e20rAssignment;
-		global $currentAssignment;
-
-		dbg( "e20rTracker::assignment_col_content() - ID: {$post_ID}" );
-
-		if ( $colName == 'used_day' ) {
-
-			$post_releaseDay = $e20rAssignment->getDelay( $post_ID );
-
-			dbg( "e20rTracker::assignment_col_content() - Used on day #: {$post_releaseDay}" );
-			if ($post_releaseDay ) {
-				echo 'Day ' . $post_releaseDay;
-			}
-		}
-	}
 
     public function sanitize( $field ) {
 
@@ -672,11 +905,11 @@ class e20rTracker {
 
 	            break;
 
-            case 'e20r_checkins':
+            case 'e20r_actions':
 
                 $title = 'Enter Action Short-code Here';
-                remove_meta_box( 'postexcerpt', 'e20r_checkins', 'side' );
-                add_meta_box('postexcerpt', __('Action text'), 'post_excerpt_meta_box', 'e20r_checkins', 'normal', 'high');
+                remove_meta_box( 'postexcerpt', 'e20r_actions', 'side' );
+                add_meta_box('postexcerpt', __('Action text'), 'post_excerpt_meta_box', 'e20r_actions', 'normal', 'high');
 
                 break;
 
@@ -701,7 +934,7 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ! class_exists('PMProSequence') ) {
+        if ( ! class_exists('PMProSequence') && is_admin()) {
 
             ?>
             <div class="error">
@@ -723,7 +956,7 @@ class e20rTracker {
 
             if ( current_user_can( 'upload_files' )) {
                 global $current_user;
-                $wp_query->set( 'author', $current_user->id );
+                $wp_query->set( 'author', $current_user->ID);
             }
         }
     }
@@ -798,48 +1031,64 @@ class e20rTracker {
 
 		global $e20rTracker;
 		global $post;
+		global $current_user;
 
 		if ( ! is_user_logged_in() ) {
 
 			return null;
 		}
 
+/*
 		if ( $userId === null ) {
 
-			global $current_user;
 
 			$userId = $current_user->ID;
 		}
+*/
+        if ( ( $current_user->ID != 0 ) && ( null === $userId ) ) {
 
-		if ( WP_DEBUG == true ) {
+            $userId = $current_user->ID;
+        }
 
-			return null;
-		}
+        dbg("e20rTracker::getUserKey() - Test if user ({$userId}) can access their AES key based on the post {$post->ID}.");
 
 		if ( $e20rTracker->hasAccess( $userId, $post->ID ) ) {
-			dbg('e20rClient::getUserKey() - User is permitted to access their AES key.');
+			dbg('e20rTracker::getUserKey() - User is permitted to access their AES key.');
 
-			$key = get_user_option( '_e20r_user_key', $userId );
+			$key = Crypt::hexToBin( get_user_meta( $userId, 'e20r_user_key', true ) );
+
+            // dbg( $key );
 
 			if ( empty( $key ) ) {
 
 				try {
-					require_once( E20R_PLUGIN_DIR . "classes/controllers/class.Crypto.php" );
 
-					$key = Crypto::CreateNewRandomKey();
+                    dbg("e20rTracker::getUserKey() - Generating a new key for user {$userId}");
+					$key = Crypt::createNewRandomKey();
+
 					// WARNING: Do NOT encode $key with bin2hex() or base64_encode(),
 					// they may leak the key to the attacker through side channels.
-					update_user_option( $userId, '_e20r_user_key', $key );
+
+					if ( false === update_user_meta( $userId, 'e20r_user_key', Crypt::binToHex( $key ) ) ){
+
+					    dbg("e20rTracker::getUserKey() - ERROR: Unable to save the key for user {$userId}");
+					    return null;
+					}
+
+					dbg("e20rTracker::getUserKey() - New key generated for user {$userId}");
 				}
-				catch (CryptoTestFailedException $ex) {
+				catch (Ex\CryptoTestFailedException $ex) {
 
 					wp_die('Cannot safely create your encryption key');
 				}
-				catch (CannotPerformOperationException $ex) {
+				catch (Ex\CannotPerformOperationException $ex) {
 
 					wp_die('Cannot safely create an encryption key on your behalf');
 				}
 			}
+
+            dbg("e20rTracker::getUserKey() - Returning key for user {$userId}");
+			return $key;
 		}
 		else {
 			return null;
@@ -850,37 +1099,36 @@ class e20rTracker {
 
     public function encryptData( $data, $key ) {
 
-        if ( ! class_exists( 'Crypto' ) ) {
-
-            dbg("e20rTrackeModel::encryptData() - Unable to load encryption engine. Using Base64... *sigh*");
-
-            if ( ! WP_DEBUG ) {
-
-                return base64_encode($data);
-            }
-            else {
-                return $data;
-            }
-
-        }
+        $enable = $this->loadOption('encrypt_surveys');
 
 	    if ( $key === null ) {
 
-		    return $data;
+            dbg("e20rTracker::encryptData() - No key defined!");
+		    return base64_encode( $data );
 	    }
 
-        if ( ! WP_DEBUG ) {
+        if ( empty( $key ) ) {
+
+            dbg("e20rTracker::encryptData() - Unable to load encryption engine/key. Using Base64... *sigh*");
+
+            return base64_encode( $data );
+        }
+
+
+        if ( 1 == $enable ) {
+
+            dbg("e20rTracker::encryptData() - Configured to encrypt data.");
 
             try {
 
-                $ciphertext = Crypto::Encrypt($data, $key);
-                return $ciphertext;
+                $ciphertext = Crypt::encrypt($data, $key);
+                return Crypt::binToHex($ciphertext);
             }
-            catch (CryptoTestFailedException $ex) {
+            catch (Ex\CryptoTestFailedException $ex) {
 
                 wp_die('Cannot safely perform encryption');
             }
-            catch (CannotPerformOperationException $ex) {
+            catch (Ex\CannotPerformOperationException $ex) {
                 wp_die('Cannot safely perform decryption');
             }
         }
@@ -889,48 +1137,44 @@ class e20rTracker {
         }
     }
 
-    public function decryptData( $encData, $key ) {
+    public function decryptData( $encData, $key, $encrypted = null ) {
 
-	    if ( $key === null ) {
+        if ( is_null( $encrypted ) ) {
 
-		    return $encData;
-	    }
-
-	    if ( ! class_exists( 'Crypto' ) ) {
-
-            if ( ! WP_DEBUG ) {
-
-                dbg("e20rTrackeModel::decryptData() - Unable to load decryption engine. Using Base64... *sigh*");
-                return base64_decode( $encData );
-            }
-            else {
-                return $encData;
-            }
+            $encrypted = $this->loadOption('encrypt_surveys');
         }
 
-        if ( ! WP_DEBUG ) {
+        dbg("e20rTracker::decryptData() - Encryption is " . ( $encrypted == 1 ? 'enabled' : 'disabled' ) );
 
-            try {
+	    if ( ( $key === null ) || ( ! $encrypted ) ) {
 
-		        $decrypted = Crypto::Decrypt($encData, $key);
-                return $decrypted;
-            }
-            catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
-                // Either:
-                //   1. The ciphertext was modified by the attacker,
-                //   2. The key is wrong, or
-                //   3. $ciphertext is not a valid ciphertext or was corrupted.
-                // Assume the worst.
-                wp_die('DANGER! DANGER! The encrypted text has been tampered with during transmission/load');
-            }
-            catch (CryptoTestFailedException $ex) {
+            dbg("e20rTracker::decryptData() - No decryption key - or encryption is disabled: {$encrypted}");
+		    return base64_decode( $encData );
+	    }
 
-                wp_die('Cannot safely perform encryption');
-            }
-            catch (CannotPerformOperationException $ex) {
+        try {
 
-                wp_die('Cannot safely perform decryption');
-            }
+            dbg("e20rTracker::decryptData() - Attempting to decrypt data...");
+
+            $data = Crypt::hexToBin( $encData );
+            $decrypted = Crypt::decrypt( $data, $key);
+            return $decrypted;
+        }
+        catch (Ex\InvalidCiphertextException $ex) { // VERY IMPORTANT
+            // Either:
+            //   1. The ciphertext was modified by the attacker,
+            //   2. The key is wrong, or
+            //   3. $ciphertext is not a valid ciphertext or was corrupted.
+            // Assume the worst.
+            wp_die('DANGER! DANGER! The encrypted information has been tampered with during transmission/load');
+        }
+        catch (Ex\CryptoTestFailedException $ex) {
+
+            wp_die('Cannot safely perform encryption');
+        }
+        catch (Ex\CannotPerformOperationException $ex) {
+
+            wp_die('Cannot safely perform decryption');
         }
 
     }
@@ -977,109 +1221,43 @@ class e20rTracker {
 
     }
 
-    public static function enqueue_admin_scripts( $hook ) {
-
-        dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
-
-        global $e20rAdminPage;
-        global $post;
-
-        if( $hook == $e20rAdminPage ) {
-
-            global $e20r_plot_jscript, $e20rTracker;
-
-            self::load_adminJS();
-
-            $e20r_plot_jscript = true;
-            self::register_plotSW( $hook );
-            self::enqueue_plotSW( $hook );
-            $e20r_plot_jscript = false;
-
-            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.css' );
-            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.css" );
-            wp_enqueue_script( 'jquery.timeago' );
-            wp_enqueue_script( 'select2' );
-
-        }
-
-        if( $hook == 'edit.php' || $hook == 'post.php' || $hook == 'post-new.php' ) {
-
-            switch( self::getCurrentPostType() ) {
-
-                case 'e20r_checkins':
-
-                    wp_enqueue_script( 'jquery-ui-datepicker' );
-                    wp_enqueue_style( 'jquery-style', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
-
-                    $type = 'checkin';
-                    $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
-                    break;
-
-                case 'e20r_programs':
-
-	                $type = 'program';
-					$deps = array('jquery', 'jquery-ui-core');
-                    break;
-
-                case 'e20r_articles':
-
-                    $type = 'article';
-                    $deps = array( 'jquery', 'jquery-ui-core' );
-
-                    break;
-
-	            case 'e20r_workout':
-
-		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.css' );
-		            $type = 'workout';
-					$deps = array( 'jquery', 'jquery-ui-core' );
-		            break;
-
-	            default:
-		            $type = null;
-            }
-
-            dbg("e20rTracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
-
-	        if ( $type !== null ) {
-
-		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.js", $deps, '1.0', true );
-
-		        /* Localize ajax script */
-		        wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
-			        array(
-				        'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				        'lang'    => array(
-					        'no_entry' => __( 'Please select', 'e20rtracker' ),
-					        'no_ex_entry' => __( 'Please select an exercise', 'e20rtracker' ),
-					        'adding' => __( 'Adding...', 'e20rtracker' ),
-					        'add'   => __( 'Add', 'e20rtracker' ),
-					        'saving' => __( 'Saving...', 'e20rtracker' ),
-					        'save'   => __( 'Save', 'e20rtracker' ),
-					        'edit'   => __( 'Update', 'e20rtracker' ),
-					        'remove' => __( 'Remove', 'e20rtracker' ),
-					        'empty'  => __( 'No exercises found.', 'e20rtracker' ),
-					        'none'   => __( 'None', 'e20rtracker' ),
-					        'no_exercises'  => __( 'No exercises found', 'e20rtracker' ),
-				        ),
-			        )
-		        );
-
-		        wp_enqueue_script( 'e20r-cpt-admin' );
-	        }
-        }
-    }
-
     public function validate( $input ) {
 
-        $valid = array();
+        dbg('e20rTracker::validate() - Running validation: ' . print_r( $input, true ) );
 
-        dbg('Running validation: ' . print_r( $input, true ) );
+        $valid = $this->settings;
 
         foreach ( $input as $key => $value ) {
 
-            $valid[$key] = apply_filters( 'e20r_settings_validation_' . $key, $value );
+           if ( ( FALSE !== stripos( $key, 'converted_metadata' ) ) ||
+                ( FALSE !== stripos( $key, '_tables' ) ) ||
+                 ( FALSE !== stripos( $key, 'roles_' ) )) {
 
+                if ( FALSE !== stripos( $key, 'converted_metadata' ) ) {
+
+                    $value = false;
+                }
+                else {
+                    $value = $this->validate_bool( $value );
+                }
+           }
+           elseif ( ( FALSE !== stripos( $key, 'unserialize_notice' ) ) ) {
+
+                $value = $value;
+           }
+           else {
+                $value = intval($value);
+           }
+
+            if ( FALSE !== stripos( $key, 'e20r_db_version' ) ) {
+                $value = E20R_DB_VERSION;
+            }
+
+            if ( FALSE !== stripos( $key, 'run_unserialize') ) {
+                $value = E20R_RUN_UNSERIALIZE;
+            }
+
+           $valid[$key] = apply_filters( 'e20r_settings_validation_' . $key, $value );
         }
 
         /*
@@ -1087,6 +1265,7 @@ class e20rTracker {
          */
 
         unset( $input ); // Free.
+        dbg('e20rTracker::validate() - Returning validation: ' . print_r( $valid, true ) );
 
         return $valid;
     }
@@ -1110,13 +1289,14 @@ class e20rTracker {
         register_setting( 'e20r_options', $this->setting_name, array( $this, 'validate' ) );
 
         /* Add fields for the settings */
-        add_settings_section( 'e20r_tracker_timeouts', 'User login', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_login_timeout', __("Default", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
-        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_section( 'e20r_tracker_timeouts', 'User Settings', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_login_timeout', __("Default login", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended login", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Surveys", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
-        add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
-        add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
+        // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
 
         add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
         add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
@@ -1137,10 +1317,18 @@ class e20rTracker {
             <option value="<?php echo $days; ?>" <?php selected($days, $timeout); ?>><?php echo $days . ($days <= 1 ? " day" : " days") ?></option>
         <?php
         }
-
-
     }
 
+    public function render_survey_select() {
+
+            $encrypted = $this->loadOption( 'encrypt_surveys' );
+        ?>
+        <select name="<?php echo $this->setting_name; ?>[encrypt_surveys]" id="<?php echo $this->setting_name; ?>_encrypt_surveys">
+            <option value="0" <?php selected(0, $encrypted); ?>>No</option>
+            <option value="1" <?php selected(1, $encrypted); ?>>Yes</option>
+        </select><?php
+
+    }
     public function render_logintimeout_select() {
 
         $timeout = $this->loadOption( 'auth_timeout' );
@@ -1149,26 +1337,8 @@ class e20rTracker {
         foreach ( range( 1, 12 ) as $hrs ) { ?>
             <option value="<?php echo $hrs; ?>" <?php selected($hrs, $timeout); ?>><?php echo $hrs . ($hrs <= 1 ? " hour" : " hours") ?></option>
         <?php
-        }
-    }
-
-    // TODO: Make this a program setting and not a global setting!
-    public function render_lessons_select() {
-
-        $options = get_option( $this->setting_name );
-        $sequences = new WP_Query( array(
-            "post_type" => "pmpro_sequence",
-        ) );
-
-        ?>
-        <select name="<?php echo $this->setting_name; ?>[lesson_source]" id="<?php echo $this->setting_name; ?>_lesson_source">
-            <option value="0" <?php selected(0, $options['lesson_source']); ?>>Not Specified</option> <?php
-            while ( $sequences->have_posts() ) : $sequences->the_post(); ?>
-                <option	value="<?php echo the_ID(); ?>" <?php echo selected( the_ID(), $options['lesson_source'] ); ?> ><?php echo the_title_attribute(); ?></option><?php
-            endwhile;
-            wp_reset_postdata(); ?>
-        </select>
-        <?php
+        } ?>
+        </select><?php
     }
 
     public function render_delete_checkbox() {
@@ -1189,21 +1359,6 @@ class e20rTracker {
         ?>
         <input type="checkbox" name="<?php echo $this->setting_name; ?>[purge_tables]" value="1" <?php checked( 1, $pVal ) ?> >
     <?php
-    }
-
-    public function render_measurementday_select() {
-
-        $options = get_option( $this->setting_name );
-        ?>
-        <select name="<?php echo $this->setting_name; ?>[measurement_day]" id="<?php echo $this->setting_name; ?>_measurement_day">
-        <option value="0" <?php selected( 0, $options['measurement_day']); ?>>Sunday</option>
-        <option value="1" <?php selected( 1, $options['measurement_day']); ?>>Monday</option>
-        <option value="2" <?php selected( 2, $options['measurement_day']); ?>>Tuesday</option>
-        <option value="3" <?php selected( 3, $options['measurement_day']); ?>>Wednesday</option>
-        <option value="4" <?php selected( 4, $options['measurement_day']); ?>>Thursday</option>
-        <option value="5" <?php selected( 5, $options['measurement_day']); ?>>Friday</option>
-        <option value="6" <?php selected( 6, $options['measurement_day']); ?>>Saturday</option>
-        <?php
     }
 
     public function render_login_section_text() {
@@ -1245,29 +1400,18 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        global $e20rClient, $e20rProgram, $e20rCheckin;
+        global $e20rClient, $e20rProgram, $e20rAction;
         global $e20rAdminPage;
+        global $e20rClientInfoPage;
 
         dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
 
-        $e20rAdminPage = add_menu_page( 'E20R Tracker', __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        add_submenu_page( 'e20r-tracker', __( 'Client Data','e20rtracker'), __( 'Client Data','e20rtracker'), 'manage_options', 'e20r-tracker', array( &$e20rClient, 'render_client_page' ));
+        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20rtracker"), __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker-info', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        $e20rClientInfoPage = add_submenu_page( 'e20r-tracker-info', __( 'Client Info','e20rtracker'), __( "Coaching Page" ,'e20rtracker'), 'manage_options', 'e20r-client-info', array( &$e20rClient, 'render_client_page' ));
 
         $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20rtracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
-
         $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20rtracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
         $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20rtracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
-
-        // add_submenu_page( 'edit.php?post_type=e20r_workout', __('Exercises', 'e20rtracker' ), __('Exercises', 'e20rtracker' ), 'manage_options', 'e20r-activity-submenu' );
-//        add_submenu_page( 'e20r-tracker', __( 'Check-in Item','e20r_tracker'), __('Check-in Items','e20r_tracker'), 'manage_options', "e20r-tracker-list-items", array( &$e20rCheckin, 'render_submenu_page'));
-//        add_submenu_page( 'e20r-tracker', __( 'Program','e20r_tracker'), __('Programs','e20r_tracker'), 'manage_options', "e20r-tracker-list-programs", array( &$e20rProgram, 'render_submenu_page'));
-//        add_submenu_page( 'e20r-tracker', __( 'Articles','e20r_tracker'), __('Articles','e20r_tracker'), 'manage_options', "e20-tracker-list-articles", array( &$e20rArticle,'render_submenu_page') );
-//        add_submenu_page( 'e20r-tracker', __('Measurements','e20r_tracker'), __('Measurements','e20r_tracker'), 'manage-options', "e20r_tracker_measure", array( &$this,'render_measurement_page' ));
-//        add_submenu_page( 'e20r-tracker', __('Manage Program','e20r_tracker'), __('Add Program','e20r_tracker'), 'manage_options', "e20r-add-new-program", array( &$this,'render_new_program_page'));
-//        add_submenu_page( 'e20r-tracker', __('Settings','e20r_tracker'), __('Settings','e20r_tracker'), 'manage_options', "e20r-tracker-settings", array( &$this, 'registerSettingsPage'));
-//        add_submenu_page( 'e20r-tracker', __('Check-in Items','e20r_tracker'), __('Items','e20r_tracker'), 'manage-options', 'e20r-items', array( &$this, 'render_management_page' ) );
-//        add_submenu_page( 'e20r-tracker', __('Meals','e20r_tracker'), __('Meal History','e20r_tracker'), 'manage_options', "e20r_tracker_meals", array( &$this,'render_meals_page'));
-//        add_action( "admin_print_scripts-$page", array( 'e20rTracker', 'load_adminJS') ); // Load datepicker, etc (see apppontments+)
     }
 
     public function renderGirthTypesMetabox() {
@@ -1306,6 +1450,8 @@ class e20rTracker {
      */
     public function datesForMeasurements( $startDate = null, $weekdayNumber = null ) {
 
+        global $currentProgram;
+
         $dateArr = array();
 
         dbg("e20rTracker::datesForMeasurements(): {$startDate}, {$weekdayNumber}");
@@ -1324,9 +1470,10 @@ class e20rTracker {
 
         if ( ! $weekdayNumber ) {
 
-            dbg("e20rTracker::datesForMeasurements() - Using option value(s)");
-            $options = get_option( $this->setting_name );
-            $weekdayNumber = $options['measurement_day'];
+            dbg("e20rTracker::datesForMeasurements() - Using program value");
+            // $options = get_option( $this->setting_name );
+            // $weekdayNumber = $options['measurement_day'];
+            $weekdayNumber = $currentProgram->measurement_day;
         }
 
         switch ( $weekdayNumber ) {
@@ -1411,15 +1558,265 @@ class e20rTracker {
         <?php
     }
 
-	public function enqueue_frontend_css() {
+/*    private function loadUserScripts() {
 
-		wp_deregister_style("e20r-tracker");
-		wp_deregister_style("e20r-activity");
+        global $currentClient;
+        global $e20r_plot_jscript;
 
-		wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
-		wp_enqueue_style( "e20r-tracker-activity", E20R_PLUGINS_URL . '/css/e20r-activity.css', false, '0.1' );
 
+        // wp_print_scripts( 'e20r-jquery-json' );
+    }
+*/
+    // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
+    // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
+
+	public function is_a_coach( $user_id ) {
+
+		$wp_user = get_user_by( 'id', $user_id );
+
+		if ( $wp_user->has_cap( 'e20r_coach' ) ) {
+		    return true;
+        }
+
+        return false;
 	}
+
+    public function hasAccess( $userId, $postId ) {
+
+        global $e20rArticle;
+        global $e20rProgram;
+
+        global $currentArticle;
+
+        $retVal = false;
+        $saved = $currentArticle;
+
+        dbg("e20rTracker::hasAccess() - Checking {$userId}'s access to {$postId}" );
+
+        if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
+
+            dbg("e20rTracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
+            return true;
+        }
+
+        if ( function_exists( 'pmpro_has_membership_access' ) ) {
+
+            dbg("e20rTracker::hasAccess() - Preferring to use access check as provided bt PMPro");
+            $levels = pmpro_getMembershipLevelsForUser( $userId );
+            $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+
+            if ( $result[0] ) {
+
+                dbg("e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
+                $filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
+                $retVal = ( $filterVal == 1 ? true : false );
+                dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == true ? 'yes' : 'no' ));
+            }
+        }
+        else {
+            dbg("e20rTracker::hasAccess() - No membership access function found for Paid Memberships Pro");
+        }
+
+        $current_delay = $this->getDelay( 'now', $userId );
+        $found = false;
+
+        $programId = $e20rProgram->getProgramIdForUser( $userId );
+
+        $articles = $e20rArticle->findArticles( 'post_id', $postId, $programId, $comp = '=' );
+        // dbg( $articles);
+
+        // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+        if ( !empty( $articles ) ) {
+
+/*                $article = $articles[0];
+
+                if ( $article->release_day <= $current_delay ) {
+                    dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$article->release_day} <= {$current_delay}");
+                    $found = $article;
+                }
+            }
+            elseif( !empty($articles ) ) {
+*/
+            $found = $this->get_closest_release_day( $current_delay, $articles );
+
+            // dbg( $found );
+
+            if ( !is_null($found) && ( $found->release_day <= $current_delay ) ) {
+                dbg("e20rTracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$found->release_day} <= {$current_delay}");
+                $retVal = $retVal && true;
+            }
+            else {
+
+                $retVal = false;
+            }
+
+        }
+
+        $currentArticle = $saved;
+
+        dbg("e20rTracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
+        return $retVal;
+    }
+
+
+    public function add_endpoint() {
+
+        add_rewrite_rule(
+            '^([^/]*)/([0-9]{4}-[0-9]{2}-[0-9]{2})/?$',
+            'index.php?pagename=$matches[1]&article_date',
+            'top'
+        );
+    }
+
+    public function add_rewrite_tags() {
+
+        add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})');
+    }
+
+    public function process_post_link( $permalink, $post, $leavename ) {
+
+        global $currentArticle;
+
+        global $current_user;
+        // global $post;
+
+        if ( !is_user_logged_in() ) {
+
+            return str_replace( '%article_date%', '', $permalink );
+        }
+
+        if ( false === strpos( $permalink, '%article_date%' ) ) {
+
+            dbg("e20rTracker::process_post_link() - No permalink containing the %article_date% tag");
+            return $permalink;
+        }
+
+        if ( isset( $currentArticle->post_id ) && ( $currentArticle->post_id == $post->ID ) ) {
+
+            $article_date = $this->getDateFromDelay( ($currentArticle->release_day -1), $current_user->ID );
+
+            $article_date = ( !empty( $article_date ) ? $article_date : date('Y-m-d', current_time('timestamp') ) );
+            $article_date = urlencode( $article_date );
+
+            $permalink = str_replace( '%article_date%', $article_date, $permalink );
+
+        } else {
+
+            $permalink = str_replace( '%article_date%/', '', $permalink );
+        }
+
+        // dbg("e20rTracker::process_post_link() - Using permalink: {$permalink}");
+        return esc_url($permalink);
+    }
+
+    public function add_query_vars( $vars ) {
+
+        $vars[] = "article_date";
+
+        return $vars;
+    }
+
+    private function get_closest_release_day($search, $posts) {
+
+        $closest = null;
+
+        foreach ($posts as $item) {
+
+            if ( !isset($closest->release_day) || abs($search - $closest->release_day) > abs($item->release_day - $search)) {
+
+                $closest = $item;
+            }
+        }
+
+        return $closest;
+    }
+
+    public function filter_changeConfirmationMessage( $data, $email ) {
+
+        global $current_user;
+        global $wpdb;
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
+
+            // If this is a "checkout" e-mail and we have a current user
+            if (  isset( $current_user->ID ) && ( 0 != $current_user->ID ) ) {
+
+                // Force the $currentProgram global to be populated
+                $e20rProgram->getProgramIdForUser( $current_user->ID );
+
+                // Grab the dates
+                $available_when = $currentProgram->startdate;
+                $today = date( 'Y-m-d', current_time( 'timestamp' ) );
+
+                $membership_levels = pmpro_getMembershipLevelsForUser( $current_user->ID );
+                $groups = $currentProgram->group;
+
+                $levels = array();
+
+                foreach( $membership_levels as $lvl ) {
+                    $levels[]  = $lvl->id;
+                }
+
+                if ( !is_array( $groups ) ) {
+                    $groups = array( $groups );
+                }
+
+                $is_in_program = array_intersect( $groups, $levels );
+
+                dbg("e20rTracker::filter_changeConfirmationMessage() - Info: Today: {$today}, {$available_when}: ");
+                dbg($is_in_program);
+
+	            if ( !empty( $is_in_program ) ) {
+
+                    if ( strtotime( $currentProgram->startdate )  > strtotime( $today ) ) {
+
+                        $substitute = "Your membership account is active, <strong>but access to the Virtual Private Trainer content - including your daily workout routine - will <em>not</em> be available until Monday {$available_when}</strong>.<br/>In the mean time, why not take a peak in the Help Menu items and read through the Frequently Asked Questions?";
+
+                    }else {
+                        $substitute = "Your membership account is now active and you have full access to your Virtual Personal Trainer content. However, we recommend that you <a href=\"https://strongcubedfitness.com/login/\">log in</a> and spend some time reading the Help section (click the \"<a href=\"/faq/\">Help</a>\" menu)";
+                    }
+
+                   dbg("e20rTracker::filter_changeConfirmationMessage() - Sending: {$substitute}");
+
+                    // Replace the message (after filters have been applied)
+                    $data['e20r_status'] = $substitute;
+                }
+            }
+/*            else {
+
+                dbg("e20rTracker::filter_changeConfirmationMessage() - WARNING - User ({$email} isn't logged in while attempting to cancel");
+                wp_mail( get_option( 'admin_email' ), 'Warning: Someone (not logged in to the site) attempted to update their membership status',  "User data: " . print_r( $current_user, true ) . "Data: " . print_r( $data, true ) . "User: " . print_r($email, true) );
+                auth_redirect();
+            }
+*/
+        }
+
+        return $data;
+    }
+
+    public function isActiveClient( $clientId ) {
+
+        global $e20rProgram;
+        global $currentProgram;
+
+        $retVal = false;
+
+        dbg("e20rTracker::isActiveClient() - Run checks to see if the client is an active member of the site");
+
+        $programId = $e20rProgram->getProgramIdForUser( $clientId );
+
+        if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
+
+            dbg("e20rTracker::isActiveClient() - Check whether the user {$clientId} belongs to (one of) the program group(s)");
+            $retVal = ( pmpro_hasMembershipLevel( $currentProgram->group, $clientId ) || $retVal );
+        }
+
+        return $retVal;
+    }
+
     /**
      * Load all JS for Admin page
      */
@@ -1432,33 +1829,193 @@ class e20rTracker {
 
 	        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
 
+            wp_enqueue_style( "e20r-tracker-admin", E20R_PLUGINS_URL . "/css/e20r-tracker-admin.min.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-activity", E20R_PLUGINS_URL . "/css/e20r-activity.min.css", false, E20R_VERSION );
+            wp_enqueue_style( "e20r-assignments", E20R_PLUGINS_URL . "/css/e20r-assignments.min.css", false, E20R_VERSION );
+            wp_enqueue_style( "codetabs", E20R_PLUGINS_URL . "/css/codetabs/codetabs.css", false, E20R_VERSION );
+            wp_enqueue_style( "code.animate", E20R_PLUGINS_URL . "/css/codetabs/code.animate.css", false, E20R_VERSION );
+            wp_enqueue_style('jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", FALSE, E20R_VERSION);
+
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
-            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/select2.min.js", array('jquery'), '4.0', true );
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), '0.1', true );
+            wp_register_script( 'jquery.autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js' , array('jquery'), E20R_VERSION, true );
+            wp_register_script( 'codetabs', E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js', array( 'jquery' ), E20R_VERSION, true );
             wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery'), '1.11.2', true);
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', true );
-            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array('jquery'), '0.1', false); // true == in footer of body.
-            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.js', array('jquery', 'e20r-progress-page'), '0.1', false); // true == in footer of body.
-            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.js', array( 'jquery' ), '0.1', true);
+            wp_register_script( 'jquery-ui-datetimepicker', E20R_PLUGINS_URL . '/js/libraries/jquery.datetimepicker.min.js', array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), E20R_VERSION, true);
+
+            // wp_register_script( 'jquery-ui-timepicker-addon-slider', "//cdn.jsdelivr.net/jquery.ui.timepicker.addon/1.4.5/jquery-ui-sliderAccess.js", array( 'jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
+            // wp_register_script( 'jquery-ui-timepicker', "//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.8.1/jquery.timepicker.min.js", array('jquery-ui-core' ,'jquery-ui-datepicker', 'jquery-ui-slider' ), '1.11.2', true);
+
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), '0.1', true );
+            wp_register_script( 'e20r-progress-page', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js', array('jquery'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r_tracker_admin', E20R_PLUGINS_URL . '/js/e20r-tracker-admin.min.js', array('jquery', 'e20r-progress-page'), E20R_VERSION, false); // true == in footer of body.
+            wp_register_script( 'e20r-assignment-admin', E20R_PLUGINS_URL . '/js/e20r-assignment-admin.min.js', array( 'jquery' ), E20R_VERSION, true);
+            wp_register_script( 'e20r-assignments', E20R_PLUGINS_URL . '/js/e20r-assignments.min.js', array( 'jquery', 'jquery.autoresize' ), E20R_VERSION, true);
+
+            // $this->load_frontend_scripts('progress_overview');
+            wp_localize_script( 'e20r-progress-page', 'e20r_admin',
+                    array(
+                        'timeout' => 12000,
+                    )
+                );
+
 
             $e20r_plot_jscript = true;
 	        self::register_plotSW();
             self::enqueue_plotSW();
             $e20r_plot_jscript = false;
-
+            wp_print_scripts( 'select2' );
+            wp_print_scripts( 'jquery.timeago' );
+            wp_print_scripts( 'jquery.autoresize' );
             wp_print_scripts( 'jquery-ui-tabs' );
+            wp_print_scripts( 'codetabs' );
+            wp_print_scripts( 'jquery-ui-datetimepicker' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-page' );
             wp_print_scripts( 'e20r_tracker_admin' );
+            wp_print_scripts( 'e20r-assignments' );
             wp_print_scripts( 'e20r-assignment-admin' );
+        }
+    }
+
+    public static function enqueue_admin_scripts( $hook ) {
+
+        dbg("e20rTracker::enqueue_admin_scripts() - Loading javascript");
+
+        global $e20rAdminPage;
+        global $e20rClientInfoPage;
+
+        global $e20rTracker;
+        global $post;
+        global $e20rTracker;
+
+        wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
+
+        if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
+
+            global $e20r_plot_jscript, $e20rTracker;
+            global $e20rTracker;
+
+            $e20rTracker->load_adminJS();
+
+            $e20r_plot_jscript = true;
+            $e20rTracker->register_plotSW( $hook );
+            $e20rTracker->enqueue_plotSW( $hook );
+            $e20r_plot_jscript = false;
+
+            wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
+            // wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
+            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
+            wp_enqueue_script( 'jquery.timeago' );
+            wp_enqueue_script( 'select2' );
+
+        }
+
+        if( $hook == 'edit.php' || $hook == 'post.php' || $hook == 'post-new.php' ) {
+
+            switch( $e20rTracker->getCurrentPostType() ) {
+
+                case 'e20r_actions':
+
+                    wp_enqueue_script( 'jquery-ui-datepicker' );
+                    wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+
+                    $type = 'action';
+                    $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
+                    break;
+
+                case 'e20r_programs':
+
+                    wp_enqueue_style( 'e20r-tracker-program-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
+	                $type = 'program';
+					$deps = array('jquery', 'jquery-ui-core');
+                    break;
+
+                case 'e20r_articles':
+
+                    $type = 'article';
+                    $deps = array( 'jquery', 'jquery-ui-core' );
+
+                    break;
+
+	            case 'e20r_workout':
+
+		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
+		            $type = 'workout';
+					$deps = array( 'jquery', 'jquery-ui-core' );
+		            break;
+
+                case 'e20r_assignments':
+
+                    wp_enqueue_style( 'e20r-tracker-assignment-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
+                    $type = 'assignment';
+                    $deps = array( 'jquery', 'jquery-ui-core' );
+                    break;
+
+	            default:
+		            $type = null;
+            }
+
+            dbg("e20rTracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
+
+	        if ( $type !== null ) {
+
+		        wp_register_script( 'e20r-cpt-admin', E20R_PLUGINS_URL . "/js/e20r-{$type}-admin.min.js", $deps, E20R_VERSION, true );
+
+		        /* Localize ajax script */
+		        wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
+			        array(
+				        'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				        'timeout' => 12000,
+				        'lang'    => array(
+					        'no_entry' => __( 'Please select', 'e20rtracker' ),
+					        'no_ex_entry' => __( 'Please select an exercise', 'e20rtracker' ),
+					        'adding' => __( 'Adding...', 'e20rtracker' ),
+					        'add'   => __( 'Add', 'e20rtracker' ),
+					        'saving' => __( 'Saving...', 'e20rtracker' ),
+					        'save'   => __( 'Save', 'e20rtracker' ),
+					        'edit'   => __( 'Update', 'e20rtracker' ),
+					        'remove' => __( 'Remove', 'e20rtracker' ),
+					        'empty'  => __( 'No exercises found.', 'e20rtracker' ),
+					        'none'   => __( 'None', 'e20rtracker' ),
+					        'no_exercises'  => __( 'No exercises found', 'e20rtracker' ),
+				        ),
+			        )
+		        );
+
+		        wp_enqueue_script( 'e20r-cpt-admin' );
+	        }
+        }
+    }
+
+    public function has_gravityforms_shortcode() {
+
+        global $post;
+
+        if ( ! isset( $post->ID ) ) {
+
+            dbg("e20rTracker::has_gravityforms_shortcode() - No post ID present?");
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'gravityform' ) ) {
+
+            $this->load_frontend_scripts('defaults');
         }
     }
 
     public function has_measurementprogress_shortcode() {
 
         global $post;
-        global $e20rArticle;
         global $e20rClient;
+        global $e20rProgram;
+        global $currentClient;
+        global $e20r_plot_jscript;
+
+        global $current_user;
+
 
         if ( ! isset( $post->ID ) ) {
 
@@ -1468,83 +2025,27 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'progress_overview' ) ) {
 
-            $e20rArticle->setId( $post->ID );
+            if ( ! is_user_logged_in() ) {
 
-            if ( ! $e20rClient->client_loaded ) {
-                $e20rClient->init();
+                auth_redirect();
+            }
+
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
+            // $e20rArticle->init( $post->ID );
+
+            if ( !isset( $currentClient->loadedDefaults ) || ( $currentClient->loadedDefaults == true ) ) {
+
                 dbg( "e20rTracker::has_measurementprogress_shortcode() - Have to init e20rClient class & grab data..." );
+                $e20rClient->init();
             }
 
-            $this->loadUserScripts();
-            // $e20rMeasurements->init( $e20rArticle->releaseDate(), $e20rClient->clientId() );
-
+            dbg("e20rTracker::has_measurementprogress_shortcode() - Loading scripts and styles for assignments and progress_overview");
+            $this->load_frontend_scripts( array(
+                            'assignments',
+                            'progress_overview'
+                        )
+                    );
         }
-    }
-
-    private function loadUserScripts() {
-
-        global $current_user;
-        global $e20r_plot_jscript;
-
-        $e20r_plot_jscript = true;
-        $this->register_plotSW();
-
-        wp_enqueue_style( "jquery-ui-tabs", "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css", false, '1.11.2' );
-
-	    wp_register_script( 'jquery.touchpunch', '//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array( 'jquery' ), '0.2.3', true);
-        wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', true );
-	    wp_register_script( 'jquery-ui-tabs', "//code.jquery.com/ui/1.11.2/jquery-ui.js", array('jquery', 'jquery.touchpunch'), '1.11.2', true);
-        wp_register_script( 'e20r-tracker', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'jquery.touchpuch' ), '0.1', true );
-        wp_register_script( 'e20r-progress-measurements', E20R_PLUGINS_URL . '/js/e20r-progress-measurements.js', array( 'e20r-tracker' ), '0.1', true );
-
-        wp_localize_script( 'e20r-progress-measurements', 'e20r_progress',
-            array(
-                'clientId' => $current_user->ID,
-                'ajaxurl' => admin_url('admin-ajax.php'),
-            )
-        );
-
-        // wp_print_scripts( 'e20r-jquery-json' );
-        wp_print_scripts( 'jquery-ui-tabs' );
-	    wp_print_scripts( 'jquery.touchpunch' );
-        wp_print_scripts( 'jquery.timeago' );
-        $this->enqueue_plotSW();
-        wp_print_scripts( 'e20r-tracker' );
-        wp_print_scripts( 'e20r-progress-measurements' );
-
-        $e20r_plot_jscript = true;
-
-        if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
-
-            dbg("e20rTracker::loadUserScripts() - Need to load CSS for e20rTracker.");
-            wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
-        }
-
-    }
-    // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
-    // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
-
-    public function hasAccess( $userId, $postId ) {
-
-        if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
-
-            dbg("Post #{$postId} is a preview for {$userId}");
-            return true;
-        }
-
-        if ( function_exists( 'pmpro_has_membership_access' ) ) {
-
-            $results = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
-
-            if ( $results[0] === true ) { // First item in results array == true if user has access
-
-                dbg( "e20rTracker::hasAccess() - User {$userId} has access to this post" );
-                return true;
-            }
-        }
-
-        return false;
     }
 
 	public function has_exercise_shortcode() {
@@ -1557,29 +2058,44 @@ class e20rTracker {
 
         if ( has_shortcode( $post->post_content, 'e20r_exercise' ) ) {
 
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
 			dbg("e20rTracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
-
-			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), '0.1', false );
-			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), '0.1', false );
-		// wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), '0.1', false );
-
-/*			wp_localize_script( 'e20r-exercise-js', 'e20r_workout',
-				array(
-					'url' => admin_url('admin-ajax.php'),
-				)
-			);
-*/
-			// wp_print_scripts( array( 'fitvids', 'e20r-tracker-js', 'e20r-workout-js', 'e20r-exercise-js' ) );
-			wp_print_scripts( array( 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ) );
+            $this->load_frontend_scripts( 'exercise' );
 		}
 
 	}
+
+    public function has_summary_shortcode() {
+
+        global $post;
+
+        if ( !isset( $post->ID ) ) {
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'e20r_article_summary' ) ) {
+
+            if ( !is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
+            dbg("e20rTracker::has_summary_shortcode() - Load CSS for weekly summary post");
+            $this->load_frontend_scripts( 'article_summary' );
+        }
+    }
 
 	public function has_activity_shortcode() {
 
 		global $post;
 		global $pagenow;
+
+        global $e20rProgram;
+        global $current_user;
 
         if ( ! isset( $post->ID ) ) {
             return;
@@ -1587,20 +2103,15 @@ class e20rTracker {
 
         if ( ( has_shortcode( $post->post_content, 'e20r_activity' ) || ( has_shortcode( $post->post_content, 'e20r_activity_archive' ) ) ) ) {
 
-			dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
+            if ( ! is_user_logged_in() ) {
 
-			wp_register_script( 'fitvids', 'https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js', array( 'jquery' ), '0.1', false );
-			wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-exercise-js', E20R_PLUGINS_URL . '/js/e20r-exercise.js', array( 'jquery', 'fitvids' ), '0.1', false );
-			wp_register_script( 'e20r-workout-js', E20R_PLUGINS_URL . '/js/e20r-workout.js', array( 'jquery', 'fitvids', 'e20r-tracker-js', 'e20r-exercise-js' ), '0.1', false );
+                auth_redirect();
+            }
 
-			wp_localize_script( 'e20r-workout-js', 'e20r_workout',
-				array(
-					'url' => admin_url('admin-ajax.php'),
-				)
-			);
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
 
-			wp_print_scripts( array( 'fitvids', 'e20r-tracker-js', 'e20r-workout-js', 'e20r-exercise-js' ) );
+            dbg("e20rTracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
+            $this->load_frontend_scripts( 'activity' );
 		}
 
 	}
@@ -1610,35 +2121,73 @@ class e20rTracker {
         global $post;
         global $pagenow;
 
+        global $currentProgram;
+        global $current_user;
+
+        global $e20rProgram;
+
         if ( ! isset( $post->ID ) ) {
             return;
         }
 
+
         if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
-            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting user javascripts. ");
+            if ( !is_user_logged_in() ) {
 
-	        wp_register_script( 'base64', '//javascriptbase64.googlecode.com/files/base64.js', array( 'jquery' ), '0.3', false);
-	        wp_register_script( 'jquery-autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrow-textarea.js', array( 'base64', 'jquery' ), '1.2', false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'base64', 'jquery', 'jquery-autoresize' ), '0.1', false );
-            wp_register_script( 'e20r-checkin-js', E20R_PLUGINS_URL . '/js/e20r-checkin.js', array( 'base64', 'jquery', 'jquery-autoresize', 'e20r-tracker-js' ), '0.1', false );
+                auth_redirect();
+            }
 
-            wp_localize_script( 'e20r-checkin-js', 'e20r_checkin',
-                array(
-                    'url' => admin_url('admin-ajax.php'),
-                )
-            );
+            $e20rProgram->getProgramIdForUser( $current_user->ID );
 
-            wp_print_scripts( array( 'base64', 'jquery-autoresize', 'e20r-tracker-js', 'e20r-checkin-js' ) );
+            dbg("e20rTracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+
+            $this->load_frontend_scripts( array( 'daily_progress', 'assignments' ) );
         }
     }
 
+    public function has_clientlist_shortcode() {
+
+        global $post;
+
+
+        if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'e20r_client_overview' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
+
+            dbg("e20rTracker::has_clientlist_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+
+            $this->load_frontend_scripts('client_overview');
+        }
+    }
+
+    public function has_profile_shortcode() {
+
+		global $post;
+
+        if ( ! isset( $post->ID )  ) {
+            return;
+        }
+
+        if ( has_shortcode( $post->post_content, 'e20r_profile' ) ) {
+
+            if ( !is_user_logged_in()) {
+                auth_redirect();
+            }
+
+			dbg("e20rTracker::has_profile_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
+            $this->load_frontend_scripts( array( 'assignments', 'progress_overview', 'daily_progress', 'profile' ) );
+        }
+
+    }
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
     public function has_weeklyProgress_shortcode() {
 
-        dbg("e20rTracker::has_weeklyProgress_shortcode() -- Loading & adapting javascripts. ");
         global $e20rMeasurements;
         global $e20rClient;
         global $e20rMeasurementDate;
@@ -1648,14 +2197,18 @@ class e20rTracker {
         global $post;
         global $current_user;
 	    global $currentArticle;
+	    global $currentProgram;
 
-        if ( ! isset( $post->ID ) ) {
+        if ( !isset( $post->ID ) ) {
             return;
         }
 
-        dbg("e20rTracker::has_weeklyProgress_shortcode() -- pagenow is '{$pagenow}'. ");
-
         if ( has_shortcode( $post->post_content, 'weekly_progress' ) ) {
+
+            if ( ! is_user_logged_in() ) {
+
+                auth_redirect();
+            }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
 
@@ -1668,7 +2221,8 @@ class e20rTracker {
             $e20rMeasurementDate = $measurementDate;
 
             $userId = $current_user->ID;
-            $programId = $e20rProgram->getProgramIdForUser( $userId );
+            $e20rProgram->getProgramIdForUser( $userId );
+            $programId = $currentProgram->id;
             $articleId = $e20rArticle->init( $articleId );
             $articleURL = $e20rArticle->getPostUrl( $articleId );
 
@@ -1684,7 +2238,7 @@ class e20rTracker {
                 $e20rClient->init();
             }
 
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for {$measurementDate}");
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading measurements for: " . ( !isset( $measurementDate ) ? 'No date given' : $measurementDate ) );
             $e20rMeasurements->init( $measurementDate, $userId );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Register scripts");
@@ -1692,9 +2246,9 @@ class e20rTracker {
             $this->enqueue_plotSW();
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
             wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
-            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.js', array( 'jquery' ), '0.1', false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), '0.1', false );
-            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , '0.1', false );
+            wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), E20R_VERSION, false );
+            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.min.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
@@ -1704,14 +2258,25 @@ class e20rTracker {
             $bDay = $e20rClient->getBirthdate( $userId );
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
 
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
             if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
 
-	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview page!");
-                $url = $e20rProgram->get_welcomeSurveyLink( $userId );
+	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
 
-                if ( ! empty( $url ) ) {
+
+                if ( empty( $currentProgram->incomplete_intake_form_page ) ) {
+                    $url = $e20rProgram->get_welcomeSurveyLink( $userId );
+                }
+                else {
+                    $url = get_permalink( $currentProgram->incomplete_intake_form_page );
+                }
+
+                dbg("e20rTracker::has_weeklyProgress_shortcode() - URL to redirect to: {$url}");
+                if ( !empty( $url ) ) {
 
 	                wp_redirect( $url, 302 );
+	                exit;
+	                // wp_die("Tried to redirect to");
                 }
 	            else {
 		            dbg("e20rTracker::has_weeklyProgress_shortcode() - No URL defined! Can't redirect.");
@@ -1729,15 +2294,16 @@ class e20rTracker {
                         'lengthunit'        => $e20rClient->getLengthUnit(),
                         'weightunit'        => $e20rClient->getWeightUnit(),
 	                    'interview_url'     => $e20rProgram->get_welcomeSurveyLink($userId),
-                        'imagepath'         => E20R_PLUGINS_URL . '/images/',
+                        'imagepath'         => E20R_PLUGINS_URL . '/img/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
                         'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
+                        'weekly_progress'   => get_permalink( $currentProgram->measurements_page_id ),
                     ),
                     'measurements' => array(
                         'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
                     ),
                     'user_info'    => array(
-                        'userdata'          => json_encode( $e20rClient->getData( $userId, true ), JSON_NUMERIC_CHECK ),
+                        'userdata'          => json_encode( $e20rClient->get_data( $userId, true, true ), JSON_NUMERIC_CHECK ),
 //                        'progress_pictures' => '',
 //                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
@@ -1806,36 +2372,543 @@ class e20rTracker {
             </script>
             <?php
 
+            if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
+
+                dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
+                wp_deregister_style("e20r-tracker");
+                wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
+            }
+
         } // End of shortcode check for weekly progress form
-
-        if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
-
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Need to load CSS for e20rTracker.");
-            wp_deregister_style("e20r-tracker");
-            wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.css', false, '0.1' );
-        }
-
     }
 
-	private function loadOption( $optionName ) {
+    private function register_script( $script, $location, $deps ) {
+
+        dbg("e20rTracker::register_script() - script: {$script}, location: {$location}, dependencies ");
+        // dbg($deps);
+
+        wp_register_script( $script, $location, $deps, E20R_VERSION, true );
+    }
+
+    public function load_frontend_scripts( $events ) {
+
+        if (defined('DOING_AJAX') && DOING_AJAX) {
+
+            dbg("e20rTracker::load_frontend_scripts() - Doing AJAX call. No need to load any scripts/styling");
+            return;
+        }
+
+        global $e20r_plot_jscript;
+        global $e20rTracker;
+
+        global $current_user;
+        global $post;
+
+        global $currentClient;
+        global $currentProgram;
+
+        if ( !is_user_logged_in() ) {
+
+            auth_redirect();
+        }
+
+        if ( !is_array( $events ) ) {
+            $events = array( $events );
+        }
+
+        $load_jq_plot = false;
+
+        dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
+        foreach( $events as $event ) {
+
+            $css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
+            $css = array(
+                "e20r-print" => E20R_PLUGINS_URL . '/css/print.min.css',
+                "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.min.css',
+                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css',
+            );
+
+            $scripts = array();
+            $prereqs = array(
+                'jquery' => null,
+                'jquery-ui-core' => null,
+                'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js'
+            );
+
+            switch ( $event ) {
+
+                case 'article_summary':
+
+                    $load_jq_plot = false;
+                    dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the article summary page.");
+
+                    $css = array_replace( $css, array(
+                            'e20r-article-summary' => E20R_PLUGINS_URL . '/css/e20r-article-summary.min.css',
+                        )
+                    );
+
+                    break;
+
+                case 'client_overview':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");
+                    $load_jq_plot = false;
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                        )
+                    ) );
+
+                    break;
+
+                case 'profile':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'e20r_profile' shortcode");
+                    $load_jq_plot = true;
+
+                    $css = array_replace( $css, array(
+                        "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
+                        "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
+                        "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
+                    ) );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'jquery-ui-tabs' => array( 'jquery', 'jquery-ui-core' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
+                        'dependencies' => array(
+                            'jquery.codetabs' => array( 'jquery' ),
+                        ),
+                    ) );
+
+                    break;
+
+                case 'assignments':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading the assignments javascripts");
+                    dbg("e20rTracker::load_frontend_scripts() - Path to thickbox: " . home_url( '/' . WPINC . "/js/thickbox/thickbox.css" ));
+
+                    $css = array_replace( $css, array(
+                        "thickbox" => null,
+                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
+                    ) );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'heartbeat' => null,
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'thickbox' => null,
+                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'dependencies' => array(
+                            'heartbeat' => false,
+                            'jquery' => false,
+                            'jquery-ui-core' => array('jquery'),
+                            'jquery.autoresize' => array('jquery'),
+                            'jquery.touchpunch' => array('jquery', 'jquery-ui-core'),
+                            'thickbox' => array('jquery'),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
+                        'dependencies' => array(
+                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize', 'heartbeat'),
+                        )
+                    ) );
+
+                    $script = 'e20r_assignments';
+                    $id = 'e20r_assignments';
+
+                    break;
+
+                case 'progress_overview':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'progress_overview' shortcode");
+
+                    $load_jq_plot = true;
+
+                    $css = array_replace( $css, array(
+                        'thickbox' => null,
+                        "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
+                        "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
+                        "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
+                    ) );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'thickbox' => null,
+                        'jquery-ui-tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
+                        'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'thickbox' => array('jquery'),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                            'jquery-ui-tabs' => array( 'jquery', 'jquery-ui-core' ),
+                            'jquery.easing' => array( 'jquery' ),
+                            'jquery.timeago' => array( 'jquery' ),
+                            'jquery.codetabs' => array( 'jquery' ),
+                            'e20r_tracker' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.codetabs', 'jquery-ui-tabs' ),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r-progress-measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
+                        'dependencies' => array(
+                            'e20r-progress-measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.codetabs', 'jquery-ui-tabs',  'e20r_tracker' )
+                        )
+                    ) );
+
+                    $script = 'e20r-progress-measurements';
+                    $id = 'e20r_progress';
+
+                    break;
+
+                case 'exercise':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'exercise' shortcode");
+                    $load_jq_plot = false;
+
+                    $css = array_replace( $css, array(
+                                'e20r-exercise' => E20R_PLUGINS_URL . "/css/e20r-exercise.min.css",
+                            )
+                        );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                            'fitvids' => array( 'jquery' ),
+                            'e20r_tracker' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids' ),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r_exercise' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
+                        'dependencies' => array(
+                            'e20r_exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
+                        )
+                    ) );
+
+                    $script = 'e20r_exercise';
+                    $id = 'e20r_exercise';
+
+                    break;
+
+                case 'activity':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'activity' shortcode");
+                    $load_jq_plot = true;
+
+                    $css = array_replace( $css, array(
+                        "e20r-assignments" => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
+                    ) );
+
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r_exercise' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                            'fitvids' => array( 'jquery' ),
+                            'e20r_tracker' => array( 'jquery', 'fitvids' ),
+                            'e20r_exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r_workout' => E20R_PLUGINS_URL . '/js/e20r-workout.min.js',
+                        'dependencies' => array(
+                            'e20r_workout' => array( 'jquery', 'fitvids', 'e20r_tracker', 'e20r_exercise' )
+                        )
+                    ) );
+
+                    $script = 'e20r_workout';
+                    $id = 'e20r_workout';
+
+                    break;
+
+                case 'daily_progress':
+
+                    dbg("e20rTracker::load_frontend_scripts() - Loading for the 'daily_progress' shortcode");
+                    $load_jq_plot = false;
+
+                    $css = array_replace( $css, array(
+                        'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
+                        "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
+                        "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
+                        'e20r_action'  => E20R_PLUGINS_URL . '/css/e20r-action.min.css',
+                    ) );
+
+                    // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
+                    //  'jquery-effects-core' => null,
+                    $prereqs = array_replace( $prereqs, array(
+                        'jquery' => null,
+                        'jquery-ui-core' => null,
+                        'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
+                        'base64' => '//javascriptbase64.googlecode.com/files/base64.js',
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                        'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
+                        'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
+                        'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'dependencies' => array(
+                            'jquery' => false,
+                            'jquery-ui-core' => array( 'jquery' ),
+                            'base64' => false,
+                            'select2' => array( 'jquery' ),
+                            'jquery.touchpunch' => array( 'jquery', 'jquery-ui-core' ),
+                            'jquery.autoresize' => array( 'jquery' ),
+                            'jquery.timeago' => array( 'jquery' ),
+                            'jquery.redirect' => array( 'jquery' ),
+                            'e20r_tracker' => array( 'jquery' ),
+                        )
+                    ) );
+
+                    $scripts = array_replace( $scripts, array(
+                        'e20r_action' => E20R_PLUGINS_URL . '/js/e20r-action.min.js',
+                        'dependencies' => array(
+                            'e20r_action' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker'),
+                        ),
+                    ) );
+
+                    $script = 'e20r_action';
+                    $id = 'e20r_action';
+
+                    break;
+
+                case 'default':
+                    $load_jq_plot = false;
+                    dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the standard formatting & gravity forms pages.");
+                    break;
+
+            }
+
+//            dbg("e20rTracker::load_frontend_scripts() - Scripts to print, prerequisites, scripts and CSS:");
+//            dbg($prereqs);
+
+            $prereq = array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch' );
+
+            foreach( $prereqs as $tag => $url ) {
+
+                if ( 'dependencies' != $tag ) {
+
+                    if ( !empty( $url ) ) {
+
+                        dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} as prerequisite for {$event}");
+                        $this->register_script( $tag, $url, $prereqs['dependencies'][$tag] );
+                    }
+
+                    if ( !in_array( $tag, $prereq ) ) {
+
+                        dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} to list of prerequisites to print/enqueue");
+                        $prereq[] = $tag;
+                    }
+                }
+            }
+
+            // $prereq = array_keys( $prereq );
+            dbg("e20rTracker::load_frontend_scripts() - For the prerequisites -- wp_print_scripts( " . print_r( $prereq, true) . " )");
+            wp_print_scripts( $prereq );
+
+            $list = array();
+
+            foreach( $scripts as $tag => $url ) {
+
+                if ( 'dependencies' != $tag ) {
+
+                    if ( !empty( $url ) ) {
+
+                        dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} as script for {$event}");
+                        $this->register_script( $tag, $url, $scripts['dependencies'][$tag] );
+                    }
+
+                    if ( !in_array( $tag, $list ) ) {
+
+                        dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} to list of scripts to print/enqueue");
+                        $list[] = $tag;
+                    }
+                }
+            }
+
+            if ( ( !empty( $script) ) && ( !empty($id) ) ) {
+
+                dbg("e20rTracker::load_frontendscripts() - localizing tag ({$script}) with name {$id}");
+                global $e20rClient;
+
+                wp_localize_script( $script, $id,
+                    array(
+                        'timeout' => 12000,
+                        'ajaxurl' => admin_url('admin-ajax.php'),
+                        'interview_complete' => $e20rClient->completeInterview( $current_user->ID ),
+                        'clientId' => $current_user->ID,
+                        'is_profile_page' => has_shortcode( $post->post_content, 'e20r_profile' ),
+                        'activity_url' => get_permalink( $currentProgram->activity_page_id ),
+                        'login_url' => wp_login_url( get_permalink( $currentProgram->dashboard_page_id ) ),
+                    )
+                );
+            }
+
+            dbg("e20rTracker::load_frontend_scripts() - For the script(s) -- wp_print_scripts( " . print_r( $list, true) . " )");
+            wp_print_scripts( $list );
+
+
+            foreach( $css as $tag => $url ) {
+
+                $css_list[] = $tag;
+
+                if ( !is_null( $url ) ) {
+
+                    dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} CSS");
+                    wp_enqueue_style( $tag, $url, false, E20R_VERSION );
+                }
+                else {
+
+                    wp_enqueue_style( $tag );
+                }
+            }
+
+/*
+            $depKey = array_search( 'dependencies', $list );
+
+            if ( $depKey ) {
+
+                dbg("e20rTracker::load_frontend_scripts() - Removing the dummy entry 'dependencies' from the list of scripts to enqueue/print");
+                unset( $list[$depKey] );
+            }
+*/
+        }
+
+        $e20r_plot_jscript = $load_jq_plot;
+
+        $this->register_plotSW();
+        dbg("e20rTracker::load_frontend_scripts() - Loading CSS for front-end");
+
+        $this->enqueue_plotSW();
+        $e20r_plot_jscript = false;
+
+        // Extract the javascripts scripts to load/print for the short code.
+        // $list = array_keys( $list );
+        // dbg("e20rTracker::load_frontend_scripts() - wp_print_scripts( " . print_r( $list, true) . " )");
+        // wp_print_scripts( $list );
+    }
+
+   /* Prepare graphing scripts */
+    public function register_plotSW( $hook = null ) {
+
+        global $e20r_plot_jscript;
+        global $post;
+	    global $e20rAdminPage;
+	    global $e20rClientInfoPage;
+
+        if ( $e20r_plot_jscript || ( !is_null($hook) && $hook == $e20rClientInfoPage ) || ( !is_null($hook) && $hook == $e20rAdminPage ) || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
+
+            dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
+
+            wp_deregister_style( 'jqplot' );
+            wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, E20R_VERSION );
+
+            wp_deregister_script( 'jqplot' );
+            wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_export' );
+            wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_pie' );
+            wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_text' );
+            wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_mobile' );
+            wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_date' );
+            wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_label' );
+            wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_pntlabel' );
+            wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), E20R_VERSION );
+
+            wp_deregister_script( 'jqplot_ticks' );
+            wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), E20R_VERSION );
+        }
+    }
+
+        /**
+     * Load graphing scripts (if needed)
+     */
+    private function enqueue_plotSW( $hook = null ) {
+
+        global $e20r_plot_jscript, $post;
+	    global $e20rAdminPage;
+	    global $e20rClientInfoPage;
+
+        if ( $e20r_plot_jscript || $hook == $e20rClientInfoPage || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
+
+            dbg("e20rTracker::enqueue_plotSW() -- Loading javascript for graph generation");
+
+            wp_print_scripts( array(
+                'jqplot', 'jqplot_export', 'jqplot_pie', 'jqplot_text', 'jqplot_mobile', 'jqplot_date', 'jqplot_label', 'jqplot_pntlabel', 'jqplot_ticks'
+                )
+            );
+
+        }
+    }
+
+	public function loadOption( $optionName ) {
 
 		$value = false;
 
-        dbg("e20rTracker::loadOption() - Looking for option with name: {$optionName}");
+        // dbg("e20rTracker::loadOption() - Looking for option with name: {$optionName}");
         $options = get_option( $this->setting_name );
 
         if ( empty( $options ) ) {
 
-            dbg("e20rTracker::loadOption() - No options defined at all!");
+            // dbg("e20rTracker::loadOption() - No options defined at all!");
             return false;
         }
 
         if ( empty( $options[$optionName] ) ) {
-            dbg("e20rTracker::loadOption() - Option {$optionName} exists but contains no data!");
+            // dbg("e20rTracker::loadOption() - Option {$optionName} exists but contains no data!");
             return false;
         }
         else {
-            dbg("e20rTracker::loadOption() - Option {$optionName} exists...");
+            // dbg("e20rTracker::loadOption() - Option {$optionName} exists...");
 
             if ( 'e20r_interview_page' == $optionName ) {
                 return E20R_COACHING_URL . "/welcome-questionnaire/";
@@ -1847,75 +2920,7 @@ class e20rTracker {
 
 		return false;
 	}
-    /**
-     * Load the generic/general plugin javascript and localizations
-     */
 
-    /* Prepare graphing scripts */
-    public function register_plotSW( $hook = null ) {
-
-        global $e20r_plot_jscript, $post;
-	    global $e20rAdminPage;
-
-        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
-
-            dbg( "e20rTracker::register_plotSW() - Plotting javascript being registered." );
-
-            wp_deregister_script( 'jqplot' );
-            wp_register_script( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.js', array( 'jquery' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_export' );
-            wp_register_script( 'jqplot_export', E20R_PLUGINS_URL . '/js/jQPlot/plugins/export/exportImg.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_pie' );
-            wp_register_script( 'jqplot_pie', E20R_PLUGINS_URL . '/js/jQPlot/plugins/pie/jqplot.pieRenderer.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_text' );
-            wp_register_script( 'jqplot_text', E20R_PLUGINS_URL . '/js/jQPlot/plugins/text/jqplot.canvasTextRenderer.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_mobile' );
-            wp_register_script( 'jqplot_mobile', E20R_PLUGINS_URL . '/js/jQPlot/plugins/mobile/jqplot.mobile.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_date' );
-            wp_register_script( 'jqplot_date', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.dateAxisRenderer.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_label' );
-            wp_register_script( 'jqplot_label', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisLabelRenderer.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_pntlabel' );
-            wp_register_script( 'jqplot_pntlabel', E20R_PLUGINS_URL . '/js/jQPlot/plugins/points/jqplot.pointLabels.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_script( 'jqplot_ticks' );
-            wp_register_script( 'jqplot_ticks', E20R_PLUGINS_URL . '/js/jQPlot/plugins/axis/jqplot.canvasAxisTickRenderer.min.js', array( 'jqplot' ), '0.1' );
-
-            wp_deregister_style( 'jqplot' );
-            wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, '0.1' );
-        }
-    }
-
-    /**
-     * Load graphing scripts (if needed)
-     */
-    private function enqueue_plotSW( $hook = null ) {
-
-        global $e20r_plot_jscript, $post;
-	    global $e20rAdminPage;
-
-        if ( $e20r_plot_jscript || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
-
-            dbg("e20rTracker::enqueue_plotSW() -- Loading javascript for graph generation");
-            wp_print_scripts('jqplot');
-            wp_print_scripts('jqplot_export');
-            wp_print_scripts('jqplot_pie');
-            wp_print_scripts('jqplot_text');
-            wp_print_scripts('jqplot_mobile');
-            wp_print_scripts('jqplot_date');
-            wp_print_scripts('jqplot_label');
-            wp_print_scripts('jqplot_pntlabel');
-            wp_print_scripts('jqplot_ticks');
-
-        }
-    }
 
     /**
      * Default permission check function.
@@ -1941,8 +2946,9 @@ class e20rTracker {
                 $perm = false;
             }
 
-            $permitted = ( $permitted || $perm ) ? true : false;
+            $permitted = ( $permitted || $perm );
         }
+
 
         if ( $permitted ) {
             dbg( "e20rTracker::userCanEdit() - User id ({$user_id}) has permission" );
@@ -1953,13 +2959,20 @@ class e20rTracker {
         return $permitted;
     }
 
-    public function e20r_tracker_activate() {
+    public function manage_tables() {
 
         global $wpdb;
         global $e20r_db_version;
 
-        // Create settings with default values
-        update_option( $this->setting_name, $this->settings );
+        $current_db_version = $this->loadOption( 'e20r_db_version' );
+
+        if ( $current_db_version == E20R_DB_VERSION ) {
+
+            dbg("e20rTracker::manage_tables() - No change in DB structure. Continuing...");
+            return;
+        }
+
+        $e20r_db_version = $current_db_version;
 
         $charset_collate = '';
 
@@ -1971,38 +2984,41 @@ class e20rTracker {
             $charset_collate .= " COLLATE {$wpdb->collate}";
         }
 
-        dbg("e20r_tracker_activate() - Loading table SQL");
+        dbg("e20rTracker::manage_tables() - Loading table SQL...");
 
-/*
-        $programsTableSql = "
-            CREATE TABLE {$wpdb->prefix}e20r_programs (
-                    id int not null auto_increment,
-                    program_name varchar(255) null,
-                    program_shortname varchar(50) null,
-                    description mediumtext null,
-                    starttime timestamp not null default current_timestamp,
-                    endtime timestamp null,
-                    member_id int null,
-                    sequences varchar(512) null,
-                    belongs_to int null,
-                    primary key (id) )
-                  {$charset_collate}
-        ";
-
-        $setsTableSql = "
-            CREATE TABLE {$wpdb->prefix}e20r_sets (
+        $message_history = "
+            CREATE TABLE {$wpdb->prefix}e20r_client_messages (
                 id int not null auto_increment,
-                set_name varchar(50) null,
-                rounds int not null default 1,
-                set_rest int not null default 60,
-                program_id int not null default 0,
-                exercise_id int not null default 0,
-                primary key (id),
-                key exercises ( exercise_id asc ),
-                key programs ( program_id asc ) )
+				user_id int not null,
+				program_id int not null,
+				sender_id int not null,
+				topic varchar(255) null,
+				message text null,
+                sent datetime null,
+				transmitted timestamp not null default current_timestamp,
+                primary key (id) ,
+                index cm_user_program ( user_id, program_id ) )
                 {$charset_collate}
         ";
-*/
+        $surveyTable = "
+            CREATE TABLE {$wpdb->prefix}e20r_surveys (
+                id int not null auto_increment,
+				user_id int not null,
+				program_id int not null,
+				article_id int not null,
+				survey_type int null,
+				survey_data text null,
+				is_encrypted tinyint null,
+				recorded timestamp not null default current_timestamp,
+				completed datetime null,
+				for_date datetime null,
+                primary key (id) ,
+                index user_program ( user_id, program_id ),
+                index program_article ( program_id, article_id ),
+                index dated ( for_date ) )
+                {$charset_collate}
+        ";
+
         $activityTable = "
             CREATE TABLE {$wpdb->prefix}e20r_workout (
                 id int not null auto_increment,
@@ -2032,6 +3048,7 @@ class e20rTracker {
                     edited_date timestamp null,
                     completed_date timestamp null,
                     program_id int not null,
+                    article_id int not null,
                     page_id int not null,
                     program_start date not null,
                     progress_photo_dir varchar(255) not null default 'e20r-pics/',
@@ -2172,8 +3189,8 @@ class e20rTracker {
                     research_consent tinyint not null default 0,
                     medical_release tinyint not null default 0,
                     primary key  (id),
-                    key user_id  (user_id asc),
-                    key programstart  (program_start asc)
+                    index user_id  (user_id),
+                    index programstart  (program_start)
               )
                   {$charset_collate}
         ";
@@ -2204,7 +3221,7 @@ class e20rTracker {
                     back_image int default null,
                     program_id int default -1,
                     primary key  ( id ),
-                    key user_id ( user_id asc) )
+                    index user_id ( user_id ) )
                   {$charset_collate}
               ";
         /**
@@ -2228,8 +3245,8 @@ class e20rTracker {
                     checkedin tinyint not null default 0,
                     checkin_note text null,
                     primary key  (id),
-                        key program_id ( program_id asc ),
-                        key checkin_short_name ( checkin_short_name asc ) )
+                        index program_id ( program_id ),
+                        index checkin_short_name ( checkin_short_name ) )
                 {$charset_collate}";
 
 
@@ -2239,49 +3256,47 @@ class e20rTracker {
          */
         $assignmentAsSql =
             "CREATE TABLE {$wpdb->prefix}e20r_assignments (
-                    id int not null,
+                    id int not null auto_increment,
                     article_id int not null,
                     program_id int not null,
+                    question_id int not null,
                     delay int not null,
                     user_id int not null,
                     answer_date datetime null,
                     answer text null,
-                    field_type enum( 'textbox', 'input', 'checkbox', 'radio', 'button' ),
+                    response_id int null,
+                    field_type enum( 'button', 'input', 'textbox', 'checkbox', 'multichoice', 'rank', 'yesno' ),
                     primary key  (id),
-                     key articles (article_id asc),
-                     key user_id ( user_id asc )
+                     index articles (article_id ),
+                     index questions (question_id ),
+                     index user_id ( user_id )
                      )
                     {$charset_collate}
         ";
 
-        $oldMeasurementTableSql =
-            "CREATE TABLE {$wpdb->prefix}nourish_measurements (
-                    lead_id int(11) not null,
-                    created_by int(11) not null,
-                    date_created date not null,
-                    username varchar(50) not null,
-                    recordedDate date not null,
-                    weight float not null,
-                    neckCM float default null,
-                    shoulderCM float default null,
-                    chestCM float default null,
-                    armCM float default null,
-                    waistCM float default null,
-                    hipCM float default null,
-                    thighCM float default null,
-                    calfCM float default null,
-                    totalGrithCM float default null,
-                    article_id int(11) DEFAULT NULL,
-                    essay1 text NULL,
-                    behaviorprogress tinyint NULL,
-                    front_image int default null,
-                    side_image int default null,
-                    back_image int default null,
-                    program_id int default 0
-                    )
+        $response_table =
+            "CREATE TABLE {$wpdb->prefix}e20r_response (
+                    id int not null auto_increment,
+                    assignment_id int not null,
+                    article_id int null,
+                    program_id int null,
+                    client_id int not null,
+                    recipient_id int not null,
+                    sent_by_id int not null,
+                    replied_to int null,
+                    archived tinyint not null default 0,
+                    message_read tinyint not null default 0,
+                    message_time timestamp not null default current_timestamp,
+                    message text null,
+                    primary key  (id),
+                     index articles (article_id ),
+                     index program_id (program_id ),
+                     index recipient_id ( recipient_id ),
+                     index client_id ( client_id )
+                     )
                     {$charset_collate}
-            ";
 
+          ";
         // FixMe: The trigger works but can only be installed if using the mysqli_* function. That causes "Command out of sync" errors.
         /* $girthTriggerSql =
             "DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total;
@@ -2294,33 +3309,182 @@ class e20rTracker {
         */
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
-        dbg('e20r_tracker_activate() - Creating tables in database');
-        dbDelta( $checkinSql );
-        dbDelta( $measurementTableSql );
-        dbDelta( $intakeTableSql );
-        dbDelta( $assignmentAsSql );
-        dbDelta( $activityTable );
-/*        dbDelta( $programsTableSql );
-        dbDelta( $setsTableSql );
-        dbDelta( $exercisesTableSql ); */
-        dbDelta( $oldMeasurementTableSql );
-
-        // dbg("e20r_tracker_activate() - Adding triggers in database");
+        dbg('e20rTracker::manage_tables() - Loading/updating tables in database...');
+        $result = dbDelta( $checkinSql );
+        dbg("e20rTracker::manage_tables() - Check-in table: ");
+        dbg($result);
+        $result = dbDelta( $measurementTableSql );
+        dbg("e20rTracker::manage_tables() - Measurements table: ");
+        dbg($result);
+        $result = dbDelta( $intakeTableSql );
+        dbg("e20rTracker::manage_tables() - Client Information table:");
+        dbg($result);
+        $result = dbDelta( $assignmentAsSql );
+        dbg("e20rTracker::manage_tables() - Assignments table:");
+        dbg($result);
+        $result = dbDelta( $activityTable );
+        dbg("e20rTracker::manage_tables() - Activity table:");
+        dbg($result);
+        $result = dbDelta( $surveyTable );
+        dbg("e20rTracker::manage_tables() - Survey table:");
+        dbg($result);
+        $result = dbDelta( $message_history );
+        dbg("e20rTracker::manage_tables() - Message history table:");
+        dbg($result);
+        $result = dbDelta( $response_table );
+        dbg("e20rTracker::manage_tables() - Coach/Client response table:");
+        dbg($result);
+        // dbg("e20rTracker::manage_tables() - Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
-        add_option( 'e20rTracker_db_version', $e20r_db_version );
+        // IMPORTANT: Always do this in the e20r_update_db_to_*() function!
+        if ( $e20r_db_version != E20R_DB_VERSION ) {
+            $this->updateSetting( 'e20r_db_version', E20R_DB_VERSION );
+        }
+        //
+    }
+
+    public function update_db() {
+
+        if ( ( $db_ver = (int)$this->loadOption('e20r_db_version' ) ) < E20R_DB_VERSION ) {
+
+            $path = E20R_PLUGIN_DIR . '/e20r_db_update.php';
+
+            if ( file_exists( $path ) ) {
+
+                dbg("e20rTracker::update_db() - Loading: $path ");
+                require( $path );
+                dbg("e20rTracker::update_db() - DB Upgrade functions loaded");
+            }
+            else {
+                dbg("e20rTracker::update_db() - ERROR: Can't load DB update script!");
+                return;
+             }
+
+
+            $diff = ( E20R_DB_VERSION - $db_ver );
+            dbg("e20rTracker::update_db() - We've got {$diff} versions to upgrade... {$db_ver} to " . E20R_DB_VERSION );
+
+            for ( $i = ($db_ver + 1) ; $i <= E20R_DB_VERSION ; $i++ ) {
+
+                $version = $i;
+                dbg("e20rTracker::update_db() - Process upgrade function for Version: {$version}");
+
+                if ( function_exists("e20r_update_db_to_{$version}" ) ) {
+
+                    dbg("e20rTracker::update_db() - Function to update version to {$version} is present. Executing...");
+                    call_user_func( "e20r_update_db_to_{$version}", array( $version ) );
+                }
+                else {
+                    dbg("e20rTracker::update_db() - No version specific update function for database version: {$version} ");
+                }
+            }
+        }
+    }
+
+    public function activate() {
+
+        global $e20r_db_version;
+
+        // Set the requested DB version.
+        // $e20r_db_version = E20R_DB_VERSION;
+
+        $e20r_db_version = $this->loadOption( 'e20r_db_version' );
+/**
+        * if ( empty( $e20r_db_version ) ) {
+ *
+* update_option( $this->setting_name, $this->settings );
+            * $e20r_db_version = $this->loadOption( 'e20r_db_version' );
+        * }
+**/
+        if ( $e20r_db_version < E20R_DB_VERSION ) {
+            $this->manage_tables();
+        }
+
+        $this->updateSetting( 'e20r_db_version', $e20r_db_version );
+
+        dbg("e20rTracker::activate() - Should we attempt to unserialize the plugin settings?");
+        $errors = '';
+
+        if ( 0 != E20R_RUN_UNSERIALIZE ) {
+
+            dbg("e20rTracker::activate() - Attempting to unserialize the plugin program id and article id settings");
+
+            $what = $this->getCPTInfo();
+
+            foreach( $what as $cpt_type => $options ) {
+
+                $this->updateSetting( "converted_metadata_{$cpt_type}", 0 );
+
+                foreach( $options->keylist as $from => $to ) {
+
+                    $success = $this->unserialize_settings( $cpt_type, $from, $to );
+
+                    // Check to see if post meta was updated and store appropriate admin notice	in options table
+                    if ( -1 === $success )
+                    {
+                        $message = '<div class="error">';
+                            $message .= '<p>';
+                                $message .= __( "Error: no specified ({$from}/{$to}) postmeta {$from}/{$to} for {$cpt_type} was found. Deactivate the plugin, specify different meta keys, then activate the plugin to try again." );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.error -->';
+                    }
+                    elseif ( empty( $success ) )
+                    {
+                        $message = '<div class="updated">';
+                            $message .= '<p>';
+                                $message .= __( "All specified postmeta ({$from}/{$to}) for {$cpt_type} was unserialized and saved back to the database." );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.updated -->';
+
+                        $this->updateSetting( "converted_metadata_{$cpt_type}", 1 );
+                    }
+                    else
+                    {
+                        $message = '<div class="error">';
+                            $message .= '<p>';
+                                $message .= __( "Error: not all postmeta {$from}/{$to} for {$cpt_type} was unserialized" );
+                            $message .= '</p>';
+                        $message .= '</div><!-- /.error -->';
+
+                        dbg("e20rTracker::activate() - Error while unserializing:");
+                        dbg($success);
+                    }
+
+                    $errors .= $message;
+                }
+            }
+
+            $this->updateSetting( 'unserialize_notice', $errors );
+
+            global $e20rAssignment;
+            dbg("e20rTracker::activate() -- Updating assignment programs key to program_ids key. ");
+            // $e20rAssignment->update_metadata();
+        }
+
+        $user_ids = get_users(
+                array(
+	                'blog_id' => '',
+                    'fields'  => 'ID',
+                )
+        );
+
+        foreach ( $user_ids as $user_id ) {
+
+            update_user_meta( $user_id, '_e20r-tracker-last-login', 0 );
+        }
 
         flush_rewrite_rules();
     }
 
-    public function e20r_tracker_deactivate() {
+    public function deactivate() {
 
         global $wpdb;
         global $e20r_db_version;
 
         $options = get_option( $this->setting_name );
 
-        dbg("Deactivation options: " . print_r( $options, true ) );
+        dbg("e20rTracker::deactivate() - Current options: " . print_r( $options, true ) );
 
         $tables = array(
             $wpdb->prefix . 'e20r_checkin',
@@ -2339,23 +3503,29 @@ class e20rTracker {
 
             if ( $options['purge_tables'] == 1 ) {
 
-                dbg("e20r_tracker_deactivate() - Truncating {$tblName}" );
+                dbg("e20rTracker::deactivate() - Truncating {$tblName}" );
                 $sql = "TRUNCATE TABLE {$tblName}";
                 $wpdb->query( $sql );
             }
 
             if ( $options['delete_tables'] == 1 ) {
 
-                dbg( "e20r_tracker_deactivate() - {$tblName} being dropped" );
+                dbg( "e20rTracker::deactivate() - {$tblName} being dropped" );
 
                 $sql = "DROP TABLE IF EXISTS {$tblName}";
                 $wpdb->query( $sql );
             }
 
         }
+
         $wpdb->query("DROP TRIGGER IF EXISTS {$wpdb->prefix}e20r_update_girth_total");
+
+        // $this->unserialize_deactivate();
+
         // Remove existing options
-        delete_option( $this->setting_name );
+        // delete_option( $this->setting_name );
+
+        $this->remove_old_files();
     }
 
     public function e20r_program_taxonomy() {
@@ -2377,7 +3547,6 @@ class e20rTracker {
             )
         );
     }
-
 
     public function e20r_tracker_assignmentsCPT() {
 
@@ -2402,6 +3571,7 @@ class e20rTracker {
                    'public' => false,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title', 'excerpt'),
@@ -2444,6 +3614,7 @@ class e20rTracker {
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title', 'excerpt', 'custom-fields', 'page-attributes'),
@@ -2485,10 +3656,11 @@ class e20rTracker {
             array( 'labels' => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
+                   'menu_icon' => '',
                    // 'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title', 'excerpt'),
+                   'supports' => array('title', 'excerpt', 'editor' ),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',
@@ -2527,13 +3699,14 @@ class e20rTracker {
             array( 'labels' => apply_filters( 'e20r-tracker-girth-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
+                   'menu_icon' => '',
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
                    'hierarchical' => true,
                    'supports' => array('title','editor','excerpt','thumbnail','custom-fields','author'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
-                   'show_in_menu' => 'e20r-tracker',
+                   'show_in_menu' => 'e20r-tracker-info',
                    'rewrite' => array(
                        'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
                        'with_front' => false
@@ -2568,6 +3741,7 @@ class e20rTracker {
         $error = register_post_type('e20r_exercises',
             array( 'labels' => apply_filters( 'e20r-tracker-exercise-cpt-labels', $labels ),
                    'public' => true,
+                   'menu_icon' => '',
                    'show_ui' => true,
                    'show_in_menu' => true,
                    'publicly_queryable' => true,
@@ -2612,9 +3786,10 @@ class e20rTracker {
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'supports' => array('title','editor','thumbnail'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',
@@ -2633,43 +3808,46 @@ class e20rTracker {
 
 	public function e20r_tracker_actionCPT() {
 
+        $this->rename_action_cpt();
+
         $labels =  array(
-            'name' => __( 'Check-ins', 'e20rtracker'  ),
-            'singular_name' => __( 'Check-In', 'e20rtracker' ),
-            'slug' => 'e20r_checkins',
-            'add_new' => __( 'New Check-In', 'e20rtracker' ),
-            'add_new_item' => __( 'New Check-In', 'e20rtracker' ),
-            'edit' => __( 'Edit Check-In', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Check-In', 'e20rtracker'),
+            'name' => __( 'Actions', 'e20rtracker'  ),
+            'singular_name' => __( 'Action', 'e20rtracker' ),
+            'slug' => 'e20r_actions',
+            'add_new' => __( 'New Action', 'e20rtracker' ),
+            'add_new_item' => __( 'New Action', 'e20rtracker' ),
+            'edit' => __( 'Edit Action', 'e20rtracker' ),
+            'edit_item' => __( 'Edit Action', 'e20rtracker'),
             'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Check-In', 'e20rtracker' ),
-            'view_item' => __( 'View This Check-Ins', 'e20rtracker' ),
-            'search_items' => __( 'Search Check-Ins', 'e20rtracker' ),
-            'not_found' => __( 'No Check-Ins Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Check-Ins Found In Trash', 'e20rtracker' )
+            'view' => __( 'View Action', 'e20rtracker' ),
+            'view_item' => __( 'View This Actions', 'e20rtracker' ),
+            'search_items' => __( 'Search Actions', 'e20rtracker' ),
+            'not_found' => __( 'No Actions Found', 'e20rtracker' ),
+            'not_found_in_trash' => __( 'No Actions Found In Trash', 'e20rtracker' )
         );
 
-        $error = register_post_type('e20r_checkins',
-            array( 'labels' => apply_filters( 'e20r-tracker-checkin-cpt-labels', $labels ),
+        $error = register_post_type('e20r_actions',
+            array( 'labels' => apply_filters( 'e20r-tracker-action-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
                    'show_in_menu' => true,
+                   'menu_icon' => '',
                    'publicly_queryable' => true,
                    'hierarchical' => true,
-                   'supports' => array('title','excerpt','thumbnail', 'page-attributes'),
+                   'supports' => array('title','excerpt','thumbnail'),
                    'can_export' => true,
                    'show_in_nav_menus' => false,
                    'show_in_menu' => 'e20r-tracker-articles',
                    'rewrite' => array(
-                       'slug' => apply_filters('e20r-tracker-checkin-cpt-slug', 'tracker-action'),
+                       'slug' => apply_filters('e20r-tracker-action-cpt-slug', 'tracker-action'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-checkin-cpt-archive-slug', 'tracker-action')
+                   'has_archive' => apply_filters('e20r-tracker-action-cpt-archive-slug', 'tracker-action')
             )
         );
 
         if ( is_wp_error($error) ) {
-            dbg('ERROR: Failed to register e20r_checkin CPT: ' . $error->get_error_message);
+            dbg('ERROR: Failed to register e20r_actions CPT: ' . $error->get_error_message);
         }
     }
 
@@ -2679,38 +3857,29 @@ class e20rTracker {
     function post_type_icon() {
         ?>
         <style>
-            /* Admin Menu - 16px */
-            #menu-posts-e20r_tracker .wp-menu-image {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>/images/icon-sequence16-sprite.png") no-repeat 6px 6px !important;
+/*          @font-face {
+                font-family: FontAwesome;
+                src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css);
             }
-            #menu-posts-e20r_tracker:hover .wp-menu-image, #menu-posts-e20r_tracker.wp-has-current-submenu .wp-menu-image {
-                background-position: 6px -26px !important;
+*/
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-activities div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1e3';
             }
-            /* Post Screen - 32px */
-            .icon32-posts-pmpro_sequence {
-                background: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence32.png") no-repeat left top !important;
-            }
-            @media
-            only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (   min--moz-device-pixel-ratio: 1.5),
-            only screen and (     -o-min-device-pixel-ratio: 3/2),
-                /* only screen and (        min-device-pixel-ratio: 1.5), */
-            only screen and (                min-resolution: 1.5dppx) {
 
-                /* Admin Menu - 16px @2x */
-                #menu-posts-pmpro_sequence .wp-menu-image {
-                    background-image: url("<?php echo E20R_PLUGINS_URL; ?>images/icon-sequence16-sprite_2x.png") !important;
-                    -webkit-background-size: 16px 48px;
-                    -moz-background-size: 16px 48px;
-                    background-size: 16px 48px;
-                }
-                /* Post Screen - 32px @2x */
-                .icon32-posts-pmpro_sequence {
-                    background-image:url("<?php echo E20R_PLUGINS_URL ?>images/icon-sequence32_2x.png") !important;
-                    -webkit-background-size: 32px 32px;
-                    -moz-background-size: 32px 32px;
-                    background-size: 32px 32px;
-                }
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-articles div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1ea';
+            }
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-programs div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f278';
+            }
+
+            #adminmenu .menu-top.toplevel_page_e20r-tracker-info div.wp-menu-image:before {
+                font-family:  FontAwesome !important;
+                content: '\f1b0';
             }
         </style>
     <?php
@@ -2755,11 +3924,29 @@ class e20rTracker {
 
     public function getUserList( $level = null ) {
 
+        dbg("e20rTracker::getUserList() - Called by: " . $this->whoCalledMe() );
         $levels = array_keys( $this->getMembershipLevels( $level, false ) );
 
         dbg("e20rTracker::getUserList() - Users being loaded for the following level(s): " . print_r( $levels, true ) );
 
         return $this->model->loadUsers( $levels );
+    }
+
+    public function getLevelIdForUser( $userId = null ) {
+
+        global $e20rProgram;
+
+        $level_id = null;
+
+        if ( is_null( $userId ) ) {
+
+            global $current_user;
+            $userId = $current_user->ID;
+        }
+
+        $program_id = $e20rProgram->getProgramIdForUser( $userId );
+
+        return $program_id;
     }
 
 	public function getGroupIdForUser( $userId = null ) {
@@ -2801,7 +3988,7 @@ class e20rTracker {
                 dbg("e20rTracker::getLevelList() - Level Name: {$name}");
             }
 
-            $allLevels = pmpro_getAllLevels();
+            $allLevels = pmpro_getAllLevels( $onlyVisible, true );
             $levels    = array();
 
             if ( ! empty( $name ) ) {
@@ -2854,22 +4041,19 @@ class e20rTracker {
         return false;
     }
 
-	/*
-	public function getDateFromDelay( $delay, $userId = null) {
+	public function isEmpty( $obj ) {
 
-		global $e20rProgram;
+		if ( ! is_object( $obj ) ) {
+            dbg('e20rTracker::isEmpty() - Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
+            // dbg($obj);
+			return empty( $obj );
+		}
 
-		dbg("e20rTracker::getDateFromDelay() - Delay value: {$delay} for user {$userId}");
-
-		$startDate = $e20rProgram->startdate( $userId );
-
-		$date = date_i18n('Y-m-d', strtotime( $startDate . " +{$delay} days" ) );
-
-		dbg("e20rTracker::getDateFromDelay() - {$date} is {$delay} days after {$startDate}" );
-
-		return $date;
+		$o = (array)$obj;
+        dbg('e20rTracker::isEmpty() - Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
+        // dbg( $o );
+		return empty( $o );
 	}
-*/
 
 	public function validateDate($date)
 	{
@@ -2880,7 +4064,7 @@ class e20rTracker {
     public function getDelay( $delayVal = 'now', $userId = null ) {
 
         global $current_user;
-        global $e20rProgram;
+        global $currentProgram;
 
         // We've been given a numeric value so assuming it's the delay.
         if ( is_numeric( $delayVal ) ) {
@@ -2889,15 +4073,16 @@ class e20rTracker {
             return $delayVal;
         }
 
-	    $startDate = $e20rProgram->startdate( $userId );
+	    $startDate = strtotime( $currentProgram->startdate );
 
-	    dbg("e20rTracker::getDelay() - Based on startdate of {$startDate}...");
+	    dbg("e20rTracker::getDelay() - Based on startdate of {$currentProgram->startdate}...");
 
 	    if ( $this->validateDate( $delayVal ) ) {
 
+            dbg("e20rTracker::getDelay() - {$delayVal} is a date.");
 		    $delay = $this->daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
 
-		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$startDate}");
+		    dbg("e20rTracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$currentProgram->startdate}");
 		    return $delay;
 	    }
 
@@ -2957,22 +4142,34 @@ class e20rTracker {
         return false;
     }
 
-    public function getDateFromDelay( $delay = 0, $userId = null ) {
+    public function getDateFromDelay( $rDelay = "now", $userId = null ) {
 
         global $current_user;
         global $e20rProgram;
+        global $currentProgram;
 
-        if ( ! $userId ) {
+        if ( is_null( $userId ) ) {
             $userId = $current_user->ID;
         }
 
+        dbg("e20rTracker::getDateFromDelay() - Received Delay value of {$rDelay} from calling function: " . $this->whoCalledMe() );
         $startTS = $e20rProgram->startdate( $userId );
 
-        if ( ( $delay === 0 ) || ( $delay == 'now' ) ) {
+        if ( 0 == $rDelay ) {
 
-            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user");
+            $delay = 0;
+        }
+        elseif ( "now" == $rDelay ) {
+
+            dbg("e20rTracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user. Got delay value of {$rDelay}");
             $delay = $this->daysBetween( $startTS, current_time('timestamp') );
         }
+        else {
+
+            $delay = ($rDelay);
+            dbg("e20rTracker::getDateFromDelay() - Adjusting delay value: {$rDelay} => {$delay}");
+        }
+
 
         dbg("e20rTracker::getDateFromDelay() - user w/id {$userId} has a startdate timestamp of {$startTS}");
 
@@ -2988,6 +4185,11 @@ class e20rTracker {
         $rDate = date( 'Y-m-d', strtotime( "{$sDate} +{$delay} days") );
 
         dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Startdate ({$sDate}) + delay ({$delay}) days = date: {$rDate}");
+
+        if ( $delay < 0 ) {
+            dbg("e20rTracker::getDateFromDelay( {$delay} ) -> Returning 'startdate' as the correct date.");
+            $rDate = $sDate;
+        }
 
         return $rDate;
     }
@@ -3008,7 +4210,7 @@ class e20rTracker {
         if (! $startDateTS ) {
 
             dbg("e20rTracker::getDateForPost( {$days} ) -> No startdate found for user with ID of {$userId}");
-            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
+            return ( date_i18n( 'Y-m-d', current_time( 'timestamp' ) ) );
         }
 
         if ( empty( $days ) || ( $days == 'now' ) ) {
@@ -3016,10 +4218,10 @@ class e20rTracker {
             $days = $this->daysBetween( $startDateTS, current_time('timestamp') );
         }
 
-        $startDate = date( 'Y-m-d', $startDateTS );
+        $startDate = date_i18n( 'Y-m-d', $startDateTS );
         dbg("e20rTracker::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
 
-        $releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +{$days} days") );
+        $releaseDate = date_i18n( 'Y-m-d', strtotime( "{$startDate} +" . ($days -1 ) ." days") );
 
         dbg("e20rTracker::getDateForPost( {$days} ) -> Calculated date for delay of {$days}: {$releaseDate}");
         return $releaseDate;
@@ -3031,22 +4233,28 @@ class e20rTracker {
 
             dbg("e20rArticle::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
 
+/*
             if ( false === ( $sequenceIds = get_post_meta( $postId, '_post_sequences', true ) ) ) {
-                return false;
+                return array();
             }
+*/
+            $sequenceIds = PMProSequence::sequences_for_post( $postId );
 
             foreach ($sequenceIds as $id ) {
 
-                $seq = new PMProSequence( $id );
-                $details = $seq->get_postDetails( $postId );
+                $details = PMProSequence::post_details( $id, $postId );
+/*
+                $seq->get_options( $id );
+                $details = $seq->get_post_details( $postId );
 
                 unset($seq);
-
+*/
                 dbg("e20rArticle::getDripFeedDelay() - Delay details: " . print_r( $details, true  ) );
 
                 if ( $id != false ) {
-                    dbg("e20rArticle::getDripFeedDelay() - Returning {$details->delay}");
-                    return $details->delay;
+
+                    dbg("e20rArticle::getDripFeedDelay() - Returning {$details[0]->delay}");
+                    return $details[0]->delay;
                 }
             }
         }
@@ -3257,8 +4465,70 @@ class e20rTracker {
                 $days = 0 - $days;
         }
 
+        // Correct the $days value because include the "to" day.
+        $days = $days + 1;
         dbg("e20rTracker::daysBetween() - Returning: {$days}");
         return $days;
+    }
+
+    public function define_e20rtracker_roles() {
+
+        $roles_set = $this->loadOption('roles_are_set');
+
+        if ( !$roles_set ) {
+
+            $result = add_role(
+                'e20r_coach',
+                __( "Coach", "e20rtracker" ),
+                array(
+                    'read' => true,
+    /*                'edit_users' => true,
+                    'manage_options' => true, */
+                )
+            );
+
+            if ( null === $result ) {
+                dbg("e20rTracker::define_e20rtracker_roles() - Error adding 'coach' role!");
+                return;
+            }
+
+            $this->updateSetting('roles_are_set',true);
+
+            $admins = get_users( array( 'role' => 'administrator' ) );
+
+            foreach( $admins as $admin ) {
+
+                if ( !in_array( 'e20r_coach', (array) $admin->roles ) ) {
+                    dbg("e20rTracker::define_e20rtracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
+                    $admin->add_role( 'e20r_coach' );
+                    dbg("e20rTracker::define_e20rtracker_roles() - Added 'e20r_coach' role to {$admin->ID}");
+                }
+            }
+
+        }
+
+        return true;
+    }
+    /**
+     * @param $data - The data to sort
+     * @param array $fields - An array (2 elements) for the fields to sort by.
+     *
+     * @return array $data
+     */
+    public function sortByFields( array $data, array $fields = array() ) {
+
+        uasort( $data, function( $a, $b ) use ($fields) {
+
+            if ($a->{$fields[0]} == $b->{$fields[0]})
+            {
+                if($a->{$fields[1]} == $b->{$fields[1]}) return 0 ;
+                return ($a->{$fields[1]} < $b->{$fields[1]}) ? -1 : 1;
+            }
+            else
+                return ($a->{$fields[0]} < $b->{$fields[0]}) ? -1 : 1;
+        });
+
+        return $data;
     }
 
     /**
@@ -3301,5 +4571,350 @@ class e20rTracker {
         }
 
         return $retVal;
+    }
+
+    /**
+     * Unserialize Post Meta plugin for WordPress
+     *
+     * Note: only acts upon post meta when plugin is activated
+     *
+     * @package WordPress
+     * @subpackage WPAlchemy
+     * @author Grant Kinney
+     * @version 0.1
+     * @license http://www.opensource.org/licenses/gpl-license.php GPL v2.0 (or later)
+     *
+     */
+    public function unserialize_settings( $post_type, $from_key, $to_key ) {
+
+        $run_unserialize = $this->loadOption('run_unserialize');
+
+        if ( 1 != $run_unserialize ) {
+
+            dbg("e20rTracker::unserialize_settings() - Not being asked to convert serialized metadata.");
+            return;
+        }
+
+        // Get all posts with post meta that have the specified meta key
+        $posts_array = get_posts( array(
+            'meta_key' => $from_key,
+            'post_type' => $post_type,
+            'posts_per_page' => -1,
+            'nopaging' => true,
+            'post_status' => 'any',
+            )
+        );
+
+        // Loop through posts, extract requested post meta, and send it back to the database in it's own row!
+        // Keep a list of updated posts and check that the unserialized postmeta has been stored
+        $serialized_post_list = array();
+        $unserialized_post_list = array();
+
+        dbg("e20rTracker::unserialize_settings() - Converting from {$from_key} to {$to_key} for type {$post_type}");
+
+        foreach ($posts_array as $serialized_post) {
+
+            $serialized_post_id = $serialized_post->ID;
+            $serialized_postmeta = get_post_meta( $serialized_post_id, $from_key, true );
+
+            dbg("e20rTracker::unserialize_settings() - Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
+
+
+            if ( "delete" == $to_key ) {
+
+                dbg("e20rTracker::unserialize_settings() - WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
+                delete_post_meta( $serialized_post_id, $from_key );
+            }
+            else {
+
+                if ( !is_array( $serialized_postmeta ) ) {
+
+                    dbg( "e20rTracker::unserialize_settings() - Value isn't actually serialized: {$serialized_postmeta}");
+                    $serialized_postmeta = array( $serialized_postmeta );
+                }
+
+                if ( is_array( $serialized_postmeta ) ) {
+
+                    dbg("e20rTracker::unserialize_settings() - serialized postmeta IS an array.");
+                    dbg($serialized_postmeta);
+
+                    delete_post_meta( $serialized_post_id, $to_key );
+
+                    foreach ( $serialized_postmeta as $k => $val ) {
+
+                        dbg("e20rTracker::unserialize_settings() - Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
+
+                        if ( 0 !== $val ) {
+
+                            add_post_meta( $serialized_post_id, $to_key, $val);
+                        }
+                        else {
+                            dbg("e20rTracker::unserialize_settings() - Zero value for {$to_key}. Won't save it");
+                            unset( $serialized_postmeta[$k] );
+                        }
+                    }
+
+                    dbg("e20rTracker::unserialize_settings() - From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
+
+                    $serialized_post_list[] = $serialized_post_id;
+                }
+
+                $unserialized_postmeta = get_post_meta( $serialized_post_id, $to_key );
+
+                // dbg("e20rTracker::unserialize_settings() - Because this is a simulation, the following data is wrong... ");
+                dbg("e20rTracker::unserialize_settings() - Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
+                dbg($unserialized_postmeta);
+
+
+                if ( is_array( $serialized_postmeta ) && ( is_array($unserialized_postmeta) ) ) {
+                    $cmp = array_diff( $serialized_postmeta, $unserialized_postmeta );
+                }
+                else {
+                    if ( $serialized_postmeta != $unserialized_postmeta ) {
+                        $cmp = null;
+                    }
+                    else {
+                        $cmp = true;
+                    }
+                }
+
+                if ( empty( $cmp )  ) {
+                        dbg("e20rTracker::unserialize_settings() - {$serialized_post_id} was unserialized and saved.");
+                    $unserialized_post_list[] = $serialized_post_id;
+
+                }
+            }
+        }
+
+        $post_check = array_diff($serialized_post_list, $unserialized_post_list);
+
+        wp_reset_postdata();
+
+        if ( 0 == count( $posts_array ) ) {
+            return -1;
+        }
+        else {
+            return $post_check;
+       }
+    }
+
+    /**
+     * display_admin_notice function.
+     * Displays an appropriate notice based on the results of the saved unserialize_notice option.
+     * @access public
+     * @return void
+     */
+    public function display_admin_notice() {
+
+        if ( $notice = $this->loadOption('unserialize_notice') ) {
+
+            dbg("e20rTracker::convert_postmeta_notice() - Loading error message");
+            echo $notice;
+            $this->updateSetting('unserialize_notice', null);
+        }
+    }
+
+    /**
+     * unserialize_deactivate function.
+     * Cleanup plugin when deactivated
+     * @access public
+     * @return void
+     */
+    public function unserialize_deactivate() {
+
+        delete_option('unserialize_notice');
+        return;
+    }
+
+    private function getCPTInfo() {
+
+        global $e20rTables;
+
+        $e20rTables = new e20rTables();
+        $e20rTables->init();
+
+        $e20rWorkout = new e20rWorkout();
+        $e20rAssignment = new e20rAssignment();
+        $e20rProgram = new e20rProgram();
+        $e20rAction = new e20rAction();
+        $e20rArticle = new e20rArticle();
+
+        $cpt_info = array(
+			'e20r_workout' => null,
+			'e20r_assignments' => null,
+            'e20r_articles' => null,
+			'e20r_actions' => null,
+		);
+
+        foreach( $cpt_info as $cpt => $data ) {
+
+            dbg("e20rTracker::getCPTInfo() - Processing {$cpt}");
+
+            $cpt_info[$cpt] = new stdClass();
+            $cpt_info[$cpt]->keylist = array();
+
+            switch ( $cpt ) {
+                case 'e20r_workout':
+
+                    $cpt_info[$cpt]->type = $e20rWorkout->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    break;
+
+                case 'e20r_articles':
+
+                    $cpt_info[$cpt]->type = $e20rArticle->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-assignments"] = "_e20r-{$cpt_info[$cpt]->type}-assignment_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-checkins"] = "_e20r-{$cpt_info[$cpt]->type}-action_ids";
+                    // $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-activity_id"] = "_e20r-{$cpt_info[$cpt]->type}-activity_id";
+                    break;
+
+                case 'e20r_assignments':
+
+                    $cpt_info[$cpt]->type = $e20rAssignment->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-article_id"] = "_e20r-{$cpt_info[$cpt]->type}-article_ids";
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_id"] = "delete";
+
+                    break;
+
+                case 'e20r_actions':
+                    $cpt_info[$cpt]->type = $e20rAction->get_cpt_type();
+                    $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-program_ids"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
+                    break;
+            }
+
+        }
+
+        dbg("e20rTracker::getCPTInfo() - Config is: ");
+        dbg($cpt_info);
+
+        return $cpt_info;
+    }
+
+    public function rename_action_cpt() {
+
+        $args = array(
+            'post_type' => 'e20r_checkins',
+            'posts_per_page' => -1,
+            'post_status' => 'any'
+        );
+
+        $old_posts = get_posts( $args );
+
+        foreach ( $old_posts as $p ) {
+
+            $update = array();
+            $update['ID'] = $p->ID;
+            $update['post_type'] = 'e20r_actions';
+
+            wp_update_post( $update );
+        }
+
+        global $wpdb;
+
+        $find_sql = "SELECT meta_id, meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE '_e20r-checkin-%'";
+
+        // $update_sql = "UPDATE {$wpdb->prefix}postmeta SET meta_key = %s WHERE meta_id = %d";
+
+        $results = $wpdb->get_results( $find_sql );
+
+        if ( count( $results ) == 0 ) {
+            return;
+        }
+
+        dbg("e20rTracker::rename_action_cpt() - Found " . count($results) . " old metadata keys to convert");
+
+        foreach ( $results as $record ) {
+
+            if ( false === $this->replace_metakey( $record, '_e20r-checkin', '_e20r-action' ) ) {
+                return;
+            }
+        }
+
+        $results = null;
+        $other_sql = "SELECT meta_id, meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE '%checkin_ids%'";
+        $results = $wpdb->get_results( $other_sql );
+
+        foreach( $results as $record ) {
+
+            if ( false === $this->replace_metakey( $record, '-checkin_ids', '-action_ids' ) ) {
+                return;
+            }
+
+        }
+
+    }
+    private function replace_metakey( $record, $old, $new ) {
+
+        global $wpdb;
+
+        $old_key = $record->meta_key;
+        $new_key = str_replace( $old, $new, $old_key);
+
+        dbg("e20rTracker::replace_metakey() - Changing key {$old_key} to {$new_key} for {$record->meta_id} in {$wpdb->postmeta}");
+
+        $upd = $wpdb->update( "{$wpdb->prefix}postmeta",
+            array( 'meta_key' => $new_key ),
+            array( 'meta_id' => $record->meta_id ),
+            array( '%s' ),
+            array( '%d' )
+         );
+
+        if ( false !== $upd ) {
+            dbg("e20rTracker::replace_metakey() - Changed key for {$record->meta_id} in {$wpdb->prefix}postmeta");
+            return true;
+        } else {
+            dbg("e20rTracker::replace_metakey() - Error for record {$record->meta_id}!!!");
+            return false;
+        }
+    }
+
+    /**
+     * Sort the two posts in ascending order
+     *
+     * @param $a -- Post to compare (including time variable)
+     * @param $b -- Post to compare against (including time variable)
+     * @return int -- Return -1 if the Delay for post $a is greater than the delay for post $b
+     *
+     * @access private
+     */
+    public function sort_descending( $a, $b )
+    {
+        if ($a->sent == $b->sent)
+            return 0;
+
+        // Descending Sort Order
+        return ($a->sent > $b->sent) ? -1 : +1;
+    }
+
+    public function remove_old_files() {
+
+        $files = array(
+            'classes/controllers/e20rCheckin.php',
+            'classes/models/e20rCheckinModel.php',
+            'classes/views/e20rCheckinView.php',
+            'css/e20r-checkin.css',
+            'css/e20r-checkin.min.css',
+            'js/e20r-checkin-admin.css',
+            'js/e20r-checkin-admin.min.css',
+            'js/e20r-checkin-items.css',
+            'js/e20r-checkin-items.min.css',
+            'js/e20r-checkin.css',
+            'js/e20r-checkin.min.css',
+        );
+
+        foreach( $files as $file ) {
+
+            if ( file_exists( E20R_PLUGIN_DIR . $file ) ) {
+
+                if ( FALSE === unlink( E20R_PLUGIN_DIR . $file ) ) {
+                    error_log("E20RTracker - Unable to remove requested file: {$file}");
+                }
+                else {
+                    dbg("e20rTracker::remove_old_files() - Removed: {$file}");
+                }
+            }
+        }
     }
 }

@@ -68,8 +68,8 @@ function setRespTable() {
     for (var i = 0; i < headers.length; i++) {
         headertext[i]=[];
         for (var j = 0, headrow; headrow = headers[i].rows[0].cells[j]; j++) {
-            var current = headrow;
-            headertext[i].push(current.textContent.replace(/\r?\n|\r/,""));
+
+            headertext[i].push(headrow.textContent.replace(/\r?\n|\r/,""));
         }
     }
 

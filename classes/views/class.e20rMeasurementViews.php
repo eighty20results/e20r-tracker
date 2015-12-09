@@ -28,7 +28,7 @@ class e20rMeasurementViews {
 
         ob_start();
         ?>
-        <div id="saturday-progress-container" class="progress-container">
+        <div id="saturday-progress-container" class="progress-container clearfix">
             <h3>Your Weekly Progress
                 <span>Update</span>
             </h3>
@@ -98,7 +98,7 @@ class e20rMeasurementViews {
                 <fieldset>
                     <legend>
                         <a href="#load_help_girth" class="inline cboxElement">
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the girth Measurement Instructions">
                         </a>Girth Measurements
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
@@ -112,7 +112,7 @@ class e20rMeasurementViews {
                         <?php dbg("showGirthRow() -> type: {$girth->type}"); ?>
                         <h5 class="measurement-header">
                             <span class="title"><?php echo ucfirst($girth->type); ?> Girth</span>
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="measurement-descript-toggle">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="measurement-descript-toggle">
                         </h5>
 
                         <div class="girth-row-container">
@@ -232,7 +232,7 @@ class e20rMeasurementViews {
                 <fieldset>
                     <legend>
                         <a href="#load_help_photo" class="inline cboxElement">
-                            <img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
+                            <img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip=""Display the Photo Instructions">
                         </a>
                         Photos
                     </legend>
@@ -253,19 +253,19 @@ class e20rMeasurementViews {
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Front Photo</div>
-                                        <button id="photo-upload-front">Select Image: Front</button>
+                                        <button id="photo-upload-front" class="e20r-button">Select Image: Front</button>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Side Photo</div>
-                                        <button id="photo-upload-side">Select Image: Side</button>
+                                        <button id="photo-upload-side" class="e20r-button">Select Image: Side</button>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="photo-upload-container">
                                         <div class="title">Back Photo</div>
-                                        <button id="photo-upload-back">Select Image: Back</button>
+                                        <button id="photo-upload-back" class="e20r-button">Select Image: Back</button>
                                     </div>
                                 </th>
                             </tr>
@@ -333,7 +333,7 @@ class e20rMeasurementViews {
             <td class="content validate-body-weight" id="body-weight">
                 <fieldset>
                     <legend>
-                        <a href="#load_help_weight" class="inline cboxElement"><img src="<?php echo E20R_PLUGINS_URL . '/images/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
+                        <a href="#load_help_weight" class="inline cboxElement"><img src="<?php echo E20R_PLUGINS_URL . '/img/help.png'; ?>" class="help-icon tooltip-handle" data-tooltip="Display the Body Weight Measurement Instructions"></a>
                         Body Weight Measurement
                     </legend>
                     <div class="help" style="margin-bottom: 24px;">
@@ -412,11 +412,37 @@ class e20rMeasurementViews {
         return ob_get_clean();
     }
 
-    public function viewTabbedProgress( $progressEntries, $dimensions ) {
+    public function viewTabbedProgress( $progressEntries, $dimensions, $withModal = true ) {
 
         ob_start();
         ?>
-        <div id="status-tabs">
+        <div id="status-tabs" class="ct ct-flatbox">
+        <?php
+            $count = 1;
+            foreach( $progressEntries as $label => $contentHtml ) { ?>
+            <div id="status-tab-<?php echo $count++; ?>">
+                <div class="ct-pagitem"><?php echo $label; ?></div>
+                <div class="status-tab"><?php echo $contentHtml; ?></div>
+            </div><?php
+            } ?>
+
+        </div> <!-- div.status-tabs --><?php
+
+        if ( $withModal ) { ?>
+        <!-- <div class="modal">--><!-- At end of form --><!--</div>--><?php
+        }
+
+        $html = ob_get_clean();
+        return $html;
+
+    }
+/*
+    public function viewTabbedProgress( $progressEntries, $dimensions, $withModal = true ) {
+
+        ob_start();
+        ?>
+        <!-- <div id="status-tabs" class="z-tabs-loading" data-role='z-tabs' data-options='{"theme": "white", "style": "clean", "rounded": "false", "defaultTab": "tab1", "orientation": "vertical", "animation": {"duration": 800, "effects": "slideH"}}'> -->
+        <div id="status-tabs" class="z-tabs-loading">
             <ul>
         <?php
             $count = 1;
@@ -436,16 +462,22 @@ class e20rMeasurementViews {
                 <?php
                 }
                 ?>
-        </div> <!-- tabs div -->
-	    <div class="modal"><!-- At end of form --></div>
-        <?php
-    }
+        </div> <!-- tabs div --><?php
+        if ( $withModal ) { ?>
+	        <div class="modal"><!-- At end of form --></div><?php
+        }
 
+        $html = ob_get_clean();
+        return $html;
+
+    }
+*/
     public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
         // TESTING: using $clientId = 12;
         // $clientId = 12;
         global $e20rTables;
         global $e20rClient;
+        global $currentProgram;
         global $current_user;
 
         if ( $dimensions === null ) {
@@ -493,7 +525,9 @@ class e20rMeasurementViews {
             ob_start();
             // echo $reloadBtn;
             ?>
-            <div id="e20r_errorMsg"><em><?php sprintf(__("No measurements found for %s", "e20rtracker"), $user->first_name . " " . $user->last_name ); ?></em></div>
+            <div id="e20r_errorMsg">
+                <em><?php sprintf(__("No measurements found for %s", "e20rtracker"), $user->first_name . " " . $user->last_name ); ?></em>
+            </div>
             <?php
             $html = ob_get_clean();
         }
@@ -502,79 +536,122 @@ class e20rMeasurementViews {
             ob_start();
 
             ?>
-            <input type="hidden" name="h_dimension" id="h_dimension" value="<?php echo $dimensions['height']; ?>">
-            <input type="hidden" name="h_dimension_type" id="h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
-            <input type="hidden" name="w_dimension" id="w_dimension" value="<?php echo $dimensions['width']; ?>">
-            <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
-            <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
-        <?php if ( $tabbed ): ?>
+            <div class="e20r-hidden-inputs">
+                <input type="hidden" name="h_dimension" id="h_dimension" value="<?php echo $dimensions['height']; ?>">
+                <input type="hidden" name="h_dimension_type" id="h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
+                <input type="hidden" name="w_dimension" id="w_dimension" value="<?php echo $dimensions['width']; ?>">
+                <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
+                <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
+            </div>
+
+        <?php if ( true === $tabbed ): ?>
+            <script type="text/javascript">
+            /* <![CDATA[ */
+                    jQuery(function() {
+                    console.log("Configure tabs for weight/girth");
+
+                    var $tabs = jQuery('div#inner-tabs');
+
+                    $tabs.tabs({
+                        heightStyle: "content"
+                    });
+/*
+                    $tabs.codetabs({
+                        fxOne: 'soEdgeHor',
+                        isAutoRun: false,
+                        isKeyboard: true,
+                        name: '.inner-tab',
+                        pag: {
+                            dirs: 'hor',
+                            pos: 'top',
+                            align: 'justified'
+                        }
+                    });
+
+                    if ($tabs.length !== 0) {
+
+                        console.log("Inner tabs for weight/girth graphs exist.");
+
+                        if ( 'undefined' !== typeof $tabs.data('codetabs') ) {
+
+                            var $innertabs = $tabs.data('codetabs').ev;
+                            $innertabs.on('selectID', function ($e, $id) {
+
+                                console.log("Inner tab # " + $id + " selected/clicked");
+                                progMeasurements._tab_selected($e, $id);
+                            });
+                        }
+                    }
+**/
+                    jQuery('.load_progress_data').on("click", function() {
+
+                        console.log("Loading progress data...", this );
+                        progMeasurements.loadProgressPage( this );
+                    });
+
+                    jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
+
+                        if ( ui.newTab.index() === 0 ) {
+
+                            console.log("Redrawing wPlot");
+                            progMeasurements.wPlot.replot({resetAxes: true});
+                        }
+                        else if ( ui.newTab.index() === 1 ) {
+
+                            console.log("Redrawing gPlot");
+                            progMeasurements.gPlot.replot({resetAxes: true});
+                        }
+                    });
+                });
+            /* ]]> */
+            </script>
             <div id="inner-tabs">
                 <ul>
-                    <li><a href="#inner-tab-1">Weight History</a></li>
-                    <li><a href="#inner-tab-2">Total Girth</a></li>
+                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-1" role="presentation"><?php _e("Weight History", "e20rtracker"); ?></a></li>
+                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-2" role="presentation"><?php _e("Total Girth", "e20rtracker"); ?></a></li>
                 </ul>
-                <div id="inner-tab-1">
-                    <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading weight history graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
-                    <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+                <!-- Weight Tab -->
+                <div>
+                    <div id="inner-tab-1" class="inner-tab">
+                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading weight history graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                        <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+                    </div>
+                </div><!-- end of Weight inner-tab -->
+                <!-- Girth tab -->
+                <div>
+                    <div id="inner-tab-2" class="inner-tab">
+                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading total girth graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                        <div id="girth_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
+                    </div><!-- End of Girth Inner-tab tab -->
                 </div>
-                <div id="inner-tab-2">
-                    <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading total girth graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
-                    <div id="girth_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
-                </div>
-            </div> <!-- tabs div -->
                 <!-- Load tabs script here because this content is dynamic -->
-                <script type="text/javascript">
-                    <!-- jQuery(function() {
-                        console.log("Configure tabs for weight/girth");
-                        jQuery("#inner-tabs").tabs();
-
-                        jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
-
-                            if ( (ui.newTab.index() === 0) && ( progMeasurements.wPlot._drawCount === 0 ) ) {
-
-                                console.log("Redrawing wPlot");
-                                progMeasurements.wPlot.replot();
-                            }
-                            else if ( (ui.newTab.index() === 1 ) && (progMeasurements.gPlot._drawCount === 0) ) {
-
-                                console.log("Redrawing gPlot");
-                                progMeasurements.gPlot.replot();
-                            }
-                        });
-
-                        jQuery('.load_progress_data').on("click", function() {
-                            progMeasurements.loadProgressPage( this );
-                        });
-
-                    }); -->
-                </script>
-            <?php else: ?>
+            </div><!-- inner-tabs div -->
+        <?php else: ?>
             <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
             <div id="girth_chart" style="height: <?php echo $height; ?>;width: <?php echo $width; ?>;"></div>
         <?php endif; ?>
-            <hr class="e20r-big-hr" />
             <div class="e20r-measurements-container">
                 <h4>Measurements for <?php echo $user->first_name; ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav">
-                    <table class="e20r-measurement-table">
-                        <thead>
+                    <table class="e20r-measurement-table e20r-resp-table">
+                        <thead class="e20r-resp-table-header">
                             <tr>
                                 <th class="e20r_mHead rotate"></th>
-                                <th class="e20r_mHead rotate"><div><span>Weight (<?php echo $e20rClient->getWeightUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Neck (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Shoulder (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Chest (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Arm (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Waist (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Hip (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Thigh (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Calf (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Total Girth (<?php echo $e20rClient->getLengthUnit(); ?>)</span></div></th>
-                                <th class="e20r_mHead rotate"><div><span>Photo</span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php _e("Photo","e20rtracker"); ?></span></div></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="e20r-resp-table-body">
                             <?php
 
                             $counter = 0;
@@ -605,7 +682,7 @@ class e20rMeasurementViews {
 					                            if ( $showLink ) {
 						                            ?>
 						                            <form method="POST" class="article_data"
-						                                  action="<?php echo URL_TO_PROGRESS_FORM; ?>">
+						                                  action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>">
 							                            <input type="hidden" name="e20r-progress-form-date"
 							                                   class="e20r-progress-form-date"
 							                                   data-measurement-type="date"
@@ -633,17 +710,17 @@ class e20rMeasurementViews {
 				                            <div
 					                            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
 			                            </td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
-			                            <td class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
-			                            <td class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?>" class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php _e("Photo","e20rtracker"); ?>" class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
 		                            </tr>
 		                            <?php
 		                            $counter ++;
@@ -654,73 +731,71 @@ class e20rMeasurementViews {
                 </div>
             </div>
         <?php
-            if ( ! $e20rTables->isBetaClient() ) {
-                ?>
-                <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
-                <div class="e20r-measurements-container">
-                    <h4>Other Progress Indicators</h4>
-                    <a class="close" href="#">X</a>
-                    <div class="quick-nav other">
-                        <table class="e20r-measurement-table">
-                            <tbody>
+            if ( ! $e20rTables->isBetaClient() ) { ?>
+            <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
+            <div class="e20r-measurements-container">
+                <h4>Other Progress Indicators</h4>
+                <a class="close" href="#">X</a>
+                <div class="quick-nav other">
+                    <table class="e20r-measurement-table">
+                        <tbody>
+                        <?php
+                            $counter = 0;
+                            if ( empty( $measurements ) ) { ?>
+                                <tr>
+                                    <td colspan="2"><?php _e("No Progress indicators recorded.", "e20rtracker"); ?></td>
+                                </tr>
                             <?php
-                                $counter = 0;
-					            if ( empty( $measurements ) ) { ?>
-						            <tr>
-							            <td colspan="2"><?php _e("No Progress indicators recorded.", "e20rtracker"); ?></td>
-						            </tr>
-					            <?php
-					            }
-					            else {
+                            }
+                            else {
 
-						            foreach ( $measurements as $key => $measurement ) {
+                                foreach ( $measurements as $key => $measurement ) {
 
-							            $when     = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
-							            $showLink = ( $clientId == $current_user->ID ? true : false );
+                                    $when     = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
+                                    $showLink = ( $clientId == $current_user->ID ? true : false );
 
-							            ?>
-							            <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
-								            <td class="measurement-date">
-									            <div class="date">
-										            <form method="POST">
-											            <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
-											            <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
-											            <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
-										            </form>
-										            <!-- <span> -->
-										            <?php
-										            if ( $showLink ) {
-											            ?>
-											            <a href="#load_progress" target="_blank"
-											               alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
-												            <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
-											            </a>
-										            <?php
-										            } else {
-											            ?>
-											            <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
-										            <?php
-										            }
-										            ?>
-									            </div>
-									            <div
-										            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
-								            </td>
-								            <td>
-									            <div class="other-progress-info">
-										            <?php echo $measurement->essay1; ?>
-									            </div>
-								            </td>
-							            </tr>
-							            <?php
-							            $counter ++;
-						            }
-					            } ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                    ?>
+                                    <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+                                        <td class="measurement-date">
+                                            <div class="date">
+                                                <form method="POST">
+                                                    <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
+                                                    <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
+                                                    <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
+                                                </form>
+                                                <!-- <span> -->
+                                                <?php
+                                                if ( $showLink ) {
+                                                    ?>
+                                                    <a href="#load_progress" target="_blank"
+                                                       alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
+                                                        <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
+                                                    </a>
+                                                <?php
+                                                } else {
+                                                    ?>
+                                                    <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
+                                                <?php
+                                                }
+                                                ?>
+                                            </div>
+                                            <div
+                                                class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
+                                        </td>
+                                        <td>
+                                            <div class="other-progress-info">
+                                                <?php echo $measurement->essay1; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                    $counter ++;
+                                }
+                            } ?>
+                        </tbody>
+                    </table>
                 </div>
-            <?php
+            </div><?php
             }
 
             $html = ob_get_clean();
@@ -891,7 +966,7 @@ class e20rMeasurementViews {
                                 It's inexpensive, it's handy, and since the tape encircles the body part with a consistent
                                 tightness, it allows for more accurate and consistent readings.
                                 <p align="center">
-                                    <img class="alignnone" src="<?php echo E20R_PLUGINS_URL; ?>/images/myotape.png" alt="" width="302" height="267" />
+                                    <img class="alignnone" src="<?php echo E20R_PLUGINS_URL; ?>/img/myotape.png" alt="" width="302" height="267" />
                                 </p>
                             </td>
                             </tr>
@@ -1072,7 +1147,7 @@ class e20rMeasurementViews {
 
 	    global $e20rClient;
 
-        return 'background-image: url("' . E20R_PLUGINS_URL . '/images/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
+        return 'background-image: url("' . E20R_PLUGINS_URL . '/img/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
     }
 
     private function prettyUnit( $type ) {
@@ -1113,14 +1188,15 @@ class e20rMeasurementViews {
         ?>
         <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred weight units:
-            <span id="preferred-weight-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
-            <select id="selected-weight-unit" style="display: none;">
+            <span id="preferred-weight-unit" class="e20r-change-units"><?php echo $this->prettyUnit($e20rClient->getWeightUnit()); ?></span>
+            <span class="e20r-change-unit-dropdown"><select id="selected-weight-unit">
                 <option value="lbs"<?php selected( $e20rClient->getWeightUnit(), 'lbs' ); ?>><?php echo $this->prettyUnit('lbs'); ?></option>
                 <option value="kg"<?php selected( $e20rClient->getWeightUnit(), 'kg' ); ?>><?php echo $this->prettyUnit('kg'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="weight">change this</a>)
+            </select></span>
+            <span class="e20r-change-weight-unit-link">(<a class="change-measurement-unit" data-dimension="weight"><?php _e("change this", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-cancel-weight-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
@@ -1133,12 +1209,13 @@ class e20rMeasurementViews {
         ?>
         <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
             Preferred length units:
-            <span id="preferred-length-unit" style="font-weight: bold; display: inline;"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
-            <select id="selected-length-unit" style="display: none;">
+            <span id="preferred-length-unit" class="e20r-change-units"><?php echo $this->prettyUnit( $e20rClient->getLengthUnit() ); ?></span>
+            <span class="e20r-change-unit-dropdown"><select id="selected-length-unit">
                 <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
                 <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
-            </select>
-            (<a class="change-measurement-unit" data-dimension="length">change this</a>)
+            </select></span>
+            <span class="e20r-change-length-unit-link">(<a class="change-measurement-unit" data-dimension="length"><?php _e("change this", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-cancel-length-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
@@ -1151,7 +1228,7 @@ class e20rMeasurementViews {
 
         if ( ( $url = wp_get_attachment_thumb_url( $id ) ) === false ) {
 
-            $url = E20R_PLUGINS_URL . "/images/no-image-uploaded.jpg";
+            $url = E20R_PLUGINS_URL . "/img/no-image-uploaded.jpg";
         }
 
         return $url;

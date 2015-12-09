@@ -1,0 +1,106 @@
+
+== List of issues that need fixing ==
+
+07/17/2015:
+
+07/18/2015
+
+07/19/2015
+
+07/20/2015
+
+07/21/2015
+
+07/25/2015
+
+07/26/2015
+
+07/27/2015:
+
+07/28/2015:
+
+08/10/2015:
+
+08/12/2015:
+
+Enh: (P2) Ability to assign users (clients) of a program to a coach.
+            In user profile page (if "coach" checkbox is checked, allow admin to assign programs for which the user is a coach).
+            May need to modify Coaching Page to reflect programs & not membership level(s).
+Fix: (P1) Load data for statistics by max weight (if the type is a weight type) then the max no of reps.
+Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
+
+08/16/2015:
+
+10/22/2015:
+
+See: http://jsfiddle.net/istvanv/uQj7t/28/ for a pop-over option.
+
+11/02/2015:
+
+
+11/06/2015:
+Fix: (P1) issue with codetabs in e20r_profile shortcode on small screens (doesn't wrap/resize).
+
+11/23/2015:
+
+
+== Completed / Fixed ==
+
+Fix: (P0) daily_progress prev/next day navigation didn't load the correct activity/workout data.
+Fix: (P0) Check-in for the daily progress dashboard gets saved in the same row all the time.
+Fix: (P0) Date navigation on Daily Progress Dashboard doesn't work for VPT!
+Fix: (P0) In the content filter, redirect a logged in program member to their dashboard if when attempting to access a defined sales page for the program.
+Fix: (P0) The Assignment list is does not display correctly on a post/page when the [daily_progress type="assignment"] is configured.
+Fix: (P0) Not loading correct assignment information on a measurement day.
+Fix: (P0) Convert $e20rArticle->activities to unserialized variable (activity_ids) a-la program_ids and article_ids.
+Fix: (P0) Add timeout error handling to jQuery.ajax() calls.
+Fix: (P0) Create a survey infrastructure for the E20R-Tracker plugin. Leverage the Gravity Forms plugin (for now)
+Fix: (P0) Added select2 box as "multichoice" box for assignment(s).
+Fix: (P0) Email messages to clients had their HTML stripped.
+Fix: (P0) Don't let new users see actual program content except the welcome info until their PMPRO startdate has come (or gone).
+Fix: (P0) Showing program pages before a users startdate (redirect to a preview page instead).
+Fix: (P0) List of exercise statistics in archive can start before the users program startdate. Graph does not.
+Fix: (P0) Activity settings didn't always get loaded correctly.
+Fix: (P0) Activity description is being saved twice
+Fix: (P0) Prevent user from accessing the client interview page if their membership is > 2 months old and the interview contains data.
+Fix: (P0) The gravity forms form on the interview page loads but is hidden (Caused by Cloudflare Rocket engine - Javascript optimization that doesn't quite work right)
+Fix: (P0) issue of not displaying e20r_profile when some of the check-in definitions are missing.
+Fix: (P0) issue where "showing day in the past" is listed when there is no defined article (should show undefined, etc)
+
+
+Fix: (P1) Client info not loading correctly (the data) for back-end form.
+Fix: (P1) Problems adding assignments to article (non-default ones).
+Fix: (P1) Correctly load the Client Info page in back end.
+Fix: (P1) [daily_progress type="assignment"] doesn't show correctly if the current day/time doesn't match the delay value for the assignment(s).
+Fix: (P1) Clean up the client information page in the back-end.
+Fix: (P1) Measurements history table isn't responsive
+Fix: (P1) Refresh all graphs in progress_overview when tab is clicked.
+
+Fix: (P2) Moved the configuration of a measurement day to the program definition page in the back-end
+Fix: (P2) Make Achievements list responsive (from table to div & float:left)
+Fix: (P2) Set/Group listing has ugly wrap in activity progress overview.
+Fix: (P3) Add a "program_list" for the assignment definition
+
+Enh: (P0) Configure a program "sales page(s)" (i.e. multi-select2 box)
+Enh: (P0) Prevent the daily assignment short code from bleeding into the actual post/page.
+Enh: (P0) Log and show last login for user on client information page
+Enh: (P0) Add sent email message to client information page (so other coaches can see what's happened/been sent).
+Enh: (P0) Add ability to schedule an email message to a coaching client.
+Enh: (P0) Add pop-over/nag screen (closeable) for when the welcome interview isn't completed and it's been > a configured amount of time since the program started.
+
+Enh: (P1) Explanation of ribbon colors as a prefix for the activity summary.
+Enh: (P1) Fix measurements form.
+Enh: (P1) When creating an article (and the Article 'delay' has been set), only list assignments that have the same delay day as the article we're processing.
+Enh: (P1) Let user/admin define the progress and dashboard pages on a per-program basis.
+Enh: (P1) Specify "Day number" or date for start/end of activity.
+
+Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
+Enh: (P2) Add client message form for back-end.
+Enh: (P2) Add graphs for the exercise history. Max weight per exercise on each day
+
+Enh: (P3) Make the action & activity portion of the dashboard DIVs so they'll float for any device.
+
+== Won't fix ==
+
+Enh: (P1) When user changes the release_day field, save the article as a draft & reload the page.
+Enh: P1 - Correctly handle $currentClient->loadedDefaults setting across all modules.

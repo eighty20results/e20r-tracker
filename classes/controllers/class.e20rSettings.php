@@ -52,6 +52,11 @@ class e20rSettings {
         return $settings;
     }
 
+    public function find( $key, $value, $programId = -1, $comp = '=', $order = 'DESC', $dataType = 'numeric' ) {
+
+        return $this->model->find( $key, $value, $programId, $comp, $order, $dataType);
+    }
+
     public function findByName( $shortName ) {
 
         $list = $this->model->loadAllSettings( 'any' );
@@ -103,6 +108,20 @@ class e20rSettings {
 
     }
 
+    public function get_cpt_slug() {
+
+        return $this->cpt_slug;
+    }
+
+    public function get_cpt_type() {
+
+        return $this->type;
+    }
+
+    public function get_defaults() {
+
+        return $this->model->defaultSettings();
+    }
     /*
     public function getID( $userId = null ) {
 
@@ -200,6 +219,32 @@ class e20rSettings {
 
     }
 
+    public function addPrograms( $gid, $programIds ) {
+
+        dbg("e20r" .ucfirst($this->type) . "::addProgram() - Adding " . count($programIds) . " programs to $this->type {$gid}");
+
+        $settings = $this->model->loadSettings( $gid );
+
+        // Clean up settings with empty program id values.
+        foreach( $settings->program_ids as $k => $value ) {
+
+            if ( empty($value ) || ( 0 == $value ) ) {
+                unset( $settings->program_ids[$k]);
+            }
+        }
+
+        foreach( $programIds as $pId ) {
+
+            if ( !in_array( $pId, $settings->program_ids ) ) {
+
+                dbg("e20r" .ucfirst($this->type) . "::addProgram() - Adding program {$pId} to {$this->type} {$gid}");
+                $settings->program_ids[] = $pId;
+            }
+        }
+
+        return $this->model->saveSettings( $settings );
+    }
+
 	public function getPeers( $id = null ) {
 
 		if ( is_null( $id ) ) {
@@ -237,6 +282,8 @@ class e20rSettings {
 				}
 			}
 		}
+
+        wp_reset_postdata();
 
 		return $itemList;
 	}

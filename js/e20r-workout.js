@@ -8,17 +8,19 @@
 
 var $body = jQuery("body");
 
+/*
 jQuery(document).on({
     ajaxStart: function() { $body.addClass("loading");   },
     ajaxStop: function() { $body.removeClass("loading"); }
 });
-
+*/
 var e20rActivity = {
     init: function () {
 
         this.$weight_fields = jQuery('.e20r-activity-input-weight');
         this.$rep_fields = jQuery('.e20r-activity-input-reps');
         this.$rows = jQuery(".e20r-exercise-tracking-row");
+        this.$print = jQuery("#e20r-activity-print");
         this.$tracked = jQuery(".e20r-exercise-set-row");
         this.$nonce = jQuery('#e20r-tracker-activity-input-nonce').val();
         this.$saveBtn = jQuery('#e20r-activity-input-button');
@@ -54,7 +56,40 @@ var e20rActivity = {
             activity.saveAll();
         });
 
+        activity.$print.unbind('click').on('click', function() {
+            console.log("User requested print function");
+        });
+
         return activity;
+    },
+    close_print: function() {
+        document.body.removeChild(this.__container__);
+    },
+    set_print: function () {
+
+        var $class = this;
+
+        this.contentWindow.__container__ = this;
+
+        this.contentWindow.onbeforeunload = $class.close_print;
+        this.contentWindow.onafterprint = $class.close_print;
+
+        this.contentWindow.focus(); // Required for IE
+        this.contentWindow.print();
+    },
+    print_page: function( sURL ) {
+
+        var $class = this;
+        var oHiddFrame = document.createElement("iframe");
+
+        oHiddFrame.onload = $class.set_print;
+        oHiddFrame.style.visibility = "hidden";
+        oHiddFrame.style.position = "fixed";
+        oHiddFrame.style.right = "0";
+        oHiddFrame.style.bottom = "0";
+        oHiddFrame.src = sURL;
+
+        document.body.appendChild(oHiddFrame);
     },
     bindInput: function (me, activity) {
 
@@ -186,20 +221,13 @@ var e20rActivity = {
         var $weight = $elem.find('.e20r-activity-input-weight').val();
         var $reps = $elem.find('.e20r-activity-input-reps').val();
 
-        if ( ( $hWeight != $weight ) || ( $hReps != $reps ) ) {
-/*
-            console.log("Need to save data...");
-            console.log("Reps: " + $reps + " hReps: " + $hReps);
-            console.log("Weight: " + $weight + " hWeight: " + $hWeight);
-*/
-            return true;
-        }
-
-        return false;
+        return ( ( $hWeight != $weight ) || ( $hReps != $reps ) )
     },
     attemptSave: function( $btn, activity ) {
 
         event.preventDefault();
+
+        $body.addClass("loading");
 
 //        console.log("Getting ready to save data in the field...");
 
@@ -221,7 +249,7 @@ var e20rActivity = {
         $rInput.removeClass("active");
         $wInput.removeClass("active");
 
-        jQuery("body").addClass("loading");
+        // jQuery("body").addClass("loading");
 
         /*
         if ( inp.val() != '' ) {
@@ -269,9 +297,9 @@ var e20rActivity = {
             // console.log("Sending data: ", $data );
 
             jQuery.ajax({
-                url: e20r_workout.url,
+                url: e20r_workout.ajaxurl,
                 type: 'POST',
-                timeout: 7000,
+                timeout: e20r_workout.timeout,
                 data: $data,
                 success: function (resp) {
 
@@ -292,7 +320,8 @@ var e20rActivity = {
                     activity.hide($edit);
 
                 },
-                error: function (xhdr, errstr, error) {
+                error: function($response, $errString, $errType) {
+
                     console.log("Error saving data");
 
                     $rInput.val($hReps);
@@ -300,6 +329,24 @@ var e20rActivity = {
 
                     $show.find('a.e20r-edit-rep-value').text($hReps);
                     $show.find('a.e20r-edit-weight-value').text($hWeight);
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to save this set/reps entry. If you\'d like to try again, please ";
+                    $string += "reload the page and edit this value again. \n\nShould you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this message in its entirety.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
 
                 },
                 complete: function () {
@@ -315,16 +362,67 @@ var e20rActivity = {
     },
     saveAll: function() {
 
+        var $class = this;
         event.preventDefault();
 
-        // TODO: Figure out whether there's data for all of the set entries. If yes then set activity to 'complete' and submit the form.
-        var $data = jQuery("#e20r-activity-input-form").serialize();
+        $body.addClass("loading");
 
-        if ( ! this._complete() ) {
+        // var $data = jQuery("#e20r-activity-input-form").serialize();
 
-            console.log("Incomplete form...")
+        var $data = {
+            action: 'e20r_save_activity',
+            'e20r-tracker-activity-input-nonce': this.$nonce,
+            'user_id': $class.$userId,
+            'activity_id': $class.$activityId,
+            'article_id': jQuery('#e20r-activity-input-article_id').val(),
+            'program_id': $class.$programId,
+            'for_date': $class.$forDate,
+            'recorded': ( Math.floor( Date.now() / 1000) ),
+            'completed': $class._complete()
+        };
+
+        if ( $class._complete() ) {
+
+            jQuery.ajax({
+                url: e20r_workout.ajaxurl,
+                type: 'POST',
+                timeout: e20r_workout.timeout,
+                data: $data,
+                success: function (resp) {
+
+                    var $id = resp.data.id;
+
+                },
+                error: function($response, $errString, $errType) {
+
+                    console.log("Error confirming completion of the activity");
+
+                    console.log("From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_updateUnitTypes()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to confirm your completion of this activity. If you\'d like to try again, please ";
+                    $string += "try again.\n\nShould you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form. ";
+                    $string += "When you contact Technical Support, please include this message in its entirety.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                },
+                complete: function () {
+                    console.log("Completed processing of activity.");
+                }
+            });
+
+            $class._clearLoading();
         }
-        console.log("Serialized form: ", $data );
 
     },
     _complete: function() {
@@ -347,26 +445,30 @@ var e20rActivity = {
             return true;
         }
 
-        if ( $pct > 0.89 ) {
-            return true;
-        }
-
-        return false;
+        return ( 0.89 < $pct );
     },
     _clearLoading: function() {
-        jQuery("body").removeClass("loading");
+        $body.removeClass("loading");
     }
 };
 
 jQuery(document).ready( function(){
 
     console.log("Loaded user script for the workout tracking form");
+
+    if ( jQuery('#e20r-daily-activity-page').length ) {
+
+        console.log("Hide the header for the [e20r_activity] shortcode page");
+        jQuery('header.entry-header').hide();
+    }
+
     e20rActivity.init();
 
 });
+
 jQuery(document).ready(function($) {
 
-    $('.e20r-faq-question').click( function(){
+    $('.e20r-faq-question').unbind().on('click', function(){
 
         var $this_heading = $(this);
         var $module = $this_heading.closest('.e20r-faq-container');

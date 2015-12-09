@@ -62,7 +62,7 @@ var e20rActivity = {
             allowClear: true
         });
 
-        jQuery('#e20r-workout-programs').select2({
+        jQuery('#e20r-workout-program_ids').select2({
             placeholder: "Select user's program",
             allowClear: true
         });
@@ -104,7 +104,7 @@ var e20rActivity = {
         wp.ajax.send({
             url: e20r_tracker.ajaxurl,
             type:'POST',
-            timeout:5000,
+            timeout:e20r_tracker.timeout,
             dataType: 'JSON',
             data: {
                 action: "e20r_add_new_exercise_group",
@@ -153,7 +153,6 @@ var e20rActivity = {
             return false;
         }
 
-
         // Disable save button
         $addBtn.attr('disabled', 'disabled');
         $addBtn.html(e20r_tracker.lang.adding);
@@ -165,7 +164,7 @@ var e20rActivity = {
         wp.ajax.send({
             url: e20r_tracker.ajaxurl,
             type: 'POST',
-            timeout: 5000,
+            timeout: e20r_tracker.timeout,
             dataType: 'JSON',
             data: {
                 action: 'e20r_add_exercise',
@@ -267,11 +266,11 @@ var e20rActivity = {
             // Process every row of the exercise list for the current group id.
             jQuery(this).closest('.e20r-exercise-group').find('.e20r-exercise-list tbody tr').each(function(){
 
-                groupInfo = '\'group:' + groupNum + '\'';
-                row = jQuery(this);
+                var groupInfo = '\'group:' + groupNum + '\'';
+                var row = jQuery(this);
 
-                ex_id = row.find('.e20r-workout-group_exercise_id').val();
-                ex_order = row.find('.e20r-workout-group_exercise_order').val();
+                var ex_id = row.find('.e20r-workout-group_exercise_id').val();
+                var ex_order = row.find('.e20r-workout-group_exercise_order').val();
 
                 if ( typeof(ex_id) != 'undefined') {
 
@@ -377,9 +376,8 @@ var e20rActivity = {
     _findExerciseRow: function( groupId, orderNo ) {
 
         var group = jQuery('#e20r-workout-add-groups').find('input[type="hidden"][name^="e20r-group-id"][value="' + groupId + '"]').closest('.e20r-exercise-group');
-        var row = group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + orderNo + '"]').closest('tr');
 
-        return row;
+        return group.find('input[type="hidden"][name^="e20r-workout-group_exercise_order"][value="' + orderNo + '"]').closest('tr');
     },
     _createExRow: function( obj, order, group ) {
 
@@ -400,7 +398,7 @@ var e20rActivity = {
 
         return $row;
     }
-}
+};
 
 jQuery(document).ready( function(){
 

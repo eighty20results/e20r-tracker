@@ -1,0 +1,141 @@
+/** CSS definition for the ExerciseView display **/
+div.e20r-exercise-table {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #bbb;
+    background-color: #fcfcfc;
+}
+div.spacer {
+    clear: both;
+    height: 1px;
+}
+div.e20r-exercise-table-header,
+div.e20r-exercise-table-body {
+    width: 100%;
+}
+div.e20r-exercise-table-header p.e20r-first-column {
+    text-align: center;
+}
+div.e20r-exercise-detail-row {
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    padding: 4px;
+}
+
+div.e20r-exercise-title {
+    cursor: pointer;
+    padding: 0 8px 0 8px;
+    margin-bottom: 0;
+    font-size: 5vmin;
+}
+h4.e20r-tracker-detail-h4 {
+    font-size: 5vmin !important;
+    font-weight: bold;
+    color: #004CFF;
+    margin: 0;
+}
+div.e20r-display-exercise-image {
+    width: 100%;
+    height: auto;
+}
+.e20r-video {
+    width: 100%;
+    /* display: inline-block; */
+}
+div.e20r-exercise-table-column {
+    /* float: left; */
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+div.e20r-exercise-description {
+    padding: 4px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    font-size: 0.9rem;
+    background-color: #fff;
+    border: 2px solid #c0c0c0;
+    min-height: 7.5ex;
+    line-height: 2.5ex;
+    overflow: hidden;
+}
+div.e20r-exercise-description p {
+    padding-left: 5px;
+    text-align: left;
+}
+.e20r-exercise-label {
+    font-size: 4.0vmin;
+    font-style: italic;
+    color: #004C00;
+    padding-left: 5px;
+}
+.e20r-exercise-value {
+    color: rgba(0, 76, 255, 0.9);
+    font-size: 3.75vmin;
+    padding-left: 8px;
+    padding-right: 10px;
+}
+div.exercise-header {
+    background-color: #004C00;
+    /* border-bottom: 2px solid #5c5c5c; */
+    padding: 4px;
+}
+/* div.e20r-activity-table-body > div.e20r-exercise-row {
+    height: 21px;
+    line-height: 100%;
+}*/
+.e20r-exercise-row {
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;
+}
+.e20r-spacer-row {
+    height: 2px;
+}
+.e20r-exercise-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+.e20r-exercise-video iframe, .e20r-exercise-video object, .e20r-exercise-video embed, .e20r-exercise-video video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.e20r-display-exercise-image {
+    width: 100%;
+    margin: 0 5px 0 5px;
+}
+.e20r-display-exercise-descr-row {
+    width: 100%;
+}
+/** Youtube specific CSS **/
+.e20r-youtube-container { display: block; margin: auto; width: 100%; max-width: 920px; }
+.youtube-player { display: block; width: 100%; /* assuming that the video has a 16:9 ratio */ padding-bottom: 56.25%; overflow: hidden; position: relative; cursor: pointer; display: block; }
+img.youtube-thumb { bottom: 0; display: block; left: 0; margin: auto; max-width: 100%; width: 100%; position: absolute; right: 0; top: 0; height: auto }
+div.play-button { height: 72px; width: 72px; left: 50%; top: 50%; margin-left: -36px; margin-top: -36px; position: absolute; background: url("http://i.imgur.com/TxzC70f.png") no-repeat; }
+#youtube-iframe { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+div.first-column {
+    float: left;
+    /* text-align: right; */
+}
+div.first-column.e20r-exercise-video-column {
+    width: 49%;
+    flex: 1;
+}
+div.second-column {
+    float: right;
+    text-align: left;
+}
+div.second-column.e20r-exercise-description {
+    width: 49%;
+    overflow: hidden;
+    flex: 1;
+}
+div.e20r-exercise-detail-row-3 {
+    display: flex;
+}
+.clearfix {
+    clear: both;
+}

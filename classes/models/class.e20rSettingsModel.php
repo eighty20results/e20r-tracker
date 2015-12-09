@@ -19,6 +19,8 @@ class e20rSettingsModel {
     protected $table;
     protected $fields;
 
+    protected $serialized;
+
     /**
      * @param $type
      * @param $cpt_slug
@@ -46,6 +48,18 @@ class e20rSettingsModel {
             return;
         }
 
+        $this->serialized = array(
+            'groups', 'assigned_user_id', 'assigned_usergroups', 'days', 'exercises',
+            'sequences', 'users', 'group'
+        );
+
+
+    }
+
+
+    public function doSerialize( $field_key ) {
+
+        return ( in_array( $field_key, $this->serialized ) );
     }
 
     public function init( $id = null ) {
@@ -74,7 +88,7 @@ class e20rSettingsModel {
 	    }
     }
 
-    protected function defaultSettings( ) {
+    protected function defaultSettings() {
 
         $this->settings = new stdClass();
 
@@ -90,10 +104,51 @@ class e20rSettingsModel {
 			$this->settings->id = $this->id;
 	    }
 
+        $this->settings = $this->ifMigrating( $this->settings );
+
         return $this->settings;
     }
 
+    private function ifMigrating( $migrate ) {
+
+        global $e20rTracker;
+
+        $migrated = false;
+
+        if ( 1 === $e20rTracker->loadOption( " converted_metadata_{$this->cpt_slug}" ) ) {
+            $migrated = true;
+        }
+
+        if ( true === $migrated ) {
+
+            switch ( $this->cpt_slug ) {
+                case 'e20r-workout':
+                case 'e20r-articles':
+                    $migrate->programs = null;
+                    $migrate->assignments = null;
+                    $migrate->checkins = null;
+                    break;
+
+                case 'e20r-assignments':
+
+                    $migrate->program_id = null;
+                    $migrate->program_ids = null;
+                    $migrate->article_id = null;
+                    break;
+
+                case 'e20r-checkins':
+
+                    $migrate->program_ids = null;
+                    break;
+            }
+        }
+
+        return $migrate;
+    }
+
     public function getSetting( $typeId, $fieldName ) {
+
+        dbg("e20rSettingsModel::getSetting() - Running from parent class");
 
 	    $typeVar = 'current' . ucfirst($this->type);
 	    global ${$typeVar};
@@ -222,14 +277,15 @@ class e20rSettingsModel {
     /**
      * Returns an array of all settings merged with their associated settings.
      *
-     * @param $statuses string|array - Statuses to return checkin data for.
-     * @return mixed - Array of checkin objects
+     * @param $statuses string|array - Statuses to return data for.
+     * @return mixed - Array of objects
      */
     public function loadAllSettings( $statuses = 'any' ) {
 
         $settings_list = array();
 
         $query = array(
+			'posts_per_page' => -1,
             'post_type' => $this->cpt_slug,
             'post_status' => $statuses,
         );
@@ -256,6 +312,8 @@ class e20rSettingsModel {
 
             $settings_list[$data->ID] = $settings;
         }
+
+        wp_reset_postdata();
 
         return $settings_list;
     }
@@ -291,6 +349,12 @@ class e20rSettingsModel {
 					'compare' => '>=',
 					'type' => 'DATE',
 				),
+                array(
+                    'key' => "_e20r-{$this->type}-program_ids",
+                    'value' => $programId,
+                    'compare' => '=',
+                    'type' => 'numeric',
+                ),
 			)
 		);
 
@@ -302,6 +366,8 @@ class e20rSettingsModel {
 
 			$query->the_post();
 
+            $list[] = get_the_ID();
+            /*
 			$id = get_the_ID();
 
 			dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Getting program info for action ID: {$id}");
@@ -318,11 +384,14 @@ class e20rSettingsModel {
 
 			dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Getting program info... ");
 
-			if ( in_array( $programId, $programs ) || ( $programs === false ) ) {
+			if ( ( $programs === false ) || $this->inProgram( $programId, $tVar, $programs ) ) {
 
 				$list[] = $id;
 			}
+            */
 		}
+
+        wp_reset_postdata();
 
 		dbg("e20r" . ucfirst($this->type) . "Model::findByDate() - Returning ids:");
 		dbg( $list );
@@ -342,20 +411,27 @@ class e20rSettingsModel {
 	 *
 	 * @return array|bool|mixed - An array of WP_Post objects for the query.
 	 */
-	public function find( $key, $value, $dataType = 'numeric', $programId = -1, $comp = 'LIKE', $order = 'DESC' ) {
+	public function find( $key, $value, $programId = -1, $comp = 'LIKE', $order = 'DESC', $dataType = 'numeric' ) {
 
 		global $e20rProgram;
 
-		$programKey = null;
+        /*
+        $programKey = null;
+
+        if ( -1 != $programId ) {
+            $programKey = $this->getProgramKey();
+        }
+        */
+
 		$pArray = false;
 
-		if ( ( $key == 'id' ) && ( $value == 'any' ) ) {
+        if ( ( $key == 'id' ) && ( $value == 'any' ) ) {
 			$args = array(
 				'posts_per_page' => -1,
 				'post_type' => $this->cpt_slug,
 				'post_status' => apply_filters( 'e20r-tracker-model-data-status', array( 'publish', 'draft', 'future' )),
 				'order' => $order,
-			);
+            );
 		}
         elseif ( ( $key == 'id') && (! is_array( $value ) ) ) {
             $args = array(
@@ -380,7 +456,7 @@ class e20rSettingsModel {
 						'compare' => $comp,
 						'type' => $dataType,
 					),
-				)
+                )
 			);
 		}
         else {
@@ -392,8 +468,32 @@ class e20rSettingsModel {
                 'order' => $order,
             );
         }
-		dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
-		dbg($args);
+
+
+        if ( ( -1 != $programId ) && ( $key != 'id') ) {
+
+            dbg("e20r" . ucfirst($this->type) . "Model::find() - Program ID is: $programId");
+
+            $pExcl = array(
+                'key' => "_e20r-{$this->type}-program_ids",
+                'value' => $programId,
+                'compare' => '='
+            );
+
+            if ( array_key_exists( 'meta_query', $args ) ) {
+
+                $args['meta_query'][1] = $pExcl;
+            }
+            else {
+
+                $args['meta_query'] = array(
+                    $pExcl
+                );
+            }
+        }
+
+		// dbg("e20r" . ucfirst($this->type) . "Model::find() - Using arguments: ");
+		// dbg($args);
 
 		$dataList = $this->loadForQuery( $args );
 
@@ -406,6 +506,7 @@ class e20rSettingsModel {
 		dbg("e20r" . ucfirst($this->type) ."Model::find() - Found " . count( $dataList ) . " records" );
 		// dbg( $dataList );
 
+        /*
 		if ( is_array( $dataList ) && ( ! empty( $dataList ) ) ) {
 
 			$pArray = true;
@@ -457,12 +558,28 @@ class e20rSettingsModel {
 					$dataList = false;
 				}
 			}
-		}
 
+		}
+*/
 		return $dataList;
 	}
 
-	private function inProgram( $pId, $key, $obj ) {
+    private function getProgramKey() {
+
+        $defaults = $this->defaultSettings();
+
+        foreach( $defaults as $key => $val ) {
+
+            if ( strpos( $key, 'program' ) !== false ) {
+
+                dbg( "e20r" . ucfirst( $this->type ) . "Model::getProgramKey() - found key base for program id(s): {$key}" );
+                return $key;
+            }
+        }
+        return null;
+    }
+
+	protected function inProgram( $pId, $key, $obj ) {
 
 		if ( $pId == -1 ) {
 
@@ -506,6 +623,7 @@ class e20rSettingsModel {
 			$list[] = $new;
 		}
 
+        wp_reset_postdata();
 		return $list;
 	}
 
@@ -554,7 +672,36 @@ class e20rSettingsModel {
 
                     $this->settings->{$key} = $setting;
 
-                    update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting );
+					// "Unroll" a setting that's represented as an array of entries
+					if ( in_array( $key, array( 'program_ids', 'article_ids', 'action_ids', 'assignment_ids', 'select_options', 'activity_id' ) ) ) {
+
+                        dbg("e20r" . ucfirst($this->type) . "Model::settings()  - {$key}: Simplifying search operations in the metadata table.");
+                        dbg("e20r" . ucfirst($this->type) . "Model::settings()  - Clearing post meta for {$post_id} and key _e20r-{$this->type}-{$key}");
+                        delete_post_meta( $post_id, "_e20r-{$this->type}-{$key}" );
+
+                        if ( is_array( $setting ) ) {
+                            foreach ($setting as $aVal) {
+
+                                if (!$this->isStored($post_id, $key, $aVal, true) && (0 !== $aVal)) {
+                                    dbg("e20r" . ucfirst($this->type) . "Model::settings() - Not currently saved in DB. Saving {$key} = $aVal");
+                                    add_post_meta($post_id, "_e20r-{$this->type}-{$key}", $aVal);
+                                } elseif (0 === $aVal) {
+                                    delete_post_meta($post_id, "_e20r-{$this->type}-{$key}", $aVal);
+                                }
+                            }
+                        }
+                        else {
+                            if (!$this->isStored($post_id, $key, $setting, true) && (0 !== $setting)) {
+                                dbg("e20r" . ucfirst($this->type) . "Model::settings() - Not currently saved in DB. Saving {$key} = $setting");
+                                add_post_meta($post_id, "_e20r-{$this->type}-{$key}", $setting);
+                            } elseif (0 === $setting) {
+                                delete_post_meta($post_id, "_e20r-{$this->type}-{$key}", $setting);
+                            }
+                        }
+					}
+					else {
+						update_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $setting );
+					}
 
                     return true;
                 }
@@ -574,17 +721,46 @@ class e20rSettingsModel {
 
             case 'get':
 
-                $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
-				/*
-				if ( ! is_array( $val ) ) {
-					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
-				}
-				else {
-					dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
-					dbg($val);
-				}
-				*/
-				if ( $val == false ) {
+                $asArray = false;
+                // $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", true );
+
+                $newAFields = array( 'program_ids', 'article_ids', 'assignment_ids', 'activity_id', 'action_ids', 'select_options');
+
+                if ( !in_array( $key, $newAFields ) ) {
+                    $asArray = true;
+                }
+
+                $val = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $asArray );
+
+                if ( in_array( $key, $newAFields ) &&
+                    ( !is_array( $val ) )  ) {
+
+                    // Clean up in case something isn't being returned correctly
+                    $val = array( $val );
+                }
+
+                if ( is_array( $val ) && ( 1 == count($val))) {
+
+                    $copy = $val;
+                    $tmp = array_pop( $copy );
+
+                    if ( empty($tmp) ) {
+
+                        dbg("e20r" . ucfirst($this->type) ."Model::settings() - {$key} contains a single null array value/element");
+                        $val = array();
+                    }
+                }
+
+                /*
+                                if ( ! is_array( $val ) ) {
+                                    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - Got: {$val} (from: _e20r-{$this->type}-{$key}) for {$post_id}" );
+                                }
+                                else {
+                                    dbg( "e20r" . ucfirst( $this->type ) . "Model::settings() - _e20r-{$this->type}-{$key}) for {$post_id} returns: " );
+                                    dbg($val);
+                                }
+                */
+				if ( ( !is_array( $val ) ) && ( $val == false ) ) {
 
 					$this->settings->{$key} = null;
 				}
@@ -603,4 +779,19 @@ class e20rSettingsModel {
 
         return $this->settings;
     } // End function
+
+	private function isStored( $post_id, $key, $value, $asArray ) {
+
+		$metaContent = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $asArray );
+
+        if ( !is_array( $metaContent ) ) {
+            $metaContent = array( $metaContent );
+        }
+
+        if (in_array($value, $metaContent)) {
+
+            return true;
+        }
+		return false;
+	}
 }

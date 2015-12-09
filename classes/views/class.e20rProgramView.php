@@ -16,18 +16,21 @@ class e20rProgramView {
 
     }
 
-    public function view_userProfile( $programList, $activePgm ) {
+    public function profile_view_client_settings( $programList, $activePgm, $coachList, $coach_id ) {
 
 	    if ( empty( $programList ) ) {
 		    $programList = array();
 	    }
 
+        dbg("e20rProgramView::profile_view_client_settings() - Looking for coach: ");
+        dbg($coach_id);
+
         ob_start();
         ?>
-        <h3><?php _e("E20R Tracker Settings", "e20rtracker"); ?></h3>
+        <h3><?php _e("E20R Tracker - Program Settings", "e20rtracker"); ?></h3>
         <table class="form-table">
             <tr>
-                <th><label for="e20r-tracker-user-program"><?php _e( "Coaching program", "e20rtracker"); ?></label></th>
+                <th><label for="e20r-tracker-user-program"><?php _e( "Member of program", "e20rtracker"); ?></label></th>
                 <td>
                     <select id="e20r-tracker-user-program" name="e20r-tracker-user-program" class="select2-container">
                         <option value="0" <?php selected( $activePgm, 0 ) ?>>Not Applicable</option>
@@ -41,6 +44,22 @@ class e20rProgramView {
                     </select>
                 </td>
             </tr>
+            <tr>
+                <th><label for="e20r-tracker-user-coach_id"><?php _e( "Assigned Coach", "e20rtracker"); ?></label></th>
+                <td>
+                    <select id="e20r-tracker-user-coach_id" name="e20r-tracker-user-coach_id" class="select2-container">
+                        <option value="0" <?php selected( key( $coach_id ), 0 ) ?>>Unassigned</option>
+                        <?php
+
+                        foreach( $coachList as $id => $name ) {
+                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( key( $coach_id ), $id ); ?>><?php echo esc_attr($name); ?></option> <?php
+                        }
+
+                        ?>
+                    </select>
+                </td>
+
+            </tr>
         </table>
         <?php
 
@@ -48,7 +67,7 @@ class e20rProgramView {
         return $html;
     }
 
-    public function viewSettingsBox( $programData, $feeds ) {
+    public function old_viewSettingsBox( $programData, $feeds ) {
 
         global $e20rTracker;
 
@@ -140,9 +159,13 @@ class e20rProgramView {
 
 			                        $list = array_merge( $pages, $posts );
 
+			                        wp_reset_postdata();
+
 			                        foreach( $list as $p ) { ?>
 	                                    <option value="<?php echo $p->ID; ?>"<?php selected( $p->ID, $programData->intake_form );?>><?php echo $p->post_title; ?></option> <?php
-                                    } ?>
+                                    }
+
+                                    ?>
 		                        </select>
 	                        </td>
 
@@ -170,6 +193,308 @@ class e20rProgramView {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </form>
+    <?php
+    }
+
+    public function viewSettingsBox( $programData, $feeds ) {
+
+        global $e20rTracker;
+        global $e20rClient;
+
+        $pages = get_pages();
+        $posts = get_posts();
+
+        $list = array_merge( $pages, $posts );
+
+        // FixMe: Load all users designated as coaches.
+        $coaches = $e20rClient->get_coach();
+
+        dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
+        dbg( "e20rProgramView::viewProgramSettingsBox() - Defined coaches in system: ");
+        dbg( $coaches );
+
+        wp_reset_postdata();
+
+        ?>
+        <style>
+            .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
+        </style>
+        <form action="" method="post">
+            <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
+            <div class="e20r-editform">
+                <input type="hidden" name="hidden-e20r-program-id" id="hidden-e20r-program-id" value="<?php echo ( ( ! empty($programData) ) ? $programData->id : 0 ); ?>">
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-program-startdate"><strong><?php _e("Starts on", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate"><strong><?php _e("Ends on", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-measurement_day"><strong><?php _e("Measurement day", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                        if ( empty( $programData->startdate ) ) {
+                            $start = '';
+                        } else {
+
+                            $start = new DateTime( $programData->startdate);
+                            $start = $start->format('Y-m-d');
+                        }
+
+                        if ( empty( $programData->enddate ) ) {
+                            $end = '';
+                        } else {
+                            $end = new DateTime( $programData->enddate );
+                            $end = $end->format( 'Y-m-d' );
+                        }
+
+                        dbg( "e20rProgramView::viewSettingsBox() - Program - Start: {$start}, End: {$end}" );
+                        ?>
+                        <tr id="<?php echo $programData->id; ?>" class="program-inputs">
+                            <td class="text-input">
+                                <input type="date" id="e20r-program-startdate" name="e20r-program-startdate" value="<?php echo $start; ?>">
+                            </td>
+                            <td class="text-input">
+                                <input type="date" id="e20r-program-enddate" name="e20r-program-enddate" value="<?php echo $end; ?>">
+                            </td>
+	                        <td>
+                                <select class="select2-container" name="e20r-program-measurement_day" id="e20r-program-measurement_day">
+                                    <option value="0" <?php selected( 0, $programData->measurement_day); ?>>Sunday</option>
+                                    <option value="1" <?php selected( 1, $programData->measurement_day); ?>>Monday</option>
+                                    <option value="2" <?php selected( 2, $programData->measurement_day); ?>>Tuesday</option>
+                                    <option value="3" <?php selected( 3, $programData->measurement_day); ?>>Wednesday</option>
+                                    <option value="4" <?php selected( 4, $programData->measurement_day); ?>>Thursday</option>
+                                    <option value="5" <?php selected( 5, $programData->measurement_day); ?>>Friday</option>
+                                    <option value="6" <?php selected( 6, $programData->measurement_day); ?>>Saturday</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+                        <th class="e20r-label header"><label for="e20r-program-group"><strong><?php _e("Membership level", "e20rtracker"); ?></strong></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-dripfeed"><strong><?php _e("Lesson/Reminder feed", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-intake_form"><strong><?php _e("Intake form", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-sales_page_ids"><strong><?php _e("Sales page", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+                            <td>
+                                <select class="select2-container" id="e20r-program-group" name="e20r-program-group">
+                                    <option value="-1" <?php selected( $programData->group, 0 ); ?>><?php _e("Not Applicable", "e20rtracker"); ?></option>
+                                    <?php
+                                        $levels = $e20rTracker->getMembershipLevels( null, true );
+
+                                        foreach( $levels as $id => $name ) { ?>
+
+                                            <option value="<?php echo $id; ?>" <?php echo selected( $programData->group, $id ); ?>><?php echo $name; ?></option> <?php
+                                        }
+                                    ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
+                                    <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>>Not configured</option>
+                                    <?php
+                                        foreach($feeds as $df) {
+
+	                                        if ( !empty( $programData->sequences ) ) {
+		                                        $selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null );
+	                                        }
+	                                        else {
+		                                        $selected = null;
+	                                        } ?>
+                                            <option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
+                                <?php   } ?>
+                                </select>
+                            </td>
+	                        <td>
+		                        <select class="select2-container" id="e20r-program-intake_form" name="e20r-program-intake_form">
+			                        <option value="-1" <?php selected( -1, $programData->intake_form) ?>>No intake form/page needed</option><?php
+
+			                        foreach( $list as $p ) { ?>
+	                                    <option value="<?php echo $p->ID; ?>"<?php selected( $p->ID, $programData->intake_form );?>><?php echo esc_textarea($p->post_title); ?></option> <?php
+                                    } ?>
+		                        </select>
+	                        </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-sales_page_ids" name="e20r-program-sales_page_ids[]" multiple="multiple">
+                                    <option value="-1" <?php echo ( empty( $programData->sales_page_ids) || in_array( -1, $programData->sales_page_ids)  ? 'selected="selected"' : null); ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php echo ( isset( $programData->sales_page_ids) && in_array( $p->ID, $programData->sales_page_ids) ? 'selected="selected"' : null); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-activity_page_id"><strong><?php _e("Activity Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-dashboard_page_id"><strong><?php _e("Dashboard Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-progress_page_id"><strong><?php _e("Status Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-measurements_page_id"><strong><?php _e("Measurements Page", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+	                        <td>
+                                <select class="select2-container" id="e20r-program-activity_page_id" name="e20r-program-activity_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->activity_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->activity_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-dashboard_page_id" name="e20r-program-dashboard_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->dashboard_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->dashboard_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-progress_page_id" name="e20r-program-progress_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->progress_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->progress_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-measurements_page_id" name="e20r-program-measurements_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->measurements_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->measurements_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-welcome_page_id"><strong><?php _e("Preparation Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-incomplete_intake_form_page"><strong><?php _e("Incomplete Intake Form", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-account_page_id"><strong><?php _e("Account Profile Page", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-contact_page_id"><strong><?php _e("Contact the Coach Page", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+	                        <td>
+                                <select class="select2-container" id="e20r-program-welcome_page_id" name="e20r-program-welcome_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->welcome_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->welcome_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-incomplete_intake_form_page" name="e20r-program-incomplete_intake_form_page">
+                                    <option value="-1" <?php selected( -1, $programData->incomplete_intake_form_page) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->incomplete_intake_form_page ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-account_page_id" name="e20r-program-account_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->account_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->account_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-contact_page_id" name="e20r-program-contact_page_id">
+                                    <option value="-1" <?php selected( -1, $programData->contact_page_id) ?>><?php _e("No page defined", "e20rtracker");?></option><?php
+
+                                foreach( $list as $p ) { ?>
+                                    <option value="<?php echo $p->ID;?>"<?php selected( $p->ID, $programData->contact_page_id ); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="e20r-program-settings wp-list-table widefat fixed">
+                    <thead>
+                    <tr>
+	                    <th class="e20r-label header"><label for="e20r-program-male_coaches"><strong><?php _e("Coaches for Male clients", "e20rtracker"); ?></strong></label></th>
+	                    <th class="e20r-label header"><label for="e20r-program-female_coaches"><strong><?php _e("Coaches for Female clients", "e20rtracker"); ?></strong></label></th>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr width="100%"/></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="program-inputs">
+	                        <td>
+                                <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches[]" multiple="multiple">
+                                    <option value="-1" <?php selected( -1, $programData->male_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+
+                                foreach( $coaches as $cId => $cName ) {
+                                    $selected = (in_array( $cId, $programData->male_coaches ) ? 'selected="selected"' : null );?>
+                                    <option value="<?php echo $cId;?>" <?php echo $selected; ?>><?php echo esc_textarea($cName);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches[]" multiple="multiple">
+                                    <option value="-1" <?php selected( -1, $programData->female_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+
+                                foreach( $coaches as $cId => $cName ) {
+                                    $selected = (in_array( $cId, $programData->female_coaches ) ? 'selected="selected"' : null );?>
+                                    <option value="<?php echo $cId; ?>" <?php echo $selected; ?>><?php echo esc_textarea( $cName);?></option><?php
+                                } ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <script>
+                    jQuery('.e20r-editform').find('.select2-container').each(function(){
+                        jQuery(this).select2();
+                    });
+                    /*
+                    jQuery('#e20r-program-sequences').select2();
+                    jQuery('#e20r-program-intake_form').select2();
+                    jQuery('#e20r-program-measurement_day').select2();
+                    jQuery('#e20r-program-activity_page_id').select2();
+                    jQuery('#e20r-program-progress_page_id').select2();
+                    jQuery('#e20r-program-dashboard_page_id').select2();
+                    */
+                </script>
+
             </div>
         </form>
     <?php

@@ -16,7 +16,7 @@ class e20rTables {
 
     protected $inBeta = false;
 
-    public function e20rTables() {
+    public function __construct() {
 
         if ( ! function_exists( 'in_betagroup' ) ) {
 
@@ -45,13 +45,16 @@ class e20rTables {
         $this->tables = new stdClass();
 
         /* The database tables used by this plugin */
-        $this->tables->checkin       = $wpdb->prefix . 'e20r_checkin';
-        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignment';
+        $this->tables->action        = $wpdb->prefix . 'e20r_checkin';
+        $this->tables->response      = $wpdb->prefix . 'e20r_response';
+        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
         $this->tables->program       = $wpdb->prefix . 'e20r_programs';
         $this->tables->workout       = $wpdb->prefix . 'e20r_workout';
-        $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
+        $this->tables->surveys       = $wpdb->prefix . 'e20r_surveys';
+        $this->tables->message_history = $wpdb->prefix . 'e20r_client_messages';
+        // $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
 	    //        $this->tables->sets          = $wpdb->prefix . 'e20r_sets';
 
 
@@ -76,6 +79,21 @@ class e20rTables {
     public function isBetaClient() {
 
         return $this->inBeta;
+    }
+
+    private function loadClientMessageFields() {
+
+        $this->fields['message_history'] = array(
+            'id'            => 'id',
+            'user_id'       => 'user_id',
+            'program_id'    => 'program_id',
+            'sender_id'     => 'sender_id',
+            'topic'         => 'topic',
+            'message'       => 'message',
+            'sent'          => 'sent',
+            'transmitted'   => 'transmitted',
+        );
+
     }
 
 	private function loadWorkoutFields() {
@@ -108,13 +126,32 @@ class e20rTables {
             'answer'        => 'answer',
             'field_type'    => 'field_type',
             'program_id'    => 'program_id',
+            'response_id'   => 'response_id',
             'delay'         => 'delay',
         );
     }
 
-    private function loadCheckinFields() {
+    private function loadResponseFields() {
 
-        $this->fields['checkin'] = array(
+        $this->fields['response'] = array(
+            'id'            => 'id',
+            'assignment_id' => 'assignment_id',
+            'article_id'    => 'article_id',
+            'program_id'    => 'program_id',
+            'client_id'     => 'client_id',
+            'recipient_id'  => 'recipient_id',
+            'replied_to'    => 'replied_to',
+            'sent_by_id'    => 'sent_by_id',
+            'message_read'  => 'message_read',
+            'archived'      => 'archived',
+            'message_time'  => 'message_time',
+            'message'       => 'message',
+        );
+    }
+
+    private function loadActionFields() {
+
+        $this->fields['action'] = array(
             'id'                => 'id',
             'user_id'           => 'user_id',
             'program_id'        => 'program_id',
@@ -124,6 +161,22 @@ class e20rTables {
             'checkin_short_name' => 'checkin_short_name',
             'checkin_type'      => 'checkin_type',
             'checkin_note'      => 'checkin_note',
+        );
+    }
+
+    private function loadSurveyFields() {
+
+        $this->fields['surveys'] = array(
+            'id'                => 'id',
+            'user_id'           => 'user_id',
+            'program_id'        => 'program_id',
+            'article_id'        => 'article_id',
+            'survey_type'       => 'survey_type',
+            'survey_data'       => 'survey_data',
+            'is_encrypted'      => 'is_encrypted',
+            'recorded'          => 'recorded',
+            'completed'         => 'completed',
+            'for_date'          => 'for_date'
         );
     }
 
@@ -351,8 +404,8 @@ class e20rTables {
                 $this->loadProgramFields();
                 break;
 
-            case 'checkin':
-                $this->loadCheckinFields();
+            case 'action':
+                $this->loadActionFields();
                 break;
 
             case 'client_info':
@@ -366,6 +419,19 @@ class e20rTables {
 	        case 'workout':
 		        $this->loadWorkoutFields();
 		        break;
+
+            case 'surveys':
+                $this->loadSurveyFields();
+                break;
+
+            case 'message_history':
+
+                $this->loadClientMessageFields();
+                break;
+
+            case 'response':
+                $this->loadResponseFields();
+                break;
 
 	        default:
 		        dbg("e20rTables::loadFields() - No fields to load for {$name}");
