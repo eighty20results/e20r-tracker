@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.3.1
-Stable tag: 1.5.26
+Stable tag: 1.5.27
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,15 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.27 ==
+
+* Make frame for progress container gray
+* Refactored Controller for Articles
+* Fix: Didn't show 'Weekly Status Update' on pages/posts for days where status update was requested and not complete
+* Fix: Order message notification, weekly status update, and other alerts to top of page/post
+* Fix: Would sometimes change the existing article during access check. Refactored code
+* Initial commit for new(ish) autogrow implementation
 
 == 1.5.26 ==
 

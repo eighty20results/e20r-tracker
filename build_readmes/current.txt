@@ -1,3 +1,6 @@
-Fix: Would not load all required scripts for the daily_progress short code
-Fix: Handle default style (already included by Wordpress) dependencies
-Fix thickbox css load
+Make frame for progress container gray
+Refactored Controller for Articles
+Fix: Didn't show "Weekly Status Update" on pages/posts for days where status update was requested and not complete
+Fix: Order message notification, weekly status update, and other alerts to top of page/post
+Fix: Would sometimes change the existing article during access check. Refactored code
+Initial commit for new(ish) autogrow implementation

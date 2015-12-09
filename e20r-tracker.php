@@ -4,7 +4,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.5.26
+Version: 1.5.27
 Author: Wicked Strong Chicks, LLC <info@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 Text Domain: e20rtracker
