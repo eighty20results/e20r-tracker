@@ -1586,7 +1586,10 @@ class e20rTracker {
         global $e20rArticle;
         global $e20rProgram;
 
+        global $currentArticle;
+
         $retVal = false;
+        $saved = $currentArticle;
 
         dbg("e20rTracker::hasAccess() - Checking {$userId}'s access to {$postId}" );
 
@@ -1614,18 +1617,16 @@ class e20rTracker {
             dbg("e20rTracker::hasAccess() - No membership access function found for Paid Memberships Pro");
         }
 
-//        if ( $retVal ) {
+        $current_delay = $this->getDelay( 'now', $userId );
+        $found = false;
 
-            $current_delay = $this->getDelay( 'now', $userId );
-            $found = false;
+        $programId = $e20rProgram->getProgramIdForUser( $userId );
 
-            $programId = $e20rProgram->getProgramIdForUser( $userId );
+        $articles = $e20rArticle->findArticles( 'post_id', $postId, $programId, $comp = '=' );
+        // dbg( $articles);
 
-            $articles = $e20rArticle->findArticles( 'post_id', $postId, $programId, $comp = '=' );
-            // dbg( $articles);
-
-            // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
-            if ( !empty( $articles ) ) {
+        // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+        if ( !empty( $articles ) ) {
 
 /*                $article = $articles[0];
 
@@ -1649,16 +1650,9 @@ class e20rTracker {
                 $retVal = false;
             }
 
-/*
-                foreach( $articles as $article ) {
+        }
 
-                    if ( $article->release_day <= $current_delay ) {
-                        $found = $article;
-                    }
-                }
-*/
-            }
-//        }
+        $currentArticle = $saved;
 
         dbg("e20rTracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
         return $retVal;
