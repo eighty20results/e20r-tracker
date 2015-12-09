@@ -2748,8 +2748,8 @@ div.e20r-message-content p {
         -moz-border-radius: 6px;
         -webkit-border-radius: 6px;
         line-height: 1;
-        background: rgba( 0, 76, 255, 0.95 );
-        border: 1px solid rgb( 0, 76, 255);
+        /* background: rgba( 0, 76, 255, 0.95 ); */
+        /* border: 1px solid rgb( 0, 76, 255); */
         padding: 14px;
         max-width: 700px;
         margin-left: auto;
