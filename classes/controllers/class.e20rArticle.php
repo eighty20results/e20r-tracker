@@ -26,40 +26,6 @@ class e20rArticle extends e20rSettings
         parent::__construct('article', 'e20r_articles', $this->model, $this->view);
     }
 
-    public function init($article_id = NULL)
-    {
-
-        global $currentArticle;
-
-        /*
-        if ( empty( $postId ) ) {
-
-
-        }
-        */
-        if ((isset($currentArticle->id) && ($currentArticle->id != $article_id)) || !isset($currentArticle->id)) {
-
-            $currentArticle = parent::init($article_id);
-            dbg("e20rArticle::init() - Loaded settings for article ({$article_id})");
-
-            $this->articleId = (!isset($currentArticle->id) ? false : $currentArticle->id);
-            dbg("e20rArticle::init() -  Loaded global currentArticle and set it for article ID {$this->articleId}");
-        } else {
-            dbg("e20rArticle::init() - No need to load settings (previously loaded): ");
-//		    dbg($currentArticle);
-        }
-
-        // dbg( $currentArticle );
-
-        if (($this->articleId !== false) && ($currentArticle->id != $article_id)) {
-
-            dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->id} & {$article_id}");
-            $this->articleId = false;
-        }
-
-        return $this->articleId;
-    }
-
     public function emptyArticle()
     {
 
@@ -71,12 +37,6 @@ class e20rArticle extends e20rSettings
 
         // findClosestArticle( $key, $value, $programId = -1, $comp = '<=', $limit = 1, $type = 'numeric', $sort_order = 'DESC' )
         return $this->model->findClosestArticle($key, $value, $programId, $comp, $limit, $sort_order, $type);
-    }
-
-    public function findArticles($key = 'id', $val = null, $programId = -1, $comp = '=', $dont_drop = false, $type = 'numeric')
-    {
-
-        return $this->model->find($key, $val, $programId, $comp, 'DESC', $dont_drop, $type );
     }
 
     public function getCheckins($aConfig)
@@ -100,74 +60,10 @@ class e20rArticle extends e20rSettings
         return $checkin_ids;
     }
 
-    public function releaseDate($articleId)
-    {
-
-        global $e20rTracker;
-        global $currentArticle;
-
-        if ((empty($articleId) || ($articleId == -1) || ($articleId == 0))) {
-
-            $delay = isset($_POST['e20r-checkin-day']) ? $e20rTracker->sanitize($_POST['e20r-checkin-day']) : null;
-
-            if (isset($delay)) {
-                dbg("e20rArticle::releaseDate() No articleId specified... Using delay value from _POST");
-                $release_date = $e20rTracker->getDateForPost($delay);
-
-                return $release_date;
-            }
-            dbg("e20rArticle::releaseDate() No articleId specified and no delay value found... returning FALSE");
-            return false;
-        }
-
-        if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
-            dbg("e20rArticle::releaseDate() - currentArticle is NOT defined.");
-            $release_date = $e20rTracker->getDateForPost($this->model->getSetting($articleId, 'release_day'));
-        } else {
-            dbg("e20rArticle::releaseDate() - currentArticle is defined.");
-            $release_date = $e20rTracker->getDateForPost($currentArticle->release_day);
-        }
-
-        dbg("e20rArticle::releaseDate: {$release_date}");
-
-        return (empty($release_date) ? false : $release_date);
-    }
-
     public function releaseDay($articleId)
     {
 
         return $this->model->getSetting($articleId, 'release_day');
-    }
-
-    public function isMeasurementDay($articleId = null)
-    {
-
-        global $currentArticle;
-
-        if (is_null($articleId)) {
-
-            $articleId = $currentArticle->id;
-        }
-
-        return ($this->model->getSetting($articleId, 'measurement_day') == 0 ? false : true);
-
-    }
-
-    public function isPhotoDay($articleId)
-    {
-
-        dbg("e20rArticle::isPhotoDay() - getting photo_day setting for {$articleId}");
-
-        $setting = $this->model->getSetting($articleId, 'photo_day');
-        dbg("e20rArticle::isPhotoDay() - Is ({$articleId}) on a photo day ({$setting})? " . ($setting == 0 ? 'No' : 'Yes'));
-
-        if (empty($setting)) {
-            dbg("e20rArticle::isPhotoDay() - photo_day setting ID empty/null.");
-            return false;
-        } else {
-            return ($setting != 0 ? true : false);
-        }
-        // return ( is_null( $retVal ) ? false : true );
     }
 
     public function isSurvey($id)
@@ -206,6 +102,23 @@ class e20rArticle extends e20rSettings
         return null;
     }
 
+    public function getSettings($articleId)
+    {
+
+        global $currentArticle;
+
+        // $article = $this->model->getSettings();
+
+        if ($currentArticle->id == $articleId) {
+            return $currentArticle->id;
+        } else {
+            $this->model->loadSettings($articleId);
+            return $currentArticle;
+        }
+
+        return false;
+    }
+
     public function getPostUrl($articleId)
     {
 
@@ -242,89 +155,8 @@ class e20rArticle extends e20rSettings
         return false;
     }
 
-    /**
-     * Use the articleId to locate the
-     * @param $articleId - The ID of the article containing the workout/activity for this lesson.
-     *
-     * @returns int - The post ID for the activity/workout.
-     */
-    public function getActivity($articleId, $userId = null)
+    public function article_archive_shortcode($attr = null)
     {
-
-        global $e20rArticle;
-        global $e20rWorkout;
-        global $e20rTracker;
-
-        $postId = null;
-
-        // $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
-
-        $aIds = $this->model->getSetting($articleId, 'activity_id');
-
-        // No activity defined
-        if (empty($aIds) || (!is_array($aIds) && (false == $aIds))) {
-
-            dbg("e20rArticle::getActivity() - No defined activity for this article ({$articleId})");
-            return false;
-        }
-
-        $delay = $this->model->getSetting($articleId, 'release_day');
-
-        $mGroupId = $e20rTracker->getGroupIdForUser($userId);
-        $activities = $e20rWorkout->find('id', $aIds, -1, 'IN');
-
-        $post_date = $e20rTracker->getDateForPost($delay, $userId);
-
-        dbg("e20rArticle::getActvitiy() - Date for post with delay {$delay} for user {$userId}: {$post_date}");
-
-        $art_day_no = date('N', strtotime($post_date));
-        dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
-//         dbg($activities);
-
-        // Loop through all the defined activities for the $articleId
-        foreach ($activities as $a) {
-
-            dbg("e20rArticle::getActivity() - On day # {$delay} for article {$articleId} processing activity {$a->id}: {$art_day_no}");
-            // dbg($a->days);
-
-            if (in_array($art_day_no, $a->days)) {
-
-                // The delay value for the $articleId releases the $articleId on one of the $activity days.
-                dbg("e20rArticle::getActivity() - ID for an activity allowed on {$art_day_no}: {$a->id}");
-                // $activity = $e20rWorkout->getActivity( $a->id );
-
-                $has_access = array();
-
-                $access_map = new stdClass();
-                $access_map->user = array();
-                $access_map->group = array();
-
-                dbg("e20rArticle::getActivity() - Testing if {$userId} is in group or user list for activity #{$a->id}");
-
-                $has_access = $e20rTracker->allowedActivityAccess($a, $userId, $mGroupId);
-                $access_map->user[$a->id] = $has_access['user'];
-                $access_map->group[$a->id] = $has_access['group'];
-
-                $postId = array_search(true, $access_map->user);
-
-                if ($postId) {
-                    dbg("e20rArticle::getActivity() - Found an activity ({$postId}) that is assigned to the specific user ({$userId})");
-                    return $postId;
-                }
-
-                $postId = array_search(true, $access_map->group);
-
-                if (!empty($postId)) {
-                    dbg("e20rArticle::getActivity() - Found an activity ({$postId}) that is assigned to the group ({$mGroupId}) that the user ({$userId}) is in");
-                    return $postId;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public function article_archive_shortcode( $attr = null ) {
 
 
         global $e20rClient;
@@ -332,52 +164,52 @@ class e20rArticle extends e20rSettings
         global $current_user;
 
         $e20rClient->setClient($current_user->ID);
-        $articles = $this->get_article_archive( $currentClient->user_id );
+        $articles = $this->get_article_archive($currentClient->user_id);
 
-        foreach ( $articles as $article ) {
+        foreach ($articles as $article) {
 
-            $cards = $this->get_card_info( $article, $currentClient->user_id );
+            $cards = $this->get_card_info($article, $currentClient->user_id);
             dbg("e20rArticle::article_archive_shortcode() - Received " . count($cards) . " cards for day # {$article->release_day}");
         }
 
         dbg($cards);
     }
 
-    private function get_summary( WP_Post $post, WP_Post $article ) {
+    public function get_article_archive($user_id = null)
+    {
 
-        $excerpt = __("No information found", "e20rtracker");
+        global $e20rProgram;
+        global $currentProgram;
 
-        $article_has_excerpt = ( empty( $article->post_excerpt ) ? false : true );
-        $article_has_content = ( empty( $article->post_content ) ? false : true );
-        $post_has_excerpt = ( empty( $post->post_excerpt ) ? false : true);
-        $post_has_content = ( empty( $post->post_content ) ? false : true );
+        if (is_null($user_id)) {
 
-        if (( false === $article_has_content ) && ( false === $article_has_excerpt )) {
+            global $currentClient;
+            global $current_user;
 
-            if ( true === $post_has_excerpt ) {
-                $excerpt = $post->post_excerpt;
+            if (!isset($currentClient->user_id)) {
+
+                global $e20rClient;
+                $user_id = $e20rClient->setClient($current_user->ID);
+                $e20rClient->init();
+
+            } else {
+                $user_id = $currentClient->user_id;
             }
-
-            if ( ( false === $post_has_excerpt ) && ( true == $post_has_content) ) {
-                $excerpt = wp_trim_words($post->post_excerpt, 20, " [...]");
-            }
         }
 
-        if ( true === $article_has_excerpt ) {
-            $excerpt = $article->post_excerpt;
-        }
+        dbg("e20rArticle::get_article_archive() - Loading article archive for user {$user_id}");
 
-        if ( (false === $article_has_excerpt) && (true === $article_has_content)) {
-            $excerpt = wp_trim_words( $article->post_content, 20, " [...]");
-        }
+        $program_id = $e20rProgram->getProgramIdForUser($user_id);
 
-        return $excerpt;
-    }
+        // The archive goes up to (but doesn't include) the current day.
+        $up_to = ($currentProgram->active_delay - 1);
 
-    public function get_feedback( $article, $type ) {
+        $archive = $this->model->load_for_archive($up_to);
 
-        // TODO: Implement get_feedback() for cards.
-        return null;
+        dbg("e20rArticle::get_article_archive() - Returned " . count($archive) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->active_delay}");
+        return $archive;
+
+        // $e20rTracker->get_closest_release_day( $array, $day );
     }
 
     public function get_card_info($article, $userId = null, $type = 'action')
@@ -408,13 +240,13 @@ class e20rArticle extends e20rSettings
         $lesson = new stdClass();
 
         // Generate the post (lesson/reminder/text) card
-        if ( isset( $article->post_id) && ( !empty( $article->post_id) ) ) {
+        if (isset($article->post_id) && (!empty($article->post_id))) {
 
-            if (!is_array( $article->post_id)) {
-                $article->post_id = array( $article->post_id );
+            if (!is_array($article->post_id)) {
+                $article->post_id = array($article->post_id);
             }
 
-            foreach( $article->post_id as $post_id ) {
+            foreach ($article->post_id as $post_id) {
 
                 $p = get_post($post_id);
                 $a = get_post($article->id);
@@ -430,18 +262,17 @@ class e20rArticle extends e20rSettings
         }
 
 
+        if (isset($article->activity_id) && (!empty($article->activity_id))) {
 
-        if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
+            if (!is_array($article->activity_id)) {
 
-            if ( !is_array( $article->activity_id)) {
-
-                $article->activity_id = array( $article->activity_id );
+                $article->activity_id = array($article->activity_id);
             }
 
-            foreach ( $article->activity_id as $activity_id) {
+            foreach ($article->activity_id as $activity_id) {
 
 
-                $activity = $e20rWorkout->load_user_activity( $activity_id, $userId );
+                $activity = $e20rWorkout->load_user_activity($activity_id, $userId);
                 $activity->saved =
                 $activities[] = $activity;
             }
@@ -450,19 +281,18 @@ class e20rArticle extends e20rSettings
         }
 
 
-
-        if ( isset( $article->action_ids ) && ( !empty( $article->action_ids ) ) ) {
+        if (isset($article->action_ids) && (!empty($article->action_ids))) {
 
             global $e20rAction;
 
-            if (!is_array( $article->action_ids)) {
-                $article->action_ids = array( $article->action_ids);
+            if (!is_array($article->action_ids)) {
+                $article->action_ids = array($article->action_ids);
             }
 
-            foreach( $article->action_ids as $action_id ) {
+            foreach ($article->action_ids as $action_id) {
 
-                $action = $e20rAction->find('id', $action_id, $currentProgram->id );
-                dbg("e20rArticle::get_card_info() - Found " . count( $action ) . " action(s) for article {$article->id}");
+                $action = $e20rAction->find('id', $action_id, $currentProgram->id);
+                dbg("e20rArticle::get_card_info() - Found " . count($action) . " action(s) for article {$article->id}");
 
                 // $action = new stdClass();
                 // $action->title = "Some title";
@@ -478,57 +308,94 @@ class e20rArticle extends e20rSettings
         return $cards;
     }
 
-    public function get_cards_for_day( $article, $user_id = null ) {
+    private function get_summary(WP_Post $post, WP_Post $article)
+    {
+
+        $excerpt = __("No information found", "e20rtracker");
+
+        $article_has_excerpt = (empty($article->post_excerpt) ? false : true);
+        $article_has_content = (empty($article->post_content) ? false : true);
+        $post_has_excerpt = (empty($post->post_excerpt) ? false : true);
+        $post_has_content = (empty($post->post_content) ? false : true);
+
+        if ((false === $article_has_content) && (false === $article_has_excerpt)) {
+
+            if (true === $post_has_excerpt) {
+                $excerpt = $post->post_excerpt;
+            }
+
+            if ((false === $post_has_excerpt) && (true == $post_has_content)) {
+                $excerpt = wp_trim_words($post->post_excerpt, 20, " [...]");
+            }
+        }
+
+        if (true === $article_has_excerpt) {
+            $excerpt = $article->post_excerpt;
+        }
+
+        if ((false === $article_has_excerpt) && (true === $article_has_content)) {
+            $excerpt = wp_trim_words($article->post_content, 20, " [...]");
+        }
+
+        return $excerpt;
+    }
+
+    public function get_feedback($article, $type)
+    {
+
+        // TODO: Implement get_feedback() for cards.
+        return null;
+    }
+
+    public function get_cards_for_day($article, $user_id = null)
+    {
 
         global $currentArticle;
 
-        if ( !isset( $article->activity_id ) ) {
-            $this->init( $article->article_id);
+        if (!isset($article->activity_id)) {
+            $this->init($article->article_id);
         }
 
-        if ( isset( $article->article_id ) && ( $currentArticle->id != $article->article_id ) ){
+        if (isset($article->article_id) && ($currentArticle->id != $article->article_id)) {
 
-            $this->init( $article->article_id );
+            $this->init($article->article_id);
         }
 
 
     }
 
-    public function get_article_archive($user_id = null )
+    public function init($article_id = NULL)
     {
 
-        global $e20rProgram;
-        global $currentProgram;
+        global $currentArticle;
 
-        if (is_null($user_id)) {
+        /*
+        if ( empty( $postId ) ) {
 
-            global $currentClient;
-            global $current_user;
 
-            if (!isset($currentClient->user_id)) {
+        }
+        */
+        if ((isset($currentArticle->id) && ($currentArticle->id != $article_id)) || !isset($currentArticle->id)) {
 
-                global $e20rClient;
-                $user_id = $e20rClient->setClient( $current_user->ID );
-                $e20rClient->init();
+            $currentArticle = parent::init($article_id);
+            dbg("e20rArticle::init() - Loaded settings for article ({$article_id})");
 
-            } else {
-                $user_id = $currentClient->user_id;
-            }
+            $this->articleId = (!isset($currentArticle->id) ? false : $currentArticle->id);
+            dbg("e20rArticle::init() -  Loaded global currentArticle and set it for article ID {$this->articleId}");
+        } else {
+            dbg("e20rArticle::init() - No need to load settings (previously loaded): ");
+//		    dbg($currentArticle);
         }
 
-        dbg("e20rArticle::get_article_archive() - Loading article archive for user {$user_id}");
+        // dbg( $currentArticle );
 
-        $program_id = $e20rProgram->getProgramIdForUser( $user_id );
+        if (($this->articleId !== false) && ($currentArticle->id != $article_id)) {
 
-        // The archive goes up to (but doesn't include) the current day.
-        $up_to = ( $currentProgram->active_delay - 1);
+            dbg("e20rArticle::init() - No article defined for this postId: {$currentArticle->id} & {$article_id}");
+            $this->articleId = false;
+        }
 
-        $archive = $this->model->load_for_archive( $up_to );
-
-        dbg("e20rArticle::get_article_archive() - Returned " . count($archive) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->active_delay}");
-        return $archive;
-
-        // $e20rTracker->get_closest_release_day( $array, $day );
+        return $this->articleId;
     }
 
     public function getExcerpt($articleId, $userId = null, $type = 'action', $in_card = false)
@@ -688,6 +555,88 @@ class e20rArticle extends e20rSettings
         return $html;
     }
 
+    /**
+     * Use the articleId to locate the
+     * @param $articleId - The ID of the article containing the workout/activity for this lesson.
+     *
+     * @returns int - The post ID for the activity/workout.
+     */
+    public function getActivity($articleId, $userId = null)
+    {
+
+        global $e20rArticle;
+        global $e20rWorkout;
+        global $e20rTracker;
+
+        $postId = null;
+
+        // $excerpt = __( "We haven't found an activity for this day", "e20rtracker" );
+
+        $aIds = $this->model->getSetting($articleId, 'activity_id');
+
+        // No activity defined
+        if (empty($aIds) || (!is_array($aIds) && (false == $aIds))) {
+
+            dbg("e20rArticle::getActivity() - No defined activity for this article ({$articleId})");
+            return false;
+        }
+
+        $delay = $this->model->getSetting($articleId, 'release_day');
+
+        $mGroupId = $e20rTracker->getGroupIdForUser($userId);
+        $activities = $e20rWorkout->find('id', $aIds, -1, 'IN');
+
+        $post_date = $e20rTracker->getDateForPost($delay, $userId);
+
+        dbg("e20rArticle::getActvitiy() - Date for post with delay {$delay} for user {$userId}: {$post_date}");
+
+        $art_day_no = date('N', strtotime($post_date));
+        dbg("e20rArticle::getActivity() - For article #{$articleId}, delay: {$delay}, on day: {$art_day_no}.");
+//         dbg($activities);
+
+        // Loop through all the defined activities for the $articleId
+        foreach ($activities as $a) {
+
+            dbg("e20rArticle::getActivity() - On day # {$delay} for article {$articleId} processing activity {$a->id}: {$art_day_no}");
+            // dbg($a->days);
+
+            if (in_array($art_day_no, $a->days)) {
+
+                // The delay value for the $articleId releases the $articleId on one of the $activity days.
+                dbg("e20rArticle::getActivity() - ID for an activity allowed on {$art_day_no}: {$a->id}");
+                // $activity = $e20rWorkout->getActivity( $a->id );
+
+                $has_access = array();
+
+                $access_map = new stdClass();
+                $access_map->user = array();
+                $access_map->group = array();
+
+                dbg("e20rArticle::getActivity() - Testing if {$userId} is in group or user list for activity #{$a->id}");
+
+                $has_access = $e20rTracker->allowedActivityAccess($a, $userId, $mGroupId);
+                $access_map->user[$a->id] = $has_access['user'];
+                $access_map->group[$a->id] = $has_access['group'];
+
+                $postId = array_search(true, $access_map->user);
+
+                if ($postId) {
+                    dbg("e20rArticle::getActivity() - Found an activity ({$postId}) that is assigned to the specific user ({$userId})");
+                    return $postId;
+                }
+
+                $postId = array_search(true, $access_map->group);
+
+                if (!empty($postId)) {
+                    dbg("e20rArticle::getActivity() - Found an activity ({$postId}) that is assigned to the group ({$mGroupId}) that the user ({$userId}) is in");
+                    return $postId;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function getAssignments($articleId, $userId = null)
     {
 
@@ -727,23 +676,6 @@ class e20rArticle extends e20rSettings
         ksort($assignment_ids);
 
         return $assignment_ids;
-    }
-
-    public function getSettings($articleId)
-    {
-
-        global $currentArticle;
-
-        // $article = $this->model->getSettings();
-
-        if ($currentArticle->id == $articleId) {
-            return $currentArticle->id;
-        } else {
-            $this->model->loadSettings($articleId);
-            return $currentArticle;
-        }
-
-        return false;
     }
 
     public function remove_assignment_callback()
@@ -979,35 +911,6 @@ class e20rArticle extends e20rSettings
         // wp_send_json_error( "No assignments found for this article!" );
     }
 
-    public function getDelayValue_callback()
-    {
-
-        global $e20rTracker;
-
-        dbg("e20rArticle::getDelayValue() - Callback initiated");
-
-        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-article-settings-nonce');
-
-        dbg("e20rArticle::getDelayValue() - Nonce is OK");
-
-        $postId = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : null;
-
-        if (!$postId) {
-            wp_send_json_error('Error: Not a valid Post/Page');
-        }
-
-        $dripFeedDelay = $e20rTracker->getDripFeedDelay($postId);
-
-        if ($dripFeedDelay) {
-            wp_send_json_success(array(
-                'delay' => $dripFeedDelay,
-                'nodelay' => false
-            ));
-        }
-
-        wp_send_json_success(array('nodelay' => true));
-    }
-
     /**
      * Save the Article Settings to the metadata table.
      *
@@ -1158,6 +1061,35 @@ class e20rArticle extends e20rSettings
 
     }
 
+    public function getDelayValue_callback()
+    {
+
+        global $e20rTracker;
+
+        dbg("e20rArticle::getDelayValue() - Callback initiated");
+
+        check_ajax_referer('e20r-tracker-data', 'e20r-tracker-article-settings-nonce');
+
+        dbg("e20rArticle::getDelayValue() - Nonce is OK");
+
+        $postId = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : null;
+
+        if (!$postId) {
+            wp_send_json_error('Error: Not a valid Post/Page');
+        }
+
+        $dripFeedDelay = $e20rTracker->getDripFeedDelay($postId);
+
+        if ($dripFeedDelay) {
+            wp_send_json_success(array(
+                'delay' => $dripFeedDelay,
+                'nodelay' => false
+            ));
+        }
+
+        wp_send_json_success(array('nodelay' => true));
+    }
+
     public function editor_metabox_setup($post)
     {
 
@@ -1238,6 +1170,9 @@ class e20rArticle extends e20rSettings
      */
     public function contentFilter($content)
     {
+        $new_messages = null;
+        $md_alert = null;
+        $update_reminder = null;
 
         if (!is_user_logged_in()) {
             return $content;
@@ -1288,6 +1223,12 @@ class e20rArticle extends e20rSettings
         $for_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
         $program_id = isset($_REQUEST['program-id']) ? $e20rTracker->sanitize($_REQUEST['program-id']) : null;
 
+        if (is_null($for_date)) {
+            $for_date = $e20rTracker->sanitize(get_query_var('article_date', null));
+            dbg("e20rArticle::contentFilter() - Loaded date for article: {$for_date}");
+
+        }
+
         if (!is_null($program_id)) {
 
             $e20rProgram->setProgram($program_id);
@@ -1322,7 +1263,6 @@ class e20rArticle extends e20rSettings
             }
         }
 
-        dbg("e20rArticle::contentFilter() - Check whether this user should have access to the dashboard page for their program (yet!)");
         $program_pages = array();
 
         $pgm_pages = array(
@@ -1352,6 +1292,8 @@ class e20rArticle extends e20rSettings
 
         if ((!empty($currentProgram->dashboard_page_id) && in_array($post->ID, $program_pages))) {
 
+            dbg("e20rArticle::contentFilter() - Check whether this user should have access to the dashboard page for their program (yet!)");
+
             if (function_exists('pmpro_getMemberStartdate')) {
 
                 $user_startdate = date_i18n('Y-m-d', pmpro_getMemberStartdate($current_user->ID));
@@ -1371,25 +1313,30 @@ class e20rArticle extends e20rSettings
         dbg("e20rArticle::contentFilter() - loading article settings for post ID {$post->ID} and article id: " . (is_null($article_id) ? 'null' : $article_id));
         $articles = array();
 
-        if (is_null($article_id)) {
+        if (!is_null($article_id)) {
 
-            $articles = $this->findArticles('post_id', $post->ID);
+            $articles = $this->find('id', $article_id, $currentProgram->id);
         }
 
-        if (empty($articles) && (is_null($article_id))) {
+        if (empty($articles) && is_null($article_id) && !empty($for_date)) {
 
-            dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
-            return $content;
+            dbg("e20rArticle::contentFilter() - Searching for article based on date argument passed by calling entity/page: {$for_date}");
+            $delayVal = $e20rTracker->getDelay($for_date, $current_user->ID);
+            $articles = $this->findArticles('release_day', $delayVal, $currentProgram->id);
+            dbg("e20rArticle::contentFilter() - Found: ");
+            dbg($articles);
         }
 
-        if (!$e20rTracker->hasAccess($current_user->ID, $post->ID)) {
+        if (empty($articles) && is_null($article_id) && is_null($for_date)) {
 
-            dbg("e20rArticle::contentFilter() - User doesn't have access to this post/page. Exiting the filter.");
-            return $content;
+            dbg("e20rArticle::contentFilter() - Searching for article based on the ID of the current post: {$post->ID}");
+            $articles = $this->findArticles('post_id', $post->ID, $currentProgram->id);
         }
 
-        if (is_null($article_id)) {
+        if (empty($articles) && is_null($article_id) && is_null($for_date)) {
+
             $dayNo = $e20rTracker->getDelay('now', $current_user->ID);
+            dbg("e20rArticle::contentFilter() - Searching for article based on the current delay value: {$dayNo}");
 
             foreach ($articles as $article) {
 
@@ -1402,28 +1349,43 @@ class e20rArticle extends e20rSettings
                     }
                 }
             }
-        } else {
-            $articles = $this->find('id', $article_id, $currentProgram->id);
-
-            if (!empty($articles)) {
-
-                $article = array_pop($articles);
-                $this->init($article->id);
-            }
         }
 
+
+        if (empty($articles)) {
+
+            dbg("e20rArticle::contentFilter() - No article defined for this content. Exiting the filter.");
+            return $content;
+
+        } else {
+
+            dbg("e20rArticle::contentFilter() - Found article(s). Using first in list returned by search.");
+            $article = array_pop($articles);
+            $this->init($article->id);
+        }
+
+
+        if (!$e20rTracker->hasAccess($current_user->ID, $currentArticle->post_id)) {
+
+            dbg("e20rArticle::contentFilter() - User doesn't have access to this post/page. Exiting the filter.");
+            return $content;
+        }
+
+        dbg("e20rArticle::contentFilter() - Restoring article: {$article->id} as the current article after access check");
+
+        dbg("e20rArticle::contentFilter() - User HAS access to post/page: {$post->ID}.");
         $measured = false;
 
-        // $rDay = $this->model->getSetting( $this->articleId, 'release_day' );
         $rDay = $currentArticle->release_day;
         $rDate = $this->releaseDate($currentArticle->id);
-        // $rDate = $currentArticle->release_date;
-        //$programId = $e20rProgram->getProgramIdForUser( $current_user->ID );
+
         $programId = $currentProgram->id;
 
         dbg("e20rArticle::contentFilter() - Release Date for article: {$rDate} calculated from {$rDay}");
 
         $md = $this->isMeasurementDay($currentArticle->id);
+
+        $info = '';
 
         // && ( !$md )
         if ($e20rAction->hasCompletedLesson($currentArticle->id, $post->ID, $current_user->ID)) {
@@ -1433,8 +1395,13 @@ class e20rArticle extends e20rSettings
             $currentArticle->complete = true;
         }
 
-        $data = $this->view->viewLessonComplete($rDay, false, $currentArticle->id);
+        $lesson_complete = $this->view->viewLessonComplete($rDay, false, $currentArticle->id);
         // $content = $data . $content;
+
+        if ($currentArticle->post_id == $post->ID) {
+
+            $new_messages = $this->view->new_message_warning();
+        }
 
         if ($md) {
 
@@ -1448,15 +1415,13 @@ class e20rArticle extends e20rSettings
             if ($md && !$measured['status']) {
 
                 dbg("e20rArticle::contentFilter() - It's a measurement day!");
-                $data = $this->view->viewMeasurementAlert($this->isPhotoDay($currentArticle->id), $rDay, $currentArticle->id);
-                // $content = $data . $content;
+                $md_alert = $this->view->viewMeasurementAlert($this->isPhotoDay($currentArticle->id), $rDay, $currentArticle->id);
             }
 
             if ($md && $measured['status']) {
 
                 dbg("e20rArticle::contentFilter() - Measurement day, and we've measured.");
-                $data = $this->view->viewMeasurementComplete($rDay, $md, $currentArticle->id);
-                // $content = $data . $content;
+                $md_alert = $this->view->viewMeasurementComplete($rDay, $md, $currentArticle->id);
             }
         }
 
@@ -1465,17 +1430,95 @@ class e20rArticle extends e20rSettings
             dbg("e20rArticle::contentFilter() - User is viewing the Welcome interview page & their interview is saved already");
             $interview_title = get_the_title($currentProgram->intake_form);
             $update_reminder = $this->view->viewInterviewComplete($interview_title, $is_complete);
-
-            $content = $update_reminder . $content;
-        }
-
-        if ( has_shortcode($content, 'daily_progress') ) {
-
-            $content = $this->view->new_message_warning() . $content;
         }
 
         dbg("e20rArticle::contentFilter() - Content being returned.");
-        return (is_null($data) ? $content : $data . $content);
+        // Construct content based on available data.
+
+        if (!empty( $new_messages ) ) {
+
+            $info .= $new_messages;
+        }
+
+        if ( !empty( $update_reminder ) ) {
+            $info .= $update_reminder;
+        }
+
+        if ( !empty( $md_alert ) ) {
+            $info .= $md_alert;
+        }
+
+        return $info . $content;
+    }
+
+    public function findArticles($key = 'id', $val = null, $programId = -1, $comp = '=', $dont_drop = false, $type = 'numeric')
+    {
+
+        return $this->model->find($key, $val, $programId, $comp, 'DESC', $dont_drop, $type);
+    }
+
+    public function releaseDate($articleId)
+    {
+
+        global $e20rTracker;
+        global $currentArticle;
+
+        if ((empty($articleId) || ($articleId == -1) || ($articleId == 0))) {
+
+            $delay = isset($_POST['e20r-checkin-day']) ? $e20rTracker->sanitize($_POST['e20r-checkin-day']) : null;
+
+            if (isset($delay)) {
+                dbg("e20rArticle::releaseDate() No articleId specified... Using delay value from _POST");
+                $release_date = $e20rTracker->getDateForPost($delay);
+
+                return $release_date;
+            }
+            dbg("e20rArticle::releaseDate() No articleId specified and no delay value found... returning FALSE");
+            return false;
+        }
+
+        if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
+            dbg("e20rArticle::releaseDate() - currentArticle is NOT defined.");
+            $release_date = $e20rTracker->getDateForPost($this->model->getSetting($articleId, 'release_day'));
+        } else {
+            dbg("e20rArticle::releaseDate() - currentArticle is defined.");
+            $release_date = $e20rTracker->getDateForPost($currentArticle->release_day);
+        }
+
+        dbg("e20rArticle::releaseDate: {$release_date}");
+
+        return (empty($release_date) ? false : $release_date);
+    }
+
+    public function isMeasurementDay($articleId = null)
+    {
+
+        global $currentArticle;
+
+        if (is_null($articleId)) {
+
+            $articleId = $currentArticle->id;
+        }
+
+        return ($this->model->getSetting($articleId, 'measurement_day') == 0 ? false : true);
+
+    }
+
+    public function isPhotoDay($articleId)
+    {
+
+        dbg("e20rArticle::isPhotoDay() - getting photo_day setting for {$articleId}");
+
+        $setting = $this->model->getSetting($articleId, 'photo_day');
+        dbg("e20rArticle::isPhotoDay() - Is ({$articleId}) on a photo day ({$setting})? " . ($setting == 0 ? 'No' : 'Yes'));
+
+        if (empty($setting)) {
+            dbg("e20rArticle::isPhotoDay() - photo_day setting ID empty/null.");
+            return false;
+        } else {
+            return ($setting != 0 ? true : false);
+        }
+        // return ( is_null( $retVal ) ? false : true );
     }
 
     public function load_lesson($article_id = null, $reading_time = true)
