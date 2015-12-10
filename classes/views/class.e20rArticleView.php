@@ -176,6 +176,8 @@ class e20rArticleView extends e20rSettingsView {
         global $e20rTracker;
         global $currentProgram;
 
+        $html = null;
+
         if ( !empty( $currentProgram->measurements_page_id ) ) {
 
             ob_start();
@@ -209,8 +211,8 @@ class e20rArticleView extends e20rSettingsView {
             </div>
             <br/>
             <?php
+            $html = ob_get_clean();
         }
-        $html = ob_get_clean();
 
         return $html;
     }
