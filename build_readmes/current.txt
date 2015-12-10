@@ -1,8 +1,4 @@
-Fix: Simplified test for whether to run content filter
-Fix: Didn't include "lesson complete" info in post/page on load.
-Fix: Reordered message banners
-Fix: Make constructor PHP 5 compliant (and ready for PHP 7)
-Fix: Wouldn't always handle buffering correctly for measurement alerts
-Fix: Didn't always display the expected activity for the day the user had navigated to
-Refactor: Clean up comments and removed code
-Refactor: e20rArticleView class
+Fix: Wouldn't update/save activity check-in consistently
+Add error correction for assignment_id value(s)
+Refactor link for excerpts
+Remove unused debug output.
