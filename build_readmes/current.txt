@@ -1,4 +1,4 @@
-Fix: Wouldn't update/save activity check-in consistently
-Add error correction for assignment_id value(s)
-Refactor link for excerpts
-Remove unused debug output.
+Fix: Reformat nav bar on dashboard
+Fix: Use 3 character day name in nav labels
+Enh: Add "current day" label in navigation box for dashboard
+Refactor: e20rAction class & remove old code
