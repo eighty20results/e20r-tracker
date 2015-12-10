@@ -474,7 +474,7 @@ class e20rArticle extends e20rSettings
                     }
                     */
 
-                    $activityField = '<input type="hidden" id="e20r-checkin-activity_id" value="' . $postId . '" name="e20r-checkin-activity_id">';
+                    $activityField = '<input type="hidden" id="e20r-action-activity_id" value="' . $postId . '" name="e20r-action-activity_id">';
                     $prefix = null; // Using NULL prefix for activities
                     dbg("e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}");
                 }
