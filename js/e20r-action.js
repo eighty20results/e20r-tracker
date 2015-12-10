@@ -176,10 +176,6 @@ jQuery(document).ready(function () {
         },
         saveCheckin: function (elem, $a, self) {
 
-//            console.log("Element is: ", elem );
-
-//            console.log("Type: ", jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_type:first') );
-
             // $body.addClass("loading");
 
             var $data = {
