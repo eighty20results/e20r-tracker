@@ -1174,17 +1174,14 @@ class e20rArticle extends e20rSettings
         $md_alert = null;
         $update_reminder = null;
 
-        if (!is_user_logged_in()) {
-            return $content;
-        }
-
         dbg("e20rArticle::contentFilter() - Processing the_content() filter");
 
         // Quit if this isn't a single-post display and we're not in the main query of wordpress.
-        if (!is_singular() && !is_main_query()) {
+        if (!is_singular() && !is_main_query() || !is_user_logged_in() ) {
             return $content;
         }
 
+        dbg("e20rArticle::contentFilter() - Processing a single page and we're in the main query");
         /*
 	    if ( has_shortcode( $content, 'weekly_progress') ||
             has_shortcode( $content, 'progress_overview' ) ||
@@ -1199,8 +1196,7 @@ class e20rArticle extends e20rSettings
             has_shortcode($content, 'e20r_activity_archive')
         ) {
             // Process in shortcode actions
-            $content = $this->view->new_message_warning() . $content;
-            return $content;
+            return $this->view->new_message_warning() . $content;
         }
 
         global $post;
@@ -1432,22 +1428,30 @@ class e20rArticle extends e20rSettings
             $update_reminder = $this->view->viewInterviewComplete($interview_title, $is_complete);
         }
 
-        dbg("e20rArticle::contentFilter() - Content being returned.");
         // Construct content based on available data.
 
-        if (!empty( $new_messages ) ) {
+        if ( !empty($lesson_complete)) {
 
-            $info .= $new_messages;
+            dbg("e20rArticle::contentFilter() - Adding lesson complete flag");
+            $info .= $lesson_complete;
         }
 
         if ( !empty( $update_reminder ) ) {
+            dbg("e20rArticle::contentFilter() - Adding update reminder for welcome interview");
             $info .= $update_reminder;
         }
 
+        if (!empty( $new_messages ) ) {
+            dbg("e20rArticle::contentFilter() - Adding new messages warning");
+            $info .= $new_messages;
+        }
+
         if ( !empty( $md_alert ) ) {
+            dbg("e20rArticle::contentFilter() - Adding Weekly Progress reminder");
             $info .= $md_alert;
         }
 
+        dbg("e20rArticle::contentFilter() - Content being returned.");
         return $info . $content;
     }
 
