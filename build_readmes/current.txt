@@ -1,4 +1,2 @@
-Select the correct name for the hidden activity ID input field
-Fix: Get the URL constant for the activity url to redirect to
-Rename the input field for the activity
-Fix: Would not show the correct unit type (seconds) when using AMRAP and time based sets
+Force redirect to use POST method for data.
+Add debug for POST on submit/click for daily workout/activity.
