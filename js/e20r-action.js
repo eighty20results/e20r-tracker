@@ -481,7 +481,7 @@ jQuery(document).ready(function () {
                 'activity-override': self.$allowActivityOverride
             };
 
-            jQuery.redirect(e20r_workout.activity_url, data);
+            jQuery.redirect(e20r_workout.activity_url, data, 'POST');
 
             /*
              jQuery.ajax({
