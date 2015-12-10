@@ -239,35 +239,6 @@ class e20rAction extends e20rSettings
         return false;
     }
 
-    /*
-    public function getCheckin( $shortName ) {
-
-        $chkinList = $this->model->loadAllSettings( 'any' );
-
-        foreach ($chkinList as $chkin ) {
-
-            if ( $chkin->short_name == $shortName ) {
-
-                unset($chkinList);
-                return $chkin;
-            }
-        }
-
-        unset($chkinList);
-        return false; // Returns false if the program isn't found.
-    }
-*/
-    /*
-    public function getAllCheckins() {
-
-        return $this->model->loadAllSettings();
-
-    }
-    public function getCheckinSettings( $id ) {
-
-        return $this->model->loadSettings( $id );
-    }
-*/
     private function count_actions($action_list, $type, $start_date, $end_date)
     {
 
@@ -763,6 +734,7 @@ class e20rAction extends e20rSettings
         $config->userId = $current_user->ID;
         $config->update_period = 'Today';
         $config->using_closest = false;
+        $config->today = null;
 
         if ( isset( $currentArticle->id) && ($post->ID == $currentArticle->post_id) ) {
             dbg("e20rAction::configure_dailyProgress() - Article data already loaded: {$currentArticle->post_id} vs {$post->ID}");
@@ -1109,10 +1081,10 @@ class e20rAction extends e20rSettings
         dbg("e20rAction::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");
 
         $t = $e20rTracker->getDateFromDelay(($config->next - 1));
-        $config->tomorrow = date_i18n('l M. jS', strtotime($t));
+        $config->tomorrow = date_i18n('D M. jS', strtotime($t));
 
         $y = $e20rTracker->getDateFromDelay(($config->prev - 1));
-        $config->yesterday = date_i18n('l M. jS', strtotime($y));
+        $config->yesterday = date_i18n('D M. jS', strtotime($y));
 
         if (!isset($config->userId)) {
 
