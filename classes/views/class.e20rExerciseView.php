@@ -11,7 +11,7 @@ class e20rExerciseView
 
     private $exercises = null;
 
-    public function e20rExerciseView($exerciseData = null)
+    public function __construct($exerciseData = null)
     {
 
         $this->exercises = $exerciseData;
