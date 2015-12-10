@@ -1,1 +1,4 @@
-Fix: Didn't show time designation when using AMRAP type exercises
+Select the correct name for the hidden activity ID input field
+Fix: Get the URL constant for the activity url to redirect to
+Rename the input field for the activity
+Fix: Would not show the correct unit type (seconds) when using AMRAP and time based sets

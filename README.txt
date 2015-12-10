@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.4
-Stable tag: 1.5.29
+Stable tag: 1.5.30
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,13 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.30 ==
+
+* Select the correct name for the hidden activity ID input field
+* Fix: Get the URL constant for the activity url to redirect to
+* Rename the input field for the activity
+* Fix: Would not show the correct unit type (seconds) when using AMRAP and time based sets
 
 == 1.5.29 ==
 
