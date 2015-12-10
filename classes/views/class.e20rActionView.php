@@ -392,7 +392,7 @@ class e20rActionView extends e20rSettingsView {
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
             <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo $config->delay; ?>">
             <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
-            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
+            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
             <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
             <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
             <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
@@ -489,7 +489,7 @@ class e20rActionView extends e20rSettingsView {
             <div id="e20r-daily-action-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-action-data', 'e20r-action-nonce'); ?>
                 <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
-	            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
+	            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
                 <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
 	            <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
