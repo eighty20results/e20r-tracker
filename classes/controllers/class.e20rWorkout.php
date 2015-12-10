@@ -896,19 +896,11 @@ class e20rWorkout extends e20rSettings
             $workoutData['error'] = 'No Activity found';
         }
 
-        ob_start();
-        ?>
+        ob_start(); ?>
         <div id="e20r-daily-activity-page">
-            <?php
-            //            if (isset($config->print_only) && (true === $config->print_only)) {
+            <?php echo $this->view->display_printable_activity($config, $workoutData); ?>
+        </div> <?php
 
-            echo $this->view->display_printable_activity($config, $workoutData);
-            //            } else {
-            //                echo $this->view->displayActivity($config, $workoutData);
-            //            }
-            ?>
-        </div>
-        <?php
         $html = ob_get_clean();
 
         return $html;
