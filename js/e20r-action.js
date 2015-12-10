@@ -469,6 +469,7 @@ jQuery(document).ready(function () {
         toActivity: function (self) {
 
             console.log("Clicked the 'Read more' link for the activity");
+            event.preventDefault();
 //            jQuery('body').addClass("loading");
 
             var data = {
@@ -476,11 +477,11 @@ jQuery(document).ready(function () {
                 'for-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
-                'activity-id': jQuery("#e20r-action-activity_id").val(),
+                'activity-id': jQuery("#e20r-activity-activity_id").val(),
                 'activity-override': self.$allowActivityOverride
             };
 
-            jQuery.redirect(e20r_action.activity_url, data);
+            jQuery.redirect(e20r_workout.activity_url, data);
 
             /*
              jQuery.ajax({
