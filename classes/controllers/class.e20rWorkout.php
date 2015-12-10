@@ -716,6 +716,7 @@ class e20rWorkout extends e20rSettings
         // $config->hide_input = ( $tmp['hide_input'] == 0 ? false : true );
 
         dbg($config);
+        dbg($_POST);
 
         $actId_from_dash = isset($_POST['activity-id']) ? array($e20rTracker->sanitize($_POST['activity-id'])) : array();
 
