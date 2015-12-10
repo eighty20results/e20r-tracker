@@ -705,20 +705,22 @@ class e20rWorkout extends e20rSettings
         global $currentProgram;
         global $currentArticle;
 
-        $activity_override = false;
-
         $config->userId = (!isset($config->userId) ? $current_user->ID : $config->userId);
         $config->programId = (!isset($currentProgram->id) ? $e20rProgram->getProgramIdForUser($config->userId) : $currentProgram->id);
         $config->startTS = strtotime($currentProgram->startdate);
         $config->userGroup = $e20rTracker->getGroupIdForUser($config->userId);
         $config->expanded = false;
+        $config->activity_override = false;
         $config->show_tracking = 1;
+        $config->dayNo = date_i18n('N', current_time('timestamp'));
+
         // $config->hide_input = ( $tmp['hide_input'] == 0 ? false : true );
 
         dbg($config);
         dbg($_POST);
 
-        $actId_from_dash = isset($_POST['activity-id']) ? array($e20rTracker->sanitize($_POST['activity-id'])) : array();
+        $actId_from_dash = isset($_POST['activity-id']) ? array( $e20rTracker->sanitize($_POST['activity-id']) ) : array();
+        $act_override = isset($_POST['activity-override']) ? $e20rTracker->sanitize($_POST['activity-override']) : false;
 
         // Make sure we won't load anything but the short code requested activity
         if (empty($config->activity_id)) {
@@ -727,34 +729,30 @@ class e20rWorkout extends e20rSettings
             // dbg($_POST);
 
             // Check whether we go called via the dashboard and an activity Id is given to us from there.
-            if (!empty($actId_from_dash)) {
+            if ( (empty($config->activity_id) && !empty($actId_from_dash)) ||
+                ( false !== $act_override  && !empty($actId_from_dash) ) )  {
 
-                $act_override = isset($_POST['activity-override']) ? $e20rTracker->sanitize($_POST['activity-override']) : false;
                 $articleId = isset($_POST['article-id']) ? $e20rTracker->sanitize($_POST['article-id']) : null;
                 $checkin_date = isset($_POST['for-date']) ? $e20rTracker->sanitize($_POST['for-date']) : null;
 
                 dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . (isset($config->activity_id) ? $config->activity_id : 'Not defined'));
-                dbg("e20rWorkout::prepare_activity() - Dashboard requested a specific activity ID:");
-                dbg($actId_from_dash);
+                dbg("e20rWorkout::prepare_activity() - Dashboard requested a specific activity ID: {$actId_from_dash}");
 
-                if ($act_override == true) {
+                $config->activity_override = true;
+                $config->activity_id = $actId_from_dash;
 
-                    $activity_override = true;
-                    $config->activity_id = $actId_from_dash;
+                if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
 
-                    if (!isset($currentArticle->id) || ($currentArticle->id != $articleId)) {
-
-                        dbg("e20rWorkout::prepare_activity() - Loading article with id {$articleId}");
-                        $e20rArticle->init($articleId);
-                    }
-
-                    $config->date = $checkin_date;
-                    $config->delay = $e20rTracker->getDelay($config->date, $config->userId);
-
-                    dbg("e20rWorkout::prepare_activity() - Overridden configuration: ");
-                    dbg($config);
+                    dbg("e20rWorkout::prepare_activity() - Loading article with id {$articleId}");
+                    $e20rArticle->init($articleId);
                 }
 
+                $config->date = $checkin_date;
+                $config->delay = $e20rTracker->getDelay($config->date, $config->userId);
+                $config->dayNo = date_i18n('N', strtotime( $config->date ) );
+
+                dbg("e20rWorkout::prepare_activity() - Overridden configuration: ");
+                dbg($config);
             }
         }
 
@@ -766,8 +764,6 @@ class e20rWorkout extends e20rSettings
             $config->date = $e20rTracker->getDateForPost($config->delay);
         }
 
-        $config->dayNo = date_i18n('N', current_time('timestamp'));
-
         // dbg( $config );
 
         dbg("e20rWorkout::prepare_activity() - Using delay: {$config->delay} which gives date: {$config->date} for program {$config->programId}");
@@ -776,7 +772,7 @@ class e20rWorkout extends e20rSettings
 
         if (!empty($config->activity_id)) {
 
-            dbg("e20rWorkout::prepare_activity() - Admin specified activity ID");
+            dbg("e20rWorkout::prepare_activity() - Admin specified activity ID. Using array of activity ids with " . count($config->activity_id) . " included activities");
             $articles = $e20rArticle->findArticles('activity_id', $config->activity_id, $config->programId, 'IN', true);
 
         } else {
@@ -805,6 +801,13 @@ class e20rWorkout extends e20rSettings
         // Process all articles we've found.
         foreach ($articles as $a_key => $article) {
 
+            if ( (true === $config->activity_override) && $config->delay != $article->release_day ) {
+                dbg("e20rWorkout::prepare_activity() - Skipping {$article->id} because its delay value is incorrect: {$config->delay} vs {$article->release_day}");
+                continue;
+            }
+
+            dbg("e20rWorkout::prepare_activity() - Processing article ID {$article->id}");
+
             // if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
 
             dbg("e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count($article->activity_id) : 0);
@@ -820,6 +823,13 @@ class e20rWorkout extends e20rSettings
 
                     dbg("e20rWorkout::prepare_activity() - The workout is not part of the same program as the user - {$config->programId}: ");
                     unset($workoutData[$k]);
+                }
+
+                if ( isset($config->dayNo) && !in_array( $config->dayNo, $workout->days )) {
+
+                    dbg("e20rWorkout::prepare_activity() - The specified day number ({$config->dayNo}) is not one where {$workout->id} is scheduled to be used. Today is: " . date('N'));
+                    unset($workoutData[$k]);
+                    unset($articles[$a_key]);
                 }
 
                 $has_access = array();
@@ -856,7 +866,7 @@ class e20rWorkout extends e20rSettings
                 dbg("e20rWorkout::prepare_activity() - Attempting to load user specific workout data for workoutData entry {$k}.");
                 $saved_data = $this->model->getRecordedActivity($config, $w->id);
 
-                if ((false == $activity_override) && isset($w->days) && (!empty($w->days)) && (!in_array($config->dayNo, $w->days))) {
+                if ((false == $config->activity_override) && isset($w->days) && (!empty($w->days)) && (!in_array($config->dayNo, $w->days))) {
 
                     dbg("e20rWorkout::prepare_activity() - day {$config->dayNo} on day {$config->delay} is wrong for this specific workout/activity #{$w->id}");
                     dbg($w->days);
@@ -1032,6 +1042,8 @@ class e20rWorkout extends e20rSettings
     {
 
         dbg("e20rWorkout::shortcode_activity() - Loading shortcode data for the activity.");
+
+        dbg($_REQUEST);
 
         if (!is_user_logged_in()) {
 

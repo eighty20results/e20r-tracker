@@ -41,7 +41,7 @@ jQuery(document).ready(function () {
             this.$progressNav = jQuery("#e20r-action-daynav");
             this.$tomorrowBtn = this.$progressNav.find("#e20r-action-tomorrow-lnk");
             this.$yesterdayBtn = this.$progressNav.find("#e20r-action-yesterday-lnk");
-            this.$activityLnk = jQuery(".e20r-action-activity").find("#e20r-activity-read-lnk");
+            this.$activityLnk = jQuery("div.e20r-action-activity").find("#e20r-activity-read-lnk");
             this.$actionLnk = jQuery(".e20r-action-lesson").find("#e20r-action-read-lnk");
             this.$allowActivityOverride = false;
             this.$cardSetting = jQuery('input[name="e20r-use-card-based-display"]').val();
@@ -54,8 +54,11 @@ jQuery(document).ready(function () {
 
             self.$tomorrowBtn = self.$header_tag.find("#e20r-action-daynav").find("#e20r-action-tomorrow-lnk");
             self.$yesterdayBtn = self.$header_tag.find("#e20r-action-daynav").find("#e20r-action-yesterday-lnk");
-            self.$activityLnk = self.$header_tag.find("td#e20r-action-activity").find("#e20r-activity-read-lnk");
-            self.$actionLnk = self.$header_tag.find("td#e20r-action-lesson").find("#e20r-action-read-lnk");
+            // self.$activityLnk = self.$header_tag.find("td#e20r-action-activity").find("#e20r-activity-read-lnk");
+            // self.$actionLnk = self.$header_tag.find("td#e20r-action-lesson").find("#e20r-action-read-lnk");
+
+            self.$activityLnk = self.$header_tag.find("#e20r-activity-read-lnk");
+            self.$actionLnk = self.$header_tag.find("#e20r-action-read-lnk");
 
             self.$header_tag.find('#e20r-daily-action-canvas fieldset.did-you input:radio').unbind('click').on('click', function () {
 
@@ -468,10 +471,10 @@ jQuery(document).ready(function () {
         },
         toActivity: function (self) {
 
-            console.log("Clicked the 'Read more' link for the activity");
-            event.preventDefault();
+            console.log("Processing the 'Read more' link for the activity");
 //            jQuery('body').addClass("loading");
 
+            var $url;
             var data = {
                 'e20r-action-nonce': self.$nonce,
                 'for-date': self.$checkinDate,
@@ -481,31 +484,16 @@ jQuery(document).ready(function () {
                 'activity-override': self.$allowActivityOverride
             };
 
-            jQuery.redirect(e20r_workout.activity_url, data, 'POST');
+            if ( typeof e20r_workout !== 'undefined') {
+                $url = e20r_workout.activity_url;
+            }
 
-            /*
-             jQuery.ajax({
-             url: e20r_action.ajaxurl,
-             type: 'POST',
-             timeout: 5000,
-             data: data,
-             success: function (response) {
-             console.dir(response);
+            if ( typeof e20r_action !== 'undefined') {
+                $url = e20r_action.activity_url;
+            }
 
-             return;
-             },
-             error: function (jqx, errno, errtype) {
-
-             console.log("Error: ", jqx );
-
-             return;
-
-             },
-             complete: function() {
-             jQuery("body").removeClass("loading");
-             }
-             });
-             */
+            console.log("Using URL: ", $url);
+            jQuery.redirect($url, data );
         }
     };
 
