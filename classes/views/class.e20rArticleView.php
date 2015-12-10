@@ -143,9 +143,9 @@ class e20rArticleView extends e20rSettingsView {
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
-        $postDate = $e20rTracker->getDateForPost( $day );
         global $currentProgram;
 
+        // $postDate = $e20rTracker->getDateForPost( $day );
         // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
