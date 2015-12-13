@@ -7,6 +7,9 @@
  *  the GPL v2 license(?)
  */
 
+use E20R\Sequences as Sequences;
+use E20R\Sequences\Sequence AS Sequence;
+
 class e20rProgram extends e20rSettings {
 
     private $programTree = array();
@@ -652,6 +655,10 @@ class e20rProgram extends e20rSettings {
         if ( class_exists( 'PMProSequence' ) ) {
 
             return PMProSequence::all_sequences('publish');
+        }
+
+        if (class_exists( '\\E20R\\Sequences\\Sequence\\Controller')) {
+            return Sequence\Controller::all_sequences('publish');
         }
 
         return false;
