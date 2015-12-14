@@ -10,6 +10,8 @@
 use \Defuse\Crypto\Crypto as Crypt;
 use \Defuse\Crypto\Exception as Ex;
 
+use \E20R\Sequences\Sequence\Controller as Controller;
+
 class e20rTracker {
 
     private $client = null;
@@ -934,13 +936,13 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ! class_exists('PMProSequence') && is_admin()) {
+        if ( ( !class_exists('PMProSequence') && !class_exists("E20R\\Sequences\\Sequence\\Controller") )&& is_admin()) {
 
             ?>
             <div class="error">
-            <?php if ( ! class_exists('PMProSequence') ): ?>
-                <?php dbg("e20rTracker::Error -  The PMPro Sequence plugin is not installed"); ?>
-                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: PMPro Sequence plugin", 'e20rtracker' ); ?></p>
+            <?php if ( !class_exists('PMProSequence') && !class_exists("E20R\\Sequences\\Sequence\\Controller") ): ?>
+                <?php dbg("e20rTracker::Error -  The The Sequences plugin is not installed"); ?>
+                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20rtracker' ); ?></p>
             <?php endif; ?>
             </div><?php
         }
@@ -4229,7 +4231,17 @@ class e20rTracker {
 
     public function getDripFeedDelay( $postId ) {
 
+        $dripfeed_exists = false;
+
         if ( class_exists( 'PMProSequence') ) {
+            $dripfeed_exists = true;
+        }
+
+        if ( class_exists( "E20R\\Sequences\\Sequence\\Controller") ) {
+            $dripfeed_exists = true;
+        }
+
+        if (true === $dripfeed_exists ) {
 
             dbg("e20rArticle::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
 
@@ -4238,11 +4250,24 @@ class e20rTracker {
                 return array();
             }
 */
-            $sequenceIds = PMProSequence::sequences_for_post( $postId );
+            if ( class_exists('PMProSequence')) {
+                $sequenceIds = PMProSequence::sequences_for_post( $postId );
+            }
+
+            if ( class_exists("E20R\\Sequences\\Sequence\\Controller")) {
+                $sequenceIds = Sequence\Controller::sequences_for_post( $postId );
+            }
 
             foreach ($sequenceIds as $id ) {
 
-                $details = PMProSequence::post_details( $id, $postId );
+                if ( class_exists('PMProSequence')) {
+                    $details = PMProSequence::post_details( $id, $postId );
+                }
+
+                if ( class_exists("E20R\\Sequences\\Sequence\\Controller")) {
+                    $details = Sequence\Controller::post_details( $id, $postId );
+                }
+
 /*
                 $seq->get_options( $id );
                 $details = $seq->get_post_details( $postId );

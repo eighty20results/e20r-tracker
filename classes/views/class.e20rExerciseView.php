@@ -11,7 +11,7 @@ class e20rExerciseView
 
     private $exercises = null;
 
-    public function e20rExerciseView($exerciseData = null)
+    public function __construct($exerciseData = null)
     {
 
         $this->exercises = $exerciseData;
@@ -75,9 +75,9 @@ class e20rExerciseView
         $display = null;
         $type_label = '';
 
-        if ($currentExercise->type == 1) {
+        if (in_array($currentExercise->type, array(2, 3))) {
 
-            dbg("e20rExerciseView::view_exercise_as_columns() - Time is the selected exercise rep type");
+            dbg("e20rExerciseView::view_exercise_as_columns() - Time/AMRAP is the selected exercise rep type");
             $type_label = __('seconds', 'e20rtracker');
         }
 
@@ -98,7 +98,7 @@ class e20rExerciseView
                 <div class="e20r-exercise-table-column first-column e20r-exercise-reps">
                     <p class="e20r-exercise-description">
                         <span class="e20r-exercise-label"><?php echo esc_html( $e20rExercise->getExerciseType($currentExercise->type) ); ?>:</span>
-                        <span class="e20r-exercise-value"><?php echo(!in_array($currentExercise->type, array(1, 3)) ? "{$currentExercise->reps} {$type_label}" : "{$currentExercise->reps}"); ?></span>
+                        <span class="e20r-exercise-value"><?php echo "{$currentExercise->reps} {$type_label}"; ?></span>
                     </p>
                 </div>
                 <div class="e20r-exercise-table-column second-column e20r-right e20r-exercise-rest-time">

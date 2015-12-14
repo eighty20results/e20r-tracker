@@ -1,6 +1,1 @@
-Make frame for progress container gray
-Refactored Controller for Articles
-Fix: Didn't show "Weekly Status Update" on pages/posts for days where status update was requested and not complete
-Fix: Order message notification, weekly status update, and other alerts to top of page/post
-Fix: Would sometimes change the existing article during access check. Refactored code
-Initial commit for new(ish) autogrow implementation
+Fix: Namespace use by new Sequences plugin.

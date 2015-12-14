@@ -239,35 +239,6 @@ class e20rAction extends e20rSettings
         return false;
     }
 
-    /*
-    public function getCheckin( $shortName ) {
-
-        $chkinList = $this->model->loadAllSettings( 'any' );
-
-        foreach ($chkinList as $chkin ) {
-
-            if ( $chkin->short_name == $shortName ) {
-
-                unset($chkinList);
-                return $chkin;
-            }
-        }
-
-        unset($chkinList);
-        return false; // Returns false if the program isn't found.
-    }
-*/
-    /*
-    public function getAllCheckins() {
-
-        return $this->model->loadAllSettings();
-
-    }
-    public function getCheckinSettings( $id ) {
-
-        return $this->model->loadSettings( $id );
-    }
-*/
     private function count_actions($action_list, $type, $start_date, $end_date)
     {
 
@@ -542,7 +513,7 @@ class e20rAction extends e20rSettings
             'program_id' => (isset($_POST['program-id']) ? $e20rTracker->sanitize($_POST['program-id']) : -1),
             'checkin_date' => (isset($_POST['checkin-date']) ? $e20rTracker->sanitize($_POST['checkin-date']) : null),
             'checkedin_date' => (isset($_POST['checkedin-date']) ? $e20rTracker->sanitize($_POST['checkedin-date']) : null),
-            'descr_id' => (isset($_POST['assignment-id']) ? $e20rTracker->sanitize($_POST['assignment-id']) : null),
+            'descr_id' => (isset($_POST['descr-id']) ? $e20rTracker->sanitize($_POST['descr-id']) : null),
             'checkin_note' => (isset($_POST['checkin-note']) ? $e20rTracker->sanitize($_POST['checkin-note']) : null),
             'checkin_short_name' => (isset($_POST['checkin-short-name']) ? $e20rTracker->sanitize($_POST['checkin-short-name']) : null),
             'checkedin' => (isset($_POST['checkedin']) ? $e20rTracker->sanitize($_POST['checkedin']) : null),
@@ -757,11 +728,13 @@ class e20rAction extends e20rSettings
         $config->survey_id = null;
         $config->post_date = null;
         $config->maxDelayFlag = null;
+        $config->assignment_id = null;
 
         $config->complete = false;
         $config->userId = $current_user->ID;
         $config->update_period = 'Today';
         $config->using_closest = false;
+        $config->today = null;
 
         if ( isset( $currentArticle->id) && ($post->ID == $currentArticle->post_id) ) {
             dbg("e20rAction::configure_dailyProgress() - Article data already loaded: {$currentArticle->post_id} vs {$post->ID}");
@@ -877,6 +850,26 @@ class e20rAction extends e20rSettings
         }
 
         dbg("e20rAction::configure_dailyProgress() - Loaded article info for {$currentArticle->id}");
+
+        switch( count( $currentArticle->assignment_ids )) {
+            case 0:
+                $config->assignment_id = 0;
+                break;
+            case 1:
+
+                if ( !is_array( $currentArticle->assignment_ids)) {
+                    $config->assignment_id = $currentArticle->assignment_ids;
+                } else {
+                    $assignment = $currentArticle->assignment_ids;
+                    $config->assignment_id = array_pop( $assignment);
+                }
+                break;
+
+            default:
+                $assignment = $current_user->assignment_ids;
+                $config->assignment_id = array_pop( $assignment);
+        }
+
         $config->delay = isset($currentArticle->release_day) ? $currentArticle->release_day : 0;
         $config->delay_byDate = $e20rTracker->getDelay();
         $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
@@ -1088,10 +1081,10 @@ class e20rAction extends e20rSettings
         dbg("e20rAction::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}");
 
         $t = $e20rTracker->getDateFromDelay(($config->next - 1));
-        $config->tomorrow = date_i18n('l M. jS', strtotime($t));
+        $config->tomorrow = date_i18n('D M. jS', strtotime($t));
 
         $y = $e20rTracker->getDateFromDelay(($config->prev - 1));
-        $config->yesterday = date_i18n('l M. jS', strtotime($y));
+        $config->yesterday = date_i18n('D M. jS', strtotime($y));
 
         if (!isset($config->userId)) {
 

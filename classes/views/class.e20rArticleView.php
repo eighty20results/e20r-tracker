@@ -143,9 +143,9 @@ class e20rArticleView extends e20rSettingsView {
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
         global $e20rTracker;
-        $postDate = $e20rTracker->getDateForPost( $day );
         global $currentProgram;
 
+        // $postDate = $e20rTracker->getDateForPost( $day );
         // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
@@ -175,6 +175,8 @@ class e20rArticleView extends e20rSettingsView {
         dbg("e20rArticleView::viewMeasurementAlert() - Photos: {$photos} for {$day}");
         global $e20rTracker;
         global $currentProgram;
+
+        $html = null;
 
         if ( !empty( $currentProgram->measurements_page_id ) ) {
 
@@ -209,8 +211,8 @@ class e20rArticleView extends e20rSettingsView {
             </div>
             <br/>
             <?php
+            $html = ob_get_clean();
         }
-        $html = ob_get_clean();
 
         return $html;
     }

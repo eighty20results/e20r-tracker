@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
-Tested up to: 4.3.1
-Stable tag: 1.5.28
+Tested up to: 4.4
+Stable tag: 1.5.35
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,51 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.35 ==
+
+* Fix: Namespace use by new Sequences plugin.
+
+== 1.5.34 ==
+
+* Fix: Reformat nav bar on dashboard
+* Fix: Use 3 character day name in nav labels
+* Enh: Add 'current day' label in navigation box for dashboard
+* Refactor: e20rAction class & remove old code
+
+== 1.5.33 ==
+
+* Fix: Wouldn't update/save activity check-in consistently
+* Add error correction for assignment_id value(s)
+* Refactor link for excerpts
+* Remove unused debug output.
+
+== 1.5.32 ==
+
+* Fix: Simplified test for whether to run content filter
+* Fix: Didn't include 'lesson complete' info in post/page on load.
+* Fix: Reordered message banners
+* Fix: Make constructor PHP 5 compliant (and ready for PHP 7)
+* Fix: Wouldn't always handle buffering correctly for measurement alerts
+* Fix: Didn't always display the expected activity for the day the user had navigated to
+* Refactor: Clean up comments and removed code
+* Refactor: e20rArticleView class
+
+== 1.5.31 ==
+
+* Force redirect to use POST method for data.
+* Add debug for POST on submit/click for daily workout/activity.
+
+== 1.5.30 ==
+
+* Select the correct name for the hidden activity ID input field
+* Fix: Get the URL constant for the activity url to redirect to
+* Rename the input field for the activity
+* Fix: Would not show the correct unit type (seconds) when using AMRAP and time based sets
+
+== 1.5.29 ==
+
+* Fix: Didn't show time designation when using AMRAP type exercises
 
 == 1.5.28 ==
 

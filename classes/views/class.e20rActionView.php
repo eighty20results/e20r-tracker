@@ -392,7 +392,7 @@ class e20rActionView extends e20rSettingsView {
             <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
             <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo $config->delay; ?>">
             <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
-            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
+            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
             <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
             <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
             <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
@@ -462,24 +462,29 @@ class e20rActionView extends e20rSettingsView {
 
         ob_start();
 
+        $date_for_today = $e20rTracker->getDateFromDelay($config->delay-1);
+        $current = date_i18n('D M. jS', strtotime( $date_for_today ));
+        dbg("e20rActionView::view_actionAndActivityCheckin() - Date for today ({$config->delay}): {$date_for_today} -> {$current}");
+
         echo $this->validate_delay_info( $config );
 
         if ( ! ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) ) {
 
             echo $this->load_noscript_notice( $config->maxDelayFlag ); ?>
-        <div id="e20r-action-daynav">
-            <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
-            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo $config->delay; ?>">
+        <div id="e20r-action-daynav" class="clear">
+            <input type="hidden" value="<?php echo esc_attr($config->use_cards); ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo esc_attr( $config->delay ); ?>">
 	        <?php if ( $config->delay >= 1 ): ?>
-                <p class="e20r-action-yesterday-nav">
-                    <a id="e20r-action-yesterday-lnk" href="<?php echo $config->url; ?>"><?php echo $config->yesterday; ?></a>
-                    <input type="hidden" name="e20r-action-day-yesterday" id="e20r-action-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( $config->prev ) : 0 ); ?>">
-                </p>
+                <div class="e20r-action-yesterday-nav clear">
+                    <a id="e20r-action-yesterday-lnk" href="<?php echo esc_url_raw( $config->url); ?>"><?php echo esc_attr( $config->yesterday); ?></a>
+                    <input type="hidden" name="e20r-action-day-yesterday" id="e20r-action-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( esc_attr($config->prev) ) : 0 ); ?>">
+                </div>
 			<?php endif; ?>
-                <p class="e20r-action-tomorrow-nav">
-                    <a id="e20r-action-tomorrow-lnk" href="<?php echo $config->url; ?>"><?php echo $config->tomorrow; ?></a>
-                    <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow" value="<?php echo ( $config->next  ); ?>">
-                </p>
+                <div class="e20r-action-current clear"><?php echo esc_attr( $current); ?></div>
+                <div class="e20r-action-tomorrow-nav clear">
+                    <a id="e20r-action-tomorrow-lnk" href="<?php echo esc_url_raw( $config->url ); ?>"><?php echo esc_attr($config->tomorrow); ?></a>
+                    <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow" value="<?php echo esc_attr($config->next  ); ?>">
+                </div>
         </div>
         <div class="clear-after"></div>
         <?php echo $this->view_action_activity_cards( $config ); ?>
@@ -489,7 +494,7 @@ class e20rActionView extends e20rSettingsView {
             <div id="e20r-daily-action-canvas" class="progress-canvas">
                 <?php wp_nonce_field('e20r-action-data', 'e20r-action-nonce'); ?>
                 <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
-	            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : null ); ?>" />
+	            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
                 <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
 	            <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
                 <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
