@@ -1,4 +1,1 @@
-Fix: Reformat nav bar on dashboard
-Fix: Use 3 character day name in nav labels
-Enh: Add "current day" label in navigation box for dashboard
-Refactor: e20rAction class & remove old code
+Fix: Namespace use by new Sequences plugin.
