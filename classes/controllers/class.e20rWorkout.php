@@ -736,7 +736,7 @@ class e20rWorkout extends e20rSettings
                 $checkin_date = isset($_POST['for-date']) ? $e20rTracker->sanitize($_POST['for-date']) : null;
 
                 dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . (isset($config->activity_id) ? $config->activity_id : 'Not defined'));
-                dbg("e20rWorkout::prepare_activity() - Dashboard requested a specific activity ID: {$actId_from_dash}");
+                dbg("e20rWorkout::prepare_activity() - Dashboard requested " . count($actId_from_dash). " specific activity ID(s)");
 
                 $config->activity_override = true;
                 $config->activity_id = $actId_from_dash;
