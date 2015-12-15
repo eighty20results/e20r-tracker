@@ -1757,7 +1757,12 @@ class e20rArticle extends e20rSettings
                 $new['day'] = $a->release_day;
                 $new['title'] = $p->post_title;
 
-                if (!empty($art->post_excerpt)) {
+                if( !empty($art->post_content)) {
+
+                    dbg("e20rArticle::shortcode_article_summary() - Using the article description.");
+                    $new['summary'] = wp_kses_allowed_html($art->post_content);
+
+                } elseif (!empty($art->post_excerpt)) {
 
                     dbg("e20rArticle::shortcode_article_summary() - Using the article summary.");
                     $new['summary'] = $art->post_excerpt;
