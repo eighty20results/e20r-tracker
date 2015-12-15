@@ -1,1 +1,2 @@
-Fix: Namespace use by new Sequences plugin.
+Fix: Couldn't always save a note in the Dashboard
+Enh: Expand .gitignore to exclude composer content
