@@ -516,7 +516,7 @@ class e20rAction extends e20rSettings
             'descr_id' => (isset($_POST['descr-id']) ? $e20rTracker->sanitize($_POST['descr-id']) : null),
             'checkin_note' => (isset($_POST['checkin-note']) ? $e20rTracker->sanitize($_POST['checkin-note']) : null),
             'checkin_short_name' => (isset($_POST['checkin-short-name']) ? $e20rTracker->sanitize($_POST['checkin-short-name']) : null),
-            'checkedin' => (isset($_POST['checkedin']) ? $e20rTracker->sanitize($_POST['checkedin']) : null),
+            'checkedin' => (isset($_POST['checkedin']) ? $e20rTracker->sanitize($_POST['checkedin']) : 0),
         );
 
         if ($data['program_id'] !== -1) {

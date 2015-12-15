@@ -799,6 +799,7 @@ jQuery(document).ready(function () {
                     'checkin-date': self.note_date,
                     'checkedin-date': self.note_actualdate,
                     'assignment-id': self.note_assignment,
+                    'descr-id': self.note_assignment,
                     'article-id': self.note_article,
                     'program-id': self.note_program,
                     'checkin-note': Base64.encode($noteTextarea.val()),
