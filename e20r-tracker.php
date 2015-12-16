@@ -148,7 +148,7 @@ if (!function_exists('dbg')):
             // $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log-' . date('Y-m-d', current_time('timestamp')) . '.txt';
             $dbgFile = $dbgPath . DIRECTORY_SEPARATOR . 'e20r_debug_log.txt';
 
-            $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . $_SERVER['REMOTE_PORT'])));
+            $tid = sprintf("%08x", abs(crc32($_SERVER['REMOTE_ADDR'] . $_SERVER['REQUEST_TIME'] . ( isset($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : 80 ))));
 
             $dbgMsg = '(' . date('d-m-y H:i:s', current_time('timestamp')) . "-{$tid}) -- " .
                 ((is_array($msg) || (is_object($msg))) ? print_r($msg, true) : $msg) . "\n";
