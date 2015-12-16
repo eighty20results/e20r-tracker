@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 include=(classes css img js languages e20r-tracker.php e20r_db_update.php README.txt)
+exclude=(vendor *.yml *.phar composer.*)
 short_name="e20r-tracker"
 plugin_path="${short_name}"
 readme_path="../build_readmes/"
@@ -54,6 +55,10 @@ fi
 
 for p in ${include[@]}; do
 	cp -R ${src_path}${p} ${dst_path}
+done
+
+for e in ${exclude[@]}; do
+    find ${dst_path} -name ${e} -exec rm -rf {} \;
 done
 
 cd ${dst_path}/..
