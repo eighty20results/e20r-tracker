@@ -308,13 +308,14 @@ class e20rArticle extends e20rSettings
         return $cards;
     }
 
-    private function get_summary(WP_Post $post, WP_Post $article)
+    private function get_summary(\WP_Post $post, \WP_Post $article)
     {
 
         $excerpt = __("No information found", "e20rtracker");
 
         $article_has_excerpt = (empty($article->post_excerpt) ? false : true);
-        $article_has_content = (empty($article->post_content) ? false : true);
+        // $article_has_content = (empty($article->post_content) ? false : true);
+        $article_has_content = false; // Fix: Only use post_content for the reminder summary description in the []
         $post_has_excerpt = (empty($post->post_excerpt) ? false : true);
         $post_has_content = (empty($post->post_content) ? false : true);
 
@@ -1713,12 +1714,18 @@ class e20rArticle extends e20rSettings
         $defaults = $this->model->defaultSettings();
 
         $days_of_summaries = (!isset($currentArticle->max_summaries) || is_null($currentArticle->max_summaries) ? $defaults->max_summaries : $currentArticle->max_summaries);
+        $title = null;
 
         $tmp = shortcode_atts(array(
             'days' => $days_of_summaries,
+            'title' => null,
         ), $attributes);
 
         dbg("e20rArticle::shortcode_article_summary() - Article # {$currentArticle->id} needs to locate {$tmp['days']} or {$days_of_summaries} days worth of articles to pull summaries from, ending on day # {$currentArticle->release_day}");
+
+        if (isset( $tmp['title']) && !empty($tmp['title'] )) {
+            $title = $tmp['title'];
+        }
 
         if ($days_of_summaries != $tmp['days']) {
 
@@ -1828,7 +1835,7 @@ class e20rArticle extends e20rSettings
 
         $end_TS = strtotime("{$currentProgram->startdate} +{$end_day} days");
 
-        $html = $this->view->view_article_history($prefix, $summary, $start_TS, $end_TS, $info);
+        $html = $this->view->view_article_history($prefix, $title, $summary, $start_TS, $end_TS, $info);
 
         return $html;
     }
