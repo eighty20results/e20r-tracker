@@ -358,6 +358,10 @@ class e20rAssignmentView extends e20rSettingsView {
                     echo $this->showYesNoQuestion( $assignment );
                     break;
 
+                case 7: // Display the HTML included
+                    echo $this->showHTMLField( $assignment );
+                    break;
+
                 default: // Button "Assignment read"
                     dbg("e20rAssignmentView::viewAssignment() - Default field_type value. Using showAssignmentButton()");
                     echo $this->showAssignmentButton( $assignment, $articleConfig->complete );
@@ -404,6 +408,19 @@ class e20rAssignmentView extends e20rSettingsView {
         dbg("e20rAssignmentView::viewAssignment() -  Returning HTML");
 		return $html;
 	}
+
+    private function showHtmlField( $assignment ) {
+
+        ob_start();
+
+        ?>
+        <div class="e20r-assignment-html-data">
+            <?php echo esc_html( $assignment->descr ); ?>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
 
     private function showMultipleChoice( $assignment ) {
 
