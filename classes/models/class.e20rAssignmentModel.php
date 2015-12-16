@@ -27,6 +27,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    4 => 'multichoice',
             5 => 'rank',
             6 => 'yesno',
+            7 => 'html',
 	    );
 
 	    $this->answerTypes = array(
@@ -37,6 +38,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		    4 => __("Multiple choice", "e20rtracker"),
             5 => __("1-10 ranking", "e20rtracker"),
             6 => __("Yes/No question", "e20rtracker"),
+            7 => __("HTML/Text Field", "e20rtracker"),
 	    );
 
         $this->table = $e20rTables->getTable('assignments');
