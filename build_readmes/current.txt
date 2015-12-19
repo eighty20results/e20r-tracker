@@ -1,2 +1,10 @@
-Fix: Couldn't always save a note in the Dashboard
-Enh: Expand .gitignore to exclude composer content
+Fix: Sometimes would include a weird program name/id
+Fix: Doesn't always save the Program id the workout belongs to
+Fix: Possible warning during DEBUG logging
+Fix: Don't use the article's editor content (post_content) in the summary. Enh: Allow user to specify a title for the article_summary shortcode.
+Enh: Allow user to specify title for Article history/summary shortcode
+Enh: Allow user to specify title for Article history/summary shortcode
+Add support for an HTML/Text field to be displayed in the Assignment (daily_progress shortcode)
+Add support for HTML/Text only entry in Assignment (daily_progress shortcode)
+Add support for explicitly excluding content from the kit
+Allow use of article description as the content for the weekly reminder text.

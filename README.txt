@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.4
-Stable tag: 1.5.36
+Stable tag: 1.5.37
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,19 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.37 ==
+
+* Fix: Sometimes would include a weird program name/id
+* Fix: Doesn't always save the Program id the workout belongs to
+* Fix: Possible warning during DEBUG logging
+* Fix: Don't use the article's editor content (post_content) in the summary. Enh: Allow user to specify a title for the article_summary shortcode.
+* Enh: Allow user to specify title for Article history/summary shortcode
+* Enh: Allow user to specify title for Article history/summary shortcode
+* Add support for an HTML/Text field to be displayed in the Assignment (daily_progress shortcode)
+* Add support for HTML/Text only entry in Assignment (daily_progress shortcode)
+* Add support for explicitly excluding content from the kit
+* Allow use of article description as the content for the weekly reminder text.
 
 == 1.5.36 ==
 
