@@ -79,7 +79,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	    $workout->excerpt = '';
 	    $workout->title = '';
 	    $workout->days = array();
-        $workout->program_ids = array( 0 );
+        $workout->program_ids = array();
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
 	    $workout->assigned_user_id = array( -1 );
