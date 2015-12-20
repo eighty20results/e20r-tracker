@@ -149,6 +149,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
             $this->settings->title    = $post->post_title;
             $this->settings->id          = $id;
 
+            $this->settings->program_ids = get_post_meta($post->ID, '_e20r-workout-program_ids');
+
             dbg("e20rWorkoutModel::loadSettings() - Analyzing group content");
             // dbg( $this->settings );
 
