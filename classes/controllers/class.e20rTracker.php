@@ -88,7 +88,7 @@ class e20rTracker {
                             );
 
         if ( in_array( $post->post_type, $managed_types ) &&
-                current_user_can( 'edit_posts' ) &&
+                $this->userCanEdit( $current_user->ID ) &&
                 $this->is_a_coach( $current_user->ID ) ) {
 
             dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for the post type!");
