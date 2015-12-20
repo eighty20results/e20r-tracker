@@ -104,7 +104,7 @@ class e20rWorkout extends e20rSettings
 
         // $currentWorkout = $this->model->find( 'id', $post->ID );
 
-        add_meta_box('e20r-tracker-workout-settings', __('Workout Settings', 'e20rtracker'), array(&$this, "addMeta_WorkoutSettings"), 'e20r_workout', 'normal', 'core');
+        add_meta_box('e20r-tracker-workout-settings', __('Activity Settings', 'e20rtracker'), array(&$this, "addMeta_WorkoutSettings"), 'e20r_workout', 'normal', 'core');
 
     }
 
@@ -373,7 +373,7 @@ class e20rWorkout extends e20rSettings
         $groupSetTempo = isset($_POST['e20r-workout-groups-group_tempo']) ? $e20rTracker->sanitize($_POST['e20r-workout-groups-group_tempo']) : array();
         $groupSetRest = isset($_POST['e20r-workout-groups-group_rest']) ? $e20rTracker->sanitize($_POST['e20r-workout-groups-group_rest']) : array();
 
-        $workout->program_ids = isset($_POST['e20r-workout-program_ids']) ? $e20rTracker->sanitize($_POST['e20r-workout-program_ids']) : array(0);
+        $workout->program_ids = isset($_POST['e20r-workout-program_ids']) ? $e20rTracker->sanitize($_POST['e20r-workout-program_ids']) : array();
         $workout->days = isset($_POST['e20r-workout-days']) ? $e20rTracker->sanitize($_POST['e20r-workout-days']) : array();
         $workout->workout_ident = isset($_POST['e20r-workout-workout_ident']) ? $e20rTracker->sanitize($_POST['e20r-workout-workout_ident']) : 'A';
         $workout->phase = isset($_POST['e20r-workout-phase']) ? $e20rTracker->sanitize($_POST['e20r-workout-phase']) : 1;
