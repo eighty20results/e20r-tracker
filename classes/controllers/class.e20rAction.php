@@ -866,7 +866,7 @@ class e20rAction extends e20rSettings
                 break;
 
             default:
-                $assignment = $current_user->assignment_ids;
+                $assignment = $currentArticle->assignment_ids;
                 $config->assignment_id = array_pop( $assignment);
         }
 
