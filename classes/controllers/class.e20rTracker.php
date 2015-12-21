@@ -10,7 +10,7 @@
 use \Defuse\Crypto\Crypto as Crypt;
 use \Defuse\Crypto\Exception as Ex;
 
-use \E20R\Sequences\Sequence\Controller as Controller;
+use \E20R\Sequences\Sequence as Sequence;
 
 class e20rTracker {
 
