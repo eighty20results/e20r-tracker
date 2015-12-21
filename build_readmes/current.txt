@@ -1,15 +1,4 @@
-Fix: Didn't always load the correct values for the program_ids setting
-Fix: Change label for Activity settings
-Fix: Return empty array of program_ids for workout/activity if none is specified
-Fix: Didn't always show duplicate link to users with the correct privileges.
-Fix: Didn't always save the program ID(s) that a post_type belonged to (Article/Activity/Action/etc)
-Fix: Sometimes would include a weird program name/id
-Fix: Doesn't always save the Program id the workout belongs to
-Fix: Possible warning during DEBUG logging
-Fix: Don't use the article's editor content (post_content) in the summary. Enh: Allow user to specify a title for the article_summary shortcode.
-Enh: Allow user to specify title for Article history/summary shortcode
-Enh: Allow user to specify title for Article history/summary shortcode
-Add support for an HTML/Text field to be displayed in the Assignment (daily_progress shortcode)
-Add support for HTML/Text only entry in Assignment (daily_progress shortcode)
-Add support for explicitly excluding content from the kit
-Allow use of article description as the content for the weekly reminder text.
+Fix: Would sometimes trigger PHP warning message while processing prerequisite javascripts on page load
+Fix: Didn't always return a valid assignment ID
+Fix: Didn't always return the correct program information on init()
+Fix: Would not always display the article summary
