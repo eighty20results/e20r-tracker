@@ -2434,7 +2434,8 @@ class e20rTracker {
             $prereqs = array(
                 'jquery' => null,
                 'jquery-ui-core' => null,
-                'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js'
+                'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
+                'dependencies' => array(),
             );
 
             switch ( $event ) {
@@ -2484,6 +2485,7 @@ class e20rTracker {
                         'jquery' => null,
                         'jquery-ui-core' => null,
                         "jquery-ui-tabs" => "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css",
+                        'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
