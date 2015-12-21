@@ -1,4 +1,2 @@
-Fix: Would sometimes trigger PHP warning message while processing prerequisite javascripts on page load
-Fix: Didn't always return a valid assignment ID
-Fix: Didn't always return the correct program information on init()
-Fix: Would not always display the article summary
+Fix: Would sometimes generate PHP warning message
+Fix: Would sometimes attempt to access the wrong namespace (and exit ungracefully)
