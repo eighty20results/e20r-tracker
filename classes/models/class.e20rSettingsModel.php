@@ -791,11 +791,12 @@ class e20rSettingsModel {
 
 		$metaContent = get_post_meta( $post_id, "_e20r-{$this->type}-{$key}", $asArray );
         dbg("e20r" . ucfirst($this->type) . "Model::isStored() - Value of _e20r-{$this->type}-{$key}: " . (false === $metaContent ? 'Not found' : print_r($metaContent, true)));
+
         if ( !in_array($key, $this->unrollable) && !is_array( $metaContent ) && false !== $metaContent ) {
             $metaContent = array( $metaContent );
         }
 
-        if (in_array($value, $metaContent)) {
+        if (is_array($metaContent) && in_array($value, $metaContent)) {
 
             return true;
         }
