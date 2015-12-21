@@ -103,30 +103,32 @@ class e20rProgram extends e20rSettings {
 	    global $currentProgram;
 	    global $current_user;
 
-	    if ( is_user_logged_in() ) {
+        dbg("e20rProgram::init() - Argument: " . (empty($programId) ? 'Null' : $programId));
+        dbg("e20rProgram::init() - Current program value: " . (empty($currentProgram->id) ? 'Null' : $currentProgram->id));
 
-            if ((is_null($programId))) {
+        if ( isset($currentProgram->id) && !empty($programId) && ($currentProgram->id == $programId)) {
 
-                dbg("e20rProgram::init() - Fetching program ID for user {$current_user->ID}.");
-                $programId = get_user_meta($current_user->ID, 'e20r-tracker-program-id', true);
-            }
-
-            if ((!isset($currentProgram->id) ||
-                (!empty($programId) && ($currentProgram->id != $programId)))
-            ) {
-
-                dbg("e20rProgram::init() - Loading program settings for {$programId}.");
-                $currentProgram = $this->model->loadSettings($programId);
-
-                $this->configure_startdate($programId, $current_user->ID);
-
-                dbg("e20rProgram::init() - Program info has been loaded for: {$currentProgram->id}");
-                return true;
-            }
+            dbg("e20rProgram::init() - Program {$currentProgram->id} was loaded already");
+            return true;
         }
 
-	    $currentProgram = new stdClass();
-	    $currentProgram->id = null;
+        if (is_null($programId)) {
+
+            dbg("e20rProgram::init() - Grabbing program ID for user {$current_user->ID} from DB.");
+            $programId = get_user_meta($current_user->ID, 'e20r-tracker-program-id', true);
+        }
+
+        if (!empty($programId) &&
+                ((!isset($currentProgram->id)) || ($currentProgram->id != $programId))) {
+
+            dbg("e20rProgram::init() - Loading program settings for {$programId}.");
+            $currentProgram = $this->model->loadSettings($programId);
+
+            $this->configure_startdate($programId, $current_user->ID);
+
+            dbg("e20rProgram::init() - Program info has been loaded for: {$currentProgram->id}");
+            return true;
+        }
 
 	    dbg("e20rProgram::init() - No Program ID found or user not logged in!");
 	    return false;
