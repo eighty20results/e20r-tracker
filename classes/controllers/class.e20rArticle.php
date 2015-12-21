@@ -1636,15 +1636,25 @@ class e20rArticle extends e20rSettings
             wp_die();
         }
 
-        if (!empty($_REQUEST)) {
+        if (!empty($_REQUEST) && (isset($_REQUEST['e20r-checkin-nonce']))) {
 
+            dbg("e20rArticle::shortcode_article_summary() - Checking for valid check-in Nonce");
             check_ajax_referer('e20r-checkin-data', 'e20r-checkin-nonce');
-            dbg("e20rArticle::shortcode_article_summary() - Received valid Nonce");
 
             $article_id = isset($_REQUEST['article-id']) ? $e20rTracker->sanitize($_REQUEST['article-id']) : null;
             $for_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
             $program_id = isset($_REQUEST['program-id']) ? $e20rTracker->sanitize($_REQUEST['program-id']) : null;
+        }
 
+        if (!empty($_REQUEST) && (isset($_REQUEST['e20r-action-nonce']))) {
+
+            dbg("e20rArticle::shortcode_article_summary() - Checking for valid action Nonce (from dashboard)");
+            check_ajax_referer('e20r-action-data', 'e20r-action-nonce');
+
+            $article_id = isset($_REQUEST['article-id']) ? $e20rTracker->sanitize($_REQUEST['article-id']) : null;
+            $for_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
+            $program_id = isset($_REQUEST['program-id']) ? $e20rTracker->sanitize($_REQUEST['program-id']) : null;
+            dbg("e20rArticle::shortcode_article_summary() - Checking for valid action Nonce (from dashboard)");
         }
 
         if (empty($program_id)) {
