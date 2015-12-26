@@ -1191,6 +1191,7 @@ class e20rArticle extends e20rSettings
 		    return $content;
 	    }
         */
+
         if (has_shortcode($content, 'e20r_profile') ||
             has_shortcode($content, 'progress_overview') ||
             has_shortcode($content, 'e20r_activity_archive')
@@ -1394,7 +1395,7 @@ class e20rArticle extends e20rSettings
         $lesson_complete = $this->view->viewLessonComplete($rDay, false, $currentArticle->id);
         // $content = $data . $content;
 
-        if ($currentArticle->post_id == $post->ID) {
+        if ($currentArticle->post_id == $post->ID && has_shortcode( $content, 'daily_progress' )) {
 
             $new_messages = $this->view->new_message_warning();
         }
