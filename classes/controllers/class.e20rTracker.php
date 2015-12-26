@@ -3586,7 +3586,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-assignments-cpt-slug', 'tracker-assignments'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-assignments-cpt-archive-slug', 'tracker-assignments')
+                   'has_archive' => apply_filters('e20r-tracker-assignments-cpt-archive-slug', 'tracker-assignments-archive')
             )
         );
 
@@ -3629,7 +3629,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-program-cpt-slug', 'tracker-programs'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-program-cpt-archive-slug', 'tracker-programs')
+                   'has_archive' => apply_filters('e20r-tracker-program-cpt-archive-slug', 'tracker-program-archive')
             )
         );
 
@@ -3672,7 +3672,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-article-cpt-slug', 'tracker-articles'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-article-cpt-archive-slug', 'tracker-articles')
+                   'has_archive' => apply_filters('e20r-tracker-article-cpt-archive-slug', 'tracker-articles-archive')
             )
         );
 
@@ -3715,7 +3715,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-girth-cpt-slug', 'girth'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-girth-cpt-archive-slug', 'girths')
+                   'has_archive' => apply_filters('e20r-tracker-girth-cpt-archive-slug', 'girths-archive')
             )
         );
 
@@ -3758,7 +3758,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-exercise-cpt-slug', 'tracker-exercise'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-exercise-cpt-archive-slug', 'tracker-exercises')
+                   'has_archive' => apply_filters('e20r-tracker-exercise-cpt-archive-slug', 'tracker-exercises-archive')
             )
         );
 
@@ -3801,7 +3801,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-workout-cpt-slug', 'tracker-activity'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-workout-cpt-archive-slug', 'tracker-activity')
+                   'has_archive' => apply_filters('e20r-tracker-workout-cpt-archive-slug', 'tracker-activity-archive')
             )
         );
 
@@ -3846,7 +3846,7 @@ class e20rTracker {
                        'slug' => apply_filters('e20r-tracker-action-cpt-slug', 'tracker-action'),
                        'with_front' => false
                    ),
-                   'has_archive' => apply_filters('e20r-tracker-action-cpt-archive-slug', 'tracker-action')
+                   'has_archive' => apply_filters('e20r-tracker-action-cpt-archive-slug', 'tracker-action-archive')
             )
         );
 
