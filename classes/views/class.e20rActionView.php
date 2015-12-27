@@ -517,13 +517,13 @@ class e20rActionView extends e20rSettingsView {
 
     public function viewSettingsBox( $checkinData, $programs ) {
 
-        dbg( "e20rActionView::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
+        dbg("e20rActionView::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
         ?>
         <form action="" method="post">
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-action-settings' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-action-id" id="hidden-e20r-action-id"
-                       value="<?php echo( ( ! empty( $checkinData ) ) ? $checkinData->id : 0 ); ?>">
+                       value="<?php echo( ( isset( $checkinData->id ) ) ? $checkinData->id : 0 ); ?>">
                 <table id="e20r-action-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
@@ -542,31 +542,42 @@ class e20rActionView extends e20rSettingsView {
                     <tbody>
                     <?php
 
+                    dbg("e20rActionView::viewSettingsBox() - Processing startdate: {$checkinData->startdate}");
                     if ( is_null( $checkinData->startdate ) ) {
 
                         $start = '';
                     } else {
-
-                        $start = new DateTime( $checkinData->startdate );
-                        $start = $start->format( 'Y-m-d' );
+                        try {
+                            $start = new \DateTime($checkinData->startdate);
+                            $start = $start->format('Y-m-d');
+                        } catch(\Exception $e) {
+                            dbg("e20rActionView::viewSettingsBox() -  Error: " . $e->getMessage());
+                            $start = "1970-01-01";
+                        }
                     }
 
+                    dbg("e20rActionView::viewSettingsBox() - Processing enddate: {$checkinData->enddate}");
                     if ( is_null( $checkinData->enddate ) ) {
 
                         $end = '';
                     } else {
-
-                        $end = new DateTime( $checkinData->enddate );
-                        $end = $end->format( 'Y-m-d' );
+                        try {
+                            $end = new \DateTime($checkinData->enddate);
+                            $end = $end->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            dbg("e20rActionView::viewSettingsBox() -  Error: " . $e->getMessage());
+                            $end = "2031-01-01";
+                        }
                     }
 
+                    dbg("e20rActionView::viewSettingsBox() - Processing maxcount, etc: {maxcount}");
                     if ( ( $checkinData->maxcount <= 0 ) && ( ! empty( $checkinData->enddate ) ) ) {
 
                         $interval              = $start->diff( $end );
                         $checkinData->maxcount = $interval->format( '%a' );
                     }
 
-                    dbg( "Checkin - Start: {$start}, End: {$end}" );
+                    dbg("e20rActionView::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
                     ?>
                     <tr id="<?php echo $checkinData->id; ?>" class="action-inputs">
                         <td>
