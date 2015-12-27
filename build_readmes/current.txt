@@ -1,2 +1,3 @@
-Fix: Would sometimes generate PHP warning message
-Fix: Would sometimes attempt to access the wrong namespace (and exit ungracefully)
+Fix: Handle unexpected date format(s) for start & end date settings in metabox
+Rename archive tags for CPTs
+Fix: Would include daily message when front-end scripts to handle/manage it wasn't available.
