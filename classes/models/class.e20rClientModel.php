@@ -581,7 +581,7 @@ class e20rClientModel {
         $current_date_ts = strtotime( $e20rTracker->getDateFromDelay( $currentArticle->release_day, $clientId ) );
         $record['for_date'] = date_i18n( 'Y-m-d H:i:s', $current_date_ts );
 
-        if ( !has_shortcode( $post->post_content, 'e20r_profile' ) ) {
+       /* if ( !has_shortcode( $post->post_content, 'e20r_profile' ) ) {
 
             $sql = $wpdb->prepare(
                 "SELECT *
@@ -597,7 +597,7 @@ class e20rClientModel {
                 ( !empty( $article_id ) ? $article_id : '%' )
             );
         }
-        else {
+        else { */
             $sql = $wpdb->prepare(
                 "SELECT *
                 FROM {$table}
@@ -609,7 +609,7 @@ class e20rClientModel {
                 $survey_type,
                 $program_id
             );
-        }
+        //}
 
 
         dbg($sql);
