@@ -127,7 +127,7 @@ if (!function_exists('dbg')):
 
         $dbgRoot = $uplDir['basedir'] . "/${plugin}";
         // $dbgRoot = "${plugin}/";
-        $dbgPath = "${dbgRoot}/debug";
+        $dbgPath = "${dbgRoot}";
 
         if (WP_DEBUG === true) {
 
@@ -158,46 +158,48 @@ if (!function_exists('dbg')):
     }
 endif;
 
-function add_log_text($text, $filename)
-{
+if (!function_exists('add_log_text')):
+    function add_log_text($text, $filename)
+    {
 
-    if (!file_exists($filename)) {
+        if (!file_exists($filename)) {
 
-        touch($filename);
-        chmod($filename, 0640);
-    }
-
-    if (filesize($filename) > E20R_MAX_LOG_SIZE) {
-
-        $filename2 = "$filename.old";
-
-        if (file_exists($filename2)) {
-
-            unlink($filename2);
+            touch($filename);
+            chmod($filename, 0640);
         }
 
-        rename($filename, $filename2);
-        touch($filename);
-        chmod($filename, 0640);
+        if (filesize($filename) > E20R_MAX_LOG_SIZE) {
+
+            $filename2 = "$filename.old";
+
+            if (file_exists($filename2)) {
+
+                unlink($filename2);
+            }
+
+            rename($filename, $filename2);
+            touch($filename);
+            chmod($filename, 0640);
+        }
+
+        if (!is_writable($filename)) {
+
+            error_log("Unable to open debug log file ($filename)");
+        }
+
+        if (!$handle = fopen($filename, 'a')) {
+
+            error_log("Unable to open debug log file ($filename)");
+        }
+
+        if (fwrite($handle, $text) === FALSE) {
+
+            error_log("Unable to write to debug log file ($filename)");
+        }
+
+        fclose($handle);
     }
-
-    if (!is_writable($filename)) {
-
-        error_log("Unable to open debug log file ($filename)");
-    }
-
-    if (!$handle = fopen($filename, 'a')) {
-
-        error_log("Unable to open debug log file ($filename)");
-    }
-
-    if (fwrite($handle, $text) === FALSE) {
-
-        error_log("Unable to write to debug log file ($filename)");
-    }
-
-    fclose($handle);
-}
+endif;
 
 if ( !function_exists( 'e20r_load' ) ) {
     function e20r_load()
