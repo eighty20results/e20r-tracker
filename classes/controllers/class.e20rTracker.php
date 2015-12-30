@@ -1601,17 +1601,23 @@ class e20rTracker {
             return true;
         }
 
-        if ( function_exists( 'pmpro_has_membership_access' ) ) {
+        dbg("e20rTracker::hasAccess() - Checking whether to use PMPro's pmpro_has_membership_access() function" );
 
-            dbg("e20rTracker::hasAccess() - Preferring to use access check as provided bt PMPro");
+        if ( function_exists( '\\pmpro_has_membership_access' ) ) {
+
+            dbg("e20rTracker::hasAccess() - Preferring to use access check as provided by PMPro");
             $levels = pmpro_getMembershipLevelsForUser( $userId );
             $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+
+            dbg("e20rTracker::hasAccess() - Checking if post {$postId} is accessible by {$userId}: " . print_r($result, true));
 
             if ( $result[0] ) {
 
                 dbg("e20rTracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
+
                 $filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
                 $retVal = ( $filterVal == 1 ? true : false );
+
                 dbg( "e20rTracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == true ? 'yes' : 'no' ));
             }
         }
