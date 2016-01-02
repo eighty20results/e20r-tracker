@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.4
-Stable tag: 1.5.41
+Stable tag: 1.5.43
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,17 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.43 ==
+
+* Fix: Various nits in CSS
+* Fix: Simplify path to debug log
+* Fix: Sometimes would clobber existing function definition
+* Fix: Didn't always return correct access permissions for pmpro protected content
+* Enh: Start investigation into using underscore.js templates for front-end.
+* Enh: Add e20rActivityView function to manage template(s) and workout timer/wizard
+* Enh: Add initial outline for showing activity as wizard/on-screen timer
+* Enh: Started working on on-screen countdown/wizard for workout/activity
 
 == 1.5.41 ==
 

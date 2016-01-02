@@ -1,3 +1,8 @@
-Fix: Handle unexpected date format(s) for start & end date settings in metabox
-Rename archive tags for CPTs
-Fix: Would include daily message when front-end scripts to handle/manage it wasn't available.
+Fix: Various nits in CSS
+Fix: Simplify path to debug log
+Fix: Sometimes would clobber existing function definition
+Fix: Didn't always return correct access permissions for pmpro protected content
+Enh: Start investigation into using underscore.js templates for front-end.
+Enh: Add e20rActivityView function to manage template(s) and workout timer/wizard
+Enh: Add initial outline for showing activity as wizard/on-screen timer
+Enh: Started working on on-screen countdown/wizard for workout/activity
