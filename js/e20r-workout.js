@@ -452,6 +452,112 @@ var e20rActivity = {
     }
 };
 
+var e20rActivityView = {
+    init: function() {
+
+        this.isIE = this._isIE();
+        this.isOldIE = this._isIE() && (this.isIE() < 9);
+        this.isiPad = this._isIpad();
+        this.tag = jQuery('.youtube-player');
+        this.poster = this.tag.data('placeholder');
+        this.video = this.tag.data('video');
+        this.noVideo = this.tag.data('src');
+        this.el = '';
+
+        this.$timer_btn = jQuery('#start_exercise');
+        this.workTimer = jQuery('input[name="e20r-duration-value"]').val();
+        this.restTimer = jQuery('input[name="e20r-rest-value"]').val();
+
+        var $class = this;
+
+        this.$timer_btn.unbind('click').on('click', function() {
+
+            this.start_timer( $class.workTimer,  $class.restTimer );
+        });
+    },
+    load: function() {
+
+        var $class = this;
+
+        if ( jQuery(window).width() > 599 && !$class.isOldIE && !$class.isiPad) {
+
+            $class.el += '<video poster="' + $class.poster + '">';
+            $class.el += '  <source src="' + $class.video + '" type="video/mp4">';
+            $class.el += '</video>';
+        } else {
+
+            $class.el = '<div class="video-element" style="background-image: url(' + $class.noVideo + ');"></div>';
+        }
+
+        this.tag.prepend($class.el);
+    },
+    start_timer: function( work, rest ) {
+
+        var workCounter = 0;
+        var $class = this;
+
+        var workTimer = setInterval(function() {
+
+            $class.change_color('work');
+
+            workCounter++;
+            jQuery('.e20r-overlay-timer').text(workCounter);
+
+            if ( workCounter == work ) {
+
+                clearInterval(workTimer);
+            }
+        }, 1000);
+
+        var restCounter = 0;
+        var restTimer = setInterval(function() {
+
+            $class.change_color('work');
+
+            restCounter++;
+            rest = work + 1 + rest;
+
+            if ( restCounter > (work+1) ) {
+
+
+                jQuery('.e20r-overlay-timer').text(restCounter);
+            }
+
+            if ( restCounter == rest ) {
+
+                $class.change_color('done');
+                clearInterval(workTimer);
+            }
+
+        }, 1000);
+    },
+    // TODO: Implement change_color for overlay background
+    change_color: function( $type ) {
+
+        // Set background color for overlay
+        if ( 'work' == $type ) {
+            // Red?
+        }
+
+        if ( 'rest' == $type ) {
+            // Green?
+        }
+
+        if ( 'done' == $type ) {
+            // White?
+        }
+
+    },
+    _isIE: function() {
+        var nav = navigator.userAgent.toLowerCase();
+        return (nav.indexOf('msie') != -1) ? parseInt(nav.split('msie')[1]) : false;
+    },
+    _isIpad: function() {
+        return navigator.userAgent.match('/iPad/i');
+    },
+
+};
+
 jQuery(document).ready( function(){
 
     console.log("Loaded user script for the workout tracking form");
