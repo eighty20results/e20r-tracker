@@ -615,6 +615,15 @@ class e20rWorkoutView extends e20rSettingsView
         return $html;
     }
 
+    public function displayActivityOverlay($config, $workoutData) {
+
+
+    }
+
+    private function display_currentExercise($activtiy, $config) {
+
+
+    }
     /**
      * Generates the HTML for the activity. Typically used by the activity short code or the activity archive short code.
      *
@@ -705,20 +714,7 @@ class e20rWorkoutView extends e20rSettingsView
                                     </p>
                                 </div>
                             </div> <!-- End of e20r-int-table -->
-                            <!-- </div> -->
-                            <!-- <div class="e20r-activity-info-col alignright">
-								<div class="e20r-int-table">
-								<div class="e20r-act-content-row">
-									<p class="e20r-content-col">
-										<span class="e20r-exercise-label"><?php _e("Name", "e20rtracker"); ?>: </span>
-										<span class="e20r-exercise-value"><?php echo esc_attr($current_user->user_firstname); ?></span>
-									</p>
-								</div>
-								</div>
-							</div> -->
-                            <!-- <div class="spacer">&nbsp;</div> -->
                         </div><!-- end of e20r-exercise-row -->
-                        <!-- <div class="spacer">&nbsp;</div> -->
                     </div><!-- COMPLETE: end of table header -->
                     <!-- <div class="spacer">&nbsp;</div> -->
                     <div class="e20r-activity-table-body">
