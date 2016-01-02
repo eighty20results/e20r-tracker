@@ -1359,13 +1359,13 @@ td.e20r-group-header {
     background: #004CFF;
     border: 1px solid #c5c5c5;
     padding: 14px;
-    margin-top: 10px;
+    /* margin-top: 10px; */
 }
 .progress-container > h3 {
     color: #FFF;
     font-size: 20px !important;
     font-weight: bold;
-    /* margin: 0 !important; */
+    margin: 0 0 0.3em 0 !important;
 }
 .progress-container > h3 span { font-weight: normal; }
 .progress-container p { color: #33383a; }
@@ -1633,7 +1633,7 @@ div#e20r-daily-progress #e20r-action-daynav {
     margin-left: auto;
     margin-right: auto;
     line-height: 40px;
-    padding: 10px 0 10px 0;
+    padding: 0 10px 0 10px;
 }
 .e20r-action-yesterday-nav {
     flex: 1;
@@ -1680,17 +1680,27 @@ div#e20r-daily-progress #e20r-action-daynav {
     text-decoration: none !important;
 }*/
 div#e20r-action-content {
+    display: flex;
     width: 100%;
     margin: 0 auto;
     padding-bottom: 10px;
-    padding-top: 10px;
+    /* padding-top: 10px;*/
 }
 .e20r-as-dashboard div.e20r-action-activity,
 .e20r-as-dashboard div.e20r-action-lesson {
-    padding: 20px;
+    padding: 0 20px;
     margin-left: auto;
     margin-right: auto;
     width: 99%;
+    flex: 1;
+}
+p.e20r-descr-link > br {
+    content: " ";
+}
+
+#e20r-daily-progress p.e20r-descr-link {
+    margin: 0;
+    padding: 0;
 }
 #e20r-daily-action-container div.e20r-content-cell {
     width: 50%;
@@ -1756,7 +1766,7 @@ body.loading .modal {
     background-image: url(../img/small-calendar.png);
 }
 .date-past-future .li { line-height: 150%; }
-.date-past-future { margin-bottom: 16px; }
+.date-past-future { margin-bottom: 8px; }
 .e20r-select2-container {
     width: 100%;
     vertical-align: baseline;
