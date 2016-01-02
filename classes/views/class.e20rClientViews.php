@@ -724,50 +724,6 @@ class e20rClientViews {
         return $html;
     }
 
-/*
-    public function view_clientProfile( $progressEntries ) {
-
-        ob_start(); ?>
-        <!-- <div id="profile-tabs" class="z-tabs-loading" data-role='z-tabs' data-options='{"theme": "white", "style": "clean", "defaultTab": "tab1", "size": "medium", "position": "top-compact", "multiline": true, "rounded": false, "orientation": "horizontal", "animation": {"duration": 800, "effects": "slideH"}}'> -->
-        <div id="profile-tabs" class="z-tabs-loading">
-            <ul><?php
-
-            $count = 1;
-            foreach( $progressEntries as $label => $contentHtml ) {
-
-                if ( ! is_array( $contentHtml ) ) { ?>
-
-                <li><a href="#profile-tab-<?php echo $count++; ?>"><?php echo $label; ?></a></li><?php
-                }
-                else {
-                    $span = $contentHtml[0];
-                    $contentHtml = $contentHtml[1];
-                ?>
-                    <li><a href="#profile-tab-<?php echo $count++; ?>"><?php echo $label; ?><span><?php echo $span; ?></span></a></li><?php
-                }
-            } ?>
-
-            </ul><?php
-            $count = 1;
-            foreach( $progressEntries as $label => $contentHtml ) {
-
-            if (is_array( $contentHtml ) ) {
-                $span = $contentHtml[0];
-                $contentHtml = $contentHtml[1];
-            } ?>
-            <div id="profile-tab-<?php echo $count++; ?>">
-                <?php echo $contentHtml; ?>
-            </div>
-
-    <?php   } ?>
-        </div> <!-- profile-tabs div -->
-        <span class="z-spinner"></span><?php
-
-        $html = ob_get_clean();
-        return $html;
-
-    }
-*/
     public function viewCompliance( $clientId = null, $shortname = null ) {
 
         if ( empty( $clientId ) ) {
