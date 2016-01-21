@@ -4,7 +4,7 @@
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
  *
  * License Information:
- *  the GPL v2 license(?)
+ *  GPL v2 license
  */
 
 class e20rActionModel extends e20rSettingsModel {
