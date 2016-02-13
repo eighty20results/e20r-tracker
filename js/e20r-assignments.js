@@ -146,6 +146,14 @@ var e20rClientAssignment = {
          self._clear_textbox( this );
          });
          */
+        jQuery("#e20r-begin-btn").unbind('click').on('click', function() {
+
+            event.preventDefault();
+
+            jQuery("form#e20r-start").submit();
+            return;
+        });
+
         jQuery(".e20r-assignment-reply-link").unbind('click').on('click', function () {
 
             var reply_lnk = jQuery(this);

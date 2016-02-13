@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
-Tested up to: 4.4
-Stable tag: 1.5.43
+Tested up to: 4.4.2
+Stable tag: 1.5.44
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,25 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.44 ==
+
+* FIX: Didn't load the Weekly Progress page
+* FIX: Didn't always save the measurement on blur
+* FIX: Only load minified JS scripts when the system is running w/o DEBUG enabled
+* FIX: Set a specific variable to indicate that the interview is complete for JS
+* FIX: Meaning on interview_complete (was interview_incomplete) inverted
+* FIX: Set the 'Null' for a field to 0 if there's no data
+* FIX: Didn't always load the correct survey type for the page/shortcode
+* FIX: Submit form and prevent ourselves from following link
+* FIX: Use PHP 5.x style constructors
+* ENH: Start working on underscore.js based front-end JavaScript templates
+* ENH: Remove whitespace
+* ENH: Add debug info for whenever we have to load NULL measurement records
+* ENH: Return a NULL record if there's no data in the DB
+* ENH: Make debug info more specific
+* ENH: Enable the exception for an empty field
+* ENH: Updated the plugin upgrade library
 
 == 1.5.43 ==
 
