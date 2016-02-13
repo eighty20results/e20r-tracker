@@ -309,7 +309,7 @@ jQuery(function() {
             }
             catch (ex) {
                 var exceptionHandlers = {
-                    //'INPUT_INVALID': 'Please enter your measurement',
+                    'INPUT_INVALID': 'Please enter your measurement',
                     'MEASUREMENT_DIFFERENCE_TOO_LARGE_FOR_PERIOD': { errorText: 'The last time you took this measurement, you measured <strong>' + lastWeekValue + ' ' + UNIT.printWord(self.unit) + '</strong>.\
 					 That\'s a difference of <strong>' + Math.round(diff) + ' ' + UNIT.printWord(self.unit) + '</strong> from this ' + self.period + '\'s measurement. Are you certain you\'ve entered this ' + self.period + '\'s measurement correctly?\
 					<br /><br />\
@@ -343,7 +343,7 @@ jQuery(function() {
 
         save: function(self) {
 
-            jQuery(body).addClass("loading");
+            jQuery('body').addClass("loading");
             var $data = {
                 'action': 'e20r_saveMeasurementForUser',
                 'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
@@ -369,7 +369,7 @@ jQuery(function() {
                 }
             });
 
-            jQuery(body).removeClass("loading");
+            jQuery('body').removeClass("loading");
             self.changeState('saved');
         },
 
@@ -1060,7 +1060,7 @@ jQuery(function() {
 
                 },
                 success: function($response) {
-                    console.log('Response: ' + $response);
+                    console.log('Updated unit response: ' + $response);
                 }
             });
 
@@ -1094,7 +1094,7 @@ jQuery(function() {
             data: $data,
             error: function($response, $errString, $errType) {
 
-                console.log("From server: ", $response );
+                console.log("For Completion check: From server: ", $response );
                 console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_checkCompletion()");
 
                 var $msg = '';
@@ -1115,8 +1115,7 @@ jQuery(function() {
             },
             success: function($response) {
                 //var $resp = jQuery.map( $response, function(el){ return el; });
-                console.log('Response: ');
-                console.dir( $response );
+                console.log('Completion response: ', $response);
 
                 if ( $response.data.progress_form_completed  == true ) {
                     console.log("Setting form as saved");
