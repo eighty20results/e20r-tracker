@@ -2206,6 +2206,7 @@ class e20rTracker {
         global $current_user;
 	    global $currentArticle;
 	    global $currentProgram;
+	    global $currentClient;
 
         if ( !isset( $post->ID ) ) {
             return;
@@ -2255,8 +2256,16 @@ class e20rTracker {
             wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
             wp_register_script( 'jquery-colorbox', "//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.33/jquery.colorbox-min.js", array('jquery'), '1.4.33', false);
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), E20R_VERSION, false );
-            wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.min.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
+
+            if (! WP_DEBUG) {
+                wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.min.js', array( 'jquery.timeago' ), E20R_VERSION, false );
+                wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.min.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
+            }
+            else {
+                wp_register_script( 'e20r-tracker-js', E20R_PLUGINS_URL . '/js/e20r-tracker.js', array( 'jquery.timeago' ), E20R_VERSION, false );
+                wp_register_script( 'e20r-progress-js', E20R_PLUGINS_URL . '/js/e20r-progress.js', array( 'e20r-tracker-js' ) , E20R_VERSION, false );
+            }
+
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 
@@ -2292,6 +2301,7 @@ class e20rTracker {
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
+			dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading survey data for user...");
 
             /* Load user specific settings */
             wp_localize_script( 'e20r-progress-js', 'e20r_progress',
@@ -2312,6 +2322,7 @@ class e20rTracker {
                     ),
                     'user_info'    => array(
                         'userdata'          => json_encode( $e20rClient->get_data( $userId, true, true ), JSON_NUMERIC_CHECK ),
+                        'interview_complete' => $e20rClient->completeInterview( $userId ),
 //                        'progress_pictures' => '',
 //                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
 
@@ -2369,9 +2380,9 @@ class e20rTracker {
 
                 console.log("Loading user_info: ", NourishUser );
                 console.log( "Loading Measurement data for last week", LAST_WEEK_MEASUREMENTS );
-                console.log( "Interview is incomplete: ", NourishUser.incomplete_interview );
+                console.log( "Interview is complete: ", e20r_progress.user_info.interview_complete );
 
-                if ( NourishUser.incomplete_interview == 1 ) {
+                if ( e20r_progress.user_info.interview_complete === false ) {
                     console.log("Need to redirect this user to the Interview page!");
                     location.href=e20r_progress.settings.interview_url;
                 }
