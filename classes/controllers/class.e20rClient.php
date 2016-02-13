@@ -251,7 +251,6 @@ class e20rClient
     public function completeInterview($userId)
     {
 
-
         dbg("e20rClient::completeInterview() - Checking if interview was completed");
         // $data = $this->model->get_data( $userId, 'completed_date');
 
