@@ -180,6 +180,7 @@ class e20rMeasurementModel {
             return ( array_key_exists( $date, $this->byDate ) ? $this->byDate[ $date ] : $this->loadNullMeasurement( $date ) );
         }
         else {
+	        dbg("e20rMeasurementModel::getByDate() - Returning NULL data for {$date}");
             return (empty( $this->byDate ) ? $this->loadNullMeasurement( $date ) : $this->byDate );
         }
 
@@ -540,6 +541,11 @@ class e20rMeasurementModel {
 
 		    dbg( "MeasurementModel::loadByDate() - loaded " . count( $results ) . " records" );
 
+		    if (empty($results)) {
+			    $ts = strtotime($when);
+			    $this->byDate[ date( 'Y-m-d', $ts) ] = $this->loadNullMeasurement();
+		    }
+
 		    foreach ( $results as $rec ) {
 			    $ts                                   = strtotime( $rec->{$this->fields['recorded_date']} );
 			    $this->byDate[ date( 'Y-m-d', $ts ) ] = $rec;
@@ -657,7 +663,7 @@ class e20rMeasurementModel {
         $nullMeasurement = new stdClass();
 
         foreach( $fields as $field => $val ) {
-            $nullMeasurement->{$field} = null;
+            $nullMeasurement->{$field} = 0;
         }
 
         dbg("MeasurementsModel_loadNullMeasurement() - Returning empty record for {$when}" );
