@@ -568,8 +568,8 @@ class e20rClientModel {
         }
         */
         if ( ( is_admin() && $e20rTracker->is_a_coach( $current_user->ID ) )||
-            ( $post->ID == $currentProgram->intake_form ) ||
-            ( has_shortcode( $post->post_content, 'e20r_profile' ) ) ) {
+            ( $post->ID == $currentProgram->intake_form ) || ($post->ID == $currentProgram->measurements_page_id) ||
+            ( has_shortcode( $post->post_content, 'e20r_profile' )  ) ) {
 
             dbg("e20rClientModel::load_from_survey_table() - Program config indicates we're loading for a welcome survey.");
             $survey_type = E20R_SURVEY_TYPE_WELCOME;
@@ -577,6 +577,8 @@ class e20rClientModel {
         else {
             $survey_type = E20R_SURVEY_TYPE_OTHER;
         }
+
+        dbg("e20rClientModel::load_from_survey_table(): Survey is {$survey_type}");
 
         $current_date_ts = strtotime( $e20rTracker->getDateFromDelay( $currentArticle->release_day, $clientId ) );
         $record['for_date'] = date_i18n( 'Y-m-d H:i:s', $current_date_ts );
