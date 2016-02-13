@@ -205,7 +205,7 @@ class e20rArticleView extends e20rSettingsView {
                             <input type="hidden" value="<?php echo $e20rTracker->getDateForPost($day); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
                             <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                         </form>
-                        <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn"><?php _e("Begin", "e20rtracker"); ?> &raquo;</a>
+                        <a href="javascript:document.getElementById('e20r-start').submit();return false;" id="e20r-begin-btn"><?php _e("Begin", "e20rtracker"); ?> &raquo;</a>
                     </div>
                 </div>
             </div>
