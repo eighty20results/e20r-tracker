@@ -89,6 +89,18 @@ class e20rAction extends e20rSettings
         return $columns;
     }
 
+    public function sort_column($query) {
+
+        if( $query->is_main_query() && is_admin() && ( $orderby = $query->get('orderby'))) {
+
+            switch( $orderby ) {
+                case 'e20r_checkin_type':
+                    $query->set('meta_key', '_e20r-action-checkin_type');
+                    $query->set('orderby', 'meta_value_num');
+                    break;
+            }
+        }
+    }
     public function hasCompletedLesson($articleId, $postId = null, $userId = null, $delay = null)
     {
 
