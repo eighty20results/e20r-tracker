@@ -788,10 +788,41 @@ class e20rAssignment extends e20rSettings {
         return true;
     }
 
-    public function assignment_col_head( $defaults ) {
+    public function sort_column($query) {
 
-        $defaults['used_day'] = 'Use on';
-        return $defaults;
+        if( $query->is_main_query() && is_admin() && ( $orderby = $query->get('orderby'))) {
+
+            switch( $orderby ) {
+                case 'used_day':
+                    $query->set('meta_key', '_e20r-assignments-delay');
+                    $query->set('orderby', 'meta_value_num');
+
+                    dbg("e20rAssignment::sort_column() - Order by is: " . $orderby);
+                    break;
+            }
+
+        }
+    }
+
+    public function order_by( $orderby ) {
+
+        if ('used_day' !== $orderby )
+            return $orderby;
+
+        if (false !== stripos($orderby, 'DESC'))
+            $direction = "DESC";
+
+        if (false !== stripos($orderby, 'ASC'))
+            $direction = "ASC";
+
+        $orderby = "CAST(meta_value AS SIGNED) {$direction}";
+        return $orderby;
+    }
+
+    public function assignment_col_head( $columns ) {
+
+        $columns['used_day'] = __("Use on (Day #)", "e20rtracker");
+        return $columns;
     }
 
     public function sortable_column( $columns ) {
@@ -801,12 +832,22 @@ class e20rAssignment extends e20rSettings {
         return $columns;
     }
 
+    public function custom_column($column, $post_ID)
+    {
+        if ($column != 'used_day')
+            return;
+
+        $post_releaseDay = $this->getDelay( $post_ID );
+        echo intval($post_releaseDay);
+    }
+
     public function set_custom_edit_columns( $columns ) {
 
         $columns['used_day'] = __("Use on (Day #)", "e20rtracker");
         return $columns;
     }
 
+    /*
     public function assignment_col_content( $colName, $post_ID ) {
 
         global $e20rAssignment;
@@ -825,6 +866,7 @@ class e20rAssignment extends e20rSettings {
             }
         }
     }
+    */
 
     /** Load the assignments table via AJAX... */
     public function ajax_assignmentData() {
