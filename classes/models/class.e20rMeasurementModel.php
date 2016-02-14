@@ -543,7 +543,7 @@ class e20rMeasurementModel {
 
 		    if (empty($results)) {
 			    $ts = strtotime($when);
-			    $this->byDate[ date( 'Y-m-d', $ts) ] = $this->loadNullMeasurement();
+			    $this->byDate[ date( 'Y-m-d', $ts) ] = $this->loadNullMeasurement($when);
 		    }
 
 		    foreach ( $results as $rec ) {
