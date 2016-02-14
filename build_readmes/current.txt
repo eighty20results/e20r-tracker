@@ -1,16 +1,4 @@
-FIX: Didn't load the Weekly Progress page
-FIX: Didn't always save the measurement on blur
-FIX: Only load minified JS scripts when the system is running w/o DEBUG enabled
-FIX: Set a specific variable to indicate that the interview is complete for JS
-FIX: Meaning on interview_complete (was interview_incomplete) inverted
-FIX: Set the "Null" for a field to 0 if there's no data
-FIX: Didn't always load the correct survey type for the page/shortcode
-FIX: Submit form and prevent ourselves from following link
-FIX: Use PHP 5.x style constructors
-ENH: Start working on underscore.js based front-end JavaScript templates
-ENH: Remove whitespace
-ENH: Add debug info for whenever we have to load NULL measurement records
-ENH: Return a NULL record if there's no data in the DB
-ENH: Make debug info more specific
-ENH: Enable the exception for an empty field
-ENH: Updated the plugin upgrade library
+FIX: Sort by check-in type
+FIX: Properly sort Assignments by assignment day number
+FIX: Wouldn't allow admins/editors to duplicate posts unless they also were a coach.
+FIX: PHP Notice in error log: Undefined variable
