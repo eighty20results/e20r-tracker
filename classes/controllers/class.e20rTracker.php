@@ -88,10 +88,10 @@ class e20rTracker {
                             );
 
         if ( in_array( $post->post_type, $managed_types ) &&
-                $this->userCanEdit( $current_user->ID ) &&
-                $this->is_a_coach( $current_user->ID ) ) {
+                ($this->userCanEdit( $current_user->ID ) ||
+                $this->is_a_coach( $current_user->ID )) ) {
 
-            dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for the post type!");
+            dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for {$post->post_type} post(s)");
             $actions['duplicate'] = '<a href="admin.php?post=' . $post->ID . '&amp;action=e20r_duplicate_as_draft" title="' .__("Duplicate this item", "e20rtracker" ) .'" rel="permalink">' . __("Duplicate", "e20rtracker") . '</a>';
         }
 
@@ -437,8 +437,12 @@ class e20rTracker {
                 add_filter( 'manage_edit-e20r_actions_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
                 add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
 
-                add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
-                add_action('manage_e20r_assignments_posts_custom_column', array( &$e20rAssignment, 'assignment_col_content' ), 10, 2);
+                add_filter( 'pre_get_posts', array(&$e20rAction, 'sort_column') );
+                add_filter( 'pre_get_posts', array(&$e20rAssignment, 'sort_column') );
+				add_filter( 'posts_orderby', array(&$e20rAssignment, 'order_by') );
+
+                // add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
+                // add_action('manage_e20r_assignments_posts_custom_column', array( &$e20rAssignment, 'assignment_col_content' ), 10, 2);
 
                 add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
                 add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
