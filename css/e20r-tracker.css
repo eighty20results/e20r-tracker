@@ -172,37 +172,7 @@ table.jqplot-table-legend td {
     padding: 0;
 }
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
-.e20r-button {
-    display: inline-block;
-    margin: 0 10px 0 0;
-    color: #004CFF;
-    padding: 8px 15px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;
-    text-transform: none;
-    font-weight: bold;
-    font-size: initial;
-    /* font-variant: small-caps; */
-    text-align: center;
-    text-decoration: none;
-    box-shadow: none;
-    /* background: #666; */
-    background-image: -webkit-linear-gradient(#FFF, #E5E5E5);
-    background-image: -moz-linear-gradient(#FFF, #E5E5E5);
-    background-image: -o-linear-gradient(#FFF, #E5E5E5);
-    background-image: linear-gradient(#FFF, #E5E5E5);
-    border: 1px solid #C5C5C5;
-    text-shadow: none;
-}
-.e20r-button:hover {
-    color: #FFF !important;
-    box-shadow: none;
-    /* background: #000; */
-    background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
-    background-image: -moz-linear-gradient(#E5E5E5, #004CFF);
-    background-image: -o-linear-gradient(#E5E5E5, #004CFF);
-    background-image: linear-gradient(#E5E5E5, #004CFF);
-}
+/*
 .gform_button,
 input[type="button"],
 input[type="reset"],
@@ -253,6 +223,7 @@ input:hover[type="submit"],
     background-image: -o-linear-gradient(#E5E5E5, #004CFF);
     background-image: linear-gradient(#E5E5E5, #004CFF);
 }
+*/
 .e20r-admin-hr {
     width: 90%;
 }
