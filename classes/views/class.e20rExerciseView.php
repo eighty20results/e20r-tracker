@@ -57,7 +57,9 @@ class e20rExerciseView
 
                 <div class="e20r-youtube-container">
                 <div class="youtube-player" data-id="<?php echo $yID; ?>"></div>
-                </div><?php
+                </div>
+                <div class="e20r-video-descr"><?php _e('Click to view the video', 'e20rtracker'); ?></div>
+                <?php
 
                 $html = ob_get_clean();
             }
