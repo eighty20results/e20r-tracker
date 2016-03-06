@@ -124,7 +124,7 @@ class e20rExerciseView
                            value="<?php echo $currentExercise->id; ?>"/>
                 </div>
                 <div class="e20r-exercise-table-column second-column e20r-exercise-description clearfix">
-                    <p><?php echo wpautop($currentExercise->descr); ?></p>
+                    <p><?php echo wpautop(do_shortcode($currentExercise->descr)); ?></p>
                 </div>
             </div>
             <?php endif; ?>
@@ -202,7 +202,7 @@ class e20rExerciseView
                 <div class="spacer">&nbsp;</div>
                 <div class="e20r-exercise-detail-row">
                     <div class="e20r-exercise-table-column first-column e20r-exercise-description">
-                        <p><?php echo wpautop($currentExercise->descr); ?></p>
+                        <p><?php echo wpautop(do_shortcode($currentExercise->descr)); ?></p>
                     </div>
                 </div>
                 <div class="spacer">&nbsp;</div>
