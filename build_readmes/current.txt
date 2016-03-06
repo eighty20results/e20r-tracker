@@ -1,4 +1,1 @@
-FIX: Sort by check-in type
-FIX: Properly sort Assignments by assignment day number
-FIX: Wouldn't allow admins/editors to duplicate posts unless they also were a coach.
-FIX: PHP Notice in error log: Undefined variable
+ENH: Support shortcodes in exercise descriptions
