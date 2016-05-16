@@ -118,7 +118,7 @@ class e20rProgram extends e20rSettings {
             $programId = get_user_meta($current_user->ID, 'e20r-tracker-program-id', true);
         }
 
-        if (!empty($programId) &&
+        if ( !empty($programId) &&
                 ((!isset($currentProgram->id)) || ($currentProgram->id != $programId))) {
 
             dbg("e20rProgram::init() - Loading program settings for {$programId}.");
@@ -140,10 +140,14 @@ class e20rProgram extends e20rSettings {
 
         $programs = $this->model->loadAllSettings('published');
 
-        foreach( $programs as $program ) {
+        if (! empty($programs)) {
 
-            $program_array[ $program->id ] = $program->title;
+            foreach ( $programs as $program ) {
+
+                $program_array[ $program->id ] = $program->title;
+            }
         }
+
         return $program_array;
     }
 
@@ -288,17 +292,16 @@ class e20rProgram extends e20rSettings {
     public function getProgramIdForUser( $userId = 0, $articleId = null ) {
 
 	    global $currentProgram;
-
         global $e20rArticle;
 
         $user_program = false;
 
-        if ( 0 != $userId ) {
+        if ( 0 < $userId ) {
 
             $user_program = get_user_meta( $userId, 'e20r-tracker-program-id', true);
         }
         else {
-            return;
+            return $user_program;
         }
 
         if ( !empty( $currentProgram->id ) && ( $currentProgram->id == $user_program ) ) {
@@ -309,6 +312,25 @@ class e20rProgram extends e20rSettings {
 	    if ( !isset( $currentProgram->id ) || ( ( false !== $user_program ) && ( isset( $currentProgram->id ) && ( $currentProgram->id != $user_program ) ) ) ) {
 
 		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id isn't configured or its different from what this user ({$userId}) needs it to be ({$user_program}).");
+
+            if (empty($user_program)) {
+
+                if (function_exists('pmpro_getMembershipLevelForUser')) {
+
+                    // locate the user's program.
+                    $level = pmpro_getMembershipLevelForUser($userId);
+
+                    $user_program = $this->model->findByMembershipId($level->id);
+
+                    if (is_null($user_program)) {
+
+                        dbg("Unable to locate program ID for user {$userId}");
+                        return false;
+                    }
+                } else {
+                    dbg("Error loading program information for {$userId}", E20R_DEBUG_SEQ_CRITICAL);
+                }
+            }
 
             dbg("e20rProgram::getProgramIdForUser() - currentProgram being configured for {$userId} -> {$user_program}.");
             $this->model->loadSettings( $user_program );
@@ -332,7 +354,7 @@ class e20rProgram extends e20rSettings {
 
         global $current_user;
 
-        dbg("e20rProgram::configure_startdate() - Defined program startdate value: {$currentProgram->startdate}");
+        dbg("e20rProgram::configure_startdate() - Defined program startdate value: {$currentProgram->startdate} for program ID {$program_id}");
 
         if ( is_admin() && ( $userId == $current_user->ID ) ) {
             return;
@@ -349,16 +371,56 @@ class e20rProgram extends e20rSettings {
             }
 
             $currentProgram->startdate = date_i18n( 'Y-m-d', $startTS );
-            dbg("e20rProgram::configure_startdate() - Startdate set to the member's start date for the program: {$currentProgram->startdate} for {$userId}");
+            dbg("e20rProgram::configure_startdate() - startdate value configured as the member's start date for the program: {$currentProgram->startdate} for {$userId}");
         }
     }
 
-    public function setProgramForUser( $user_id, $membership_id ) {
+    /*
+    public function setUserProgramStart( $levelId, $userId = null ) {
+
+        global $e20rTracker;
+
+        dbg("e20rProgram::setUserProgramStart() - Called from: " . $e20rTracker->whoCalledMe() );
+        dbg("e20rProgram::setUserProgramStart() - levelId: {$levelId} and userId: {$userId}" );
+
+        $levels = $e20rTracker->coachingLevels();
+
+        dbg("e20rProgram::setUserProgramStart() - Loaded level information" );
+        dbg($levels);
+
+        if ( in_array( $levelId, $levels) ) {
+
+            if ( $userId == null ) {
+
+                global $current_user;
+                $userId = ( !empty( $current_user->ID ) ) ? $current_user->ID : false;
+                dbg("e20rProgram::setUserProgramStart() - User id wasn't received?? Set to: {$userId}");
+            }
+
+            $startDate = $this->startdate( $userId );
+            dbg( "e20rProgram::setuserProgramStart() - Received startdate of: {$startDate} aka " . date( 'Y-m-d', $startDate ) );
+        }
+
+        return false;
+    }
+    */
+    public function setProgramForUser( $startdate, $user_id, $level_obj ) {
 
         global $e20rTracker;
         global $currentProgram;
 
-        dbg("e20rTracker::setProgramForUser() - Called from: " . $e20rTracker->whoCalledMe() );
+        // We only need the membership ID value to find the program (if it's defgined.
+        if (!empty($level_obj->id))
+        {
+            $membership_id = $level_obj->id;
+        }
+        else
+        {
+            return $startdate;
+        }
+
+
+        dbg("e20rProgram::setProgramForUser() - Called from: " . $e20rTracker->whoCalledMe() );
         dbg("e20rProgram::setProgramForUser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}");
 
         if ( false === ( $pId = $this->model->findByMembershipId( $membership_id ) ) ) {
@@ -367,12 +429,13 @@ class e20rProgram extends e20rSettings {
 
             $addr = get_option( 'admin_email' );
 
-            $subj = "Error: Cannot locate program definition for {$membership_id}";
+            $subj = "Error: Cannot locate program definition for the '{$level_obj->name}'' membership level (ID: {$membership_id})";
 
-            $msg = "Membership Level {$membership_id} isn't associated with a published program ID.\n";
-            $msg .= "Please correct the program definitions for the {$membership_id} membership level\n";
+            $msg = "Membership Level '{$level_obj->name}' (ID: {$membership_id}) does NOT appear to be associated with a published program.\n";
+            $msg .= "Please correct the program definitions for the '{$level_obj->name}' (ID: {$membership_id}) membership level\n";
 
             wp_mail( $addr, $subj, $msg);
+            return $startdate;
 
         }
 
@@ -395,28 +458,36 @@ class e20rProgram extends e20rSettings {
             }
 
             wp_mail( $addr, $subj, $msg);
-            return;
+            return $startdate;
         }
 
         update_user_meta( $user_id, 'e20r-tracker-program-id', $pId );
 
-        if ( $pId ===  get_user_meta( $user_id, 'e20r-tracker-program-id', true ) ) {
+        if ( $pId !==  get_user_meta( $user_id, 'e20r-tracker-program-id', true ) ) {
 
             $addr = get_option( 'admin_email' );
 
             $subj = "Error: Unable to set program for user ID";
 
-            $msg = "Membership Level {$membership_id} could not be configured for user ID {$user_id}.\n";
+            $msg = "Membership Level '{$level_obj->name}' (ID: {$membership_id}) could not be configured for user ID {$user_id}.\n";
             $msg .= "Please update the profile for user with ID {$user_id} in the admin panel.\n";
 
             wp_mail( $addr, $subj, $msg);
+            return $startdate;
         }
 
         dbg("e20rProgram::setProgramForUser() - Testing whether to add user to program list");
 
-        if ( !isset( $currentProgram->id ) || ( $pId != $currentProgram->id ) ) {
+        if ( empty( $currentProgram->id ) || ( $pId != $currentProgram->id ) ) {
 
-            $this->init($pId);
+            dbg("e20rProgram::setProgramForUser() - Configure program ({$pId}) for new user/member");
+            $this->model->loadSettings($pId);
+            $startTS = $this->startdate($user_id, $pId, false);
+
+            if ( false !== update_user_meta( $user_id, 'e20r-tracker-program-startdate', date( 'Y-m-d', $startTS ) ) ) {
+
+                $startdate = date_i18n('Y-m-d', $startTS) . " 00:00:00";
+            }
         }
 
         $currentProgram->users[] = $user_id;
@@ -427,7 +498,7 @@ class e20rProgram extends e20rSettings {
             $this->model->set('users', $currentProgram->users, $currentProgram->id);
         }
 
-        return;
+        return $startdate;
     }
 
     private function loadProgram( $userId = 0 ) {
@@ -550,6 +621,12 @@ class e20rProgram extends e20rSettings {
 
 	    global $currentProgram;
 
+        if ( ( empty($program_id) ) ) {
+
+            dbg( "e20rProgram::startdate() - Loading program for user with ID: {$userId}" );
+            $program_id = $this->getProgramIdForUser( $userId );
+        }
+
         if ( ( !empty( $program_id ) && !empty( $currentProgram->id ) && ( $currentProgram->id === false ) ) ||
                 ( (!empty( $program_id ) ) && ( $program_id != $currentProgram->id ) ) ) {
 
@@ -557,17 +634,30 @@ class e20rProgram extends e20rSettings {
             $this->model->loadSettings( $program_id );
         }
 
-        if ( ( empty($program_id) ) ) {
-
-            // dbg( "e20rProgram::startdate() - Loading program for user with ID: {$userId}" );
-            $this->getProgramIdForUser( $userId );
-        }
-
         dbg("e20rProgram::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
         // dbg($currentProgram);
 
         // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
         return strtotime( $currentProgram->startdate );
+    }
+
+    public function set_startdate_for_user( $ts, $user_id, $level )
+    {
+        $program_id = $this->getProgramIdForUser( $user_id );
+        $sd = $this->startdate($user_id, $program_id );
+
+        if (empty($sd))
+        {
+            if (!empty($level->startdate))
+            {
+                $sd = $level->startdate;
+            }
+        }
+
+        $start_date = date_i18n('Y-m-d', $sd) . " 00:00:00";
+
+        dbg("e20rProgram::set_startdate_for_user() - Using startdate of: {$start_date} ({$sd} vs {$ts}) for {$user_id} in program {$program_id}");
+        return $start_date;
     }
 
     public function get_coaches_for_program( $program_id ) {
