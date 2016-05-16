@@ -32,10 +32,10 @@ class e20rExerciseView
             if (is_null($data[0]) && empty($currentExercise->video_link)) {
 
                 dbg("e20rExerciseViews::generate_video_view() - Using default placeholder image...");
-                $currentExercise->image = '<img class="e20r-resize" src="' . E20R_PLUGINS_URL . '/img/strong-cubed-fitness-default.png" alt="' . $currentExercise->title . '">';
+                $currentExercise->image = '<img class="e20r-resize" src="' . E20R_PLUGINS_URL . '/img/strong-cubed-fitness-default.png" alt="' . esc_attr($currentExercise->title) . '">';
             } else {
 
-                $currentExercise->image = '<img class="e20r-resize" src="' . $data[0] . '" alt="' . $currentExercise->title . '">';
+                $currentExercise->image = '<img class="e20r-resize" src="' . esc_url($data[0]) . '" alt="' . esc_attr($currentExercise->title) . '">';
             }
 
             $html = $currentExercise->image;
@@ -56,7 +56,7 @@ class e20rExerciseView
                 ob_start(); ?>
 
                 <div class="e20r-youtube-container">
-                <div class="youtube-player" data-id="<?php echo $yID; ?>"></div>
+                <div class="youtube-player" data-id="<?php echo esc_attr($yID); ?>"></div>
                 </div>
                 <div class="e20r-video-descr"><?php _e('Click to view the video', 'e20rtracker'); ?></div>
                 <?php
@@ -92,7 +92,7 @@ class e20rExerciseView
             <div class="spacer">&nbsp;</div>
             <div class="e20r-exercise-table-header e20r-exercise-detail-row-1 clearfix">
                 <div class="e20r-exercise-title">
-                    <h4 class="e20r-tracker-detail-h4"><?php echo $currentExercise->title; ?></h4>
+                    <h4 class="e20r-tracker-detail-h4"><?php echo esc_attr($currentExercise->title); ?></h4>
                 </div>
             </div>
             <div class="spacer">&nbsp;</div>
