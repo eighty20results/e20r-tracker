@@ -19,6 +19,8 @@ class e20rProgramModel extends e20rSettingsModel {
 
     public function findByMembershipId( $mID ) {
 
+        $pId = null;
+
         $args = array(
             'posts_per_page' => -1,
             'post_type' => $this->cpt_slug,
@@ -95,6 +97,8 @@ class e20rProgramModel extends e20rSettingsModel {
         $settings->sequences = array();
         $settings->title = null;
         $settings->excerpt = null;
+        $settings->active_delay = null;
+        $settings->previous_delay = null;
         
         return $settings;
     }
@@ -219,9 +223,10 @@ class e20rProgramModel extends e20rSettingsModel {
 
 			if ( ! empty( $post->post_title ) ) {
 
-				$this->settings->excerpt       = $post->post_excerpt;
-				$this->settings->title    = $post->post_title;
-				$this->settings->id          = $id;
+				$this->settings->excerpt            = $post->post_excerpt;
+                $this->settings->program_shortname  = $post->post_name;
+				$this->settings->title              = $post->post_title;
+				$this->settings->id                 = $id;
 			}
 
             if ( !isset( $this->settings->users ) || empty( $this->settings->users ) ) {
