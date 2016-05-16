@@ -460,7 +460,7 @@ class e20rProgramView {
                         <tr class="program-inputs">
 	                        <td>
                                 <select class="select2-container" id="e20r-program-male_coaches" name="e20r-program-male_coaches[]" multiple="multiple">
-                                    <option value="-1" <?php selected( -1, $programData->male_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+                                    <option value="-1" <?php in_array( -1, $programData->male_coaches) ? 'selected="selected"' : null; ?>><?php _e("None added", "e20rtracker");?></option><?php
 
                                 foreach( $coaches as $cId => $cName ) {
                                     $selected = (in_array( $cId, $programData->male_coaches ) ? 'selected="selected"' : null );?>
@@ -470,7 +470,7 @@ class e20rProgramView {
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-female_coaches" name="e20r-program-female_coaches[]" multiple="multiple">
-                                    <option value="-1" <?php selected( -1, $programData->female_coaches) ?>><?php _e("None added", "e20rtracker");?></option><?php
+                                    <option value="-1" <?php in_array( -1, $programData->female_coaches) ? 'selected="selected"' : null; ?>><?php _e("None added", "e20rtracker");?></option><?php
 
                                 foreach( $coaches as $cId => $cName ) {
                                     $selected = (in_array( $cId, $programData->female_coaches ) ? 'selected="selected"' : null );?>
