@@ -291,7 +291,8 @@ class e20rTracker {
 
             add_filter( 'post_link', array( &$this, 'process_post_link' ), 10, 3 );
             add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
-            add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
+            // add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
+            add_filter( 'pmpro_member_startdate', array( $e20rProgram, 'setProgramForUser'), 11, 3 );
             add_filter( 'auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3 );
             add_filter( 'pmpro_email_data', array( &$this, 'filter_changeConfirmationMessage' ), 10, 2 );
 
@@ -300,7 +301,6 @@ class e20rTracker {
             if ( !is_user_logged_in() ) {
                 return;
             }
-
 
             // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
 
@@ -4098,7 +4098,12 @@ class e20rTracker {
             return $delayVal;
         }
 
-	    $startDate = strtotime( $currentProgram->startdate );
+
+
+        if ( false === $startDate = strtotime( $currentProgram->startdate ) ) {
+            dbg("Unable to configure startdate for currentProgram (" . !empty($currentProgram->id) ? $currentProgram->id : 'None' . ")");
+            return false;
+        }
 
 	    dbg("e20rTracker::getDelay() - Based on startdate of {$currentProgram->startdate}...");
 
@@ -4129,39 +4134,6 @@ class e20rTracker {
             dbg("e20rTracker::getDelay() - Days since startdate is: {$delay}...");
 
             return $delay;
-        }
-
-        return false;
-    }
-
-    public function setUserProgramStart( $levelId, $userId = null ) {
-
-        global $e20rProgram;
-
-        dbg("e20rTracker::setUserProgramStart() - Called from: " . $this->whoCalledMe() );
-        dbg("e20rTracker::setUserProgramStart() - levelId: {$levelId} and userId: {$userId}" );
-
-        $levels = $this->coachingLevels();
-
-        dbg("e20rTracker::setUserProgramStart() - Loaded level information" );
-        dbg($levels);
-
-        if ( in_array( $levelId, $levels) ) {
-
-            if ( $userId == null ) {
-
-                global $current_user;
-                $userId = ( !is_null( $current_user->ID ) ) ? $current_user->ID : false;
-                dbg("e20rTracker::setUserProgramStart() - User id wasn't received?? Set to: {$userId}");
-            }
-
-            $startDate = $e20rProgram->startdate( $userId );
-            dbg( "e20rTracker::setuserProgramStart() - Received startdate of: {$startDate} aka " . date( 'Y-m-d', $startDate ) );
-
-            if ( false !== update_user_meta( $userId, 'e20r-tracker-program-startdate', date( 'Y-m-d', $startDate ) ) ) {
-
-                return true;
-            }
         }
 
         return false;
