@@ -62,6 +62,9 @@ class e20rSettings {
         $list = $this->model->loadAllSettings( 'any' );
         $key = false;
 
+	    if (empty($list))
+		    return false;
+
         foreach ($list as $settings ) {
 
             if ( isset($settings->short_name) ) {
