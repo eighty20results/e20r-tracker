@@ -1125,7 +1125,7 @@ class e20rWorkoutView extends e20rSettingsView
                         <hr width="100%"/>
                     </td>
                 </tr>
-                <tr>
+<!--                <tr>
                     <td colspan="3" style="background-color: #C5C5C5;"><?php
                         $text = "<p style='font-size: 1.1em;'>The <em><strong>date values will take precedence over day number configurations</strong></em>. If you want to use day numbers, you <strong>have to clear the dates</strong> for the 'First workout (date)' or 'Last workout (date)' fields, <strong>before saving this workout/activity.</strong></p>";
                         $text .= "<p style='font-size: 1.1em;'>If you use the '(day number)' to indicate delay for a workout, we will use the start date value for the clients membership as day 1. Then we will add the startday/endday values to the start date when verifying the clients access to the activity/workout.</p>";
@@ -1133,7 +1133,7 @@ class e20rWorkoutView extends e20rSettingsView
                         ?>
                     </td>
                 </tr>
-                <tr>
+                 <tr>
                     <td colspan="3">
                         <table class="sub-table wp-list-table widefat fixed">
                             <thead>
@@ -1157,6 +1157,7 @@ class e20rWorkoutView extends e20rSettingsView
                         </table>
                     </td>
                 </tr>
+-->
                 <tr>
                     <td colspan="3">
                         <table class="sub-table wp-list-table widefat fixed">
