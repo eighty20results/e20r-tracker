@@ -179,3 +179,4 @@ input#e20r-send-email-message {
     color: #FFF !important;
 }
 .fa-stack br { display: none; }
+table#new-assignments td { vertical-align: middle; }
