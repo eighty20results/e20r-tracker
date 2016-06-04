@@ -1342,7 +1342,7 @@ td.e20r-group-header {
 .progress-container p { color: #33383a; }
 .progress-container hr {
     border: none;
-    border-bottom: 1px solid #dceef4;
+    /* border-bottom: 1px solid #dceef4; */
     height: 1px;
     margin-top: 11px;
     margin-bottom: 13px;
@@ -1440,7 +1440,7 @@ td.e20r-group-header {
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li {
     white-space: nowrap;
 }
-#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
+/* #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; } */
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li.active {
     background: #fffdc0;
     border-bottom: 1px solid #c9c89a;
@@ -1475,6 +1475,7 @@ td.e20r-group-header {
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes legend {
     margin-bottom: 12px;
     font-size: 13px;
+    border: none !important;
     text-transform: uppercase;
     font-family: sans-serif;
     color: rgba(0, 72, 0, 0.75);
@@ -2592,11 +2593,13 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         margin-right: 2%;
         height: 184px;
+        border: none !important;
         font-size: 1rem;
     }
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 1rem;
         margin-left: 2%;
+        border: none !important;
         height: 184px;
     }
 }
@@ -2631,6 +2634,7 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         width: 100%;
         margin-right: 2%;
+        border: none !important;
         height: 184px;
         font-size: 0.8rem;
         min-width: 260px;
@@ -2638,6 +2642,7 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 0.8rem;
         width: 100%;
+        border: none !important;
         height: 184px;
         min-width: 260px;
     }
