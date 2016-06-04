@@ -742,15 +742,6 @@ class e20rClientModel {
         $fields = $e20rTables->getFields('surveys');
         $encrypt = $e20rTracker->loadOption('encrypt_surveys');
 
-        if ( ( !empty( $data['article_id'] )) && ( $data['article_id'] != $currentArticle->id ) ) {
-
-            global $e20rArticle;
-            dbg("e20rClientModel::save_in_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
-            $e20rArticle->getSettings( $data['article_id']);
-        }
-
-        $record["{$fields['article_id']}"] = !empty( $data['article_id'] ) ? $data['article_id'] : $currentArticle->id;
-
         if ( ( !empty( $data['program_id'] ) ) && ( $data['program_id'] != $currentProgram->id ) ) {
 
             global $e20rProgram;
@@ -761,8 +752,17 @@ class e20rClientModel {
 
         $record["{$fields['program_id']}"] = !empty( $data['program_id'] ) ? $data['program_id'] : $currentProgram->id;
 
-        if ( $post->ID == $currentProgram->intake_form ) {
-            dbg("e20rClientModel::save_in_survey_table() - Program config indicates we're on the same page as the welcome survey.");
+        if ( ( !empty( $data['article_id'] )) && ( $data['article_id'] != $currentArticle->id ) ) {
+
+            global $e20rArticle;
+            dbg("e20rClientModel::save_in_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
+            $e20rArticle->getSettings( $data['article_id']);
+        }
+
+        $record["{$fields['article_id']}"] = !empty( $data['article_id'] ) ? $data['article_id'] : $currentArticle->id;
+
+        if ( $post->ID == $currentProgram->intake_form || ( $post->ID == $currentProgram->dashboard_page_id)) {
+            dbg("e20rClientModel::save_in_survey_table() - Program config indicates we're saving a welcome survey.");
             $record["{$fields['survey_type']}"] = E20R_SURVEY_TYPE_WELCOME;
         }
         else {
@@ -852,7 +852,7 @@ class e20rClientModel {
 
         dbg("e20rClientModel::save_client_interview() - Saving data to {$this->table}");
 
-        if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'], $data['page_id'] ) ) !== false ) {
+        if ( ( $id = $this->recordExists( $data['user_id'], $data['program_id'], $data['page_id'], $data['article_id'] ) ) !== false ) {
 
             dbg("e20rTrackerModel::save_client_interview() - User/Program exists in the client info table. Editing an existing record: {$id}" );
             $data['edited_date'] = date_i18n('Y-m-d H:i:s', current_time('timestamp') );
@@ -908,6 +908,7 @@ class e20rClientModel {
 
         global $wpdb;
         global $e20rTables;
+        global $currentArticle;
 
         if ( is_null( $table_name ) ) {
 
@@ -1244,7 +1245,7 @@ class e20rClientModel {
             return $form;
         }
 
-        $cFields = array('GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select', 'GF_Field_MultiSelect');
+        $cFields = array('GF_Field_Radio', 'GF_Field_Checkbox', 'GF_Field', 'GF_Field_Select', 'GF_Field_MultiSelect', 'GF_Field_Likert');
         $txtFields = array('GF_Field_Phone', 'GF_Field_Text', 'GF_Field_Email', 'GF_Field_Date', 'GF_Field_Number', 'GF_Field_Textarea');
         $skipLabels = array('Comments', 'Name', 'Email', 'Phone');
 
