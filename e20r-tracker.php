@@ -29,14 +29,14 @@ License: GPLv2
  */
 // TODO: run unserialize functionality from the Tools section?
 
-define('E20R_VERSION', '1.5.47');
+define('E20R_VERSION', '1.5.48');
 define('E20R_RUN_UNSERIALIZE', 0); // 0 == Do NOT Run, 1 == Run
 define('E20R_DB_VERSION', '11');
 define('E20R_NEW_DB_VERSION', '9');
 define('E20R_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('E20R_PLUGINS_URL', plugins_url('', __FILE__));
 define('E20R_PLUGIN_NAME', plugin_basename(__FILE__));
-define('E20R_MAX_LOG_SIZE', 3 * 1024 * 1024);
+define('E20R_MAX_LOG_SIZE', 10 * 1024 * 1024);
 define('E20R_UPCOMING_WEEK', 1002);
 define('E20R_CURRENT_WEEK', 1001);
 define('E20R_PREVIOUS_WEEK', 1000);
