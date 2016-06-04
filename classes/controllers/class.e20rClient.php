@@ -481,6 +481,7 @@ class e20rClient
         global $current_user;
         global $e20rProgram;
         global $e20rTracker;
+        global $e20rArticle;
         global $page;
 
         global $currentProgram;
@@ -490,16 +491,17 @@ class e20rClient
         $userProgramId = !empty($currentProgram->id) ? $currentProgram->id : $e20rProgram->getProgramIdForUser($userId);
         $userProgramStart = $currentProgram->startdate;
         $eKey = $e20rTracker->getUserKey($userId);
-        $articleId = $currentArticle->id;
+        $surveyArticle = $e20rArticle->findArticles('post_id', $currentProgram->intake_form, $userProgramId );
 
-        dbg($currentProgram);
-        dbg($currentArticle);
+        // dbg($currentProgram);
+        dbg($surveyArticle);
 
         $db_Data = array(
             'user_id' => $userId,
             'program_id' => $currentProgram->id,
             'page_id' => (isset($page->ID) ? $page->ID : CONST_NULL_ARTICLE),
-            'article_id' => $currentArticle->id,
+            // 'article_id' => $currentArticle->id,
+            'article_id' => $surveyArticle[0]->id,
             'program_start' => $currentProgram->startdate,
             'user_enc_key' => $eKey,
             'progress_photo_dir' => "e20r_pics/client_{$userProgramId}_{$userId}"
@@ -723,7 +725,7 @@ class e20rClient
 
                     if ('textarea' == $item['type']) {
 
-                        $data = wp_kses($data);
+                        $data = wp_kses_post($data);
                     }
 
                     // Encrypt the data.
