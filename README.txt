@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.4.2
-Stable tag: 1.5.46
+Stable tag: 1.5.48
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,34 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.48 ==
+
+* FIX: Updated version number to v1.5.48
+* FIX: Cleaned up layout of 'Notes' field
+* FIX: Remove borders for <hr> in the progress update container
+* FIX: Removed border(s) for the notes headline.
+* FIX: Removed borders under the 'did-you' fields on the daily progress page
+* FIX: Load the article defined for the Welcome Survey
+* FIX: Didn't always save sanitized text for survey entries.
+* FIX: Didn't select the correct survey type when the user edited/added/updated their welcome survey from the Dashboard.
+* FIX: Add article ID when looking for pre-existing survey results.
+* FIX: Add support for Likert fields in Gravity Forms surveys/questionnaires.
+* FIX: Alignment in New Assignment metabox
+* FIX: Check validity of the assigned startdate when returning the delay value for the current/specified user ID
+* FIX: Initialize the Program ID variable
+* FIX: Include the shortname in the program definition (settings)
+* FIX: Didn't return false if there were no settings
+* FIX: Didn't properly show the selected/assigned male or female coach.
+* FIX: Avoid PHP warnings
+* FIX: Return explicit false if program ID for a user isn't located
+* FIX: Use Membership level to assign program for new user on checkout
+* FIX: Set startdate for user's membership based on program they've signed up for
+* FIX: Escape attributes
+* ENHANCEMENT: Add action description for video
+* ENHANCEMENT: Removed confusing date/day-since-start option in Activity setup
+* ENHANCEMENT: Changed the log-file size during debug operations
+* REFACTOR: Reorder functions
 
 == 1.5.47 ==
 
