@@ -1042,18 +1042,6 @@ class e20rWorkout extends e20rSettings
             auth_redirect();
         }
 
-        /*		global $e20rArticle;
-                global $e20rProgram;
-                global $e20rTracker;
-
-                global $current_user;
-                global $currentArticle;
-                global $currentProgram;
-                global $post;
-                $workoutData = array();
-                $activity_override = false;
-        */
-
         $config = new stdClass();
         $config->show_tracking = 1;
         $config->display_type = 'row';
@@ -1111,10 +1099,10 @@ class e20rWorkout extends e20rSettings
 
     public function getMemberGroups()
     {
-
-        $membersGroups = array();
-
+        $memberGroups = e20rWorkoutModel::getExerciseLevels();
+            
         // For Paid Memberships Pro.
+/*
         if (function_exists('pmpro_getAllLevels')) {
 
             $memberships = pmpro_getAllLevels();
@@ -1123,7 +1111,7 @@ class e20rWorkout extends e20rSettings
                 $memberGroups[$mId] = $mInfo->name;
             }
         }
-
+*/
         return $memberGroups;
     }
 
