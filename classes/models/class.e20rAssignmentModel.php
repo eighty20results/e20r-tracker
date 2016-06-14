@@ -214,7 +214,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Loading assignments for user {$userId} until day {$delay} for program {$programId}");
 
 
-		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay' );
+		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay', 'DESC' );
 		dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $assignments ) . " to process ");
         // dbg($assignments);
 
@@ -246,7 +246,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                     $assignment->article_ids = array();
 
                 }
-
+                // TODO: Unroll loop to simplify fetching assignment repsponses for the user
                 foreach( $assignment->article_ids as $userAId ) {
 
                     // $userInfo = $this->loadUserAssignment( $userAId, $userId, $assignment->delay, $assignment->id);
@@ -329,7 +329,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $assignments;
     }
 
-	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num' ) {
+	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num', $order = 'ASC' ) {
 
 		global $current_user;
 		global $e20rProgram;
@@ -346,7 +346,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 			'post_status' => 'publish',
 			'meta_key' => "_e20r-{$this->type}-{$orderbyKey}",
 			'order_by' => 'meta_key',
-			'order' => 'ASC',
+			'order' => $order,
 			'meta_query' => array(
 				array(
 					'key' => "_e20r-{$this->type}-{$key}",
@@ -436,7 +436,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         global $post;
 
-	    $assignments = parent::loadAllSettings( 'publish' );
+	    $assignments = parent::loadAllSettings( 'publish', 'asc' );
 
 	    if ( empty( $assignments ) ) {
 
