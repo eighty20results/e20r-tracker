@@ -283,7 +283,7 @@ class e20rSettingsModel {
      * @param $statuses string|array - Statuses to return data for.
      * @return mixed - Array of objects
      */
-    public function loadAllSettings( $statuses = 'any' ) {
+    public function loadAllSettings( $statuses = 'any', $order = 'desc', $orderby = 'post_date' ) {
 
         $settings_list = array();
 
@@ -291,6 +291,8 @@ class e20rSettingsModel {
 			'posts_per_page' => -1,
             'post_type' => $this->cpt_slug,
             'post_status' => $statuses,
+            'order' => $order,
+            'order_by' => $orderby
         );
 
         wp_reset_query();
