@@ -12,25 +12,46 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	protected $types = array();
 	protected $table;
 
-	public function __construct() {
+    private static $exercise_levels = array();
 
-		global $e20rTables;
+    public function __construct() {
 
-		parent::__construct( 'workout', 'e20r_workout' );
+        global $e20rTables;
 
-		$this->table = $e20rTables->getTable('workout');
+        parent::__construct( 'workout', 'e20r_workout' );
+
+        $this->table = $e20rTables->getTable('workout');
         $this->fields = $e20rTables->getFields('workout');
 
-		$this->types = array(
-			0 => '',
-			1 => __("Slow", "e20rtracker"),
-			2 => __("Normal", "e20rtracker"),
-			3 => __("Fast", "e20rtracker"),
+        dbg("e20rWorkoutModel() - Constructor...");
+
+        $this->types = array(
+            0 => '',
+            1 => __("Slow", "e20rtracker"),
+            2 => __("Normal", "e20rtracker"),
+            3 => __("Fast", "e20rtracker"),
             4 => __("Varying", "e20rtracker")
-		);
+        );
 
         $this->settings = new stdClass();
-	}
+    }
+
+    /**
+     * @return array - List of configured roles for
+     */
+    static function getExerciseLevels() {
+
+        if (empty(self::$exercise_levels)) {
+            
+            self::$exercise_levels['e20r_coach'] = __( "Coach", "e20rtracker");
+            self::$exercise_levels['e20r_tracker_exp_1'] = __( "Exercise Level 1 (NE)", "e20rtracker");
+            self::$exercise_levels['e20r_tracker_exp_2'] = __( "Exercise Level 2 (IN)", "e20rtracker");
+            self::$exercise_levels['e20r_tracker_exp_3'] = __( "Exercise Level 3 (EX)", "e20rtracker");
+        }
+
+        dbg("e20rWorkoutModel::getExerciseLevels() - Found levels: " . print_r(self::$exercise_levels, true));
+        return self::$exercise_levels;
+    }
 
     public function getTable() {
 
@@ -986,26 +1007,40 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 			    dbg("e20rWorkoutModel::load_activity() - For Workout id: " . get_the_ID() );
 			    $new = $this->loadSettings( get_the_ID() );
+                $post_title = get_the_title();
 
 			    $new->id         = $id;
 
+                dbg("e20rWorkoutModel::load_activity() - For {$post_title}: " . print_r($new->assigned_usergroups, true));
+
                 // Convert/update the userGroup to role based model
-                if (false !== stripos($new->post_tile, 'EX)') &&
-                    ( !in_array( 'e20r_tracker_exp_3', $new->assigned_usergroups) )) {
+                $for_ex = preg_match("/\([A-D|a-d][0-9][0-9][0-9][0-9]EX\)|\([A-D|a-d][0-9][0-9][0-9][0-9]EX-[1-9]\)/i", $post_title);
+
+                dbg("e20rWorkoutModel::load_activity() - For {$post_title}: " . print_r($for_ex, true));
+
+                if ( false != $for_ex && ( !in_array( 'e20r_tracker_exp_3', $new->assigned_usergroups) )) {
+                    dbg("e20rWorkoutModel::load_activity() - Assigning/converting to use role for experienced" );
                     $new->assigned_usergroups[] = 'e20r_tracker_exp_3';
                 }
 
-                if (false !== stripos($new->post_tile, 'IN)') &&
-                    ( !in_array( 'e20r_tracker_exp_2', $new->assigned_usergroups) ) ) {
+                $for_in = preg_match("/\([A-D|a-d][0-9][0-9][0-9][0-9]IN\)|\([A-D|a-d][0-9][0-9][0-9][0-9]IN-[1-9]\)/i", $post_title);
+
+                dbg("e20rWorkoutModel::load_activity() - For {$post_title}: " . print_r($for_in, true));
+
+                if ( false != $for_in && ( !in_array( 'e20r_tracker_exp_2', $new->assigned_usergroups) ) ) {
+                    dbg("e20rWorkoutModel::load_activity() - Assigning/converting to use role for intermediates" );
                     $new->assigned_usergroups[] = 'e20r_tracker_exp_2';
                 }
 
-                if (false !== stripos($new->post_tile, 'NE)') &&
-                    ( !in_array( 'e20r_tracker_exp_1', $new->assigned_usergroups) )) {
+                $for_ne = preg_match("/\([A-D|a-d][0-9][0-9][0-9][0-9]NE\)|\([A-D|a-d][0-9][0-9][0-9][0-9]NE-[1-9]\)/i", $post_title);
+                dbg("e20rWorkoutModel::load_activity() - For {$post_title}: " . print_r($for_ne, true));
+
+                if ( false !=  $for_ne && ( !in_array( 'e20r_tracker_exp_1', $new->assigned_usergroups) )) {
+                    dbg("e20rWorkoutModel::load_activity() - Assigning/converting to use role for beginners" );
                     $new->assigned_usergroups[] = 'e20r_tracker_exp_1';
                 }
-                
-                update_post_meta( $id, 'e20r-workout-assigned_usergroups', $new->assigned_usergroups);
+
+                update_post_meta( $new->id, 'e20r-workout-assigned_usergroups', $new->assigned_usergroups);
 
                 $workouts[$new->id] = $new;
 		    }
