@@ -237,7 +237,7 @@ class e20rTracker {
             add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
 
             add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
-            add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
+            // add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
             add_action( 'e20r_schedule_email_for_client', array( &$e20rClient, 'send_email_to_client' ), 10, 2 );
 
             $action = ( isset( $_REQUEST['action'] ) && (false !== strpos($_REQUEST['action'], 'e20r')) ) ? $this->sanitize($_REQUEST['action']) : null;
@@ -3460,6 +3460,11 @@ class e20rTracker {
             update_user_meta( $user_id, '_e20r-tracker-last-login', 0 );
         }
 
+        if (false === $this->define_e20rtracker_roles() )
+        {
+            dbg("ERROR: Unable to define the required roles for this plugin");
+        }
+
         flush_rewrite_rules();
     }
 
@@ -4454,12 +4459,14 @@ class e20rTracker {
 
     public function define_e20rtracker_roles() {
 
-        $roles_set = $this->loadOption('roles_are_set');
-        $roles = e20rWorkoutModel::getExerciesLevels();
+        global $wp_roles;
 
+        $roles_set = $this->loadOption('roles_are_set');
+        $roles = e20rWorkoutModel::getExerciseLevels();
+
+        dbg("e20rTracker::define_e20rtracker_roles() - Processing " . count($roles) . " roles:");
         foreach ( $roles as $key => $descr ) {
             switch( $key ) {
-
                 case 'e20r_coach':
 
                     $permissions = array(
@@ -4476,9 +4483,15 @@ class e20rTracker {
                     );
             }
 
-            $result = add_role( $key, $descr, $permissions );
+            foreach ( $wp_roles->get_names() as $role_name => $display_name) {
+                if (in_array($role_name, $roles)) {
+                    dbg("e20rTracker::define_e20rtracker_roles() - Removing pre-existing role definition: {$role_name}");
+                    $wp_roles->remove_role($role_name);
+                }
+            }
 
-            if ( null === $result ) {
+            dbg("e20rTracker::define_e20rtracker_roles() - role definition: {$key} => {$descr}");
+            if (! $wp_roles->add_role( $key, $descr, $permissions ) ) {
                 dbg("e20rTracker::define_e20rtracker_roles() - Error adding '{$key}' role!");
                 return false;
             }
