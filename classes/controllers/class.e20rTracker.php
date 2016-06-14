@@ -666,6 +666,7 @@ class e20rTracker {
             dbg("e20rTracker::inGroup() - Group ID {$id} is in the group list. Returning true");
             return true;
         }
+              
 
         dbg("e20rTracker::inGroup() - None of the tests returned true. Default is 'No access!'");
         return false;
@@ -4454,61 +4455,47 @@ class e20rTracker {
     public function define_e20rtracker_roles() {
 
         $roles_set = $this->loadOption('roles_are_set');
+        $roles = e20rWorkoutModel::getExerciesLevels();
 
-//        if ( !$roles_set ) {
+        foreach ( $roles as $key => $descr ) {
+            switch( $key ) {
 
-           $result = add_role('e20r_coach',
-                __( "Coach", "e20rtracker"),
-                array(
-                    'read' => true,
-                    'edit_users' => true,
-                    'upload_files' => true
-                )
-           );
+                case 'e20r_coach':
 
-           add_role('e20r_tracker_exp_1',
-                __( "Exercise Level 1 (NE)", "e20rtracker"),
-                array(
-                    'read' => true,
-                    'upload_files' => true
-                )
-           );
+                    $permissions = array(
+                        'read' => true,
+                        'edit_users' => true,
+                        'upload_files' => true
+                    );
+                    break;
 
-           add_role('e20r_tracker_exp_2',
-                __( "Exercise Level 2 (IN)", "e20rtracker"),
-                array(
-                    'read' => true,
-                    'upload_files' => true
-                )
-           );
+                default: // everyone else
+                    $permissions =  array(
+                        'read' => true,
+                        'upload_files' => true
+                    );
+            }
 
-           add_role('e20r_tracker_exp_3',
-                __( "Exercise Level 3 (EX)", "e20rtracker"),
-                array(
-                    'read' => true,
-                    'upload_files' => true
-                )
-           );
+            $result = add_role( $key, $descr, $permissions );
 
             if ( null === $result ) {
-                dbg("e20rTracker::define_e20rtracker_roles() - Error adding 'coach' role!");
-                return;
+                dbg("e20rTracker::define_e20rtracker_roles() - Error adding '{$key}' role!");
+                return false;
             }
+        }
 
-            $this->updateSetting('roles_are_set',true);
+        $this->updateSetting('roles_are_set',true);
 
-            $admins = get_users( array( 'role' => 'administrator' ) );
+        $admins = get_users( array( 'role' => 'administrator' ) );
 
-            foreach( $admins as $admin ) {
+        foreach( $admins as $admin ) {
 
-                if ( !in_array( 'e20r_coach', (array) $admin->roles ) ) {
-                    dbg("e20rTracker::define_e20rtracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
-                    $admin->add_role( 'e20r_coach' );
-                    dbg("e20rTracker::define_e20rtracker_roles() - Added 'e20r_coach' role to {$admin->ID}");
-                }
+            if ( !in_array( 'e20r_coach', (array) $admin->roles ) ) {
+                dbg("e20rTracker::define_e20rtracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
+                $admin->add_role( 'e20r_coach' );
+                dbg("e20rTracker::define_e20rtracker_roles() - Added 'e20r_coach' role to {$admin->ID}");
             }
-
-        // }
+        }
 
         return true;
     }
