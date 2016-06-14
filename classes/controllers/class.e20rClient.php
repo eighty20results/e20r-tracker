@@ -21,7 +21,10 @@ class e20rClient
     public $actionsLoaded = false;
     public $scriptsLoaded = false;
 
-
+    /**
+     * e20rClient constructor.
+     * @param integer|null $user_id
+     */
     public function __construct($user_id = null)
     {
 
@@ -74,7 +77,6 @@ class e20rClient
 
     public function isNourishClient($user_id = 0)
     {
-
         __return_false();
         /*
                 global $e20r_isClient;
@@ -745,6 +747,9 @@ class e20rClient
         dbg("e20rClient::save_interview() - Assigning a coach for this user ");
         $db_Data['coach_id'] = $this->assign_coach($userId, $db_Data['gender']);
 
+        dbg("e20rClient::save_interview() - Configure the exercise level for this user");
+        $this->assign_exercise_level( $userId, $db_Data );
+
         dbg("e20rClient::save_interview() - Saving the client interview data to the DB. ");
 
         if ($this->model->save_client_interview($db_Data)) {
@@ -760,11 +765,135 @@ class e20rClient
         return false;
     }
 
+    /**
+     * Automatically propose/recommend an exercise experience level for the user based
+     * on survey results.
+     *
+     * @param integer   $user_id      - The User ID to update the role for
+     * @param array     $data         - The survey response(s) given
+     */
+    public function assign_exercise_level( $user_id, $data ) {
+
+        // can the client even be at the "experienced" level (by default, no).
+        $can_be_ex = false;
+
+        dbg($data);
+
+        switch ( $data['exercise_level'] ) {
+            case 'complete-beginner':
+            case 'some-experience':
+                dbg("e20rClient::assign_exercise_level() -  Self-reported as inexperienced exerciser");
+                $el_score = 1;
+                break;
+
+            case 'comfortable':
+                dbg("e20rClient::assign_exercise_level() -  Self-reported as intermediate exerciser");
+                $el_score = 2;
+                break;
+
+            case 'very-experienced':
+            case 'advanced':
+                dbg("e20rClient::assign_exercise_level() -  Self-reported as experienced exerciser");
+                $el_score = 3;
+                break;
+        }
+
+        // Lower the user's exercise level score if they're injured
+        if ( 'yes' === strtolower($data['limiting_injuries']) ) {
+
+            dbg("e20rClient::assign_exercise_level() -  Lowering exercise level score due to injury.");
+
+            if ( 1 === $el_score ) {
+                $el_score = 1;
+            }
+            if ( 2 === $el_score) {
+                $el_score = 1;
+            }
+            if ( 3 === $el_score) {
+                $el_score = 2;
+            }
+        }
+
+        switch( $data['exercise_hours_per_week']) {
+
+            case '1-3': // 1-3 hours/week
+                $hw_score = 1;
+                $can_be_ex = false;
+                break;
+
+            case '3-5': // 3-5 hours
+                $hw_score = 2;
+                $can_be_ex = false;
+                break;
+
+            case '5-7':
+            case '7+':
+                $hw_score = 3;
+                if (3 === $el_score) {
+                    $can_be_ex = true;
+                }
+                break;
+
+            default:
+                $hw_score = 0;
+        }
+
+        dbg("e20rClient::assign_exercise_level() -  Exercise per hour score: {$hw_score}");
+
+        // Can't be "experienced" if they don't currently exercise
+        if (1 == $data['exercise_plan']) {
+            dbg("e20rClient::assign_exercise_level() -  Performs regular exercise, so is allowed to be selected for experienced level.");
+            $can_be_ex = true;
+        } else {
+            $can_be_ex = false;
+        }
+
+        $total_exp = $el_score + $hw_score;
+
+        // "experienced"
+        if ( true === $can_be_ex && (6 === $total_exp || ( 3 === $el_score && $hw_score == 2 ) ))  {
+            dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'Experienced'");
+            $role = 'e20r_tracker_exp_3';
+
+        // $el_score = 1 or 2 and $hw_score = 1, 2, 3 ('intermediate')
+        } elseif ( $total_exp <= 5 || $total_exp >= 3 ) {
+            dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'Intermediate'");
+            $role = 'e20r_tracker_exp_2';
+
+            // Beginner
+        } else {
+            dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'New to Exercise'");
+            $role = 'e20r_tracker_exp_1';
+        }
+
+        $user = new WP_User($user_id);
+
+        // Clean up any pre-existing roles for this user
+        foreach( $user->roles as $r ) {
+
+            dbg("e20rClient::assign_exercise_level() - Checking role '{$r}' for user {$user_id}");
+
+            if (in_array($r, array('e20r_tracker_exp_1', 'e20r_tracker_exp_2', 'e20r_tracker_exp_3'))) {
+                dbg("e20rClient::assign_exercise_level() - User has pre-existing role {$r}. Being removed");
+                $user->remove_role($r);
+            }
+         }
+
+        // assign new exercise exerience role
+        dbg("e20rClient::assign_exercise_level() - Adding role {$role} to user {$user_id}.");
+        $user->add_role($role);
+    }
+
+    /**
+     * Assign a coach for the new client/user
+     * @param   integer         $user_id
+     * @param   string|null     $gender
+     * @return bool|mixed
+     */
     public function assign_coach($user_id, $gender = null)
     {
 
         global $e20rProgram;
-
         global $currentProgram;
 
         dbg("e20rClient::assign_coach() - Loading program settings for {$user_id}");
@@ -804,8 +933,6 @@ class e20rClient
 
     public function find_next_coach($coach_arr, $program_id)
     {
-
-
         dbg("e20rClient::find_next_coach() - Searching for the coach with the fewest clients so far..");
 
         $coaches = array();
@@ -1180,7 +1307,7 @@ class e20rClient
 
         $u = get_user_by('id', $userId);
 
-        if (!is_null($role_name)) {
+        if (!empty($role_name)) {
 
             $u->add_role($role_name);
         } else {
