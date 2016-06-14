@@ -988,7 +988,26 @@ class e20rWorkoutModel extends e20rSettingsModel {
 			    $new = $this->loadSettings( get_the_ID() );
 
 			    $new->id         = $id;
-			    $workouts[$new->id] = $new;
+
+                // Convert/update the userGroup to role based model
+                if (false !== stripos($new->post_tile, 'EX)') &&
+                    ( !in_array( 'e20r_tracker_exp_3', $new->assigned_usergroups) )) {
+                    $new->assigned_usergroups[] = 'e20r_tracker_exp_3';
+                }
+
+                if (false !== stripos($new->post_tile, 'IN)') &&
+                    ( !in_array( 'e20r_tracker_exp_2', $new->assigned_usergroups) ) ) {
+                    $new->assigned_usergroups[] = 'e20r_tracker_exp_2';
+                }
+
+                if (false !== stripos($new->post_tile, 'NE)') &&
+                    ( !in_array( 'e20r_tracker_exp_1', $new->assigned_usergroups) )) {
+                    $new->assigned_usergroups[] = 'e20r_tracker_exp_1';
+                }
+                
+                update_post_meta( $id, 'e20r-workout-assigned_usergroups', $new->assigned_usergroups);
+
+                $workouts[$new->id] = $new;
 		    }
 
             wp_reset_postdata();
