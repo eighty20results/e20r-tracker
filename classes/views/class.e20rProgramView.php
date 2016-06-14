@@ -16,7 +16,7 @@ class e20rProgramView {
 
     }
 
-    public function profile_view_client_settings( $programList, $activePgm, $coachList, $coach_id ) {
+    public function profile_view_client_settings( $programList, $activePgm, $coachList, $coach_id, $user ) {
 
 	    if ( empty( $programList ) ) {
 		    $programList = array();
@@ -44,6 +44,37 @@ class e20rProgramView {
                     </select>
                 </td>
             </tr>
+            <tr><?php   global $current_user;
+
+                        $has_exercise_role = (
+                            user_can($user->ID, 'e20r_tracker_exp_1') ||
+                            user_can($user->ID, 'e20r_tracker_exp_2') ||
+                            user_can($user->ID, 'e20r_tracker_exp_3') ||
+                            user_can($user->ID, 'e20r_coach') ); ?>
+                <th><label for="e20r-tracker-user-assigned_role"><?php _e( "Exercise Experience", "e20rtracker"); ?></label></th>
+                <td>
+                    <select id="e20r-tracker-user-assigned_role" name="e20r-tracker-user-assigned_role" class="select2-container">
+                        <option value="0" <?php echo (false === $has_exercise_role ? 'selected="selected"' : null);  ?>>Unassigned</option>
+                        <?php
+                            $roles = array(
+                                'e20r_coach' => __( "Coach", "e20rtracker"),
+                                'e20r_tracker_exp_1' => __( "Exercise Level 1 (NE)", "e20rtracker"),
+                                'e20r_tracker_exp_2' => __( "Exercise Level 2 (IN)", "e20rtracker"),
+                                'e20r_tracker_exp_3' => __( "Exercise Level 3 (EX)", "e20rtracker"),
+                            );
+
+                        foreach( $roles as $key => $label ) {
+                            ?>
+                            <option value="<?php echo esc_attr($key); ?>" <?php echo (true === user_can( $user->ID, $key)? 'selected="selected"' : null); ?>>
+                                <?php echo esc_attr($label); ?>
+                            </option> <?php
+                        }
+
+                        ?>
+                    </select>
+                </td>
+
+            </tr>
             <tr>
                 <th><label for="e20r-tracker-user-coach_id"><?php _e( "Assigned Coach", "e20rtracker"); ?></label></th>
                 <td>
@@ -58,8 +89,8 @@ class e20rProgramView {
                         ?>
                     </select>
                 </td>
-
             </tr>
+
         </table>
         <?php
 

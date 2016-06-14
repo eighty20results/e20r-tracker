@@ -571,7 +571,7 @@ class e20rProgram extends e20rSettings {
 
         dbg("e20rProgram::selectProgramForUser() - Active Program: {$activeProgram}");
 
-        echo $this->view->profile_view_client_settings( $programlist, $activeProgram, $coachList, $coach_id );
+        echo $this->view->profile_view_client_settings( $programlist, $activeProgram, $coachList, $coach_id, $user );
     }
 
     public function incompleteIntakeForm() {
@@ -686,6 +686,7 @@ class e20rProgram extends e20rSettings {
 
         global $currentProgram;
         global $e20rClient;
+        global $e20rTracker;
 
         if ( ! current_user_can( 'edit_user', $userId ) ) {
             return false;
@@ -693,10 +694,11 @@ class e20rProgram extends e20rSettings {
 
         $programId = isset( $_POST['e20r-tracker-user-program'] ) ? intval( $_POST['e20r-tracker-user-program'] ) : 0;
         $coachId = isset( $_POST['e20r-tracker-user-coach_id'] ) ? intval( $_POST['e20r-tracker-user-coach_id'] ) : 0;
+        $ex_level = isset( $_POST['e20r-tracker-user-assigned_role'] ) ? $e20rTracker->sanitize( $_POST['e20r-tracker-user-assigned_role'] ) : 0;
 
         dbg("e20rProgram::updateProgramForUser() - Setting program ID = {$programId} for user with ID of {$userId}");
 
-        if ( $programId != 0 ) {
+        if ( 0 !== $programId ) {
 
             update_user_meta( $userId, 'e20r-tracker-program-id', $programId );
 
@@ -720,7 +722,7 @@ class e20rProgram extends e20rSettings {
             }
         }
 
-        if ( $coachId != 0 ) {
+        if ( 0 !== $coachId ) {
 
             dbg("e20rProgram::updateProgramForUser() - Assigning & saving coach {$coachId} for user with ID {$userId}");
 
@@ -731,6 +733,17 @@ class e20rProgram extends e20rSettings {
             if ( get_user_meta( $userId, 'e20r-tracker-user-coach_id', true ) != $coachId ) {
 
                 wp_die("Unable to save the assigned coach for this user");
+            }
+        }
+
+        // Add role for user if it's not already added
+        if (0 !== $ex_level ) {
+
+            $user = new WP_User( $userId );
+
+            if ( !in_array( $ex_level, $user->roles )) {
+                dbg("e20rProgram::updateProgramForUser() - Adding {$ex_level} to user {$userId}");
+                $user->add_role($ex_level);
             }
         }
     }
