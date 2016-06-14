@@ -219,7 +219,6 @@ class e20rTracker {
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
 	        $plugin = E20R_PLUGIN_NAME;
-
             add_action( 'init', array( &$this, 'auth_timeout_reset'), 10 );
             add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
@@ -246,45 +245,6 @@ class e20rTracker {
              if ( !is_null( $action ) ) {
                 add_action( "wp_ajax_nopriv_{$action}", "e20r_ajaxUnprivError" );
              }
-
-            /*
-            add_action( 'wp_ajax_nopriv_e20r_updateUnitTypes', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_clientDetail', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_showMessageHistory', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_showClientMessage', "e20r_ajaxUnprivError" );
-            add_action( 'wp_ajax_nopriv_e20r_complianceData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_assignmentData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_measurementData', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_getMemberListForLevel', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_updateUnitTypes', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_userinfo', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_loadProgress', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_saveMeasurementForUser', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_checkCompletion', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_measurementDataForUser', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_load_activity_stats', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_deletePhoto', 'e20r_ajaxUnprivError' );
-            // add_action( 'wp_ajax_nopriv_e20r_addPhoto', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_addWorkoutGroup', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_getDelayValue', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_saveCheckin', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_daynav', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_addAssignment', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_removeAssignment', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_save_daily_progress', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_add_new_exercise_group', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_add_exercise', 'e20r_ajaxUnprivError' );
-	        add_action( 'wp_ajax_nopriv_e20r_save_activity',  'e20r_ajaxUnprivError');
-	        add_action( 'wp_ajax_nopriv_e20r_manage_option_list', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_get_checkinItem', 'e20r_ajaxUnprivError' );
-            add_action( 'wp_ajax_nopriv_e20r_save_item_data', 'e20r_ajaxUnprivError' );
-
-
-            add_action( 'wp_ajax_e20r_get_checkinItem', array( &$e20rAction, 'ajax_getCheckin_item' ) );
-	        add_action( 'wp_ajax_save_daily_checkin', array( &$e20rAction, 'dailyCheckin_callback' ) );
-            add_action( 'wp_ajax_addPhoto', array( &$e20rMeasurements, 'ajax_addPhoto_callback' ) );
-            */
-
 
 	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
 	        add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
@@ -4495,17 +4455,40 @@ class e20rTracker {
 
         $roles_set = $this->loadOption('roles_are_set');
 
-        if ( !$roles_set ) {
+//        if ( !$roles_set ) {
 
-            $result = add_role(
-                'e20r_coach',
-                __( "Coach", "e20rtracker" ),
+           $result = add_role('e20r_coach',
+                __( "Coach", "e20rtracker"),
                 array(
                     'read' => true,
-    /*                'edit_users' => true,
-                    'manage_options' => true, */
+                    'edit_users' => true,
+                    'upload_files' => true
                 )
-            );
+           );
+
+           add_role('e20r_tracker_exp_1',
+                __( "Exercise Level 1 (NE)", "e20rtracker"),
+                array(
+                    'read' => true,
+                    'upload_files' => true
+                )
+           );
+
+           add_role('e20r_tracker_exp_2',
+                __( "Exercise Level 2 (IN)", "e20rtracker"),
+                array(
+                    'read' => true,
+                    'upload_files' => true
+                )
+           );
+
+           add_role('e20r_tracker_exp_3',
+                __( "Exercise Level 3 (EX)", "e20rtracker"),
+                array(
+                    'read' => true,
+                    'upload_files' => true
+                )
+           );
 
             if ( null === $result ) {
                 dbg("e20rTracker::define_e20rtracker_roles() - Error adding 'coach' role!");
@@ -4525,7 +4508,7 @@ class e20rTracker {
                 }
             }
 
-        }
+        // }
 
         return true;
     }
