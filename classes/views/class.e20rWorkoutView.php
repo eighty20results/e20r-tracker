@@ -922,7 +922,6 @@ class e20rWorkoutView extends e20rSettingsView
         if (isset($workoutData->days) && empty($workoutData->days)) {
 
             dbg("e20rWorkoutView::viewSettingsBox() - Days contains: ");
-            dbg($workoutData);
             $workoutData->days = array();
         } elseif (!isset($workoutData->days)) {
             dbg("e20rWorkoutView::viewSettingsBox() - No 'days' defined??");
@@ -1056,19 +1055,19 @@ class e20rWorkoutView extends e20rSettingsView
                                             name="e20r-workout-assigned_usergroups[]" class="select2-container"
                                             multiple="multiple">
                                         <option
-                                            value="0"<?php echo in_array(0, $workoutData->assigned_usergroups) ? 'selected="selected"' : null; ?>>
-                                            Not Applicable
+                                            value="0" <?php echo in_array(0, $workoutData->assigned_usergroups, true) ? 'selected="selected"' : null; ?>>
+                                            <?php _e("Not Applicable", "e20rtracker"); ?>
                                         </option>
                                         <option
-                                            value="-1"<?php echo in_array(-1, $workoutData->assigned_usergroups) ? 'selected="selected"' : null; ?>>
-                                            All Users
+                                            value="-1" <?php echo in_array(-1, $workoutData->assigned_usergroups, true) ? 'selected="selected"' : null; ?>>
+                                            <?php _e("All Users", "e20rtracker"); ?>
                                         </option>
                                         <?php
 
                                         $member_groups = $e20rWorkout->getMemberGroups();
-
+                                        
                                         foreach ($member_groups as $id => $name) {
-
+                                            
                                             if (!empty($workoutData->assigned_usergroups)) {
                                                 $selected = in_array($id, $workoutData->assigned_usergroups) ? 'selected="selected"' : null;
                                             } else {
@@ -1076,7 +1075,7 @@ class e20rWorkoutView extends e20rSettingsView
                                             }
                                             ?>
                                             <option
-                                                value="<?php echo $id; ?>"<?php echo $selected; ?>><?php echo $name; ?></option> <?php
+                                                value="<?php echo $id; ?>" <?php echo $selected; ?>><?php echo $name; ?></option> <?php
                                         } ?>
 
                                     </select>
