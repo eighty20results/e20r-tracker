@@ -44,8 +44,7 @@ class e20rProgramView {
                     </select>
                 </td>
             </tr>
-            <tr><?php   global $current_user;
-
+            <tr><?php
                         $has_exercise_role = (
                             user_can($user->ID, 'e20r_tracker_exp_1') ||
                             user_can($user->ID, 'e20r_tracker_exp_2') ||
