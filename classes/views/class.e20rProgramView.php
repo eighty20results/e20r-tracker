@@ -237,8 +237,7 @@ class e20rProgramView {
         $posts = get_posts();
 
         $list = array_merge( $pages, $posts );
-
-        // FixMe: Load all users designated as coaches.
+      
         $coaches = $e20rClient->get_coach();
 
         dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
