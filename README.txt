@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.5.2
-Stable tag: 1.5.50
+Stable tag: 1.5.51
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,12 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.51 ==
+
+* FIX: Didn't center the pop-up on large/multiple screens
+* FIX: Didn't include 'upcoming week' as a valid period
+* FIX: Button positioning for Interview pop-over
 
 == 1.5.50 ==
 
