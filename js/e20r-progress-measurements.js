@@ -418,6 +418,24 @@ var progMeasurements = {
 
         console.log("Popup was processed...");
     },
+    center_popup: function (url, title, w, h) {
+        "use strict";
+        // Fixes dual-screen position                         Most browsers      Firefox
+        var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+        var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+        var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+        var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+        var left = ((width / 2) - (w / 2)) + dualScreenLeft;
+        var top = ((height / 2) - (h / 2)) + dualScreenTop;
+        var newWindow = window.open(url, title, 'scrollbars=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        // Puts focus on the newWindow
+        if (window.focus) {
+            newWindow.focus();
+        }
+    },
     manage_overlay: function ( box ) {
 
         var $class = this;
@@ -448,38 +466,40 @@ var progMeasurements = {
         var winH = jQuery(window).height();
         var winW = jQuery(window).width();
 
+        /*            
+         .css('top',  function() {
+
+         var middleInPx;
+
+         if ( winW < 400 ) {
+         console.log("On a small device. ");
+         middleInPx = 40;
+         }
+         else {
+         if ( winH < 400 ) {
+         return '3%';
+         }
+         middleInPx = (winH / 2) - (dialog.height() / 2 );
+         }
+
+         return ( (middleInPx / winH) * 100 ) + '%';
+         })
+         .css('left', function() {
+         var middleInPx
+
+         if ( winW < 400 ) {
+         middleInPx = 10;
+         }else {
+         middleInPx = (winW/2)-(dialog.width()/2);
+         }
+
+         return ( (middleInPx / winW) * 100 ) + '%';
+         }) */
+
         //Set the popup window to center
         dialog
             .css('position', 'absolute')
             .css('z-index', '9999')
-            .css('top',  function() {
-
-                var middleInPx;
-
-                if ( winW < 400 ) {
-                    console.log("On a small device. ");
-                    middleInPx = 40;
-                }
-                else {
-                    if ( winH < 400 ) {
-                        return '3%';
-                    }
-                    middleInPx = (winH / 2) - (dialog.height() / 2 );
-                }
-
-                return ( (middleInPx / winH) * 100 ) + '%';
-            })
-            .css('left', function() {
-                var middleInPx
-
-                if ( winW < 400 ) {
-                    middleInPx = 10;
-                }else {
-                    middleInPx = (winW/2)-(dialog.width()/2);
-                }
-
-                return ( (middleInPx / winW) * 100 ) + '%';
-            })
             .fadeIn(900);
 
         if ( winW < 400 ) {
