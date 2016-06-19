@@ -348,6 +348,8 @@ class e20rWorkoutView extends e20rSettingsView
                     $period = 'current week';
                 } elseif ('previous' == $config->period) {
                     $period = 'prior week';
+                } else {
+                    $period = "upcoming week";
                 }
 
                 echo sprintf(__('Sorry, there are no activities to found for the %s.<br/>Please report this error to the <a href="mailto:%s">webmaster</a>', "e20rtracker"), $period, get_bloginfo('admin_email')); ?>
