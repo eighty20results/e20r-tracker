@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
-Tested up to: 4.4.2
-Stable tag: 1.5.48
+Tested up to: 4.5.2
+Stable tag: 1.5.50
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,42 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.50 ==
+
+* FIX: Correctly identified the selected option for user group permission
+* FIX: Remove static getExerciseLevels() function - now using the 'e20r-tracker-configured-roles' filter instead (more flexible)
+* BUG: Assignment Model didn't include the ID of the post/record when loading the assignment settings.
+* ENHANCEMENT/FIX: Use new role-based member groups for activity/workout.
+* ENHANCEMENT/FIX: Allow caller-defined sort order (ASC/DESC) for assignments
+* ENHANCEMENT/FIX: Allow caller-defined ordering of settings when loading all settings
+* ENHANCEMENT/FIX: Automatically upgrade/transition an activity to the new role based group/intentsity settings when loading settings.
+* ENHANCEMENT/FIX: Use new role-based Exercise level definitions to select member groups for activity
+* ENHANCEMENT/FIX: Moved definition of roles to plugin activation.
+* ENHANCEMENT/FIX: Handle unlimited role definitions during activation (defined by Workout/exercise levels)
+* ENHANCEMENT: Validate user's Exercise Experience level on login
+* ENHANCEMENT: Use 'e20r-tracker-configured-roles' filter to define user/coach roles
+* ENHANCEMENT: check_role_setting() for user ID to make sure the user has a valid exercise experience role in the system (defaults to 'beginner')
+* ENHANCEMENT: add_default_roles() is the default filter for defining Exercise level roles on the system (array of arrays)
+* ENHANCEMENT: Use the default definitions when setting/processing exercise experience level roles
+* ENHANCEMENT: Use the default exercise level definitions when doing a user search for the available coaches
+* ENHANCEMENT: Lowering the threshold for when we get insistent on completing the Welcome interview
+* ENHANCEMENT: Use the 'e20r-tracker-configured-roles' filter for program definition metabox
+* ENHANCEMENT: Use the 'e20r-tracker-configured-roles' filter for Workout definition metabox
+* ENHANCEMENT: Use 'e20r-tracker-configured-roles' filtered roles/labels for group membership
+* ENHANCEMENT: Define exercise levels/exercise roles to determine group/intensity for workout
+* ENHANCEMENT: Fixed translation issue for assigned user group selection
+* ENHANCEMENT: Automatically assign exercise level based on customer's Welcome interview
+* ENHANCEMENT: Use roles defined in WorkoutModel class
+* ENHANCEMENT: Convert workout definition to use Exercise level roles
+* ENHANCEMENT: Add support for 3 exercise experience roles (New, Intermediate, Experienced)
+* ENHANCEMENT: Manually set exercise experience level in user profile
+* REFACTOR: Remove stale code
+* REFACTOR: Removed unused variable(s) & cleaned up duplicate DEBUG info
+* REFACTOR: Remove old (stale) code from plugin
+* REFACTOR: Clean up duplicate DEBUG info
+* NIT: Removed FixMe
+* NIT: Add DEBUG output for Exercise Experience level validation
 
 == 1.5.48 ==
 

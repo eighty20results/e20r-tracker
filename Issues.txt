@@ -23,9 +23,6 @@
 
 08/12/2015:
 
-Enh: (P2) Ability to assign users (clients) of a program to a coach.
-            In user profile page (if "coach" checkbox is checked, allow admin to assign programs for which the user is a coach).
-            May need to modify Coaching Page to reflect programs & not membership level(s).
 Fix: (P1) Load data for statistics by max weight (if the type is a weight type) then the max no of reps.
 Fix: (P1) Handle situations where the exercise is time/rep based in graphing.
 
@@ -97,6 +94,9 @@ Enh: (P1) Specify "Day number" or date for start/end of activity.
 Enh: (P2) Show the client how their workouts are progressing (define and use a short code).
 Enh: (P2) Add client message form for back-end.
 Enh: (P2) Add graphs for the exercise history. Max weight per exercise on each day
+Enh: (P2) Ability to assign users (clients) of a program to a coach.
+            In user profile page (if "coach" checkbox is checked, allow admin to assign programs for which the user is a coach).
+            May need to modify Coaching Page to reflect programs & not membership level(s).
 
 Enh: (P3) Make the action & activity portion of the dashboard DIVs so they'll float for any device.
 
