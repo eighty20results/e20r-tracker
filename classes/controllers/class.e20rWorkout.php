@@ -1099,7 +1099,7 @@ class e20rWorkout extends e20rSettings
 
     public function getMemberGroups()
     {
-        $memberGroups = e20rWorkoutModel::getExerciseLevels();
+        $memberGroups = apply_filters( 'e20r-tracker-configured-roles', array() );
             
         // For Paid Memberships Pro.
 /*

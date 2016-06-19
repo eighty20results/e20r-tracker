@@ -1066,16 +1066,16 @@ class e20rWorkoutView extends e20rSettingsView
 
                                         $member_groups = $e20rWorkout->getMemberGroups();
                                         
-                                        foreach ($member_groups as $id => $name) {
+                                        foreach ($member_groups as $key => $role) {
                                             
                                             if (!empty($workoutData->assigned_usergroups)) {
-                                                $selected = in_array($id, $workoutData->assigned_usergroups) ? 'selected="selected"' : null;
+                                                $selected = in_array($role['name'], $workoutData->assigned_usergroups) ? 'selected="selected"' : null;
                                             } else {
                                                 $selected = null;
                                             }
                                             ?>
                                             <option
-                                                value="<?php echo $id; ?>" <?php echo $selected; ?>><?php echo $name; ?></option> <?php
+                                                value="<?php echo $role['name']; ?>" <?php echo $selected; ?>><?php echo $role['label']; ?></option> <?php
                                         } ?>
 
                                     </select>
