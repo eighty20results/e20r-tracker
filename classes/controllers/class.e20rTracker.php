@@ -219,6 +219,9 @@ class e20rTracker {
             dbg("e20rTracker::loadAllHooks() - Adding action hooks for plugin");
 
 	        $plugin = E20R_PLUGIN_NAME;
+
+	        add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles'), 5, 1);
+
             add_action( 'init', array( &$this, 'auth_timeout_reset'), 10 );
             add_action( 'init', array( &$this, 'update_db'), 7 );
             add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
@@ -497,6 +500,36 @@ class e20rTracker {
                 $cookie = null;
             }
         }
+    }
+
+    /**
+      * Define the default roles as they pertain to the user's exercise level experience (Beginner, Intermediate, Experienced)
+      *
+      * @param      array       $roles      Associative array of defined roles for user's exercise level(s)
+      * @return     array                   Associative array of defined roles for the user's exercise level(s).
+      *
+      * @since 1.5.50 - Initially added
+      */
+    public function add_default_roles( $roles ) {       
+    
+        return array(
+            'coach'         =>  array( 
+                                        'role' => 'e20r_coach',
+                                         'label' => __( "Coach", "e20rtracker") 
+                                ), 
+            'beginner'      =>  array( 
+                                        'role' => 'e20r_tracker_exp_1', 
+                                        'label' => __( "Exercise Level 1 (NE)", "e20rtracker") 
+                                ),
+            'intermediate'  =>  array(
+                                        'role' => 'e20r_tracker_exp_2',
+                                        'label' => __( "Exercise Level 2 (IN)", "e20rtracker")
+                                ),
+            'experienced'   =>  array(
+                                        'role' => 'e20r_tracker_exp_3',
+                                        'label' => __( "Exercise Level 3 (EX)", "e20rtracker")
+                                ),
+        );
     }
 
     public function login_timeout( $seconds, $user_id, $remember ) {
@@ -1539,9 +1572,11 @@ class e20rTracker {
 
 	public function is_a_coach( $user_id ) {
 
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
+
 		$wp_user = get_user_by( 'id', $user_id );
 
-		if ( $wp_user->has_cap( 'e20r_coach' ) ) {
+		if ( $wp_user->has_cap( $user_roles['coach']['role'] ) ) {
 		    return true;
         }
 
@@ -4461,13 +4496,13 @@ class e20rTracker {
 
         global $wp_roles;
 
-        $roles_set = $this->loadOption('roles_are_set');
-        $roles = e20rWorkoutModel::getExerciseLevels();
+        $roles_set = $this->loadOption('roles_are_set');      
+        $roles = apply_filters('e20r-tracker-configured-roles', array() );
 
         dbg("e20rTracker::define_e20rtracker_roles() - Processing " . count($roles) . " roles:");
-        foreach ( $roles as $key => $descr ) {
+        foreach ( $roles as $key => $user_role ) {
             switch( $key ) {
-                case 'e20r_coach':
+                case 'coach':
 
                     $permissions = array(
                         'read' => true,
@@ -4484,15 +4519,16 @@ class e20rTracker {
             }
 
             foreach ( $wp_roles->get_names() as $role_name => $display_name) {
-                if (in_array($role_name, $roles)) {
+
+                if ( $role_name === $user_role['role'] ) {
                     dbg("e20rTracker::define_e20rtracker_roles() - Removing pre-existing role definition: {$role_name}");
                     $wp_roles->remove_role($role_name);
                 }
             }
 
-            dbg("e20rTracker::define_e20rtracker_roles() - role definition: {$key} => {$descr}");
-            if (! $wp_roles->add_role( $key, $descr, $permissions ) ) {
-                dbg("e20rTracker::define_e20rtracker_roles() - Error adding '{$key}' role!");
+            dbg("e20rTracker::define_e20rtracker_roles() - Adding role definition for {$user_role['role']} => {$user_role['label']}");
+            if (! $wp_roles->add_role( $user_role['role'], $user_role['label'], $permissions ) ) {
+                dbg("e20rTracker::define_e20rtracker_roles() - Error adding {$key} -> '{$user_role['role']}' role!");
                 return false;
             }
         }
@@ -4503,10 +4539,10 @@ class e20rTracker {
 
         foreach( $admins as $admin ) {
 
-            if ( !in_array( 'e20r_coach', (array) $admin->roles ) ) {
+            if ( !in_array( $roles['coach']['role'], (array) $admin->roles ) ) {
                 dbg("e20rTracker::define_e20rtracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
-                $admin->add_role( 'e20r_coach' );
-                dbg("e20rTracker::define_e20rtracker_roles() - Added 'e20r_coach' role to {$admin->ID}");
+                $admin->add_role( $roles['coach']['role'] );
+                dbg("e20rTracker::define_e20rtracker_roles() - Added 'coach' role to {$admin->ID}");
             }
         }
 

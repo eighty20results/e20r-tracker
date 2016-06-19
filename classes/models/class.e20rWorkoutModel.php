@@ -39,7 +39,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
     /**
      * @return array - List of configured roles for
      */
-    static function getExerciseLevels() {
+/*    static function getExerciseLevels() {
 
         if (empty(self::$exercise_levels)) {
             
@@ -52,7 +52,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
         dbg("e20rWorkoutModel::getExerciseLevels() - Found levels: " . print_r(self::$exercise_levels, true));
         return self::$exercise_levels;
     }
-
+*/
     public function getTable() {
 
         return $this->table;

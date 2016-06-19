@@ -1076,17 +1076,17 @@ class e20rClientModel {
         global $wpdb;
 
         $saved = $currentProgram;
-
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
         $coaches = array();
 
         if ( is_null( $program_id ) && ( is_null( $client_id ) ) ) {
-            dbg("e20rClientModel::get_coach() - Neither program nor user ID is defined. Get any user with a capability like 'e20r_coach'");
+            dbg("e20rClientModel::get_coach() - Neither program nor user ID is defined. Get any user with a capability like {$user_roles['coach']['role']}");
             $coach_query = array(
                 'field' => array( 'ID', 'display_name' ),
                 'meta_query' => array(
                     array(
                         'key'       => $wpdb->prefix . 'capabilities',
-                        'value'     => 'e20r_coach',
+                        'value'     => $user_roles['coach']['role'],
                         'compare'   => 'LIKE'
                     ),
                 )
@@ -1101,7 +1101,7 @@ class e20rClientModel {
                     'relation' => 'AND',
                     array(
                         'key'       => $wpdb->prefix . 'capabilities',
-                        'value'     => 'e20r_coach',
+                        'value'     => $user_roles['coach']['role'],
                         'compare'   => 'LIKE'
                     ),
                     array(
@@ -1121,7 +1121,7 @@ class e20rClientModel {
                     'relation' => 'AND',
                     array(
                         'key'       => $wpdb->prefix . 'capabilities',
-                        'value'     => 'e20r_coach',
+                        'value'     => $user_roles['coach']['role'],
                         'compare'   => 'LIKE'
                     ),
                     array(
@@ -1141,7 +1141,7 @@ class e20rClientModel {
                     'relation' => 'AND',
                     array(
                         'key'       => $wpdb->prefix . 'capabilities',
-                        'value'     => 'e20r_coach',
+                        'value'     => $user_roles['coach']['role'],
                         'compare'   => 'LIKE'
                     ),
                     array(

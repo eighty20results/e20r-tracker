@@ -256,6 +256,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
                     foreach( $userInfo as $k => $data ) {
 
+                        $assignment->id = isset($data->id) ? $data->id : null;
                         $assignment->answer = isset( $data->answer ) ? $data->answer : null;
                         $assignment->answer_date = isset($data->answer_date) ? $data->answer_date : null;
                         $assignment->article_id = $userAId;
@@ -411,7 +412,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                 $new->article_ids = $article_list;
             }
 
-            $new->id = $assignment_id;
+            $new->id = !empty( $assignment_id ) ? $assignment_id : null;
 			$new->descr = $query->post->post_excerpt;
 			$new->question = $query->post->post_title;
 			// $new->{$key} = $value;

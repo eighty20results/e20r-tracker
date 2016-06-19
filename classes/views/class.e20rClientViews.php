@@ -647,7 +647,7 @@ class e20rClientViews {
         global $e20rClient;
 
         $today = current_time('timestamp');
-        $two_weeks = strtotime("{$currentProgram->startdate} + 2 weeks");
+        $four_days = strtotime("{$currentProgram->startdate} + 5 days");
         $complete_interview = $e20rClient->completeInterview($current_user->ID);
 
         ob_start(); ?>
@@ -677,7 +677,7 @@ class e20rClientViews {
         <?php
         dbg("e20rClientViews::view_clientProfile() - Checking whether to load pop-up warning for incomplete intake interview");
 
-        if ( ($two_weeks <= $today) && (false === $complete_interview) ) {
+        if ( ($four_days <= $today) && (false === $complete_interview) ) {
 
             dbg("e20rClientViews::view_clientProfile() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
 
@@ -759,8 +759,9 @@ class e20rClientViews {
     public function profile_view_user_settings( $userId, $programs ) {
 
         $checked = null;
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array());
 
-        if ( user_can( $userId, 'e20r_coach' ) ) {
+        if ( user_can( $userId, $user_roles['coach']['role']) ) {
             $checked = 'checked="checked"';
         }
 
@@ -777,7 +778,7 @@ class e20rClientViews {
             <tr>
                 <th><label for="e20r-tracker-user-role"><?php _e( "User is a program coach", "e20rtracker"); ?></label></th>
                 <td>
-                    <input type="checkbox" id="e20r-tracker-user-role" name="e20r-tracker-user-role" value="e20r_coach" <?php echo $checked; ?>>
+                    <input type="checkbox" id="e20r-tracker-user-role" name="e20r-tracker-user-role" value="<?php echo $user_roles['coach']['role']; ?>" <?php echo $checked; ?>>
                 </td>
             </tr>
             <tr>

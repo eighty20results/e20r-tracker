@@ -45,31 +45,26 @@ class e20rProgramView {
                 </td>
             </tr>
             <tr><?php
+                        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
+
                         $has_exercise_role = (
-                            user_can($user->ID, 'e20r_tracker_exp_1') ||
-                            user_can($user->ID, 'e20r_tracker_exp_2') ||
-                            user_can($user->ID, 'e20r_tracker_exp_3') ||
-                            user_can($user->ID, 'e20r_coach') ); ?>
+                            user_can($user->ID, $user_roles['beginner']['role']) ||
+                            user_can($user->ID, $user_roles['intermediate']['role']) ||
+                            user_can($user->ID, $user_roles['experienced']['role']) ||
+                            user_can($user->ID, $user_roles['coach']['role']) ); ?>
                 <th><label for="e20r-tracker-user-assigned_role"><?php _e( "Exercise Experience", "e20rtracker"); ?></label></th>
                 <td>
                     <select id="e20r-tracker-user-assigned_role" name="e20r-tracker-user-assigned_role" class="select2-container">
                         <option value="0" <?php echo (false === $has_exercise_role ? 'selected="selected"' : null);  ?>>Unassigned</option>
                         <?php
-                            $roles = array(
-                                'e20r_coach' => __( "Coach", "e20rtracker"),
-                                'e20r_tracker_exp_1' => __( "Exercise Level 1 (NE)", "e20rtracker"),
-                                'e20r_tracker_exp_2' => __( "Exercise Level 2 (IN)", "e20rtracker"),
-                                'e20r_tracker_exp_3' => __( "Exercise Level 3 (EX)", "e20rtracker"),
-                            );
 
-                        foreach( $roles as $key => $label ) {
-                            ?>
-                            <option value="<?php echo esc_attr($key); ?>" <?php echo (true === user_can( $user->ID, $key)? 'selected="selected"' : null); ?>>
-                                <?php echo esc_attr($label); ?>
+                        foreach( $user_roles as $key => $role_def ) { ?>
+
+                            <option value="<?php echo esc_attr($role_def['role']); ?>" <?php echo (true === user_can( $user->ID, $role_def['role'])? 'selected="selected"' : null); ?>>
+                                <?php echo esc_attr($role_def['label']); ?>
                             </option> <?php
-                        }
+                        } ?>
 
-                        ?>
                     </select>
                 </td>
 

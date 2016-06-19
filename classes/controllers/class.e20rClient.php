@@ -766,6 +766,34 @@ class e20rClient
     }
 
     /**
+     * Validate that the user ID has an exercise level role on the system
+     * Set to "beginner" if they don't.
+     * 
+     * @param       integer         $user_id        The User ID to check
+     * @return      true                            
+     */
+    public function check_role_setting( $user_id ) {
+
+        $user = new WP_User($user_id);
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
+
+        // assume the user does _NOT_ have one of the expected roles
+        $has_role = false;
+
+        foreach( $user_roles as $key => $role ) {
+
+            $has_role = $has_role || in_array( $role['role'], $user->roles );
+        }
+
+        if ( false === $has_role ) {
+            $user->add_role( $user_roles['beginner']['role'] );
+            $has_role = true;
+        }
+
+        return $has_role;
+    }
+
+    /**
      * Automatically propose/recommend an exercise experience level for the user based
      * on survey results.
      *
@@ -776,7 +804,8 @@ class e20rClient
 
         // can the client even be at the "experienced" level (by default, no).
         $can_be_ex = false;
-
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
+        
         dbg($data);
 
         switch ( $data['exercise_level'] ) {
@@ -853,17 +882,17 @@ class e20rClient
         // "experienced"
         if ( true === $can_be_ex && (6 === $total_exp || ( 3 === $el_score && $hw_score == 2 ) ))  {
             dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'Experienced'");
-            $role = 'e20r_tracker_exp_3';
+            $role = $user_roles['experienced']['role'];
 
         // $el_score = 1 or 2 and $hw_score = 1, 2, 3 ('intermediate')
         } elseif ( $total_exp <= 5 || $total_exp >= 3 ) {
             dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'Intermediate'");
-            $role = 'e20r_tracker_exp_2';
+            $role = $user_roles['intermediate']['role'];
 
             // Beginner
         } else {
             dbg("e20rClient::assign_exercise_level() -  User {$user_id} qualifies as 'New to Exercise'");
-            $role = 'e20r_tracker_exp_1';
+            $role = $user_roles['beginner']['role'];
         }
 
         $user = new WP_User($user_id);
@@ -1303,6 +1332,8 @@ class e20rClient
         $role_name = isset($_POST['e20r-tracker-user-role']) ? $e20rTracker->sanitize($_POST['e20r-tracker-user-role']) : null;
         $programs = isset($_POST['e20r-tracker-coach-for-programs']) ? $e20rTracker->sanitize($_POST['e20r-tracker-coach-for-programs']) : array();
 
+        $user_roles = apply_filters('e20r-tracker-configured-roles', array());
+
         dbg("e20rTracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}");
 
         $u = get_user_by('id', $userId);
@@ -1311,10 +1342,10 @@ class e20rClient
 
             $u->add_role($role_name);
         } else {
-            if ($u->has_cap('e20r_coach')) {
+            if ($u->has_role( $user_roles['coach']['role'])) {
 
-                dbg("e20rClient::updateRoleForUser() - Removing 'e20r_coach' capability/role for user {$userId}");
-                $u->remove_cap('e20r_coach');
+                dbg("e20rClient::updateRoleForUser() - Removing 'coach' capability/role for user {$userId}");
+                $u->remove_role($user_roles['coach']['role']);
             }
 
             // wp_die( "Unable to remove the {$role_name} role for this user ({$userId})" );
@@ -1351,7 +1382,7 @@ class e20rClient
     {
 
         global $e20rProgram;
-
+        
         dbg("e20rClient::selectRoleForUser() - Various roles & capabilities for user {$user->ID}");
 
         $allPrograms = $e20rProgram->get_programs();
