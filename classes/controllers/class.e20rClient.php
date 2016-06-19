@@ -66,8 +66,10 @@ class e20rClient
 
     public function record_login($user_login)
     {
-
         $user = get_user_by('login', $user_login);
+
+        dbg("e20rClient::record_login() - Check that {$user_login} has a valid role...");
+        $this->check_role_setting( $user->ID );
 
         if ( $user->ID != 0 ) {
             dbg("e20rClient::record_login() - Saving login information about {$user_login}");
@@ -774,6 +776,8 @@ class e20rClient
      */
     public function check_role_setting( $user_id ) {
 
+        dbg("e20rClient::check_role_setting() - Make sure {$user_id} has an exercise experience role configured");
+
         $user = new WP_User($user_id);
         $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
 
@@ -785,7 +789,10 @@ class e20rClient
             $has_role = $has_role || in_array( $role['role'], $user->roles );
         }
 
+        dbg("e20rClient::check_role_setting() - {$user_id} DOES have the exercise experience role configured? " . ( $has_role === true ? 'Yes' : 'No') );
+
         if ( false === $has_role ) {
+            dbg("e20rClient::check_role_setting() - Assigning a default role (Beginner) until they complete the Welcome interview" );
             $user->add_role( $user_roles['beginner']['role'] );
             $has_role = true;
         }
