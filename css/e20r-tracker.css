@@ -2386,7 +2386,14 @@ div.e20r-boxes div.e20r-footer-placement {
     position: absolute;
     left: 50%;
     bottom: 0;
-    width: 100%;
+    /* width: 100%; */
+}
+div.e20r-boxes div.e20r-footer-placement div.e20r-footer-button-div {
+    float: left;
+}
+div.e20r-footer-button-div a.button.secondary.agree {
+    background: lightgray;
+    color: #444;
 }
 div.e20r-boxes .button {
     padding:10px;
