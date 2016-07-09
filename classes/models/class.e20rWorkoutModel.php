@@ -103,8 +103,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
         $workout->program_ids = array();
 	    $workout->workout_ident = 'A';
 	    $workout->phase = null;
-	    $workout->assigned_user_id = array( -1 );
-	    $workout->assigned_usergroups = array( -1 );
+	    $workout->assigned_user_id = array( 0 ); // Not Applicable
+	    $workout->assigned_usergroups = array( 0 ); // Not Applicable
 	    // $workout->startdate = date( 'Y-m-d', current_time( 'timestamp' ) );
 		$workout->startdate = null;
 	    $workout->enddate = null;
