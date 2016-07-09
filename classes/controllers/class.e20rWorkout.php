@@ -377,8 +377,8 @@ class e20rWorkout extends e20rSettings
         $workout->days = isset($_POST['e20r-workout-days']) ? $e20rTracker->sanitize($_POST['e20r-workout-days']) : array();
         $workout->workout_ident = isset($_POST['e20r-workout-workout_ident']) ? $e20rTracker->sanitize($_POST['e20r-workout-workout_ident']) : 'A';
         $workout->phase = isset($_POST['e20r-workout-phase']) ? $e20rTracker->sanitize($_POST['e20r-workout-phase']) : 1;
-        $workout->assigned_user_id = isset($_POST['e20r-workout-assigned_user_id']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_user_id']) : array(-1); // Default is "everybody"
-        $workout->assigned_usergroups = isset($_POST['e20r-workout-assigned_usergroups']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_usergroups']) : array(-1);
+        $workout->assigned_user_id = isset($_POST['e20r-workout-assigned_user_id']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_user_id']) : array(0); // Default is "everybody"
+        $workout->assigned_usergroups = isset($_POST['e20r-workout-assigned_usergroups']) ? $e20rTracker->sanitize($_POST['e20r-workout-assigned_usergroups']) : array(0);
         $workout->startdate = isset($_POST['e20r-workout-startdate']) ? $e20rTracker->sanitize($_POST['e20r-workout-startdate']) : null;
         $workout->enddate = isset($_POST['e20r-workout-enddate']) ? $e20rTracker->sanitize($_POST['e20r-workout-enddate']) : null;
         $workout->startday = isset($_POST['e20r-workout-startday']) ? $e20rTracker->sanitize($_POST['e20r-workout-startday']) : null;
@@ -455,6 +455,17 @@ class e20rWorkout extends e20rSettings
 
         $currentDay = $e20rTracker->getDelay('now', $userId);
         $currentDate = date('Y-m-d', current_time('timestamp'));
+
+        $user = new WP_User($userId);
+
+        foreach( (array) $user->roles as $role ) {
+
+            if ( false !== strpos( $role, 'e20r_tracker_exp') ) {
+
+                $user_role = $role;
+                break;
+            }
+        }
 
         dbg("e20rWorkout::getActivityArchive() - User ({$userId}) started program ({$programId}) on: {$started}");
 
@@ -559,8 +570,13 @@ class e20rWorkout extends e20rSettings
                 $act = $this->find('id', $article->activity_id, $programId, 'IN');
 
                 foreach ($act as $a) {
-                    dbg("e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted");
-                    $unsorted[] = $a;
+
+                    $access = $e20rTracker->allowedActivityAccess( $a, $userId, $user_role );
+
+                    if ( true === $access['group'] || true === $access['user']) {
+                        dbg( "e20rWorkout::getActivityArchive() - Pushing {$a->id} to array to be sorted" );
+                        $unsorted[] = $a;
+                    }
                 }
             } else {
                 dbg("e20rWorkout::getActivityArchive() - No activities defined for article {$article->id}, moving on.");
@@ -575,6 +591,7 @@ class e20rWorkout extends e20rSettings
         */
 
         dbg("e20rWorkout::getActivityArchive() - Have " . count($unsorted) . " workout objects to process/sort");
+        dbg($unsorted);
 
         // Save activities in an hash keyed on the weekday the activity is scheduled for.
         foreach ($unsorted as $activity) {
