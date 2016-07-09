@@ -4132,8 +4132,6 @@ class e20rTracker {
             return $delayVal;
         }
 
-
-
         if ( false === $startDate = strtotime( $currentProgram->startdate ) ) {
             dbg("Unable to configure startdate for currentProgram (" . !empty($currentProgram->id) ? $currentProgram->id : 'None' . ")");
             return false;
