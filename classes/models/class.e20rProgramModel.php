@@ -176,6 +176,13 @@ class e20rProgramModel extends e20rSettingsModel {
         return ( !$error ) ;
     }
 
+    /**
+     * Load program settings from database
+     *
+     * @param       integer       $id       Program (post) ID (CPT)
+     *
+     * @return      stdClass    e20rProgram->settings       Settings for the specified program
+     */
 	public function loadSettings( $id ) {
 
 		global $post;
@@ -184,7 +191,7 @@ class e20rProgramModel extends e20rSettingsModel {
 
 		global $currentProgram;
 
-		if ( ! empty( $currentProgram ) && ( $currentProgram->id == $id ) ) {
+		if ( isset( $currentProgram->id ) && ( $currentProgram->id == $id ) ) {
 
 			return $currentProgram;
 		}
@@ -244,45 +251,4 @@ class e20rProgramModel extends e20rSettingsModel {
 		$currentProgram = $this->settings;
 		return $currentProgram;
 	}
-
-    /**
-     * Save program settings to the post_meta table.
-     *
-     * @param $data - Array of data to insert/update/delete.
-     * /
-    public function saveProgram( $data ) {
-
-        global $wpdb;
-
-        if ( ( ! isset( $data['id'] ) ) || ( $data['id'] === null ) ) {
-
-            // New program being added.
-            dbg( "e20rProgramModel::saveProgram() - ADDING: " . print_r( $data, true ) );
-
-            if ( false === $wpdb->insert( $this->table, $data ) ) {
-
-                dbg("e20rProgramModel::saveProgram() - ERROR on ADD: {$wpdb->last_error}" );
-            }
-
-        } elseif ( $this->recordExists( $data['id'] )
-                   && ( isset( $data['program_shortname'] ) ) ) {
-
-            dbg( "e20rProgramModel::saveProgram() - UPDATING: " . print_r( $data, true ) );
-            $where = array( 'id' => $data['id'] );
-
-            if ( false === $wpdb->update( $this->table, $data, $where, array( '%d' ) ) ) {
-
-                dbg("e20rProgramModel::saveProgram() - ERROR on UPDATE: {$wpdb->last_error}" );
-            }
-        } elseif ( ( $this->recordExists( $data['id'] ) ) && ( ! isset($data['program_shortname'])) ) {
-
-            dbg( "e20rProgramModel::saveProgram() - Deleting record ({$data['id']})" );
-
-            if ( false === $wpdb->delete( $this->table, array( 'id' => $data['id'] ) ) ) {
-
-                dbg("e20rProgramModel::saveProgram() - ERROR on DELETE: {$wpdb->last_error}" );
-            }
-        }
-    }
-    */
 }
