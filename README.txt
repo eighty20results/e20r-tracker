@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
-Tested up to: 4.5.2
-Stable tag: 1.5.51
+Tested up to: 4.5.3
+Stable tag: 1.5.52
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,28 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.52 ==
+
+* ENHANCEMENT: Documentation for loadSettings()
+* ENHANCEMENT: Fix debug output for constructor() method
+* ENHANCEMENT: (optional) Future use of $delay value in e20rProgram::init() method
+* ENHANCEMENT: Fix debug output
+* ENHANCEMENT/BUG: Add permissions to role definitions
+* ENHANCEMENT/BUG: Use WP Roles to grant/deny group access
+* BUG: Couldn't figure out the correct startdate for the user/program because the program wasn't initiated yet
+* BUG: Wouldn't set correct startdate for user when using navigation in dashboard
+* BUG: Fix syntax error/parser error
+* BUG: Would sometimes fail to drop invalid (unexpected) articles
+* BUG: Ensure that only articles w/a valid release day are used (valid values: 1 - infinite)
+* BUG: Would sometimes incorrectly assume the currentProgram object was configured
+* BUG: Would set default access permissions to 'all users' or 'all groups' if none was specified
+* BUG: Would sometimes override appropriate group access level (deny what should be permitted)
+* BUG: Could occasionally reset login timestamps for users
+* BUG: Didn't correctly load E20R Tracker roles on activation
+* BUG: Debug output for prepare_activity()
+* REFACTOR: Remove stale code
+* REFACTOR: e20rTracker.php
 
 == 1.5.51 ==
 
