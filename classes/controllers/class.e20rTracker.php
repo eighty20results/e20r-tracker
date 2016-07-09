@@ -2773,7 +2773,7 @@ class e20rTracker {
 
             // $prereq = array_keys( $prereq );
             dbg("e20rTracker::load_frontend_scripts() - For the prerequisites -- wp_print_scripts( " . print_r( $prereq, true) . " )");
-            wp_print_scripts( $prereq );
+            wp_enqueue_script( $prereq );
 
             $list = array();
 
@@ -2814,7 +2814,7 @@ class e20rTracker {
             }
 
             dbg("e20rTracker::load_frontend_scripts() - For the script(s) -- wp_print_scripts( " . print_r( $list, true) . " )");
-            wp_print_scripts( $list );
+            wp_enqueue_script( $list );
 
 
             foreach( $css as $tag => $url ) {
