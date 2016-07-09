@@ -510,24 +510,41 @@ class e20rTracker {
       *
       * @since 1.5.50 - Initially added
       */
-    public function add_default_roles( $roles ) {       
+    public function add_default_roles( $roles ) {
     
         return array(
             'coach'         =>  array( 
                                         'role' => 'e20r_coach',
-                                         'label' => __( "Coach", "e20rtracker") 
+                                        'label' => __( "Coach", "e20rtracker"),
+                                        'permissions' => array(
+											'read' => true,
+											'edit_users' => true,
+											'upload_files' => true
+                                         ),
                                 ), 
             'beginner'      =>  array( 
                                         'role' => 'e20r_tracker_exp_1', 
-                                        'label' => __( "Exercise Level 1 (NE)", "e20rtracker") 
+                                        'label' => __( "Exercise Level 1 (NE)", "e20rtracker"),
+                                        'permissions' => array(
+											'read' => true,
+                                            'upload_files' => true
+                                         ),
                                 ),
             'intermediate'  =>  array(
                                         'role' => 'e20r_tracker_exp_2',
-                                        'label' => __( "Exercise Level 2 (IN)", "e20rtracker")
+                                        'label' => __( "Exercise Level 2 (IN)", "e20rtracker"),
+                                        'permissions' => array(
+											'read' => true,
+                                            'upload_files' => true
+                                         ),
                                 ),
             'experienced'   =>  array(
                                         'role' => 'e20r_tracker_exp_3',
-                                        'label' => __( "Exercise Level 3 (EX)", "e20rtracker")
+                                        'label' => __( "Exercise Level 3 (EX)", "e20rtracker"),
+                                        'permissions' => array(
+											'read' => true,
+                                            'upload_files' => true
+                                         ),
                                 ),
         );
     }
@@ -682,12 +699,6 @@ class e20rTracker {
 */
     private function inGroup( $id, $grpList ) {
 
-        if ( in_array( 0, $grpList ) ) {
-
-            dbg("e20rTracker::inGroup() - Admin has set 'Not Applicable' for group. Returning false");
-            return false;
-        }
-
         if ( in_array( -1, $grpList ) ) {
 
             dbg("e20rTracker::inGroup() - Admin has set 'All Groups'. Returning true");
@@ -761,7 +772,7 @@ class e20rTracker {
         // Check against group list(s) first.
         // Loop through any list of groups the user belongs to
 
-        dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$grpId}");
+        dbg("e20rTracker::allowedActivityAccess() - Check access for group ID {$grpId} vs " . print_r($activity->assigned_usergroups, true));
         $ret['group'] = $this->inGroup( $grpId, $activity->assigned_usergroups );
 
         // Return true if either user or group access is true.
@@ -3492,7 +3503,9 @@ class e20rTracker {
 
         foreach ( $user_ids as $user_id ) {
 
-            update_user_meta( $user_id, '_e20r-tracker-last-login', 0 );
+            if ( false === get_user_meta( $user_id, '_e20r-tracker-last-login', true ) ) {
+                update_user_meta( $user_id, '_e20r-tracker-last-login', 0 );
+            }
         }
 
         if (false === $this->define_e20rtracker_roles() )
@@ -3977,7 +3990,7 @@ class e20rTracker {
 
 	public function getGroupIdForUser( $userId = null ) {
 
-		$group_id = 0;
+		$group_id = null;
 
 		dbg("e20rTracker::getGroupIdForUser() - Get membership/group data for {$userId}");
 
@@ -3987,6 +4000,26 @@ class e20rTracker {
 			$userId = $current_user->ID;
 		}
 
+		$user = new WP_User($userId);
+
+		dbg("e20rTracker::getGroupIdForUser() - User object: " . print_r( $user, true));
+
+		foreach( (array) $user->roles as $role ) {
+
+			if ( false !== strpos( $role, 'e20r_tracker_exp') ) {
+				dbg("e20rTracker::getGroupIdForUser() - Returning the tracker role/group for {$userId}: {$role}");
+				$group_id = $role;
+			}
+		}
+
+		if (empty($group_id)) {
+
+			$roles = apply_filters('e20r-tracker-configured-roles', array() );
+			$group_id = $roles['beginner']['role'];
+
+			dbg("e20rTracker::getGroupIdForUser() - Assigning default group for the current user ID ({$userId}): {$group_id}");
+		}
+/*
 		if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
 
 			dbg("e20rTracker::getGroupIdForUser() - Using Paid Memberships Pro for group/level management for {$userId}");
@@ -3996,7 +4029,7 @@ class e20rTracker {
 
 			dbg("e20rTracker::getGroupIdForUser() - Returning group ID of {$group_id} for {$userId}");
 		}
-
+*/
 		return $group_id;
 	}
 
@@ -4497,26 +4530,10 @@ class e20rTracker {
         global $wp_roles;
 
         $roles_set = $this->loadOption('roles_are_set');      
-        $roles = apply_filters('e20r-tracker-configured-roles', array() );
+        $roles = $this->add_default_roles(array());
 
         dbg("e20rTracker::define_e20rtracker_roles() - Processing " . count($roles) . " roles:");
         foreach ( $roles as $key => $user_role ) {
-            switch( $key ) {
-                case 'coach':
-
-                    $permissions = array(
-                        'read' => true,
-                        'edit_users' => true,
-                        'upload_files' => true
-                    );
-                    break;
-
-                default: // everyone else
-                    $permissions =  array(
-                        'read' => true,
-                        'upload_files' => true
-                    );
-            }
 
             foreach ( $wp_roles->get_names() as $role_name => $display_name) {
 
@@ -4527,7 +4544,7 @@ class e20rTracker {
             }
 
             dbg("e20rTracker::define_e20rtracker_roles() - Adding role definition for {$user_role['role']} => {$user_role['label']}");
-            if (! $wp_roles->add_role( $user_role['role'], $user_role['label'], $permissions ) ) {
+            if (! $wp_roles->add_role( $user_role['role'], $user_role['label'], $user_role['permissions'] ) ) {
                 dbg("e20rTracker::define_e20rtracker_roles() - Error adding {$key} -> '{$user_role['role']}' role!");
                 return false;
             }
