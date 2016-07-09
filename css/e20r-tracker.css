@@ -602,7 +602,8 @@ div#inner-tabs div.inner-tab {
 }
 #saturday-progress-container #e20r-progress-canvas img#weekly-alarm-clock {
     float: left;
-    width: 45%;
+    width: auto;
+    max-height: 200px;
 }
 .e20r-weekly-progress-reminder-text {
     float: left;
@@ -612,7 +613,6 @@ div#inner-tabs div.inner-tab {
 .e20r-weekly-progress-reminder-text h4 {
     font-size: 22px;
     margin-top: 8px;
-    height: 28px;
     line-height: 30px;
 }
 .e20r-weekly-progress-reminder-text p {
@@ -1327,7 +1327,7 @@ td.e20r-group-header {
 .progress-container {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
-    background: #004CFF;
+    background: #b9b8b8;
     border: 1px solid #c5c5c5;
     padding: 14px;
     /* margin-top: 10px; */
@@ -2695,7 +2695,7 @@ div.e20r-message-content p {
         height: 38px;
         line-height: 40px;
         color: #FFF;
-        background: #004CFF;
+        background: #b9b8b8;
         border-bottom: 1px solid #cccccc;
     }
     /* .colorbox-guide-container table.e20r-help-items {
@@ -2755,8 +2755,6 @@ div.e20r-message-content p {
         font-size: 1rem;
     }
     #saturday-progress-container #e20r-progress-canvas {
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
         background: #FFF;
         min-height: 300px;
         padding: 14px;
@@ -2836,7 +2834,7 @@ div.e20r-message-content p {
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
-        margin: 0 0 15px;
+        margin: 0 0 15px !important;
     }
     #saturday-progress-container.progress-container > h3 span {
         font-size: 100%;
@@ -2902,6 +2900,18 @@ div.e20r-message-content p {
     }
 }
 @media screen and (max-width: 533px) {
+
+    #saturday-progress-container #e20r-progress-canvas img#weekly-alarm-clock {
+        float: left;
+        width: auto;
+        height: 100px;
+    }
+
+    #saturday-progress-container #e20r-progress-canvas .e20r-weekly-progress-reminder-text {
+        float: left;
+        width: 95%;
+    }
+
     .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
         padding: 5px !important;
     }
@@ -2952,7 +2962,7 @@ div.e20r-message-content p {
         height: 25px;
         line-height: 26px;
         color: #FFF;
-        background: #004CFF;
+        background: #b9b8b8;
         border-bottom: 1px solid #cccccc;
     }
     /* .colorbox-guide-container table.e20r-help-items {
@@ -3030,8 +3040,12 @@ div.e20r-message-content p {
         -moz-border-radius: 6px;
         -webkit-border-radius: 6px;
         border-radius: 6px;
+        /*
         background: rgba( 0, 76, 255, 0.95 );
         border: 1px solid rgb( 0, 76, 255);
+        */
+        background: #b9b8b8;
+        border: 1px solid #c5c5c5;
         padding: 14px;
         /* max-width: 95%; */
         width: 100%;
@@ -3067,7 +3081,7 @@ div.e20r-message-content p {
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
-        margin: 0 0 15px;
+        margin: 0 0 15px !important;
     }
     #saturday-progress-container.progress-container > h3 span {
         font-size: 90%;
@@ -3209,7 +3223,6 @@ div.e20r-message-content p {
     .e20r-weekly-progress-reminder-text h4 {
         font-size: 18px;
         margin-top: 8px;
-        height: 22px;
         line-height: 22px;
     }
 }
