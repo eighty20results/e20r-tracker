@@ -850,8 +850,7 @@ class e20rAction extends e20rSettings
                     }
                 }
             } elseif (is_object($articles) && (false === $article_configured)) {
-                dbg("e20rAction::con
-				figure_dailyProgress() - Articles object: " . gettype($articles));
+                dbg("e20rAction::configure_dailyProgress() - Articles object: " . gettype($articles));
                 dbg($articles);
                 $article = $articles;
             }
