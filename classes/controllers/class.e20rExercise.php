@@ -17,7 +17,7 @@ class e20rExercise extends e20rSettings
     public function __construct()
     {
 
-        dbg("e20rProgram:: - Initializing Exercise class");
+        dbg("e20rExercise::__construct() - Initializing Exercise class");
 
         $this->model = new e20rExerciseModel();
         $this->view = new e20rExerciseView();
