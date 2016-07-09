@@ -245,10 +245,13 @@ class e20rProgramModel extends e20rSettingsModel {
 			$post = $savePost;
 		}
 
-        $this->settings->active_delay = $e20rTracker->getDelay('now');
         $this->settings->previous_delay = null;
-
 		$currentProgram = $this->settings;
+
+        /** BUGFIX: Couldn't figure out the correct startdate for the user/program because the current startdate was wrong */
+        $this->settings->active_delay = $e20rTracker->getDelay('now');
+        $currentProgram = $this->settings;
+
 		return $currentProgram;
 	}
 }
