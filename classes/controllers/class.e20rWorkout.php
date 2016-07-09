@@ -810,7 +810,7 @@ class e20rWorkout extends e20rSettings
 
             // if ( isset( $article->activity_id ) && ( !empty( $article->activity_id) ) ) {
 
-            dbg("e20rWorkout::prepare_activity() - Activity count for article: " . isset($article->activity_id) ? count($article->activity_id) : 0);
+            dbg("e20rWorkout::prepare_activity() - Activity count for article: " . (isset($article->activity_id) ? count($article->activity_id) : 0));
 
             $workoutData = $this->model->find('id', $article->activity_id, $config->programId, 'IN');
 
