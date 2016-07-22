@@ -163,7 +163,13 @@ class e20rArticleModel extends e20rSettingsModel
 
         foreach ($result as $k => $data) {
 
-            if ( ( empty($data->release_day) && ( false === $data->is_survey ) || (-9999 == $data->release_day ) ) && ($dont_drop === false)) {
+        	$allow_drop = !$dont_drop;
+
+        	if ( false === $dont_drop && true === $data->is_survey ) {
+        		$allow_drop = false;
+	        }
+
+            if ( ( empty($data->release_day) || (-9999 == $data->release_day ) ) && (true === $allow_drop)) {
 
                 // Dropping articles containing the "Always released" indicator ( -9999 )
                 dbg("e20rArticleModel::find() - Dropping article {$data->id} since it's a 'default' article");
