@@ -163,9 +163,11 @@ class e20rArticleModel extends e20rSettingsModel
 
         foreach ($result as $k => $data) {
 
+        	dbg("e20rArticleModel::find() - Drop setting is: " . ( $dont_drop ? "Don't Drop" : 'Drop' ) );
+	        dbg("e20rArticleModel::find() - Survey setting is: " . ( $data->is_survey ? "Survey" : 'Not a survey' ) );
         	$allow_drop = !$dont_drop;
 
-        	if ( false === $dont_drop && true === $data->is_survey ) {
+        	if ( true == $allow_drop && true == $data->is_survey ) {
         		$allow_drop = false;
 	        }
 
