@@ -237,7 +237,10 @@ class e20rTracker {
             add_action( 'init', array( &$this, 'add_endpoint' ), 10 );
             add_action( 'init', array( &$this, 'add_rewrite_tags' ), 10);
 
-            add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
+            // add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
+            // add_filter( 'heartbeat_send', array( &$e20rAssignment, 'heartbeat_send'), 10, 2 );
+
+            add_action( 'wp_ajax_e20r_coach_message', array( &$e20rAssignment, 'heartbeat_received'),10, 2);
 
             add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
             // add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
@@ -1876,7 +1879,8 @@ class e20rTracker {
             // $this->load_frontend_scripts('progress_overview');
             wp_localize_script( 'e20r-progress-page', 'e20r_admin',
                     array(
-                        'timeout' => 12000,
+                        'timeout' => 30000,
+                        'longpoll_timeout' => apply_filters('e20r-tracker-longpoll-timeout', 300000),
                     )
                 );
 
@@ -1987,7 +1991,8 @@ class e20rTracker {
 		        wp_localize_script( 'e20r-cpt-admin', 'e20r_tracker',
 			        array(
 				        'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				        'timeout' => 12000,
+				        'timeout' => 30000,
+				        'longpoll_timeout' => apply_filters('e20r-tracker-longpoll-timeout', 300000),
 				        'lang'    => array(
 					        'no_entry' => __( 'Please select', 'e20rtracker' ),
 					        'no_ex_entry' => __( 'Please select an exercise', 'e20rtracker' ),
@@ -2538,7 +2543,7 @@ class e20rTracker {
 
                     $css = array_replace( $css, array(
                         "thickbox" => null,
-                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.min.css"
+                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.css"
                     ) );
 
                     $prereqs = array_replace( $prereqs, array(
@@ -2802,7 +2807,10 @@ class e20rTracker {
 
                 wp_localize_script( $script, $id,
                     array(
-                        'timeout' => 12000,
+                        'timeout' => 30000,
+                        'longpoll_timeout' => apply_filters('e20r-tracker-longpoll-timeout', 300000),
+                        'coach_message_nonce' => wp_create_nonce('e20r-coach-message'),
+                        'ticks_to_skip' => apply_filters('e20r-tracker-heartbeat-skip-count', 5),
                         'ajaxurl' => admin_url('admin-ajax.php'),
                         'interview_complete' => $e20rClient->completeInterview( $current_user->ID ),
                         'clientId' => $current_user->ID,
