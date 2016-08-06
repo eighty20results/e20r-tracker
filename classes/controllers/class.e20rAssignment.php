@@ -394,8 +394,10 @@ class e20rAssignment extends e20rSettings {
         }
 
         $assignment_info = array_pop( $existing_assignment );
-        // dbg($assignment_info);
-        $data['record_id'] = $assignment_info->id;
+
+        // if ( !empty( $assignment_info->id) ) {
+            $data['record_id'] = $assignment_info->id;
+        // }
 
         dbg('e20rAssignment::add_assignment_reply() - Assignment reply data: ');
         dbg($data);
@@ -459,17 +461,37 @@ class e20rAssignment extends e20rSettings {
         return $this->model->user_has_new_messages( $client_id );
     }
 
-    public function heartbeat_received( $response, $data ) {
+    public function heartbeat_received() {
 
-        dbg("e20rAssignment::heartbeat_received() - Received heartbeat. Checking for new messages");
-        $client_id = isset( $data['e20r_message_request'] ) ? intval( $data['e20r_message_request'] ) : null;
+        dbg("e20rAssignment::heartbeat_received() - Checking coach/client messaging status");
 
-        if ( !is_null( $client_id ) ) {
-            dbg("e20rAssignment::heartbeat_received() - New message for user {$client_id}");
-            $response['e20r_message_status'] = $this->client_has_unread_messages( $client_id );
+        $nonce = isset($_REQUEST['e20r-message-nonce']) ? $_REQUEST['e20r-message-nonce'] : null;
+        $client_id = isset($_REQUEST['e20r-message-client-id']) ? intval( $_REQUEST['e20r-message-client-id']) : null;
+
+        $retval = array(
+            'e20r_new_messages' => 0,
+            'e20r_message_client_id' => $client_id
+        );
+
+        dbg("e20rAssignment::heartbeat_received() - Checking NONCE");
+
+        if ( wp_verify_nonce( $nonce, 'e20r-coach-message' ) && ! is_null( $retval['e20r_message_client_id'] ) ) {
+
+            dbg("e20rAssignment::heartbeat_received() - Received heartbeat. Checking for new messages");
+
+            $retval['e20r_new_messages'] = $this->client_has_unread_messages( $retval['e20r_message_client_id'] );
+
+            dbg("e20rAssignment::heartbeat_received() - New message for user {$retval['e20r_message_client_id']}: {$retval['e20r_new_messages']}");
+
+            wp_send_json_success( $retval );
         }
 
-        return $response;
+        if ( empty( $client_id ) ) {
+            dbg("e20rAssignment::heartbeat_received() - Returning due to no client ID given");
+            return wp_send_json_error( array( 'errormsg' => 'no-client-provided') );
+        }
+
+        wp_send_json_error( array( 'errormsg' => __( "Unauthenticated polling request" , 'e20rtracker' )) );
     }
 
     public function update_metadata() {
