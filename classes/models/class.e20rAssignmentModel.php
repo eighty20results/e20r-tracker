@@ -940,7 +940,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         $format = $e20rTracker->setFormatForRecord( $data );
 
-        if ( isset( $data['record_id'] ) ) {
+        if ( array_key_exists( 'record_id', $data ) ) {
 
             $assignment_record_id = $data['record_id'];
             unset( $data['record_id']);
