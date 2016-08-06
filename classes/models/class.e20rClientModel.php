@@ -289,7 +289,13 @@ class e20rClientModel {
         global $current_user;
         global $currentProgram;
 
-        dbg("e20rClientModel::get_data(): " . $e20rTracker->whoCalledMe() );
+	    dbg("e20rClientModel::get_data(): " . $e20rTracker->whoCalledMe() );
+
+	    if ( empty($currentProgram->id) && empty( $user_id ) ) {
+		    dbg("e20rClientModel::get_data(): No client or program info configured" );
+	    	return false;
+	    }
+
         $e20rProgram->getProgramIdForUser( $userId );
 
         if ( ( $currentClient->user_id != $userId ) && ( $e20rTracker->is_a_coach( $current_user->ID ) ) ) {
@@ -1182,6 +1188,7 @@ class e20rClientModel {
         global $wpdb;
 
         dbg("e20rClientModel::get_clients() - Loading all of coach #{$coach_id} clients for program {$program_id} ");
+	    $uList = array();
 
         if ( !is_null( $coach_id ) ) {
             $client_list = get_user_meta($coach_id, 'e20r-tracker-client-program-list', true);
@@ -1193,7 +1200,12 @@ class e20rClientModel {
             } elseif (is_null($program_id)) {
 
                 dbg("e20rClientModel::get_clients() - No program ID specified. Returning all clients ");
-                $uList = $client_list;
+                if ( false === $client_list ) {
+                	$uList[] = null;
+                } else {
+                	$uList[] = $client_list;
+                }
+
             } else {
                 $uList = array();
             }
