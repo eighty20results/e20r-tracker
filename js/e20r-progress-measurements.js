@@ -86,7 +86,11 @@ var progMeasurements = {
 */
 
              jQuery('#status-tabs').tabs({
-                 heightStyle: "content"
+                 heightStyle: "content",
+                 activate: function(event ,ui){
+                     console.log("Tab event: ", event);
+                     console.log("Tab Index: ", ui.newTab.index());
+                 }
              });
 
             $class.$statusTabs = jQuery('#status-tabs');
@@ -207,6 +211,55 @@ var progMeasurements = {
                 }
             });
 
+            jQuery('#status-tabs').on('tabsactivate', function( event, ui ) {
+
+                var $id = $class.$memberSelector.find('option:selected').val();
+
+                window.console.log("Activating: ", ui.newTab.index());
+
+                switch ( ui.newTab.index() ) {
+                    case 0: // measurements page
+                        window.console.log("Loading Measurements tab for (" + $id + ")");
+                        $class.loadMeasurementData( $id );
+                        break;
+
+                    case 1: // Assignments page
+                        window.console.log("Loading Assignments tab for (" + $id + ")");
+                        $class.loadAssignmentData( $id );
+                        break;
+
+                    case 2: // Achievements page
+                        window.console.log("Loading Achievements tab for (" + $id + ")");
+                        $class.loadAchivementsData( $id );
+                        break;
+
+                    case 3: // Activities page
+                        window.console.log("Loading Activities tab for (" + $id + ")");
+                        $class.loadActivityData( $id );
+                        break;
+
+                    case 4: // Client Info
+                        window.console.log("Loading Info tab for (" + $id + ")");
+                        $class.loadClientInfo( $id );
+                        break;
+
+                    case 5: // Client Messages
+                        window.console.log("Loading Messages tab for (" + $id + ")");
+                        $class.loadClientMessages( $id );
+                        break;
+
+                    case 6: // Client Message History
+                        window.console.log("Loading Message History tab for (" + $id + ")");
+                        $class.loadClientMessageHistory( $id );
+                        break;
+
+                    default:
+                        window.console.log("No window/tab to load for (" + $id + ")");
+
+                }
+
+            });
+
             if ( $class._loaded_from_coachpage() ) {
 
                 console.log("The coach has loaded this page by clicking the client link from the e20r_client_overview shortcode");
@@ -220,6 +273,9 @@ var progMeasurements = {
 
             }
             // TODO Bind click events to the assignments, etc. on the wp-admin page.
+            jQuery('a[href^="tabs-"]').on('click', function() {
+                window.console.log("User clicked on the tab...");
+            });
         }
         else {
             if ( typeof( e20r_progress ) === 'undefined' ) {
@@ -700,17 +756,18 @@ var progMeasurements = {
     },
     adminLoadData: function(id) {
 
+        var $class = this;
         console.log("in adminLoadData() for user with id: " + id);
 
         // $class.$memberSelect.prop("disabled", true);
 
-        this.loadMeasurementData(id);
-        this.loadAchivementsData(id);
-        this.loadAssignmentData( id );
-        this.loadActivityData(id);
-        this.loadClientInfo(id);
-        this.loadClientMessages(id);
-        this.loadClientMessageHistory(id);
+        $class.loadMeasurementData(id);
+//        $class.loadAchivementsData(id);
+//        $class.loadAssignmentData( id );
+//        $class.loadActivityData(id);
+//        $class.loadClientInfo(id);
+//        $class.loadClientMessages(id);
+//        $class.loadClientMessageHistory(id);
 
         jQuery("div#status-tabs").removeClass("startHidden");
 
@@ -926,6 +983,8 @@ var progMeasurements = {
 
                 // Disable the spinner again
                 $class.$spinner.hide();
+                $class.$body.removeClass("loading");
+
             }
         });
     },
@@ -937,6 +996,8 @@ var progMeasurements = {
         event.preventDefault();
 
         $class.$spinner.show();
+        $class.$body.addClass("loading");
+
 
         var $clientId = jQuery("input#e20r-send-to-id").val();
 
@@ -1014,6 +1075,8 @@ var progMeasurements = {
 
                 // Disable the spinner again
                 $class.$spinner.hide();
+                $class.$body.removeClass("loading");
+
             }
         });
     },
@@ -1023,6 +1086,7 @@ var progMeasurements = {
         var $res = { data: { html: '' } };
 
         $class.$spinner.show();
+        $class.$body.addClass("loading");
 
         jQuery.ajax({
             url: $class.$ajaxUrl,
@@ -1071,6 +1135,7 @@ var progMeasurements = {
 
                 // Disable the spinner again
                 $class.$spinner.hide();
+                $class.$body.removeClass('loading');
 
                 if ( typeof e20rClientAssignment != 'undefined') {
 
@@ -1110,6 +1175,8 @@ var progMeasurements = {
     loadActivityStats: function( $clientId, $exercise_id, $graph ) {
 
         var $class = this;
+
+        $class.$body.addClass("loading");
 
         if ( $clientId === null ) {
             console.log("No arguments specified?");
@@ -1327,6 +1394,8 @@ var progMeasurements = {
 
                 // Disable the spinner again
                 $class.$spinner.hide();
+                $class.$body.removeClass("loading");
+
             }
         });
 
@@ -1334,6 +1403,8 @@ var progMeasurements = {
     loadMeasurementData: function( $clientId ) {
 
         var $class = this;
+
+        $class.$body.addClass("loading");
 
         if ( $class.loadMeasurementData.arguments.length != 1 ) {
 
@@ -1559,6 +1630,8 @@ var progMeasurements = {
                 }
                 // Disable the spinner again
                 $class.$spinner.hide();
+                $class.$body.removeClass("loading");
+
             }
         });
     },
@@ -1582,6 +1655,7 @@ var progMeasurements = {
         $class.$levelId = $class.$levelSelector.find("option:selected").val();
 
         $class.$spinner.show();
+        $class.$body.addClass("loading");
 
         jQuery.ajax({
             url: this.$ajaxUrl,
@@ -1646,6 +1720,8 @@ var progMeasurements = {
             complete: function () {
 
                 $class.$spinner.hide();
+                $class.$body.removeClass("loading");
+
                 // $class.$memberSelector.prop('disabled', false);
 
             }
@@ -1654,6 +1730,8 @@ var progMeasurements = {
     loadProgressPage: function(link) {
 
         event.preventDefault();
+
+        var $class = this;
 
         var $form = jQuery(link).parent();
 
