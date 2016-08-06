@@ -157,7 +157,7 @@ class e20rProgram extends e20rSettings {
         global $currentProgram;
 
         if ( $program_id != $currentProgram->id ) {
-            $this->model->load_settings( $program_id );
+            $this->model->loadSettings( $program_id );
         }
 
         dbg("e20rProgram::get_program_name() - Name for program with id {$program_id}: {$currentProgram->title}");
@@ -297,6 +297,8 @@ class e20rProgram extends e20rSettings {
 
         $user_program = false;
 
+	    dbg("e20rProgram::getProgramIdForUser() - Processing user ID: {$userId}");
+
         if ( 0 < $userId ) {
 
             $user_program = get_user_meta( $userId, 'e20r-tracker-program-id', true);
@@ -320,6 +322,10 @@ class e20rProgram extends e20rSettings {
 
                     // locate the user's program.
                     $level = pmpro_getMembershipLevelForUser($userId);
+
+	                if ( !isset( $level->id ) ) {
+	                	return false;
+	                }
 
                     $user_program = $this->model->findByMembershipId($level->id);
 
@@ -366,7 +372,7 @@ class e20rProgram extends e20rSettings {
 
         dbg("e20rProgram::configure_startdate() - Current program startdate value: {$currentProgram->startdate} for program ID {$program_id}");
 
-        if ( is_admin() && ( $userId == $current_user->ID ) && false === DOING_AJAX ) {
+        if ( is_admin() && ( $userId == $current_user->ID ) && ( defined('DOING_AJAX') && false === DOING_AJAX ) ) {
             dbg("e20rProgram::configure_startdate() - user ID ({$userId}) matches current logged in user ({$current_user->ID}) AND we're in the admin UI");
             return;
         }
