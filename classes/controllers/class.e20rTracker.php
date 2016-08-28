@@ -2566,7 +2566,7 @@ class e20rTracker {
                     $scripts = array_replace( $scripts, array(
                         'e20r_assignments' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-assignments.js' : '/js/e20r-assignments.min.js' ),
                         'dependencies' => array(
-                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize', 'heartbeat'),
+                            'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize' ),
                         )
                     ) );
 
