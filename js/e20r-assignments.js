@@ -762,7 +762,6 @@ jQuery(document).ready(function () {
     if (typeof e20rClientAssignment != 'undefined') {
 
         // Reset any 'dismiss' requests on load.
-        wp.heartbeat.interval('slow');
         var new_message_alert = jQuery('.e20r-new-message-alert');
         new_message_alert.data('e20rHideWarnings', 0);
 
