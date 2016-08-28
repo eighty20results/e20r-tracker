@@ -2715,7 +2715,7 @@ class e20rTracker {
                         'jquery' => null,
                         'jquery-ui-core' => null,
                         'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
-                        'base64' => '//javascriptbase64.googlecode.com/files/base64.js',
+                        'base64' => E20R_PLUGINS_URL . '/js/libraries/Base64.min.js',
                         'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',

@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.5.3
-Stable tag: 1.5.54
+Stable tag: 1.5.55
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,24 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.56 ==
+
+* FIX: Base64 library went missing. Now using local version of it.
+
+== 1.5.55 ==
+
+* FIX: Didn't check whether the client ID and program ID were configured before attempting to load client data
+* FIX: Didn't return the correct value if the Membership Level wasn't set for the user.
+* FIX: Didn't always handle AJAX based actions when configuring the program start date for the user(s).
+* FIX: Increase AJAX timeout value to 30 seconds
+* FIX: Restore old behavior for assignment_info record ID
+* FIX: Didn't always verify that the data existed.
+* FIX: Verify that user ID & program ID is defined before attempting to load data for user in program
+* FIX: Would sometimes incorrectly drop the Welcome Survey article.
+* FIX: Didn't always handle surveys correctly while loading data
+* ENH: Load tabs for Coach view on click (speed up page loading).
+* ENH: Using polling for messages rather than heartbeat (reduce server load) - every 300 seconds.
 
 == 1.5.54 ==
 

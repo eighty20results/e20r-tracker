@@ -1,1 +1,1 @@
-BUG: Weekly Progress Update dialog didn't display properly in all standard screen sizes
+FIX: Base64 library went missing. Now using local version of it.
