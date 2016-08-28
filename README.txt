@@ -122,6 +122,10 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.59 ==
+
+* FIX: Removed wp.heartbeat dependency
+
 == 1.5.58 ==
 
 * BUG: Dependency caused required library to not load

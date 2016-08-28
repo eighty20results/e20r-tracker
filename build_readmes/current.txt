@@ -1,2 +1,1 @@
-BUG: Dependency caused required library to not load
-REFACTOR: Removed stale code & regenerated .min. file
+FIX: Removed wp.heartbeat dependency
