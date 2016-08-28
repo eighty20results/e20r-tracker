@@ -23,9 +23,6 @@ var e20rClientAssignment = {
             this.longpoll_active = false;
         }
 
-        this.skipped_ticks = 0;
-        this.heartbeat_counter = 'now';
-
         if (typeof e20r_admin != 'undefined') {
 
             this.url = ajaxurl;
