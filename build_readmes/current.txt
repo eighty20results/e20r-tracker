@@ -1,4 +1,2 @@
-BUG: Edit button width & placement on dashboard page.
-BUG: Didn't save changes to yes/no responses correctly
-ENH: Base64 library update
-ENH: Load minified JS & CSS files if not running w/WP_DEBUG.
+BUG: Dependency caused required library to not load
+REFACTOR: Removed stale code & regenerated .min. file
