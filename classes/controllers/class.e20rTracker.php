@@ -2458,9 +2458,9 @@ class e20rTracker {
 
             $css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
-                "e20r-print" => E20R_PLUGINS_URL . '/css/print.min.css',
-                "e20r-tracker" => E20R_PLUGINS_URL . '/css/e20r-tracker.min.css',
-                "e20r-tracker-activity" => E20R_PLUGINS_URL . '/css/e20r-activity.min.css',
+                "e20r-print" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/print.css' : '/css/print.min.css' ),
+                "e20r-tracker" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-tracker.css' : '/css/e20r-tracker.min.css'),
+                "e20r-tracker-activity" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-activity.css' : '/css/e20r-activity.min.css' ),
             );
 
             $scripts = array();
@@ -2479,7 +2479,7 @@ class e20rTracker {
                     dbg("e20rTracker::load_frontend_scripts() - Loading CSS for the article summary page.");
 
                     $css = array_replace( $css, array(
-                            'e20r-article-summary' => E20R_PLUGINS_URL . '/css/e20r-article-summary.min.css',
+                            'e20r-article-summary' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-article-summary.css' : '/css/e20r-article-summary.min.css' ),
                         )
                     );
 
@@ -2543,7 +2543,7 @@ class e20rTracker {
 
                     $css = array_replace( $css, array(
                         "thickbox" => null,
-                        "e20r-assignments" => E20R_PLUGINS_URL . "/css/e20r-assignments.css"
+                        "e20r-assignments" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? "/css/e20r-assignments.css" : "/css/e20r-assignments.min.css" ),
                     ) );
 
                     $prereqs = array_replace( $prereqs, array(
@@ -2564,7 +2564,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r_assignments' => E20R_PLUGINS_URL . '/js/e20r-assignments.min.js',
+                        'e20r_assignments' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-assignments.js' : '/js/e20r-assignments.min.js' ),
                         'dependencies' => array(
                             'e20r_assignments' => array('jquery', 'thickbox', 'jquery.autoresize', 'heartbeat'),
                         )
@@ -2596,7 +2596,7 @@ class e20rTracker {
                         'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.codetabs' => E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js',
-                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-tracker.js' : '/js/e20r-tracker.min.js' ),
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2611,7 +2611,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r-progress-measurements' => E20R_PLUGINS_URL . '/js/e20r-progress-measurements.min.js',
+                        'e20r-progress-measurements' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-progress-measurements.js' : '/js/e20r-progress-measurements.min.js' ),
                         'dependencies' => array(
                             'e20r-progress-measurements' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.codetabs', 'jquery-ui-tabs',  'e20r_tracker' )
                         )
@@ -2628,7 +2628,7 @@ class e20rTracker {
                     $load_jq_plot = false;
 
                     $css = array_replace( $css, array(
-                                'e20r-exercise' => E20R_PLUGINS_URL . "/css/e20r-exercise.min.css",
+                                'e20r-exercise' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? "/css/e20r-exercise.css" : "/css/e20r-exercise.min.css" ),
                             )
                         );
 
@@ -2637,7 +2637,7 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
-                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-tracker.js' : '/js/e20r-tracker.min.js' ),
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2648,7 +2648,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r_exercise' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
+                        'e20r_exercise' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-exercise.js' : '/js/e20r-exercise.min.js'),
                         'dependencies' => array(
                             'e20r_exercise' => array( 'jquery', 'jquery-ui-core', 'jquery.touchpunch', 'fitvids', 'e20r_tracker' )
                         )
@@ -2665,7 +2665,7 @@ class e20rTracker {
                     $load_jq_plot = true;
 
                     $css = array_replace( $css, array(
-                        "e20r-assignments" => E20R_PLUGINS_URL . '/css/e20r-assignments.min.css',
+                        "e20r-assignments" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-assignments.css' : '/css/e20r-assignments.min.css' ),
                     ) );
 
                     $prereqs = array_replace( $prereqs, array(
@@ -2673,8 +2673,8 @@ class e20rTracker {
                         'jquery-ui-core' => null,
                         'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'fitvids' => '//cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js',
-                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
-                        'e20r_exercise' => E20R_PLUGINS_URL . '/js/e20r-exercise.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-tracker.js' : '/js/e20r-tracker.min.js' ),
+                        'e20r_exercise' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-exercise.js' : '/js/e20r-exercise.min.js' ),
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2706,7 +2706,7 @@ class e20rTracker {
                         'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
-                        'e20r_action'  => E20R_PLUGINS_URL . '/css/e20r-action.min.css',
+                        'e20r_action'  => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-action.css' : '/css/e20r-action.min.css' ),
                     ) );
 
                     // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
@@ -2715,12 +2715,12 @@ class e20rTracker {
                         'jquery' => null,
                         'jquery-ui-core' => null,
                         'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
-                        'base64' => E20R_PLUGINS_URL . '/js/libraries/Base64.min.js',
+                        'base64' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/libraries/Base64.js' : '/js/libraries/Base64.min.js' ),
                         'jquery.touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js',
                         'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
                         'jquery.timeago' => E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js',
                         'jquery.redirect' => E20R_PLUGINS_URL . '/js/libraries/jquery.redirect.min.js',
-                        'e20r_tracker' => E20R_PLUGINS_URL . '/js/e20r-tracker.min.js',
+                        'e20r_tracker' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-tracker.js' : '/js/e20r-tracker.min.js' ),
                         'dependencies' => array(
                             'jquery' => false,
                             'jquery-ui-core' => array( 'jquery' ),
@@ -2735,7 +2735,7 @@ class e20rTracker {
                     ) );
 
                     $scripts = array_replace( $scripts, array(
-                        'e20r_action' => E20R_PLUGINS_URL . '/js/e20r-action.min.js',
+                        'e20r_action' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/e20r-action.js' : '/js/e20r-action.min.js'),
                         'dependencies' => array(
                             'e20r_action' => array( 'jquery', 'base64', 'select2', 'jquery-ui-core', 'jquery.touchpunch', 'jquery.timeago', 'jquery.autoresize', 'jquery.redirect', 'e20r_tracker'),
                         ),
