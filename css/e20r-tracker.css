@@ -1470,6 +1470,9 @@ td.e20r-group-header {
     padding: 4px 4px;
     font-size: 0.75rem;
     letter-spacing: normal;
+    max-width: 200px;
+    width: 50%;
+    min-width: 200px;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes { padding: 0 4px; display: flex; }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes legend {
