@@ -503,6 +503,8 @@ jQuery(document).ready(function () {
             this.$answerForm = this.$assignment.find("form#e20r-assignment-answers");
             this.$checkinBtn = this.$assignment.find("button#e20r-lesson-complete");
             this.$inputs = this.$answerForm.find('.e20r-assignment-response');
+            this.checkcell_yes = this.$answerForm.find('.e20r-yes-checkbox');
+            this.checkcell_no = this.$answerForm.find('.e20r-no-checkbox');
             this.$choices = this.$answerForm.find('td.e20r-assignment-survey-question-choice, input[type="radio"], input[type="checkbox"]');
             this.$multichoice = this.$answerForm.find('.e20r-select2-assignment-options');
 
@@ -518,6 +520,23 @@ jQuery(document).ready(function () {
                 self.lessonComplete(self);
             });
 
+            this.checkcell_no.unbind('click').on('click', function() {
+
+                var checkbox_yes = jQuery(this).closest('tr').find('td.e20r-yes-checkbox > input.e20r-assignment-response');
+                if (true === checkbox_yes.is(':checked')) {
+                    window.console.log("Uncheck the 'yes' checkbox" );
+                    checkbox_yes.removeAttr('checked');
+                }
+            });
+
+            this.checkcell_yes.unbind('click').on('click', function() {
+
+                var checkbox_no = jQuery(this).closest('tr').find('td.e20r-no-checkbox > input.e20r-assignment-response');
+                if (true === checkbox_no.is(':checked')) {
+                    window.console.log("Uncheck the 'no' checkbox" );
+                    checkbox_no.removeAttr('checked');
+                }
+            });
 
             this.$inputs.each(function () {
                 console.log("Working through response fields");
@@ -802,7 +821,7 @@ jQuery(document).ready(function () {
                     'descr-id': self.note_assignment,
                     'article-id': self.note_article,
                     'program-id': self.note_program,
-                    'checkin-note': Base64.encode($noteTextarea.val()),
+                    'checkin-note': base64.encode($noteTextarea.val()),
                     'checkedin': self.checkin_value,
                     'checkin-type': self.checkin_type
                 };

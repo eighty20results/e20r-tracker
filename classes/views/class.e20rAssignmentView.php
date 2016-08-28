@@ -376,7 +376,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
             dbg("e20rAssignmentView::viewAssignment() -  Have assignment data to process.");
 
-			if ( true != $articleConfig->complete ) { ?>
+			if ( isset($articleConfig->complete) && true != $articleConfig->complete ) { ?>
 				<div id="e20r-assignment-save-btn"><?php
 			}
 			else { ?>
@@ -524,10 +524,10 @@ class e20rAssignmentView extends e20rSettingsView {
                     <td class="e20r-assignment-ranking-question-choice-label"><?php _e("No", "e20rtracker"); ?></td>
                 </tr>
                 <tr>
-                    <td class="e20r-assignment-ranking-question-choice">
+                    <td class="e20r-assignment-ranking-question-choice e20r-yes-checkbox">
                         <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' );?>>
                     </td>
-                    <td class="e20r-assignment-ranking-question-choice">
+                    <td class="e20r-assignment-ranking-question-choice e20r-no-checkbox">
                         <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' );?>>
                     </td>
                 </tr>
