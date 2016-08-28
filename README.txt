@@ -122,6 +122,13 @@ Arguments:
 
 == ChangeLog ==
 
+== 1.5.57 ==
+
+* BUG: Edit button width & placement on dashboard page.
+* BUG: Didn't save changes to yes/no responses correctly
+* ENH: Base64 library update
+* ENH: Load minified JS & CSS files if not running w/WP_DEBUG.
+
 == 1.5.56 ==
 
 * FIX: Base64 library went missing. Now using local version of it.
