@@ -396,7 +396,7 @@ class e20rAssignment extends e20rSettings {
         $assignment_info = array_pop( $existing_assignment );
 
         // if ( !empty( $assignment_info->id) ) {
-            $data['record_id'] = $assignment_info->id;
+            $data['record_id'] = isset( $assignment_info->id ) ? $assignment_info->id : null;
         // }
 
         dbg('e20rAssignment::add_assignment_reply() - Assignment reply data: ');
