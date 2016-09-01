@@ -1420,7 +1420,7 @@ class e20rClient
     public function send_email_to_client($email_array)
     {
 
-        dbg($email_array);
+        // dbg($email_array);
         $headers[] = "Content-type: text/html";
         $headers[] = "Cc: " . $email_array['cc'];
         $headers[] = "From: " . $email_array['from'];
@@ -1429,12 +1429,12 @@ class e20rClient
 
         // $headers[] = "From: \"{$from_name}\" <{$from}>";
 
-        dbg($email_array['to_email']);
-        dbg($headers);
-        dbg($email_array['subject']);
-        dbg($message);
-
-        add_filter('wp_mail', array($this, 'test_wp_mail'));
+//        dbg($email_array['to_email']);
+//        dbg($headers);
+//        dbg($email_array['subject']);
+//        dbg($message);
+//
+//        add_filter('wp_mail', array($this, 'test_wp_mail'));
 
         add_filter('wp_mail_content_type', array($this, 'set_html_content_type'));
 
