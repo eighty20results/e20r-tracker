@@ -558,7 +558,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                     if ( ( 'field_type' == $k ) && ( 4 == $val ) ) {
 
                         dbg("e20rAssignmentModel::load_user_assignment_info() - Found a multi-choice answer. Restoring it as an array.");
-                        $r->assignment_answer = json_decode( stripslashes( $r->assignment_answer ) );
+                        $r->answer = json_decode( stripslashes( $r->answer ) );
                     }
                 }
             }
