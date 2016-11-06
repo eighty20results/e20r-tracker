@@ -766,7 +766,7 @@ class e20rAction extends e20rSettings
 
         $config->startTS = strtotime($currentProgram->startdate);
 
-        dbg($_POST);
+        dbg("e20rAction::configure_dailyProgress() - POST vaues: " . print_r( $_POST, true ) );
 
         if (isset($_POST['e20r-use-card-based-display'])) {
             dbg("e20rAction::configure_dailyProgress() - Card status from the calling page/post: {$_POST['e20r-use-card-based-display']}");
@@ -832,9 +832,9 @@ class e20rAction extends e20rSettings
                 $article = array_pop($articles);
 
             } elseif (1 < count($articles) && (false === $article_configured)) {
-                dbg("e20rAction::configure_dailyProgress() - ERROR: Multiple articles have been returned. Select the one with a release data == the delay.");
+                dbg("e20rAction::configure_dailyProgress() - WARNING: Multiple articles have been returned. Select the one with a release data == the delay.");
 
-                if (!isset($config->delay)) {
+                if (empty($config->delay)) {
 
                     $use = $e20rTracker->getDelay();
                 } else {
@@ -842,13 +842,9 @@ class e20rAction extends e20rSettings
                     $use = $config->delay;
                 }
 
-                foreach ($articles as $art) {
+                $article = $this->getClosest( $use, $articles );
+	            dbg("e20rAction::configure_dailyProgress() - Found an article w/what we think is the correct release_day and program ID. Using it: {$article->id}.");
 
-                    if ((in_array($currentProgram->id, $art->program_ids)) && ($use == $art->release_day)) {
-                        dbg("e20rAction::configure_dailyProgress() - Found an article w/correct release_day and program ID. Using it: {$art->id}.");
-                        $article = $art;
-                    }
-                }
             } elseif (is_object($articles) && (false === $article_configured)) {
                 dbg("e20rAction::configure_dailyProgress() - Articles object: " . gettype($articles));
                 dbg($articles);
@@ -890,6 +886,20 @@ class e20rAction extends e20rSettings
         return $config;
 
     }
+
+	public function getClosest($day, $articles) {
+
+		$closest = null;
+
+		foreach ($articles as $article) {
+
+			if ($closest === null || abs($day - $closest->release_day) > abs($article->release_day - $day)) {
+				$closest = $article;
+			}
+		}
+
+		return $closest;
+	}
 
     public function nextCheckin_callback()
     {
