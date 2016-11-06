@@ -1,1 +1,5 @@
-FIX: Removed wp.heartbeat dependency
+BUG: Error loading required JavaScript
+BUG: Didn't always save the assignmnet data correctly
+BUG: Multi-select responses weren't decoded properly
+BUG: Undefined property warning
+BUG: Invalid message body error
