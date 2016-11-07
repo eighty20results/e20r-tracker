@@ -201,6 +201,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         return $text;
     }
+
 	public function loadAllUserAssignments( $userId ) {
 
 		global $e20rTracker;
@@ -270,7 +271,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 		}
 
         // Sort the answers by the delay value, then the order_num value
-        $answers = $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
+        // $answers = $e20rTracker->sortByFields( $answers, array( 'delay', 'order_num' ) );
 
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Returning sorted array of answers: ");
         // dbg($answers);
@@ -341,8 +342,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		dbg("e20rAssignmentModel::loadAssignmentByMeta() - for program #: {$programId}");
 
+		$items = apply_filters( 'e20r-tracker-items-per-page', null );
+
 		$args = array(
-			'posts_per_page' => -1,
+			'posts_per_page' => ( empty( $items ) ? -1 : $items ),
+			'paged' => get_query_var('paged', 1 ),
 			'post_type' => $this->cpt_slug,
 			'post_status' => 'publish',
 			'meta_key' => "_e20r-{$this->type}-{$orderbyKey}",
