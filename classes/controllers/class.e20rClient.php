@@ -915,6 +915,9 @@ class e20rClient
             }
          }
 
+	    dbg("e20rClient::assign_exercise_level() - Do we need to upgrade the user ({$user->ID}) from their current {$role} exericse level?");
+        $this->maybe_upgrade_role( $user, $role );
+
         // assign new exercise exerience role
         dbg("e20rClient::assign_exercise_level() - Adding role {$role} to user {$user_id}.");
         $user->add_role($role);
@@ -1004,8 +1007,6 @@ class e20rClient
 
     public function assign_client_to_coach($program_id, $coach_id, $client_id)
     {
-
-
         $client_list = get_user_meta($coach_id, 'e20r-tracker-client-program-list', true);
         dbg("e20rClient::assign_client_to_coach() - Coach {$coach_id} has the following programs & clients he/she is coaching: ");
         dbg($client_list);
@@ -1324,6 +1325,75 @@ class e20rClient
         </html><?php
         $html = ob_get_clean();
         return $html;
+    }
+
+	/**
+	 * @param WP_User $user
+	 * @param string $role_name
+	 */
+    public function maybe_upgrade_role( $user, $role_name ) {
+
+        if ( ! $user->exists() ) {
+            return;
+        }
+
+        if ( $role_name === 'e20r_tracker_exp_3' ) {
+            return;
+        }
+
+	    global $e20rTracker;
+
+        $first_upgrade_day = 155;
+        $second_upgrade_day = 180;
+	    $current_day = $e20rTracker->getDelay('now', $user->ID );
+
+	    $new_role = null;
+
+	    if ( $current_day >= $first_upgrade_day && $current_day < $second_upgrade_day ) {
+		    $new_role = $this->select_next_role( $role_name );
+		    dbg("e20rClient::maybe_upgrade_role() - Yes we do.. Upgrading from {$role_name} to {$new_role} on day # {$first_upgrade_day}");
+	    }
+
+	    if ( $current_day >= $second_upgrade_day ) {
+		    $new_role = $this->select_next_role( $role_name );
+		    dbg("e20rClient::maybe_upgrade_role() - Yes we do (2nd upgrade). Upgrading from {$role_name} to {$new_role} on day # {$second_upgrade_day}");
+	    }
+
+	    $user_upgrade_level = get_user_meta( $user->ID, '_e20rtracker_upgraded_to', true );
+
+	    if ( ( !is_null( $new_role ) && $user_upgrade_level !== $new_role ) ) {
+
+		    dbg("e20rClient::maybe_upgrade_role() - Changing user role from ");
+		    $user->add_role( $new_role );
+		    $user->remove_role( $role_name );
+
+		    update_user_meta( $user->ID, '_e20rtracker_upgraded_to', $new_role );
+	    }
+    }
+
+    private function select_next_role( $role_name ) {
+
+	    $roles = apply_filters('e20r-tracker-configured-roles', array() );
+
+	    foreach( $roles as $r_key => $def ) {
+
+		    if ( $def['role'] === $role_name ) {
+
+			    switch( $r_key ) {
+
+				    case 'beginner':
+				    	$role_to_use = 'intermediate';
+					    break;
+
+				    case 'intermediate':
+				    case 'experienced':
+				    	$role_to_use = 'experienced';
+					    break;
+			    }
+		    }
+	    }
+
+	    return $roles[$role_to_use]['role'];
     }
 
     public function updateRoleForUser($userId)
