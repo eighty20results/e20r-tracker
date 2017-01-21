@@ -202,7 +202,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $text;
     }
 
-	public function loadAllUserAssignments( $userId ) {
+	public function loadAllUserAssignments( $userId, $page_num = -1 ) {
 
 		global $e20rTracker;
 		global $e20rProgram;
@@ -215,7 +215,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         dbg("e20rAssignmentModel::loadAllUserAssignments() - Loading assignments for user {$userId} until day {$delay} for program {$programId}");
 
 
-		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay', 'DESC' );
+		$assignments = $this->loadAssignmentByMeta( $programId, 'delay', $delay, '<=', 'numeric', 'delay', 'DESC', $page_num );
+
 		dbg("e20rAssignmentModel::loadAllUserAssignments() - Returned " . count( $assignments ) . " to process ");
         // dbg($assignments);
 
@@ -227,6 +228,17 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		$answers = array();
 
+		// Transfer config settings...
+		if ( isset( $assignments['max_num_pages'] ) ) {
+			$answers['max_num_pages'] = $assignments['max_num_pages'];
+			unset( $assignments['max_num_pages']);
+		}
+
+		if ( isset( $assignments['current_page'] ) ) {
+			$answers['current_page'] = $assignments['current_page'];
+			unset( $assignments['current_page']);
+		}
+
 		foreach ( $assignments as $assignment ) {
 
             if ( !empty( $assignment->article_ids) && ( $key = array_search( 0, $assignment->article_ids ) ) !== false ) {
@@ -236,7 +248,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
             }
 
             // Process this assignment if it's NOT a "I've read it" button.
-            if ( 0 != $assignment->field_type ) {
+            if ( isset($assignment->field_type) && 0 != $assignment->field_type ) {
 
                 dbg("e20rAssigmentModel::loadAllUserAssignments() - Assignment information being processed:");
                 // dbg($assignment);
@@ -331,7 +343,20 @@ class e20rAssignmentModel extends e20rSettingsModel {
         return $assignments;
     }
 
-	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num', $order = 'ASC' ) {
+	/**
+	 * Query and paginate the Assignment data for a program / user
+	 *
+	 * @param $programId
+	 * @param $key
+	 * @param $value
+	 * @param string $comp
+	 * @param string $type
+	 * @param string $orderbyKey
+	 * @param string $order
+	 *
+	 * @return array    - Array of assignments + the max number of pages (for pagination) in the `max_num_pages` array key
+	 */
+	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num', $order = 'ASC', $page_num = -1 ) {
 
 		global $current_user;
 		global $e20rProgram;
@@ -342,11 +367,24 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		dbg("e20rAssignmentModel::loadAssignmentByMeta() - for program #: {$programId}");
 
-		$items = apply_filters( 'e20r-tracker-items-per-page', null );
+		$items = apply_filters( 'e20r-tracker-items-per-page', 20 );
+
+		$page = 1;
+
+		if ( -1 === $page_num ) {
+			$pg = get_query_var( 'paged' );
+
+			if ( !empty($pg) || 1 == $pg ) {
+				$page = get_query_var( 'paged' );
+			}
+		} else {
+			dbg("Received Page number request {$page_num}");
+			$page = $page_num;
+		}
 
 		$args = array(
 			'posts_per_page' => ( empty( $items ) ? -1 : $items ),
-			'paged' => get_query_var('paged', 1 ),
+			'paged' => $page,
 			'post_type' => $this->cpt_slug,
 			'post_status' => 'publish',
 			'meta_key' => "_e20r-{$this->type}-{$orderbyKey}",
@@ -382,7 +420,10 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 		$query = new WP_Query( $args );
 
-		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returned {$query->post_count} {$this->cpt_slug} records" );
+		$assignments['max_num_pages'] = $query->max_num_pages;
+		$assignments['current_page'] = $page;
+
+		dbg("e20rAssignmentModel::loadAssignmentByMeta() - Returned {$query->post_count} {$this->cpt_slug} records. Page # {$page}" );
 
 		while ( $query->have_posts() ) {
 
@@ -497,7 +538,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 */
         $save_post = $post;
 
-        if ( !isset( $currentProgram->id) || (-1 == $currentProgram->id) ) {
+        if ( !isset( $currentProgram->id) || ( -1 == $currentProgram->id ) ) {
             $program_id = $e20rProgram->getProgramIdForUser($user_id);
         }
 
