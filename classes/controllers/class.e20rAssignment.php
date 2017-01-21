@@ -432,7 +432,7 @@ class e20rAssignment extends e20rSettings {
         wp_send_json_success( array('message_history' => $message_history ));
     }
 
-	public function listUserAssignments( $userId ) {
+	public function listUserAssignments( $userId, $page_num = -1 ) {
 
 		global $current_user;
 		global $e20rProgram;
@@ -447,7 +447,7 @@ class e20rAssignment extends e20rSettings {
 		$config->delay = $e20rTracker->getDelay( 'now' );
         $config->programId = $e20rProgram->getProgramIdForUser( $config->userId );
 
-		$answers = $this->model->loadAllUserAssignments( $userId );
+		$answers = $this->model->loadAllUserAssignments( $userId, $page_num );
 
 		return $this->view->viewAssignmentList( $config, $answers );
 	}
@@ -895,7 +895,7 @@ class e20rAssignment extends e20rSettings {
 
         global $e20rTracker;
 
-        check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce');
+        check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
         dbg("e20rAssignment::ajax_assignmentData() - Got a valid NONCE");
 
         $client_id = isset($_POST['client-id']) ? $e20rTracker->sanitize( $_POST['client-id']) : null;
@@ -909,4 +909,26 @@ class e20rAssignment extends e20rSettings {
         wp_send_json_error(array('message' => "No assignment data for client ({$client_id})"));
     }
 
+    public function ajax_paginateAssignments() {
+        global $e20rTracker;
+
+        check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
+        dbg("e20rAssignment::ajax_paginateAssignments() - Got a valid NONCE");
+
+        $client_id = isset($_POST['client-id']) ? $e20rTracker->sanitize( $_POST['client-id']) : null;
+        $page_num = isset( $_REQUEST['page_num'] ) ? $e20rTracker->sanitize( $_REQUEST['page_num'] ) : 1;
+        // $base_url = isset( $_REQUEST['page_url'] ) ? $e20rTracker->sanitize( $_REQUEST['page_url'] ) : null;
+
+        if ( !is_null( $client_id ) ) {
+
+/*            $org_uri = $_SERVER['REQUEST_URI'];
+            $_SERVER['REQUEST_URI'] = $base_url; */
+            $html = $this->listUserAssignments( $client_id, $page_num );
+/*            $_SERVER['REQUEST_URI'] = $org_uri; */
+
+            wp_send_json_success( array('assignments' => $html ));
+        }
+
+        wp_send_json_error(array('message' => "No assignment data for client ({$client_id})"));
+    }
 }
