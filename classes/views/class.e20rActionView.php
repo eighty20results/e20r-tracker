@@ -545,7 +545,7 @@ class e20rActionView extends e20rSettingsView {
                     dbg("e20rActionView::viewSettingsBox() - Processing startdate: {$checkinData->startdate}");
                     if ( is_null( $checkinData->startdate ) ) {
 
-                        $start = '';
+                        $start = null;
                     } else {
                         try {
                             $start = new \DateTime($checkinData->startdate);
@@ -559,7 +559,7 @@ class e20rActionView extends e20rSettingsView {
                     dbg("e20rActionView::viewSettingsBox() - Processing enddate: {$checkinData->enddate}");
                     if ( is_null( $checkinData->enddate ) ) {
 
-                        $end = '';
+                        $end = null;
                     } else {
                         try {
                             $end = new \DateTime($checkinData->enddate);
@@ -573,8 +573,8 @@ class e20rActionView extends e20rSettingsView {
                     dbg("e20rActionView::viewSettingsBox() - Processing maxcount, etc: {maxcount}");
                     if ( ( $checkinData->maxcount <= 0 ) && ( ! empty( $checkinData->enddate ) ) ) {
 
-                        $interval              = $start->diff( $end );
-                        $checkinData->maxcount = $interval->format( '%a' );
+                        $interval              = !is_null( $start ) ? $start->diff( $end ) : null;
+                        $checkinData->maxcount = !is_null( $interval ) ? $interval->format( '%a' ) : null;
                     }
 
                     dbg("e20rActionView::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
