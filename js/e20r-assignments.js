@@ -18,6 +18,7 @@ var e20rClientAssignment = {
         this.assignment_replies = jQuery('.e20r-message-history-content');
         this.new_message_alert = jQuery('.e20r-new-message-alert');
         this.current_status_row = null;
+        this.page_name = jQuery('#e20r-page-name').val();
 
         if (typeof this.longpoll_active === 'undefined') {
             this.longpoll_active = false;
@@ -50,6 +51,34 @@ var e20rClientAssignment = {
         window.console.log("Timeout for long poll: " + this.timeout);
 
         var self = this;
+
+        // reset all event handlers
+        self._bind();
+    },
+    _cancel_polling: function () {
+
+        // var self = this;
+
+        if ( false !== this.longpoll_active) {
+            clearInterval(this.longpoll_active);
+        } else {
+            window.console.log("No interval function for polling present?!?");
+        }
+    },
+    _bind: function () {
+
+        window.console.log("Running _bind() for e20rClientAssignment class");
+
+        var self = this;
+
+        if ( self.page_name.length > 0 ) {
+            jQuery("div#e20r-" + self.page_name ).find('nav.e20r-pagination-links a.page-numbers').unbind('click').on('click', function() {
+
+                var link = jQuery(this);
+
+                self.pagination( self.page_name, link );
+            });
+        }
 
         jQuery('.e20r-assignment-reply_area').each(function () {
 
@@ -95,26 +124,6 @@ var e20rClientAssignment = {
             window.console.log("Polling based on interval: " + self.timeout);
             self.longpoll_active = setInterval( this.poll_msgs.bind(this), self.timeout);
         }
-
-        // reset all event handlers
-        self._bind();
-    },
-    _cancel_polling: function () {
-
-        // var self = this;
-
-        if ( false !== this.longpoll_active) {
-            clearInterval(this.longpoll_active);
-        } else {
-            window.console.log("No interval function for polling present?!?");
-        }
-    },
-    _bind: function () {
-
-        window.console.log("Running _bind() for e20rClientAssignment class");
-
-        var self = this;
-
         /*
          jQuery("#TB_window,#TB_overlay,#TB_HideSelect").on('unload', function(){
          window.console.log("User closed box without sending...")
@@ -669,7 +678,45 @@ var e20rClientAssignment = {
             }
         });
     },
-}
+    pagination: function( $pagename, link ) {
+
+        var self = this;
+
+        event.preventDefault();
+
+        var $page_element_id = 'div#e20r-' + $pagename;
+        var lnk_array = link.attr('href').split('/');
+        var page_num = lnk_array[(lnk_array.length - 2)];
+
+        var data = {
+            action: "e20r_paginate_" + $pagename,
+            'e20r-assignment-nonce': jQuery('#e20r-assignment-nonce').val(),
+            'client-id': jQuery('input#e20r-assignment-pagination-cid').val(),
+            'page_num': page_num
+        };
+
+        jQuery.ajax({
+            url: self.url,
+            timeout: self.timeout,
+            type: 'POST',
+            dataType: 'JSON',
+            data: data,
+            success: function (response, textStatus, XMLHttpRequest) {
+
+                window.console.log("Data returned for pagination links: ", data, $pagename);
+
+                var htmlelem = jQuery($page_element_id);
+                htmlelem.replaceWith(response.data.assignments);
+
+                self._bind();
+            },
+            error: function (MLHttpRequest, textStatus, errorThrown) {
+                window.alert(errorThrown);
+            }
+        });
+    }
+};
+
 function setSurveyState(me) {
     var elem = jQuery(me),
         input = elem.is('td.e20r-assignment-ranking-question-choice') ? elem.find('input') : elem;
@@ -694,7 +741,9 @@ jQuery(document).ready(function () {
 
     window.console.log("Loading Assignment Survey processing");
 
-    if (jQuery("table.e20r-assignment-ranking-question").length > 0) {
+    var rankingQuestion = jQuery("table.e20r-assignment-ranking-question");
+
+    if (rankingQuestion.length > 0) {
 
         window.console.log("Found a Ranking request in the assignment");
 
@@ -710,23 +759,11 @@ jQuery(document).ready(function () {
 
         });
 
-        jQuery("table.e20r-assignment-ranking-question").find('td.e20r-assignment-ranking-question-choice, input[type="radio"], input[type="checkbox"]').on('click', function (e) {
+        rankingQuestion.find('td.e20r-assignment-ranking-question-choice, input[type="radio"], input[type="checkbox"]').on('click', function (e) {
 
             window.console.log("Found a survey choice in the survey question");
 
             setSurveyState(this);
-            /*
-             var elem = jQuery( this ),
-             input = elem.is( 'td.e20r-assignment-ranking-question-choice' ) ? elem.find( 'input' ) : elem;
-
-             if( input.is( ':disabled' ) )
-             return false;
-
-             input.prop( 'checked', true );
-             input.closest( 'tr' ).find( '.e20r-assignment-ranking-question-choice-selected' ).removeClass( 'e20r-assignment-survey-question-choice-selected' );
-             input.parent().addClass( 'e20r-assignment-ranking-question-choice-selected' );
-             input.focus().change();
-             */
         });
 
         // add a hover state
@@ -779,13 +816,3 @@ jQuery(document).ready(function () {
     }
 
 });
-
-/*
- var old_tb_remove = window.tb_remove;
-
- var tb_remove = function() {
-
- e20rClientAssignment._clear_textbox();
- old_tb_remove(); // calls the tb_remove() of the Thickbox plugin
- };
- */
