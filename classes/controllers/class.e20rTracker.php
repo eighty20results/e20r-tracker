@@ -347,6 +347,8 @@ class e20rTracker {
             add_action( 'wp_ajax_e20r_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
             add_action( 'wp_ajax_e20r_load_activity_stats', array( &$e20rWorkout, 'ajax_getPlotDataForUser' ) );
 	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
+			add_action( 'wp_ajax_e20r_paginate_assignment_answer_list', array( $e20rAssignment, 'ajax_paginateAssignments' ) );
+			add_action( 'wp_ajax_e20r_paginate_measurements_list', array( $e20rAssignment, 'ajax_paginateMeasurements' ) );
 
             /* AJAX call-backs if user is unprivileged */
 
@@ -2066,6 +2068,7 @@ class e20rTracker {
             dbg("e20rTracker::has_measurementprogress_shortcode() - Loading scripts and styles for assignments and progress_overview");
             $this->load_frontend_scripts( array(
                             'assignments',
+                            'activity',
                             'progress_overview'
                         )
                     );
@@ -2920,7 +2923,7 @@ class e20rTracker {
         }
     }
 
-        /**
+    /**
      * Load graphing scripts (if needed)
      */
     private function enqueue_plotSW( $hook = null ) {
@@ -4582,6 +4585,7 @@ class e20rTracker {
 
         return true;
     }
+
     /**
      * @param $data - The data to sort
      * @param array $fields - An array (2 elements) for the fields to sort by.
@@ -4918,6 +4922,7 @@ class e20rTracker {
         }
 
     }
+
     private function replace_metakey( $record, $old, $new ) {
 
         global $wpdb;
