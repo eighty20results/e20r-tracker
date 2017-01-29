@@ -384,7 +384,7 @@ var progMeasurements = {
                 $class.$body.addClass("loading");
                 $class.loadMeasurementData();
                 $class.$body.removeClass("loading");
-            }, 10);
+            }, 1000);
 
             setTimeout(function () {
 
