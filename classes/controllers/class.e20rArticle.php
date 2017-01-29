@@ -675,6 +675,9 @@ class e20rArticle extends e20rSettings
         dbg("e20rArticle::getAssignments() - Sorting assignments for article # {$articleId} by order number");
         ksort($assignment_ids);
 
+        // Set the active article
+	    $currentArticle = $articleSettings;
+
         return $assignment_ids;
     }
 
