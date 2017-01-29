@@ -730,6 +730,45 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 
 		// TODO: Use $e20rArticle::get_feedback() function to load a feedback item for user (or coach).
+		if ( !is_null($max_num_pages) && $max_num_pages > 1 ) {
+
+			$big        = 99999999;
+
+			$config->userId;
+
+			error_log("Current page: {$current_page}");
+			// $translated = __( "Page", "e20rtracker" );
+			$translated = ''; ?>
+
+
+            <nav class="e20r-pagination-links navigation" role="navigation">
+            <input type="hidden" id="e20r-page-name" value="assignment_answer_list">
+            <input type="hidden" id="e20r-assignment-pagination-cid" value="<?php esc_attr_e( $config->userId ); ?>">
+			<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-assignment-nonce' ); ?>
+            <!-- <span class="e20r-page-nav"><?php echo $translated; ?></span> -->
+			<?php
+			// structure of "format" depends on whether we're using pretty permalinks
+
+			$pagination_args = array(
+				'base'               => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+				'format'             => '?paged=%#%',
+				'current'            => $current_page,
+				'total'              => $max_num_pages,
+				'mid_size'           => 2,
+				'end_size'           => 1,
+				'prev_next'          => true,
+				'before_page_number' => '<span class="screen-reader-text">' .$translated . '</span>',
+			);
+
+			global $wp_rewrite;
+			if ( $wp_rewrite->using_permalinks() ) {
+				$pagination_args['base'] = user_trailingslashit( trailingslashit( remove_query_arg('paged', get_pagenum_link(1) ) ) . 'page/%#%/', 'paged');
+			}
+
+			echo paginate_links( $pagination_args );
+			?>
+            </nav><?php
+		}
 		?>
 		<div id="e20r-assignment_answer_list" class="e20r-measurements-container">
 			<h4><?php _e( "Assignments", "e20rtracker" ) ?></h4>
@@ -1044,7 +1083,8 @@ class e20rAssignmentView extends e20rSettingsView {
 					$config->userId;
 
 					error_log("Current page: {$current_page}");
-					$translated = __( "Page", "e20rtracker" ); ?>
+					// $translated = __( "Page", "e20rtracker" );
+                    $translated = ''; ?>
 
 
 				<nav class="e20r-pagination-links navigation" role="navigation">
