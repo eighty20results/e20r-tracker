@@ -538,11 +538,13 @@ class e20rAssignmentModel extends e20rSettingsModel {
 */
         $save_post = $post;
 
-        if ( !isset( $currentProgram->id) || ( -1 == $currentProgram->id ) ) {
+        if ( empty( $currentProgram->id ) || ( -1 == $currentProgram->id ) ) {
             $program_id = $e20rProgram->getProgramIdForUser($user_id);
+        } else {
+        	$program_id = $currentProgram->id;
         }
 
-        dbg("e20rAssignmentModel::load_user_assignment_info() - Loading data for article # {$article_id} in program {$currentProgram->id} for user {$user_id}");
+        dbg("e20rAssignmentModel::load_user_assignment_info() - Loading data for article # {$article_id} in program {$program_id} for user {$user_id}");
 
         $assignment_sql =  "SELECT a.{$this->fields['id']} AS id,
                             a.{$this->fields['answer_date']} AS answer_date,
@@ -556,7 +558,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
                       ( a.{$this->fields['program_id']} = %d ) )
                   ORDER BY a.{$this->fields['delay']}";
 
-        $assignment_sql = $wpdb->prepare( $assignment_sql, $user_id, $assignment_id, $currentProgram->id);
+        $assignment_sql = $wpdb->prepare( $assignment_sql, $user_id, $assignment_id, $program_id );
 
         $assignments = $wpdb->get_results( $assignment_sql );
 
