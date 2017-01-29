@@ -468,6 +468,7 @@ class e20rClientModel {
                 }
 
                 dbg("e20rClientModel::load_data() - Found client data in DB for user {$currentClient->user_id} and program {$currentClient->program_id}.");
+
                 $currentClient->loadedDefaults = false;
 
                 // Load the relevant survey record (for this article/assignment/page)
