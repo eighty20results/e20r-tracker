@@ -800,9 +800,9 @@ class e20rProgram extends e20rSettings {
         return false;
     }
 
-    public function getValue( $fieldName = 'id' ) {
+    public function getValue( $programId, $fieldName = 'id' ) {
 
-        return $this->model->getFieldValue( $fieldName );
+        return $this->model->getSetting( $programId, $fieldName );
     }
 
 } 
