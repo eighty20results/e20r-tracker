@@ -99,7 +99,7 @@ div#e20r-progress-achievements {
     left: 50%;
 }
 */
-div#e20r-assignment-answer-list {
+div#e20r-assignment_answer_list {
     margin-left: auto;
     margin-right: auto;
 }
@@ -809,6 +809,7 @@ div#inner-tabs div.inner-tab {
     font-size: 14px;
     float: right;
     margin-right: 12px;
+    width: initial;
 }
 .measurement-saved-container.active { display: block; }
 /** Internet Explorer specific - *sigh* **/
@@ -829,7 +830,7 @@ div#inner-tabs div.inner-tab {
 }
 .browserIE .measurement-saved-container span.value { margin-top: 0; }
 .browserIE .measurement-saved-container span.unit { margin-top: 4px; }
-.browserIE .measurement-saved-container button.edit { margin-top: 1px; }
+.browserIE .measurement-saved-container button.edit { margin-top: 1px; width: initial; }
 .browserIE .content fieldset legend { margin-left: -6px; }
 /** TODO: Include depending on how we manage picture uploads **/
 .browserIE #photo-upload-table .photo-upload-container .title {
@@ -1125,9 +1126,10 @@ a.load_progress_data {
     width: 350px;
     top: 0;
     left: 0;
+    margin: 0;
     margin-left: 10px;
     text-align: left;
-    padding: 10px;
+    padding: 5px 0 0 10px;
 }
 .e20r-measurements-container h4:after {
     content: "";
@@ -1231,7 +1233,7 @@ div.photo-overlay span.value {
 .quick-nav a {
     color: #004C00;
     text-decoration: none;
-    font-size: 0.6rem;
+    /* font-size: 0.6rem; */
 }
 .quick-nav table th.rotate {
     /* Something you can count on */
@@ -2388,8 +2390,37 @@ div.e20r-boxes .window {
 div.e20r-boxes div.e20r-footer-placement {
     position: absolute;
     left: 50%;
-    bottom: 0;
+    bottom: 15px;
     /* width: 100%; */
+}
+div.e20r-footer-button-div a.button {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    color: #333 !important;
+    font-size: 20px;
+    padding: 10px 20px 10px 20px;
+    text-decoration: none;
+    background-color: rgba( 0, 77, 0, 0.3);
+}
+div.e20r-footer-button-div a.button.disagree {
+    background-color: rgba( 157, 0, 0, 0.3 );
+    color: #333;
+}
+div.e20r-footer-button-div a.button.disagree:hover {
+    background-color: rgba( 157, 0, 0, 1.0 );
+    color: #FFF;
+}
+div.e20r-footer-button-div a.button:hover {
+    text-decoration: none;
+    background-color: rgba( 0, 77, 0, 1.0);
+    /*
+    background-image: -webkit-linear-gradient( #004C00, #004C00 );
+    background-image: -moz-linear-gradient( #004C00, #004C00 );
+    background-image: -o-linear-gradient( #004C00, #004C00 );
+    background-image: linear-gradient( #004C00, #004C00 );
+    */
+    color: #FFF !important;
 }
 div.e20r-boxes div.e20r-footer-placement div.e20r-footer-button-div {
     float: left;
@@ -2403,11 +2434,6 @@ div.e20r-boxes .button {
     margin: 5px;
 }
 div.e20r-boxes .secondary:hover {
-    background-image: -webkit-linear-gradient( #9C0000, #9C0000 );
-    background-image: -moz-linear-gradient( #9C0000, #9C0000 );
-    background-image: -o-linear-gradient( #9C0000, #9C0000 );
-    background-image: linear-gradient( #9C0000, #9C0000 );
-    color: #FFF;
 }
 div.e20r-boxes div.e20r-dialog {
     max-width: 750px;
@@ -3149,6 +3175,7 @@ div.e20r-message-content p {
         float: left;
         margin-left: 12px;
         margin-bottom: 5px;
+        width: initial;
     }
     .measurement-field-container label {
         -moz-border-radius: 3px;
