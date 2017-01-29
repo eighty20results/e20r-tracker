@@ -730,6 +730,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 
 		// TODO: Use $e20rArticle::get_feedback() function to load a feedback item for user (or coach).
+        /*
 		if ( !is_null($max_num_pages) && $max_num_pages > 1 ) {
 
 			$big        = 99999999;
@@ -769,6 +770,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			?>
             </nav><?php
 		}
+        */
 		?>
 		<div id="e20r-assignment_answer_list" class="e20r-measurements-container">
 			<h4><?php _e( "Assignments", "e20rtracker" ) ?></h4>
