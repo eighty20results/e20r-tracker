@@ -716,7 +716,7 @@ class e20rClientViews {
                         <a href="#" class="close button <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>"><?php echo apply_filters( 'e20r-tracker-article-popup-agree-text', __("I'll fix it", "e20rtracker") );?></a>
                     </div>
                     <div class="e20r-footer-button-div">
-                        <a class="button secondary <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>" href="#"><?php echo apply_filters( 'e20r-tracker-article-popup-disagree-text', __("Remind me", "e20rtracker") );?></a>
+                        <a class="button  <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'disagree' );?>" href="#"><?php echo apply_filters( 'e20r-tracker-article-popup-disagree-text', __("Remind me", "e20rtracker") );?></a>
                     </div>
                 </div>
             </div>
