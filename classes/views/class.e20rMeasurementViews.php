@@ -215,11 +215,11 @@ class e20rMeasurementViews {
 
     }
 
-    public function showPhotoRow( $showPhotos = null ) {
+    public function showPhotoRow( $showPhotos = false ) {
 
         dbg("In createPhotoBlock()");
 
-        if ( ! $showPhotos ) {
+        if ( false === $showPhotos ) {
             return;
         }
 
@@ -816,7 +816,15 @@ class e20rMeasurementViews {
             $isBeta = false;
         }
 
-        list($width, $height, $type, $attr) = getimagesize( $imageUrl );
+        if ( false !== stripos( $imageUrl, 'no-image-uploaded.jpg') ) {
+            $imgPath = E20R_PLUGIN_DIR . '/img/no-image-uploaded.jpg';
+        } else {
+            // TODO: Handle cases where the user's download is locaed
+        }
+
+        error_log("Path: {$imgPath}");
+
+        list($width, $height, $type, $attr) = getimagesize( $imgPath );
 
         if ( ! is_admin() ) { ?>
         <div style="display: none;" id="e20r-progress-pop-up">
