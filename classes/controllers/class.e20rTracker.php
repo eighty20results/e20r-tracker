@@ -2220,6 +2220,8 @@ class e20rTracker {
         global $e20rMeasurementDate;
         global $e20rArticle;
         global $e20rProgram;
+        global $e20rTracker;
+
         global $pagenow;
         global $post;
         global $current_user;
@@ -2251,7 +2253,20 @@ class e20rTracker {
             $userId = $current_user->ID;
             $e20rProgram->getProgramIdForUser( $userId );
             $programId = $currentProgram->id;
-            $articleId = $e20rArticle->init( $articleId );
+
+            // Get current article ID if it's not set as part of the $_POST variable.
+            if ( empty( $articleId ) ) {
+                $delay = $e20rTracker->getDelay();
+                $program  = $e20rProgram->getProgramIdForUser( $current_user->ID );
+                $currentArticle = $e20rArticle->findArticles( 'release_day', $delay, $program )[0];
+                $articleId = $currentArticle->id;
+                $programId = $program;
+
+                dbg("e20rMeasurements::has_weeklyProgress_shortcode() - Article ID is now: {$articleId} for program {$programId}");
+            }
+
+            // $articleId = $e20rArticle->init( $articleId );
+
             $articleURL = $e20rArticle->getPostUrl( $articleId );
 
             if ( ! $this->isActiveUser( $userId ) ) {
@@ -2320,7 +2335,9 @@ class e20rTracker {
             }
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
-			dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading survey data for user...");
+			dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading survey data for user - {$articleURL} - ...");
+
+			$dashboardLnk = get_permalink( $e20rProgram->getValue( $programId, 'dashboard_page_id') );
 
             /* Load user specific settings */
             wp_localize_script( 'e20r-progress-js', 'e20r_progress',
@@ -2333,7 +2350,7 @@ class e20rTracker {
 	                    'interview_url'     => $e20rProgram->get_welcomeSurveyLink($userId),
                         'imagepath'         => E20R_PLUGINS_URL . '/img/',
                         'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
-                        'measurementSaved'  => ( $articleURL ? $articleURL : E20R_COACHING_URL . 'home/' ),
+                        'measurementSaved'  => ( !empty( $articleURL ) ? $dashboardLnk : E20R_COACHING_URL . 'home/' ),
                         'weekly_progress'   => get_permalink( $currentProgram->measurements_page_id ),
                     ),
                     'measurements' => array(
