@@ -33,12 +33,12 @@ nav.e20r-pagination-links {
     text-align: center;
     width: 50%;
 }
-a.page-numbers {
+.page-numbers {
     padding: 5px;
-    font-size: 12pt;
+    font-size: 10pt;
     color: #000 !important;
 }
-span.page-numbers.current {
+.page-numbers.current {
     font-weight: bolder;
 }
 .e20r-assignment-question {
