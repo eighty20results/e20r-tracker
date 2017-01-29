@@ -819,10 +819,10 @@ class e20rMeasurementViews {
         if ( false !== stripos( $imageUrl, 'no-image-uploaded.jpg') ) {
             $imgPath = E20R_PLUGIN_DIR . '/img/no-image-uploaded.jpg';
         } else {
-            // TODO: Handle cases where the user's download is locaed
+            // TODO: Handle cases where the user's download is located
+            error_log("Image path: {$imageUrl}");
+            $imgPath = $imageUrl;
         }
-
-        error_log("Path: {$imgPath}");
 
         list($width, $height, $type, $attr) = getimagesize( $imgPath );
 
