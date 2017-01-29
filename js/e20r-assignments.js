@@ -71,7 +71,7 @@ var e20rClientAssignment = {
 
         var self = this;
 
-        if ( self.page_name.length > 0 ) {
+        if ( typeof self.page_name  !== 'undefined' && self.page_name.length > 0 ) {
             jQuery("div#e20r-" + self.page_name ).find('nav.e20r-pagination-links a.page-numbers').unbind('click').on('click', function() {
 
                 var link = jQuery(this);
