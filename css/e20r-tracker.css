@@ -809,7 +809,7 @@ div#inner-tabs div.inner-tab {
     font-size: 14px;
     float: right;
     margin-right: 12px;
-    width: initial;
+    width: auto;
 }
 .measurement-saved-container.active { display: block; }
 /** Internet Explorer specific - *sigh* **/
@@ -3175,7 +3175,7 @@ div.e20r-message-content p {
         float: left;
         margin-left: 12px;
         margin-bottom: 5px;
-        width: initial;
+        width: auto;
     }
     .measurement-field-container label {
         -moz-border-radius: 3px;
