@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.3 or later.
 Tested up to: 4.6.1
-Stable tag: 1.5.60
+Stable tag: 1.5.61
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,35 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.61 ==
+
+* ENH: Sort Assignments progress list by most recent first
+* ENH: Add infrastructure to support pagination for assignment progress page
+* ENH: Update/modernize plugin build script
+* ENH: Pagination for assignment status page
+* BUG: Would attempt to use DateTime class method on null/string
+* BUG: Fix JS bug when attempting to bind for pagination
+* BUG/FIX: Notice when attempting to access empty data object
+* BUG/FIX: Program ID wasn't always configured correctly
+* BUG/FIX: Correctly identify the article for the measurement page
+* BUG/FIX: Return the user to the Dashboard after completing the measurements
+* BUG/FIX: Buttons size on measurement(s) page
+* ENH: Styling for pagination links/buttons
+* BUG/FIX: Error while showing 'loading' page
+* ENH: Replace 'Return to Lesson' with 'Return to Dashboard'
+* ENH/FIX: Allow user to get a single Program setting (getValue())
+* BUG/FIX: Load program/day specific article for measurements
+* ENH: Remove 'Page'
+* ENH: Improved styling for Pagination text on Assignment Progress
+* ENH/FIX: Clean up styling for pagination links
+* BUG/FIX: Handle cases where no image is uploaded for user
+* ENH/FIX: Button width on measurements page
+* BUG/FIX: Hide top level navigation for now
+* BUG/FIX: Agree/Disagree buttons on pop-up overlay
+* FIX: Removed debug output
+* BUG/FIX: Set the currentArticle global
+* BUG/FIX/WORKAROUND: Handle uploaded images if/when needed
 
 == 1.5.60 ==
 
