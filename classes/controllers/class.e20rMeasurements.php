@@ -665,8 +665,10 @@ class e20rMeasurements {
         global $e20rArticle;
         global $e20rTracker;
         global $e20rClient;
+        global $e20rProgram;
 
         global $currentClient;
+        global $currentArticle;
 
         global $e20rMeasurementDate;
 
@@ -679,7 +681,17 @@ class e20rMeasurements {
         $mDate = ( isset( $_POST['e20r-progress-form-date'] ) ? ( strtotime( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null ) : null );
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
 
-        // TODO: Get current article ID if it's not set as part of the $_POST variable.
+        // Get current article ID if it's not set as part of the $_POST variable.
+	    if ( empty( $articleId ) ) {
+	    	$delay = $e20rTracker->getDelay();
+	    	$program  = $e20rProgram->getProgramIdForUser( $current_user->ID );
+	    	$currentArticle = $e20rArticle->findArticles( 'release_day', $delay, $program )[0];
+
+	    	dbg("Current Article: " . print_r( $currentArticle, true ));
+	    	$articleId = $currentArticle->id;
+
+	    	dbg("e20rMeasurements::shortcode_weeklyProgress() - Article ID is now: {$articleId}");
+	    }
 
         if ( $mDate ) {
 
