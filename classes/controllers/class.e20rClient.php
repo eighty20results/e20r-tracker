@@ -209,32 +209,43 @@ class e20rClient
 
         $data = $cData;
 
-        $data->display_birthdate = 1;
-        $data->incomplete_interview = 1;
+        if ( is_object( $data ) ) {
+	        $data->display_birthdate    = 1;
+	        $data->incomplete_interview = 1;
 
-        $include = array(
-            'id', 'birthdate', 'first_name', 'gender', 'lengthunits', 'weightunits', 'incomplete_interview',
-            'program_id', 'progress_photo_dir', 'program_start', 'user_id'
-        );
 
-        foreach ($data as $field => $value) {
+	        $include = array(
+		        'id',
+		        'birthdate',
+		        'first_name',
+		        'gender',
+		        'lengthunits',
+		        'weightunits',
+		        'incomplete_interview',
+		        'program_id',
+		        'progress_photo_dir',
+		        'program_start',
+		        'user_id'
+	        );
 
-            if (!in_array($field, $include)) {
+	        foreach ( $data as $field => $value ) {
 
-                unset($data->{$field});
-            }
+		        if ( ! in_array( $field, $include ) ) {
+
+			        unset( $data->{$field} );
+		        }
+	        }
+
+	        if ( isset( $data->birthdate ) && strtotime( $data->birthdate ) ) {
+
+		        $data->display_birthdate = false;
+	        }
+
+	        if ( isset( $data->first_name ) && ( isset( $data->id ) ) && isset( $data->display_birthdate ) ) {
+
+		        $data->incomplete_interview = false;
+	        }
         }
-
-        if (strtotime($data->birthdate)) {
-
-            $data->display_birthdate = false;
-        }
-
-        if (isset($data->first_name) && (isset($data->id)) && isset($data->display_birthdate)) {
-
-            $data->incomplete_interview = false;
-        }
-
         return $data;
     }
 
