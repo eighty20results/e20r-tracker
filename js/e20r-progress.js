@@ -496,7 +496,7 @@ jQuery(function() {
         }
         else {
 
-            jQuery(body).addClass("loading");
+            jQuery('body').addClass("loading");
 
             // The user has completed enough of the progress form to let them proceed.
             jQuery.ajax ({
@@ -543,7 +543,7 @@ jQuery(function() {
                 }
             });
 
-            jQuery(body).removeClass("loading");
+            jQuery('body').removeClass("loading");
         }
     });
 
@@ -1137,7 +1137,7 @@ jQuery(function() {
 
         // show saved message
         jQuery('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
-              <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Lesson</a>.\
+              <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Dashboard</a>.\
             </div>').appendTo('#e20r-progress-canvas');
     }
 
