@@ -589,7 +589,7 @@ var progMeasurements = {
             mask.hide();
         });
 
-        box.find('.secondary').unbind('click').on('click', function() {
+        box.find('.disagree').unbind('click').on('click', function() {
 
             event.preventDefault();
             dialog.hide();
@@ -1409,7 +1409,13 @@ var progMeasurements = {
         if ( $class.loadMeasurementData.arguments.length != 1 ) {
 
             $clientId = $class.clientId
-            console.log("No arguments specified.. Loading for user ID: ", $class.clientId );
+            window.console.log("No arguments specified.. Loading for user ID: ", $class.clientId );
+        }
+
+        // Return if no nonce is found (function won't work).
+        if ( ! jQuery('#e20r_tracker_client_detail_nonce').length ) {
+            window.console.log("Measurement graph page missing. Returning quietly....");
+            return;
         }
 
         $class.$spinner.show();
