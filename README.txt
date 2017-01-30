@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.6 or later.
-Tested up to: 4.7.1
-Stable tag: 1.5.62
+Tested up to: 4.7.2
+Stable tag: 1.5.63
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,13 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.63 ==
+
+* BUG/FIX: Remind Me button didn't work
+* BUG/FIX: Error when there's no measurement graph/data to plot
+* FIX/ENH: Width of header for Assignments
+* ENH/FIX: Colors and positioning for Fix/Remind buttons on pop-up
 
 == 1.5.62 ==
 

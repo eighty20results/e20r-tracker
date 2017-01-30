@@ -1,1 +1,4 @@
-BUG/FIX: Add delay to measurement data loader
+BUG/FIX: Remind Me button didn't work
+BUG/FIX: Error when there's no measurement graph/data to plot
+FIX/ENH: Width of header for Assignments
+ENH/FIX: Colors and positioning for Fix/Remind buttons on pop-up
