@@ -2401,29 +2401,28 @@ div.e20r-footer-button-div a.button {
     font-size: 20px;
     padding: 10px 20px 10px 20px;
     text-decoration: none;
-    background-color: rgba( 0, 77, 0, 0.3);
+    background-color: rgba( 0, 77, 0, 0.3) !important;
+    border: 2px solid rgb(0, 77, 0) !important;
+    background-image: initial !important;
 }
 div.e20r-footer-button-div a.button.disagree {
-    background-color: rgba( 157, 0, 0, 0.3 );
+    background-color: rgba( 157, 0, 0, 0.3 ) !important;
+    border: 2px solid rgba( 157, 0, 0, 1.0 ) !important;
     color: #333;
 }
 div.e20r-footer-button-div a.button.disagree:hover {
-    background-color: rgba( 157, 0, 0, 1.0 );
+    background-color: rgba( 157, 0, 0, 1.0 ) !important;
     color: #FFF;
 }
 div.e20r-footer-button-div a.button:hover {
     text-decoration: none;
-    background-color: rgba( 0, 77, 0, 1.0);
-    /*
-    background-image: -webkit-linear-gradient( #004C00, #004C00 );
-    background-image: -moz-linear-gradient( #004C00, #004C00 );
-    background-image: -o-linear-gradient( #004C00, #004C00 );
-    background-image: linear-gradient( #004C00, #004C00 );
-    */
+    background-color: rgba( 0, 77, 0, 1.0) !important;
     color: #FFF !important;
 }
 div.e20r-boxes div.e20r-footer-placement div.e20r-footer-button-div {
     float: left;
+    bottom: -10px;
+    position: relative;
 }
 div.e20r-footer-button-div a.button.secondary.agree {
     background: lightgray;
