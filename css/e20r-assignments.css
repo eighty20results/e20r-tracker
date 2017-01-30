@@ -92,8 +92,8 @@ hr.e20r-assignment-separator {
     background-color: #5c5c5c;
 }
 h2.e20r-daily-assignment-headline{
-    /* font-size: 25px; */
-    width: 300px;
+    min-width: 300px;
+    max-width: 100%;
     border-bottom: 2px solid #c5c5c5;
     margin-bottom: 30px;
 }
