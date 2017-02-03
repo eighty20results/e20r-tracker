@@ -341,22 +341,16 @@ class e20rAssignmentView extends e20rSettingsView {
 		<div id="e20r-article-assignment">
 			<form id="e20r-assignment-answers">
 				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' ); ?>
-				<input type="hidden" value="<?php echo $currentArticle->id; ?>" name="e20r-article-id"
-				       id="e20r-article-id"/>
-				<input type="hidden" value="<?php echo $articleConfig->userId; ?>" name="e20r-article-user_id"
-				       id="e20r-article-user_id"/>
-				<input type="hidden" value="<?php echo $currentArticle->release_day; ?>" name="e20r-article-release_day"
-				       id="e20r-article-release_day"/>
-				<input type="hidden" value="<?php echo date( 'Y-m-d', current_time( 'timestamp' ) ); ?>"
-				       name="e20r-assignment-answer_date" id="e20r-assignment-answer_date"/>
+				<input type="hidden" value="<?php esc_attr_e( $articleConfig->articleId ); ?>" name="e20r-article-id" id="e20r-article-id" />
+				<input type="hidden" value="<?php esc_attr_e( $articleConfig->userId ); ?>" name="e20r-article-user_id" id="e20r-article-user_id" />
+				<input type="hidden" value="<?php esc_attr_e( $assignmentData->delay ); ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
+				<input type="hidden" value="<?php echo date_i18n( 'Y-m-d', current_time( 'timestamp' ) ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
 				<?php
 
 				dbg( "e20rAssignmentView::viewAssignment() - Processing for " . count( $assignmentData ) . " assignments" );
 				foreach ( $assignmentData as $orderId => $assignment ) { ?>
 
-					<input type="hidden"
-					       value="<?php echo( isset( $assignment->id ) && ( 0 != $assignment->id ) ? $assignment->id : null ); ?>"
-					       name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
+					<input type="hidden" value="<?php echo( isset( $assignment->id ) && ( 0 != $assignment->id ) ? esc_attr( $assignment->id ) : null ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
 
 					dbg( $assignment );
 
@@ -421,8 +415,7 @@ class e20rAssignmentView extends e20rSettingsView {
 					else { ?>
 					<div id="e20r-assignment-save-btn" style="display:none;"><?php
 						} ?>
-						<button id="e20r-assignment-save"
-						        class="e20r-button"><?php _e( "Save Answers", 'e20rtracker' ); ?></button>
+						<button id="e20r-assignment-save" class="e20r-button"><?php _e( "Save Answers", 'e20rtracker' ); ?></button>
 					</div><?php
 					}
 
@@ -476,41 +469,35 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		?>
 		<div class="e20r-assignment-paragraph">
-		<input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : - 1; ?>"
-		       name="e20r-assignment-record_id[]" class="e20r-assignment-record_id"/>
-		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]"
-		       class="e20r-assignment-question_id"/>
-		<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]"
-		       class="e20r-assignment-field_type"/>
-		<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
-		if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
-			<div class="e20r-assignment-descr">
-			<?php echo $assignment->descr; ?>
-			<p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20rtracker" ); ?></p>
-			</div><?php
-		} ?>
-		<select class="select2-container e20r-select2-assignment-options e20r-assignment-response"
-		        name="e20r-multiplechoice_answer[]" multiple="multiple"><?php
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? esc_attr( $assignment->id ) : - 1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+            <input type="hidden" value="<?php esc_attr_e( $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+            <input type="hidden" value="<?php esc_attr_e( $assignment->field_type ); ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+            <h5 class="e20r-assignment-question"><?php wpautop( $assignment->question ); ?></h5><?php
+            if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
+                <div class="e20r-assignment-descr">
+                    <?php wp_autop( $assignment->descr ); ?>
+                    <p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20rtracker" ); ?></p>
+                </div><?php
+            } ?>
+            <select class="select2-container e20r-select2-assignment-options e20r-assignment-response" name="e20r-multiplechoice_answer[]" multiple="multiple"><?php
 
-			if ( ! is_array( $assignment->answer ) ) {
+                if ( ! is_array( $assignment->answer ) ) {
 
-				$assignment->answer = array( $assignment->answer );
-			}
+                    $assignment->answer = array( $assignment->answer );
+                }
 
-			if ( empty( $assignment->answer ) || ( - 1 == $assignment->answer[0] ) ) { ?>
+                if ( empty( $assignment->answer ) || ( - 1 == $assignment->answer[0] ) ) { ?>
 
-				<option value="-1"><?php _e( "Not applicable", "e20rtracker" ); ?></option><?php
-			}
+                    <option value="-1"><?php _e( "Not applicable", "e20rtracker" ); ?></option><?php
+                }
 
-			foreach ( $assignment->select_options as $option_id => $option_text ) {
+                foreach ( $assignment->select_options as $option_id => $option_text ) {
 
-				$selected = ( ! empty( $assignment->answer ) && in_array( $option_id, $assignment->answer ) ) ? 'selected="selected"' : null; ?>
-				<option
-				value="<?php echo $option_id; ?>" <?php echo $selected; ?>><?php echo $option_text; ?></option><?php
-			} ?>
-		</select>
-		<input type="hidden" value="<?php echo $answer; ?>" name="e20r-assignment-answer[]"
-		       class="e20r-assignment-select2-hidden">
+                    $selected = ( ! empty( $assignment->answer ) && in_array( $option_id, $assignment->answer ) ) ? 'selected="selected"' : null; ?>
+                    <option value="<?php esc_attr_e( $option_id ); ?>" <?php echo $selected; ?>><?php esc_attr_e(  $option_text ); ?></option><?php
+                } ?>
+            </select>
+            <input type="hidden" value="<?php esc_attr_e( $answer ); ?>" name="e20r-assignment-answer[]" class="e20r-assignment-select2-hidden" />
 		</div><?php
 
 		return ob_get_clean();
@@ -521,35 +508,31 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-ranking">
-		<input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : - 1; ?>"
-		       name="e20r-assignment-record_id[]" class="e20r-assignment-record_id"/>
-		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]"
-		       class="e20r-assignment-question_id"/>
-		<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]"
-		       class="e20r-assignment-field_type"/>
-		<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? esc_attr( $assignment->id ) : - 1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+            <input type="hidden" value="<?php esc_attr_e( $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+            <input type="hidden" value="<?php esc_attr_e( $assignment->field_type ); ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+            <h5 class="e20r-assignment-question"><?php wpautop( $assignment->question ); ?></h5><?php
 
-		if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
-			<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
-		} ?>
-		<table class="e20r-assignment-ranking-question">
-			<tbody>
-			<tr><?php
-				foreach ( range( 1, 10 ) as $cnt ) { ?>
-					<td class="e20r-assignment-ranking-question-choice-label"><?php echo $cnt; ?></td><?php
-				} ?>
-			</tr>
-			<tr><?php
-				foreach ( range( 1, 10 ) as $cnt ) { ?>
-					<td class="e20r-assignment-ranking-question-choice">
-					<input name="e20r-assignment-answer[]" type="radio" class="e20r-assignment-response"
-					       value="<?php echo $cnt; ?>"
-					       tabindex="<?php echo $cnt; ?>" <?php checked( $assignment->answer, $cnt ); ?>>
-					</td><?php
-				} ?>
-			</tr>
-			</tbody>
-		</table>
+            if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
+                <div class="e20r-assignment-descr"><?php wpautop( $assignment->descr ); ?></div><?php
+            } ?>
+            <table class="e20r-assignment-ranking-question">
+                <tbody>
+                <tr><?php
+                    foreach ( range( 1, 10 ) as $cnt ) { ?>
+                        <td class="e20r-assignment-ranking-question-choice-label"><?php esc_attr_e( $cnt ); ?></td><?php
+                    } ?>
+                </tr>
+                <tr><?php
+                    foreach ( range( 1, 10 ) as $cnt ) { ?>
+                        <td class="e20r-assignment-ranking-question-choice">
+                        <input name="e20r-assignment-answer[]" type="radio" class="e20r-assignment-response" value="<?php esc_attr_e( $cnt ); ?>"
+                               tabindex="<?php esc_attr_e( $cnt ); ?>" <?php checked( $assignment->answer, $cnt ); ?>>
+                        </td><?php
+                    } ?>
+                </tr>
+                </tbody>
+            </table>
 		</div><?php
 
 		return ob_get_clean();
@@ -560,35 +543,30 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-ranking">
-		<input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : - 1; ?>"
-		       name="e20r-assignment-record_id[]" class="e20r-assignment-record_id"/>
-		<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]"
-		       class="e20r-assignment-question_id"/>
-		<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]"
-		       class="e20r-assignment-field_type"/>
-		<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+            <input type="hidden" value="<?php echo isset( $assignment->id ) ? esc_attr( $assignment->id ) : - 1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+            <input type="hidden" value="<?php esc_attr_e($assignment->question_id); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+            <input type="hidden" value="<?php esc_attr_e( $assignment->field_type ); ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+            <h5 class="e20r-assignment-question"><?php wpautop( $assignment->question ); ?></h5><?php
 
-		if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
-			<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
-		} ?>
-		<table class="e20r-assignment-ranking-question">
-			<tbody>
-			<tr>
-				<td class="e20r-assignment-ranking-question-choice-label"><?php _e( "Yes", "e20rtracker" ); ?></td>
-				<td class="e20r-assignment-ranking-question-choice-label"><?php _e( "No", "e20rtracker" ); ?></td>
-			</tr>
-			<tr>
-				<td class="e20r-assignment-ranking-question-choice e20r-yes-checkbox">
-					<input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox"
-					       value="yes" <?php checked( $assignment->answer, 'yes' ); ?>>
-				</td>
-				<td class="e20r-assignment-ranking-question-choice e20r-no-checkbox">
-					<input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox"
-					       value="no" <?php checked( $assignment->answer, 'no' ); ?>>
-				</td>
-			</tr>
-			</tbody>
-		</table>
+            if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
+                <div class="e20r-assignment-descr"><?php wpautop( $assignment->descr ); ?></div><?php
+            } ?>
+            <table class="e20r-assignment-ranking-question">
+                <tbody>
+                <tr>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "Yes", "e20rtracker" ); ?></td>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "No", "e20rtracker" ); ?></td>
+                </tr>
+                <tr>
+                    <td class="e20r-assignment-ranking-question-choice e20r-yes-checkbox">
+                        <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="yes" <?php checked( $assignment->answer, 'yes' ); ?> />
+                    </td>
+                    <td class="e20r-assignment-ranking-question-choice e20r-no-checkbox">
+                        <input class="e20r-assignment-response" name="e20r-assignment-answer[]" type="checkbox" value="no" <?php checked( $assignment->answer, 'no' ); ?> />
+                    </td>
+                </tr>
+                </tbody>
+            </table>
 		</div><?php
 
 		return ob_get_clean();
@@ -599,19 +577,14 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : - 1; ?>"
-			       name="e20r-assignment-record_id[]" class="e20r-assignment-record_id"/>
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]"
-			       class="e20r-assignment-question_id"/>
-			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]"
-			       class="e20r-assignment-field_type"/>
-			<h5 class="e20r-assignment-question"><?php echo $assignment->question; ?></h5><?php
+			<input type="hidden" value="<?php echo isset( $assignment->id ) ? esc_attr( $assignment->id ) : - 1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+			<input type="hidden" value="<?php esc_attr_e( $assignment->question_id ); ?>" name="e20r-assignment-question_id[]" class="e20r-assignment-question_id" />
+			<input type="hidden" value="<?php esc_attr_e( $assignment->field_type ); ?>" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type" />
+			<h5 class="e20r-assignment-question"><?php wpautop( $assignment->question ); ?></h5><?php
 			if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
-				<div class="e20r-assignment-descr"><?php echo $assignment->descr; ?></div><?php
+				<div class="e20r-assignment-descr"><?php wpautop( $assignment->descr ); ?></div><?php
 			} ?>
-			<input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]"
-			       placeholder="<?php _e( "Type your response and click 'Save Answers', please...", "e20rtracker" ); ?>"
-			       value="<?php echo $assignment->answer; ?>"/>
+			<input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="<?php _e( "Type your response and click 'Save Answers', please...", "e20rtracker" ); ?>" value="<?php echo stripslashes( $assignment->answer ); ?>" />
 		</div>
 		<?php
 		return ob_get_clean();
@@ -623,9 +596,8 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		?>
 		<div class="e20r-assignment-paragraph">
-			<input type="hidden" value="<?php echo isset( $assignment->id ) ? $assignment->id : - 1; ?>"
-			       name="e20r-assignment-record_id[]" class="e20r-assignment-record_id"/>
-			<input type="hidden" value="<?php echo $assignment->question_id; ?>" name="e20r-assignment-question_id[]"
+			<input type="hidden" value="<?php echo isset( $assignment->id ) ? esc_attr( $assignment->id ) : - 1; ?>" name="e20r-assignment-record_id[]" class="e20r-assignment-record_id" />
+			<input type="hidden" value="<?php esc_attr_e( $assignment->question_id ); ?>" name="e20r-assignment-question_id[]"
 			       class="e20r-assignment-question_id"/>
 			<input type="hidden" value="<?php echo $assignment->field_type; ?>" name="e20r-assignment-field_type[]"
 			       class="e20r-assignment-field_type"/>
@@ -683,8 +655,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 		$prefix = preg_replace( '/\[|\]/', '', $currentArticle->prefix );
 		?>
-		<div class="green-notice big"
-		     style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
+		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
 			<p>
 				<strong><?php echo sprintf( __( "You have completed this %s.", "e20rTracker" ), lcfirst( $prefix ) ); ?></strong>
 			</p>
