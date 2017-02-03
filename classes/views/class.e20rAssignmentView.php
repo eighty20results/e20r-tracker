@@ -343,7 +343,7 @@ class e20rAssignmentView extends e20rSettingsView {
 				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' ); ?>
 				<input type="hidden" value="<?php esc_attr_e( $articleConfig->articleId ); ?>" name="e20r-article-id" id="e20r-article-id" />
 				<input type="hidden" value="<?php esc_attr_e( $articleConfig->userId ); ?>" name="e20r-article-user_id" id="e20r-article-user_id" />
-				<input type="hidden" value="<?php esc_attr_e( $assignmentData->delay ); ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
+				<input type="hidden" value="<?php esc_attr_e( $articleConfig->delay ); ?>" name="e20r-article-release_day" id="e20r-article-release_day" />
 				<input type="hidden" value="<?php echo date_i18n( 'Y-m-d', current_time( 'timestamp' ) ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
 				<?php
 
