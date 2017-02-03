@@ -1840,9 +1840,9 @@ class e20rArticle extends e20rSettings
         // Since we're saving the array using the delay day as the key we'll have to do some jumping through hoops
         // to get the right key for the last day in the list.
         $k_array = array_keys($summary);
-        $last_day_key = $k_array[(count($summary) - 1)];
-        $last_day_summary = $summary[$last_day_key];
-        $end_day = $last_day_summary['day'];
+        $last_day_key = count( $summary ) > 0 ? $k_array[(count($summary) - 1)] : 0;
+        $last_day_summary = isset( $summary[$last_day_key] ) ? $summary[$last_day_key] : null;
+        $end_day = !empty( $last_day_summary['day'] ) ? $last_day_summary['day'] : 7;
 
         dbg("e20rArticle::shortcode_article_summary() - Using end day for summary period: {$end_day}");
         // dbg($last_day_summary);
