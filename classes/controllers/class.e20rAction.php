@@ -1276,7 +1276,6 @@ class e20rAction extends e20rSettings
 
             // TODO: Decide whether or not the daily assignment is supposed to be a survey or not.
             $assignments = $e20rArticle->getAssignments($config->articleId, $config->userId);
-            dbg($assignments);
 
             if (true === $config->is_survey) {
 
@@ -1284,7 +1283,7 @@ class e20rAction extends e20rSettings
 
             }
 
-            return $e20rAssignment->showAssignment($assignments, $config);
+	        return $e20rAssignment->showAssignment($assignments, $config);
         }
 
         if (strtolower($config->type == 'show_assignment')) {
