@@ -475,7 +475,7 @@ class e20rAssignmentView extends e20rSettingsView {
             <h5 class="e20r-assignment-question"><?php echo esc_attr_e( $assignment->question ); ?></h5><?php
             if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
                 <div class="e20r-assignment-descr">
-                    <?php wp_autop( $assignment->descr ); ?>
+                    <?php echo wp_autop( $assignment->descr ); ?>
                     <p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20rtracker" ); ?></p>
                 </div><?php
             } ?>
@@ -514,7 +514,7 @@ class e20rAssignmentView extends e20rSettingsView {
             <h5 class="e20r-assignment-question"><?php esc_attr_e( $assignment->question ); ?></h5><?php
 
             if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
-                <div class="e20r-assignment-descr"><?php wpautop( $assignment->descr ); ?></div><?php
+                <div class="e20r-assignment-descr"><?php echo wpautop( $assignment->descr ); ?></div><?php
             } ?>
             <table class="e20r-assignment-ranking-question">
                 <tbody>
