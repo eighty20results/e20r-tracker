@@ -7,6 +7,11 @@
  * License Information:
  *  the GPL v2 license(?)
  */
+
+/* Prevent direct access to the plugin */
+if ( !defined( 'ABSPATH' ) ) {
+	die( "Sorry, you are not allowed to access this page directly." );
+}
 class e20rArticleModel extends e20rSettingsModel
 {
 
