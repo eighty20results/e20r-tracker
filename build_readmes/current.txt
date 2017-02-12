@@ -1,4 +1,1 @@
-BUG/FIX: Remind Me button didn't work
-BUG/FIX: Error when there's no measurement graph/data to plot
-FIX/ENH: Width of header for Assignments
-ENH/FIX: Colors and positioning for Fix/Remind buttons on pop-up
+BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)

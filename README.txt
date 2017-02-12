@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 3.7
 Requires PHP 5.6 or later.
 Tested up to: 4.7.2
-Stable tag: 1.5.63
+Stable tag: 1.5.67
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,27 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.5.67 ==
+
+* BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)
+
+== 1.5.66 ==
+
+* BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)
+* ENH: Prevent direct execution of class file
+
+== 1.5.65 ==
+
+* BUG/FIX: Didn't flag the delay value for the assignment correctly
+* BUG/FIX: Avoid PHP Warnings during summary post display
+* ENH: Remove debug data
+* ENH: Only include the Post summary header if there are posts to summarize
+
+== 1.5.64 ==
+
+* ENH/FIX: Didn't include all settings for Assignment answer display/save.
+* ENH/FIX: Escape more of the assignment output forms
 
 == 1.5.63 ==
 

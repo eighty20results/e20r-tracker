@@ -3,7 +3,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.5.65
+Version: 1.5.67
 Author: Wicked Strong Chicks, LLC <info@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 Text Domain: e20rtracker
@@ -11,7 +11,7 @@ Domain Path: /languages
 License: GPLv2
 */
 /*
-    Copyright 2015 Thomas Sjolshagen / Wicked Strong Chicks, LLC (info@eighty20results.com)
+    Copyright 2015-2017 Thomas Sjolshagen / Wicked Strong Chicks, LLC (info@eighty20results.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
@@ -27,8 +27,13 @@ License: GPLv2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 // TODO: run unserialize functionality from the Tools section?
+/* Prevent direct access to the plugin */
 
-define('E20R_VERSION', '1.5.65');
+if ( !defined( 'ABSPATH' ) ) {
+	die( "Sorry, you are not allowed to access this page directly." );
+}
+
+define('E20R_VERSION', '1.5.67');
 define('E20R_RUN_UNSERIALIZE', 0); // 0 == Do NOT Run, 1 == Run
 define('E20R_DB_VERSION', '11');
 define('E20R_NEW_DB_VERSION','9');
