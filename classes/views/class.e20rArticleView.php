@@ -7,6 +7,11 @@
  *  the GPL v2 license(?)
  */
 
+/* Prevent direct access to the plugin */
+if ( !defined( 'ABSPATH' ) ) {
+        die( "Sorry, you are not allowed to access this page directly." );
+}
+
 class e20rArticleView extends e20rSettingsView {
 
     private $article = null;
@@ -146,14 +151,15 @@ class e20rArticleView extends e20rSettingsView {
 
         global $e20rTracker;
         global $currentProgram;
-
+        global $currentArticle;
         // $postDate = $e20rTracker->getDateForPost( $day );
         // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
         ?>
         <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-            <p><strong><?php _e("You have completed this lesson.", "e20rTracker"); ?></strong>
+            <p>
+            <strong><?php printf( __("You have completed this %s.", "e20rTracker"), $currentArticle->prefix ); ?></strong>
             <?php
                 if ( $measurements !== 0 ) { ?>
                 <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "e20rTracker"); ?></strong>  &raquo;</a>
