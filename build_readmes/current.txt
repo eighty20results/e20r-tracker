@@ -1,1 +1,1 @@
-BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)
+BUG: Didn't escape the activity excerpt properly
