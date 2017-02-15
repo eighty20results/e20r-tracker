@@ -53,7 +53,7 @@ class e20rActionView extends e20rSettingsView {
         ob_start(); ?>
         <div id="e20r-action-content" class="<?php echo ( $config->use_cards ? 'e20r-as-cards' : 'e20r-as-dashboard') ?>">
             <div class="e20r-action-activity e20r-content-cell">
-                <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">'.  __("Activity", "e20rtracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20rtracker") .'</p>' : $config->activityExcerpt ); ?>
+                <?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">'.  __("Activity", "e20rtracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20rtracker") .'</p>' : wpautop( $config->activityExcerpt ) ); ?>
             </div>
             <div class="e20r-action-lesson e20r-content-cell">
                 <?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">'. sprintf( __("%s", "e20rtracker"), esc_attr( $action_type ) ). '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __("No %s scheduled", "e20rtracker"), esc_attr( lcfirst( $action_type ) ) ) . '</p>' : wpautop( $config->actionExcerpt ) ); ?>
