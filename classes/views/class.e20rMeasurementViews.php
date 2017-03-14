@@ -8,12 +8,26 @@ class e20rMeasurementViews {
     private $data;
     private $fields;
 
+    private static $instance = null;
+
     public function __construct() {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $this->fields = $e20rTables->getFields( 'measurements' );
     }
+
+    /**
+	 * @return e20rMeasurementViews
+	 */
+	static function getInstance() {
+
+    	if ( is_null( self::$instance ) ) {
+    		self::$instance = new self;
+	    }
+
+	    return self::$instance;
+	}
 
     public function init( $when = null, $data = null, $who = null ) {
 
@@ -85,7 +99,7 @@ class e20rMeasurementViews {
 
     public function showGirthRow( $girths ) {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         dbg("showGirthRow() - Loading Girth information");
         ob_start();
@@ -322,7 +336,7 @@ class e20rMeasurementViews {
 
     public function showWeightRow() {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         ob_start();
         ?>
@@ -475,8 +489,8 @@ class e20rMeasurementViews {
     public function viewTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
         // TESTING: using $clientId = 12;
         // $clientId = 12;
-        global $e20rTables;
-        global $e20rClient;
+        $e20rTables = e20rTables::getInstance();
+        $e20rClient = e20rClient::getInstance();
         global $currentProgram;
         global $current_user;
 
@@ -526,7 +540,7 @@ class e20rMeasurementViews {
             // echo $reloadBtn;
             ?>
             <div id="e20r_errorMsg">
-                <em><?php sprintf(__("No measurements found for %s", "e20rtracker"), $user->first_name . " " . $user->last_name ); ?></em>
+                <em><?php sprintf(__("No measurements found for %s", "e20r-tracker"), $user->first_name . " " . $user->last_name ); ?></em>
             </div>
             <?php
             $html = ob_get_clean();
@@ -607,20 +621,20 @@ class e20rMeasurementViews {
             </script>
             <div id="inner-tabs">
                 <ul>
-                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-1" role="presentation"><?php _e("Weight History", "e20rtracker"); ?></a></li>
-                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-2" role="presentation"><?php _e("Total Girth", "e20rtracker"); ?></a></li>
+                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-1" role="presentation"><?php _e("Weight History", "e20r-tracker"); ?></a></li>
+                    <li class="ui-corner-top" role="tab"><a href="#inner-tab-2" role="presentation"><?php _e("Total Girth", "e20r-tracker"); ?></a></li>
                 </ul>
                 <!-- Weight Tab -->
                 <div>
                     <div id="inner-tab-1" class="inner-tab">
-                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading weight history graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading weight history graph for %s", "e20r-tracker"), $user->display_name) . "</h4>" : '' ); ?>
                         <div id="weight_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
                     </div>
                 </div><!-- end of Weight inner-tab -->
                 <!-- Girth tab -->
                 <div>
                     <div id="inner-tab-2" class="inner-tab">
-                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading total girth graph for %s", "e20rtracker"), $user->display_name) . "</h4>" : '' ); ?>
+                        <?php echo ( $admin ? '<h4 class="e20r_progress_text">' . sprintf( __("Loading total girth graph for %s", "e20r-tracker"), $user->display_name) . "</h4>" : '' ); ?>
                         <div id="girth_chart" style="height: <?php echo $height; ?>; width: <?php echo $width; ?>;"></div>
                     </div><!-- End of Girth Inner-tab tab -->
                 </div>
@@ -638,17 +652,17 @@ class e20rMeasurementViews {
                         <thead class="e20r-resp-table-header">
                             <tr>
                                 <th class="e20r_mHead rotate"></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?></span></div></th>
-                                <th class="e20r_mHead rotate"><div><span><?php _e("Photo","e20rtracker"); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Weight (%s)","e20r-tracker"), $e20rClient->getWeightUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Neck (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Shoulder (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Chest (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Arm (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Waist (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Hip (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Thigh (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Calf (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php echo sprintf( __("Total Girth (%s)","e20r-tracker"), $e20rClient->getLengthUnit() ); ?></span></div></th>
+                                <th class="e20r_mHead rotate"><div><span><?php _e("Photo","e20r-tracker"); ?></span></div></th>
                             </tr>
                         </thead>
                         <tbody class="e20r-resp-table-body">
@@ -657,7 +671,7 @@ class e20rMeasurementViews {
                             $counter = 0;
                             if ( empty( $measurements ) ) { ?>
 	                            <tr>
-		                            <td colspan="12"><?php _e("No measurements recorded.", "e20rtracker"); ?></td>
+		                            <td colspan="12"><?php _e("No measurements recorded.", "e20r-tracker"); ?></td>
 	                            </tr>
                             <?php
                             }
@@ -710,17 +724,17 @@ class e20rMeasurementViews {
 				                            <div
 					                            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
 			                            </td>
-			                            <td data-th="<?php echo sprintf( __("Weight (%s)","e20rtracker"), $e20rClient->getWeightUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Neck (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Shoulder (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Chest (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Arm (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Waist (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Hip (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Thigh (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Calf (%s)","e20rtracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php echo sprintf( __("Total Girth (%s)","e20rtracker"), $e20rClient->getLengthUnit() ); ?>" class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
-			                            <td data-th="<?php _e("Photo","e20rtracker"); ?>" class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Weight (%s)","e20r-tracker"), $e20rClient->getWeightUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->weight ) || ( $measurement->weight == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->weight, 1 ), 1 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Neck (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->neck ) || ( $measurement->neck == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->neck, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Shoulder (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->shoulder ) || ( $measurement->shoulder == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->shoulder, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Chest (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->chest ) || ( $measurement->chest == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->chest, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Arm (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->arm ) || ( $measurement->arm == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->arm, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Waist (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->waist ) || ( $measurement->waist == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->waist, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Hip (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->hip ) || ( $measurement->hip == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->hip, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Thigh (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->thigh ) || ( $measurement->thigh == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->thigh, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Calf (%s)","e20r-tracker"), $e20rClient->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php echo sprintf( __("Total Girth (%s)","e20r-tracker"), $e20rClient->getLengthUnit() ); ?>" class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
+			                            <td data-th="<?php _e("Photo","e20r-tracker"); ?>" class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
 		                            </tr>
 		                            <?php
 		                            $counter ++;
@@ -743,7 +757,7 @@ class e20rMeasurementViews {
                             $counter = 0;
                             if ( empty( $measurements ) ) { ?>
                                 <tr>
-                                    <td colspan="2"><?php _e("No Progress indicators recorded.", "e20rtracker"); ?></td>
+                                    <td colspan="2"><?php _e("No Progress indicators recorded.", "e20r-tracker"); ?></td>
                                 </tr>
                             <?php
                             }
@@ -806,7 +820,7 @@ class e20rMeasurementViews {
 
     public function getProgressPhoto( $data, $userId, $key = null ) {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         $isBeta = true; // I know... This is a bit backwards
         $imageUrl = $e20rClient->getUserImgUrl( $userId, $data->recorded_date, 'front' );
@@ -1153,7 +1167,7 @@ class e20rMeasurementViews {
 
     private function bgImage( $what, $type ) {
 
-	    global $e20rClient;
+	    $e20rClient = e20rClient::getInstance();
 
         return 'background-image: url("' . E20R_PLUGINS_URL . '/img/' . $what . '-' . $type . ( $e20rClient->getGender() == 'f' ? '-f.png");' : '-m.png");' );
     }
@@ -1190,7 +1204,7 @@ class e20rMeasurementViews {
 
     private function showChangeWeightUnit() {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         ob_start();
         ?>
@@ -1203,8 +1217,8 @@ class e20rMeasurementViews {
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st' ); ?>><?php echo $this->prettyUnit('st'); ?></option>
                 <option value="st"<?php selected( $e20rClient->getWeightUnit(), 'st_uk' ); ?>><?php echo $this->prettyUnit('st_uk'); ?></option>
             </select></span>
-            <span class="e20r-change-weight-unit-link">(<a class="change-measurement-unit" data-dimension="weight"><?php _e("change this", "e20rtracker"); ?></a>)</span>
-            <span class="e20r-cancel-weight-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-change-weight-unit-link">(<a class="change-measurement-unit" data-dimension="weight"><?php _e("change this", "e20r-tracker"); ?></a>)</span>
+            <span class="e20r-cancel-weight-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20r-tracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
@@ -1212,7 +1226,7 @@ class e20rMeasurementViews {
 
     private function showChangeLengthUnit() {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
         ob_start();
         ?>
         <div class="e20r-measurement-setting" style="margin-bottom: 24px;">
@@ -1222,8 +1236,8 @@ class e20rMeasurementViews {
                 <option value="in"<?php selected( $e20rClient->getLengthUnit(), 'in' ); ?>><?php echo $this->prettyUnit('in'); ?></option>
                 <option value="cm"<?php selected( $e20rClient->getLengthUnit(), 'cm' ); ?>><?php echo $this->prettyUnit('cm'); ?></option>
             </select></span>
-            <span class="e20r-change-length-unit-link">(<a class="change-measurement-unit" data-dimension="length"><?php _e("change this", "e20rtracker"); ?></a>)</span>
-            <span class="e20r-cancel-length-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20rtracker"); ?></a>)</span>
+            <span class="e20r-change-length-unit-link">(<a class="change-measurement-unit" data-dimension="length"><?php _e("change this", "e20r-tracker"); ?></a>)</span>
+            <span class="e20r-cancel-length-unit-link">(<a class="cancel-measurement-unit-update"><?php _e("cancel", "e20r-tracker"); ?></a>)</span>
         </div>
         <?php
         return ob_get_clean();
@@ -1243,7 +1257,7 @@ class e20rMeasurementViews {
     }
 
     private function resizeImage( $size ) {
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $style = '';
         switch ( $size ) {

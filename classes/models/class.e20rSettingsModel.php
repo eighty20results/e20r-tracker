@@ -22,6 +22,8 @@ class e20rSettingsModel {
     protected $serialized;
     private $unrollable;
 
+    private static $instance = null;
+
     /**
      * @param $type
      * @param $cpt_slug
@@ -36,7 +38,7 @@ class e20rSettingsModel {
 
         $this->unrollable = array( 'program_ids', 'article_ids', 'action_ids', 'assignment_ids', 'select_options', 'activity_id' );
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         dbg("e20r" . ucfirst($this->type) . "Model::e20rSettingsModel() - Type: {$type}");
         try {
@@ -55,10 +57,19 @@ class e20rSettingsModel {
             'groups', 'assigned_user_id', 'assigned_usergroups', 'days', 'exercises',
             'sequences', 'users', 'group'
         );
-
-
     }
 
+	/**
+	 * @return e20rSettingsModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function doSerialize( $field_key ) {
 
@@ -114,7 +125,7 @@ class e20rSettingsModel {
 
     private function ifMigrating( $migrate ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $migrated = false;
 
@@ -418,7 +429,7 @@ class e20rSettingsModel {
 	 */
 	public function find( $key, $value, $programId = -1, $comp = 'LIKE', $order = 'DESC', $dataType = 'numeric' ) {
 
-		global $e20rProgram;
+		$e20rProgram = e20rProgram::getInstance();
 
         /*
         $programKey = null;

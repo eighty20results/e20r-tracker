@@ -17,6 +17,8 @@ class e20rArticleModel extends e20rSettingsModel
 
     protected $id;
 
+    private static $instance = null;
+
     // protected $settings;
 
     public function __construct()
@@ -24,6 +26,18 @@ class e20rArticleModel extends e20rSettingsModel
 
         parent::__construct('article', 'e20r_articles');
     }
+
+	/**
+	 * @return e20rArticleModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function defaultSettings()
     {
@@ -152,7 +166,7 @@ class e20rArticleModel extends e20rSettingsModel
 
     public function find($key, $value, $programId = -1, $comp = 'LIKE', $order = 'DESC', $dont_drop = false, $dataType = 'numeric' )
     {
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
         global $currentClient;
 
@@ -260,8 +274,8 @@ class e20rArticleModel extends e20rSettingsModel
     public function load_for_archive( $last_day = null, $order = 'ASC', $program_id = -1 )
     {
 
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentClient;
         global $currentProgram;
@@ -454,8 +468,8 @@ class e20rArticleModel extends e20rSettingsModel
     public function saveSettings(stdClass $settings)
     {
 
-        global $e20rAssignment;
-        global $e20rAction;
+        $e20rAssignment = e20rAssignment::getInstance();
+        $e20rAction = e20rAction::getInstance();
 
         $articleId = $settings->id;
 

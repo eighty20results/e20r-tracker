@@ -11,12 +11,26 @@ class e20rExerciseView
 
     private $exercises = null;
 
+    private static $instance = null;
+
     public function __construct($exerciseData = null)
     {
 
         $this->exercises = $exerciseData;
 
     }
+
+	/**
+	 * @return e20rExerciseView
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     private function generate_video_view()
     {
@@ -58,7 +72,7 @@ class e20rExerciseView
                 <div class="e20r-youtube-container">
                 <div class="youtube-player" data-id="<?php echo esc_attr($yID); ?>"></div>
                 </div>
-                <div class="e20r-video-descr"><?php _e('Click to view the video', 'e20rtracker'); ?></div>
+                <div class="e20r-video-descr"><?php _e('Click to view the video', 'e20r-tracker'); ?></div>
                 <?php
 
                 $html = ob_get_clean();
@@ -72,7 +86,7 @@ class e20rExerciseView
     {
 
         global $currentExercise;
-        global $e20rExercise;
+        $e20rExercise = e20rExercise::getInstance();
 
         $display = null;
         $type_label = '';
@@ -80,7 +94,7 @@ class e20rExerciseView
         if (in_array($currentExercise->type, array(2, 3))) {
 
             dbg("e20rExerciseView::view_exercise_as_columns() - Time/AMRAP is the selected exercise rep type");
-            $type_label = __('seconds', 'e20rtracker');
+            $type_label = __('seconds', 'e20r-tracker');
         }
 
         dbg("e20rExerciseViews::view_exercise_as_columns() - Hidden status is: {$show}");
@@ -105,13 +119,13 @@ class e20rExerciseView
                 </div>
                 <div class="e20r-exercise-table-column second-column e20r-right e20r-exercise-rest-time">
                     <p class="e20r-exercise-description">
-                        <span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+                        <span class="e20r-exercise-label"><?php _e('Rest', 'e20r-tracker'); ?>:</span>
                         <?php
                         if (!empty($currentExercise->rest)) { ?>
                             <span
-                                class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20rtracker'); ?></span><?php
+                                class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20r-tracker'); ?></span><?php
                         } else { ?>
-                            <span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
+                            <span class="e20r-exercise-value"><?php _e('N/A', 'e20r-tracker'); ?></span><?php
                         } ?>
                     </p>
                 </div>
@@ -142,7 +156,7 @@ class e20rExerciseView
     {
 
         global $currentExercise;
-        global $e20rExercise;
+        $e20rExercise = e20rExercise::getInstance();
 
         $display = null;
         $type_label = '';
@@ -150,7 +164,7 @@ class e20rExerciseView
         if ($currentExercise->type == 1) {
 
             dbg("e20rExerciseView::view_exercise_as_row() - Time is the selected exercise rep type");
-            $type_label = __('seconds', 'e20rtracker');
+            $type_label = __('seconds', 'e20r-tracker');
         }
 
         dbg("e20rExerciseViews::view_exercise_as_row() - Hidden status is: {$show}");
@@ -161,7 +175,7 @@ class e20rExerciseView
         ob_start();
         ?>
         <div class="e20r-exercise-table e20r-exercise-detail">
-            <div class="e20r-exercise-instructions"><?php _e("Click the image to play video demonstration", "e20rtracker"); ?></div>
+            <div class="e20r-exercise-instructions"><?php _e("Click the image to play video demonstration", "e20r-tracker"); ?></div>
             <div class="e20r-exercise-table-header e20r-exercise-detail-row">
                 <div class="e20r-exercise-table-column first-column e20r-exercise-title">
                     <h4 class="e20r-tracker-detail-h4"><?php echo $currentExercise->title; ?></h4>
@@ -190,13 +204,13 @@ class e20rExerciseView
                     </div>
                     <div class="e20r-exercise-table-column second-column e20r-exercise-rest-time">
                         <p class="e20r-exercise-description">
-                            <span class="e20r-exercise-label"><?php _e('Rest', 'e20rtracker'); ?>:</span>
+                            <span class="e20r-exercise-label"><?php _e('Rest', 'e20r-tracker'); ?>:</span>
                             <?php
                             if (!empty($currentExercise->rest)) { ?>
                                 <span
-                                    class="e20r-exercise-value"><?php echo $currentExercise->rest; ?><?php _e('seconds', 'e20rtracker'); ?></span><?php
+                                    class="e20r-exercise-value"><?php echo $currentExercise->rest; ?><?php _e('seconds', 'e20r-tracker'); ?></span><?php
                             } else { ?>
-                                <span class="e20r-exercise-value"><?php _e('N/A', 'e20rtracker'); ?></span><?php
+                                <span class="e20r-exercise-value"><?php _e('N/A', 'e20r-tracker'); ?></span><?php
                             } ?>
                         </p>
                     </div>
@@ -296,7 +310,7 @@ class e20rExerciseView
 
         if (!$embed_code) {
 
-            return '<strong>' . __('Error: Unsupported video host/service', 'e20rtracker') . '</strong>';
+            return '<strong>' . __('Error: Unsupported video host/service', 'e20r-tracker') . '</strong>';
         }
 
         return preg_replace($regex, '', $embed_code);
@@ -333,14 +347,14 @@ class e20rExerciseView
                     <thead>
                     <tr>
                         <th class="e20r-label header"><label
-                                for="e20r-exercise-type"><?php _e("Type", "e20rtracker"); ?></label></th>
+                                for="e20r-exercise-type"><?php _e("Type", "e20r-tracker"); ?></label></th>
                         <th class="e20r-label header"><label
-                                for="e20r-exercise-reps"><?php _e("Repetitions / Duration", "e20rtracker"); ?></label>
+                                for="e20r-exercise-reps"><?php _e("Repetitions / Duration", "e20r-tracker"); ?></label>
                         </th>
                         <th class="e20r-label header"><label
-                                for="e20r-exercise-rest"><?php _e("Rest (seconds)", "e20rtracker"); ?></label></th>
+                                for="e20r-exercise-rest"><?php _e("Rest (seconds)", "e20r-tracker"); ?></label></th>
                         <th class="e20r-label header"><label
-                                for="e20r-exercise-shortcode"><?php _e("Shortcode", "e20rtracker"); ?></label></th>
+                                for="e20r-exercise-shortcode"><?php _e("Shortcode", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -376,7 +390,7 @@ class e20rExerciseView
                     </tr>
                     <tr class="program-inputs">
                         <th class="e20r-label header"><label
-                                for="e20r-exercise-video_link"><strong><?php _e("Video link", "e20rtracker"); ?>
+                                for="e20r-exercise-video_link"><strong><?php _e("Video link", "e20r-tracker"); ?>
                                     :</strong></label></th>
                         <td class="text-input" colspan="3">
                             <input type="text" style="width: 100%;" id="e20r-exercise-video_link"

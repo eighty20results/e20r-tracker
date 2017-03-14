@@ -9,7 +9,7 @@ class trackerTemplates
     public function __construct()
     {
         if (isset(self::$_this)) {
-            wp_die(sprintf(__("%s is already instantiated and cannot be re-delcared", "e20rtracker"), get_class($this)));
+            wp_die(sprintf(__("%s is already instantiated and cannot be re-delcared", "e20r-tracker"), get_class($this)));
         }
 
         self::$_this = $this;

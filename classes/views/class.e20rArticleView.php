@@ -16,6 +16,8 @@ class e20rArticleView extends e20rSettingsView {
 
     private $article = null;
 
+    private static $instance = null;
+
     public function __construct( $data = null, $error = null ) {
 
         parent::__construct( 'article', 'e20r_articles' );
@@ -23,6 +25,18 @@ class e20rArticleView extends e20rSettingsView {
         $this->article = $data;
         $this->error = $error;
     }
+
+    	/**
+	 * @return e20rArticleView
+	 */
+	static function getInstance() {
+
+    	if ( is_null( self::$instance ) ) {
+    		self::$instance = new self;
+	    }
+
+	    return self::$instance;
+	}
 
 	public function viewLessonComplete( $day, $articleId ) {
 
@@ -62,8 +76,8 @@ class e20rArticleView extends e20rSettingsView {
         ob_start(); ?>
         <div class="e20r-article-post-summary">
         <?php if ( !empty( $articles ) ): ?>
-            <h5 class="e20r-article-post-summary-heading"><?php echo ( !empty($title) ? esc_attr($title) : sprintf( __("%s summary", "e20rtracker"), esc_attr( ucfirst($type) ) )); ?></h5>
-            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between %s and %s", "e20rtracker" ), $startdate, $enddate ); ?></p>
+            <h5 class="e20r-article-post-summary-heading"><?php echo ( !empty($title) ? esc_attr($title) : sprintf( __("%s summary", "e20r-tracker"), esc_attr( ucfirst($type) ) )); ?></h5>
+            <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between %s and %s", "e20r-tracker" ), $startdate, $enddate ); ?></p>
             <?php if ( !empty( $article_summary ) ) {?>
             <div class="e20r-article-post-summary-info"><?php echo esc_html( $article_summary); ?></div><?php
             }
@@ -73,7 +87,7 @@ class e20rArticleView extends e20rSettingsView {
                 $day_name = date('l', $timestamp);
             ?>
             <div class="e20r-article-post-summary-tile">
-                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed how...", "e20rtracker" ), $day_name, $type, $article['title'] ); ?></p>
+                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed how...", "e20r-tracker" ), $day_name, $type, $article['title'] ); ?></p>
                 <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ) ; ?></p>
             </div><?php
             } ?>
@@ -91,14 +105,14 @@ class e20rArticleView extends e20rSettingsView {
             ?>
             <div class="green-notice big"
                  style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p class="e20r-completed-notice"><?php echo sprintf(__("Great, you have already saved this '%s' interview.", 'e20rtracker'), $page_title) ?></p>
+                <p class="e20r-completed-notice"><?php echo sprintf(__("Great, you have already saved this '%s' interview.", 'e20r-tracker'), $page_title) ?></p>
                 <p class="e20r-completed-notice"><?php _e("If you need to update any information, make sure to save it before you leave. Or you can simply navigate away from the page without updating anything.", "e20rTracker"); ?></p>
             </div>
             <?php
         }
         else { ?>
             <div class="red-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/warning.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20rtracker'), $page_title) ?></p>
+                <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20r-tracker'), $page_title) ?></p>
                 <p class="e20r-completed-notice"><?php _e("To help us better understand your health profile and fitness level, and take that information to help you achieve your health and fitness goals, please complete the interview now. Then save it.", "e20rTracker"); ?></p>
             </div>
             <?php
@@ -114,7 +128,7 @@ class e20rArticleView extends e20rSettingsView {
         global $currentProgram;
         global $currentArticle;
 
-        global $e20rAssignment;
+        $e20rAssignment = e20rAssignment::getInstance();
         global $current_user;
 
         $unread_messages = $e20rAssignment->client_has_unread_messages( $current_user->ID );
@@ -125,18 +139,18 @@ class e20rArticleView extends e20rSettingsView {
         <div class="e20r-new-message-alert orange-notice <?php echo ( 0 == $unread_messages ? 'startHidden' : null );  ?>">
             <input type="hidden" name="e20r-message-user-id" value="<?php echo $current_user->ID;?>" id="e20r-message-user-id">
             <input type="hidden" name="e20r-message-new-count" value="<?php echo $unread_messages; ?>" id="e20r-messages-previous-count">
-            <h4><span class="highlighted"><?php _e("New message!", "e20rtracker"); ?></span></h4>
+            <h4><span class="highlighted"><?php _e("New message!", "e20r-tracker"); ?></span></h4>
 
             <div class="e20r-tracker-new-message-alert-txt">
-                <li><?php _e("Your coach has sent you a new message.", "e20rtracker");?> <a href="javascript:void(0);" id="e20r-read-messages-btn"><?php _e("Click to read message(s)", "e20rtracker"); ?> &raquo;</a></li>
+                <li><?php _e("Your coach has sent you a new message.", "e20r-tracker");?> <a href="javascript:void(0);" id="e20r-read-messages-btn"><?php _e("Click to read message(s)", "e20r-tracker"); ?> &raquo;</a></li>
                 <form action="<?php echo get_permalink($currentProgram->progress_page_id); ?>" method="POST" id="e20r-start">
                     <input type="hidden" value="<?php echo ( isset( $currentArticle->id ) ? $currentArticle->id : null) ; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                 </form>
-                <button id="e20r-new-message-dismiss-button" class="e20r-dismiss-button button"><?php _e("Hide", "e20rtracker"); ?></button>
+                <button id="e20r-new-message-dismiss-button" class="e20r-dismiss-button button"><?php _e("Hide", "e20r-tracker"); ?></button>
                 <li>
                     <span class="e20r-help-description-text">
-                        <?php _e("You can read and reply to your messages via the 'Assignments' tab on the 'Progress' page/tab.", "e20rtracker"); ?>
-                        <?php _e("The assignment response row will be an <span class='orange-background'>orange row</span> wherever there are unread messages.", "e20rtracker"); ?>
+                        <?php _e("You can read and reply to your messages via the 'Assignments' tab on the 'Progress' page/tab.", "e20r-tracker"); ?>
+                        <?php _e("The assignment response row will be an <span class='orange-background'>orange row</span> wherever there are unread messages.", "e20r-tracker"); ?>
                     </span>
                 </li>
 
@@ -149,7 +163,7 @@ class e20rArticleView extends e20rSettingsView {
 
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
         global $currentArticle;
         // $postDate = $e20rTracker->getDateForPost( $day );
@@ -181,7 +195,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewMeasurementAlert( $photos, $day, $articleId = null ) {
 
         dbg("e20rArticleView::viewMeasurementAlert() - Photos: {$photos} for {$day}");
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
 
         $html = null;
@@ -191,7 +205,7 @@ class e20rArticleView extends e20rSettingsView {
             ob_start();
             ?>
             <div id="saturday-progress-container" class="progress-container clearfix" style="margin-bottom: 16px;">
-                <h3><?php _e("Weekly Progress", "e20rtracker");?> <span><?php _e("Update", "e20tracker"); ?></span></h3>
+                <h3><?php _e("Weekly Progress", "e20r-tracker");?> <span><?php _e("Update", "e20tracker"); ?></span></h3>
 
                 <div id="e20r-progress-canvas">
                     <img src="<?php echo E20R_PLUGINS_URL; ?>/img/alert.png" class="tooltip-handle" data-tooltip=""
@@ -199,21 +213,21 @@ class e20rArticleView extends e20rSettingsView {
 
                     <div class="e20r-weekly-progress-reminder-text">
 
-                        <h4><span class="highlighted"><?php _e("We need your measurements.", "e20rtracker"); ?></span></h4>
+                        <h4><span class="highlighted"><?php _e("We need your measurements.", "e20r-tracker"); ?></span></h4>
 
-                        <p><?php _e("Today is a measurement day. Here's what we need you to collect:", "e20rtracker"); ?></p>
+                        <p><?php _e("Today is a measurement day. Here's what we need you to collect:", "e20r-tracker"); ?></p>
                         <ul>
-                            <li><?php _e("Body Weight", "e20rtracker"); ?></li>
+                            <li><?php _e("Body Weight", "e20r-tracker"); ?></li>
                             <li><?php _e("Girth Measurements", "e20tracker"); ?></li>
                             <?php if ($photos == 1): ?>
-                                <li><?php _e("Photos", "e20rtracker");?></li>
+                                <li><?php _e("Photos", "e20r-tracker");?></li>
                             <?php endif; ?>
                         </ul>
                         <form action="<?php echo get_permalink($currentProgram->measurements_page_id); ?>" method="POST" id="e20r-start">
                             <input type="hidden" value="<?php echo $e20rTracker->getDateForPost($day); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
                             <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                         </form>
-                        <a href="javascript:document.getElementById('e20r-start').submit();return false;" id="e20r-begin-btn"><?php _e("Begin", "e20rtracker"); ?> &raquo;</a>
+                        <a href="javascript:document.getElementById('e20r-start').submit();return false;" id="e20r-begin-btn"><?php _e("Begin", "e20r-tracker"); ?> &raquo;</a>
                     </div>
                 </div>
             </div>
@@ -228,7 +242,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewCheckinSettings( $settings, $checkinList ) {
 
         global $post;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( ! current_user_can( 'manage_options ') ) {
             return false;
@@ -243,8 +257,8 @@ class e20rArticleView extends e20rSettingsView {
                 <table id="e20r-article-checkin-settings" class="wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-checkin_id"><?php _e("Check-In", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                 </table>
@@ -259,7 +273,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewArticleSettings( $settings, $lessons, $checkinList = null ) {
 
         global $post;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg($settings);
 
@@ -282,9 +296,9 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Post/Page", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-release_day"><?php _e("Day of Release", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-post_id"><?php _e("Post/Page", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-release_day"><?php _e("Day of Release", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-prefix"><?php _e("Prefix", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -320,8 +334,8 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-summary_day"><?php _e("Summary Article", "e20rtracker"); ?></label></th>
-                        <th colspan="2" class="e20r-label header"><label for="e20r-article-max_summaries"><?php _e("Articles to summarize", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-summary_day"><?php _e("Summary Article", "e20r-tracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-max_summaries"><?php _e("Articles to summarize", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -339,9 +353,9 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-is_survey"><?php _e("Survey", "e20rtracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-measurement_day"><?php _e("Measurements", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-photo_day"><?php _e("Pictures", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-is_survey"><?php _e("Survey", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -364,8 +378,8 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th colspan="2" class="e20r-label header"><label for="e20r-article-program_ids"><?php _e("Programs", "e20rtracker"); ?></label></th>
-                        <th class="e20r-label header"><label for="e20r-article-is_preview_day"><?php _e("Preparation", "e20rtracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-program_ids"><?php _e("Programs", "e20r-tracker"); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-article-is_preview_day"><?php _e("Preparation", "e20r-tracker"); ?></label></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -409,8 +423,8 @@ class e20rArticleView extends e20rSettingsView {
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
-                        <th colspan="2" class="e20r-label header"><label for="e20r-article-action_ids"><?php _e("Actions", "e20rtracker"); ?></label></th>
-	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20rtracker"); ?></label></th>
+                        <th colspan="2" class="e20r-label header"><label for="e20r-article-action_ids"><?php _e("Actions", "e20r-tracker"); ?></label></th>
+	                    <th class="e20r-label header"><label for="e20r-article-activity_id"><?php _e("Activity", "e20r-tracker"); ?></label></th>
                         <th></th>
                     </tr>
                     </thead>
@@ -460,7 +474,7 @@ class e20rArticleView extends e20rSettingsView {
 		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id[]" multiple="multiple">
 			                    <option value="-1" <?php echo $selected ?>>No defined activity</option>
 			                    <?php
-			                    global $e20rWorkout;
+			                    $e20rWorkout = e20rWorkout::getInstance();
 
 			                    dbg("e20rArticleView::viewArticleSettings() - Load all defined activities");
 			                    $activities = $e20rWorkout->getActivities();
@@ -498,7 +512,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewSettings_Checkin( $data ) {
 
         global $post;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -668,7 +682,7 @@ class e20rArticleView extends e20rSettingsView {
 
     public function newExerciseGroup( $group, $group_id ) {
 
-        global $e20rExercise;
+        $e20rExercise = e20rExercise::getInstance();
         ob_start();
     ?>
         <tr><td colspan="2"><hr width="100%" /></td></tr>
@@ -701,10 +715,10 @@ class e20rArticleView extends e20rSettingsView {
                                 <table class="e20r-exercise-list sub-table wp-list-table widefat fixed">
                                     <thead>
                                         <tr>
-                                            <th colspan="2" class="e20r-label header"><label for="e20r-article-exercise_id-<?php echo $group_id; ?>"><?php _e('Exercise', 'e20rtracker'); ?></label></th>
-                                            <th class="e20r-label header"><label for="e20r-article-exercise_type-<?php echo $group_id; ?>"><?php _e('Type', 'e20rtracker'); ?></label></th>
-                                            <th class="e20r-label header"><label for="e20r-article-exercise_reps-<?php echo $group_id; ?>"><?php _e('Reps / Secs', 'e20rtracker'); ?></label></th>
-                                            <th class="e20r-label header"><label for="e20r-article-exercise_rest-<?php echo $group_id; ?>"><?php _e('Rest', 'e20rtracker'); ?></label></th>
+                                            <th colspan="2" class="e20r-label header"><label for="e20r-article-exercise_id-<?php echo $group_id; ?>"><?php _e('Exercise', 'e20r-tracker'); ?></label></th>
+                                            <th class="e20r-label header"><label for="e20r-article-exercise_type-<?php echo $group_id; ?>"><?php _e('Type', 'e20r-tracker'); ?></label></th>
+                                            <th class="e20r-label header"><label for="e20r-article-exercise_reps-<?php echo $group_id; ?>"><?php _e('Reps / Secs', 'e20r-tracker'); ?></label></th>
+                                            <th class="e20r-label header"><label for="e20r-article-exercise_rest-<?php echo $group_id; ?>"><?php _e('Rest', 'e20r-tracker'); ?></label></th>
                                             <th colspan="2">&nbsp;</th>
                                         </tr>
                                     </thead>
@@ -737,7 +751,7 @@ class e20rArticleView extends e20rSettingsView {
                                                 echo "<td>{$info->reps}</td>";
                                                 echo "<td>{$info->rest}</td>";
 
-                                                foreach( array( __('Edit', 'e20rtracker'), __('Remove', 'e20rtracker') ) as $btnName ) {
+                                                foreach( array( __('Edit', 'e20r-tracker'), __('Remove', 'e20r-tracker') ) as $btnName ) {
 
                                                     echo '<td><a href="javascript:" class="e20r-exercise-' . strtolower($btnName) . '">'. $btnName . '</a></td>';
                                                 }
@@ -748,7 +762,7 @@ class e20rArticleView extends e20rSettingsView {
                                             ?>
                                             <tr>
                                                 <td colspan="7">
-                                                    <?php echo sprintf( __("No exercises defined for group #%d. Please add exercises to this group", 'e20rtracker'), ($group_id + 1)); ?>
+                                                    <?php echo sprintf( __("No exercises defined for group #%d. Please add exercises to this group", 'e20r-tracker'), ($group_id + 1)); ?>
                                                 </td>
                                             </tr>
                                             <?php
@@ -783,9 +797,9 @@ class e20rArticleView extends e20rSettingsView {
                                         </td>
                                         <td class="text-input">
                                             <select id="e20r-article-add-exercise-type_<?php echo $group_id; ?>" name="e20r-add-exercise-type">
-                                                <option value="0"><?php _e("Reps", "e20rtracker" ); ?></option>
-                                                <option value="1"><?php _e("Time", "e20rtracker" ); ?></option>
-                                                <option value="2"><?php _e("AMRAP", "e20rtracker" ); ?></option>
+                                                <option value="0"><?php _e("Reps", "e20r-tracker" ); ?></option>
+                                                <option value="1"><?php _e("Time", "e20r-tracker" ); ?></option>
+                                                <option value="2"><?php _e("AMRAP", "e20r-tracker" ); ?></option>
                                             </select>
                                         </td>
 
@@ -801,10 +815,10 @@ class e20rArticleView extends e20rSettingsView {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th colspan="2" class="e20r-label header"><label for="e20r-article-exercises-<?php echo $group_id; ?>"><?php _e('Exercise', 'e20rtracker'); ?></label></th>
-                                        <th class="e20r-label header"><label for="e20r-article-exercise_type-<?php echo $group_id; ?>"><?php _e('Type', 'e20rtracker'); ?></label></th>
-                                        <th class="e20r-label header"><label for="e20r-article-exercise_reps-<?php echo $group_id; ?>"><?php _e('Reps / Secs', 'e20rtracker'); ?></label></th>
-                                        <th class="e20r-label header"><label for="e20r-article-exercise-rest-<?php echo $group_id; ?>"><?php _e('Rest', 'e20rtracker'); ?></label></th>
+                                        <th colspan="2" class="e20r-label header"><label for="e20r-article-exercises-<?php echo $group_id; ?>"><?php _e('Exercise', 'e20r-tracker'); ?></label></th>
+                                        <th class="e20r-label header"><label for="e20r-article-exercise_type-<?php echo $group_id; ?>"><?php _e('Type', 'e20r-tracker'); ?></label></th>
+                                        <th class="e20r-label header"><label for="e20r-article-exercise_reps-<?php echo $group_id; ?>"><?php _e('Reps / Secs', 'e20r-tracker'); ?></label></th>
+                                        <th class="e20r-label header"><label for="e20r-article-exercise-rest-<?php echo $group_id; ?>"><?php _e('Rest', 'e20r-tracker'); ?></label></th>
                                         <th colspan="2">&nbsp;</th>
                                     </tr>
                                     </tfoot>

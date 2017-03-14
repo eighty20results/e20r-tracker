@@ -13,9 +13,11 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	private $answerTypes;
 	private $answerInputs;
 
+	private static $instance = null;
+
     public function __construct()  {
 
-	    global $e20rTables;
+	    $e20rTables = e20rTables::getInstance();
 
 	    parent::__construct( 'assignments', 'e20r_assignments' );
 
@@ -31,14 +33,14 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	    );
 
 	    $this->answerTypes = array(
-		    0 => __("'Lesson complete' button", "e20rtracker"),
-		    1 => __("Line of text (input)", "e20rtracker"),
-		    2 => __("Paragraph of text (textbox)", "e20rtracker"),
-//		    3 => __("Checkbox", "e20rtracker"),
-		    4 => __("Multiple choice", "e20rtracker"),
-            5 => __("1-10 ranking", "e20rtracker"),
-            6 => __("Yes/No question", "e20rtracker"),
-            7 => __("HTML/Text Field", "e20rtracker"),
+		    0 => __("'Lesson complete' button", "e20r-tracker"),
+		    1 => __("Line of text (input)", "e20r-tracker"),
+		    2 => __("Paragraph of text (textbox)", "e20r-tracker"),
+//		    3 => __("Checkbox", "e20r-tracker"),
+		    4 => __("Multiple choice", "e20r-tracker"),
+            5 => __("1-10 ranking", "e20r-tracker"),
+            6 => __("Yes/No question", "e20r-tracker"),
+            7 => __("HTML/Text Field", "e20r-tracker"),
 	    );
 
         $this->table = $e20rTables->getTable('assignments');
@@ -170,7 +172,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     public function defaultSettings() {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $settings = parent::defaultSettings();
 
@@ -204,8 +206,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
 	public function loadAllUserAssignments( $userId, $page_num = -1 ) {
 
-		global $e20rTracker;
-		global $e20rProgram;
+		$e20rTracker = e20rTracker::getInstance();
+		$e20rProgram = e20rProgram::getInstance();
 
         global $currentProgram;
 
@@ -294,7 +296,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
     public function getArticleAssignments( $articleId ) {
 
         global $current_user;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         $assignments = array();
 
@@ -359,9 +361,9 @@ class e20rAssignmentModel extends e20rSettingsModel {
 	private function loadAssignmentByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'order_num', $order = 'ASC', $page_num = -1 ) {
 
 		global $current_user;
-		global $e20rProgram;
-        global $e20rArticle;
-		global $e20rTracker;
+		$e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+		$e20rTracker = e20rTracker::getInstance();
 
 		$assignments = array();
 
@@ -517,8 +519,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
         global $currentProgram;
 
-        global $e20rProgram;
-        global $e20rTables;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         dbg("e20rAssignmentModel::load_user_assignment_info() - Attempting to locate info for assignment {$assignment_id}, user {$user_id} and article {$article_id}");
 
@@ -648,8 +650,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         // TODO: Load the recorded user assignment answers by assignment ID.
         global $wpdb;
         global $post;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 	    global $currentAssignment;
 
         $records = array();
@@ -815,7 +817,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
     public function update_reply_status( $message_id, $status, $status_field ) {
 
         global $wpdb;
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $table = $e20rTables->getTable('response');
         $fields = $e20rTables->getFields('response');
@@ -853,7 +855,7 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     public function user_has_new_messages( $client_id ) {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         global $currentProgram;
 
@@ -922,8 +924,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
         global $wpdb;
         global $current_user;
 
-        global $e20rTables;
-        global $e20rTracker;
+        $e20rTables = e20rTables::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         $r_table = $e20rTables->getTable('response');
         $r_fields = $e20rTables->getFields('response');
@@ -975,8 +977,8 @@ class e20rAssignmentModel extends e20rSettingsModel {
 
     public function save_response( $data ) {
 
-        global $e20rTracker;
-        global $e20rTables;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         global $wpdb;
 

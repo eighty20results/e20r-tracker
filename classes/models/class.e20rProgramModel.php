@@ -11,11 +11,25 @@ class e20rProgramModel extends e20rSettingsModel {
 
 	protected $settings;
 
+	private static $instance = null;
+
     public function __construct() {
 
         parent::__construct( 'program', 'e20r_programs');
 
     }
+
+	/**
+	 * @return e20rProgramModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function findByMembershipId( $mID ) {
 
@@ -105,7 +119,7 @@ class e20rProgramModel extends e20rSettingsModel {
 
     public function load_program_members( $programId ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rProgram::load_program_members() - Loading users with Program ID: {$programId}");
 
@@ -187,7 +201,7 @@ class e20rProgramModel extends e20rSettingsModel {
 
 		global $post;
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
 		global $currentProgram;
 

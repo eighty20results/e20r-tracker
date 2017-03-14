@@ -26,6 +26,8 @@ class e20rTracker {
 
     private $hooksLoaded = false;
 
+    private static $instance = null;
+
     public function __construct() {
 
         $this->model = new e20rTrackerModel();
@@ -57,6 +59,18 @@ class e20rTracker {
 //        $this->tables = new e20rTables();
 
     }
+
+    /**
+	 * @return e20rTracker;
+	 */
+	static function getInstance() {
+
+    	if ( is_null( self::$instance ) ) {
+    		self::$instance = new self;
+	    }
+
+	    return self::$instance;
+	}
 
 	/*
     Give admin members access to everything.
@@ -92,7 +106,7 @@ class e20rTracker {
                 $this->is_a_coach( $current_user->ID )) ) {
 
             dbg("e20rTracker::duplicate_cpt_link() - Adding 'Duplicate' action for {$post->post_type} post(s)");
-            $actions['duplicate'] = '<a href="admin.php?post=' . $post->ID . '&amp;action=e20r_duplicate_as_draft" title="' .__("Duplicate this item", "e20rtracker" ) .'" rel="permalink">' . __("Duplicate", "e20rtracker") . '</a>';
+            $actions['duplicate'] = '<a href="admin.php?post=' . $post->ID . '&amp;action=e20r_duplicate_as_draft" title="' .__("Duplicate this item", "e20r-tracker" ) .'" rel="permalink">' . __("Duplicate", "e20r-tracker") . '</a>';
         }
 
         return $actions;
@@ -203,16 +217,7 @@ class e20rTracker {
 
         global $current_user;
         global $pagenow;
-
-        global $e20rClient;
-        global $e20rMeasurements;
-        global $e20rArticle;
-        global $e20rAssignment;
-        global $e20rAction;
-        global $e20rExercise;
-        global $e20rProgram;
-        global $e20rWorkout;
-
+        global $post;
 
         if ( ! $this->hooksLoaded ) {
 
@@ -222,45 +227,40 @@ class e20rTracker {
 
 	        add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles'), 5, 1);
 
-            add_action( 'init', array( &$this, 'auth_timeout_reset'), 10 );
-            add_action( 'init', array( &$this, 'update_db'), 7 );
-            add_action( 'init', array( &$this, "dependency_warnings" ), 10 );
-            add_action( 'init', array( &$this, "e20r_program_taxonomy" ), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_programCPT"), 10 );
-            add_action( "init", array( &$this, "e20r_tracker_articleCPT"), 11 );
-            add_action( "init", array( &$this, "e20r_tracker_actionCPT"), 12 );
-            add_action( "init", array( &$this, "e20r_tracker_activitiesCPT"), 13 );
-            add_action( "init", array( &$this, "e20r_tracker_assignmentsCPT"), 14 );
-            add_action( "init", array( &$this, "e20r_tracker_exerciseCPT"), 15 );
-            add_action( "init", array( &$this, "e20r_tracker_girthCPT" ), 16 );
+            add_action( 'init', array( $this, 'update_db'), 7 );
+            add_action( 'init', array( $this, "dependency_warnings" ), 10 );
+            add_action( 'init', array( $this, "e20r_program_taxonomy" ), 10 );
+            add_action( "init", array( $this, "e20r_tracker_programCPT"), 10 );
+            add_action( "init", array( $this, "e20r_tracker_articleCPT"), 11 );
+            add_action( "init", array( $this, "e20r_tracker_actionCPT"), 12 );
+            add_action( "init", array( $this, "e20r_tracker_activitiesCPT"), 13 );
+            add_action( "init", array( $this, "e20r_tracker_assignmentsCPT"), 14 );
+            add_action( "init", array( $this, "e20r_tracker_exerciseCPT"), 15 );
+            add_action( "init", array( $this, "e20r_tracker_girthCPT" ), 16 );
 
-            add_action( 'init', array( &$this, 'add_endpoint' ), 10 );
-            add_action( 'init', array( &$this, 'add_rewrite_tags' ), 10);
+            add_action( 'init', array( $this, 'add_endpoint' ), 10 );
+            add_action( 'init', array( $this, 'add_rewrite_tags' ), 10);
 
-            // add_action( 'heartbeat_received', array( &$e20rAssignment, 'heartbeat_received'), 10, 2);
-            // add_filter( 'heartbeat_send', array( &$e20rAssignment, 'heartbeat_send'), 10, 2 );
+            // add_action( 'heartbeat_received', array( e20rAssignment::getInstance(), 'heartbeat_received'), 10, 2);
+            // add_filter( 'heartbeat_send', array( e20rAssignment::getInstance(), 'heartbeat_send'), 10, 2 );
+            // add_action( 'plugins_loaded', array( $this, "define_e20rtracker_roles" ) );
 
-            add_action( 'wp_ajax_e20r_coach_message', array( &$e20rAssignment, 'heartbeat_received'),10, 2);
+            add_action( "wp_login", array( e20rClient::getInstance(), "record_login" ), 99, 2 );
 
-            add_action( "wp_login", array( &$e20rClient, "record_login" ), 99, 2 );
-            // add_action( 'plugins_loaded', array( &$this, "define_e20rtracker_roles" ) );
-            add_action( 'e20r_schedule_email_for_client', array( &$e20rClient, 'send_email_to_client' ), 10, 2 );
 
             $action = ( isset( $_REQUEST['action'] ) && (false !== strpos($_REQUEST['action'], 'e20r')) ) ? $this->sanitize($_REQUEST['action']) : null;
 
-             if ( !is_null( $action ) ) {
-                add_action( "wp_ajax_nopriv_{$action}", "e20r_ajaxUnprivError" );
-             }
+            if ( !is_null( $action ) ) {
+               add_action( "wp_ajax_nopriv_{$action}", "e20r_ajaxUnprivError" );
+            }
 
-	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
-	        add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
+            add_filter( 'post_link', array( $this, 'process_post_link' ), 10, 3 );
 
-            add_filter( 'post_link', array( &$this, 'process_post_link' ), 10, 3 );
-            add_filter( 'the_content', array( &$e20rArticle, 'contentFilter' ) );
-            // add_filter( 'pmpro_after_change_membership_level', array( &$this, 'setUserProgramStart') );
-            add_filter( 'pmpro_member_startdate', array( $e20rProgram, 'setProgramForUser'), 11, 3 );
+            // add_filter( 'pmpro_after_change_membership_level', array( $this, 'setUserProgramStart') );
+
+            add_filter( 'pmpro_member_startdate', array( e20rProgram::getInstance(), 'setProgramForUser'), 11, 3 );
             add_filter( 'auth_cookie_expiration', array( $this, 'login_timeout'), 100, 3 );
-            add_filter( 'pmpro_email_data', array( &$this, 'filter_changeConfirmationMessage' ), 10, 2 );
+            add_filter( 'pmpro_email_data', array( $this, 'filter_changeConfirmationMessage' ), 10, 2 );
 
             add_post_type_support( 'page', 'excerpt' );
 
@@ -268,18 +268,24 @@ class e20rTracker {
                 return;
             }
 
-            // add_action( 'init', array( &$e20rAssignment, 'update_metadata' ), 20 );
+            add_action( 'init', array( $this, 'auth_timeout_reset'), 10 );
 
-            add_filter( "post_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
-            add_filter( "page_row_actions", array( &$this, 'duplicate_cpt_link'), 10, 2);
+            add_action( 'wp_ajax_e20r_coach_message', array( e20rAssignment::getInstance(), 'heartbeat_received'),10, 2);
+            add_action( 'wp_ajax_e20r_save_activity', array( e20rWorkout::getInstance(), 'saveExData_callback' ) );
+	        add_action( 'wp_ajax_e20r_manage_option_list', array( e20rAssignment::getInstance(), 'manage_option_list') );
+            add_action( 'e20r_schedule_email_for_client', array( e20rClient::getInstance(), 'send_email_to_client' ), 10, 2 );
 
-            add_action( "admin_action_e20r_duplicate_as_draft", array( &$this, 'duplicate_cpt_as_draft') );
-            add_action( 'admin_notices', array( &$this, 'display_admin_notice'  ) );
+            add_filter( 'the_content', array( e20rArticle::getInstance(), 'contentFilter' ) );
 
-	        add_filter( "pmpro_has_membership_access_filter", array( &$this, "admin_access_filter" ), 10, 3);
-	        add_filter( 'embed_defaults', array( &$e20rExercise, 'embed_default' ) );
+            // add_action( 'init', array( e20rAssignment::getInstance(), 'update_metadata' ), 20 );
 
-	        dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
+            add_action( "admin_action_e20r_duplicate_as_draft", array( $this, 'duplicate_cpt_as_draft') );
+            add_action( 'admin_notices', array( $this, 'display_admin_notice'  ) );
+
+	        add_filter( "pmpro_has_membership_access_filter", array( $this, "admin_access_filter" ), 10, 3);
+	        add_filter( 'embed_defaults', array( e20rExercise::getInstance(), 'embed_default' ) );
+
+	        // dbg("e20rTracker::loadAllHooks() - Load upload directory filter? ". $e20rClient->isNourishClient( $current_user->ID));
             dbg("e20rTracker::loadAllHooks() - Pagenow = {$pagenow}" );
 
             $post_id =  ( !empty( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : null );
@@ -294,165 +300,168 @@ class e20rTracker {
 
 
                     dbg("e20rTracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
-                    add_filter('media_view_strings', array(&$e20rMeasurements, 'clientMediaUploader'), 10);
+                    add_filter('media_view_strings', array(e20rMeasurements::getInstance(), 'clientMediaUploader'), 10);
 
                     dbg("e20rTracker::loadAllHooks() - Loaded filter to change the Media Library settings for client uploads");
-                    add_filter("wp_handle_upload_prefilter", array(&$this, "pre_upload"));
-                    add_filter("wp_handle_upload", array(&$this, "post_upload"));
+                    add_filter("wp_handle_upload_prefilter", array( $this, "pre_upload"));
+                    add_filter("wp_handle_upload", array( $this, "post_upload"));
                     dbg("e20rTracker::loadAllHooks() - Loaded filter to change the upload directory for Nourish clients");
 
                     dbg("e20rTracker::loadAllHooks() - Control Access to media uploader for e20rTracker users");
 
                     /* Control access to the media uploader for Nourish users */
-                    add_action( 'pre_get_posts', array( &$this, 'restrict_media_library') );
-                    add_filter( 'wp_handle_upload_prefilter', array( &$e20rMeasurements, 'setFilenameForClientUpload' ) );
+                    add_action( 'pre_get_posts', array( $this, 'restrict_media_library') );
+                    add_filter( 'wp_handle_upload_prefilter', array( e20rMeasurements::getInstance(), 'setFilenameForClientUpload' ) );
 
                 }
             }
 
-            add_filter( 'page_attributes_dropdown_pages_args', array( &$e20rExercise, 'changeSetParentType'), 10, 2);
-            add_filter( 'enter_title_here', array( &$this, 'setEmptyTitleString' ) );
+            add_filter( 'page_attributes_dropdown_pages_args', array( e20rExercise::getInstance(), 'changeSetParentType'), 10, 2);
+            add_filter( 'enter_title_here', array( $this, 'setEmptyTitleString' ) );
 
             // add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
             // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
-            // add_action( 'wp_print_scripts', array( &$e20rClient, 'load_scripts' ) );
+            // add_action( 'wp_print_scripts', array( e20rClient::getInstance(), 'load_scripts' ) );
             // add_action( '', array( $e20rClient, 'save_gravityform_entry'), 10, 2 );
 
-            add_action( 'wp_ajax_e20r_addAssignment', array( &$e20rArticle, 'add_assignment_callback') );
-            add_action( 'wp_ajax_e20r_getDelayValue', array( &$e20rArticle, 'getDelayValue_callback' ) );
-	        add_action( 'wp_ajax_e20r_removeAssignment', array( &$e20rArticle, 'remove_assignment_callback') );
-            add_action( 'wp_ajax_e20r_add_reply', array( &$e20rAssignment, 'add_assignment_reply') );
-            add_action( 'wp_ajax_e20r_assignmentData', array( &$e20rAssignment, 'ajax_assignmentData' ) );
-            add_action( 'wp_ajax_e20r_manage_option_list', array( &$e20rAssignment, 'manage_option_list') );
-            add_action( 'wp_ajax_e20r_update_message_status', array( &$e20rAssignment, 'update_message_status') );
-            add_action( 'wp_ajax_e20r_daynav', array( &$e20rAction, 'nextCheckin_callback' ) );
-            add_action( 'wp_ajax_e20r_save_item_data', array( &$e20rAction, 'ajax_save_item_data' ) );
-            add_action( 'wp_ajax_e20r_saveCheckin', array( &$e20rAction, 'saveCheckin_callback' ) );
-	        add_action( 'wp_ajax_e20r_save_daily_progress', array( &$e20rAction, 'dailyProgress_callback' ) );
-            add_action( 'wp_ajax_e20r_clientDetail', array( &$e20rClient, 'ajax_clientDetail' ) );
-            add_action( 'wp_ajax_e20r_complianceData', array( &$e20rClient, 'ajax_complianceData' ) );
-            add_action( 'wp_ajax_e20r_getMemberListForLevel', array( &$e20rClient, 'ajax_getMemberlistForLevel' ) );
-            add_action( 'wp_ajax_e20r_sendClientMessage', array( &$e20rClient, 'ajax_sendClientMessage' ) );
-            add_action( 'wp_ajax_e20r_showClientMessage', array( &$e20rClient, 'ajax_showClientMessage' ) );
-            add_action( 'wp_ajax_e20r_showMessageHistory', array( &$e20rClient, 'ajax_ClientMessageHistory') );
-            add_action( 'wp_ajax_e20r_updateUnitTypes', array( &$e20rClient, 'updateUnitTypes') );
-            add_action( 'wp_ajax_e20r_userinfo', array( &$e20rClient, 'ajax_userInfo_callback' ) );
-            add_action( 'wp_ajax_e20r_checkCompletion', array( &$e20rMeasurements, 'checkProgressFormCompletion_callback' ) );
-            add_action( 'wp_ajax_e20r_deletePhoto', array( &$e20rMeasurements, 'ajax_deletePhoto_callback' ) );
-            add_action( 'wp_ajax_e20r_loadProgress', array( &$e20rMeasurements, 'ajax_loadProgressSummary' ) );
-            add_action( 'wp_ajax_e20r_measurementDataForUser', array( &$e20rMeasurements, 'ajax_getPlotDataForUser' ) );
-            add_action( 'wp_ajax_e20r_saveMeasurementForUser', array( &$e20rMeasurements, 'saveMeasurement_callback' ) );
-            add_action( 'wp_ajax_e20r_add_exercise', array( &$e20rWorkout, 'add_new_exercise_to_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( &$e20rWorkout, 'add_new_exercise_group_callback' ) );
-            add_action( 'wp_ajax_e20r_addWorkoutGroup', array( &$e20rWorkout, 'ajax_addGroup_callback' ) );
-            add_action( 'wp_ajax_e20r_load_activity_stats', array( &$e20rWorkout, 'ajax_getPlotDataForUser' ) );
-	        add_action( 'wp_ajax_e20r_save_activity', array( &$e20rWorkout, 'saveExData_callback' ) );
-			add_action( 'wp_ajax_e20r_paginate_assignment_answer_list', array( $e20rAssignment, 'ajax_paginateAssignments' ) );
-			add_action( 'wp_ajax_e20r_paginate_measurements_list', array( $e20rAssignment, 'ajax_paginateMeasurements' ) );
+            add_action( 'wp_ajax_e20r_addAssignment', array( e20rArticle::getInstance(), 'add_assignment_callback') );
+            add_action( 'wp_ajax_e20r_getDelayValue', array( e20rArticle::getInstance(), 'getDelayValue_callback' ) );
+	        add_action( 'wp_ajax_e20r_removeAssignment', array( e20rArticle::getInstance(), 'remove_assignment_callback') );
+            add_action( 'wp_ajax_e20r_add_reply', array( e20rAssignment::getInstance(), 'add_assignment_reply') );
+            add_action( 'wp_ajax_e20r_assignmentData', array( e20rAssignment::getInstance(), 'ajax_assignmentData' ) );
+            add_action( 'wp_ajax_e20r_manage_option_list', array( e20rAssignment::getInstance(), 'manage_option_list') );
+            add_action( 'wp_ajax_e20r_update_message_status', array( e20rAssignment::getInstance(), 'update_message_status') );
+            add_action( 'wp_ajax_e20r_daynav', array( e20rAction::getInstance(), 'nextCheckin_callback' ) );
+            add_action( 'wp_ajax_e20r_save_item_data', array( e20rAction::getInstance(), 'ajax_save_item_data' ) );
+            add_action( 'wp_ajax_e20r_saveCheckin', array( e20rAction::getInstance(), 'saveCheckin_callback' ) );
+	        add_action( 'wp_ajax_e20r_save_daily_progress', array( e20rAction::getInstance(), 'dailyProgress_callback' ) );
+            add_action( 'wp_ajax_e20r_clientDetail', array( e20rClient::getInstance(), 'ajax_clientDetail' ) );
+            add_action( 'wp_ajax_e20r_complianceData', array( e20rClient::getInstance(), 'ajax_complianceData' ) );
+            add_action( 'wp_ajax_e20r_getMemberListForLevel', array( e20rClient::getInstance(), 'ajax_getMemberlistForLevel' ) );
+            add_action( 'wp_ajax_e20r_sendClientMessage', array( e20rClient::getInstance(), 'ajax_sendClientMessage' ) );
+            add_action( 'wp_ajax_e20r_showClientMessage', array( e20rClient::getInstance(), 'ajax_showClientMessage' ) );
+            add_action( 'wp_ajax_e20r_showMessageHistory', array( e20rClient::getInstance(), 'ajax_ClientMessageHistory') );
+            add_action( 'wp_ajax_e20r_updateUnitTypes', array( e20rClient::getInstance(), 'updateUnitTypes') );
+            add_action( 'wp_ajax_e20r_userinfo', array( e20rClient::getInstance(), 'ajax_userInfo_callback' ) );
+            add_action( 'wp_ajax_e20r_checkCompletion', array( e20rMeasurements::getInstance(), 'checkProgressFormCompletion_callback' ) );
+            add_action( 'wp_ajax_e20r_deletePhoto', array( e20rMeasurements::getInstance(), 'ajax_deletePhoto_callback' ) );
+            add_action( 'wp_ajax_e20r_loadProgress', array( e20rMeasurements::getInstance(), 'ajax_loadProgressSummary' ) );
+            add_action( 'wp_ajax_e20r_measurementDataForUser', array( e20rMeasurements::getInstance(), 'ajax_getPlotDataForUser' ) );
+            add_action( 'wp_ajax_e20r_saveMeasurementForUser', array( e20rMeasurements::getInstance(), 'saveMeasurement_callback' ) );
+            add_action( 'wp_ajax_e20r_add_exercise', array( e20rWorkout::getInstance(), 'add_new_exercise_to_group_callback' ) );
+	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( e20rWorkout::getInstance(), 'add_new_exercise_group_callback' ) );
+            add_action( 'wp_ajax_e20r_addWorkoutGroup', array( e20rWorkout::getInstance(), 'ajax_addGroup_callback' ) );
+            add_action( 'wp_ajax_e20r_load_activity_stats', array( e20rWorkout::getInstance(), 'ajax_getPlotDataForUser' ) );
+	        add_action( 'wp_ajax_e20r_save_activity', array( e20rWorkout::getInstance(), 'saveExData_callback' ) );
+			add_action( 'wp_ajax_e20r_paginate_assignment_answer_list', array( e20rAssignment::getInstance(), 'ajax_paginateAssignments' ) );
+			add_action( 'wp_ajax_e20r_paginate_measurements_list', array( e20rAssignment::getInstance(), 'ajax_paginateMeasurements' ) );
 
             /* AJAX call-backs if user is unprivileged */
 
             if ( is_admin() ) {
-                add_action( 'save_post', array( &$this, 'save_girthtype_order' ), 10, 2 );
-                add_action( 'save_post', array( &$e20rProgram, 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( &$e20rExercise, 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( &$e20rWorkout, 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( &$e20rAction, 'saveSettings' ), 10, 20);
-                add_action( 'save_post', array( &$e20rArticle, 'saveSettings' ), 10, 20);
-                add_action( 'save_post', array( &$e20rAssignment, 'saveSettings' ), 10, 20);
 
-                add_action( 'post_updated', array( &$this, 'save_girthtype_order' ), 10, 2 );
-                add_action( 'post_updated', array( &$e20rProgram, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rExercise, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rWorkout, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rAction, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rArticle, 'saveSettings' ) );
-                add_action( 'post_updated', array( &$e20rAssignment, 'saveSettings' ) );
+                add_action( 'current_screen', array( $this, 'current_screen_hooks' ), 10 );
 
-                add_action( 'add_meta_boxes_e20r_articles', array( &$e20rArticle, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_assignments', array( &$e20rAssignment, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_programs', array( &$e20rProgram, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_exercises', array( &$e20rExercise, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_workout', array( &$e20rWorkout, 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_actions', array( &$e20rAction, 'editor_metabox_setup') );
+                add_action( 'save_post', array( $this, 'save_girthtype_order' ), 10, 2 );
+                add_action( 'save_post', array( e20rProgram::getInstance(), 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( e20rExercise::getInstance(), 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( e20rWorkout::getInstance(), 'saveSettings' ), 10, 2 );
+                add_action( 'save_post', array( e20rAction::getInstance(), 'saveSettings' ), 10, 20);
+                add_action( 'save_post', array( e20rArticle::getInstance(), 'saveSettings' ), 10, 20);
+                add_action( 'save_post', array( e20rAssignment::getInstance(), 'saveSettings' ), 10, 20);
 
-                add_action( 'admin_init', array( &$this, 'registerSettingsPage' ) );
+                add_action( 'post_updated', array( $this, 'save_girthtype_order' ), 10, 2 );
+                add_action( 'post_updated', array( e20rProgram::getInstance(), 'saveSettings' ) );
+                add_action( 'post_updated', array( e20rExercise::getInstance(), 'saveSettings' ) );
+                add_action( 'post_updated', array( e20rWorkout::getInstance(), 'saveSettings' ) );
+                add_action( 'post_updated', array( e20rAction::getInstance(), 'saveSettings' ) );
+                add_action( 'post_updated', array( e20rArticle::getInstance(), 'saveSettings' ) );
+                add_action( 'post_updated', array( e20rAssignment::getInstance(), 'saveSettings' ) );
 
-                add_action( 'admin_head', array( &$this, 'post_type_icon' ) );
-                add_action( 'admin_menu', array( &$this, 'loadAdminPage') );
-                add_action( 'admin_menu', array( &$this, 'registerAdminPages' ) );
-                add_action( 'admin_menu', array( &$this, "renderGirthTypesMetabox" ) );
+                add_action( 'add_meta_boxes_e20r_articles', array( e20rArticle::getInstance(), 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_assignments', array( e20rAssignment::getInstance(), 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_programs', array( e20rProgram::getInstance(), 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_exercises', array( e20rExercise::getInstance(), 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_workout', array( e20rWorkout::getInstance(), 'editor_metabox_setup') );
+                add_action( 'add_meta_boxes_e20r_actions', array( e20rAction::getInstance(), 'editor_metabox_setup') );
+
+                add_action( 'admin_init', array( $this, 'registerSettingsPage' ) );
+
+                add_action( 'admin_head', array( $this, 'post_type_icon' ) );
+                add_action( 'admin_menu', array( $this, 'loadAdminPage') );
+                add_action( 'admin_menu', array( $this, 'registerAdminPages' ) );
+                add_action( 'admin_menu', array( $this, "renderGirthTypesMetabox" ) );
 
                 /* Allow admin to set the program ID for the user in their profile(s) */
-                add_action( 'show_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
-                add_action( 'edit_user_profile', array( &$e20rProgram, 'selectProgramForUser' ) );
-                add_action( 'edit_user_profile_update', array( &$e20rProgram, 'updateProgramForUser') );
-                add_action( 'personal_options_update', array( &$e20rProgram, 'updateProgramForUser') );
+                add_action( 'show_user_profile', array( e20rProgram::getInstance(), 'selectProgramForUser' ) );
+                add_action( 'edit_user_profile', array( e20rProgram::getInstance(), 'selectProgramForUser' ) );
+                add_action( 'edit_user_profile_update', array( e20rProgram::getInstance(), 'updateProgramForUser') );
+                add_action( 'personal_options_update', array( e20rProgram::getInstance(), 'updateProgramForUser') );
 
-                add_action( 'show_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
-                add_action( 'edit_user_profile', array( &$e20rClient, 'selectRoleForUser' ) );
-                add_action( 'edit_user_profile_update', array( &$e20rClient, 'updateRoleForUser') );
-                add_action( 'personal_options_update', array( &$e20rClient, 'updateRoleForUser') );
-                add_filter( "plugin_action_links_$plugin", array( &$this, 'plugin_add_settings_link' ) );
+                add_action( 'show_user_profile', array( e20rClient::getInstance(), 'selectRoleForUser' ) );
+                add_action( 'edit_user_profile', array( e20rClient::getInstance(), 'selectRoleForUser' ) );
+                add_action( 'edit_user_profile_update', array( e20rClient::getInstance(), 'updateRoleForUser') );
+                add_action( 'personal_options_update', array( e20rClient::getInstance(), 'updateRoleForUser') );
+                add_filter( "plugin_action_links_$plugin", array( $this, 'plugin_add_settings_link' ) );
 
                 // Custom columns
-                add_filter( 'manage_edit-e20r_actions_columns', array( &$e20rAction, 'set_custom_edit_columns' ) );
-                add_filter( 'manage_edit-e20r_assignments_columns', array( &$e20rAssignment, 'set_custom_edit_columns' ) );
+                add_filter( 'manage_edit-e20r_actions_columns', array( e20rAction::getInstance(), 'set_custom_edit_columns' ) );
+                add_filter( 'manage_edit-e20r_assignments_columns', array( e20rAssignment::getInstance(), 'set_custom_edit_columns' ) );
 
-                add_action( 'manage_e20r_actions_posts_custom_column' , array( &$e20rAction, 'custom_column'), 10, 2 );
-                add_action( 'manage_e20r_assignments_posts_custom_column' , array( &$e20rAssignment, 'custom_column'), 10, 2 );
+                add_action( 'manage_e20r_actions_posts_custom_column' , array( e20rAction::getInstance(), 'custom_column'), 10, 2 );
+                add_action( 'manage_e20r_assignments_posts_custom_column' , array( e20rAssignment::getInstance(), 'custom_column'), 10, 2 );
 
-                add_filter( 'manage_edit-e20r_actions_sortable_columns', array( &$e20rAction, 'sortable_column' ) );
-                add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( &$e20rAssignment, 'sortable_column' ) );
+                add_filter( 'manage_edit-e20r_actions_sortable_columns', array( e20rAction::getInstance(), 'sortable_column' ) );
+                add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( e20rAssignment::getInstance(), 'sortable_column' ) );
 
-                add_filter( 'pre_get_posts', array(&$e20rAction, 'sort_column') );
-                add_filter( 'pre_get_posts', array(&$e20rAssignment, 'sort_column') );
-				add_filter( 'posts_orderby', array(&$e20rAssignment, 'order_by') );
+                add_filter( 'pre_get_posts', array(e20rAction::getInstance(), 'sort_column') );
+                add_filter( 'pre_get_posts', array(e20rAssignment::getInstance(), 'sort_column') );
+				add_filter( 'posts_orderby', array(e20rAssignment::getInstance(), 'order_by') );
 
-                // add_filter('manage_e20r_assignments_posts_columns', array( &$e20rAssignment, 'assignment_col_head' ) );
-                // add_action('manage_e20r_assignments_posts_custom_column', array( &$e20rAssignment, 'assignment_col_content' ), 10, 2);
+                // add_filter('manage_e20r_assignments_posts_columns', array( e20rAssignment::getInstance(), 'assignment_col_head' ) );
+                // add_action('manage_e20r_assignments_posts_custom_column', array( e20rAssignment::getInstance(), 'assignment_col_content' ), 10, 2);
 
-                add_filter('manage_e20r_exercises_posts_columns', array( &$e20rExercise, 'col_head' ) );
-                add_action('manage_e20r_exercises_posts_custom_column', array( &$e20rExercise, 'col_content' ), 10, 2);
+                add_filter('manage_e20r_exercises_posts_columns', array( e20rExercise::getInstance(), 'col_head' ) );
+                add_action('manage_e20r_exercises_posts_custom_column', array( e20rExercise::getInstance(), 'col_content' ), 10, 2);
 
             }
 
             dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
             /* Load scripts & CSS */
-            add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_admin_scripts') );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_weeklyProgress_shortcode' ) );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_measurementprogress_shortcode' ) );
-            add_action( 'wp_enqueue_scripts', array( &$this, 'has_dailyProgress_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_activity_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_exercise_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_profile_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_clientlist_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_summary_shortcode' ) );
-	        add_action( 'wp_enqueue_scripts', array( &$this, 'has_gravityforms_shortcode' ) );
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts') );
+            add_action( 'wp_enqueue_scripts', array( $this, 'has_weeklyProgress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( $this, 'has_measurementprogress_shortcode' ) );
+            add_action( 'wp_enqueue_scripts', array( $this, 'has_dailyProgress_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_activity_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_exercise_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_profile_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_clientlist_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_summary_shortcode' ) );
+	        add_action( 'wp_enqueue_scripts', array( $this, 'has_gravityforms_shortcode' ) );
 
             dbg("e20rTracker::loadAllHooks() - Loading Short Codes");
-            add_shortcode( 'weekly_progress', array( &$e20rMeasurements, 'shortcode_weeklyProgress' ) );
-            add_shortcode( 'progress_overview', array( &$e20rMeasurements, 'shortcode_progressOverview') );
-            add_shortcode( 'daily_progress', array( &$e20rAction, 'shortcode_dailyProgress' ) );
-	        add_shortcode( 'e20r_activity', array( &$e20rWorkout, 'shortcode_activity' ) );
-	        add_shortcode( 'e20r_activity_archive', array( &$e20rWorkout, 'shortcode_act_archive' ) );
-	        add_shortcode( 'e20r_exercise', array( &$e20rExercise, 'shortcode_exercise' ) );
-            add_shortcode( 'e20r_profile', array( &$e20rClient, 'shortcode_clientProfile' ) );
-            add_shortcode( 'e20r_client_overview', array( &$e20rClient, 'shortcode_clientList') );
-            add_shortcode( 'e20r_article_summary', array( &$e20rArticle, 'shortcode_article_summary') );
-            add_shortcode( 'e20r_article_archive', array( &$e20rArticle, 'article_archive_shortcode') );
+            add_shortcode( 'weekly_progress', array( e20rMeasurements::getInstance(), 'shortcode_weeklyProgress' ) );
+            add_shortcode( 'progress_overview', array( e20rMeasurements::getInstance(), 'shortcode_progressOverview') );
+            add_shortcode( 'daily_progress', array( e20rAction::getInstance(), 'shortcode_dailyProgress' ) );
+	        add_shortcode( 'e20r_activity', array( e20rWorkout::getInstance(), 'shortcode_activity' ) );
+	        add_shortcode( 'e20r_activity_archive', array( e20rWorkout::getInstance(), 'shortcode_act_archive' ) );
+	        add_shortcode( 'e20r_exercise', array( e20rExercise::getInstance(), 'shortcode_exercise' ) );
+            add_shortcode( 'e20r_profile', array( e20rClient::getInstance(), 'shortcode_clientProfile' ) );
+            add_shortcode( 'e20r_client_overview', array( e20rClient::getInstance(), 'shortcode_clientList') );
+            add_shortcode( 'e20r_article_summary', array( e20rArticle::getInstance(), 'shortcode_article_summary') );
+            add_shortcode( 'e20r_article_archive', array( e20rArticle::getInstance(), 'article_archive_shortcode') );
 
 	        /* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
-	        add_action( 'gform_after_submission', array( &$e20rClient, 'save_interview' ), 10, 2);
-	        add_filter( 'gform_pre_render', array( &$e20rClient, 'load_interview' ) );
-	        add_filter( 'gform_field_value', array( &$e20rClient, 'process_gf_fields'), 10, 3);
+	        add_action( 'gform_after_submission', array( e20rClient::getInstance(), 'save_interview' ), 10, 2);
+	        add_filter( 'gform_pre_render', array( e20rClient::getInstance(), 'load_interview' ) );
+	        add_filter( 'gform_field_value', array( e20rClient::getInstance(), 'process_gf_fields'), 10, 3);
 
-//	        add_action( 'gform_entry_post_save', array( &$e20rClient, 'save_interview'), 10, 2);
-//  	    add_filter( 'gform_pre_validation', array( &$e20rClient, 'load_interview' ) );
-//	        add_filter( 'gform_admin_pre_render', array( &$e20rClient, 'load_interview' ) );
-// 	        add_filter( 'gform_pre_submission_filter', array( &$e20rClient, 'load_interview' ) );
+//	        add_action( 'gform_entry_post_save', array( e20rClient::getInstance(), 'save_interview'), 10, 2);
+//  	    add_filter( 'gform_pre_validation', array( e20rClient::getInstance(), 'load_interview' ) );
+//	        add_filter( 'gform_admin_pre_render', array( e20rClient::getInstance(), 'load_interview' ) );
+// 	        add_filter( 'gform_pre_submission_filter', array( e20rClient::getInstance(), 'load_interview' ) );
 //	        add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
-//	        add_filter( 'wp_video_shortcode',  array( &$e20rExercise, 'responsive_wp_video_shortcode' ), 10, 5 );
+//	        add_filter( 'wp_video_shortcode',  array( e20rExercise::getInstance(), 'responsive_wp_video_shortcode' ), 10, 5 );
 
 
 	        dbg("e20rTracker::loadAllHooks() - Action hooks for plugin are loaded");
@@ -461,6 +470,27 @@ class e20rTracker {
         $this->hooksLoaded = true;
     }
 
+    /**
+      * Load duplicate links on Edit page
+      * @param  WP_Screen $screen
+      */
+    public function current_screen_hooks( $screen ) {
+
+        $edit_pages = array(
+            'edit-e20r_girth_types',
+            'edit-e20r_programs',
+            'edit-e20r_articles',
+            'edit-e20r_actions',
+            'edit-e20r_workout',
+            'edit-e20r_assignments',
+            'edit-e20r_exercises'
+        );
+
+        if ( in_array( $screen->id, $edit_pages ) ) {
+            add_filter( "post_row_actions", array( $this, 'duplicate_cpt_link'), 10, 2);
+            add_filter( "page_row_actions", array( $this, 'duplicate_cpt_link'), 10, 2);
+        }
+    }
     public function auth_timeout_reset() {
 
         global $current_user;
@@ -472,7 +502,7 @@ class e20rTracker {
 
             foreach( $_COOKIE as $cKey => $cookie ) {
 
-                if ( FALSE !== stripos( $cKey, "wordpress_logged_in_" ) ) {
+                if ( false !== stripos( $cKey, "wordpress_logged_in_" ) ) {
 
                     $cookie_arr = preg_split( "/\|/", $cookie);
 
@@ -511,7 +541,8 @@ class e20rTracker {
       * Define the default roles as they pertain to the user's exercise level experience (Beginner, Intermediate, Experienced)
       *
       * @param      array       $roles      Associative array of defined roles for user's exercise level(s)
-      * @return     array                   Associative array of defined roles for the user's exercise level(s).
+      *
+*@return     array                   Associative array of defined roles for the user's exercise level(s).
       *
       * @since 1.5.50 - Initially added
       */
@@ -520,7 +551,7 @@ class e20rTracker {
         return array(
             'coach'         =>  array( 
                                         'role' => 'e20r_coach',
-                                        'label' => __( "Coach", "e20rtracker"),
+                                        'label' => __( "Coach", "e20r-tracker"),
                                         'permissions' => array(
 											'read' => true,
 											'edit_users' => true,
@@ -529,7 +560,7 @@ class e20rTracker {
                                 ), 
             'beginner'      =>  array( 
                                         'role' => 'e20r_tracker_exp_1', 
-                                        'label' => __( "Exercise Level 1 (NE)", "e20rtracker"),
+                                        'label' => __( "Exercise Level 1 (NE)", "e20r-tracker"),
                                         'permissions' => array(
 											'read' => true,
                                             'upload_files' => true
@@ -537,7 +568,7 @@ class e20rTracker {
                                 ),
             'intermediate'  =>  array(
                                         'role' => 'e20r_tracker_exp_2',
-                                        'label' => __( "Exercise Level 2 (IN)", "e20rtracker"),
+                                        'label' => __( "Exercise Level 2 (IN)", "e20r-tracker"),
                                         'permissions' => array(
 											'read' => true,
                                             'upload_files' => true
@@ -545,7 +576,7 @@ class e20rTracker {
                                 ),
             'experienced'   =>  array(
                                         'role' => 'e20r_tracker_exp_3',
-                                        'label' => __( "Exercise Level 3 (EX)", "e20rtracker"),
+                                        'label' => __( "Exercise Level 3 (EX)", "e20r-tracker"),
                                         'permissions' => array(
 											'read' => true,
                                             'upload_files' => true
@@ -613,7 +644,7 @@ class e20rTracker {
 
     public function e20r_set_upload_dir( $param ) {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
         global $current_user;
         global $post;
 
@@ -846,7 +877,7 @@ class e20rTracker {
 
 	function plugin_add_settings_link( $links ) {
 
-		$settings_link = '<a href="options-general.php?page=e20r_tracker_opt_page">' . __( 'Settings', 'e20rtracker' ) . '</a>';
+		$settings_link = '<a href="options-general.php?page=e20r_tracker_opt_page">' . __( 'Settings', 'e20r-tracker' ) . '</a>';
 		array_push( $links, $settings_link );
 		return $links;
 	}
@@ -956,7 +987,7 @@ class e20rTracker {
             <div class="error">
             <?php if ( !class_exists('PMProSequence') && !class_exists("E20R\\Sequences\\Sequence\\Controller") ): ?>
                 <?php dbg("e20rTracker::Error -  The The Sequences plugin is not installed"); ?>
-                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20rtracker' ); ?></p>
+                <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20r-tracker' ); ?></p>
             <?php endif; ?>
             </div><?php
         }
@@ -1045,7 +1076,7 @@ class e20rTracker {
 
 	public function getUserKey( $userId = null ) {
 
-		global $e20rTracker;
+		$e20rTracker = e20rTracker::getInstance();
 		global $post;
 		global $current_user;
 
@@ -1245,11 +1276,11 @@ class e20rTracker {
 
         foreach ( $input as $key => $value ) {
 
-           if ( ( FALSE !== stripos( $key, 'converted_metadata' ) ) ||
-                ( FALSE !== stripos( $key, '_tables' ) ) ||
-                 ( FALSE !== stripos( $key, 'roles_' ) )) {
+           if ( ( false !== stripos( $key, 'converted_metadata' ) ) ||
+                ( false !== stripos( $key, '_tables' ) ) ||
+                 ( false !== stripos( $key, 'roles_' ) )) {
 
-                if ( FALSE !== stripos( $key, 'converted_metadata' ) ) {
+                if ( false !== stripos( $key, 'converted_metadata' ) ) {
 
                     $value = false;
                 }
@@ -1257,7 +1288,7 @@ class e20rTracker {
                     $value = $this->validate_bool( $value );
                 }
            }
-           elseif ( ( FALSE !== stripos( $key, 'unserialize_notice' ) ) ) {
+           elseif ( ( false !== stripos( $key, 'unserialize_notice' ) ) ) {
 
                 $value = $value;
            }
@@ -1265,11 +1296,11 @@ class e20rTracker {
                 $value = intval($value);
            }
 
-            if ( FALSE !== stripos( $key, 'e20r_db_version' ) ) {
+            if ( false !== stripos( $key, 'e20r_db_version' ) ) {
                 $value = E20R_DB_VERSION;
             }
 
-            if ( FALSE !== stripos( $key, 'run_unserialize') ) {
+            if ( false !== stripos( $key, 'run_unserialize') ) {
                 $value = E20R_RUN_UNSERIALIZE;
             }
 
@@ -1422,17 +1453,17 @@ class e20rTracker {
 
         dbg("e20rTracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
 
-        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20rtracker"), __( 'E20R Tracker','e20rtracker'), 'manage_options', 'e20r-tracker-info', array( &$e20rClient, 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        $e20rClientInfoPage = add_submenu_page( 'e20r-tracker-info', __( 'Client Info','e20rtracker'), __( "Coaching Page" ,'e20rtracker'), 'manage_options', 'e20r-client-info', array( &$e20rClient, 'render_client_page' ));
+        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20r-tracker"), __( 'E20R Tracker','e20r-tracker'), 'manage_options', 'e20r-tracker-info', array( e20rClient::getInstance(), 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
+        $e20rClientInfoPage = add_submenu_page( 'e20r-tracker-info', __( 'Client Info','e20r-tracker'), __( "Coaching Page" ,'e20r-tracker'), 'manage_options', 'e20r-client-info', array( e20rClient::getInstance(), 'render_client_page' ));
 
-        $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20rtracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
-        $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20rtracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
-        $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20rtracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
+        $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20r-tracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
+        $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20r-tracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
+        $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20r-tracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
     }
 
     public function renderGirthTypesMetabox() {
 
-        add_meta_box('e20r_tracker_girth_types_meta', __('Sort order for Girth Type', 'e20rtracker'), array(&$this, "build_girthTypesMeta"), 'e20r_girth_types', 'side', 'high');
+        add_meta_box('e20r_tracker_girth_types_meta', __('Sort order for Girth Type', 'e20r-tracker'), array(&$this, "build_girthTypesMeta"), 'e20r_girth_types', 'side', 'high');
     }
 
     public function build_girthTypesMeta( $object, $box ) {
@@ -1448,7 +1479,7 @@ class e20rTracker {
                 <div id="e20r-tracker-postmeta">
                     <?php dbg("Loading metabox for Girth Type postmeta"); ?>
                     <?php wp_nonce_field('e20r-tracker-post-meta', 'e20r-girth-type-sortorder-nonce'); ?>
-                    <label for="e20r-sort-order"><?php _e("Sort Order", "e20rtracker"); ?></label>
+                    <label for="e20r-sort-order"><?php _e("Sort Order", "e20r-tracker"); ?></label>
                     <input type="text" name="e20r_girth_order" id="e20r-sort-order" value="<?php echo $sortOrder; ?>">
                 </div>
             </div>
@@ -1601,8 +1632,8 @@ class e20rTracker {
 
     public function hasAccess( $userId, $postId ) {
 
-        global $e20rArticle;
-        global $e20rProgram;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $currentArticle;
 
@@ -1760,7 +1791,7 @@ class e20rTracker {
         global $current_user;
         global $wpdb;
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         if ( function_exists( 'pmpro_getMemberStartdate' ) ) {
@@ -1823,7 +1854,7 @@ class e20rTracker {
 
     public function isActiveClient( $clientId ) {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         $retVal = false;
@@ -1859,7 +1890,7 @@ class e20rTracker {
             wp_enqueue_style( "codetabs", E20R_PLUGINS_URL . "/css/codetabs/codetabs.css", false, E20R_VERSION );
             wp_enqueue_style( "code.animate", E20R_PLUGINS_URL . "/css/codetabs/code.animate.css", false, E20R_VERSION );
             wp_enqueue_style('jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
-            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", FALSE, E20R_VERSION);
+            wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", false, E20R_VERSION);
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
             wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
@@ -1912,16 +1943,16 @@ class e20rTracker {
         global $e20rAdminPage;
         global $e20rClientInfoPage;
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $post;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 
         if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
 
             global $e20r_plot_jscript, $e20rTracker;
-            global $e20rTracker;
+            $e20rTracker = e20rTracker::getInstance();
 
             $e20rTracker->load_adminJS();
 
@@ -1996,17 +2027,17 @@ class e20rTracker {
 				        'timeout' => 30000,
 				        'longpoll_timeout' => apply_filters('e20r-tracker-longpoll-timeout', 300000),
 				        'lang'    => array(
-					        'no_entry' => __( 'Please select', 'e20rtracker' ),
-					        'no_ex_entry' => __( 'Please select an exercise', 'e20rtracker' ),
-					        'adding' => __( 'Adding...', 'e20rtracker' ),
-					        'add'   => __( 'Add', 'e20rtracker' ),
-					        'saving' => __( 'Saving...', 'e20rtracker' ),
-					        'save'   => __( 'Save', 'e20rtracker' ),
-					        'edit'   => __( 'Update', 'e20rtracker' ),
-					        'remove' => __( 'Remove', 'e20rtracker' ),
-					        'empty'  => __( 'No exercises found.', 'e20rtracker' ),
-					        'none'   => __( 'None', 'e20rtracker' ),
-					        'no_exercises'  => __( 'No exercises found', 'e20rtracker' ),
+					        'no_entry' => __( 'Please select', 'e20r-tracker' ),
+					        'no_ex_entry' => __( 'Please select an exercise', 'e20r-tracker' ),
+					        'adding' => __( 'Adding...', 'e20r-tracker' ),
+					        'add'   => __( 'Add', 'e20r-tracker' ),
+					        'saving' => __( 'Saving...', 'e20r-tracker' ),
+					        'save'   => __( 'Save', 'e20r-tracker' ),
+					        'edit'   => __( 'Update', 'e20r-tracker' ),
+					        'remove' => __( 'Remove', 'e20r-tracker' ),
+					        'empty'  => __( 'No exercises found.', 'e20r-tracker' ),
+					        'none'   => __( 'None', 'e20r-tracker' ),
+					        'no_exercises'  => __( 'No exercises found', 'e20r-tracker' ),
 				        ),
 			        )
 		        );
@@ -2035,8 +2066,8 @@ class e20rTracker {
     public function has_measurementprogress_shortcode() {
 
         global $post;
-        global $e20rClient;
-        global $e20rProgram;
+        $e20rClient = e20rClient::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
         global $currentClient;
         global $e20r_plot_jscript;
 
@@ -2121,7 +2152,7 @@ class e20rTracker {
 		global $post;
 		global $pagenow;
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $current_user;
 
         if ( ! isset( $post->ID ) ) {
@@ -2151,7 +2182,7 @@ class e20rTracker {
         global $currentProgram;
         global $current_user;
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( ! isset( $post->ID ) ) {
             return;
@@ -2215,12 +2246,12 @@ class e20rTracker {
      */
     public function has_weeklyProgress_shortcode() {
 
-        global $e20rMeasurements;
-        global $e20rClient;
+        $e20rMeasurements = e20rMeasurements::getInstance();
+        $e20rClient = e20rClient::getInstance();
         global $e20rMeasurementDate;
-        global $e20rArticle;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $pagenow;
         global $post;
@@ -2454,7 +2485,7 @@ class e20rTracker {
         }
 
         global $e20r_plot_jscript;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         global $current_user;
         global $post;
@@ -2834,7 +2865,7 @@ class e20rTracker {
             if ( ( !empty( $script) ) && ( !empty($id) ) ) {
 
                 dbg("e20rTracker::load_frontendscripts() - localizing tag ({$script}) with name {$id}");
-                global $e20rClient;
+                $e20rClient = e20rClient::getInstance();
 
                 wp_localize_script( $script, $id,
                     array(
@@ -2998,7 +3029,8 @@ class e20rTracker {
      * Checks whether the provided user_id is allowed to publish_pages & publish_posts.
      *
      * @param $user_id - ID of user to check permissions for.
-     * @return bool -- True if the user is allowed to edi/update
+     *
+*@return bool -- True if the user is allowed to edi/update
      *
      */
     public function userCanEdit( $user_id ) {
@@ -3528,7 +3560,7 @@ class e20rTracker {
 
             $this->updateSetting( 'unserialize_notice', $errors );
 
-            global $e20rAssignment;
+            $e20rAssignment = e20rAssignment::getInstance();
             dbg("e20rTracker::activate() -- Updating assignment programs key to program_ids key. ");
             // $e20rAssignment->update_metadata();
         }
@@ -3612,7 +3644,7 @@ class e20rTracker {
             'programs',
             'e20r_program',
             array(
-                'label' => __( 'Programs', 'e20rtracker' ),
+                'label' => __( 'Programs', 'e20r-tracker' ),
                 'rewrite' => array( 'slug' => 'programs' ),
                 'public' => false,
                 'show_tagcloud' => false,
@@ -3629,19 +3661,19 @@ class e20rTracker {
     public function e20r_tracker_assignmentsCPT() {
 
         $labels =  array(
-            'name' => __( 'Assignments', 'e20rtracker'  ),
-            'singular_name' => __( 'Assignment', 'e20rtracker' ),
+            'name' => __( 'Assignments', 'e20r-tracker'  ),
+            'singular_name' => __( 'Assignment', 'e20r-tracker' ),
             'slug' => 'e20r_assignments',
-            'add_new' => __( 'New Assignment', 'e20rtracker' ),
-            'add_new_item' => __( 'New Assignment', 'e20rtracker' ),
-            'edit' => __( 'Edit assignments', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Assignment', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Assignments', 'e20rtracker' ),
-            'view_item' => __( 'View This Assignment', 'e20rtracker' ),
-            'search_items' => __( 'Search Assignments', 'e20rtracker' ),
-            'not_found' => __( 'No Assignments Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Assignment Found In Trash', 'e20rtracker' )
+            'add_new' => __( 'New Assignment', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Assignment', 'e20r-tracker' ),
+            'edit' => __( 'Edit assignments', 'e20r-tracker' ),
+            'edit_item' => __( 'Edit Assignment', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Assignments', 'e20r-tracker' ),
+            'view_item' => __( 'View This Assignment', 'e20r-tracker' ),
+            'search_items' => __( 'Search Assignments', 'e20r-tracker' ),
+            'not_found' => __( 'No Assignments Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Assignment Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_assignments',
@@ -3672,19 +3704,19 @@ class e20rTracker {
     public function e20r_tracker_programCPT() {
 
         $labels =  array(
-            'name' => __( 'Programs', 'e20rtracker'  ),
-            'singular_name' => __( 'Program', 'e20rtracker' ),
+            'name' => __( 'Programs', 'e20r-tracker'  ),
+            'singular_name' => __( 'Program', 'e20r-tracker' ),
             'slug' => 'e20r_programs',
-            'add_new' => __( 'New Program', 'e20rtracker' ),
-            'add_new_item' => __( 'New Program', 'e20rtracker' ),
-            'edit' => __( 'Edit program', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Program', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Programs', 'e20rtracker' ),
-            'view_item' => __( 'View This Program', 'e20rtracker' ),
-            'search_items' => __( 'Search Programs', 'e20rtracker' ),
-            'not_found' => __( 'No Programs Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Programs Found In Trash', 'e20rtracker' )
+            'add_new' => __( 'New Program', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Program', 'e20r-tracker' ),
+            'edit' => __( 'Edit program', 'e20r-tracker' ),
+            'edit_item' => __( 'Edit Program', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Programs', 'e20r-tracker' ),
+            'view_item' => __( 'View This Program', 'e20r-tracker' ),
+            'search_items' => __( 'Search Programs', 'e20r-tracker' ),
+            'not_found' => __( 'No Programs Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Programs Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_programs',
@@ -3715,19 +3747,19 @@ class e20rTracker {
     public function e20r_tracker_articleCPT() {
 
         $labels =  array(
-            'name' => __( 'Articles', 'e20rtracker'  ),
-            'singular_name' => __( 'Article', 'e20rtracker' ),
+            'name' => __( 'Articles', 'e20r-tracker'  ),
+            'singular_name' => __( 'Article', 'e20r-tracker' ),
             'slug' => 'e20r_articles',
-            'add_new' => __( 'New Article', 'e20rtracker' ),
-            'add_new_item' => __( 'New Tracker Article', 'e20rtracker' ),
+            'add_new' => __( 'New Article', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Tracker Article', 'e20r-tracker' ),
             'edit' => __( 'Edit Article', 'pmprosequence' ),
-            'edit_item' => __( 'Edit Tracker Article', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Articles', 'e20rtracker' ),
-            'view_item' => __( 'View This Article', 'e20rtracker' ),
-            'search_items' => __( 'Search Articles', 'e20rtracker' ),
-            'not_found' => __( 'No Articles Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Articles Found In Trash', 'e20rtracker' )
+            'edit_item' => __( 'Edit Tracker Article', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Articles', 'e20r-tracker' ),
+            'view_item' => __( 'View This Article', 'e20r-tracker' ),
+            'search_items' => __( 'Search Articles', 'e20r-tracker' ),
+            'not_found' => __( 'No Articles Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Articles Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_articles',
@@ -3758,19 +3790,19 @@ class e20rTracker {
     public function e20r_tracker_girthCPT() {
 
         $labels =  array(
-            'name' => __( 'Girth Types', 'e20rtracker'  ),
-            'singular_name' => __( 'Girth Type', 'e20rtracker' ),
+            'name' => __( 'Girth Types', 'e20r-tracker'  ),
+            'singular_name' => __( 'Girth Type', 'e20r-tracker' ),
             'slug' => 'e20r_girth_types',
-            'add_new' => __( 'New Girth Type', 'e20rtracker' ),
-            'add_new_item' => __( 'New Girth Type', 'e20rtracker' ),
+            'add_new' => __( 'New Girth Type', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Girth Type', 'e20r-tracker' ),
             'edit' => __( 'Edit Girth Type', 'pmprosequence' ),
-            'edit_item' => __( 'Edit Girth Type', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Girth Types', 'e20rtracker' ),
-            'view_item' => __( 'View This Girth Type', 'e20rtracker' ),
-            'search_items' => __( 'Search Girths', 'e20rtracker' ),
-            'not_found' => __( 'No Girth Types Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Girth Types Found In Trash', 'e20rtracker' )
+            'edit_item' => __( 'Edit Girth Type', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Girth Types', 'e20r-tracker' ),
+            'view_item' => __( 'View This Girth Type', 'e20r-tracker' ),
+            'search_items' => __( 'Search Girths', 'e20r-tracker' ),
+            'not_found' => __( 'No Girth Types Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Girth Types Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_girth_types',
@@ -3801,19 +3833,19 @@ class e20rTracker {
     public function e20r_tracker_exerciseCPT() {
 
         $labels =  array(
-            'name' => __( 'Exercises', 'e20rtracker'  ),
-            'singular_name' => __( 'Exercise', 'e20rtracker' ),
+            'name' => __( 'Exercises', 'e20r-tracker'  ),
+            'singular_name' => __( 'Exercise', 'e20r-tracker' ),
             'slug' => 'e20r_exercise',
-            'add_new' => __( 'New Exercise', 'e20rtracker' ),
-            'add_new_item' => __( 'New Exercise', 'e20rtracker' ),
-            'edit' => __( 'Edit Exercise', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Exercise', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Exercises', 'e20rtracker' ),
-            'view_item' => __( 'View This Exercise', 'e20rtracker' ),
-            'search_items' => __( 'Search Exercises', 'e20rtracker' ),
-            'not_found' => __( 'No Exercises Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Exercises Found In Trash', 'e20rtracker' )
+            'add_new' => __( 'New Exercise', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Exercise', 'e20r-tracker' ),
+            'edit' => __( 'Edit Exercise', 'e20r-tracker' ),
+            'edit_item' => __( 'Edit Exercise', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Exercises', 'e20r-tracker' ),
+            'view_item' => __( 'View This Exercise', 'e20r-tracker' ),
+            'search_items' => __( 'Search Exercises', 'e20r-tracker' ),
+            'not_found' => __( 'No Exercises Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Exercises Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_exercises',
@@ -3844,19 +3876,19 @@ class e20rTracker {
     public function e20r_tracker_activitiesCPT() {
 
         $labels =  array(
-            'name' => __( 'Activities', 'e20rtracker'  ),
-            'singular_name' => __( 'Activity', 'e20rtracker' ),
+            'name' => __( 'Activities', 'e20r-tracker'  ),
+            'singular_name' => __( 'Activity', 'e20r-tracker' ),
             'slug' => 'e20r_workout',
-            'add_new' => __( 'New Activity', 'e20rtracker' ),
-            'add_new_item' => __( 'New Activity', 'e20rtracker' ),
-            'edit' => __( 'Edit Activity', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Activity', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Activities', 'e20rtracker' ),
-            'view_item' => __( 'View This Activity', 'e20rtracker' ),
-            'search_items' => __( 'Search Activities', 'e20rtracker' ),
-            'not_found' => __( 'No Activities Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Activities Found In Trash', 'e20rtracker' )
+            'add_new' => __( 'New Activity', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Activity', 'e20r-tracker' ),
+            'edit' => __( 'Edit Activity', 'e20r-tracker' ),
+            'edit_item' => __( 'Edit Activity', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Activities', 'e20r-tracker' ),
+            'view_item' => __( 'View This Activity', 'e20r-tracker' ),
+            'search_items' => __( 'Search Activities', 'e20r-tracker' ),
+            'not_found' => __( 'No Activities Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Activities Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_workout',
@@ -3889,19 +3921,19 @@ class e20rTracker {
         $this->rename_action_cpt();
 
         $labels =  array(
-            'name' => __( 'Actions', 'e20rtracker'  ),
-            'singular_name' => __( 'Action', 'e20rtracker' ),
+            'name' => __( 'Actions', 'e20r-tracker'  ),
+            'singular_name' => __( 'Action', 'e20r-tracker' ),
             'slug' => 'e20r_actions',
-            'add_new' => __( 'New Action', 'e20rtracker' ),
-            'add_new_item' => __( 'New Action', 'e20rtracker' ),
-            'edit' => __( 'Edit Action', 'e20rtracker' ),
-            'edit_item' => __( 'Edit Action', 'e20rtracker'),
-            'new_item' => __( 'Add New', 'e20rtracker' ),
-            'view' => __( 'View Action', 'e20rtracker' ),
-            'view_item' => __( 'View This Actions', 'e20rtracker' ),
-            'search_items' => __( 'Search Actions', 'e20rtracker' ),
-            'not_found' => __( 'No Actions Found', 'e20rtracker' ),
-            'not_found_in_trash' => __( 'No Actions Found In Trash', 'e20rtracker' )
+            'add_new' => __( 'New Action', 'e20r-tracker' ),
+            'add_new_item' => __( 'New Action', 'e20r-tracker' ),
+            'edit' => __( 'Edit Action', 'e20r-tracker' ),
+            'edit_item' => __( 'Edit Action', 'e20r-tracker'),
+            'new_item' => __( 'Add New', 'e20r-tracker' ),
+            'view' => __( 'View Action', 'e20r-tracker' ),
+            'view_item' => __( 'View This Actions', 'e20r-tracker' ),
+            'search_items' => __( 'Search Actions', 'e20r-tracker' ),
+            'not_found' => __( 'No Actions Found', 'e20r-tracker' ),
+            'not_found_in_trash' => __( 'No Actions Found In Trash', 'e20r-tracker' )
         );
 
         $error = register_post_type('e20r_actions',
@@ -3970,7 +4002,7 @@ class e20rTracker {
 
         $trace =  "Called by {$caller['function']}()";
         if (isset($caller['class']))
-            $trace .= " in {$caller['class']}()";
+            {$trace .= " in {$caller['class']}()";}
 
         return $trace;
     }
@@ -4012,7 +4044,7 @@ class e20rTracker {
 
     public function getLevelIdForUser( $userId = null ) {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         $level_id = null;
 
@@ -4213,7 +4245,7 @@ class e20rTracker {
     public function getDateFromDelay( $rDelay = "now", $userId = null ) {
 
         global $current_user;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         if ( is_null( $userId ) ) {
@@ -4266,7 +4298,7 @@ class e20rTracker {
 
         dbg("e20rTracker::getDateForPost() - Loading function...");
         global $current_user;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( $userId  === null ) {
 
@@ -4504,7 +4536,8 @@ class e20rTracker {
      *
      * @param $startTS (timestamp) - timestamp value for start date
      * @param $endTS (timestamp) - timestamp value for end date
-     * @return int ( the # of days )
+     *
+*@return int ( the # of days )
      */
     public function daysBetween( $startTS, $endTS = null, $tz = 'UTC' ) {
 
@@ -4537,7 +4570,7 @@ class e20rTracker {
 
             // Invert the value
             if ( $dDiff->invert == 1 )
-                $days = 0 - $days;
+                {$days = 0 - $days;}
         }
         else {
 
@@ -4553,7 +4586,7 @@ class e20rTracker {
 
             // Sign flip if needed.
             if ( gmp_sign($dStartStr - $dEndStr) == -1)
-                $days = 0 - $days;
+                {$days = 0 - $days;}
         }
 
         // Correct the $days value because include the "to" day.
@@ -4615,11 +4648,11 @@ class e20rTracker {
 
             if ($a->{$fields[0]} == $b->{$fields[0]})
             {
-                if($a->{$fields[1]} == $b->{$fields[1]}) return 0 ;
+                if($a->{$fields[1]} == $b->{$fields[1]}) {return 0 ;}
                 return ($a->{$fields[1]} < $b->{$fields[1]}) ? -1 : 1;
             }
             else
-                return ($a->{$fields[0]} < $b->{$fields[0]}) ? -1 : 1;
+                {return ($a->{$fields[0]} < $b->{$fields[0]}) ? -1 : 1;}
         });
 
         return $data;
@@ -4627,7 +4660,8 @@ class e20rTracker {
 
     /**
      * @param $dayNo -- The day number (1 == Monday)
-     * @return string - The day name
+     *
+*@return string - The day name
      */
     public function displayWeekdayName( $dayNo ) {
 
@@ -4822,7 +4856,7 @@ class e20rTracker {
 
     private function getCPTInfo() {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $e20rTables = new e20rTables();
         $e20rTables->init();
@@ -4970,14 +5004,15 @@ class e20rTracker {
      *
      * @param $a -- Post to compare (including time variable)
      * @param $b -- Post to compare against (including time variable)
-     * @return int -- Return -1 if the Delay for post $a is greater than the delay for post $b
+     *
+*@return int -- Return -1 if the Delay for post $a is greater than the delay for post $b
      *
      * @access private
      */
     public function sort_descending( $a, $b )
     {
         if ($a->sent == $b->sent)
-            return 0;
+            {return 0;}
 
         // Descending Sort Order
         return ($a->sent > $b->sent) ? -1 : +1;
@@ -5003,7 +5038,7 @@ class e20rTracker {
 
             if ( file_exists( E20R_PLUGIN_DIR . $file ) ) {
 
-                if ( FALSE === unlink( E20R_PLUGIN_DIR . $file ) ) {
+                if ( false === unlink( E20R_PLUGIN_DIR . $file ) ) {
                     error_log("E20RTracker - Unable to remove requested file: {$file}");
                 }
                 else {

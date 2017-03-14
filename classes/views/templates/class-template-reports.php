@@ -18,7 +18,7 @@ class template_reports
         if (isset(self::$_this)) {
             wp_die(
                 sprintf(
-                    __("Please use the 'get_template_reports_class_instance' filter to access this class (%s)","e20rtracker"),
+                    __("Please use the 'get_template_reports_class_instance' filter to access this class (%s)","e20r-tracker"),
                     get_class($this)
                 )
             );

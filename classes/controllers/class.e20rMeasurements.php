@@ -16,13 +16,15 @@ class e20rMeasurements {
     protected $dates = null;
     protected $measurementDate = null;
 
+    private static $instance = null;
+
     public function __construct( $user_id = null ) {
 
-        global $e20rMeasurements;
-        global $e20rTracker;
+        // $e20rMeasurements = e20rMeasurements::getInstance();
+        // $e20rTracker = e20rTracker::getInstance();
 
         global $current_user;
-        global $currentClient;
+        // global $currentClient;
 
         $this->view = new e20rMeasurementViews();
         $this->model = new e20rMeasurementModel( $user_id );
@@ -32,17 +34,31 @@ class e20rMeasurements {
             $this->id = $current_user->ID;
         }
 
+        /*
         if ( $e20rTracker->isEmpty( $e20rMeasurements ) ) {
 
             dbg("e20rMeasurements::__construct() - Self-referencing for the e20rMeasurements global");
             $e20rMeasurements = $this;
         }
+        */
     }
+
+	/**
+	 * @return e20rMeasurements
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function init( $forDate = null, $user_id = 0 ) {
 
         global $e20rMeasurementDate;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( $user_id != 0 ) {
 
@@ -157,7 +173,7 @@ class e20rMeasurements {
     public function setFilenameForClientUpload( $file ) {
 
         global $current_user;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $pagenow;
         global $post;
 
@@ -389,8 +405,8 @@ class e20rMeasurements {
     public function ajax_deletePhoto_callback() {
 
         global $current_user;
-        global $e20rMeasurements;
-        global $e20rProgram;
+        $e20rMeasurements = e20rMeasurements::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         dbg('e20rMeasurements::ajax_deletePhoto_callback() - Deleting uploaded photo');
 
@@ -453,9 +469,9 @@ class e20rMeasurements {
     // TODO: This is the current / active AJAX option
     public function ajax_getPlotDataForUser() {
 
-        global $e20rTables;
-        global $e20rClient;
-        global $e20rProgram;
+        $e20rTables = e20rTables::getInstance();
+        $e20rClient = e20rClient::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $post;
 
@@ -531,14 +547,14 @@ class e20rMeasurements {
 
         global $currentClient;
 
-        global $e20rArticle;
-        global $e20rTracker;
-        global $e20rClient;
-	    global $e20rAction;
-	    global $e20rAssignment;
-	    global $e20rWorkout;
-        global $e20rProgram;
-        global $e20rTables;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rClient = e20rClient::getInstance();
+	    $e20rAction = e20rAction::getInstance();
+	    $e20rAssignment = e20rAssignment::getInstance();
+	    $e20rWorkout = e20rWorkout::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
 
@@ -620,10 +636,10 @@ class e20rMeasurements {
 
         dbg("e20rMeasurements::ajax_loadProgress() - Access approved");
 
-        global $e20rTracker;
-        global $e20rClient;
-        global $e20rTables;
-        global $e20rProgram;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rClient = e20rClient::getInstance();
+        $e20rTables = e20rTables::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         $userId = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : null );
         $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
@@ -662,10 +678,10 @@ class e20rMeasurements {
 
         global $e20r_plot_jscript;
         global $current_user;
-        global $e20rArticle;
-        global $e20rTracker;
-        global $e20rClient;
-        global $e20rProgram;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rClient = e20rClient::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $currentClient;
         global $currentArticle;
@@ -813,9 +829,9 @@ class e20rMeasurements {
 
     public function getMeasurement( $when = 'all', $forJS = false ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $current_user;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( ! isset( $this->id ) ) {
             dbg("e20rMeasurements::getMeasurement() - User ID hasn't been set yet.");
@@ -871,8 +887,8 @@ class e20rMeasurements {
 
     private function transformForJS( $records ) {
 
-        global $e20rClient;
-        global $e20rTables;
+        $e20rClient = e20rClient::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         global $currentClient;
 
@@ -924,12 +940,12 @@ class e20rMeasurements {
 
     private function load_EditProgress( $articleId = CONST_NULL_ARTICLE ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $current_user;
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rMeasurements;
-        global $e20rTables;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rMeasurements = e20rMeasurements::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         dbg("e20rMeasurements::load_EditProgress() - Date supplied is: {$this->measurementDate}. " . $e20rTracker->whoCalledMe() );
         $count = 1;
@@ -989,7 +1005,7 @@ class e20rMeasurements {
 
     public function generatePlotData( $data, $variable ) {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $fields = $e20rTables->getFields( 'measurements' );
         $data_matrix = array();
@@ -1029,8 +1045,8 @@ class e20rMeasurements {
      */
     public function saveMeasurement_callback() {
 
-        global $e20rAction;
-        global $e20rProgram;
+        $e20rAction = e20rAction::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         dbg("e20rMeasurements::saveMeasurement() - Checking access");
 
@@ -1146,7 +1162,7 @@ class e20rMeasurements {
 
         global $current_user;
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( !is_user_logged_in() ) {
             dbg("e20rMeasurements::checkProgressFormCompletion_callback() - User Isn't logged in! Redirect immediately");

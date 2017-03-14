@@ -17,6 +17,8 @@ class e20rWorkout extends e20rSettings
     protected $table;
     protected $fields;
 
+    private static $instance = null;
+
     public function __construct()
     {
 
@@ -28,11 +30,23 @@ class e20rWorkout extends e20rSettings
         parent::__construct('workout', 'e20r_workout', $this->model, $this->view);
     }
 
+	/**
+	 * @return e20rWorkout
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
     public function init($id = null)
     {
 
         global $currentWorkout;
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $this->table = $e20rTables->getTable('workout');
         $this->fields = $e20rTables->getFields('workout');
@@ -104,16 +118,16 @@ class e20rWorkout extends e20rSettings
 
         // $currentWorkout = $this->model->find( 'id', $post->ID );
 
-        add_meta_box('e20r-tracker-workout-settings', __('Activity Settings', 'e20rtracker'), array(&$this, "addMeta_WorkoutSettings"), 'e20r_workout', 'normal', 'core');
+        add_meta_box('e20r-tracker-workout-settings', __('Activity Settings', 'e20r-tracker'), array(&$this, "addMeta_WorkoutSettings"), 'e20r_workout', 'normal', 'core');
 
     }
 
     public function ajax_getPlotDataForUser()
     {
 
-        global $e20rProgram;
-        global $e20rClient;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rClient = e20rClient::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
 
@@ -128,7 +142,7 @@ class e20rWorkout extends e20rSettings
             $e20rProgram->getProgramIdForuser($user_id);
         } else {
             dbg("e20rWorkout::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$user_id}");
-            wp_send_json_error(__("Your membership level prevents you from accessing this data. Please upgrade.", "e20rtracker"));
+            wp_send_json_error(__("Your membership level prevents you from accessing this data. Please upgrade.", "e20r-tracker"));
             wp_die();
         }
 
@@ -177,7 +191,7 @@ class e20rWorkout extends e20rSettings
     public function generate_stats($data)
     {
 
-        // global $e20rTables;
+        // $e20rTables = e20rTables::getInstance();
         // $fields = $this->model->getField();
 
         // dbg($data);
@@ -205,8 +219,8 @@ class e20rWorkout extends e20rSettings
     {
 
         global $current_user;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
 
         $config = new stdClass();
@@ -255,7 +269,7 @@ class e20rWorkout extends e20rSettings
     {
 
         global $current_user;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if (!is_user_logged_in()) {
             wp_send_json_error('Please log in to access this service');
@@ -337,7 +351,7 @@ class e20rWorkout extends e20rSettings
 
         global $post;
         global $current_user;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ((!isset($post->post_type)) || ($post->post_type != 'e20r_workout')) {
 
@@ -443,9 +457,9 @@ class e20rWorkout extends e20rSettings
     public function getActivityArchive($userId, $programId, $period = E20R_CURRENT_WEEK)
     {
 
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         global $currentProgram;
 
@@ -715,9 +729,9 @@ class e20rWorkout extends e20rSettings
 
         global $current_user;
 
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
         global $currentArticle;
@@ -1150,8 +1164,8 @@ class e20rWorkout extends e20rSettings
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
-        global $e20rTracker;
-        global $e20rExercise;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rExercise = e20rExercise::getInstance();
 
         dbg("e20rWorkout::add_new_exercise_to_group_callback() - Received POST data:");
         dbg($_POST);
@@ -1180,7 +1194,7 @@ class e20rWorkout extends e20rSettings
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-workout-settings-nonce');
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rWorkout::add_new_exercise_group_callback() - Received POST data:");
         dbg($_POST);

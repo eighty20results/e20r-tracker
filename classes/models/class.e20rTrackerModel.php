@@ -2,9 +2,25 @@
 
 class e20rTrackerModel {
 
+	private static $instance = null;
+
+	/**
+	 * @return e20rTrackerModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
     public function loadUsers( $levels ) {
 
-        global $wpdb, $e20rTracker;
+        global $wpdb;
+
+        $e20rTracker = e20rTracker::getInstance();
 
         $sql = "
                 SELECT m.user_id AS id, u.display_name AS name, um.meta_value AS last_name

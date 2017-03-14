@@ -11,9 +11,23 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	private $assignments = null;
 
+	private static $instance = null;
+
 	public function __construct() {
 
 		parent::__construct( 'assignment', 'e20r_assignments' );
+	}
+
+	/**
+	 * @return e20rAssignmentView
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
 	}
 
 	public function setAssignment( $type, $config ) {
@@ -24,7 +38,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewSettingsBox( $assignmentData, $answerTypes ) {
 
-		global $e20rProgram;
+		$e20rProgram = e20rProgram::getInstance();
 
 		dbg( "e20rAssignmentView::viewSettingsBox() - Supplied data: " . print_r( $assignmentData, true ) );
 
@@ -84,7 +98,7 @@ class e20rAssignmentView extends e20rSettingsView {
 					<select class="select2-container" id="e20r-assignment-program_ids"
 					        name="e20r-assignment-program_ids" multiple="multiple">
 						<option
-							value="-1" <?php echo empty( $assignmentData->program_ids ) || in_array( - 1, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php _e( "No program defined", "e20rtracker" ); ?></option><?php
+							value="-1" <?php echo empty( $assignmentData->program_ids ) || in_array( - 1, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php _e( "No program defined", "e20r-tracker" ); ?></option><?php
 
 						foreach ( $pList as $p ) { ?>
 							<option value="<?php echo $p->id; ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( $p->title ); ?></option><?php
@@ -128,7 +142,7 @@ class e20rAssignmentView extends e20rSettingsView {
 				</label>
 			</th>
 			<th colspan="2" class="e20r-label header"><label
-					for="e20r-assignment-select_options"><?php _e( "Option", "e20rtracker" ); ?></label></th>
+					for="e20r-assignment-select_options"><?php _e( "Option", "e20r-tracker" ); ?></label></th>
 		</tr>
 		<tr>
 			<td colspan="3">
@@ -141,7 +155,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		if ( empty( $assignmentData->select_options ) ) { ?>
 			<tr class="assignment-select-options">
 			<td class="e20r-row-counter checkbox"></td>
-			<td colspan="2" class="e20r-row-value"><?php _e( "No options found", "e20rtracker" ); ?></td>
+			<td colspan="2" class="e20r-row-value"><?php _e( "No options found", "e20r-tracker" ); ?></td>
 			</tr><?php
 		}
 
@@ -177,15 +191,15 @@ class e20rAssignmentView extends e20rSettingsView {
 		<tr>
 			<td class="e20r-add-assignment-manage-options">
 				<button class="button button-secondary"
-				        id="e20r-add-assignment-delete-option"><?php _e( "Delete Option(s)", "e20rtracker" ); ?></button>
+				        id="e20r-add-assignment-delete-option"><?php _e( "Delete Option(s)", "e20r-tracker" ); ?></button>
 			</td>
 			<td class="e20r-add-assignment-manage-options">
 				<button class="button button-primary"
-				        id="e20r-add-assignment-save-option"><?php _e( "Add Option", "e20rtracker" ); ?></button>
+				        id="e20r-add-assignment-save-option"><?php _e( "Add Option", "e20r-tracker" ); ?></button>
 			</td>
 
 			<td class="e20r-add-assignment-manage-options">
-				<!-- <button class="button button-secondary" id="e20r-add-assignment-new-option"><?php _e( "New Option", "e20rtracker" ); ?></button> -->
+				<!-- <button class="button button-secondary" id="e20r-add-assignment-new-option"><?php _e( "New Option", "e20r-tracker" ); ?></button> -->
 			</td>
 		</tr>
 		</tfoot>
@@ -198,7 +212,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments, $answerDefs = null ) {
 
-		global $e20rAssignment;
+		$e20rAssignment = e20rAssignment::getInstance();
 		global $currentArticle;
 
 		$multi_select = false;
@@ -215,10 +229,10 @@ class e20rAssignmentView extends e20rSettingsView {
 		<table id="e20r-tracker-article-assignment-list" class="wp-list-table widefat fixed">
 			<thead>
 			<tr>
-				<th class="e20r-label header"><?php _e( "Order", "e20rtracker" ); ?></th>
-				<th class="e20r-label header" style="width: 30%;"><?php _e( "Assignment", "e20rtracker" ); ?></th>
-				<th class="e20r-label header" style="width: 30%;"><?php _e( "Answer Type", "e20rtracker" ); ?></th>
-				<th colspan="2" class="e20r-label header"><?php _e( "Operation", "e20rtracker" ); ?></th>
+				<th class="e20r-label header"><?php _e( "Order", "e20r-tracker" ); ?></th>
+				<th class="e20r-label header" style="width: 30%;"><?php _e( "Assignment", "e20r-tracker" ); ?></th>
+				<th class="e20r-label header" style="width: 30%;"><?php _e( "Answer Type", "e20r-tracker" ); ?></th>
+				<th colspan="2" class="e20r-label header"><?php _e( "Operation", "e20r-tracker" ); ?></th>
 			</tr>
 			</thead>
 			<tbody class="e20r-settings-list-tbody">
@@ -256,11 +270,11 @@ class e20rAssignmentView extends e20rSettingsView {
 				</td>
 				<td class="e20r-assignment-buttons">
 					<a class="e20r-assignment-edit"
-					   href="javascript:e20r_assignmentEdit(<?php echo $a->question_id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e( "Edit", "e20rtracker" ); ?></a>
+					   href="javascript:e20r_assignmentEdit(<?php echo $a->question_id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e( "Edit", "e20r-tracker" ); ?></a>
 				</td>
 				<td class="e20r-assignment-buttons">
 					<a class="e20r-assignment-remove"
-					   href="javascript:e20r_assignmentRemove(<?php echo $a->question_id; ?>); void(0);"><?php _e( "Remove", "e20rtracker" ); ?></a>
+					   href="javascript:e20r_assignmentRemove(<?php echo $a->question_id; ?>); void(0);"><?php _e( "Remove", "e20r-tracker" ); ?></a>
 					<input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]"
 					       value="<?php echo $a->question_id ?>"/>
 					<input type="hidden" class="e20r-article-assignment_ids" name="e20r-article-assignment_ids[]"
@@ -271,14 +285,14 @@ class e20rAssignmentView extends e20rSettingsView {
 			</tbody>
 		</table>
 		<div id="postcustomstuff">
-			<p><strong><?php _e( 'Add/Edit Assignments:', 'e20rtracker' ); ?></strong></p>
+			<p><strong><?php _e( 'Add/Edit Assignments:', 'e20r-tracker' ); ?></strong></p>
 			<table id="new-assignments">
 				<thead>
 				<tr>
 					<th id="new-assigment-header-order"><label
-							for="e20r-add-assignment-order_num"><?php _e( 'Order', 'e20rtracker' ); ?></label></th>
+							for="e20r-add-assignment-order_num"><?php _e( 'Order', 'e20r-tracker' ); ?></label></th>
 					<th id="new-assignment-header-id"><label
-							for="e20r-add-assignment-id"><?php _e( 'Select assignment', 'e20rtracker' ); ?></label></th>
+							for="e20r-add-assignment-id"><?php _e( 'Select assignment', 'e20r-tracker' ); ?></label></th>
 					<th></th>
 				</tr>
 				</thead>
@@ -311,7 +325,7 @@ class e20rAssignmentView extends e20rSettingsView {
 					<td>
 						<button style="width: 100%; padding: 5px; vertical-align: baseline;" class="e20r-button"
 						        id="e20r-article-assignment-save"
-						        onclick="javascript:e20r_assignmentSave(); return false;"> <?php _e( 'Add', 'e20rtracker' ); ?> </button>
+						        onclick="javascript:e20r_assignmentSave(); return false;"> <?php _e( 'Add', 'e20r-tracker' ); ?> </button>
 					</td>
 				</tr>
 				</tbody>
@@ -337,7 +351,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		?>
 		<hr class="e20r-assignment-separator"/>
-		<h2 class="e20r-daily-assignment-headline"><?php _e( "Your Daily Assignment", "e20rtracker" ); ?></h2>
+		<h2 class="e20r-daily-assignment-headline"><?php _e( "Your Daily Assignment", "e20r-tracker" ); ?></h2>
 		<div id="e20r-article-assignment">
 			<form id="e20r-assignment-answers">
 				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' ); ?>
@@ -415,7 +429,7 @@ class e20rAssignmentView extends e20rSettingsView {
 					else { ?>
 					<div id="e20r-assignment-save-btn" style="display:none;"><?php
 						} ?>
-						<button id="e20r-assignment-save" class="e20r-button"><?php _e( "Save Answers", 'e20rtracker' ); ?></button>
+						<button id="e20r-assignment-save" class="e20r-button"><?php _e( "Save Answers", 'e20r-tracker' ); ?></button>
 					</div><?php
 					}
 
@@ -476,7 +490,7 @@ class e20rAssignmentView extends e20rSettingsView {
             if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
                 <div class="e20r-assignment-descr">
                     <?php echo wp_autop( $assignment->descr ); ?>
-                    <p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20rtracker" ); ?></p>
+                    <p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20r-tracker" ); ?></p>
                 </div><?php
             } ?>
             <select class="select2-container e20r-select2-assignment-options e20r-assignment-response" name="e20r-multiplechoice_answer[]" multiple="multiple"><?php
@@ -488,7 +502,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
                 if ( empty( $assignment->answer ) || ( - 1 == $assignment->answer[0] ) ) { ?>
 
-                    <option value="-1"><?php _e( "Not applicable", "e20rtracker" ); ?></option><?php
+                    <option value="-1"><?php _e( "Not applicable", "e20r-tracker" ); ?></option><?php
                 }
 
                 foreach ( $assignment->select_options as $option_id => $option_text ) {
@@ -554,8 +568,8 @@ class e20rAssignmentView extends e20rSettingsView {
             <table class="e20r-assignment-ranking-question">
                 <tbody>
                 <tr>
-                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "Yes", "e20rtracker" ); ?></td>
-                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "No", "e20rtracker" ); ?></td>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "Yes", "e20r-tracker" ); ?></td>
+                    <td class="e20r-assignment-ranking-question-choice-label"><?php _e( "No", "e20r-tracker" ); ?></td>
                 </tr>
                 <tr>
                     <td class="e20r-assignment-ranking-question-choice e20r-yes-checkbox">
@@ -584,7 +598,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
 				<div class="e20r-assignment-descr"><?php echo wpautop( $assignment->descr ); ?></div><?php
 			} ?>
-			<input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="<?php _e( "Type your response, and after responding to all assignments, click 'Save Answers', please...", "e20rtracker" ); ?>" value="<?php echo stripslashes( $assignment->answer ); ?>" />
+			<input type="text" class="e20r-assignment-response" name="e20r-assignment-answer[]" placeholder="<?php _e( "Type your response, and after responding to all assignments, click 'Save Answers', please...", "e20r-tracker" ); ?>" value="<?php echo stripslashes( $assignment->answer ); ?>" />
 		</div>
 		<?php
 		return ob_get_clean();
@@ -606,7 +620,7 @@ class e20rAssignmentView extends e20rSettingsView {
 				<div class="e20r-assignment-descr"><?php echo wpautop( $assignment->descr ); ?></div><?php
 			} ?>
 			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80"
-			          placeholder="<?php _e( "Type your response, and after responding to all assignments, click 'Save Answers', please...", "e20rtracker" ); ?>"><?php
+			          placeholder="<?php _e( "Type your response, and after responding to all assignments, click 'Save Answers', please...", "e20r-tracker" ); ?>"><?php
 				if ( ! empty( $assignment->answer ) ) {
 					dbg( "e20rAssignmentView::showAssignmentParagraph() - Loading actual answer..." );
 					echo trim( stripslashes( $assignment->answer ) );
@@ -630,7 +644,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		<input type="hidden" value="0" name="e20r-assignment-field_type[]" class="e20r-assignment-field_type"/>
 		<div class="e20r-lesson-highlight <?php echo( $isComplete ? 'lesson-completed startHidden' : null ); ?>">
 			<button id="e20r-lesson-complete"
-			        class="e20r-button assignment-btn"><?php _e( "I have read this", "e20rtracker" ); ?></button>
+			        class="e20r-button assignment-btn"><?php _e( "I have read this", "e20r-tracker" ); ?></button>
 		</div>
 		<?php
 		/*		if ( isset( $article->completed ) && ( $article->complete == true ) ) { ?>
@@ -670,9 +684,9 @@ class e20rAssignmentView extends e20rSettingsView {
 	public function viewAssignmentList( $config, $answers ) {
 
 		global $current_user;
-		global $e20rTracker;
-		global $e20rArticle;
-		global $e20rClient;
+		$e20rTracker = e20rTracker::getInstance();
+		$e20rArticle = e20rArticle::getInstance();
+		$e20rClient = e20rClient::getInstance();
 
 		$add_message = false;
 		$is_coach    = $e20rTracker->is_a_coach( $current_user->ID );
@@ -709,7 +723,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			$config->userId;
 
 			error_log("Current page: {$current_page}");
-			// $translated = __( "Page", "e20rtracker" );
+			// $translated = __( "Page", "e20r-tracker" );
 			$translated = ''; ?>
 
 
@@ -744,7 +758,7 @@ class e20rAssignmentView extends e20rSettingsView {
         */
 		?>
 		<div id="e20r-assignment_answer_list" class="e20r-measurements-container">
-			<h4><?php _e( "Assignments", "e20rtracker" ) ?></h4>
+			<h4><?php _e( "Assignments", "e20r-tracker" ) ?></h4>
 			<a class="close" href="#">X</a>
 			<div class="quick-nav other">
 				<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-assignment-nonce' ); ?>
@@ -930,13 +944,13 @@ class e20rAssignmentView extends e20rSettingsView {
 														// Remove trailing comma and whitespace.
 														$info = preg_replace( "/,\s$/", '', $info );
 													} elseif ( 5 == $answer->field_type ) {
-														$info = sprintf( __( "On a scale from 1 to 10: <strong>%s</strong>", "e20rtracker" ), ( empty( $answer->answer ) ? __( "No response recorded", "e20rtracker" ) : $answer->answer ) );
+														$info = sprintf( __( "On a scale from 1 to 10: <strong>%s</strong>", "e20r-tracker" ), ( empty( $answer->answer ) ? __( "No response recorded", "e20r-tracker" ) : $answer->answer ) );
 													} else {
 														$info = $answer->answer;
 													}
 
 
-													echo empty( $info ) ? __( "No response recorded", "e20rtracker" ) : stripslashes( $info ); ?>
+													echo empty( $info ) ? __( "No response recorded", "e20r-tracker" ) : stripslashes( $info ); ?>
 												</div>
 											</td>
 										</tr>
@@ -953,20 +967,20 @@ class e20rAssignmentView extends e20rSettingsView {
 											switch ( $button_status ) {
 												case 0:
 												case 2:
-													$button_text = __( "Respond", "e20rtracker" );
+													$button_text = __( "Respond", "e20r-tracker" );
 													break;
 
 												case 1:
 												case 3:
-													$button_text = sprintf( __( "Total: %d", "e20rtracker" ), count( $answer->messages ) );
+													$button_text = sprintf( __( "Total: %d", "e20r-tracker" ), count( $answer->messages ) );
 													break;
 
 												case 4:
-													$button_text = __( "Reply", "e20rtracker" );
+													$button_text = __( "Reply", "e20r-tracker" );
 													break;
 
 												case 5:
-													$button_text = __( "Review", "e20rtracker" );
+													$button_text = __( "Review", "e20r-tracker" );
 													break;
 
 												default:
@@ -1018,13 +1032,13 @@ class e20rAssignmentView extends e20rSettingsView {
 											<?php echo $this->message_history( $answer->messages, $recipient_id, $answer->article_ids ); ?>
 										</div>
 										<div class="e20r-message-reply">
-											<h3 class="e20r-message-reply-header"><?php _e( "Write a reply", "e20rtracker" ); ?></h3>
+											<h3 class="e20r-message-reply-header"><?php _e( "Write a reply", "e20r-tracker" ); ?></h3>
 											<div class="e20r-message-status-text startHidden"></div>
 											<textarea class="e20r-assignment-reply_area"
 											          name="e20r-assignment-message[]"></textarea>
 										</div>
 										<button
-											class="button secondary e20r-assignment-reply-button"><?php _e( "Send", "e20rtracker" ); ?></button><?php
+											class="button secondary e20r-assignment-reply-button"><?php _e( "Send", "e20r-tracker" ); ?></button><?php
 										//                                    } ?>
 										</div><?php
 									} ?>
@@ -1038,7 +1052,7 @@ class e20rAssignmentView extends e20rSettingsView {
 						}
 					} else { ?>
 						<tr>
-							<td colspan="3"><?php _e( "No assignments or answers found.", "e20rtracker" ); ?></td>
+							<td colspan="3"><?php _e( "No assignments or answers found.", "e20r-tracker" ); ?></td>
 						</tr>
 					<?php } ?>
 					</tbody>
@@ -1056,7 +1070,7 @@ class e20rAssignmentView extends e20rSettingsView {
 					$config->userId;
 
 					error_log("Current page: {$current_page}");
-					// $translated = __( "Page", "e20rtracker" );
+					// $translated = __( "Page", "e20r-tracker" );
                     $translated = ''; ?>
 
 
@@ -1100,8 +1114,8 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function message_history( $history, $user_id, $assignment_id ) {
 
-		global $e20rTables;
-		global $e20rTracker;
+		$e20rTables = e20rTables::getInstance();
+		$e20rTracker = e20rTracker::getInstance();
 
 		global $current_user;
 
@@ -1126,7 +1140,7 @@ class e20rAssignmentView extends e20rSettingsView {
 				if ( $r->message_sender_id == $current_user->ID ) {
 
 					$from_me = true;
-					$from    = __( "me", "e20rtracker" );
+					$from    = __( "me", "e20r-tracker" );
 
 				} else {
 
@@ -1168,7 +1182,7 @@ class e20rAssignmentView extends e20rSettingsView {
 							       value="<?php echo esc_attr( $r->message_sender_id ); ?>">
 							<input type="hidden" name="e20r-message-timestamp[]"
 							       value="<?php echo esc_attr( $r->message_time ); ?>">
-							<?php echo sprintf( __( "From %s on %s", "e20rtracker" ), esc_attr( $from ), esc_attr( date( get_option( 'date_format' ), strtotime( $r->message_time ) ) ) ); ?>
+							<?php echo sprintf( __( "From %s on %s", "e20r-tracker" ), esc_attr( $from ), esc_attr( date( get_option( 'date_format' ), strtotime( $r->message_time ) ) ) ); ?>
 						</div>
 						<div class="e20r-message-history-message-body">
 							<?php echo stripslashes( $r->message ); ?>
@@ -1176,7 +1190,7 @@ class e20rAssignmentView extends e20rSettingsView {
 						if ( ( false === $from_me ) && ( false === $is_archived ) ) { ?>
 							<div class="e20r-message-ack">
 							<button
-								class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20rtracker" ); ?></button>
+								class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20r-tracker" ); ?></button>
 							</div><?php
 						} ?>
 					</div>
@@ -1205,7 +1219,7 @@ class e20rAssignmentView extends e20rSettingsView {
 												<input type="hidden" class="e20r-message-id-hidden" name="e20r-message-id[]" value="<?php echo esc_attr($r->response_id); ?>">
 												<input type="hidden" name="e20r-message-sent-by-hidden[]" value="<?php echo esc_attr($r->message_sender_id); ?>">
 												<input type="hidden" name="e20r-message-timestamp[]" value="<?php echo esc_attr($r->message_time); ?>">
-												<?php echo sprintf(__("From %s on %s", "e20rtracker"), esc_attr($user->display_name), esc_attr($r->message_time)); ?>
+												<?php echo sprintf(__("From %s on %s", "e20r-tracker"), esc_attr($user->display_name), esc_attr($r->message_time)); ?>
 											</div>
 											<div class="e20r-message-history-message-body">
 												<?php echo stripslashes($r->message); ?>
@@ -1214,7 +1228,7 @@ class e20rAssignmentView extends e20rSettingsView {
 									if ( ( false === $is_read ) && ( false == $from_me ) ) {
 										dbg("e20rAssignmentView::message_history() - Adding Archive (button)"); ?>
 											<div class="e20r-message-ack">
-												<button class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20rtracker"); ?></button>
+												<button class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20r-tracker"); ?></button>
 											</div><?php
 									}
 

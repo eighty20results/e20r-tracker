@@ -19,11 +19,12 @@ class e20rMeasurementModel {
     private $table = array();
     private $fields = array();
 
+    private static $instance = null;
+
     public function __construct( $user_id = null ) {
 
         global $wpdb;
-        global $e20rTables;
-        global $e20rProgram;
+        $e20rTables = e20rTables::getInstance();
 
         global $current_user;
 
@@ -43,6 +44,18 @@ class e20rMeasurementModel {
         $this->table = $e20rTables->getTable( 'measurements' );
         $this->fields = $e20rTables->getFields( 'measurements' );
     }
+
+	/**
+	 * @return e20rMeasurementModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function checkCompletion( $articleId, $programId, $user_id, $date ) {
 
@@ -193,8 +206,8 @@ class e20rMeasurementModel {
 
     public function setUser( $userId ) {
 
-        global $e20rProgram;
-        global $e20rTables;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         $this->client_id = $userId;
         $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
@@ -234,9 +247,9 @@ class e20rMeasurementModel {
     public function saveRecord( $rec, $user_id, $date ) {
 
         global $wpdb;
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rClient;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rClient = e20rClient::getInstance();
 
         if (! is_array( $rec ) ) {
 
@@ -277,7 +290,7 @@ class e20rMeasurementModel {
 
     public function setFreshClientData() {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         // Make sure new data is accurately reflected to user(s).
         delete_transient("e20r_byDate_client_measurements_{$this->client_id}");
@@ -347,8 +360,8 @@ class e20rMeasurementModel {
      */
     public function saveField( $form_key, $value, $articleID, $programId, $when, $user_id ) {
 
-        global $e20rClient;
-        global $e20rTracker;
+        $e20rClient = e20rClient::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( $this->client_id == 0 ) {
 
@@ -486,7 +499,7 @@ class e20rMeasurementModel {
 
     private function loadByDate( $when ) {
 
-	    global $e20rTracker;
+	    $e20rTracker = e20rTracker::getInstance();
 	    global $e20rMeasurementDate;
 
 	    if ( false === ( $this->all = get_transient( "e20r_datelist_client_measurements_{$this->client_id}" ) ) ) {
@@ -654,7 +667,7 @@ class e20rMeasurementModel {
 
         dbg("MeasurementsModel_loadNullMeasurement() - Loading empty measurement info");
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         $fields = $e20rTables->getFields('measurements');
 

@@ -16,6 +16,8 @@ class e20rAssignment extends e20rSettings {
     protected $model;
     protected $view;
 
+    private static $instance = null;
+
     public function __construct() {
 
         dbg("e20rAssignment::__construct() - Initializing Assignment class");
@@ -25,6 +27,18 @@ class e20rAssignment extends e20rSettings {
 
         parent::__construct( 'assignments', 'e20r_assignment', $this->model, $this->view );
     }
+
+	/**
+	 * @return e20rAssignment
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function createDefaultAssignment( $article ) {
 
@@ -110,7 +124,7 @@ class e20rAssignment extends e20rSettings {
 
 	public function load_userAssignment( $articleID, $assignmentId, $userId = null ) {
 
-		global $e20rArticle;
+		$e20rArticle = e20rArticle::getInstance();
 		global $currentArticle;
 
 		if ( is_null( $currentArticle ) || ( $currentArticle->id != $articleID ) ) {
@@ -127,12 +141,12 @@ class e20rAssignment extends e20rSettings {
 
     public function findAssignmentItemId( $articleId ) {
 
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
     }
 
     public function manage_option_list() {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rAssignment::manage_option_list() - Checking ajax referrer privileges");
         check_ajax_referer('e20r-assignment-data', 'e20r-tracker-assignment-settings-nonce');
@@ -246,7 +260,7 @@ class e20rAssignment extends e20rSettings {
     public function configureArticleMetabox( $articleId, $ajax = false ) {
 
         dbg("e20rAssignment::configureArticleMetabox() - For article {$articleId}");
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
 
         $assignments = array();
 
@@ -262,7 +276,7 @@ class e20rAssignment extends e20rSettings {
 
             $assignments[0] = $this->model->defaultSettings();
             $assignments[0]->order_num = 1;
-            $assignments[0]->question = __( "Lesson complete (default)", 'e20rtracker' );
+            $assignments[0]->question = __( "Lesson complete (default)", 'e20r-tracker' );
             $assignments[0]->field_type = 0; // "Lesson complete" button.
         }
 
@@ -289,8 +303,8 @@ class e20rAssignment extends e20rSettings {
 
     public function update_message_status() {
 
-        global $e20rTracker;
-        global $e20rTables;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         check_ajax_referer('e20r-tracker-data', 'e20r-assignment-nonce');
 
@@ -333,7 +347,7 @@ class e20rAssignment extends e20rSettings {
                     wp_send_json_error(
                         array(
                             'message' =>
-                                sprintf( __("Error: Unable to update the status for message: (#%s}).", "e20rtracker"), $message_id )
+                                sprintf( __("Error: Unable to update the status for message: (#%s}).", "e20r-tracker"), $message_id )
                         )
                     );
                 }
@@ -346,7 +360,7 @@ class e20rAssignment extends e20rSettings {
 
     public function add_assignment_reply() {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $current_user;
 
         check_ajax_referer('e20r-tracker-data', 'e20r-assignment-nonce');
@@ -372,7 +386,7 @@ class e20rAssignment extends e20rSettings {
         if ( is_null($data['assignment_id']) || is_null($data['article_id']) || is_null( $data['program_id']) || is_null($data['message_time']) || is_null( $data['message']) ) {
 
             dbg("e20rAssignment::add_assignment_reply() - ERROR: Missing data from front-end!!");
-            wp_send_json_error( array('message' => sprintf( __( "Error: Unable to save assignment reply for assignment ID %d and user ID %d", "e20rtracker"), $data['assignment_id'], $data['user_id'] ) ) );
+            wp_send_json_error( array('message' => sprintf( __( "Error: Unable to save assignment reply for assignment ID %d and user ID %d", "e20r-tracker"), $data['assignment_id'], $data['user_id'] ) ) );
         }
 
         // $am_coach = $e20rTracker->is_a_coach($current_user->ID);
@@ -384,12 +398,12 @@ class e20rAssignment extends e20rSettings {
         if ( empty( $existing_assignment ) ) {
 
             dbg("e20rAssignment::add_assignment_reply() - ERROR: No previously existing assignment found, so shouldn't have been possible!");
-            wp_send_json_error( array('message' => __( "Error: No assignment found to reply to!", "e20rtracker")));
+            wp_send_json_error( array('message' => __( "Error: No assignment found to reply to!", "e20r-tracker")));
         }
 
         if ( count( $existing_assignment) > 1) {
             dbg("e20rAssignment::add_assignment_reply() - ERROR: More than a single assignment record found for user/assignment");
-            wp_send_json_error( array('message' => sprintf( __( "Error: Multiple (%d) assignments found for %d reply for assignment ID %d and user %d", "e20rtracker" ), count($existing_assignment), $data['assignment_id'], $data['user_id']) ) );
+            wp_send_json_error( array('message' => sprintf( __( "Error: Multiple (%d) assignments found for %d reply for assignment ID %d and user %d", "e20r-tracker" ), count($existing_assignment), $data['assignment_id'], $data['user_id']) ) );
 
         }
 
@@ -404,7 +418,7 @@ class e20rAssignment extends e20rSettings {
 
         if ( false === $this->model->save_response( $data ) ) {
 
-            wp_send_json_error( array('message' => __( "Error: Unable to save response, or update assignment information", "e20rtracker") ) );
+            wp_send_json_error( array('message' => __( "Error: Unable to save response, or update assignment information", "e20r-tracker") ) );
         }
 
         $history = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
@@ -423,8 +437,8 @@ class e20rAssignment extends e20rSettings {
             $client_assignment_lnk = admin_url( "admin.php?page=e20r-client-info&e20r-client-id={$data['client_id']}&e20r-level-id={$data['program_id']}");
             $text = "%s has sent a new (instant) message via the %s website. Please <a href='%s' target='_blank'>log in<a/> and then click <a href='%s' target='_blank'>this link</a> to open the Assignment history for %s.";
 
-            $subject = sprintf( __("New message on %s from %s", "e20rtracker"), get_option('blogname'), $client->display_name);
-            $content = sprintf( __($text, "e20rtracker"), $client->display_name, get_option('blogname'), wp_login_url(), $client_assignment_lnk, $client->user_firstname );
+            $subject = sprintf( __("New message on %s from %s", "e20r-tracker"), get_option('blogname'), $client->display_name);
+            $content = sprintf( __($text, "e20r-tracker"), $client->display_name, get_option('blogname'), wp_login_url(), $client_assignment_lnk, $client->user_firstname );
 
             wp_mail( $coach->user_email, $subject, $content, $header );
         }
@@ -435,8 +449,8 @@ class e20rAssignment extends e20rSettings {
 	public function listUserAssignments( $userId, $page_num = -1 ) {
 
 		global $current_user;
-		global $e20rProgram;
-		global $e20rTracker;
+		$e20rProgram = e20rProgram::getInstance();
+		$e20rTracker = e20rTracker::getInstance();
 
 		$config = new stdClass();
 		$config->type = 'action';
@@ -454,7 +468,7 @@ class e20rAssignment extends e20rSettings {
 
     public function client_has_unread_messages( $client_id ) {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         $e20rProgram->getProgramIdForUser( $client_id );
 
@@ -491,7 +505,7 @@ class e20rAssignment extends e20rSettings {
             return wp_send_json_error( array( 'errormsg' => 'no-client-provided') );
         }
 
-        wp_send_json_error( array( 'errormsg' => __( "Unauthenticated polling request" , 'e20rtracker' )) );
+        wp_send_json_error( array( 'errormsg' => __( "Unauthenticated polling request" , 'e20r-tracker' )) );
     }
 
     public function update_metadata() {
@@ -501,7 +515,7 @@ class e20rAssignment extends e20rSettings {
         }
 
         dbg("e20rAssignment::update_metadata() - Test for required metadata update.");
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $old_meta_key = 'program_id';
         $new_meta_key = 'program_ids';
@@ -576,7 +590,7 @@ class e20rAssignment extends e20rSettings {
 
         // Save the $_POST data for the Action callback
         global $current_user;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rAssignment::saveAssignment_callback() - Content of POST variable:");
 
@@ -647,7 +661,7 @@ class e20rAssignment extends e20rSettings {
 */
     public function editor_metabox_setup( $post ) {
 
-        add_meta_box('e20r-tracker-assignment-settings', __('Assignment Settings', 'e20rtracker'), array( &$this, "addMeta_Settings" ), 'e20r_assignments', 'normal', 'core');
+        add_meta_box('e20r-tracker-assignment-settings', __('Assignment Settings', 'e20r-tracker'), array( &$this, "addMeta_Settings" ), 'e20r_assignments', 'normal', 'core');
 
     }
 
@@ -704,7 +718,7 @@ class e20rAssignment extends e20rSettings {
 
     public function saveSettings( $assignmentId, $settings = null ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $post;
 
 	    if ( empty( $assignmentId ) ) {
@@ -843,7 +857,7 @@ class e20rAssignment extends e20rSettings {
 
     public function assignment_col_head( $columns ) {
 
-        $columns['used_day'] = __("Use on (Day #)", "e20rtracker");
+        $columns['used_day'] = __("Use on (Day #)", "e20r-tracker");
         return $columns;
     }
 
@@ -865,14 +879,14 @@ class e20rAssignment extends e20rSettings {
 
     public function set_custom_edit_columns( $columns ) {
 
-        $columns['used_day'] = __("Use on (Day #)", "e20rtracker");
+        $columns['used_day'] = __("Use on (Day #)", "e20r-tracker");
         return $columns;
     }
 
     /*
     public function assignment_col_content( $colName, $post_ID ) {
 
-        global $e20rAssignment;
+        $e20rAssignment = e20rAssignment::getInstance();
         global $currentAssignment;
 
         dbg( "e20rTracker::assignment_col_content() - ID: {$post_ID}" );
@@ -893,7 +907,7 @@ class e20rAssignment extends e20rSettings {
     /** Load the assignments table via AJAX... */
     public function ajax_assignmentData() {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
         dbg("e20rAssignment::ajax_assignmentData() - Got a valid NONCE");
@@ -910,7 +924,7 @@ class e20rAssignment extends e20rSettings {
     }
 
     public function ajax_paginateAssignments() {
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
         dbg("e20rAssignment::ajax_paginateAssignments() - Got a valid NONCE");

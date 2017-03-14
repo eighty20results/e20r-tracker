@@ -15,6 +15,8 @@ class e20rAction extends e20rSettings
     protected $model;
     protected $view;
 
+    private static $instance = null;
+
     // checkin_type: 0 - action (habit), 1 - lesson, 2 - activity (workout), 3 - survey
     // "Enum" for the types of check-ins
     protected $types = array(
@@ -46,6 +48,18 @@ class e20rAction extends e20rSettings
         parent::__construct('action', 'e20r_actions', $this->model, $this->view);
     }
 
+	/**
+	 * @return e20rAction
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
     public function getTypeDescr($typeId)
     {
 
@@ -63,7 +77,7 @@ class e20rAction extends e20rSettings
 
         unset($columns['post_type']);
 
-        $columns['e20r_checkin_type'] = __("Action Type", "e20rtracker");
+        $columns['e20r_checkin_type'] = __("Action Type", "e20r-tracker");
         return $columns;
     }
 
@@ -109,8 +123,8 @@ class e20rAction extends e20rSettings
         global $currentArticle;
         global $currentProgram;
 
-        global $e20rArticle;
-        global $e20rProgram;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         $config = new stdClass();
 
@@ -173,10 +187,10 @@ class e20rAction extends e20rSettings
         global $currentProgram;
 
         global $current_user;
-        global $e20rTracker;
-        global $e20rTables;
-        global $e20rProgram;
-        global $e20rAction;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTables = e20rTables::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rAction = e20rAction::getInstance();
 
         if (is_null($userId)) {
 
@@ -218,15 +232,15 @@ class e20rAction extends e20rSettings
     public function findCheckinItemId($articleId)
     {
 
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
     }
 
     public function setArticleAsComplete($userId, $articleId)
     {
 
-        global $e20rArticle;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         // $articleId = $e20rArticle->init( $articleId );
         $programId = $e20rProgram->getProgramIdForUser($userId);
@@ -275,7 +289,7 @@ class e20rAction extends e20rSettings
     private function days_of_action($checkin)
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ($checkin->enddate <= date('Y-m-d', current_time('timestamp'))) {
 
@@ -294,11 +308,11 @@ class e20rAction extends e20rSettings
         global $currentProgram;
         global $current_user;
 
-        global $e20rArticle;
-        global $e20rAssignment;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rAssignment = e20rAssignment::getInstance();
 
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         // $config = new stdClass();
 
@@ -510,8 +524,8 @@ class e20rAction extends e20rSettings
         // Save the $_POST data for the Action callback
         global $current_user;
 
-        global $e20rTracker;
-        global $e20rProgram;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         dbg("e20rAction::saveCheckin_callback() - Content of POST variable:");
         dbg($_POST);
@@ -585,10 +599,10 @@ class e20rAction extends e20rSettings
         }
 
         global $currentArticle;
-        global $e20rTracker;
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rAssignment;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rAssignment = e20rAssignment::getInstance();
 
         $descrId = null;
         $success = false;
@@ -608,7 +622,7 @@ class e20rAction extends e20rSettings
 
         if ((CONST_NULL_ARTICLE === $articleId) && (is_null($userId) || is_null($answerDate) || is_null($delay))) {
             dbg("e20rAction::dailyProgress_callback() - Can't save assignment info!");
-            wp_send_json_error(__("Unable to save your answer. Please contact technical support!", "e20rtracker"));
+            wp_send_json_error(__("Unable to save your answer. Please contact technical support!", "e20r-tracker"));
         }
 
         if (count($questionIds) != count($answers)) {
@@ -624,7 +638,7 @@ class e20rAction extends e20rSettings
                 // It is, so flag the fact.
                 $answerIsDefaultBtn = true;
             }
-            // wp_send_json_error( __( "You didn't answer all of the questions we had for you. We're saving what we received.", "e20rtracker" ) );
+            // wp_send_json_error( __( "You didn't answer all of the questions we had for you. We're saving what we received.", "e20r-tracker" ) );
         }
 
 
@@ -721,9 +735,9 @@ class e20rAction extends e20rSettings
     public function configure_dailyProgress($is_callback = false)
     {
 
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         global $currentProgram;
         global $currentArticle;
@@ -915,8 +929,8 @@ class e20rAction extends e20rSettings
             wp_send_json_error(array('ecode' => 3));
         }
 
-        global $e20rArticle;
-        global $e20rTracker;
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentArticle;
 
@@ -997,7 +1011,7 @@ class e20rAction extends e20rSettings
             auth_redirect();
         }
 
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
 
         global $post;
 
@@ -1058,10 +1072,10 @@ class e20rAction extends e20rSettings
     public function dailyProgress($config)
     {
 
-        global $e20rTracker;
-        global $e20rArticle;
-        global $e20rAssignment;
-        global $e20rWorkout;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rAssignment = e20rAssignment::getInstance();
+        $e20rWorkout = e20rWorkout::getInstance();
         global $currentArticle;
 
         dbg("e20rAction::dailyProgress() - Start of dailyProgress(): " . $e20rTracker->whoCalledMe());
@@ -1328,7 +1342,7 @@ class e20rAction extends e20rSettings
     public function load_UserCheckin($config, $checkinArr)
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $action = null;
         $activity = null;
@@ -1462,7 +1476,7 @@ class e20rAction extends e20rSettings
             $this->init($post->ID);
         }
 
-        add_meta_box('e20r-tracker-checkin-settings', __('Action Settings', 'e20rtracker'), array(&$this, "addMeta_Settings"), 'e20r_actions', 'normal', 'high');
+        add_meta_box('e20r-tracker-checkin-settings', __('Action Settings', 'e20r-tracker'), array(&$this, "addMeta_Settings"), 'e20r_actions', 'normal', 'high');
 
     }
 

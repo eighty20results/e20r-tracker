@@ -14,6 +14,8 @@ class e20rExercise extends e20rSettings
     protected $model = null;
     protected $view = null;
 
+    private static $instance = null;
+
     public function __construct()
     {
 
@@ -25,6 +27,17 @@ class e20rExercise extends e20rSettings
         parent::__construct('exercise', 'e20r_exercises', $this->model, $this->view);
     }
 
+	/**
+	 * @return e20rExercise
+	 */
+	static function getInstance() {
+
+    	if ( is_null( self::$instance ) ) {
+    		self::$instance = new self;
+	    }
+
+	    return self::$instance;
+	}
 
     public function empty_exercise()
     {
@@ -110,7 +123,7 @@ class e20rExercise extends e20rSettings
     public function editor_metabox_setup($post)
     {
 
-        add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20rtracker'), array(&$this, "addMeta_Settings"), 'e20r_exercises', 'normal', 'high');
+        add_meta_box('e20r-tracker-exercise-settings', __('Exercise Settings', 'e20r-tracker'), array(&$this, "addMeta_Settings"), 'e20r_exercises', 'normal', 'high');
 
     }
 
@@ -151,7 +164,7 @@ class e20rExercise extends e20rSettings
         }
 
         if (empty($exInfo)) {
-            return __('The administrator did not indicate which exercise to show', 'e20rtracker');
+            return __('The administrator did not indicate which exercise to show', 'e20r-tracker');
         }
 
         foreach ($exInfo as $ex) {
@@ -182,7 +195,7 @@ class e20rExercise extends e20rSettings
     public function saveSettings( $post_id ) {
 
         global $post;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( (! isset( $post->post_type ) ) || ( $post->post_type != 'e20r_exercises' ) ) {
             return $post_id;
@@ -256,7 +269,7 @@ class e20rExercise extends e20rSettings
     public function col_content($colName, $post_ID)
     {
 
-        global $e20rExercise;
+        $e20rExercise = e20rExercise::getInstance();
         global $currentExercise;
 
         dbg("e20rExercise::col_content() - ID: {$post_ID}");

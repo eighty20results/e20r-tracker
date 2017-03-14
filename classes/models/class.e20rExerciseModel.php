@@ -18,16 +18,30 @@ class e20rExerciseModel extends e20rSettingsModel {
 		'amrap'=> 3
 	);
 
+	private static $instance = null;
+
 	public function __construct() {
 
 		parent::__construct( 'exercise', 'e20r_exercises');
 
 		$this->exercise_types = array(
 
-			1 => __('Reps', "e20rtracker"),
-			2 => __('Time', 'e20rtracker'),
-			3 => __('AMRAP', 'e20rtracker'),
+			1 => __('Reps', "e20r-tracker"),
+			2 => __('Time', 'e20r-tracker'),
+			3 => __('AMRAP', 'e20r-tracker'),
 		);
+	}
+
+	/**
+	 * @return e20rExerciseModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
 	}
 
     public function init( $exerciseId = null ) {

@@ -15,6 +15,8 @@ class e20rSettings {
     protected $cpt_slug;
     protected $type;
 
+    private static $instance = null;
+
     protected function __construct( $type = null, $cpt_slug = null, $model = null , $view = null ) {
 
         $this->cpt_slug = $cpt_slug;
@@ -23,6 +25,18 @@ class e20rSettings {
         $this->model = $model;
         $this->view = $view;
     }
+
+	/**
+	 * @return e20rSettings
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     protected function init( $postId = null ) {
 
@@ -103,11 +117,11 @@ class e20rSettings {
 
     public function editor_metabox_setup( $post ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $title =  ucfirst( $this->type ) . ' Settings';
 
-        add_meta_box("e20r-tracker-{$this->type}-settings", __($title, 'e20rtracker'), array(&$this, "addMeta_Settings"), $this->cpt_slug, 'normal', 'high');
+        add_meta_box("e20r-tracker-{$this->type}-settings", __($title, 'e20r-tracker'), array(&$this, "addMeta_Settings"), $this->cpt_slug, 'normal', 'high');
 
     }
 

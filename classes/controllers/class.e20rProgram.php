@@ -14,11 +14,25 @@ class e20rProgram extends e20rSettings {
 
     private $programTree = array();
 
+    private static $instance = null;
+
     public function __construct() {
 
         dbg("e20rProgram::__construct() - Initializing Program data");
         parent::__construct( 'program', 'e20r_programs', new e20rProgramModel(), new e20rProgramView() );
     }
+
+	/**
+	 * @return e20rProgram
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     /**
      * Returns the value of the active_delay setting (for articles/records) OR null if it's not configured/set
@@ -48,7 +62,7 @@ class e20rProgram extends e20rSettings {
     public function set_active_delay( $value )
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( is_object( $this->model->settings ) &&
             isset( $this->model->settings->active_delay ) &&
@@ -84,7 +98,7 @@ class e20rProgram extends e20rSettings {
      */
     public function set_previous_delay( $value ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $this->model->settings->previous_delay = $e20rTracker->sanititze( $value );
     }
@@ -99,7 +113,7 @@ class e20rProgram extends e20rSettings {
      */
     public function init( $programId = null, $delay = null ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
 	    global $currentProgram;
 	    global $current_user;
@@ -293,7 +307,7 @@ class e20rProgram extends e20rSettings {
     public function getProgramIdForUser( $userId = 0, $articleId = null ) {
 
 	    global $currentProgram;
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
 
         $user_program = false;
 
@@ -409,7 +423,7 @@ class e20rProgram extends e20rSettings {
     /*
     public function setUserProgramStart( $levelId, $userId = null ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rProgram::setUserProgramStart() - Called from: " . $e20rTracker->whoCalledMe() );
         dbg("e20rProgram::setUserProgramStart() - levelId: {$levelId} and userId: {$userId}" );
@@ -437,7 +451,7 @@ class e20rProgram extends e20rSettings {
     */
     public function setProgramForUser( $startdate, $user_id, $level_obj ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
 
         // We only need the membership ID value to find the program (if it's defgined.
@@ -564,7 +578,7 @@ class e20rProgram extends e20rSettings {
      */
     public function selectProgramForUser( $user ) {
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
         global $currentClient;
 
         $coach_id = null;
@@ -625,7 +639,7 @@ class e20rProgram extends e20rSettings {
             $post = get_post( $currentProgram->intake_form );
 
             $default_text = sprintf(
-                __('<p>Please complete %s (<a href="%s" target="_blank">link</a>)</p>', "e20rtracker"),
+                __('<p>Please complete %s (<a href="%s" target="_blank">link</a>)</p>', "e20r-tracker"),
                     $post->post_title,
                     get_permalink( $post->ID )
             );
@@ -716,8 +730,8 @@ class e20rProgram extends e20rSettings {
     public function updateProgramForUser( $userId ) {
 
         global $currentProgram;
-        global $e20rClient;
-        global $e20rTracker;
+        $e20rClient = e20rClient::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( ! current_user_can( 'edit_user', $userId ) ) {
             return false;

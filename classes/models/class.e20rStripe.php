@@ -11,6 +11,20 @@
 
 class e20rStripe {
 
+	private static $instance = null;
+
+	/**
+	 * @return e20rStripe
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
     function test_stripe_api( $new_level_id = 0, $user_id = 0 ) {
 
         if(!class_exists("Stripe")) {

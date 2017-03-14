@@ -21,6 +21,8 @@ class e20rClient
     public $actionsLoaded = false;
     public $scriptsLoaded = false;
 
+    private static $instance = null;
+
     /**
      * e20rClient constructor.
      * @param integer|null $user_id
@@ -40,10 +42,22 @@ class e20rClient
 
     }
 
+	/**
+	 * @return e20rClient
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
     public function init()
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentClient;
 
         if (empty($currentClient->user_id)) {
@@ -153,7 +167,7 @@ class e20rClient
     public function getUserImgUrl($who, $when, $imageSide)
     {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         if ($this->isNourishClient($who) && $e20rTables->isBetaClient()) {
 
@@ -290,7 +304,7 @@ class e20rClient
     public function load_interview($form)
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentClient;
         global $current_user;
         global $post;
@@ -347,7 +361,7 @@ class e20rClient
         }
 
         if (!isset($currentProgram->id)) {
-            global $e20rProgram;
+            $e20rProgram = e20rProgram::getInstance();
 
             $e20rProgram->getProgramIdForUser($clientId);
         }
@@ -384,7 +398,7 @@ class e20rClient
     public function remove_survey_form_entry($entry)
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $current_user;
         global $post;
 
@@ -466,7 +480,7 @@ class e20rClient
     public function save_interview($entry, $form)
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $current_user;
         global $post;
 
@@ -492,11 +506,11 @@ class e20rClient
 
         dbg("e20rTracker::save_interview() - Processing the Bit Better Interview form(s).");
 
-        global $e20rMeasurements;
+        $e20rMeasurements = e20rMeasurements::getInstance();
         global $current_user;
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
         global $page;
 
         global $currentProgram;
@@ -943,7 +957,7 @@ class e20rClient
     public function assign_coach($user_id, $gender = null)
     {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         dbg("e20rClient::assign_coach() - Loading program settings for {$user_id}");
@@ -1202,8 +1216,8 @@ class e20rClient
         global $currentClient;
         global $currentProgram;
 
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         if (!$e20rTracker->is_a_coach($current_user->ID)) {
 
@@ -1244,7 +1258,7 @@ class e20rClient
 
         global $current_user;
         global $currentClient;
-        global $e20rMeasurements;
+        $e20rMeasurements = e20rMeasurements::getInstance();
 
         $currentClient->user_id = isset($_POST['user-id']) ? intval($_POST['user-id']) : $current_user->ID;
         $dimension = isset($_POST['dimension']) ? sanitize_text_field($_POST['dimension']) : null;
@@ -1294,7 +1308,7 @@ class e20rClient
         // dbg($_POST);
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $levelId = (isset($_POST['hidden_e20r_level']) ? intval($_POST['hidden_e20r_level']) : 0);
 
@@ -1352,7 +1366,7 @@ class e20rClient
             return;
         }
 
-	    global $e20rTracker;
+	    $e20rTracker = e20rTracker::getInstance();
 
         $first_upgrade_day = 155;
         $second_upgrade_day = 180;
@@ -1411,7 +1425,7 @@ class e20rClient
     {
 
         // global $currentProgram;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if (!current_user_can('edit_user')) {
             return false;
@@ -1469,7 +1483,7 @@ class e20rClient
     public function selectRoleForUser($user)
     {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         
         dbg("e20rClient::selectRoleForUser() - Various roles & capabilities for user {$user->ID}");
 
@@ -1541,8 +1555,8 @@ class e20rClient
     public function ajax_sendClientMessage()
     {
 
-        global $e20rTracker;
-        global $e20rProgram;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $currentProgram;
 
@@ -1629,8 +1643,8 @@ class e20rClient
         dbg("e20rClient::ajax_ClientMessageHistory() - Request: " . print_r($_REQUEST, true));
 
         global $current_user;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
         global $currentClient;
@@ -1665,11 +1679,11 @@ class e20rClient
         dbg("e20rClient::ajax_showClientMessage() - Request: " . print_r($_REQUEST, true));
 
         global $current_user;
-        global $e20rProgram;
-        global $e20rMeasurements;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rMeasurements = e20rMeasurements::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
         global $currentClient;
@@ -1710,7 +1724,7 @@ class e20rClient
     {
 
         global $current_user;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if (!is_user_logged_in()) {
 
@@ -1731,9 +1745,9 @@ class e20rClient
 
         dbg("e20rClient::ajax_clientDetail() - Request: " . print_r($_REQUEST, true));
 
-        global $e20rProgram;
-        global $e20rMeasurements;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rMeasurements = e20rMeasurements::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         global $currentProgram;
         global $currentArticle;
@@ -1790,8 +1804,8 @@ class e20rClient
     {
 
         dbg("e20rClient::load_clientDetail() - Load client data...");
-        global $e20rProgram;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         global $currentProgram;
         global $currentArticle;
@@ -1830,7 +1844,7 @@ class e20rClient
     public function load_achievementsData($clientId)
     {
 
-        global $e20rAction;
+        $e20rAction = e20rAction::getInstance();
 
         return $e20rAction->listUserAccomplishments($clientId);
     }
@@ -1838,7 +1852,7 @@ class e20rClient
     public function load_assignmentsData($clientId)
     {
 
-        global $e20rAssignment;
+        $e20rAssignment = e20rAssignment::getInstance();
 
         return $e20rAssignment->listUserAssignments($clientId);
     }
@@ -1846,7 +1860,7 @@ class e20rClient
     public function load_activityData($clientId)
     {
 
-        global $e20rWorkout;
+        $e20rWorkout = e20rWorkout::getInstance();
 
         return $e20rWorkout->listUserActivities($clientId);
     }
@@ -1855,7 +1869,7 @@ class e20rClient
     {
 
         global $current_user;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rClient::validateAccess() - Client being validated: " . $clientId);
 
@@ -1883,7 +1897,7 @@ class e20rClient
     public function view_interview($clientId)
     {
 
-        global $e20rArticle;
+        $e20rArticle = e20rArticle::getInstance();
 
         global $currentProgram;
 
@@ -1926,12 +1940,12 @@ class e20rClient
 
         global $current_user;
 
-        global $e20rProgram;
-        global $e20rAction;
-        global $e20rAssignment;
-        global $e20rWorkout;
-        global $e20rArticle;
-        global $e20rMeasurements;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rAction = e20rAction::getInstance();
+        $e20rAssignment = e20rAssignment::getInstance();
+        $e20rWorkout = e20rWorkout::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rMeasurements = e20rMeasurements::getInstance();
 
         global $currentProgram;
         global $currentArticle;
@@ -1982,7 +1996,7 @@ class e20rClient
             $interview_descr = 'Saved interview';
         } else {
 
-            $interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;">' . __("Please complete interview", "e20rtracker") . '</div>';
+            $interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;">' . __("Please complete interview", "e20r-tracker") . '</div>';
         }
 
         $interview_html = '<div id="e20r-profile-interview">' . $this->view_interview($config->userId) . '</div>';
@@ -2063,12 +2077,12 @@ class e20rClient
     private function set_not_coach_msg()
     {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20rClient::set_not_coach_msg() - User isn't a coach. Return error & force redirect");
 
         $error = '<div class="error">';
-        $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20rtracker") . '</p>';
+        $error .= '    <p>' . __("Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20r-tracker") . '</p>';
         $error .= '</div><!-- /.error -->';
 
         $e20rTracker->updateSetting('unserialize_notice', $error);
@@ -2081,9 +2095,9 @@ class e20rClient
 
         dbg("e20rClient::shortcode_clientList() - Loading shortcode for the coach list of clients");
 
-        global $e20rAction;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rAction = e20rAction::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
 
@@ -2134,7 +2148,7 @@ class e20rClient
                     $client->status->last_message = array($when => $msg->topic);
                     $client->status->last_message_sender = $msg->sender_id;
                 } else {
-                    $client->status->last_message = array('empty' => __('No message sent via this website', "e20rtracker"));
+                    $client->status->last_message = array('empty' => __('No message sent via this website', "e20r-tracker"));
                     $client->status->last_message_sender = null;
                 }
 

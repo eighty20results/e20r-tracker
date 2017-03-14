@@ -11,16 +11,30 @@ class e20rActionModel extends e20rSettingsModel {
 
     private $settings;
 
+    private static $instance = null;
+
     public function __construct()  {
 
         parent::__construct( 'action', 'e20r_actions' );
 
-/*        global $e20rTables;
+/*        $e20rTables = e20rTables::getInstance();
 
         $this->table = $e20rTables->getTable('action');
         $this->fields = $e20rTables->getFields('action');
 */
     }
+
+	/**
+	 * @return e20rActionModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     public function defaultCheckin( $type ) {
 
@@ -222,9 +236,9 @@ class e20rActionModel extends e20rSettingsModel {
 		global $wpdb;
 		global $currentArticle;
 		global $current_user;
-		global $e20rTracker;
-		global $e20rTables;
-		global $e20rAction;
+		$e20rTracker = e20rTracker::getInstance();
+		$e20rTables = e20rTables::getInstance();
+		$e20rAction = e20rAction::getInstance();
 
 		if ( is_null( $userId ) ) {
 
@@ -254,9 +268,9 @@ class e20rActionModel extends e20rSettingsModel {
 
 		global $wpdb;
 		global $current_user;
-		global $e20rTracker;
-		global $e20rProgram;
-		global $e20rArticle;
+		$e20rTracker = e20rTracker::getInstance();
+		$e20rProgram = e20rProgram::getInstance();
+		$e20rArticle = e20rArticle::getInstance();
 
 		$programId = $e20rProgram->getProgramIdForUser( $userId );
 
@@ -300,9 +314,9 @@ class e20rActionModel extends e20rSettingsModel {
         global $current_user;
 	    global $currentAction;
 
-        global $e20rProgram;
-        global $e20rArticle;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
 	    dbg("e20rActionModel::get_user_checkin() - Loading type {$type} check-ins for user {$userId}");
 

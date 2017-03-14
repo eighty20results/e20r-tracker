@@ -4,6 +4,8 @@ class e20rClientViews {
 
     protected $client_id;
 
+    private static $instance = null;
+
     public function __construct( $id = null ) {
 
         dbg("e20rClientviews::__construct() - Setting client ID");
@@ -13,6 +15,18 @@ class e20rClientViews {
             $this->client_id = $id;
         }
     }
+
+    	/**
+	 * @return e20rClientViews
+	 */
+	static function getInstance() {
+
+    	if ( is_null( self::$instance ) ) {
+    		self::$instance = new self;
+	    }
+
+	    return self::$instance;
+	}
 
     public function viewMessageHistory( $client_id, $messages ) {
 
@@ -29,16 +43,16 @@ class e20rClientViews {
          <table class="e20r-client-message-history-table">
             <thead>
                 <tr>
-                    <th><?php _e("Sent", "e20rtracker"); ?></th>
-                    <th><?php _e("Subject", "e20rtracker"); ?></th>
-                    <th><?php _e("From", "e20rtracker");?></th>
+                    <th><?php _e("Sent", "e20r-tracker"); ?></th>
+                    <th><?php _e("Subject", "e20r-tracker"); ?></th>
+                    <th><?php _e("From", "e20r-tracker");?></th>
                 </tr>
             </thead>
             <tbody><?php
             if ( empty( $messages ) ) { ?>
                 <tr class="e20r-client-message-history-entry">
                     <td colspan="3">
-                        <h3><?php _e("No message history found", "e20rtracker" ); ?></h3>
+                        <h3><?php _e("No message history found", "e20r-tracker" ); ?></h3>
                     </td>
                 </tr><?php
             }
@@ -83,8 +97,8 @@ class e20rClientViews {
 
     public function display_client_list( $clients ) {
 
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         global $currentProgram;
 
@@ -100,28 +114,28 @@ class e20rClientViews {
                         <td colspan="2"><h5>Legend</h5></td>
                     </tr>
                     <tr>
-                        <td class="e20r-strong-text"><?php _e("Strong text", "e20rtracker"); ?></td>
-                        <td class="e20r-strong-text"><?php _e("Client accessed system in the past 3 days", "e20rtracker"); ?></td>
+                        <td class="e20r-strong-text"><?php _e("Strong text", "e20r-tracker"); ?></td>
+                        <td class="e20r-strong-text"><?php _e("Client accessed system in the past 3 days", "e20r-tracker"); ?></td>
                     </tr>
                     <tr>
-                        <td class="e20r-weak-text"><?php _e("Weaker text", "e20rtracker"); ?></td>
-                        <td class="e20r-weak-text"><?php _e("Client accessed system in the past 3 - 10 days", "e20rtracker"); ?></td>
+                        <td class="e20r-weak-text"><?php _e("Weaker text", "e20r-tracker"); ?></td>
+                        <td class="e20r-weak-text"><?php _e("Client accessed system in the past 3 - 10 days", "e20r-tracker"); ?></td>
                     </tr>
                     <tr>
-                        <td class="e20r-weakest-text"><?php _e("Weakest text", "e20rtracker"); ?></td>
-                        <td class="e20r-weakest-text"><?php _e("More than 10 days since the client accessed this system", "e20rtracker"); ?></td>
+                        <td class="e20r-weakest-text"><?php _e("Weakest text", "e20r-tracker"); ?></td>
+                        <td class="e20r-weakest-text"><?php _e("More than 10 days since the client accessed this system", "e20r-tracker"); ?></td>
                     </tr>
                     <tr class="e20r-followup-critical">
-                        <td><?php _e("Critical", "e20rtracker"); ?></td>
-                        <td><?php _e("No recorded contact with this client in more than 14 days, or there's never been any recorded contact", "e20rtracker"); ?></td>
+                        <td><?php _e("Critical", "e20r-tracker"); ?></td>
+                        <td><?php _e("No recorded contact with this client in more than 14 days, or there's never been any recorded contact", "e20r-tracker"); ?></td>
                     </tr>
                     <tr class="e20r-followup-warning">
-                        <td><?php _e("Warning", "e20rtracker"); ?></td>
-                        <td><?php _e("No recorded contact with this client in between 7 and 14 days", "e20rtracker"); ?></td>
+                        <td><?php _e("Warning", "e20r-tracker"); ?></td>
+                        <td><?php _e("No recorded contact with this client in between 7 and 14 days", "e20r-tracker"); ?></td>
                     </tr>
                     <tr class="e20r-followup-normal">
-                        <td><?php _e("Normal", "e20rtracker"); ?></td>
-                        <td><?php _e("Client contact recorded sometime in past 7 days", "e20rtracker"); ?></td>
+                        <td><?php _e("Normal", "e20r-tracker"); ?></td>
+                        <td><?php _e("Client contact recorded sometime in past 7 days", "e20r-tracker"); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -138,9 +152,9 @@ class e20rClientViews {
                     <td class="e20r-client-list-program-name" colspan="3"><h4><?php echo $program_name; ?></h4></td>
                 </tr>
                 <tr class="e20r-client-list-header-row">
-                    <th class="e20r-client-name"><label><?php _e( "Client", "e20rtracker" ); ?></label></th>
-                    <th class="e20r-client-last-login"><label><?php _e("Last login by client", "e20rtracker"); ?></label></th>
-                    <th class="e20r-client-last-message"><label><?php _e("Last message from us", "e20rtracker"); ?></label></th>
+                    <th class="e20r-client-name"><label><?php _e( "Client", "e20r-tracker" ); ?></label></th>
+                    <th class="e20r-client-last-login"><label><?php _e("Last login by client", "e20r-tracker"); ?></label></th>
+                    <th class="e20r-client-last-message"><label><?php _e("Last message from us", "e20r-tracker"); ?></label></th>
                 </tr><?php
 
                     foreach( $clientList as $client ) {
@@ -214,8 +228,8 @@ class e20rClientViews {
 
     public function displayData() {
 
-        global $e20rClient;
-        global $e20rTracker;
+        $e20rClient = e20rClient::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         // TODO: Create page for back-end to display customers.
         ?>
@@ -238,9 +252,9 @@ class e20rClientViews {
 
     public function viewLevelSelect( $levelId = -1 ) {
 
-        global $e20rClient;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rClient = e20rClient::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( ! defined( 'PMPRO_VERSION' ) ) {
             // Display error message.
@@ -257,11 +271,11 @@ class e20rClientViews {
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' ); ?>
                 <div class="e20r-select">
                     <input type="hidden" name="hidden_e20r_level" id="hidden_e20r_level" value="0" >
-                    <label for="e20r_levels"><?php _e("Program", "e20rtracker"); ?>:</label>
+                    <label for="e20r_levels"><?php _e("Program", "e20r-tracker"); ?>:</label>
                     <span class="e20r-level-select-span">
                         <select name="e20r_levels" id="e20r_levels">
                             <option value="-1" <?php selected( -1, $levelId ); ?>><?php _e("None", "e20tracker");?></option>
-                            <option value="0" <?php selected( 0, $levelId ); ?>><?php _e("All Programs", "e20rtracker" ); ?></option>
+                            <option value="0" <?php selected( 0, $levelId ); ?>><?php _e("All Programs", "e20r-tracker" ); ?></option>
                         <?php
 
                         $program_list = $e20rProgram->get_programs();
@@ -284,9 +298,9 @@ class e20rClientViews {
 
     public function viewMemberSelect( $levelId = null ) {
 
-        global $e20rClient;
-        global $e20rTracker;
-        global $e20rProgram;
+        $e20rClient = e20rClient::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $currentClient;
 
@@ -327,8 +341,8 @@ class e20rClientViews {
 
     public function viewClientContact( $clientId ) {
 
-        global $e20rProgram;
-        global $e20rClient;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rClient = e20rClient::getInstance();
 
         global $currentProgram;
         global $currentClient;
@@ -356,22 +370,22 @@ class e20rClientViews {
             <input type="hidden" name="e20r-send-from-id" id="e20r-send-from-id" value="<?php echo $current_user->ID; ?>">
             <?php if ( true === $incomplete ) { ?>
                 <div class="red-notice">
-                    <?php _e("Incomplete client interview. Please ask {$first_name} to complete the welcome interview as quickly as possible", "e20rtracker" ); ?>
+                    <?php _e("Incomplete client interview. Please ask {$first_name} to complete the welcome interview as quickly as possible", "e20r-tracker" ); ?>
                 </div><?php
             }?>
             <table id="e20r-send-message">
                 <thead>
                 <tr>
-                    <th colspan="3" class="e20r-activity-table-header"><?php echo sprintf( __("Send message to: %s %s &lt;<em>%s</em>&gt;", "e20rtracker" ), $first_name, $last_name, $email ); ?></th>
+                    <th colspan="3" class="e20r-activity-table-header"><?php echo sprintf( __("Send message to: %s %s &lt;<em>%s</em>&gt;", "e20r-tracker" ), $first_name, $last_name, $email ); ?></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
                     <td class="e20r-message-header">
-                        <?php _e("From", "e20rtracker"); ?>:
+                        <?php _e("From", "e20r-tracker"); ?>:
                     </td>
                     <td class="e20r-message-from">
-                        <input class="e20r-message-input" type="text" name="e20r-email-from-name" id="e20r-email-from-name" autocomplete="off" value="<?php echo __("Coach", "e20rtracker") . " {$current_user->user_firstname}"; ?>" />
+                        <input class="e20r-message-input" type="text" name="e20r-email-from-name" id="e20r-email-from-name" autocomplete="off" value="<?php echo __("Coach", "e20r-tracker") . " {$current_user->user_firstname}"; ?>" />
                     </td>
                     <td class="e20r-message-from">
                         <input class="e20r-message-input" type="email" name="e20r-email-from" id="e20r-email-from" autocomplete="off" value="<?php echo "{$current_user->user_email}"; ?>" />
@@ -379,10 +393,10 @@ class e20rClientViews {
                 </tr>
                 <tr>
                     <td class="e20r-message-header">
-                        <?php _e("Subject", "e20rtracker"); ?>:
+                        <?php _e("Subject", "e20r-tracker"); ?>:
                     </td>
                     <td class="e20r-message-subject" colspan="2">
-                        <input class="e20r-message-input" type="text" name="e20r-email-subject" id="e20r-email-subject" autocomplete="off" placeholder="<?php _e('Enter subject for email', 'e20rtracker'); ?>" />
+                        <input class="e20r-message-input" type="text" name="e20r-email-subject" id="e20r-email-subject" autocomplete="off" placeholder="<?php _e('Enter subject for email', 'e20r-tracker'); ?>" />
                     </td>
                 </tr>
                 <tr>
@@ -390,7 +404,7 @@ class e20rClientViews {
                 </tr>
                 <tr>
                     <td class="e20r-message-subject" colspan="3">
-                        <textarea class="e20r-message-input" id="content" autocomplete="off" name="content" placeholder="<?php _e('Message to client', 'e20rtracker'); ?>" rows="20" cols="75" type='textarea'> </textarea><?php
+                        <textarea class="e20r-message-input" id="content" autocomplete="off" name="content" placeholder="<?php _e('Message to client', 'e20r-tracker'); ?>" rows="20" cols="75" type='textarea'> </textarea><?php
                         $settings = array(
                             'textarea_name' => 'content',
                             'quicktags' => false,
@@ -415,13 +429,13 @@ class e20rClientViews {
                         <?php
 
                         $btn_attrs = array( 'id' => 'e20r-send-email-message' );
-                        submit_button( __("Send message", "e20rtracker"), 'primary', 'e20r-send-email-message', true, $btn_attrs );
+                        submit_button( __("Send message", "e20r-tracker"), 'primary', 'e20r-send-email-message', true, $btn_attrs );
                         ?>
                     </td>
-                    <td style="font-size: 0.7rem; text-align: right;"><?php _e("When to send (empty = now)", "e20rtracker"); ?></td>
+                    <td style="font-size: 0.7rem; text-align: right;"><?php _e("When to send (empty = now)", "e20r-tracker"); ?></td>
                     <td style="font-size: 0.7rem;">
                         <input type="text" name="e20r-tracker-send-message-datetime" id="e20r-tracker-send-message-datetime">
-                        <?php echo sprintf( __( "TZ: %s", "e20rtracker" ),  get_option( 'timezone_string' ) ); ?>
+                        <?php echo sprintf( __( "TZ: %s", "e20r-tracker" ),  get_option( 'timezone_string' ) ); ?>
                     </td>
                 </tr>
                 </tfoot>
@@ -436,11 +450,11 @@ class e20rClientViews {
 
     public function show_lastLogin( $clientId ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
         global $currentProgram;
         global $currentUser;
 
-        $when = __( 'Never.', 'e20rtracker' );
+        $when = __( 'Never.', 'e20r-tracker' );
         $last_login = (int) get_user_meta( $clientId, '_e20r-tracker-last-login', true );
         $today = current_time( 'timestamp' );
         $user = get_user_by( 'id', $clientId );
@@ -470,18 +484,18 @@ class e20rClientViews {
 
         if ( ( $program_length >= 2 ) && ( 10 <= $days_since_login ) ) { ?>
             <div class="red-notice">
-                <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+                <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20r-tracker"), $user->user_firstname ); ?></h3><?php
         }
 
         if ( ( $program_length >= 2 ) && ( 10 > $days_since_login && 3 < $days_since_login ) ) { ?>
             <div class="orange-notice">
-            <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20rtracker"), $user->user_firstname ); ?></h3><?php
+            <h3 style="color: #004CFF;"><?php echo sprintf( __("Please send a reminder to %s", "e20r-tracker"), $user->user_firstname ); ?></h3><?php
         }
 
         if ( ( $program_length >= 2 ) && ( 3 >= $days_since_login ) ) { ?>
             <div class="green-notice"><?php
         }?>
-                <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20rtracker"), $user_firstname, $when );?></p>
+                <p><?php echo sprintf( __('The last recorded access for %s was: <em style="text-decoration: underline;">%s</em>', "e20r-tracker"), $user_firstname, $when );?></p>
             </div><?php
         $html = ob_get_clean();
 
@@ -490,8 +504,8 @@ class e20rClientViews {
 
     public function viewClientDetail( $clientId ) {
 
-        global $e20rProgram;
-        global $e20rClient;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rClient = e20rClient::getInstance();
 
         global $currentProgram;
         global $currentClient;
@@ -515,8 +529,8 @@ class e20rClientViews {
         <table class="e20r-client-information-table">
             <thead>
                 <tr>
-                    <th><?php _e("Question", "e20rtracker"); ?></th>
-                    <th><?php _e("Content", "e20rtracker"); ?></th>
+                    <th><?php _e("Question", "e20r-tracker"); ?></th>
+                    <th><?php _e("Content", "e20r-tracker"); ?></th>
                 </tr>
             </thead>
             <tbody><?php
@@ -541,11 +555,11 @@ class e20rClientViews {
 
     public function viewClientAdminPage( $lvlName = '', $level_id = -1 ) {
 
-	    global $e20rAction;
+	    $e20rAction = e20rAction::getInstance();
         global $currentClient;
-	    global $e20rAssignment;
-        global $e20rWorkout;
-        global $e20rClient;
+	    $e20rAssignment = e20rAssignment::getInstance();
+        $e20rWorkout = e20rWorkout::getInstance();
+        $e20rClient = e20rClient::getInstance();
 
         if ( is_admin() ) {
 
@@ -559,7 +573,7 @@ class e20rClientViews {
 
         ob_start();
         ?>
-        <H1><?php _e( "Coaching Page", "e20rtracker" ); ?></H1>
+        <H1><?php _e( "Coaching Page", "e20r-tracker" ); ?></H1>
         <div class="e20r-client-service-select">
             <div id="spinner" class="e20r-spinner"></div>
             <?php echo $this->viewLevelSelect( $level_id ); ?>
@@ -589,13 +603,13 @@ class e20rClientViews {
         <hr class="e20r-admin-hr" />
 	    <div id="status-tabs" style="max-width: 800px; width: 100%;" class="startHidden" data-role='z-tabs'>
 		    <ul>
-			    <li><a href="#tabs-1"><?php _e("Measurements", "e20rtracker");?></a></li>
-			    <li><a href="#tabs-2"><?php _e("Assignments", "e20rtracker");?></a></li>
-			    <li><a href="#tabs-3"><?php _e("Achievements", "e20rtracker");?></a></li>
-			    <li><a href="#tabs-4"><?php _e("Activities", "e20rtracker");?></a></li>
-                <li><a href="#tabs-5"><?php _e("Client Info", "e20rtracker");?></a></li>
-                <li><a href="#tabs-6"><?php _e("Send E-Mail", "e20rtracker");?></a></li>
-                <li><a href="#tabs-7"><?php _e("Message History", "e20rtracker");?></a></li>
+			    <li><a href="#tabs-1"><?php _e("Measurements", "e20r-tracker");?></a></li>
+			    <li><a href="#tabs-2"><?php _e("Assignments", "e20r-tracker");?></a></li>
+			    <li><a href="#tabs-3"><?php _e("Achievements", "e20r-tracker");?></a></li>
+			    <li><a href="#tabs-4"><?php _e("Activities", "e20r-tracker");?></a></li>
+                <li><a href="#tabs-5"><?php _e("Client Info", "e20r-tracker");?></a></li>
+                <li><a href="#tabs-6"><?php _e("Send E-Mail", "e20r-tracker");?></a></li>
+                <li><a href="#tabs-7"><?php _e("Message History", "e20r-tracker");?></a></li>
 		    </ul>
 	        <div id="tabs-1">
 		        <div id="e20r-progress-measurements">
@@ -644,7 +658,7 @@ class e20rClientViews {
         global $currentProgram;
         global $current_user;
 
-        global $e20rClient;
+        $e20rClient = e20rClient::getInstance();
 
         $today = current_time('timestamp');
         $four_days = strtotime("{$currentProgram->startdate} + 5 days");
@@ -682,9 +696,9 @@ class e20rClientViews {
             dbg("e20rClientViews::view_clientProfile() - Loading pop-up warning for incomplete intake interview: {$current_user->ID}");
 
             $message = apply_filters('e20r-tracker-interview-warning-message', sprintf(
-                __("We know these are annoying, but we <em>really</em> need you to complete your \"Welcome Interview\" soon. Please help us out by clicking the \"<strong>%s</strong>\" button (below), and complete your interview. It should only take about 20 minutes to complete, and will help us adapt your program to your current situation. Also it will make everything \"A-OK\", legally. (Added bonus:  You help us avoid getting stern letters from our legal eagles!)", "e20rtracker"), __("I'll fix it", "e20rtracker") ) );
+                __("We know these are annoying, but we <em>really</em> need you to complete your \"Welcome Interview\" soon. Please help us out by clicking the \"<strong>%s</strong>\" button (below), and complete your interview. It should only take about 20 minutes to complete, and will help us adapt your program to your current situation. Also it will make everything \"A-OK\", legally. (Added bonus:  You help us avoid getting stern letters from our legal eagles!)", "e20r-tracker"), __("I'll fix it", "e20r-tracker") ) );
 
-            $interview_warning = "<h4>" . __("Your Welcome Interview is incomplete", "e20rtracker") . "</h4>";
+            $interview_warning = "<h4>" . __("Your Welcome Interview is incomplete", "e20r-tracker") . "</h4>";
             $interview_warning .= "<p>" . $message . "</p>";
 
             echo $this->add_popup_overlay($current_user->ID, $interview_warning);
@@ -706,17 +720,17 @@ class e20rClientViews {
         ob_start(); ?>
         <div class="e20r-boxes clearfix">
           <div class="<?php echo apply_filters("e20r-tracker-dialog-class", 'e20r-dialog' );?> window">
-            <h3 class="<?php echo apply_filters("e20r-tracker-article-popup-h3", 'e20r-popup-h3' );?>"><?php echo apply_filters('e20r-tracker-article-popup-header-text', __("Warning", "e20rtracker") ); ?></h3>
+            <h3 class="<?php echo apply_filters("e20r-tracker-article-popup-h3", 'e20r-popup-h3' );?>"><?php echo apply_filters('e20r-tracker-article-popup-header-text', __("Warning", "e20r-tracker") ); ?></h3>
             <div class="<?php echo apply_filters("e20r-tracker-article-popup-paragraph", 'e20r-popup-paragraph' );?> clearfix">
                 <?php echo apply_filters('e20r-tracker-article-popup-message-text', $popup_text ); ?>
             </div>
             <div class="e20r-footer-placement">
                 <div class="<?php echo apply_filters("e20r-tracker-article-popup-message-footer", 'e20r-popupfoot'); ?>">
                     <div class="e20r-footer-button-div">
-                        <a href="#" class="close button <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>"><?php echo apply_filters( 'e20r-tracker-article-popup-agree-text', __("I'll fix it", "e20rtracker") );?></a>
+                        <a href="#" class="close button <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'agree' );?>"><?php echo apply_filters( 'e20r-tracker-article-popup-agree-text', __("I'll fix it", "e20r-tracker") );?></a>
                     </div>
                     <div class="e20r-footer-button-div">
-                        <a class="button  <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'disagree' );?>" href="#"><?php echo apply_filters( 'e20r-tracker-article-popup-disagree-text', __("Remind me", "e20rtracker") );?></a>
+                        <a class="button  <?php echo apply_filters("e20r-tracker-article-popup-agree-class", 'disagree' );?>" href="#"><?php echo apply_filters( 'e20r-tracker-article-popup-disagree-text', __("Remind me", "e20r-tracker") );?></a>
                     </div>
                 </div>
             </div>
@@ -777,16 +791,16 @@ class e20rClientViews {
 
         ob_start();
         ?>
-        <h3><?php _e("E20R-Tracker: Coach Info", "e20rtracker"); ?></h3>
+        <h3><?php _e("E20R-Tracker: Coach Info", "e20r-tracker"); ?></h3>
         <table class="form-table">
             <tr>
-                <th><label for="e20r-tracker-user-role"><?php _e( "User is a program coach", "e20rtracker"); ?></label></th>
+                <th><label for="e20r-tracker-user-role"><?php _e( "User is a program coach", "e20r-tracker"); ?></label></th>
                 <td>
                     <input type="checkbox" id="e20r-tracker-user-role" name="e20r-tracker-user-role" value="<?php echo $user_roles['coach']['role']; ?>" <?php echo $checked; ?>>
                 </td>
             </tr>
             <tr>
-                <th><label for="e20r-tracker-coaching-programs"><?php _e( "Programs this user is a coach for", "e20rtracker"); ?></label></th>
+                <th><label for="e20r-tracker-coaching-programs"><?php _e( "Programs this user is a coach for", "e20r-tracker"); ?></label></th>
                 <td>
                     <select id="e20r-tracker-coach-for-programs" name="e20r-tracker-coach-for-programs[]" multiple="multiple">
                         <option value="0">None</option><?php

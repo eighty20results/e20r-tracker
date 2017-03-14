@@ -14,9 +14,11 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
     private static $exercise_levels = array();
 
+    private static $instance = null;
+
     public function __construct() {
 
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
 
         parent::__construct( 'workout', 'e20r_workout' );
 
@@ -27,14 +29,26 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         $this->types = array(
             0 => '',
-            1 => __("Slow", "e20rtracker"),
-            2 => __("Normal", "e20rtracker"),
-            3 => __("Fast", "e20rtracker"),
-            4 => __("Varying", "e20rtracker")
+            1 => __("Slow", "e20r-tracker"),
+            2 => __("Normal", "e20r-tracker"),
+            3 => __("Fast", "e20r-tracker"),
+            4 => __("Varying", "e20r-tracker")
         );
 
         $this->settings = new stdClass();
     }
+
+	/**
+	 * @return e20rWorkoutModel
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     /**
      * @return array - List of configured roles for
@@ -43,10 +57,10 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         if (empty(self::$exercise_levels)) {
             
-            self::$exercise_levels['e20r_coach'] = __( "Coach", "e20rtracker");
-            self::$exercise_levels['e20r_tracker_exp_1'] = __( "Exercise Level 1 (NE)", "e20rtracker");
-            self::$exercise_levels['e20r_tracker_exp_2'] = __( "Exercise Level 2 (IN)", "e20rtracker");
-            self::$exercise_levels['e20r_tracker_exp_3'] = __( "Exercise Level 3 (EX)", "e20rtracker");
+            self::$exercise_levels['e20r_coach'] = __( "Coach", "e20r-tracker");
+            self::$exercise_levels['e20r_tracker_exp_1'] = __( "Exercise Level 1 (NE)", "e20r-tracker");
+            self::$exercise_levels['e20r_tracker_exp_2'] = __( "Exercise Level 2 (IN)", "e20r-tracker");
+            self::$exercise_levels['e20r_tracker_exp_3'] = __( "Exercise Level 3 (EX)", "e20r-tracker");
         }
 
         dbg("e20rWorkoutModel::getExerciseLevels() - Found levels: " . print_r(self::$exercise_levels, true));
@@ -70,7 +84,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 	public function getType( $tId = null ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( null == $tId ) {
             return $this->types[0];
@@ -144,8 +158,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
 		global $currentWorkout;
 
-		global $e20rProgram;
-        global $e20rTracker;
+		$e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
 		if ( isset( $currentWorkout->id ) && ( $currentWorkout->id == $id ) ) {
 
@@ -274,8 +288,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 	public function getRecordedActivity( $config, $id ) {
 
 		global $wpdb;
-		global $e20rTables;
-		global $e20rTracker;
+		$e20rTables = e20rTables::getInstance();
+		$e20rTracker = e20rTracker::getInstance();
 
 		$fields = $e20rTables->getFields('workout');
 
@@ -395,9 +409,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
     public function save_activity_status( $post_data ) {
 
-        global $e20rTracker;
-        global $e20rAction;
-        global $e20rArticle;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rAction = e20rAction::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         $completed = isset( $_POST['completed'] ) ? $e20rTracker->sanitize( $_POST['completed'] ) : false;
         $userId = isset( $_POST['user_id'] ) ? $e20rTracker->sanitize( $_POST['user_id'] ) : null;
@@ -510,8 +524,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
 /*
     private function transformForJS( $records ) {
 
-        global $e20rTables;
-        global $e20rClient;
+        $e20rTables = e20rTables::getInstance();
+        $e20rClient = e20rClient::getInstance();
 
         $retVal = array();
 
@@ -560,7 +574,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         global $wpdb;
         global $currentProgram;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( ( is_null( $programId ) ) || ( $currentProgram->id != $programId ) ) {
 
@@ -638,9 +652,9 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
     public function loadAllUserActivities( $userId ) {
 
-        global $e20rTracker;
-        global $e20rExercise;
-        global $e20rProgram;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rExercise = e20rExercise::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $currentExercise;
         global $currentProgram;
@@ -710,8 +724,8 @@ class e20rWorkoutModel extends e20rSettingsModel {
     private function loadWorkoutByMeta( $programId, $key, $value, $comp = '=', $type = 'numeric', $orderbyKey = 'startday' ) {
 
         global $current_user;
-        global $e20rProgram;
-        global $e20rTracker;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         $records = array();
 
@@ -772,7 +786,7 @@ class e20rWorkoutModel extends e20rSettingsModel {
 
         global $wpdb;
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         $result = array();

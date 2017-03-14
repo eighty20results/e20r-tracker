@@ -14,8 +14,8 @@ class e20rClientModel {
 
     public function __construct() {
 
-        global $e20rTables;
-        global $e20rProgram;
+        $e20rTables = e20rTables::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
         global $currentClient;
 
         try {
@@ -72,8 +72,8 @@ class e20rClientModel {
 
         global $wpdb;
 
-        global $e20rTables;
-        global $e20rTracker;
+        $e20rTables = e20rTables::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         $table = $e20rTables->getTable('message_history');
         $fields = $e20rTables->getFields('message_history');
@@ -94,7 +94,7 @@ class e20rClientModel {
 
             $user = get_user_by('id', $userId);
             $error = '<div class="error">';
-            $error .= '    <p>' . sprintf( __("Error while saving the message history for %s %s: %s ", "e20rtracker"), $user->user_firstname, $user->user_lastname, $wpdb->print_error() ) . '</p>';
+            $error .= '    <p>' . sprintf( __("Error while saving the message history for %s %s: %s ", "e20r-tracker"), $user->user_firstname, $user->user_lastname, $wpdb->print_error() ) . '</p>';
             $error .= '</div><!-- /.error -->';
 
             $e20rTracker->updateSetting( 'unserialize_notice', $error );
@@ -112,9 +112,9 @@ class e20rClientModel {
         dbg("e20rClientModel::load_message_history() - Looking for a message history for {$userId}");
         global $wpdb;
 
-        global $e20rTables;
-        global $e20rTracker;
-        global $e20rAssignment;
+        $e20rTables = e20rTables::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rAssignment = e20rAssignment::getInstance();
 
         global $currentProgram;
 
@@ -190,7 +190,7 @@ class e20rClientModel {
     public function interview_complete( $userId ) {
 
         global $currentProgram;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         global $wpdb;
 
@@ -231,12 +231,12 @@ class e20rClientModel {
             return false;
         }
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentClient;
         global $currentProgram;
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( !isset( $currentProgram->id ) ) {
 
@@ -283,8 +283,8 @@ class e20rClientModel {
         }
 
         global $currentClient;
-        global $e20rTracker;
-        global $e20rProgram;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rProgram = e20rProgram::getInstance();
 
         global $current_user;
         global $currentProgram;
@@ -340,9 +340,9 @@ class e20rClientModel {
         global $currentClient;
         global $currentArticle;
 
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         dbg("e20rClientModel::load_basic_clientdata() - Loading default currentClient structure");
 
@@ -395,9 +395,9 @@ class e20rClientModel {
         global $currentClient;
         global $currentArticle;
 
-        global $e20rProgram;
-        global $e20rTracker;
-        global $e20rArticle;
+        $e20rProgram = e20rProgram::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         dbg("e20rClientModel::load_data(): " . $e20rTracker->whoCalledMe() );
 
@@ -545,9 +545,9 @@ class e20rClientModel {
         global $currentArticle;
         global $current_user;
 
-        global $e20rTracker;
-        global $e20rTables;
-        global $e20rArticle;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTables = e20rTables::getInstance();
+        $e20rArticle = e20rArticle::getInstance();
 
         global $wpdb;
         global $post;
@@ -568,7 +568,7 @@ class e20rClientModel {
 
         if ( ( !empty( $program_id ) ) && ( $program_id != $currentProgram->id ) ) {
 
-            global $e20rProgram;
+            $e20rProgram = e20rProgram::getInstance();
             dbg("e20rClientModel::load_from_survey_table() - Program ID in data vs currentProgram mismatch. Loading new program info");
 
             $e20rProgram->init( $program_id );
@@ -677,8 +677,8 @@ class e20rClientModel {
         }
 
         global $wpdb;
-        global $e20rTables;
-        global $e20rTracker;
+        $e20rTables = e20rTables::getInstance();
+        $e20rTracker = e20rTracker::getInstance();
 
         $table = $e20rTables->getTable( 'client_info' );
 
@@ -737,8 +737,8 @@ class e20rClientModel {
         global $currentProgram;
         global $currentArticle;
         global $current_user;
-        global $e20rTracker;
-        global $e20rTables;
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTables = e20rTables::getInstance();
 
         global $post;
         global $wpdb;
@@ -751,7 +751,7 @@ class e20rClientModel {
 
         if ( ( !empty( $data['program_id'] ) ) && ( $data['program_id'] != $currentProgram->id ) ) {
 
-            global $e20rProgram;
+            $e20rProgram = e20rProgram::getInstance();
             dbg("e20rClientModel::save_in_survey_table() - Program ID in data vs currentProgram mismatch. Loading new program info");
 
             $e20rProgram->init( $data['program_id']);
@@ -761,7 +761,7 @@ class e20rClientModel {
 
         if ( ( !empty( $data['article_id'] )) && ( $data['article_id'] != $currentArticle->id ) ) {
 
-            global $e20rArticle;
+            $e20rArticle = e20rArticle::getInstance();
             dbg("e20rClientModel::save_in_survey_table() - Article ID in data vs currentArticle mismatch. Loading new article");
             $e20rArticle->getSettings( $data['article_id']);
         }
@@ -847,7 +847,7 @@ class e20rClientModel {
         }
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( !empty( $data['completion_date'] ) ) {
             $data['completed_date'] = date('Y-m-d H:i:s', strtotime( $data['completion_date'] . " ". date( 'H:i:s', current_time('timestamp') ) ) );
@@ -914,7 +914,7 @@ class e20rClientModel {
     private function recordExists( $userId, $programId, $postId = null, $article_id = null, $table_name = null ) {
 
         global $wpdb;
-        global $e20rTables;
+        $e20rTables = e20rTables::getInstance();
         global $currentArticle;
 
         if ( is_null( $table_name ) ) {
@@ -964,7 +964,7 @@ class e20rClientModel {
     public function setUser( $id ) {
 
         global $currentClient;
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
 
         if ( $id != $currentClient->user_id ) {
             $currentClient->user_id = $id;
@@ -1077,7 +1077,7 @@ class e20rClientModel {
 
     public function get_coach( $client_id = null, $program_id = null ) {
 
-        global $e20rProgram;
+        $e20rProgram = e20rProgram::getInstance();
         global $currentProgram;
 
         global $wpdb;

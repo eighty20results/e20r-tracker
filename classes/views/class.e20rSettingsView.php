@@ -14,12 +14,26 @@ class e20rSettingsView {
     protected $type;
     protected $error;
 
+    private static $instance = null;
+
     protected function __construct( $type = null, $cpt_slug = null ) {
 
         $this->type = $type;
         $this->cpt_slug = $cpt_slug;
 
     }
+
+	/**
+	 * @return e20rSettingsView
+	 */
+	static function getInstance() {
+
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
 
     protected function setError( $text ) {
 
