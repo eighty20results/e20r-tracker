@@ -3,7 +3,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.6.0
+Version: 1.6.1
 Author: Wicked Strong Chicks, LLC <info@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 Text Domain: e20r-tracker
@@ -33,7 +33,7 @@ if ( !defined( 'ABSPATH' ) ) {
 	die( "Sorry, you are not allowed to access this page directly." );
 }
 
-define('E20R_VERSION', '1.6.0');
+define('E20R_VERSION', '1.6.1');
 define('E20R_RUN_UNSERIALIZE', 0); // 0 == Do NOT Run, 1 == Run
 define('E20R_DB_VERSION', '11');
 define('E20R_NEW_DB_VERSION','9');
@@ -140,7 +140,7 @@ if (!function_exists('dbg')):
                 error_log("E20R Track: Creating root directory for debug logging: ${dbgPath}");
 
                 // Create the debug logging directory
-                wp_mkdir_p($dbgPath, 0750);
+                wp_mkdir_p( $dbgPath );
 
                 if (!is_writable($dbgRoot)) {
 
