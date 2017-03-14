@@ -1,10 +1,10 @@
 === E20R Tracker ===
 Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
-Requires at least: 3.7
+Requires at least: 4.4
 Requires PHP 5.6 or later.
-Tested up to: 4.7.2
-Stable tag: 1.5.68
+Tested up to: 4.7.3
+Stable tag: 1.6.1
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,16 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.6.1 ==
+
+* BUG/FIX: Resize Daily Progress content windows
+* BUG/FIX: wp_mkdir_p() would fail to create debug directory
+
+== 1.6.0 ==
+
+* ENHANCEMENT: Use singleton pattern to speed up plugin load time
+* ENHANCEMENT: Transition to e20r-tracker as translation slug
 
 == 1.5.68 ==
 

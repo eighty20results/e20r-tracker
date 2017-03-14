@@ -1,1 +1,2 @@
-BUG: Didn't escape the activity excerpt properly
+BUG/FIX: Resize Daily Progress content windows
+BUG/FIX: wp_mkdir_p() would fail to create debug directory
