@@ -1,1 +1,1 @@
-ENHANCEMENT: Automatically load the Yoast meta description to the "article summary" field
+BUG/FIX: Didn't properly set the Exerpt/Article Summary
