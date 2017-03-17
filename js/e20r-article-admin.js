@@ -30,7 +30,7 @@ jQuery(document).ready( function(){
 
                 console.log("Received from e20r_getDelayValue: ", $response );
 
-                if ( $response.data.nodelay != 0) {
+                if ( $response.data.nodelay !== false ) {
                     console.log("No delay specified. Exiting!");
                     return false;
                 }
@@ -41,13 +41,16 @@ jQuery(document).ready( function(){
                     jQuery('#e20r-article-release_day').val($response.data.delay);
                 }
 
-                if ( $response.data.summary > 0 ) {
-                    console.log("Got a summary value from back-end: " + $response.data.summary );
+                if ( $response.data.summary.length > 0 ) {
 
-                    var excerpt = jQuery('#excerpt').val();
+                    window.console.log("Got a summary text from the back-end" );
 
-                    if ( excerpt.trim().length <= 0 ) {
-                        excerpt.val( $response.data.summary );
+                    var excerpt = jQuery('textarea#excerpt').val().trim();
+                    window.console.log( excerpt );
+
+                    if ( excerpt.length === 0 ) {
+                        window.console.log("Setting the Excerpt to: " + $response.data.summary );
+                        jQuery('textarea#excerpt').val( $response.data.summary );
                     }
                 }
             },
