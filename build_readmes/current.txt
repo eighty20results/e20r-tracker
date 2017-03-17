@@ -1,2 +1,1 @@
-BUG/FIX: Resize Daily Progress content windows
-BUG/FIX: wp_mkdir_p() would fail to create debug directory
+ENHANCEMENT: Automatically load the Yoast meta description to the "article summary" field
