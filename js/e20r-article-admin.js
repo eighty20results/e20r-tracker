@@ -40,6 +40,16 @@ jQuery(document).ready( function(){
                     console.log("Got delay value from back-end: " + $response.data.delay);
                     jQuery('#e20r-article-release_day').val($response.data.delay);
                 }
+
+                if ( $response.data.summary > 0 ) {
+                    console.log("Got a summary value from back-end: " + $response.data.summary );
+
+                    var excerpt = jQuery('#excerpt').val();
+
+                    if ( excerpt.trim().length <= 0 ) {
+                        excerpt.val( $response.data.summary );
+                    }
+                }
             },
             error: function( $response, $errString, $errType ) {
                 console.log($errString + ' error returned from e20r_getDelayValue action: ' + $errType );

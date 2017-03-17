@@ -1086,11 +1086,13 @@ class e20rArticle extends e20rSettings {
 		}
 
 		$dripFeedDelay = $e20rTracker->getDripFeedDelay( $postId );
+        $seo_summary = get_post_meta( $postId, '_yoast_wpseo_metadesc', true );
 
 		if ( $dripFeedDelay ) {
 			wp_send_json_success( array(
 				'delay'   => $dripFeedDelay,
-				'nodelay' => false
+				'nodelay' => false,
+                'summary' => $seo_summary,
 			) );
 		}
 
