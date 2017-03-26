@@ -1336,20 +1336,20 @@ class e20rTracker {
         register_setting( 'e20r_options', $this->setting_name, array( $this, 'validate' ) );
 
         /* Add fields for the settings */
-        add_settings_section( 'e20r_tracker_timeouts', 'User Settings', array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_login_timeout', __("Default login", 'e20r_tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
-        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended login", 'e20r_tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
-        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Surveys", 'e20r_tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_section( 'e20r_tracker_timeouts', __( 'User Settings', 'e20r-tracker'), array( &$this, 'render_login_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_login_timeout', __("Default login", 'e20r-tracker'), array( $this, 'render_logintimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_rememberme_timeout', __("Extended login", 'e20r-tracker'), array( $this, 'render_remembermetimeout_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
+        add_settings_field( 'e20r_tracker_encrypt_surveys', __("Encrypt Surveys", 'e20r-tracker'), array( $this, 'render_survey_select'), 'e20r_tracker_opt_page', 'e20r_tracker_timeouts');
 
         // add_settings_section( 'e20r_tracker_programs', 'Programs', array( &$this, 'render_program_section_text' ), 'e20r_tracker_opt_page' );
-        // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r_tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
-        // add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r_tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_field( 'e20r_tracker_measurement_day', __("Day to record progress", 'e20r-tracker'), array( $this, 'render_measurementday_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
+        // add_settings_field( 'e20r_tracker_lesson_source', __("Drip Feed managing lessons", 'e20r-tracker'), array( $this, 'render_lessons_select'), 'e20r_tracker_opt_page', 'e20r_tracker_programs');
 
-        add_settings_section( 'e20r_tracker_deactivate', 'Deactivation settings', array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
-        add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r_tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
-        add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r_tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
+        add_settings_section( 'e20r_tracker_deactivate', __( 'Deactivation settings', 'e20r-tracker' ), array( &$this, 'render_deactivation_section_text' ), 'e20r_tracker_opt_page' );
+        add_settings_field( 'e20r_tracker_purge_tables', __("Clear tables", 'e20r-tracker'), array( $this, 'render_purge_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
+        add_settings_field( 'e20r_tracker_delete_tables', __("Delete tables", 'e20r-tracker'), array( $this, 'render_delete_checkbox'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate');
 
-        // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r_tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
+        // add_settings_field( 'e20r_tracker_measured', __('Progress measurements', 'e20r-tracker'), array( $this, 'render_measurement_list'), 'e20r_tracker_opt_page', 'e20r_tracker_deactivate' );
 
         // $this->render_settings_page();
 
