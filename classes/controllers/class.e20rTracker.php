@@ -1324,7 +1324,7 @@ class e20rTracker {
 
     public function loadAdminPage() {
 
-        add_options_page( 'Eighty / 20 Tracker', 'E20R Tracker', 'manage_options', 'e20r_tracker_opt_page', array( $this, 'render_settings_page' ) );
+        add_options_page( __( 'Eighty / 20 Tracker', 'e20r-tracker'), __('E20R Tracker', 'e20r-tracker'), 'manage_options', 'e20r_tracker_opt_page', array( $this, 'render_settings_page' ) );
 
         // $this->registerAdminPages();
 
@@ -1410,17 +1410,17 @@ class e20rTracker {
 
     public function render_login_section_text() {
 
-        echo "<p>Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.</p><hr/>";
+        echo "<p>" . __("Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.", 'e20r-tracker' ) . "</p><hr/>";
     }
 
     public function render_program_section_text() {
 
-        echo "<p>Configure global Eighty / 20 Tracker settings.</p><hr/>";
+        echo "<p>" . __( "Configure global Eighty / 20 Tracker settings.", "e20r-tracker" ) . "</p><hr/>";
     }
 
     public function render_deactivation_section_text() {
 
-        echo "<p>Configure the behavior of the plugin when it gets deactivated.</p><hr/>";
+        echo "<p>" . __( "Configure the behavior of the plugin when it gets deactivated.", "e20r-tracker" ) . "</p><hr/>";
     }
 
     public function render_settings_page() {
