@@ -1,1 +1,3 @@
-BUG/FIX: Didn't properly set the Exerpt/Article Summary
+BUG/FIX: Not all text is/was translatable
+BUG/FIX: Didn't make sure there was an actual post to process
+BUG/FIX: Translation slug
