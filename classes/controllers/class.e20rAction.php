@@ -809,7 +809,7 @@ class e20rAction extends e20rSettings
 
             // Article ID given in POST variable so load the requested article
             $e20rArticle->init($config->articleId);
-        } else {
+        } else if ( isset( $post->ID ) && ! empty( $post->ID ) ) {
 
             if (!isset($config->delay) && (false === $article_configured)) {
 
