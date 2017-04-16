@@ -1,1 +1,1 @@
-BUG/FIX: Couldn't navigate back or forwards on dashboard
+ENHANCEMENT: Grammar in summary page/shortcode
