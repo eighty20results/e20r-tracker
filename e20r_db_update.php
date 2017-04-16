@@ -11,7 +11,7 @@ if ( !function_exists( "e20r_update_db_to_11" ) ) {
 
         $real_version = $version[0];
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20r_update_db_to_11() - Updating version setting so we won't re-run");
         $e20rTracker->updateSetting('e20r_db_version', $real_version );
@@ -29,7 +29,7 @@ if ( !function_exists( "e20r_update_db_to_10" ) ) {
 
         $real_version = $version[0];
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         dbg("e20r_update_db_to_10() - Updating version setting so we won't re-run");
         $e20rTracker->updateSetting('e20r_db_version', $real_version );
@@ -46,7 +46,7 @@ if ( !function_exists( "e20r_update_db_to_6" ) ) {
         }
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $error = false;
 
@@ -98,7 +98,7 @@ if ( !function_exists( "e20r_update_db_to_7" ) ) {
         }
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $error = false;
 
@@ -150,7 +150,7 @@ if ( !function_exists( "e20r_update_db_to_8" ) ) {
         }
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $error = false;
 
@@ -203,7 +203,7 @@ if ( !function_exists( "e20r_update_db_to_9" ) ) {
         }
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $error = false;
 
@@ -250,7 +250,7 @@ if ( !function_exists( "e20r_update_db_to_5" ) ) {
     function e20r_update_db_to_5( $version ) {
 
         global $wpdb;
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( ! e20r_should_we_run( $version ) ) {
             return;
@@ -303,7 +303,7 @@ if ( ! function_exists( 'e20r_should_we_run' ) ) {
 
     function e20r_should_we_run( $version ) {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         $version = $version[0];
 
