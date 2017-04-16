@@ -13,7 +13,9 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
     function setUp() {
 
         parent::setUp();
-        global $e20rTracker;
+        
+        $e20rTracker = e20rTracker::getInstance();
+        
         $this->plugin = $e20rTracker;
 
     } // end setUp()
@@ -24,26 +26,27 @@ class E20R_Checkin_DBTests extends WP_UnitTestCase {
 
     function configureDB() {
 
-        global $e20rTracker;
-        $e20rTracker->e20r_tracker_activate();
+        $e20rTracker = e20rTracker::getInstance();
+        $e20rTracker->activate();
     }
 
     function teardownDB() {
 
-        global $e20rTracker;
+        $e20rTracker = e20rTracker::getInstance();
 
         if ( $e20rTracker->updateSetting( 'delete_tables', true ) && $e20rTracker->updateSetting( 'purge_tables', false )) {
-            $e20rTracker->e20r_tracker_deactivate();
+            $e20rTracker->deactivate();
         }
         else throwException("Unable to set the delete_tables setting to true");
     }
 
     function testCreateTables() {
 
-        global $wpdb, $e20rTracker;
-
+        global $wpdb;
+	
+	    $e20rTracker = e20rTracker::getInstance();
         // Create database tables
-        $e20rTracker->e20r_tracker_activate();
+        $e20rTracker->activate();
 
 
         // Iterate through and check that DB was correctly created
