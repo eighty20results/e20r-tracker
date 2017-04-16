@@ -87,7 +87,7 @@ class e20rArticleView extends e20rSettingsView {
                 $day_name = date('l', $timestamp);
             ?>
             <div class="e20r-article-post-summary-tile">
-                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed how...", "e20r-tracker" ), $day_name, $type, $article['title'] ); ?></p>
+                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed...", "e20r-tracker" ), $day_name, $type, $article['title'] ); ?></p>
                 <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ) ; ?></p>
             </div><?php
             } ?>
