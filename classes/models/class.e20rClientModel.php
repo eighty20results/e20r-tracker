@@ -1016,8 +1016,10 @@ class e20rClientModel {
      */
     public function getBetaUserUrl( $who, $when, $imageSide ) {
 
-        global $e20rTables, $wpdb;
-
+        global $wpdb;
+	
+	    $e20rTables = e20rTables::getInstance();
+	    
         if ( $e20rTables->isBetaClient() ) {
 
             dbg("e20rClientModel::getBetaUserUrl() - User with ID {$who} IS a member of the Nourish BETA group");

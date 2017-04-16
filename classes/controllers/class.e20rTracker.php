@@ -1447,7 +1447,7 @@ class e20rTracker {
 
     public function registerAdminPages() {
 
-        global $e20rClient, $e20rProgram, $e20rAction;
+       
         global $e20rAdminPage;
         global $e20rClientInfoPage;
 
@@ -1458,7 +1458,7 @@ class e20rTracker {
 
         $e20rProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20r-tracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
         $e20rArticles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20r-tracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
-        $e20rActivies = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20r-tracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
+        $e20rActivities = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20r-tracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
     }
 
     public function renderGirthTypesMetabox() {

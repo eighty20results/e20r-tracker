@@ -177,7 +177,9 @@ class e20rSettings {
 
     public function saveSettings( $post_id ) {
 
-        global $e20rTracker, $post;
+        global $post;
+	
+	    $e20rTracker = e20rTracker::getInstance();
 
         if ( (! isset( $post->post_type ) ) || ( $post->post_type != $this->model->get_slug()) ) {
             dbg("e20r" .ucfirst($this->type) . "::saveSettings() - Incorrect post type for " . $this->model->get_slug());

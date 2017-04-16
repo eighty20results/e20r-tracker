@@ -103,8 +103,10 @@ class e20rMeasurements {
 
     public function setMeasurementDate( $date = null ) {
 
-        global $e20rTracker, $e20rMeasurementDate;
-
+        global $e20rMeasurementDate;
+	    
+        $e20rTracker = e20rTracker::getInstance();
+        
         $this->dates = $e20rTracker->datesForMeasurements( $date );
 
         if ( $date != $this->measurementDate ) {
@@ -173,10 +175,11 @@ class e20rMeasurements {
     public function setFilenameForClientUpload( $file ) {
 
         global $current_user;
-        $e20rProgram = e20rProgram::getInstance();
         global $pagenow;
         global $post;
-
+	
+	    $e20rProgram = e20rProgram::getInstance();
+	    
 	    $imageFormats = array(
             'image/bmp',
 		    'image/gif',
@@ -334,10 +337,12 @@ class e20rMeasurements {
 
     public function updateMeasurementsForType( $unitType, $newUnit ) {
 
-        global $e20rTables, $e20rClient;
+        $e20rTables = e20rTables::getInstance();
+	    $e20rClient = e20rClient::getInstance();
 
         $fields = $e20rTables->getFields( 'measurements' );
-
+	    $oldUnit = null;
+	    
         if ( $unitType == 'weight' ) {
             $oldUnit = $e20rClient->getWeightUnit();
         }
@@ -580,7 +585,7 @@ class e20rMeasurements {
         }
         else {
             dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
-            return;
+            return null;
         }
 
         dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
@@ -761,8 +766,7 @@ class e20rMeasurements {
 
             dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading progress form for {$this->measurementDate} by {$this->id}");
             return $this->load_EditProgress( $articleId );
-
-            dbg('e20rMeasurements::shortcode_weeklyProgress() - Form load completed...');
+	        
         }
         catch ( Exception $e ) {
             dbg("Error displaying weekly progress form: " . $e->getMessage() );
@@ -828,9 +832,10 @@ class e20rMeasurements {
     }
 
     public function getMeasurement( $when = 'all', $forJS = false ) {
-
+	
+	    global $current_user;
+	    
         $e20rTracker = e20rTracker::getInstance();
-        global $current_user;
         $e20rProgram = e20rProgram::getInstance();
 
         if ( ! isset( $this->id ) ) {
@@ -939,9 +944,10 @@ class e20rMeasurements {
     }
 
     private function load_EditProgress( $articleId = CONST_NULL_ARTICLE ) {
-
+	
+	    global $current_user;
+	    
         $e20rTracker = e20rTracker::getInstance();
-        global $current_user;
         $e20rProgram = e20rProgram::getInstance();
         $e20rArticle = e20rArticle::getInstance();
         $e20rMeasurements = e20rMeasurements::getInstance();
