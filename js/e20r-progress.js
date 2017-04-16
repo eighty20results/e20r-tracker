@@ -94,7 +94,7 @@ var UNIT = {
     }
 };
 
-jQuery(function() {
+(function($) {
 
     var MAX_ALLOWED_MEASUREMENT_CHANGE_PER_PERIOD = {
         'weight': 10, // lbs
@@ -121,7 +121,7 @@ jQuery(function() {
             this.type = attrs.type;
             this.period = attrs.period;
             this.unit = attrs.unit || 'unknown';
-            this.$field = jQuery('input.measurement-input[data-measurement-type=' + self.type + ']');
+            this.$field = $('input.measurement-input[data-measurement-type=' + self.type + ']');
             this.value = float(this.$field.val());
             this.$fieldContainer = self.$field.closest('.measurement-field-container');
             this.$savedContainer = this.$fieldContainer.next('.measurement-saved-container');
@@ -148,7 +148,7 @@ jQuery(function() {
                 }
             }
 
-            jQuery.bindEvents({
+            $.bindEvents({
                 self: this,
                 elem: this.$field,
                 events: {
@@ -162,7 +162,7 @@ jQuery(function() {
                 }
             });
 
-            jQuery.bindEvents({
+            $.bindEvents({
                 self: this,
                 elem: this.$infoToggleIcon,
                 events: {
@@ -172,7 +172,7 @@ jQuery(function() {
                 }
             });
 
-            jQuery.bindEvents({
+            $.bindEvents({
                 self: this,
                 elem: this.$editButton,
                 events: {
@@ -316,13 +316,13 @@ jQuery(function() {
 					<button class="override-difference-check">I\'m certain, save this measurement</button>\
 					<button class="cancel" style="margin-right: 4px;">Change this measurement</button>',
                         handler: function(self) {
-                            jQuery('.floating-error button.override-difference-check')
+                            $('.floating-error button.override-difference-check')
                                 .click(function() {
                                     self.__overrideDifferenceCheck = 1;
                                     self.attemptSave(self);
                                 });
 
-                            jQuery('.floating-error button.cancel')
+                            $('.floating-error button.cancel')
                                 .click(function() {
                                     self._clearErrors();
                                     self.$field.select();
@@ -343,19 +343,19 @@ jQuery(function() {
 
         save: function(self) {
 
-            jQuery('body').addClass("loading");
+            $('body').addClass("loading");
             var $data = {
                 'action': 'e20r_saveMeasurementForUser',
-                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
-                'article-id': jQuery('#article_id').val(),
-                'program-id': jQuery('#program_id').val(),
-                'date': jQuery( '#date').val(),
+                'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
+                'article-id': $('#article_id').val(),
+                'program-id': $('#program_id').val(),
+                'date': $( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
                 'user-id': NourishUser.user_id
             };
 
-            jQuery.ajax ({
+            $.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
@@ -369,7 +369,7 @@ jQuery(function() {
                 }
             });
 
-            jQuery('body').removeClass("loading");
+            $('body').removeClass("loading");
             self.changeState('saved');
         },
 
@@ -381,12 +381,12 @@ jQuery(function() {
         },
 
         _clearErrors: function() {
-            jQuery('.floating-error[data-measurement-type="' + this.type + '"]')
+            $('.floating-error[data-measurement-type="' + this.type + '"]')
                 .remove();
         },
 
         _displayError: function(errorText) {
-            jQuery('<div class="floating-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
+            $('<div class="floating-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
                 .positionAtOffset(this.$fieldContainer, +20, +66)
                 .appendTo(document.body);
         },
@@ -441,21 +441,24 @@ jQuery(function() {
     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
 */
-    jQuery('#submit-weekly-progress-button').click(function() {
+    $('#submit-weekly-progress-button').click(function() {
 
         event.preventDefault(); // Disable POST action - handle it in AJAX instead
 
-        jQuery('#validation-errors').remove();
+        $('#validation-errors').remove();
 
         // Make sure at least one of the progress form sections are completed.
-        var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
-        var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
-        var photosMissing = bool( jQuery('.validate-photos').find('img.photo.null').length );
-        var otherMissing = ( jQuery('textarea[name=essay1]').val().length == 0 );
+        var weightMissing = bool($('.validate-body-weight').find('.measurement-field-container:visible').length);
+        var girthsMissing = $('.validate-girth-measurements').find('.measurement-field-container:visible').length;
+        var photosMissing = bool( $('.validate-photos').find('img.photo.null').length );
+        var otherMissing = ( $('textarea[name=essay1]').val().length === 0 );
 
-        if ((jQuery('#photos').length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
+        var photos = $('#photos');
+        var body = $('body');
 
-            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+        if (( photos.length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
+
+            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You must answer at least one of the sections to complete the assignment:</strong>\
                       <br/><br/>\
@@ -468,9 +471,9 @@ jQuery(function() {
                 \</div>'
             );
         }
-        else if ((jQuery('#photos').length == 0) && (weightMissing && (girthsMissing >= 8) && otherMissing)) {
+        else if (( photos.length === 0) && (weightMissing && (girthsMissing >= 8) && otherMissing)) {
 
-            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You must answer at least one of the sections to complete the assignment:</strong>\
                       <br/><br/>\
@@ -484,7 +487,7 @@ jQuery(function() {
         }
         else if (girthsMissing > 0 && girthsMissing <= 7) {
 
-            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You have missed some of the girth measurements. Please check the values and re-submit.</strong>\
                       <br/><br/>\
@@ -496,20 +499,20 @@ jQuery(function() {
         }
         else {
 
-            jQuery('body').addClass("loading");
+            body.addClass("loading");
 
             // The user has completed enough of the progress form to let them proceed.
-            jQuery.ajax ({
+            $.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: {
-                    'article-id': jQuery('#article_id').val(),
-                    'program-id': jQuery('#program_id').val(),
+                    'article-id': $('#article_id').val(),
+                    'program-id': $('#program_id').val(),
                     'action': 'e20r_saveMeasurementForUser',
-                    'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
-                    'date': jQuery('#date').val(),
+                    'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
+                    'date': $('#date').val(),
                     'user-id': NourishUser.user_id,
                     'measurement-type': 'completed',
                     'measurement-value': 1
@@ -543,27 +546,27 @@ jQuery(function() {
                 }
             });
 
-            jQuery('body').removeClass("loading");
+            body.removeClass("loading");
         }
     });
 
     var ProgressQuestionnaire = {
         init: function() {
-            jQuery('#progress-questionnaire')
+            $('#progress-questionnaire')
                 .find('input[name^=pquestion]')
                 .click(function() {
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
-                        'date': jQuery('#date').val(),
-                        'measurement-type': jQuery(this).attr('data-measurement-type'),
-                        'measurement-value': jQuery(this).val(),
+                        'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
+                        'date': $('#date').val(),
+                        'measurement-type': $(this).attr('data-measurement-type'),
+                        'measurement-value': $(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val()
+                        'article-id': $('#article_id').val(),
+                        'program-id': $('#program_id').val()
                     };
 
-                    jQuery.ajax({
+                    $.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -593,20 +596,20 @@ jQuery(function() {
                     });
                 });
 
-            jQuery('textarea[name=essay1]')
+            $('textarea[name=essay1]')
                 .blur(function() {
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
-                        'date': jQuery('#date').val(),
-                        'measurement-type': jQuery(this).attr('data-measurement-type'),
-                        'measurement-value': jQuery(this).val(),
+                        'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
+                        'date': $('#date').val(),
+                        'measurement-type': $(this).attr('data-measurement-type'),
+                        'measurement-value': $(this).val(),
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val()
+                        'article-id': $('#article_id').val(),
+                        'program-id': $('#program_id').val()
                     };
 
-                    jQuery.ajax({
+                    $.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -644,37 +647,37 @@ jQuery(function() {
     ProgressQuestionnaire.init();
 
     /* select units */
-    jQuery('#save-units')
+    $('#save-units')
         .click(function() {
-            jQuery('.unit-item-container')
+            $('.unit-item-container')
                 .find('.units')
                 .each(function() {
-                    jQuery(this)
+                    $(this)
                         .hide()
                         .next('.completed')
                         .text(function() {
-                            return jQuery(this).prev('select').find('option:selected').text();
+                            return $(this).prev('select').find('option:selected').text();
                         })
                         .show();
                 });
 
-            jQuery(this)
+            $(this)
                 .removeClass('save-state')
                 .addClass('change-state')
                 .text('Change Measurement UNITs')
                 .blur();
 
-            var queryString = jQuery('#measurement-inputs select').serialize();
+            var queryString = $('#measurement-inputs select').serialize();
             console.log("Query String: " + queryString);
 
             var $data = {
                 'action': 'e20r_updateUnitTypes',
-                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
                 'querystring': queryString,
                 'user-id': NourishUser.user_id
             };
 
-            jQuery.ajax({
+            $.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
@@ -709,7 +712,7 @@ jQuery(function() {
         });
 
 
-    jQuery('.help-lightbox-handle')
+    $('.help-lightbox-handle')
         .colorbox({
             opacity: .5,
             speed: 500,
@@ -721,38 +724,38 @@ jQuery(function() {
         init: function() {
             var self = this;
 
-            jQuery.each(['front', 'side', 'back'], function() {
+            $.each(['front', 'side', 'back'], function() {
 
                 self.bindPhotoUploader(this);
 
-                if (jQuery('#photo-' + this).hasClass('null')) {
+                if ($('#photo-' + this).hasClass('null')) {
 
                     console.log("Hiding for: " + this);
-                    jQuery('.delete-photo.' + this).hide();
-                    jQuery('.manip-container.' + this).hide();
+                    $('.delete-photo.' + this).hide();
+                    $('.manip-container.' + this).hide();
                 }
                 else {
 
-                    jQuery('.delete-photo.' + this).closest('tfoot > td').show();
-                    jQuery('.manip-container.' + this).closest('tfoot > td').show();
+                    $('.delete-photo.' + this).closest('tfoot > td').show();
+                    $('.manip-container.' + this).closest('tfoot > td').show();
                 }
             });
 
-            jQuery('.delete-photo')
+            $('.delete-photo')
                 .click(function() {
-                    var orientation = jQuery(this).attr('data-orientation');
+                    var orientation = $(this).attr('data-orientation');
 
                     var $data = {
-                        'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val(),
-                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
-                        'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
+                        'article-id': $('#article_id').val(),
+                        'program-id': $('#program_id').val(),
+                        'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
+                        'image-id': $("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation,
                         'action': 'e20r_deletePhoto',
                         'user-id': NourishUser.user_id
                     };
 
-                    jQuery.ajax({
+                    $.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -781,7 +784,7 @@ jQuery(function() {
                         },
                         success: function( $response ) {
 
-                            jQuery('#photo-' + orientation)
+                            $('#photo-' + orientation)
                                 .attr('src', $response.data.imageLink )
                                 .addClass('null')
                                 .closest('td')
@@ -791,7 +794,7 @@ jQuery(function() {
                             // var $photo =  self._getPhoto$(orientation);
                             // self._getPhotoSaveNotifier$($photo).fadeOut('slow');
 
-                            jQuery('.delete-photo.' + orientation).hide();
+                            $('.delete-photo.' + orientation).hide();
                         }
                     });
 
@@ -803,9 +806,9 @@ jQuery(function() {
             var progress_uploader;
             var self = this;
 
-            var $uploadButton = jQuery('#photo-upload-' + orientation);
+            var $uploadButton = $('#photo-upload-' + orientation);
 
-            if ($uploadButton.length == 0) {
+            if ($uploadButton.length === 0) {
                 return;
             }
 
@@ -816,11 +819,11 @@ jQuery(function() {
                 if ( progress_uploader ) {
 
                     progress_uploader.open();
-                    jQuery("#media-attachment-date-filters option[value='all']").each( function() {
+                    $("#media-attachment-date-filters option[value='all']").each( function() {
                         this.remove();
                     });
                     /*
-                    jQuery("#media-attachment-date-filters").each( function() {
+                    $("#media-attachment-date-filters").each( function() {
                         this.trigger('click');
                     });
                     */
@@ -849,27 +852,27 @@ jQuery(function() {
 
                     var attachment_thumbs = selection.map( function( attachment ) {
                         attachment = attachment.toJSON();
-                        if( attachment.id != '' ) { return '<img src="' + attachment.sizes.thumbnail.url + '" id="id-' + attachment.id + '" />'; }
+                        if( attachment.id !== '' ) { return '<img src="' + attachment.sizes.thumbnail.url + '" id="id-' + attachment.id + '" />'; }
                     }).join(' ');
 
                     console.log( 'Attacment info:', attachment );
 
-                    jQuery("#photo-" + orientation + "-url-hidden").val( attachment.id );
+                    $("#photo-" + orientation + "-url-hidden").val( attachment.id );
 
                     // Save the image value with the measurements data
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
-                        'date': jQuery('#date').val(),
+                        'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
+                        'date': $('#date').val(),
                         'measurement-type': orientation + '_image',
                         'measurement-value': attachment.id,
                         'user-id': NourishUser.user_id,
-                        'article-id': jQuery('#article_id').val(),
-                        'program-id': jQuery('#program_id').val(),
+                        'article-id': $('#article_id').val(),
+                        'program-id': $('#program_id').val(),
                         'view': orientation
                     };
 
-                    jQuery.ajax({
+                    $.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -909,23 +912,23 @@ jQuery(function() {
                                 });
 
                             setTimeout(function() {
-                                jQuery("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
+                                $("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
                             }, 800);
 
-                            jQuery('.delete-photo.' + orientation).show();
+                            $('.delete-photo.' + orientation).show();
                         }
                     });
                     return false;
                 });
 
                 progress_uploader.open();
-                jQuery("#media-attachment-date-filters option[value='all']").each( function() {
+                $("#media-attachment-date-filters option[value='all']").each( function() {
 
                     this.remove();
                 });
 
                 /*
-                 jQuery("#media-attachment-date-filters").each( function() {
+                 $("#media-attachment-date-filters").each( function() {
                     this.trigger('click');
                  });
                  */
@@ -934,7 +937,7 @@ jQuery(function() {
 
         },
         _getPhoto$: function(orientation) {
-            return jQuery('#photo-' + orientation);
+            return $('#photo-' + orientation);
         },
         _getPhotoSaveNotifier$: function($photo) {
             return $photo
@@ -945,15 +948,15 @@ jQuery(function() {
 
     PhotoUploader.init();
 
-    jQuery('.change-measurement-unit')
+    $('.change-measurement-unit')
         .click(function() {
-            var dimension = jQuery(this).attr('data-dimension');
+            var dimension = $(this).attr('data-dimension');
 
-            jQuery('#selected-' + dimension + '-unit').css('display', 'inline');
-            jQuery('#preferred-' + dimension + '-unit').css('display', 'none');
+            $('#selected-' + dimension + '-unit').css('display', 'inline');
+            $('#preferred-' + dimension + '-unit').css('display', 'none');
 
-            var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
-            var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+            var $cancel = $('.e20r-cancel-' + dimension + '-unit-link');
+            var $change = $('.e20r-change-' + dimension + '-unit-link');
 
             if ( $cancel.is(':hidden') ) {
                 $change.hide();
@@ -964,53 +967,54 @@ jQuery(function() {
                 $change.show();
             }
         });
-    jQuery('.cancel-measurement-unit-update')
+    $('.cancel-measurement-unit-update')
         .each( function() {
             console.log("Adding click event to cancel button for measurement unit update");
-            jQuery(this).on('click', function() {
+            $(this).on('click', function() {
 
                 console.log("Cancel button for measurement unit update clicked");
-                var dimension = jQuery(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
+                var dimension = $(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
 
                 console.log("Dimension: " + dimension);
-                var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
-                var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
+                var $cancel = $('.e20r-cancel-' + dimension + '-unit-link');
+                var $change = $('.e20r-change-' + dimension + '-unit-link');
 
                 $cancel.hide();
                 $change.show();
 
-                jQuery('#selected-' + dimension + '-unit').hide();
-                jQuery('#preferred-' + dimension + '-unit')
+                $('#selected-' + dimension + '-unit').hide();
+                $('#preferred-' + dimension + '-unit')
                     .css('display', 'inline');
 
             });
         });
 
-    jQuery('#selected-length-unit, #selected-weight-unit')
+    $('#selected-length-unit, #selected-weight-unit')
         .each(function() {
-            var dimension = jQuery(this).attr('id').split('-')[1]; // "weight" or "length"
+            var dimension = $(this).attr('id').split('-')[1]; // "weight" or "length"
+            var currentValue;
 
-            if ( dimension == 'weight' ) {
-                var currentValue = NourishUser.weightunits;
+            if ( dimension === 'weight' ) {
+                currentValue = NourishUser.weightunits;
             }
-            else if ( dimension == 'length' ) {
-                var currentValue = NourishUser.lengthunits
+            else if ( dimension === 'length' ) {
+                currentValue = NourishUser.lengthunits
             }
 
-            jQuery(this).val(currentValue);
+            $(this).val(currentValue);
 
-            jQuery('#preferred-' + dimension + '-unit').text(UNIT[currentValue]);
+            $('#preferred-' + dimension + '-unit').text(UNIT[currentValue]);
         })
         .change(function() {
-            var dimension = jQuery(this).attr('id').split('-')[1]; // "weight" or "length"
+            var dimension = $(this).attr('id').split('-')[1]; // "weight" or "length"
 
-            var newUnitAbbr = jQuery(this).val(); // "in"
-            var newUnitFull = jQuery(this).child('option:selected').text(); // "inches (in)"
+            var newUnitAbbr = $(this).val(); // "in"
+            var newUnitFull = $(this).child('option:selected').text(); // "inches (in)"
 
-            jQuery('.unit.' + dimension).text(newUnitFull);
+            $('.unit.' + dimension).text(newUnitFull);
 
             // update the actual objects (new MeasurementField)
-            var fieldObjectArr = (dimension == 'weight')
+            var fieldObjectArr = (dimension === 'weight')
                 ? WEIGHT_FIELD : GIRTH_FIELDS;
 
 
@@ -1025,14 +1029,14 @@ jQuery(function() {
 
             var $data = {
                 'action': 'e20r_updateUnitTypes',
-                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
                 'user-id': NourishUser.user_id,
                 'dimension': dimension, // "weight" or "length"
                 'value': newUnitAbbr // i.e. "lbs" or "cm", etc
             };
 
             // persist to database
-            jQuery.ajax({
+            $.ajax({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
@@ -1064,13 +1068,13 @@ jQuery(function() {
                 }
             });
 
-            jQuery('#selected-' + dimension + '-unit').hide();
-            jQuery('#preferred-' + dimension + '-unit')
+            $('#selected-' + dimension + '-unit').hide();
+            $('#preferred-' + dimension + '-unit')
                 .text(newUnitFull)
                 .css('display', 'inline');
         });
 
-    jQuery(new Image)
+    $(new Image)
         .attr('src', e20r_progress.settings.imagepath + 'myotape.png')
         .css('display', 'none')
         .appendTo(document.body);
@@ -1078,14 +1082,14 @@ jQuery(function() {
     function checkFormCompletion() {
         var $data = {
             'action': 'e20r_checkCompletion',
-            'article-id': jQuery('#article_id').val(),
-            'program-id': jQuery('#program_id').val(),
-            'date': jQuery('#date').val(),
-            'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
+            'article-id': $('#article_id').val(),
+            'program-id': $('#program_id').val(),
+            'date': $('#date').val(),
+            'e20r-progress-nonce': $( '#e20r-progress-nonce' ).val(),
             'user-id': NourishUser.user_id
         };
 
-        jQuery.ajax({
+        $.ajax({
             url: e20r_progress.ajaxurl,
             type: 'POST',
             timeout: e20r_progress.timeout,
@@ -1114,10 +1118,10 @@ jQuery(function() {
 
             },
             success: function($response) {
-                //var $resp = jQuery.map( $response, function(el){ return el; });
+                //var $resp = $.map( $response, function(el){ return el; });
                 console.log('Completion response: ', $response);
 
-                if ( $response.data.progress_form_completed  == true ) {
+                if ( $response.data.progress_form_completed  === true ) {
                     console.log("Setting form as saved");
                     formToSavedState();
                 }
@@ -1126,31 +1130,37 @@ jQuery(function() {
     }
 
     function formToSavedState() {
-        var isInSavedState = (jQuery('#saved-state-message').length >= 1);
+        var isInSavedState = ($('#saved-state-message').length >= 1);
 
         if (isInSavedState) {
             return;
         }
 
         // hide submit button
-        jQuery('.e20r-progress-form > tfoot').hide();
+        $('.e20r-progress-form > tfoot').hide();
 
         // show saved message
-        jQuery('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
+        $('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
               <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Dashboard</a>.\
             </div>').appendTo('#e20r-progress-canvas');
     }
 
-//    jQuery('#basic-photo-uploader-submit')
+//    $('#basic-photo-uploader-submit')
 //        .removeAttr('disabled');
+
+
+})(jQuery);
+
+jQuery( document ).ready( function( $ ) {
 
     console.log( bool( NourishUser.display_birthdate ) );
 
     if ( false === bool( NourishUser.display_birthdate ) ) {
         console.log("Hiding the birthdate form.");
-        jQuery('#birth-date').hide();
+        $('#birth-date').hide();
     }
 
-    jQuery(".inline").colorbox({inline: true, width: '60%'});
+    $(".inline").colorbox({inline: true, width: '60%'});
+
     checkFormCompletion();
 });
