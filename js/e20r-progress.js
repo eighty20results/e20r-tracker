@@ -1080,6 +1080,7 @@ var UNIT = {
         .appendTo(document.body);
 
     function checkFormCompletion() {
+
         var $data = {
             'action': 'e20r_checkCompletion',
             'article-id': $('#article_id').val(),
