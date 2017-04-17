@@ -2399,64 +2399,13 @@ class e20rTracker {
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Loading scripts in footer of page");
             wp_enqueue_media();
+
+            dbg("e20rTracker::has_weeklyProgress_shortcode() - Add manually created javascript");
+            
             wp_print_scripts( 'jquery-colorbox' );
             wp_print_scripts( 'e20r-jquery-json' );
             wp_print_scripts( 'e20r-tracker-js' );
             wp_print_scripts( 'e20r-progress-js' );
-
-            dbg("e20rTracker::has_weeklyProgress_shortcode() - Add manually created javascript");
-            ?>
-            <script type="text/javascript">
-
-                var user_data = e20r_progress.user_info.userdata.replace(/&quot;/g, '"');
-                var NourishUser = jQuery.parseJSON( user_data );
-
-                var $last_week_data = e20r_progress.measurements.last_week.replace( /&quot;/g, '"');
-                var LAST_WEEK_MEASUREMENTS = jQuery.parseJSON( $last_week_data );
-
-                function setBirthday() {
-
-                    if ( ( typeof NourishUser.birthdate === "undefined" ) || ( NourishUser.birthdate === null ) ) {
-                        console.log("Error: No Birthdate specified. Should we redirect to Interview page?");
-                        return;
-                    }
-
-                    var $bd = NourishUser.birthdate;
-
-                    console.log("Birthday: " + $bd );
-
-                    var curbd = $bd.split('-');
-
-                    jQuery('#bdyear').val(curbd[0]);
-                    jQuery('#bdmonth').val(curbd[1]);
-                    jQuery('#bdday').val(curbd[2]);
-
-                }
-
-                function getBirthday() {
-
-	                var bdate = jQuery('#bdyear').val() + '-' + jQuery('#bdmonth').val() + '-' + jQuery('#bdday').val();
-
-	                console.log("getBirthday() = ", bdate );
-
-	                // TODO: Send to backend for processing/to be added.
-
-                }
-
-                console.log("WP script for E20R Progress Update (client-side) loaded");
-
-                console.log("Loading user_info: ", NourishUser );
-                console.log( "Loading Measurement data for last week", LAST_WEEK_MEASUREMENTS );
-                console.log( "Interview is complete: ", e20r_progress.user_info.interview_complete );
-
-                if ( e20r_progress.user_info.interview_complete === false ) {
-                    console.log("Need to redirect this user to the Interview page!");
-                    location.href=e20r_progress.settings.interview_url;
-                }
-
-                setBirthday();
-            </script>
-            <?php
 
             if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
 
@@ -2506,7 +2455,7 @@ class e20rTracker {
 
         dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
         foreach( $events as $event ) {
-
+            // TODO: Use minified CSS for all (including e20r-tracker.css)
             $css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
                 "e20r-print" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/print.css' : '/css/print.min.css' ),
