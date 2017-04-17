@@ -2455,7 +2455,7 @@ class e20rTracker {
 
         dbg("e20rTracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
         foreach( $events as $event ) {
-            // TODO: Use minified CSS for all (including e20r-tracker.css)
+            
             $css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
             $css = array(
                 "e20r-print" => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/print.css' : '/css/print.min.css' ),
