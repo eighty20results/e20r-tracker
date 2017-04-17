@@ -1,1 +1,2 @@
-ENHANCEMENT: Grammar in summary page/shortcode
+ENHANCEMENT: Better stepping for girth/weight graphs
+BUG/FIX: Load minified CSS files when not running in debug mode

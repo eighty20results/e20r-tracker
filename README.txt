@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
 Tested up to: 4.7.3
-Stable tag: 1.6.9
+Stable tag: 1.6.11
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,17 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.6.11 ==
+
+* ENHANCEMENT: Better stepping for girth/weight graphs
+* BUG/FIX: Load minified CSS files when not running in debug mode
+
+== 1.6.10 ==
+
+* BUG/FIX: Measurement handling errors & refactor to use standard jQuery behaviors
+* BUG/FIX: Button spacing for Measurements page
+* ENHANCEMENT: Transitioning away from embedded JavaScript on Measurements page
 
 == 1.6.9 ==
 
