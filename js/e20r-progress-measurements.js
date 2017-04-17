@@ -597,7 +597,7 @@ var progMeasurements = {
         });
 
         jQuery(document).keyup(function(e) {
-            if (e.keyCode == 27) {
+            if (e.keyCode === 27) {
 
                 dialog.hide();
                 mask.hide();
@@ -609,9 +609,9 @@ var progMeasurements = {
     _loaded_from_coachpage: function() {
         var field = 'e20r-client-id';
         var url = window.location.href;
-        if(url.indexOf('?' + field + '=') != -1)
+        if(url.indexOf('?' + field + '=') !== -1)
             return true;
-        else if(url.indexOf('&' + field + '=') != -1)
+        else if(url.indexOf('&' + field + '=') !== -1)
             return true;
         return false
     },
@@ -643,12 +643,12 @@ var progMeasurements = {
     },
     _tab_selected: function( event, $id ) {
 
-        if ( $id == 2 ) {
+        if ( $id === 2 ) {
 
             console.log("Resize the graphs on the Activities page");
             progMeasurements._resize_chart();
         }
-        else if ( $id == 0 ) {
+        else if ( $id === 0 ) {
 
             console.log("Redrawing weight/girth graphs");
             progMeasurements._resize_chart();
@@ -1003,7 +1003,7 @@ var progMeasurements = {
 
         var $when = jQuery('#e20r-tracker-send-message-datetime').val();
 
-        if ( $when == '' ) {
+        if ( $when === '' ) {
             console.log("No date/time specified. Setting to NULL");
             $when = null;
         }
@@ -1137,7 +1137,7 @@ var progMeasurements = {
                 $class.$spinner.hide();
                 $class.$body.removeClass('loading');
 
-                if ( typeof e20rClientAssignment != 'undefined') {
+                if ( typeof e20rClientAssignment !== 'undefined') {
 
                     console.log("Loading the assignment handler for clients");
                     e20rClientAssignment.init();
@@ -1167,7 +1167,7 @@ var progMeasurements = {
         var $class = this;
         var $currId = $class.$memberSelector.find('option:selected').val();
 
-        if ( $currId != $class.$oldClientId ) {
+        if ( $currId !== $class.$oldClientId ) {
             $class.$hClientId.val($currId);
         }
 
@@ -1406,9 +1406,9 @@ var progMeasurements = {
 
         $class.$body.addClass("loading");
 
-        if ( $class.loadMeasurementData.arguments.length != 1 ) {
+        if ( $class.loadMeasurementData.arguments.length !== 1 ) {
 
-            $clientId = $class.clientId
+            $clientId = $class.clientId;
             window.console.log("No arguments specified.. Loading for user ID: ", $class.clientId );
         }
 
@@ -1472,7 +1472,16 @@ var progMeasurements = {
                     var $entries;
                     var $stepSize;
 
+                    var $hour_in_seconds = 60 * 60;
+                    var $day_in_seconds = $hour_in_seconds * 24;
+                    var $month_in_seconds = $day_in_seconds * 30;
+                    var $year_in_seconds = $month_in_seconds * 12;
+
+                    var $years;
+                    var $time_since_start;
+
                     console.log("Loading Weight chart");
+
 
                     if ( ( typeof data.weight !== 'undefined' ) && ( data.weight.length > 0 ) ) {
 
@@ -1482,11 +1491,27 @@ var progMeasurements = {
                         $minTick = firstDate - 604800000;
                         $maxTick = lastDate + 604800000;
 
+                        $time_since_start = ( $maxTick - $minTick );
+                        $years = $time_since_start / $year_in_seconds;
+
                         $entries = data.weight.length;
                         $stepSize = '1 week';
 
-                        if ($entries >= 26) {
+                        window.console.log("Have been at it for " + $years + " years (weight)");
+
+                        if ( $years > 0.5 && $years <= 1.1  ) {
+                            window.console.log("Using bi-weekly stepping");
                             $stepSize = '2 weeks';
+                        }
+
+                        if ($years > 1.1 && $years <= 2.15 ) {
+                            window.console.log("Using monthly stepping");
+                            $stepSize = '4 weeks';
+                        }
+
+                        if ( $years > 2.15 ) {
+                            window.console.log("Using bi-monthly stepping");
+                            $stepSize = '8 weeks';
                         }
 
                         $class.wPlot = jQuery.jqplot('weight_chart', [data.weight], {
@@ -1544,12 +1569,29 @@ var progMeasurements = {
                         $minTick = firstDate - 604800000;
                         $maxTick = lastDate + 604800000;
 
+                        $time_since_start = ( $maxTick - $minTick );
+                        $years = $time_since_start / $year_in_seconds;
+
                         $entries = data.girth.length;
                         $stepSize = '1 week';
 
-                        if ($entries >= 26) {
+                        window.console.log("Have been at it for " + $years + " years (girth)");
+
+                        if ( $years > 0.5 && $years <= 1.1  ) {
+                            window.console.log("Using bi-weekly stepping");
                             $stepSize = '2 weeks';
                         }
+
+                        if ($years > 1.1 && $years <= 2.15 ) {
+                            window.console.log("Using monthly stepping");
+                            $stepSize = '4 weeks';
+                        }
+
+                        if ( $years > 2.15 ) {
+                            window.console.log("Using bi-monthly stepping");
+                            $stepSize = '8 weeks';
+                        }
+
 
                         $class.gPlot = jQuery.jqplot('girth_chart', [data.girth], {
                             title: 'Total Girth',
