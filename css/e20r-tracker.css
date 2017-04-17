@@ -830,7 +830,7 @@ div#inner-tabs div.inner-tab {
 }
 .browserIE .measurement-saved-container span.value { margin-top: 0; }
 .browserIE .measurement-saved-container span.unit { margin-top: 4px; }
-.browserIE .measurement-saved-container button.edit { margin-top: 1px; width: initial; }
+.browserIE .measurement-saved-container button.edit { margin-top: 1px; width: auto; }
 .browserIE .content fieldset legend { margin-left: -6px; }
 /** TODO: Include depending on how we manage picture uploads **/
 .browserIE #photo-upload-table .photo-upload-container .title {
@@ -2867,6 +2867,7 @@ div.e20r-message-content p {
     #saturday-progress-container.progress-container > h3 span {
         font-size: 100%;
         font-weight: normal;
+        color: #f5f5f5;
     }
     #saturday-progress-container legend {
         float: left;
@@ -3114,6 +3115,7 @@ div.e20r-message-content p {
     #saturday-progress-container.progress-container > h3 span {
         font-size: 90%;
         font-weight: normal;
+        color: #f5f5f5;
     }
     table.e20r-progress-form textarea.e20r-note {
         margin: 0;
