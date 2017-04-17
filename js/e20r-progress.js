@@ -1,100 +1,112 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * License Information:
+ *  the GPL v2 license(?)
+ */
 
-var UNIT = {
-    _weight: ['kg', 'lbs', 'st'],
-    _length: ['cm', 'in'],
+var BitBetterUser;
+var LAST_WEEK_MEASUREMENTS;
+var MeasurementField;
+var ProgressQuestionnaire;
+var UNIT;
 
-    kg: 'kilograms (kg)',
-    lbs: 'pounds (lbs)',
-    st: 'stone (st)',
-    in: 'inches (in)',
-    cm: 'centimeters (cm)',
+(function($){
+    UNIT = {
+        _weight: ['kg', 'lbs', 'st'],
+        _length: ['cm', 'in'],
+
+        kg: 'kilograms (kg)',
+        lbs: 'pounds (lbs)',
+        st: 'stone (st)',
+        in: 'inches (in)',
+        cm: 'centimeters (cm)',
 
 
-    printAbbr: function(fullForm) {
-        return UNIT.abbr(fullForm);
-    },
+        printAbbr: function(fullForm) {
+            return UNIT.abbr(fullForm);
+        },
 
-    printWord: function(fullForm) {
-        return /[^\(]+/.exec(fullForm)[0].strip();
-    },
+        printWord: function(fullForm) {
+            return /[^\(]+/.exec(fullForm)[0].strip();
+        },
 
-    abbr: function(unitStr) {
-        var abbr = /\((.+?)\)/.exec(unitStr);
+        abbr: function(unitStr) {
+            var abbr = /\((.+?)\)/.exec(unitStr);
 
-        if (abbr !== null) {
-            return abbr[1];
-        }
-        else {
-            return unitStr; // probably already in abbr notation
-        }
-    },
-
-    convert: function(from, to, value) {
-        from = UNIT.abbr(from);
-        to = UNIT.abbr(to);
-
-        if (UNIT._weight.find(from) !== -1) {
-            return UNIT._convertWeight(from, to, value);
-        }
-        else {
-            return UNIT._convertLength(from, to, value);
-        }
-    },
-
-    _convertWeight: function(from, to, value) {
-        if (from === to || !from || from == 'unknown') {
-            return value;
-        }
-
-        return {
-            'lbs': {
-                'st': function(n) {
-                    return n / 14;
-                },
-                'kg': function(n) {
-                    return n / 2.20462262;
-                }
-            },
-            'st': {
-                'lbs': function(n) {
-                    return n * 14;
-                },
-                'kg': function(n) {
-                    return n * 6.35029318;
-                }
-            },
-            'kg': {
-                'lbs': function(n) {
-                    return n * 2.20462262;
-                },
-                'st': function(n) {
-                    return n * 0.157473044;
-                }
+            if (abbr !== null) {
+                return abbr[1];
             }
-        }[from][to].call(null, value);
-    },
-
-    _convertLength: function(from, to, value) {
-        if (from === to || !from || from == 'unknown') {
-            return value;
-        }
-
-        return {
-            'in': {
-                'cm': function(value) {
-                    return value * 2.54;
-                }
-            },
-            'cm': {
-                'in': function(value) {
-                    return value / 2.54;
-                }
+            else {
+                return unitStr; // probably already in abbr notation
             }
-        }[from][to].call(null, value);
-    }
-};
+        },
 
-(function($) {
+        convert: function(from, to, value) {
+            from = UNIT.abbr(from);
+            to = UNIT.abbr(to);
+
+            if (UNIT._weight.find(from) !== -1) {
+                return UNIT._convertWeight(from, to, value);
+            }
+            else {
+                return UNIT._convertLength(from, to, value);
+            }
+        },
+
+        _convertWeight: function(from, to, value) {
+            if (from === to || !from || from == 'unknown') {
+                return value;
+            }
+
+            return {
+                'lbs': {
+                    'st': function(n) {
+                        return n / 14;
+                    },
+                    'kg': function(n) {
+                        return n / 2.20462262;
+                    }
+                },
+                'st': {
+                    'lbs': function(n) {
+                        return n * 14;
+                    },
+                    'kg': function(n) {
+                        return n * 6.35029318;
+                    }
+                },
+                'kg': {
+                    'lbs': function(n) {
+                        return n * 2.20462262;
+                    },
+                    'st': function(n) {
+                        return n * 0.157473044;
+                    }
+                }
+            }[from][to].call(null, value);
+        },
+
+        _convertLength: function(from, to, value) {
+            if (from === to || !from || from == 'unknown') {
+                return value;
+            }
+
+            return {
+                'in': {
+                    'cm': function(value) {
+                        return value * 2.54;
+                    }
+                },
+                'cm': {
+                    'in': function(value) {
+                        return value / 2.54;
+                    }
+                }
+            }[from][to].call(null, value);
+        }
+    };
 
     var MAX_ALLOWED_MEASUREMENT_CHANGE_PER_PERIOD = {
         'weight': 10, // lbs
@@ -116,12 +128,12 @@ var UNIT = {
     };
 
     /* class */
-    var MeasurementField = {
+    MeasurementField = {
         init: function(self, attrs) {
             this.type = attrs.type;
             this.period = attrs.period;
             this.unit = attrs.unit || 'unknown';
-            this.$field = $('input.measurement-input[data-measurement-type=' + self.type + ']');
+            this.$field = jQuery('input.measurement-input[data-measurement-type=' + self.type + ']');
             this.value = float(this.$field.val());
             this.$fieldContainer = self.$field.closest('.measurement-field-container');
             this.$savedContainer = this.$fieldContainer.next('.measurement-saved-container');
@@ -133,22 +145,22 @@ var UNIT = {
             this.$infoToggleIcon = this.$girthRowContainer.prev('h5.measurement-header').child('.measurement-descript-toggle');
 
             this._state = 'default';
-            this._isSkinfold = this.type.indexOf('skinfold') != -1;
+            this._isSkinfold = this.type.indexOf('skinfold') !== -1;
             this._allPossibleStates = ['default', 'active', 'saved', 'edit'];
             this.__overrideDifferenceCheck = 0; // e20r_progress.settings.overrideDiff;
 
             if (bool(this.$girthImage.length)) {
 
-                this.$girthImage.addClass(NourishUser.gender);
+                this.$girthImage.addClass(BitBetterUser.gender);
 
-                if ('F' === NourishUser.gender) { // ad hoc
+                if ('F' === BitBetterUser.gender) { // ad hoc
                     this.$girthImage.css('background-image', function(url) {
                         return url.replace('-m', '-f');
                     });
                 }
             }
 
-            $.bindEvents({
+            jQuery.bindEvents({
                 self: this,
                 elem: this.$field,
                 events: {
@@ -162,7 +174,7 @@ var UNIT = {
                 }
             });
 
-            $.bindEvents({
+            jQuery.bindEvents({
                 self: this,
                 elem: this.$infoToggleIcon,
                 events: {
@@ -172,7 +184,7 @@ var UNIT = {
                 }
             });
 
-            $.bindEvents({
+            jQuery.bindEvents({
                 self: this,
                 elem: this.$editButton,
                 events: {
@@ -244,7 +256,7 @@ var UNIT = {
             var key = this._state + '->' + toState;
 
             try {
-                if (this._state == toState) {
+                if (this._state === toState) {
                     throw 'State change attempted to already current state: ' + key; // this isn't a huge deal actually
                 }
                 else if (undefined === this.__stateTransitionHandlers[key]) {
@@ -287,10 +299,10 @@ var UNIT = {
                 if (!self.__overrideDifferenceCheck
                     && LAST_WEEK_MEASUREMENTS
                     && LAST_WEEK_MEASUREMENTS[self.type]) {
-                    var lastWeekValue = LAST_WEEK_MEASUREMENTS[self.type]['value'];
+                    lastWeekValue = LAST_WEEK_MEASUREMENTS[self.type]['value'];
 
                     if (lastWeekValue) {
-                        var diff = Math.abs(value - lastWeekValue);
+                        diff = Math.abs(value - lastWeekValue);
 
                         var diffMaxAllowed = MAX_ALLOWED_MEASUREMENT_CHANGE_PER_PERIOD[self.type] * 5; // *5 temporary
 
@@ -316,13 +328,13 @@ var UNIT = {
 					<button class="override-difference-check">I\'m certain, save this measurement</button>\
 					<button class="cancel" style="margin-right: 4px;">Change this measurement</button>',
                         handler: function(self) {
-                            $('.floating-error button.override-difference-check')
+                            jQuery('.floating-error button.override-difference-check')
                                 .click(function() {
                                     self.__overrideDifferenceCheck = 1;
                                     self.attemptSave(self);
                                 });
 
-                            $('.floating-error button.cancel')
+                            jQuery('.floating-error button.cancel')
                                 .click(function() {
                                     self._clearErrors();
                                     self.$field.select();
@@ -342,20 +354,20 @@ var UNIT = {
         },
 
         save: function(self) {
-
-            $('body').addClass("loading");
+            var body = jQuery('body');
+            body.addClass("loading");
             var $data = {
                 'action': 'e20r_saveMeasurementForUser',
-                'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
-                'article-id': $('#article_id').val(),
-                'program-id': $('#program_id').val(),
-                'date': $( '#date').val(),
+                'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                'article-id': jQuery('#article_id').val(),
+                'program-id': jQuery('#program_id').val(),
+                'date': jQuery( '#date').val(),
                 'measurement-type': self.type,
                 'measurement-value': self.value,
-                'user-id': NourishUser.user_id
+                'user-id': BitBetterUser.user_id
             };
 
-            $.ajax ({
+            jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
@@ -369,7 +381,7 @@ var UNIT = {
                 }
             });
 
-            $('body').removeClass("loading");
+            body.removeClass("loading");
             self.changeState('saved');
         },
 
@@ -381,12 +393,12 @@ var UNIT = {
         },
 
         _clearErrors: function() {
-            $('.floating-error[data-measurement-type="' + this.type + '"]')
+            jQuery('.floating-error[data-measurement-type="' + this.type + '"]')
                 .remove();
         },
 
         _displayError: function(errorText) {
-            $('<div class="floating-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
+            jQuery('<div class="floating-error" data-measurement-type="' + this.type + '">' + errorText + '</div>')
                 .positionAtOffset(this.$fieldContainer, +20, +66)
                 .appendTo(document.body);
         },
@@ -415,50 +427,24 @@ var UNIT = {
         }
     };
 
-    var MeasurementField_ = construct(MeasurementField);
-
-    var weightUNIT = {'lbs': 'pounds (lbs)', 'kg': 'kilograms (kg)', 'st': 'stone (st)'}[NourishUser.weightunits];
-    var lengthUNIT = {'in': 'inches (in)', 'cm': 'centimeters (cm)'}[NourishUser.lengthunits];
-
-    var GIRTH_FIELDS = [],
-        WEIGHT_FIELD = [];
-
-    WEIGHT_FIELD.push(new MeasurementField_({ type: 'weight', period: 'week', unit: weightUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_neck', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_shoulder', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_arm', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_chest', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_waist', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_hip', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_thigh', period: 'week', unit: lengthUNIT }));
-    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_calf', period: 'week', unit: lengthUNIT }));
-/*
-    new MeasurementField_({ type: 'skinfold_abdominal', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_triceps', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_chest', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_midaxillary', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_subscapular', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
-    new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
-*/
-    $('#submit-weekly-progress-button').click(function() {
+    jQuery('#submit-weekly-progress-button').click(function() {
 
         event.preventDefault(); // Disable POST action - handle it in AJAX instead
 
-        $('#validation-errors').remove();
+        jQuery('#validation-errors').remove();
 
         // Make sure at least one of the progress form sections are completed.
-        var weightMissing = bool($('.validate-body-weight').find('.measurement-field-container:visible').length);
-        var girthsMissing = $('.validate-girth-measurements').find('.measurement-field-container:visible').length;
-        var photosMissing = bool( $('.validate-photos').find('img.photo.null').length );
-        var otherMissing = ( $('textarea[name=essay1]').val().length === 0 );
+        var weightMissing = bool(jQuery('.validate-body-weight').find('.measurement-field-container:visible').length);
+        var girthsMissing = jQuery('.validate-girth-measurements').find('.measurement-field-container:visible').length;
+        var photosMissing = bool( jQuery('.validate-photos').find('img.photo.null').length );
+        var otherMissing = ( jQuery('textarea[name=essay1]').val().length === 0 );
 
-        var photos = $('#photos');
-        var body = $('body');
+        var photos = jQuery('#photos');
+        var body = jQuery('body');
 
         if (( photos.length > 0) && (weightMissing && (girthsMissing >= 8) && photosMissing && otherMissing)) {
 
-            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You must answer at least one of the sections to complete the assignment:</strong>\
                       <br/><br/>\
@@ -473,7 +459,7 @@ var UNIT = {
         }
         else if (( photos.length === 0) && (weightMissing && (girthsMissing >= 8) && otherMissing)) {
 
-            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You must answer at least one of the sections to complete the assignment:</strong>\
                       <br/><br/>\
@@ -487,7 +473,7 @@ var UNIT = {
         }
         else if (girthsMissing > 0 && girthsMissing <= 7) {
 
-            $('.e20r-progress-form tfoot tr td:eq(1)').prepend(
+            jQuery('.e20r-progress-form tfoot tr td:eq(1)').prepend(
                 '<div class="red-notice" id="validation-errors" style="font-size: 16px;">\
                       <strong>You have missed some of the girth measurements. Please check the values and re-submit.</strong>\
                       <br/><br/>\
@@ -502,18 +488,18 @@ var UNIT = {
             body.addClass("loading");
 
             // The user has completed enough of the progress form to let them proceed.
-            $.ajax ({
+            jQuery.ajax ({
                 url: e20r_progress.ajaxurl,
                 type: 'POST',
                 timeout: e20r_progress.timeout,
                 dataType: 'JSON',
                 data: {
-                    'article-id': $('#article_id').val(),
-                    'program-id': $('#program_id').val(),
+                    'article-id': jQuery('#article_id').val(),
+                    'program-id': jQuery('#program_id').val(),
                     'action': 'e20r_saveMeasurementForUser',
-                    'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
-                    'date': $('#date').val(),
-                    'user-id': NourishUser.user_id,
+                    'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                    'date': jQuery('#date').val(),
+                    'user-id': BitBetterUser.user_id,
                     'measurement-type': 'completed',
                     'measurement-value': 1
                 },
@@ -550,23 +536,23 @@ var UNIT = {
         }
     });
 
-    var ProgressQuestionnaire = {
+    ProgressQuestionnaire = {
         init: function() {
-            $('#progress-questionnaire')
+            jQuery('#progress-questionnaire')
                 .find('input[name^=pquestion]')
                 .click(function() {
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
-                        'date': $('#date').val(),
-                        'measurement-type': $(this).attr('data-measurement-type'),
-                        'measurement-value': $(this).val(),
-                        'user-id': NourishUser.user_id,
-                        'article-id': $('#article_id').val(),
-                        'program-id': $('#program_id').val()
+                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
+                        'measurement-type': jQuery(this).attr('data-measurement-type'),
+                        'measurement-value': jQuery(this).val(),
+                        'user-id': BitBetterUser.user_id,
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val()
                     };
 
-                    $.ajax({
+                    jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -596,20 +582,20 @@ var UNIT = {
                     });
                 });
 
-            $('textarea[name=essay1]')
+            jQuery('textarea[name=essay1]')
                 .blur(function() {
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
-                        'date': $('#date').val(),
-                        'measurement-type': $(this).attr('data-measurement-type'),
-                        'measurement-value': $(this).val(),
-                        'user-id': NourishUser.user_id,
-                        'article-id': $('#article_id').val(),
-                        'program-id': $('#program_id').val()
+                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
+                        'measurement-type': jQuery(this).attr('data-measurement-type'),
+                        'measurement-value': jQuery(this).val(),
+                        'user-id': BitBetterUser.user_id,
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val()
                     };
 
-                    $.ajax({
+                    jQuery.ajax({
                         url: e20r_progress.ajaxurl,
                         type: 'POST',
                         timeout: e20r_progress.timeout,
@@ -641,40 +627,133 @@ var UNIT = {
                         }
                     });
                 });
+        },
+        checkFormCompletion: function() {
+
+            var self = this;
+            var $data = {
+            'action': 'e20r_checkCompletion',
+            'article-id': jQuery('#article_id').val(),
+            'program-id': jQuery('#program_id').val(),
+            'date': jQuery('#date').val(),
+            'e20r-progress-nonce': jQuery( '#e20r-progress-nonce' ).val(),
+            'user-id': BitBetterUser.user_id
+        };
+
+            $.ajax({
+                url: e20r_progress.ajaxurl,
+                type: 'POST',
+                timeout: e20r_progress.timeout,
+                dataType: 'JSON',
+                // async: false,
+                data: $data,
+                error: function($response, $errString, $errType) {
+
+                    console.log("For Completion check: From server: ", $response );
+                    console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_checkCompletion()");
+
+                    var $msg = '';
+
+                    if ( 'timeout' === $errString ) {
+
+                        $msg = "Error: Timeout while the server was processing data.\n\n";
+                    }
+
+                    var $string;
+                    $string = "An error occurred while trying to check whether you have completed the form. Please ";
+                    $string += "reload this page. \n\nIf you get this error a second time, ";
+                    $string += "please contact Technical Support by using the Contact form ";
+                    $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
+
+                    alert( $msg + $string + "\n\n" + $response.data );
+
+                },
+                success: function($response) {
+
+                    //var $resp = $.map( $response, function(el){ return el; });
+                    console.log('Completion response: ', $response);
+
+                    if ( $response.data.progress_form_completed  === true ) {
+                        console.log("Setting form as saved");
+                        self.formToSavedState();
+                    }
+                }
+        });
+        },
+        formToSavedState: function() {
+
+            var isInSavedState = (jQuery('#saved-state-message').length >= 1);
+
+            if (isInSavedState) {
+                return;
+            }
+
+            // hide submit button
+            jQuery('.e20r-progress-form > tfoot').hide();
+
+            // show saved message
+            jQuery('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
+                  <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Dashboard</a>.\
+                </div>').appendTo('#e20r-progress-canvas');
+        },
+        setBirthday: function() {
+
+        if ( ( typeof BitBetterUser.birthdate === "undefined" ) || ( BitBetterUser.birthdate === null ) ) {
+            console.log("Error: No Birthdate specified. Should we redirect to Interview page?");
+            return;
+        }
+
+        var $bd = BitBetterUser.birthdate;
+
+        console.log("Birthday: " + $bd );
+
+        var curbd = $bd.split("-");
+
+        jQuery("#bdyear").val(curbd[0]);
+        jQuery("#bdmonth").val(curbd[1]);
+        jQuery("#bdday").val(curbd[2]);
+
+    },
+        getBirthday: function() {
+            var bdate = jQuery("#bdyear").val() + "-" + jQuery("#bdmonth").val() + "-" + jQuery("#bdday").val();
+
+            console.log("getBirthday() = ", bdate );
+
+            // TODO: Send to backend for processing/to be added.
         }
     };
 
     ProgressQuestionnaire.init();
 
     /* select units */
-    $('#save-units')
+    jQuery('#save-units')
         .click(function() {
-            $('.unit-item-container')
+            jQuery('.unit-item-container')
                 .find('.units')
                 .each(function() {
-                    $(this)
+                    jQuery(this)
                         .hide()
                         .next('.completed')
                         .text(function() {
-                            return $(this).prev('select').find('option:selected').text();
+                            return jQuery(this).prev('select').find('option:selected').text();
                         })
                         .show();
                 });
 
-            $(this)
+            jQuery(this)
                 .removeClass('save-state')
                 .addClass('change-state')
                 .text('Change Measurement UNITs')
                 .blur();
 
-            var queryString = $('#measurement-inputs select').serialize();
+            var queryString = jQuery('#measurement-inputs select').serialize();
             console.log("Query String: " + queryString);
 
             var $data = {
                 'action': 'e20r_updateUnitTypes',
-                'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
+                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
                 'querystring': queryString,
-                'user-id': NourishUser.user_id
+                'user-id': BitBetterUser.user_id
             };
 
             $.ajax({
@@ -712,7 +791,7 @@ var UNIT = {
         });
 
 
-    $('.help-lightbox-handle')
+    jQuery('.help-lightbox-handle')
         .colorbox({
             opacity: .5,
             speed: 500,
@@ -728,31 +807,31 @@ var UNIT = {
 
                 self.bindPhotoUploader(this);
 
-                if ($('#photo-' + this).hasClass('null')) {
+                if (jQuery('#photo-' + this).hasClass('null')) {
 
                     console.log("Hiding for: " + this);
-                    $('.delete-photo.' + this).hide();
-                    $('.manip-container.' + this).hide();
+                    jQuery('.delete-photo.' + this).hide();
+                    jQuery('.manip-container.' + this).hide();
                 }
                 else {
 
-                    $('.delete-photo.' + this).closest('tfoot > td').show();
-                    $('.manip-container.' + this).closest('tfoot > td').show();
+                    jQuery('.delete-photo.' + this).closest('tfoot > td').show();
+                    jQuery('.manip-container.' + this).closest('tfoot > td').show();
                 }
             });
 
-            $('.delete-photo')
+            jQuery('.delete-photo')
                 .click(function() {
-                    var orientation = $(this).attr('data-orientation');
+                    var orientation = jQuery(this).attr('data-orientation');
 
                     var $data = {
-                        'article-id': $('#article_id').val(),
-                        'program-id': $('#program_id').val(),
-                        'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
-                        'image-id': $("#photo-" + orientation + "-url-hidden").val(),
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
+                        'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                        'image-id': jQuery("#photo-" + orientation + "-url-hidden").val(),
                         'view': orientation,
                         'action': 'e20r_deletePhoto',
-                        'user-id': NourishUser.user_id
+                        'user-id': BitBetterUser.user_id
                     };
 
                     $.ajax({
@@ -784,7 +863,7 @@ var UNIT = {
                         },
                         success: function( $response ) {
 
-                            $('#photo-' + orientation)
+                            jQuery('#photo-' + orientation)
                                 .attr('src', $response.data.imageLink )
                                 .addClass('null')
                                 .closest('td')
@@ -794,7 +873,7 @@ var UNIT = {
                             // var $photo =  self._getPhoto$(orientation);
                             // self._getPhotoSaveNotifier$($photo).fadeOut('slow');
 
-                            $('.delete-photo.' + orientation).hide();
+                            jQuery('.delete-photo.' + orientation).hide();
                         }
                     });
 
@@ -806,7 +885,7 @@ var UNIT = {
             var progress_uploader;
             var self = this;
 
-            var $uploadButton = $('#photo-upload-' + orientation);
+            var $uploadButton = jQuery('#photo-upload-' + orientation);
 
             if ($uploadButton.length === 0) {
                 return;
@@ -819,11 +898,11 @@ var UNIT = {
                 if ( progress_uploader ) {
 
                     progress_uploader.open();
-                    $("#media-attachment-date-filters option[value='all']").each( function() {
+                    jQuery("#media-attachment-date-filters option[value='all']").each( function() {
                         this.remove();
                     });
                     /*
-                    $("#media-attachment-date-filters").each( function() {
+                    jQuery("#media-attachment-date-filters").each( function() {
                         this.trigger('click');
                     });
                     */
@@ -857,18 +936,18 @@ var UNIT = {
 
                     console.log( 'Attacment info:', attachment );
 
-                    $("#photo-" + orientation + "-url-hidden").val( attachment.id );
+                    jQuery("#photo-" + orientation + "-url-hidden").val( attachment.id );
 
                     // Save the image value with the measurements data
                     var $data = {
                         'action': 'e20r_saveMeasurementForUser',
-                        'e20r-progress-nonce': $( '#e20r-progress-nonce').val(),
-                        'date': $('#date').val(),
+                        'e20r-progress-nonce': jQuery( '#e20r-progress-nonce').val(),
+                        'date': jQuery('#date').val(),
                         'measurement-type': orientation + '_image',
                         'measurement-value': attachment.id,
-                        'user-id': NourishUser.user_id,
-                        'article-id': $('#article_id').val(),
-                        'program-id': $('#program_id').val(),
+                        'user-id': BitBetterUser.user_id,
+                        'article-id': jQuery('#article_id').val(),
+                        'program-id': jQuery('#program_id').val(),
                         'view': orientation
                     };
 
@@ -912,23 +991,23 @@ var UNIT = {
                                 });
 
                             setTimeout(function() {
-                                $("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
+                                jQuery("#photo-" + orientation).attr('src', attachment.sizes.thumbnail.url).fadeIn('slow');
                             }, 800);
 
-                            $('.delete-photo.' + orientation).show();
+                            jQuery('.delete-photo.' + orientation).show();
                         }
                     });
                     return false;
                 });
 
                 progress_uploader.open();
-                $("#media-attachment-date-filters option[value='all']").each( function() {
+                jQuery("#media-attachment-date-filters option[value='all']").each( function() {
 
                     this.remove();
                 });
 
                 /*
-                 $("#media-attachment-date-filters").each( function() {
+                 jQuery("#media-attachment-date-filters").each( function() {
                     this.trigger('click');
                  });
                  */
@@ -937,7 +1016,7 @@ var UNIT = {
 
         },
         _getPhoto$: function(orientation) {
-            return $('#photo-' + orientation);
+            return jQuery('#photo-' + orientation);
         },
         _getPhotoSaveNotifier$: function($photo) {
             return $photo
@@ -948,15 +1027,15 @@ var UNIT = {
 
     PhotoUploader.init();
 
-    $('.change-measurement-unit')
+    jQuery('.change-measurement-unit')
         .click(function() {
-            var dimension = $(this).attr('data-dimension');
+            var dimension = jQuery(this).attr('data-dimension');
 
-            $('#selected-' + dimension + '-unit').css('display', 'inline');
-            $('#preferred-' + dimension + '-unit').css('display', 'none');
+            jQuery('#selected-' + dimension + '-unit').css('display', 'inline');
+            jQuery('#preferred-' + dimension + '-unit').css('display', 'none');
 
-            var $cancel = $('.e20r-cancel-' + dimension + '-unit-link');
-            var $change = $('.e20r-change-' + dimension + '-unit-link');
+            var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+            var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
 
             if ( $cancel.is(':hidden') ) {
                 $change.hide();
@@ -967,51 +1046,52 @@ var UNIT = {
                 $change.show();
             }
         });
-    $('.cancel-measurement-unit-update')
+
+    jQuery('.cancel-measurement-unit-update')
         .each( function() {
             console.log("Adding click event to cancel button for measurement unit update");
-            $(this).on('click', function() {
+            jQuery(this).on('click', function() {
 
                 console.log("Cancel button for measurement unit update clicked");
-                var dimension = $(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
+                var dimension = jQuery(this).closest('.e20r-measurement-setting').find('.change-measurement-unit').attr('data-dimension');
 
                 console.log("Dimension: " + dimension);
-                var $cancel = $('.e20r-cancel-' + dimension + '-unit-link');
-                var $change = $('.e20r-change-' + dimension + '-unit-link');
+                var $cancel = jQuery('.e20r-cancel-' + dimension + '-unit-link');
+                var $change = jQuery('.e20r-change-' + dimension + '-unit-link');
 
                 $cancel.hide();
                 $change.show();
 
-                $('#selected-' + dimension + '-unit').hide();
-                $('#preferred-' + dimension + '-unit')
+                jQuery('#selected-' + dimension + '-unit').hide();
+                jQuery('#preferred-' + dimension + '-unit')
                     .css('display', 'inline');
 
             });
         });
 
-    $('#selected-length-unit, #selected-weight-unit')
+    jQuery('#selected-length-unit, #selected-weight-unit')
         .each(function() {
-            var dimension = $(this).attr('id').split('-')[1]; // "weight" or "length"
+            var dimension = jQuery(this).attr('id').split('-')[1]; // "weight" or "length"
             var currentValue;
 
             if ( dimension === 'weight' ) {
-                currentValue = NourishUser.weightunits;
+                currentValue = BitBetterUser.weightunits;
             }
             else if ( dimension === 'length' ) {
-                currentValue = NourishUser.lengthunits
+                currentValue = BitBetterUser.lengthunits
             }
 
-            $(this).val(currentValue);
+            jQuery(this).val(currentValue);
 
-            $('#preferred-' + dimension + '-unit').text(UNIT[currentValue]);
+            jQuery('#preferred-' + dimension + '-unit').text(UNIT[currentValue]);
         })
         .change(function() {
-            var dimension = $(this).attr('id').split('-')[1]; // "weight" or "length"
+            var dimension = jQuery(this).attr('id').split('-')[1]; // "weight" or "length"
 
-            var newUnitAbbr = $(this).val(); // "in"
-            var newUnitFull = $(this).child('option:selected').text(); // "inches (in)"
+            var newUnitAbbr = jQuery(this).val(); // "in"
+            var newUnitFull = jQuery(this).child('option:selected').text(); // "inches (in)"
 
-            $('.unit.' + dimension).text(newUnitFull);
+            jQuery('.unit.' + dimension).text(newUnitFull);
 
             // update the actual objects (new MeasurementField)
             var fieldObjectArr = (dimension === 'weight')
@@ -1029,8 +1109,8 @@ var UNIT = {
 
             var $data = {
                 'action': 'e20r_updateUnitTypes',
-                'e20r-progress-nonce': $('#e20r-progress-nonce').val(),
-                'user-id': NourishUser.user_id,
+                'e20r-progress-nonce': jQuery('#e20r-progress-nonce').val(),
+                'user-id': BitBetterUser.user_id,
                 'dimension': dimension, // "weight" or "length"
                 'value': newUnitAbbr // i.e. "lbs" or "cm", etc
             };
@@ -1068,100 +1148,78 @@ var UNIT = {
                 }
             });
 
-            $('#selected-' + dimension + '-unit').hide();
-            $('#preferred-' + dimension + '-unit')
+            jQuery('#selected-' + dimension + '-unit').hide();
+            jQuery('#preferred-' + dimension + '-unit')
                 .text(newUnitFull)
                 .css('display', 'inline');
         });
 
-    $(new Image)
+    jQuery(new Image)
         .attr('src', e20r_progress.settings.imagepath + 'myotape.png')
         .css('display', 'none')
         .appendTo(document.body);
 
-    function checkFormCompletion() {
 
-        var $data = {
-            'action': 'e20r_checkCompletion',
-            'article-id': $('#article_id').val(),
-            'program-id': $('#program_id').val(),
-            'date': $('#date').val(),
-            'e20r-progress-nonce': $( '#e20r-progress-nonce' ).val(),
-            'user-id': NourishUser.user_id
-        };
-
-        $.ajax({
-            url: e20r_progress.ajaxurl,
-            type: 'POST',
-            timeout: e20r_progress.timeout,
-            dataType: 'JSON',
-            // async: false,
-            data: $data,
-            error: function($response, $errString, $errType) {
-
-                console.log("For Completion check: From server: ", $response );
-                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_checkCompletion()");
-
-                var $msg = '';
-
-                if ( 'timeout' === $errString ) {
-
-                    $msg = "Error: Timeout while the server was processing data.\n\n";
-                }
-
-                var $string;
-                $string = "An error occurred while trying to check whether you have completed the form. Please ";
-                $string += "reload this page. \n\nIf you get this error a second time, ";
-                $string += "please contact Technical Support by using the Contact form ";
-                $string += "at the top of this page. When you contact Technical Support, please include this entire message.";
-
-                alert( $msg + $string + "\n\n" + $response.data );
-
-            },
-            success: function($response) {
-                //var $resp = $.map( $response, function(el){ return el; });
-                console.log('Completion response: ', $response);
-
-                if ( $response.data.progress_form_completed  === true ) {
-                    console.log("Setting form as saved");
-                    formToSavedState();
-                }
-            }
-        });
-    }
-
-    function formToSavedState() {
-        var isInSavedState = ($('#saved-state-message').length >= 1);
-
-        if (isInSavedState) {
-            return;
-        }
-
-        // hide submit button
-        $('.e20r-progress-form > tfoot').hide();
-
-        // show saved message
-        $('<div style="background-image: url( ' + e20r_progress.settings.imagepath + 'checked.png); margin: 12px 0pt; background-position: 24px 9px;" class="green-notice big" id="saved-state-message">\
-              <strong>You have completed this Progress Update.</strong> <a href="' + e20r_progress.settings.measurementSaved + '">Return to Dashboard</a>.\
-            </div>').appendTo('#e20r-progress-canvas');
-    }
-
-//    $('#basic-photo-uploader-submit')
+//    jQuery('#basic-photo-uploader-submit')
 //        .removeAttr('disabled');
-
 
 })(jQuery);
 
 jQuery( document ).ready( function( $ ) {
 
-    console.log( bool( NourishUser.display_birthdate ) );
+    var user_data = e20r_progress.user_info.userdata.replace(/&quot;/g, '"');
+    BitBetterUser = jQuery.parseJSON( user_data );
 
-    if ( false === bool( NourishUser.display_birthdate ) ) {
+    console.log( bool( BitBetterUser.display_birthdate ) );
+
+    jQuery(".inline").colorbox({inline: true, width: '60%'});
+
+    var $last_week_data = e20r_progress.measurements.last_week.replace( /&quot;/g, '"');
+    LAST_WEEK_MEASUREMENTS = jQuery.parseJSON( $last_week_data );
+
+    console.log("WP script for E20R Progress Update (client-side) loaded");
+
+    console.log("Loading user_info: ", BitBetterUser );
+    console.log( "Loading Measurement data for last week", LAST_WEEK_MEASUREMENTS );
+    console.log( "Interview is complete: ", e20r_progress.user_info.interview_complete );
+
+    if ( false === bool( BitBetterUser.display_birthdate ) ) {
         console.log("Hiding the birthdate form.");
-        $('#birth-date').hide();
+        jQuery('#birth-date').hide();
     }
 
-    $(".inline").colorbox({inline: true, width: '60%'});
+    if ( e20r_progress.user_info.interview_complete === false ) {
+        console.log("Need to redirect this user to the Interview page!");
+        location.href=e20r_progress.settings.interview_url;
+    }
 
-    checkFormCompletion();
+    ProgressQuestionnaire.setBirthday();
+    ProgressQuestionnaire.checkFormCompletion();
+
+    var MeasurementField_ = construct(MeasurementField);
+
+    var weightUNIT = {'lbs': 'pounds (lbs)', 'kg': 'kilograms (kg)', 'st': 'stone (st)'}[BitBetterUser.weightunits];
+    var lengthUNIT = {'in': 'inches (in)', 'cm': 'centimeters (cm)'}[BitBetterUser.lengthunits];
+
+    var GIRTH_FIELDS = [],
+        WEIGHT_FIELD = [];
+
+    WEIGHT_FIELD.push(new MeasurementField_({ type: 'weight', period: 'week', unit: weightUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_neck', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_shoulder', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_arm', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_chest', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_waist', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_hip', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_thigh', period: 'week', unit: lengthUNIT }));
+    GIRTH_FIELDS.push(new MeasurementField_({ type: 'girth_calf', period: 'week', unit: lengthUNIT }));
+    /*
+     new MeasurementField_({ type: 'skinfold_abdominal', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_triceps', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_chest', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_midaxillary', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_subscapular', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_suprailiac', period: 'month', unit: 'millimeters (mm)' });
+     new MeasurementField_({ type: 'skinfold_thigh', period: 'month', unit: 'millimeters (mm)' });
+     */
 });
