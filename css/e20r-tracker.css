@@ -732,6 +732,7 @@ div#inner-tabs div.inner-tab {
     display: block;
     float: left;
     margin-bottom: 10px;
+    max-width: 120px;
 }
 .measurement-field-container.active {
     background: rgba(255, 184, 77, 0.3);
@@ -1458,7 +1459,6 @@ td.e20r-group-header {
     margin-left: 20px;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li label {
-    float: left;
     margin-left: 4px;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li input[type=radio] {

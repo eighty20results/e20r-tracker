@@ -461,7 +461,7 @@ var progMeasurements = {
 
         var $class = this;
 
-        if ( $class.$tag.is_profile_page && (  $class.$tag.interview_complete == false ) ) {
+        if ( $class.$tag.is_profile_page && (  $class.$tag.interview_complete === false ) ) {
 
             console.log("Incomplete interview. Loading the Interview nag screen.")
             jQuery('div.e20r-boxes').each(function() {
