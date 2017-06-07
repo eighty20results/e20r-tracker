@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
-Tested up to: 4.7.3
-Stable tag: 1.6.11
+Tested up to: 4.7.5
+Stable tag: 1.6.12
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,15 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.6.12 ==
+
+* ENHANCEMENT/FIX: Using Sequence_Controller class for E20R Sequences
+* ENHANCEMENT/FIX: Disable loading TouchPunch jQuery library
+* ENHANCEMENT/FIX: Error when using CodeTabs library in certain situations
+* ENHANCEMENT/FIX: Could sometimes pass check for intake interview w/o a completed interview
+* ENHANCEMENT/FIX: Size of input field on Measurement page was inconsistent between themes
+* ENHANCEMENT/FIX: Would wrap text/radio field incorrectly on dashboard page
 
 == 1.6.11 ==
 

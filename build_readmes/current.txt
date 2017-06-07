@@ -1,2 +1,6 @@
-ENHANCEMENT: Better stepping for girth/weight graphs
-BUG/FIX: Load minified CSS files when not running in debug mode
+ENHANCEMENT/FIX: Using Sequence_Controller class for E20R Sequences
+ENHANCEMENT/FIX: Disable loading TouchPunch jQuery library
+ENHANCEMENT/FIX: Error when using CodeTabs library in certain situations
+ENHANCEMENT/FIX: Could sometimes pass check for intake interview w/o a completed interview
+ENHANCEMENT/FIX: Size of input field on Measurement page was inconsistent between themes
+ENHANCEMENT/FIX: Would wrap text/radio field incorrectly on dashboard page
