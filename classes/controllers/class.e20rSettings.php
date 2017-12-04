@@ -13,6 +13,10 @@ class e20rSettings {
 	 * @var null|e20rProgramModel|e20rClientModel|e20rMeasurementModel|e20rWorkoutModel|e20rAssignmentModel|e20rArticleModel|e20rActionModel
 	 */
     protected $model;
+	
+	/**
+	 * @var null|e20rProgramView|e20rActionView|e20rMeasurementViews|e20rWorkoutView|e20rAssignmentView|e20rArticleView|e20rActionView
+	 */
     protected $view;
 
     protected $cpt_slug;
