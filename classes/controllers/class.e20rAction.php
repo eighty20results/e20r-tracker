@@ -187,10 +187,8 @@ class e20rAction extends e20rSettings
         global $currentProgram;
 
         global $current_user;
-        $e20rTracker = e20rTracker::getInstance();
         $e20rTables = e20rTables::getInstance();
         $e20rProgram = e20rProgram::getInstance();
-        $e20rAction = e20rAction::getInstance();
 
         if (is_null($userId)) {
 
