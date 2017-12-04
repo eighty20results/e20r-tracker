@@ -94,7 +94,7 @@ class e20rArticleModel extends e20rSettingsModel
 
             $currentArticle->assignment_ids = array();
         } else {
-            dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
+            dbg("e20rArticleModel::loadSettings() - Found configured assignments.");
             foreach ($currentArticle->assignment_ids as $k => $assignmentId) {
 
                 if (empty($assignmentId)) {
@@ -110,7 +110,7 @@ class e20rArticleModel extends e20rSettingsModel
 
             $currentArticle->action_ids = array();
         } else {
-            dbg("e20rArticleModel::loadSettings() - Found preconfigured assignments.");
+            dbg("e20rArticleModel::loadSettings() - Found configured actions.");
             foreach ($currentArticle->action_ids as $k => $checkinId) {
 
                 if (empty($checkinId)) {
