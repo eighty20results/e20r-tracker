@@ -2334,12 +2334,16 @@ tr.e20r-client-list-row > tbody {
 }
 .e20r-strong-text {
     color: black;
+    font-weight: 900;
+    font-size: 120%;
 }
 .e20r-weak-text {
-    color: #777;
+    color: #333;
+    font-weight: 600;
 }
 .e20r-weakest-text {
-    color: #ccc;
+    color: #666;
+    font-weight: normal;
 }
 .e20r-followup-normal {
     background-color: rgba( 0, 76, 0, 0.1);
