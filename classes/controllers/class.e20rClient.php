@@ -837,6 +837,7 @@ class e20rClient
         // can the client even be at the "experienced" level (by default, no).
         $can_be_ex = false;
         $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
+        $el_score = 0;
         
         dbg($data);
 
@@ -1773,7 +1774,7 @@ class e20rClient
         switch ($type) {
             case 'client-info':
                 dbg("e20rClient::ajax_clientDetail() - Loading client data");
-                $html = $this->load_clientDetail($userId, $currentProgram->id, $currentArticle->id);
+                $html = $this->load_clientDetail($userId );
                 break;
 
             case 'achievements':
