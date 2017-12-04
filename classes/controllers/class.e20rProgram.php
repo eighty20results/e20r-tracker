@@ -100,7 +100,7 @@ class e20rProgram extends e20rSettings {
 
         $e20rTracker = e20rTracker::getInstance();
 
-        $this->model->settings->previous_delay = $e20rTracker->sanititze( $value );
+        $this->model->settings->previous_delay = $e20rTracker->sanitize( $value );
     }
 
     /**
@@ -807,8 +807,8 @@ class e20rProgram extends e20rSettings {
             return PMProSequence::all_sequences('publish');
         }
 
-        if (class_exists( 'E20R\Sequences\Sequence\Sequence_Controller')) {
-            return Sequence\Sequence_Controller::all_sequences('publish');
+        if (class_exists( 'E20R\Sequences\Sequence\Controller')) {
+            return Sequence\Controller::all_sequences('publish');
         }
 
         return false;
