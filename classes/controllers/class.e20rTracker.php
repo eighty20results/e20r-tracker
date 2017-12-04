@@ -4031,7 +4031,7 @@ class e20rTracker {
 
 		$user = new WP_User($userId);
 
-		dbg("e20rTracker::getGroupIdForUser() - User object: " . print_r( $user, true));
+		// dbg("e20rTracker::getGroupIdForUser() - User object: " . print_r( $user, true));
 
 		foreach( (array) $user->roles as $role ) {
 
