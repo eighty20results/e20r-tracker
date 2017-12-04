@@ -590,7 +590,7 @@ class e20rMeasurementModel {
                       SELECT *
                         FROM {$this->table}
                         WHERE {$this->fields['user_id']} = %d
-                        ORDER BY {$this->fields['recorded_date']} ASC
+                        ORDER BY {$this->fields['recorded_date']} ORDER BY {$this->fields['recorded_date']} ASC
                     ",
                     $this->client_id
                 );
