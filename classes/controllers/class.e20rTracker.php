@@ -429,6 +429,7 @@ class e20rTracker {
             dbg("e20rTracker::loadAllHooks() - Scripts and CSS");
             /* Load scripts & CSS */
             add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts') );
+            
             add_action( 'wp_enqueue_scripts', array( $this, 'has_weeklyProgress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( $this, 'has_measurementprogress_shortcode' ) );
             add_action( 'wp_enqueue_scripts', array( $this, 'has_dailyProgress_shortcode' ) );
@@ -491,6 +492,10 @@ class e20rTracker {
             add_filter( "page_row_actions", array( $this, 'duplicate_cpt_link'), 10, 2);
         }
     }
+    
+    /**
+      *
+      */
     public function auth_timeout_reset() {
 
         global $current_user;
@@ -981,11 +986,11 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Sequence_Controller') )&& is_admin()) {
+        if ( ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') )&& is_admin()) {
 
             ?>
             <div class="error">
-            <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Sequence_Controller') ): ?>
+            <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') ): ?>
                 <?php dbg("e20rTracker::Error -  The The Sequences plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20r-tracker' ); ?></p>
             <?php endif; ?>
@@ -1376,6 +1381,7 @@ class e20rTracker {
         </select><?php
 
     }
+    
     public function render_logintimeout_select() {
 
         $timeout = $this->loadOption( 'auth_timeout' );
@@ -1893,7 +1899,7 @@ class e20rTracker {
             wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", false, E20R_VERSION);
 
             dbg("e20rTracker::load_adminJS() - Loading admin javascript");
-            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js", array('jquery'), '4.0.0', true );
+            wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/" . E20R_SELECT2_VER ."/js/select2.min.js", array('jquery'), E20R_SELECT2_VER, true );
             wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), '0.1', true );
             wp_register_script( 'jquery.autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js' , array('jquery'), E20R_VERSION, true );
             wp_register_script( 'codetabs', E20R_PLUGINS_URL . '/js/libraries/codetabs/codetabs.min.js', array( 'jquery' ), E20R_VERSION, true );
@@ -1949,12 +1955,13 @@ class e20rTracker {
 
         wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 
+        $e20rTracker->load_adminJS();
+
         if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
 
-            global $e20r_plot_jscript, $e20rTracker;
-            $e20rTracker = e20rTracker::getInstance();
-
-            $e20rTracker->load_adminJS();
+            dbg("Loading for Tracker admin page!");
+            
+            global $e20r_plot_jscript;
 
             $e20r_plot_jscript = true;
             $e20rTracker->register_plotSW( $hook );
@@ -1963,7 +1970,7 @@ class e20rTracker {
 
             wp_enqueue_style( 'e20r_tracker', E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
             // wp_enqueue_style( 'e20r_tracker-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
-            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css", false, '4.0.0' );
+            wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/" . E20R_SELECT2_VER ."/css/select2.min.css", null, E20R_SELECT2_VER );
             wp_enqueue_script( 'jquery.timeago' );
             wp_enqueue_script( 'select2' );
 
@@ -1979,20 +1986,20 @@ class e20rTracker {
                     wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 
                     $type = 'action';
-                    $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker');
+                    $deps = array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'select2' );
                     break;
 
                 case 'e20r_programs':
 
                     wp_enqueue_style( 'e20r-tracker-program-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
 	                $type = 'program';
-					$deps = array('jquery', 'jquery-ui-core');
+					$deps = array('jquery', 'jquery-ui-core', 'select2' );
                     break;
 
                 case 'e20r_articles':
 
                     $type = 'article';
-                    $deps = array( 'jquery', 'jquery-ui-core' );
+                    $deps = array( 'jquery', 'jquery-ui-core', 'select2' );
 
                     break;
 
@@ -2000,14 +2007,14 @@ class e20rTracker {
 
 		            wp_enqueue_style( 'e20r-tracker-workout-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
 		            $type = 'workout';
-					$deps = array( 'jquery', 'jquery-ui-core' );
+					$deps = array( 'jquery', 'jquery-ui-core', 'select2' );
 		            break;
 
                 case 'e20r_assignments':
 
                     wp_enqueue_style( 'e20r-tracker-assignment-admin', E20R_PLUGINS_URL . '/css/e20r-tracker-admin.min.css', false, E20R_VERSION );
                     $type = 'assignment';
-                    $deps = array( 'jquery', 'jquery-ui-core' );
+                    $deps = array( 'jquery', 'jquery-ui-core', 'select2' );
                     break;
 
 	            default:
@@ -2241,6 +2248,7 @@ class e20rTracker {
         }
 
     }
+    
     /**
      * Load Javascript for the Weekly Progress page/shortcode
      */
@@ -4285,7 +4293,7 @@ class e20rTracker {
             $dripfeed_exists = true;
         }
 
-        if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller') ) {
+        if ( class_exists( 'E20R\Sequences\Sequence\Controller') ) {
             $dripfeed_exists = true;
         }
 
@@ -4302,8 +4310,8 @@ class e20rTracker {
                 $sequenceIds = PMProSequence::sequences_for_post( $postId );
             }
 
-            if ( class_exists('E20R\Sequences\Sequence\Sequence_Controller')) {
-                $sequenceIds = Sequence\Sequence_Controller::sequences_for_post( $postId );
+            if ( class_exists('E20R\Sequences\Sequence\Controller')) {
+                $sequenceIds = Sequence\Controller::sequences_for_post( $postId );
             }
 
             foreach ($sequenceIds as $id ) {
@@ -4312,8 +4320,8 @@ class e20rTracker {
                     $details = PMProSequence::post_details( $id, $postId );
                 }
 
-                if ( class_exists('E20R\Sequences\Sequence\Sequence_Controller')) {
-                    $details = Sequence\Sequence_Controller::post_details( $id, $postId );
+                if ( class_exists('E20R\Sequences\Sequence\Controller')) {
+                    $details = Sequence\Controller::post_details( $id, $postId );
                 }
 
 /*
@@ -4502,7 +4510,7 @@ class e20rTracker {
 
             $endTS = current_time( 'timestamp' );
         }
-
+        
         // Create two DateTime objects
         $dStart = new DateTime( date( 'Y-m-d', $startTS ), new DateTimeZone( $tz ) );
         $dEnd   = new DateTime( date( 'Y-m-d', $endTS ), new DateTimeZone( $tz ) );
