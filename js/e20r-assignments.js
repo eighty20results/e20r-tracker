@@ -24,7 +24,7 @@ var e20rClientAssignment = {
             this.longpoll_active = false;
         }
 
-        if (typeof e20r_admin != 'undefined') {
+        if (typeof e20r_admin !== 'undefined') {
 
             this.url = ajaxurl;
             this.ajax_timeout = e20r_admin.timeout;
@@ -102,14 +102,14 @@ var e20rClientAssignment = {
                 var sender_id = sender.val();
                 window.console.log("Did I send this message?", my_user_id, sender_id, top.closest('.e20r-message-history-content').find('input[name^="e20r-assignment_id"]').val());
 
-                if (my_user_id == sender_id) {
+                if (my_user_id === sender_id) {
                     sender.closest('div.e20r-message-history-message').hide();
                     sender.closest('tr.e20r-messages-new').removeClass('e20r-messages-new');
                 }
             }
         });
 
-        jQuery('#e20r-new-message-dismiss-button').unbind('click').on('click', function () {
+        jQuery('#e20r-new-message-dismiss-button').unbind('click').on('click', function (event) {
 
             event.preventDefault();
 
@@ -130,7 +130,7 @@ var e20rClientAssignment = {
          self._clear_textbox( this );
          });
          */
-        jQuery("#e20r-begin-btn").unbind('click').on('click', function() {
+        jQuery("#e20r-begin-btn").unbind('click').on('click', function(event) {
 
             event.preventDefault();
 
@@ -152,12 +152,19 @@ var e20rClientAssignment = {
                 response_window.find("textarea.e20r-assignment-reply_area").val('');
                 response_window.find("div.e20r-message-status-text").empty();
 
+                var button = response_window.find('button.e20r-assignment-reply-button');
+
+                button.unbind('click').on('click', function () {
+
+                    window.console.log("User or coach clicked the 'Send/Save' button");
+                    self.save_assignment_reply(this);
+                });
 
                 var answer_text = response_window.find('input[name^="e20r-assignment-answer"]').val();
                 // var question_text = response_window.find('input[name^="e20r-assignment-question"]').val();
                 window.console.log("User/Coach clicking the 'See messages' button: ", answer_text);
 
-                if (typeof answer_text != 'undefined') {
+                if (typeof answer_text !== 'undefined') {
 
                     answer_text = answer_text.replace("\"", "'");
 
@@ -192,9 +199,11 @@ var e20rClientAssignment = {
 
             var entry = jQuery(this);
             // var tab = entry.closest('#e20r-progress-assignments');
-            var button = entry.find('button.e20r-assignment-reply-button');
-            var ack_button = entry.find('button.e20r-message-ack-button');
-            var reply = entry.find('a.e20r-assignment-reply-link');
+            var button = entry.find('.e20r-assignment-reply-button');
+            var ack_button = entry.find('.e20r-message-ack-button');
+            var reply = entry.find('.e20r-assignment-reply-link');
+
+            window.console.log("Setting up button click events");
 
             ack_button.unbind('click').on('click', function () {
 
@@ -206,7 +215,7 @@ var e20rClientAssignment = {
 
                 window.console.log("User or coach clicked the 'Send/Save' button");
                 self.save_assignment_reply(this);
-            })
+            });
         });
     },
     _update_status: function (message_ids, $status_type, button) {
@@ -262,7 +271,7 @@ var e20rClientAssignment = {
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '') {
+                if ($response.message !== '') {
                     $msg = $response.message;
                 }
                 var $string;
@@ -285,7 +294,7 @@ var e20rClientAssignment = {
 
         var $class = this;
 
-        if (typeof $btn_text == 'undefined') {
+        if (typeof $btn_text === 'undefined') {
             window.console.log("No button text specified. Using 'Review' as the default");
             $btn_text = 'Review';
         }
@@ -302,7 +311,7 @@ var e20rClientAssignment = {
             row.css('background-color', '#c5c5c5');
         }
 
-        if ($btn_text == 'nil') {
+        if ($btn_text === 'nil') {
 
             row.find('.e20r-assignment-reply-link').hide();
         }
@@ -325,7 +334,7 @@ var e20rClientAssignment = {
 
         var found_id = jQuery(element).find('input[name^="e20r-message-id"]').val();
 
-        if (typeof found_id == 'undefined') {
+        if (typeof found_id === 'undefined') {
 
             window.console.log("Running from thickbox");
             reply_link = jQuery('#TB_ajaxContent');
@@ -348,7 +357,7 @@ var e20rClientAssignment = {
 
         window.console.log("Message IDs to process for is_read update: ", message_ids);
 
-        if (message_ids.length != 0) {
+        if (message_ids.length !== 0) {
 
             window.console.log("Updating read status for: ", message_ids);
             $class._update_status(message_ids, 'read', message_history.find('.e20r-assignment-reply-button'));
@@ -365,7 +374,7 @@ var e20rClientAssignment = {
         var message_ids = new Array();
         message_ids.push(button.closest('.e20r-message-history-unread, .e20r-message-history').find('input[name^="e20r-message-id"]').val());
 
-        if (message_ids.length != 0) {
+        if (message_ids.length !== 0) {
 
             window.console.log("Updating archive status for message # ", message_ids);
             $class._update_status(message_ids, 'archive', button);
@@ -409,7 +418,7 @@ var e20rClientAssignment = {
 
         window.console.log("Client ID: " + client_id + " and Sent-by ID: " + sent_by_id);
 
-        if (client_id == sent_by_id) {
+        if (client_id === sent_by_id) {
             $class.update_read_status(element);
         }
 
@@ -487,7 +496,7 @@ var e20rClientAssignment = {
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '') {
+                if ($response.message !== '') {
                     $msg = $response.message;
                 }
                 var $string;
@@ -551,7 +560,7 @@ var e20rClientAssignment = {
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '') {
+                if ($response.message !== '') {
                     $msg = $response.message;
                 }
                 var $string;
@@ -626,7 +635,7 @@ var e20rClientAssignment = {
 
                             window.console.log("Dismissed value is: ", dismissed );
 
-                            if (1 == dismissed) {
+                            if (1 === dismissed) {
 
                                 window.console.log("Another new message");
                                 $class.reload_assignments(client_id);
@@ -657,7 +666,7 @@ var e20rClientAssignment = {
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
 
-                if ($response.message != '') {
+                if ($response.message !== '') {
                     $msg = $response.message;
                 }
 
