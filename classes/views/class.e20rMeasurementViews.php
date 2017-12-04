@@ -546,15 +546,15 @@ class e20rMeasurementViews {
             $html = ob_get_clean();
         }
         else {
-
+            $measurements = array_reverse( $measurements );
             ob_start();
 
             ?>
             <div class="e20r-hidden-inputs">
-                <input type="hidden" name="h_dimension" id="h_dimension" value="<?php echo $dimensions['height']; ?>">
-                <input type="hidden" name="h_dimension_type" id="h_dimension_type" value="<?php echo $dimensions['htype']; ?>">
-                <input type="hidden" name="w_dimension" id="w_dimension" value="<?php echo $dimensions['width']; ?>">
-                <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php echo $dimensions['wtype']; ?>">
+                <input type="hidden" name="h_dimension" id="h_dimension" value="<?php esc_attr_e( $dimensions['height'] ); ?>">
+                <input type="hidden" name="h_dimension_type" id="h_dimension_type" value="<?php esc_attr_e( $dimensions['htype'] ); ?>">
+                <input type="hidden" name="w_dimension" id="w_dimension" value="<?php esc_attr_e( $dimensions['width'] ); ?>">
+                <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php esc_attr_e( $dimensions['wtype'] ); ?>">
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
             </div>
 
@@ -645,7 +645,7 @@ class e20rMeasurementViews {
             <div id="girth_chart" style="height: <?php echo $height; ?>;width: <?php echo $width; ?>;"></div>
         <?php endif; ?>
             <div class="e20r-measurements-container">
-                <h4>Measurements for <?php echo $user->first_name; ?></h4>
+                <h4>Measurements for <?php esc_attr_e( $user->first_name ); ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav">
                     <table class="e20r-measurement-table e20r-resp-table">
