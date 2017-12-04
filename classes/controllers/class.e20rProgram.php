@@ -321,12 +321,18 @@ class e20rProgram extends e20rSettings {
             return $user_program;
         }
 
-        if ( !empty( $currentProgram->id ) && ( $currentProgram->id == $user_program ) ) {
-
+        // Assign the program to an array (allow multiple programs per user)
+        /*if ( false !== $user_program && !is_array( $user_program ) ) {
+        	$user_program = array( $user_program );
+        }
+        */
+        if ( !empty( $currentProgram->id ) && !empty( $user_program ) && ( $currentProgram->id == $user_program ) ) {
+	        dbg( "e20rProgram::getProgramIdForUser() - User program and current program id are the same: {$currentProgram->id} vs {$user_program}" );
+	        $this->configure_startdate( $user_program, $userId );
             return $currentProgram->id;
         }
-
-	    if ( !isset( $currentProgram->id ) || ( ( false !== $user_program ) && ( isset( $currentProgram->id ) && ( $currentProgram->id != $user_program ) ) ) ) {
+        
+	    if ( empty( $currentProgram->id ) || ( !empty( $user_program ) && ( !empty( $currentProgram->id ) && ( $currentProgram->id != $user_program ) ) ) ) {
 
 		    dbg("e20rProgram::getProgramIdForUser() - currentProgram->id isn't configured or its different from what this user ({$userId}) needs it to be ({$user_program}).");
 
@@ -349,7 +355,7 @@ class e20rProgram extends e20rSettings {
                         return false;
                     }
                 } else {
-                    dbg("Error loading program information for {$userId}", E20R_DEBUG_SEQ_CRITICAL);
+                    dbg("Error loading program information for {$userId}");
                 }
             }
 
@@ -379,7 +385,6 @@ class e20rProgram extends e20rSettings {
     public function configure_startdate( $program_id, $userId ) {
 
         global $currentProgram;
-
         global $current_user;
 
         $startTS = null;
@@ -394,9 +399,9 @@ class e20rProgram extends e20rSettings {
         $pgm_startdate = $currentProgram->startdate;
 
         if (function_exists( 'pmpro_getMemberStartdate' ) && !empty($current_user->ID)) {
-
-            dbg( "e20rProgram::configure_startdate() - Using PMPro's member startdate for user ID {$userId}");
+        	
             $startTS = pmpro_getMemberStartdate( $userId );
+	        dbg( "e20rProgram::configure_startdate() - Finding PMPro's member startdate for user ID {$userId}: {$startTS}");
         }
 
         $startTS = apply_filters( "e20r-tracker-program-start-timestamp", $startTS);
@@ -408,13 +413,13 @@ class e20rProgram extends e20rSettings {
 
         $user_startdate = date_i18n( 'Y-m-d', $startTS );
 
-        if ( $user_startdate < $pgm_startdate ) {
-            $currentProgram->startdate = $pgm_startdate;
-            dbg("e20rProgram::configure_startdate() - Using program start date: {$currentProgram->startdate} for {$userId}");
+        if ( !empty( $currentProgram->startdate ) && $user_startdate < $pgm_startdate ) {
+            $currentProgram->startdate = $user_startdate;
+            dbg("e20rProgram::configure_startdate() - Using user date as the start: {$currentProgram->startdate} for {$userId}");
 
         } else {
-            $currentProgram->startdate = $user_startdate;
-            dbg("e20rProgram::configure_startdate() - Using member's start date as the program start: {$currentProgram->startdate} for {$userId}");
+            $currentProgram->startdate = $pgm_startdate;
+            dbg("e20rProgram::configure_startdate() - Using program date as the start: {$currentProgram->startdate} for {$userId}");
 
         }
 
