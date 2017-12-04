@@ -111,19 +111,19 @@ class e20rClientViews {
             <table id="e20r-client-list-legend">
                 <tbody>
                     <tr>
-                        <td colspan="2"><h5>Legend</h5></td>
+                        <td colspan="2"><h5><?php _e('Legend', 'e20r-tracker' ); ?></h5></td>
                     </tr>
                     <tr>
-                        <td class="e20r-strong-text"><?php _e("Strong text", "e20r-tracker"); ?></td>
-                        <td class="e20r-strong-text"><?php _e("Client accessed system in the past 3 days", "e20r-tracker"); ?></td>
+                        <td class="e20r-weakest-text"><?php _e("Weakest text", "e20r-tracker"); ?></td>
+                        <td class="e20r-weakest-text"><?php _e("Client accessed system in the past 3 days", "e20r-tracker"); ?></td>
                     </tr>
                     <tr>
                         <td class="e20r-weak-text"><?php _e("Weaker text", "e20r-tracker"); ?></td>
                         <td class="e20r-weak-text"><?php _e("Client accessed system in the past 3 - 10 days", "e20r-tracker"); ?></td>
                     </tr>
                     <tr>
-                        <td class="e20r-weakest-text"><?php _e("Weakest text", "e20r-tracker"); ?></td>
-                        <td class="e20r-weakest-text"><?php _e("More than 10 days since the client accessed this system", "e20r-tracker"); ?></td>
+                        <td class="e20r-strong-text"><?php _e("Strong text", "e20r-tracker"); ?></td>
+                        <td class="e20r-strong-text"><?php _e("More than 10 days since the client accessed this system", "e20r-tracker"); ?></td>
                     </tr>
                     <tr class="e20r-followup-critical">
                         <td><?php _e("Critical", "e20r-tracker"); ?></td>
@@ -149,7 +149,7 @@ class e20rClientViews {
                     $program_name = $e20rProgram->get_program_name( $programId );
                     ?>
                 <tr class="e20r-client-list-programs">
-                    <td class="e20r-client-list-program-name" colspan="3"><h4><?php echo $program_name; ?></h4></td>
+                    <td class="e20r-client-list-program-name" colspan="3"><h4><?php esc_attr_e( $program_name ); ?></h4></td>
                 </tr>
                 <tr class="e20r-client-list-header-row">
                     <th class="e20r-client-name"><label><?php _e( "Client", "e20r-tracker" ); ?></label></th>
@@ -162,14 +162,19 @@ class e20rClientViews {
                         dbg( $client );
 
                         $level_id = $e20rTracker->getGroupIdForUser( $client->ID );
-
-                        $days_since_login = $e20rTracker->daysBetween( $client->status->recent_login, $today, get_option('timezone_string') );
-                        $program_length = $e20rTracker->daysbetween( strtotime( $client->status->program_start), $today );
+                        
+                        if ( ! empty( $client->status->recent_login ) ) {
+                            $days_since_login = $e20rTracker->daysBetween( $client->status->recent_login, $today, get_option('timezone_string') );
+                        } else {
+                            $days_since_login = PHP_INT_MAX;
+                        }
+                        
+                        $program_length = $e20rTracker->daysBetween( strtotime( $client->status->program_start), $today, get_option('timezone_string') );
 
                         $css_flag = "e20r-strong-text";
 
                         if ( ( $program_length >= 2 ) && ( 10 <= $days_since_login ) ) {
-                            $css_flag = "e20r-weakest-text";
+                            $css_flag = "e20r-strong-text";
                         }
 
                         if ( ( $program_length >= 2 ) && ( 10 > $days_since_login && 3 <= $days_since_login ) ) {
@@ -177,7 +182,7 @@ class e20rClientViews {
                         }
 
                         if ( ( $program_length >= 2 ) && ( 3 > $days_since_login ) ) {
-                            $css_flag = "e20r-strong-text";
+                            $css_flag = "e20r-weakest-text";
                         }
 
                         $msg_when = key( $client->status->last_message );
@@ -212,9 +217,9 @@ class e20rClientViews {
 
                         dbg( "e20rClientViews::display_client_list() - Info about last message sent to user: " . $message_info );
                     ?>
-                    <tr class="e20r-client-list-row <?php echo $css_flag; ?> <?php echo $status_flag; ?>">
-                        <td class="e20r-client-name"><a href="<?php echo admin_url( "admin.php?page=e20r-client-info&e20r-client-id={$client->ID}&e20r-level-id={$programId}" );?>" target="_blank"><?php echo $client->display_name; ?></td>
-                        <td class="e20r-client-last-login"><?php echo date( 'l F jS, Y', $client->status->recent_login ); ?></td>
+                    <tr class="e20r-client-list-row <?php esc_attr_e(  $css_flag ); ?> <?php esc_attr_e( $status_flag ); ?>">
+                        <td class="e20r-client-name"><a href="<?php echo esc_url_raw( add_query_arg( array( 'page' => 'e20r-client-info', 'e20r-client-id' => $client->ID, 'e20r-level-id' => $programId ), admin_url( "admin.php" ) ) );?>" target="_blank"><?php echo $client->display_name; ?></td>
+                        <td class="e20r-client-last-login"><?php echo ( !empty($client->status->recent_login) ? date_i18n( 'l F jS, Y', $client->status->recent_login ) : __('Never', 'e20r-tracker' ) ); ?></td>
                         <td class="e20r-client-last-message" <?php echo ( !is_null( $msg_txt) ? 'title="' .$msg_txt .'"' : null ); ?>><?php echo $message_info; ?></td>
                     </tr><?php
                     }
@@ -746,7 +751,9 @@ class e20rClientViews {
 
         if ( empty( $clientId ) ) {
 
-            global $current_user, $e20rTracker;
+            $e20rTracker = e20rTracker::getInstance();
+            
+            global $current_user;
             $clientId = $current_user->ID;
 
             if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
