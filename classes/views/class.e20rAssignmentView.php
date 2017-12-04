@@ -62,10 +62,10 @@ class e20rAssignmentView extends e20rSettingsView {
 		<table id="e20r-assignment-settings" class="wp-list-table widefat fixed">
 			<thead>
 			<tr>
-				<th class="e20r-label header"><label for="e20r-assignment-order_num">Order #</label></th>
-				<th class="e20r-label header"><label for="e20r-assignment-field_type">Answer type</label></th>
-				<th class="e20r-label header"><label for="e20r-assignment-delay">Day #</label></th>
-				<th class="e20r-label header"><label for="e20r-assignment-program_ids">Programs</label></th>
+				<th class="e20r-label header"><label for="e20r-assignment-order_num"><?php _e('Order #', 'e20r-tracker' ); ?></label></th>
+				<th class="e20r-label header"><label for="e20r-assignment-field_type"><?php _e( 'Answer type', 'e20r-tracker' ); ?></label></th>
+				<th class="e20r-label header"><label for="e20r-assignment-delay"><?php _e( 'Day #', 'e20r-tracker' ); ?></label></th>
+				<th class="e20r-label header"><label for="e20r-assignment-program_ids"><?php _e('Programs', 'e20r-tracker'); ?></label></th>
 			</tr>
 			<tr>
 				<td colspan="4">
@@ -74,10 +74,10 @@ class e20rAssignmentView extends e20rSettingsView {
 			</tr>
 			</thead>
 			<tbody>
-			<tr id="<?php echo $assignmentData->id; ?>" class="assignment-inputs">
+			<tr id="<?php esc_attr_e( $assignmentData->id ); ?>" class="assignment-inputs">
 				<td class="text-input">
 					<input type="number" id="e20r-assignment-order_num" name="e20r-assignment-order_num"
-					       value="<?php echo( ! isset( $assignmentData->order_num ) ? 1 : $assignmentData->order_num ); ?>">
+					       value="<?php echo( ! isset( $assignmentData->order_num ) ? 1 : esc_attr( $assignmentData->order_num ) ); ?>">
 				</td>
 				<td class="text-input" style="width: 50%;">
 					<select id="e20r-assignment-field_type" class="select2-container" name="e20r-assignment-field_type"
@@ -85,14 +85,14 @@ class e20rAssignmentView extends e20rSettingsView {
 						<?php
 						foreach ( $answerTypes as $key => $descr ) { ?>
 							<option
-							value="<?php echo $key; ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
+							value="<?php esc_attr_e( $key ); ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
 						}
 						?>
 					</select>
 				</td>
 				<td class="text-input">
 					<input type="number" id="e20r-assignment-delay" name="e20r-assignment-delay"
-					       value="<?php echo( ! isset( $assignmentData->delay ) ? '' : $assignmentData->delay ); ?>">
+					       value="<?php echo( ! isset( $assignmentData->delay ) ? '' : esc_attr( $assignmentData->delay ) ); ?>">
 				</td>
 				<td class="select-input">
 					<select class="select2-container" id="e20r-assignment-program_ids"
@@ -101,7 +101,7 @@ class e20rAssignmentView extends e20rSettingsView {
 							value="-1" <?php echo empty( $assignmentData->program_ids ) || in_array( - 1, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php _e( "No program defined", "e20r-tracker" ); ?></option><?php
 
 						foreach ( $pList as $p ) { ?>
-							<option value="<?php echo $p->id; ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( $p->title ); ?></option><?php
+							<option value="<?php esc_attr_e( $p->id ); ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( $p->title ); ?></option><?php
 						} ?>
 					</select>
 					<style>
