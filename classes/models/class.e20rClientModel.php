@@ -1190,12 +1190,12 @@ class e20rClientModel {
 
         global $wpdb;
 
-        dbg("e20rClientModel::get_clients() - Loading all of coach #{$coach_id} clients for program {$program_id} ");
+        dbg("e20rClientModel::get_clients() - Loading all of coach #{$coach_id} clients for program (ID: {$program_id})");
 	    $uList = array();
 
-        if ( !is_null( $coach_id ) ) {
+        if ( !empty( $coach_id ) ) {
             $client_list = get_user_meta($coach_id, 'e20r-tracker-client-program-list', true);
-
+	        
             if (!is_null($program_id) && (isset($client_list[$program_id]))) {
 
                 dbg("e20rClientModel::get_clients() - Found client list for program with ID {$program_id}");
@@ -1206,7 +1206,7 @@ class e20rClientModel {
                 if ( false === $client_list ) {
                 	$uList[] = null;
                 } else {
-                	$uList[] = $client_list;
+                	$uList = $client_list;
                 }
 
             } else {
@@ -1219,7 +1219,7 @@ class e20rClientModel {
 
                 $programs[] = array();
             }
-
+	
             foreach( $uList as $pgmId => $userList ) {
 
                 dbg("e20rClientModel::get_clients() - Program {$pgmId} has the following users associated: ");
@@ -1229,7 +1229,7 @@ class e20rClientModel {
                     'include' => $userList,
                     'fields' => array( 'ID', 'display_name' ),
                 );
-
+                
                 $programs[$pgmId] = get_users( $args );
             }
 
