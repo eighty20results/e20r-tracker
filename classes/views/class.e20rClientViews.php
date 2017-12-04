@@ -67,8 +67,8 @@ class e20rClientViews {
                         <?php echo esc_html( $when ); ?>
                     </td>
                     <td class="e20r-client-message-history-subject">
-                        <a href="#TB_inline?width=500&height=300&inlineId=message_<?php echo $message->id; ?>" class="thickbox"><?php echo esc_attr( stripslashes($message->topic) ); ?></a>
-                        <div id="message_<?php echo $message->id; ?>" class="e20r-message-history-content" style="display:none">
+                        <a href="#TB_inline?width=500&height=300&inlineId=message_<?php  esc_attr_e( $message->id ); ?>" class="thickbox"><?php esc_attr_e( stripslashes($message->topic) ); ?></a>
+                        <div id="message_<?php esc_attr_e( $message->id ); ?>" class="e20r-message-history-content" style="display:none">
                             <div class="e20r-message-content">
                                 <h3 class="e20r-client-message-title"><?php echo esc_attr(stripslashes($message->topic)); ?></h3>
                                 <hr/>
