@@ -677,7 +677,7 @@ class e20rActionView extends e20rSettingsView {
             </div>
         </div>
 		<div id="e20r-assignment-answer-list" class="e20r-measurements-container">
-			<h4>Achievements</h4>
+			<h4><?php _e( 'Achievements', 'e20r-tracker' ); ?></h4>
 			<a class="close" href="#">X</a>
 			<div class="quick-nav other">
                 <div class="e20r-measurement-table">
