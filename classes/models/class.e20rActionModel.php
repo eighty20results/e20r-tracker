@@ -273,29 +273,29 @@ class e20rActionModel extends e20rSettingsModel {
 		$e20rArticle = e20rArticle::getInstance();
 
 		$programId = $e20rProgram->getProgramIdForUser( $userId );
-
+		
+		$checkin_list = $e20rTracker->prepare_in("c.checkin_type IN ([IN])", $typeArr );
+		// Add the article ID array
+		$article_in = $e20rTracker->prepare_in(" IN ([IN]) ) ", $articleArr );
+		
 		$sql = "SELECT *
                  FROM {$this->table} AS c
-                 WHERE ( ( c.user_id = %d ) AND
+                 WHERE ( ( c.user_id = %s ) AND
                   ( c.program_id = %d ) AND
-                  ( c.checkin_type IN ([IN]) ) AND
+                  ( {$checkin_list} ) AND
                   ( c.checkin_date BETWEEN %s AND %s ) AND
-                  ( c.article_id";
-
-		$sql = $e20rTracker->prepare_in( $sql, $typeArr );
-
-		// Add the article ID array
-		$sql .= " IN ([IN]) ) )";
-		$sql = $e20rTracker->prepare_in( $sql, $articleArr );
-
+                  ( c.article_id {$article_in} )";
+		
 		$sql = $wpdb->prepare( $sql,
 			$userId,
 			$programId,
 			$dateArr['min'] . " 00:00:00",
 			$dateArr['max'] . " 23:59:59"
 		);
-
-        // dbg("e20rActionModel::loadCheckinsForUser() - SQL: {$sql}");
+		
+		dbg("e20rActionModel::loadCheckinsForUser({$userId}) - Using SQL: {$sql}");
+		
+		// dbg("e20rActionModel::loadCheckinsForUser() - SQL: {$sql}");
 
 		$results = $wpdb->get_results( $sql );
 
