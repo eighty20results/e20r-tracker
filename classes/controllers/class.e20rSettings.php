@@ -8,7 +8,10 @@
  */
 
 class e20rSettings {
-
+	
+	/**
+	 * @var null|e20rProgramModel|e20rClientModel|e20rMeasurementModel|e20rWorkoutModel|e20rAssignmentModel|e20rArticleModel|e20rActionModel
+	 */
     protected $model;
     protected $view;
 
