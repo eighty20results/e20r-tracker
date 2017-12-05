@@ -181,8 +181,8 @@ class e20rActionView extends e20rSettingsView {
             <fieldset class="did-you workout">
                 <legend><?php _e("Did you complete your activity today?", "e20r-tracker"); ?></legend>
                 <div class="clearfix">
-                    <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php echo $activity->id; ?>" />
-                    <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php echo CHECKIN_ACTIVITY; ?>" />
+                    <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php esc_attr_e( $activity->id ); ?>" />
+                    <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php esc_attr_e( CHECKIN_ACTIVITY ); ?>" />
                     <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php echo $activity->checkin_short_name; ?>" />
                     <ul> <!-- style="max-width: 300px; min-width: 200px; width: 290px;" -->
                         <li <?php echo is_null( $activity->checkedin) ? null : ( $activity->checkedin == 1 ? 'class="active";' : 'style="display: none;"'); ?>>
@@ -199,7 +199,7 @@ class e20rActionView extends e20rSettingsView {
                         </li>
                         <li <?php echo is_null( $activity->checkedin) ? null : ( $activity->checkedin == 3 ? 'class="active";' : 'style="display: none;"'); ?>>
                             <input type="radio" value="3" <?php checked( $activity->checkedin, 3 ); ?> name="did-activity-today" id="did-activity-today-radio-4" />
-                            <label for="did-activity-today-radio-4"><?php echo $not_scheduled; ?></label>
+                            <label for="did-activity-today-radio-4"><?php esc_attr_e( $not_scheduled ); ?></label>
                         </li>
                     </ul>
                     <div class="notification-entry-saved" style="width: 300px; display: none;">
@@ -240,17 +240,17 @@ class e20rActionView extends e20rSettingsView {
 
                     switch ( $cnt ) {
                         case 3: ?>
-                            <span class="faded"><?php echo $habit_entries[2]->item_text; ?><br/></span><?php
+                            <span class="faded"><?php esc_attr_e( wp_unslash( $habit_entries[2]->item_text ) ); ?><br/></span><?php
 
                         case 2: ?>
-                            <span class="faded"><?php echo $habit_entries[1]->item_text; ?><br/></span><?php
+                            <span class="faded"><?php esc_attr_e( wp_unslash( $habit_entries[1]->item_text ) ); ?><br/></span><?php
 
                         case 1: ?>
-                            <strong><?php echo $habit_entries[0]->item_text; ?></strong></p><?php
+                            <strong><?php esc_attr_e( wp_unslash( $habit_entries[0]->item_text ) ); ?></strong></p><?php
                      }?>
-                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php echo $action->id; ?>" />
-                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php echo CHECKIN_ACTION; ?>" />
-                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" />
+                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php esc_attr_e( $action->id ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php esc_attr_e( CHECKIN_ACTION ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php esc_attr_e( $action->checkin_short_name ); ?>" />
                 <?php if ( ! $skip_yn ): ?>
                     <ul> <!-- style="max-width: 300px; width: 285px;" -->
                         <li <?php echo is_null( $action->checkedin) ? null : ( $action->checkedin == 1 ? 'class="active";' : 'style="display: none;"'); ?>><input type="radio" value="1" <?php checked( $action->checkedin, 1 ); ?> name="did-action-today" id="did-action-today-radio-1" /><label for="did-action-today-radio-1"><?php _e("Yes", "e20r-tracker");?></label></li>
@@ -284,10 +284,10 @@ class e20rActionView extends e20rSettingsView {
         ?>
         <div class="e20r-action-card">
             <fieldset class="did-you habit">
-                <h4><?php echo $habit_entries[0]->item_text; ?></h4>
-                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php echo $action->id; ?>" />
-                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php echo CHECKIN_ACTION; ?>" />
-                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php echo $action->checkin_short_name; ?>" /><?php
+                <h4><?php esc_attr_e( wp_unslash( $habit_entries[0]->item_text ) ); ?></h4>
+                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php esc_attr_e(  $action->id ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php esc_attr_e( CHECKIN_ACTION ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php esc_attr_e( $action->checkin_short_name ); ?>" /><?php
                 if ( ! $skip_yn ): ?>
                 <div class="e20r-descr e20r-toggle-button-group">
                     <div>
@@ -318,19 +318,21 @@ class e20rActionView extends e20rSettingsView {
     public function view_notes_card( $config, $action, $note ) {
 
         ob_start();
-
+        global $current_user;
+        $e20rTracker = e20rTracker::getInstance();
+        $is_a_coach = $e20rTracker->is_a_coach( $current_user->ID );
         ?>
         <div class="e20r-action-notes">
             <fieldset class="notes">
-                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php echo $action->id; ?>" />
-                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php echo CHECKIN_NOTE; ?>" />
-                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php echo $note->checkin_short_name; ?>" />
+                <input type="hidden" name="e20r-action-id" class="e20r-action-id" value="<?php esc_attr_e( $action->id ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type" value="<?php esc_attr_e( CHECKIN_NOTE ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name" value="<?php esc_attr_e( $note->checkin_short_name ); ?>" />
                 <legend><?php _e("Notes", "e20r-tracker"); ?></legend>
                 <p><?php _e("Please, feel free to add any notes that you'd like to record for this day. The notes are for your benefit; your coaches won't read them unless you ask them to.", "e20r-tracker"); ?></p>
                 <div id="note-display">
-                    <div style="margin: 8px;"><?php isset( $note->checkin_note ) ? base64_decode( $note->checkin_note ) : 'hidden text'; ?></div>
+                    <div style="margin: 8px;"><?php !empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : 'hidden text'; ?></div>
                 </div>
-                <textarea name="value" id="note-textarea"><?php echo isset( $note->checkin_note ) ? base64_decode( $note->checkin_note ) : null ; ?></textarea>
+                <textarea name="value" id="note-textarea"><?php echo !empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : null ; ?></textarea>
                 <div id="note-display-overflow-pad"></div>
                 <div class="notification-entry-saved" style="width: auto; height: 30px; position: absolute;">
                     <div style="border: 1px solid #84c37e; width: 140px;"><?php _e("Note saved", "e20r-tracker"); ?></div>
@@ -351,18 +353,18 @@ class e20rActionView extends e20rSettingsView {
         ob_start();
 
         if ( ( $config->delay < $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ){ ?>
-            <div class="date-past-future notice"><?php echo sprintf( __('You are viewing a day in the past.  <a href="%s">Back to Today</a>', "e20r-tracker"), $config->url );?></div><?php
+            <div class="date-past-future notice"><?php printf( __('You are viewing a day in the past.  <a href="%s">Back to Today</a>', "e20r-tracker"), $config->url );?></div><?php
         }
 
         if ( ( $config->delay > $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ) { ?>
-            <div class="date-past-future notice"><?php echo sprintf( __('You are viewing a day in the future.  <a href="%s">Back to Today</a>', "e20r-tracker"), $config->url );?></div><?php
+            <div class="date-past-future notice"><?php printf( __('You are viewing a day in the future.  <a href="%s">Back to Today</a>', "e20r-tracker"), $config->url );?></div><?php
         }
 
         // The user is attempting to view a day >2 days after today.
         if ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) { ?>
             <div class="date-past-future orange-notice">
                 <h4><?php _e("We love that you're interested!", "e20r-tracker"); ?></h4>
-                <p><?php echo sprintf( __('However, we feel there\'s already plenty to keep yourself busy with for now, so please return
+                <p><?php printf( __('However, we feel there\'s already plenty to keep yourself busy with for now, so please return
                     <a href="%s">to the dashboard</a> for today\'s lesson.', "e20r-tracker" ), $config->url ); ?></p>
             </div><?php
         }
@@ -400,14 +402,14 @@ class e20rActionView extends e20rSettingsView {
 
         if ( ! ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) ) {
 
-        echo $this->load_noscript_notice($config->maxDelayFlag); ?>
+        echo $this->load_noscript_notice(); ?>
         <div class="e20r-action-activity-overview e20r-as-cards">
             <?php wp_nonce_field('e20r-action-data', 'e20r-action-nonce'); ?>
-            <input type="hidden" value="<?php echo $config->use_cards; ?>" name="e20r-use-card-based-display">
-            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo $config->delay; ?>">
+            <input type="hidden" value="<?php esc_attr_e( $config->use_cards ); ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php esc_attr_e( $config->delay ); ?>">
             <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
             <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
-            <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
+            <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php esc_attr_e( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
             <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
             <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
             <div class="e20r-daily-action-row e20r-as-cards">
@@ -449,12 +451,12 @@ class e20rActionView extends e20rSettingsView {
         <noscript>
             <div class="red-notice" style="font-size: 18px; line-height: 22px;">
                 <strong style="display: block; margin-bottom: 8px;"><?php _e("There's a little problem...", "e20r-tracker"); ?></strong>
-                <?php echo sprintf(__("You are using a web browser that doesn't have JavaScript enabled! <br/><br/>
-                JavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
-                To get something useful from the %s platform, you will need to enable JavaScript.
-                Start by checking your browser's help pages or support forums or \"the Google\". You'll probably find
-                step by step instructions.<br/>
-                Or you can contact your coach and we\'ll be happy to help you.", "e20r-tracker"), $currentProgram->title); ?>
+                <?php printf(__('%1$sYou are using a web browser that doesn\'t have JavaScript enabled!!%2$s
+                %1$sJavaScript is a technology that lets your web browser do cool stuff and we use it a lot throughout this site.
+                To get something useful from the %3$s platform, you will need to enable JavaScript.
+                Start by checking your browser\'s help pages or support forums or "the Google". You\'ll probably find
+                step by step instructions.%2$s
+                %1$sOr you can contact your coach and we\'ll be happy to help you.%2$s', "e20r-tracker"), '<p>', '</p>', $currentProgram->title ); ?>
             </div>
         </noscript><?php
 
@@ -484,20 +486,20 @@ class e20rActionView extends e20rSettingsView {
 
         if ( ! ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) ) {
 
-            echo $this->load_noscript_notice( $config->maxDelayFlag ); ?>
+            echo $this->load_noscript_notice(); ?>
         <div id="e20r-action-daynav" class="clear">
-            <input type="hidden" value="<?php echo esc_attr($config->use_cards); ?>" name="e20r-use-card-based-display">
-            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php echo esc_attr( $config->delay ); ?>">
+            <input type="hidden" value="<?php esc_attr_e($config->use_cards); ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today" value="<?php esc_attr_e( $config->delay ); ?>">
 	        <?php if ( $config->delay >= 1 ): ?>
                 <div class="e20r-action-yesterday-nav clear">
-                    <a id="e20r-action-yesterday-lnk" href="<?php echo esc_url_raw( $config->url); ?>"><?php echo esc_attr( $config->yesterday); ?></a>
+                    <a id="e20r-action-yesterday-lnk" href="<?php echo esc_url_raw( $config->url); ?>"><?php esc_attr_e( $config->yesterday); ?></a>
                     <input type="hidden" name="e20r-action-day-yesterday" id="e20r-action-yesterday" value="<?php echo ( ( $config->prev ) >= 0 ? ( esc_attr($config->prev) ) : 0 ); ?>">
                 </div>
 			<?php endif; ?>
-                <div class="e20r-action-current clear"><?php echo esc_attr( $current); ?></div>
+                <div class="e20r-action-current clear"><?php esc_attr_e( $current); ?></div>
                 <div class="e20r-action-tomorrow-nav clear">
-                    <a id="e20r-action-tomorrow-lnk" href="<?php echo esc_url_raw( $config->url ); ?>"><?php echo esc_attr($config->tomorrow); ?></a>
-                    <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow" value="<?php echo esc_attr($config->next  ); ?>">
+                    <a id="e20r-action-tomorrow-lnk" href="<?php echo esc_url_raw( $config->url ); ?>"><?php esc_attr_e($config->tomorrow); ?></a>
+                    <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow" value="<?php esc_attr_e($config->next  ); ?>">
                 </div>
         </div>
         <div class="clear-after"></div>
@@ -509,8 +511,8 @@ class e20rActionView extends e20rSettingsView {
                 <?php wp_nonce_field('e20r-action-data', 'e20r-action-nonce'); ?>
                 <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id" value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>" />
 	            <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id" value="<?php echo ( isset( $config->assignment_id ) && !empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>" />
-                <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php echo esc_attr( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
-	            <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php echo date('Y-m-d', current_time('timestamp') ); ?>" />
+                <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date" value="<?php esc_attr_e( $e20rTracker->getDateFromDelay( ( $config->delay - 1) ) ); ?>" />
+	            <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date" value="<?php esc_attr( date('Y-m-d', current_time('timestamp') ) ); ?>" />
                 <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id" value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : -1 ; ?>" />
                 <div class="e20r-daily-action-row clearfix">
                     <?php echo $this->view_activity( $config, $activity ); ?>
@@ -537,15 +539,15 @@ class e20rActionView extends e20rSettingsView {
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-action-settings' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-action-id" id="hidden-e20r-action-id"
-                       value="<?php echo( ( isset( $checkinData->id ) ) ? $checkinData->id : 0 ); ?>">
+                       value="<?php echo( ( isset( $checkinData->id ) ) ? esc_attr( $checkinData->id ) : 0 ); ?>">
                 <table id="e20r-action-settings wp-list-table widefat fixed">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-action-checkin_type">Type</label></th>
-                        <th class="e20r-label header"><label for="e20r-action-maxcount">Max # Check-ins</label></th>
-                        <th class="e20r-label header"><label for="e20r-action-startdate">Starts on</label></th>
-                        <th class="e20r-label header"><label for="e20r-action-enddate">Ends on</label></th>
-                        <th class="e20r-label header"><label for="e20r-action-program_ids">Program</label></th>
+                        <th class="e20r-label header"><label for="e20r-action-checkin_type"><?php _e('Type', 'e20r-tracker' ); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-action-maxcount"><?php _e('Max # Check-ins', 'e20r-tracker' ); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-action-startdate"><?php _e( 'Starts on', 'e20r-tracker' ); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-action-enddate"><?php _e('Ends on', 'e20r-tracker' ); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-action-program_ids"><?php _e('Program', 'e20r-tracker' ); ?></label></th>
                     </tr>
                     <tr>
                         <td colspan="5">
@@ -556,6 +558,15 @@ class e20rActionView extends e20rSettingsView {
                     <tbody>
                     <?php
 
+                    /**
+                     * @var DateTime|null $start
+                     */
+                    $start = null;
+                    /**
+                     * @var DateTime|null $end
+                     */
+                    $end = null;
+                    
                     dbg("e20rActionView::viewSettingsBox() - Processing startdate: {$checkinData->startdate}");
                     if ( is_null( $checkinData->startdate ) ) {
 
@@ -587,52 +598,45 @@ class e20rActionView extends e20rSettingsView {
                     dbg("e20rActionView::viewSettingsBox() - Processing maxcount, etc: {maxcount}");
                     if ( ( $checkinData->maxcount <= 0 ) && ( ! empty( $checkinData->enddate ) ) ) {
 
-                        $interval              = !is_null( $start ) ? $start->diff( $end ) : null;
-                        $checkinData->maxcount = !is_null( $interval ) ? $interval->format( '%a' ) : null;
+                        $interval              = !empty( $start ) ? $start->diff( $end ) : null;
+                        $checkinData->maxcount = !empty( $interval ) ? $interval->format( '%a' ) : null;
                     }
 
                     dbg("e20rActionView::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
                     ?>
-                    <tr id="<?php echo $checkinData->id; ?>" class="action-inputs">
+                    <tr id="<?php esc_attr_e( $checkinData->id ); ?>" class="action-inputs">
                         <td>
                             <select id="e20r-action-checkin_type" name="e20r-action-checkin_type">
-                                <option value="0" <?php selected( $checkinData->checkin_type, 0 ); ?><?php _e("Not configured", "e20r-tracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ACTION; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTION ); ?>><?php _e("Action", "e20r-tracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ASSIGNMENT; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ASSIGNMENT ); ?>><?php _e("Assignment", "e20r-tracker"); ?></option>
-                                <option value="<?php echo CHECKIN_SURVEY; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_SURVEY ); ?>><?php _e("Survey", "e20r-tracker"); ?></option>
-                                <option value="<?php echo CHECKIN_ACTIVITY; ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTIVITY ); ?>><?php _e("Activity", "e20r-tracker"); ?></option>
+                                <option value="0" <?php selected( $checkinData->checkin_type, 0 ); ?>><?php _e("Not configured", "e20r-tracker"); ?></option>
+                                <option value="<?php esc_attr_e( CHECKIN_ACTION ); ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTION ); ?>><?php _e("Action", "e20r-tracker"); ?></option>
+                                <option value="<?php esc_attr_e( CHECKIN_ASSIGNMENT ); ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ASSIGNMENT ); ?>><?php _e("Assignment", "e20r-tracker"); ?></option>
+                                <option value="<?php esc_attr_e( CHECKIN_SURVEY ); ?>" <?php selected( $checkinData->checkin_type, CHECKIN_SURVEY ); ?>><?php _e("Survey", "e20r-tracker"); ?></option>
+                                <option value="<?php esc_attr_e( CHECKIN_ACTIVITY ); ?>" <?php selected( $checkinData->checkin_type, CHECKIN_ACTIVITY ); ?>><?php _e("Activity", "e20r-tracker"); ?></option>
                             </select>
                         </td>
                         <td class="text-input">
-                            <input type="number" id="e20r-action-maxcount" name="e20r-action-maxcount" value="<?php echo $checkinData->maxcount; ?>">
+                            <input type="number" id="e20r-action-maxcount" name="e20r-action-maxcount" value="<?php esc_attr_e( $checkinData->maxcount ); ?>">
                         </td>
                         <td class="text-input">
-                            <input type="text" id="e20r-action-startdate" name="e20r-action-startdate" value="<?php echo $start; ?>">
+                            <input type="text" id="e20r-action-startdate" name="e20r-action-startdate" value="<?php esc_attr_e( $start ); ?>">
                         </td>
                         <td class="text-input">
-                            <input type="text" id="e20r-action-enddate" name="e20r-action-enddate" value="<?php echo $end; ?>">
+                            <input type="text" id="e20r-action-enddate" name="e20r-action-enddate" value="<?php esc_attr_e( $end ); ?>">
                         </td>
                         <td>
                             <select class="select2-container" id="e20r-action-program_ids" name="e20r-action-program_ids[]" multiple="multiple">
-                                <option value="0">Not configured</option>
+                                <option value="0"><?php _e('Not configured', 'e20r-tracker' ); ?></option>
                                 <?php
                                 foreach ( $programs as $pgm ) {
 
                                     $selected = ( in_array( $pgm->ID, $checkinData->program_ids ) ? ' selected="selected" ' : null); ?>
                                     <option
-                                        value="<?php echo $pgm->ID; ?>"<?php echo $selected; ?>><?php echo esc_textarea( $pgm->post_title ); ?>
-                                        (#<?php echo $pgm->ID; ?>)
+                                        value="<?php esc_attr_e( $pgm->ID ); ?>"<?php esc_attr_e( $selected ); ?>><?php echo esc_textarea( wp_unslash( $pgm->post_title ) ); ?>
+                                        (#<?php esc_attr_e( $pgm->ID ); ?>)
                                     </option>
                                 <?php } ?>
                             </select>
-                            <style>
-                                .select2-container {
-                                    min-width: 150px;
-                                    max-width: 300px;
-                                    width: 90%;
-                                }
-                            </style>
-                            <script>
+                            <script type="text/javascript" language="JavaScript">
                                 jQuery('#e20r-action-program_ids').select2();
                             </script>
                         </td>
@@ -645,10 +649,7 @@ class e20rActionView extends e20rSettingsView {
     }
 
 	public function view_user_achievements( $achievements ) {
-
-		global $current_user;
-		$e20rTracker = e20rTracker::getInstance();
-
+  
 		$program_days = $achievements['program_days'];
 		$program_score = $achievements['program_score'];
 
@@ -661,17 +662,17 @@ class e20rActionView extends e20rSettingsView {
             <div class="e20r-description-row clear-after">
                 <div class="column_1_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Gold Ribbon", "e20r-tracker" ); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/gold-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo esc_url(  E20R_PLUGINS_URL . '/img/gold-badge.png' ); ?>">
                     <p class="achivement-descr-small"><?php _e("The gold ribbon is awarded when your consistency is greater than 80 percent", "e20r-tracker" ); ?></p>
                 </div>
                 <div class="column_2_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Silver Ribbon", "e20r-tracker"); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/silver-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo esc_url( E20R_PLUGINS_URL . '/img/silver-badge.png' ); ?>">
                     <p class="achivement-descr-small"><?php _e("The sliver ribbon is awarded when your consistency is between 70 and 80 percent", "e20r-tracker" ); ?></p>
                 </div>
                 <div class="column_3_3">
                     <h4 class="e20r-ribbon-small"><?php _e("Bronze Ribbon", "e20r-tracker"); ?></h4>
-                    <img class="e20r-ribbon-small" src="<?php echo E20R_PLUGINS_URL . '/img/bronze-badge.png'; ?>">
+                    <img class="e20r-ribbon-small" src="<?php echo esc_url( E20R_PLUGINS_URL . '/img/bronze-badge.png' ); ?>">
                     <p class="achivement-descr-small"><?php _e("The bronze ribbon is awarded when your consistency is 70 percent or less", "e20rtracekr" ); ?></p>
                 </div>
             </div>
@@ -703,17 +704,17 @@ class e20rActionView extends e20rSettingsView {
                     <div class="e20r-achievement-row-bg <?php echo ($counter % 2) == 0 ? 'e20rEven' : 'e20rOdd'?>" >
 
                         <div class="e20r-achievement-row <?php echo ($counter % 2) == 0 ? 'e20rEven' : 'e20rOdd'?> clear-after" >
-                            <div class="e20r-achievements-col_1_4 e20r-tracker-action-descr"><?php echo $answer->actionText ?></div>
+                            <div class="e20r-achievements-col_1_4 e20r-tracker-action-descr"><?php esc_attr_e( wp_unslash( $answer->actionText ) ); ?></div>
                             <div class="e20r-achievements-col_2_4 e20r-tracker-action">
                                 <div class="e20r-action-table clear-after">
                                     <div class="e20r-action-row e20r-achievement-header small-viewport">
                                         <div class="e20r-action-col-1_1"><a title="<?php _e("The daily actions", "e20r-tracker"); ?>"><?php _e("Action", "e20r-tracker" ); ?></a></div>
                                     </div>
                                     <div class="e20r-action-row">
-                                        <div class="e20r-action-col-1_1 e20r-tracker-<?php echo isset( $answer->action->badge ) ? $answer->action->badge : 'no'; ?>-badge"></div>
+                                        <div class="e20r-action-col-1_1 e20r-tracker-<?php echo isset( $answer->action->badge ) ? esc_attr( $answer->action->badge ) : 'no'; ?>-badge"></div>
                                     </div>
                                     <div class="e20r-action-row">
-                                        <div class="e20r-action-col-1_1 e20r-tracker-score"><?php echo( $answer->action->score * 100 ); ?> &#37;</div>
+                                        <div class="e20r-action-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->action->score * 100 ); ?> &#37;</div>
                                     </div>
                                 </div>
                             </div>
@@ -723,10 +724,10 @@ class e20rActionView extends e20rSettingsView {
                                         <div class="e20r-activity-col-1_1"><a title="<?php _e("The activities (exercise, etc)", "e20r-tracker"); ?>"><?php _e("Activity", "e20r-tracker" ); ?></a></div>
                                     </div>
                                     <div class="e20r-activity-row">
-                                        <div class="e20r-activity-col-1_1 e20r-tracker-<?php echo isset( $answer->activity->badge ) ? $answer->activity->badge : 'no'; ?>-badge"></div>
+                                        <div class="e20r-activity-col-1_1 e20r-tracker-<?php echo isset( $answer->activity->badge ) ? esc_attr( $answer->activity->badge ) : 'no'; ?>-badge"></div>
                                     </div>
                                     <div class="e20r-activity-row">
-                                        <div class="e20r-activity-col-1_1 e20r-tracker-score"><?php echo( $answer->activity->score * 100 ); ?> &#37;</div>
+                                        <div class="e20r-activity-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->activity->score * 100 ); ?> &#37;</div>
                                     </div>
                                 </div>
                             </div>
@@ -737,10 +738,10 @@ class e20rActionView extends e20rSettingsView {
                                     </div>
                                     <div class="clear-after"></div>
                                     <div class="e20r-assignment-row">
-                                        <div class="e20r-assignment-col-1_1 e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? $answer->assignment->badge : 'no'; ?>-badge"></div>
+                                        <div class="e20r-assignment-col-1_1 e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? esc_attr( $answer->assignment->badge ) : 'no'; ?>-badge"></div>
                                     </div>
                                     <div class="e20r-assignment-row">
-                                        <div class="e20r-assignment-col-1_1 e20r-tracker-score"><?php echo( $answer->assignment->score * 100 ); ?> &#37;</div>
+                                        <div class="e20r-assignment-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->assignment->score * 100 ); ?> &#37;</div>
                                     </div>
                                 </div>
                             </div>
