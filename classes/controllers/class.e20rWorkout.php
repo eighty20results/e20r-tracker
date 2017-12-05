@@ -143,7 +143,7 @@ class e20rWorkout extends e20rSettings
         } else {
             dbg("e20rWorkout::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$user_id}");
             wp_send_json_error(__("Your membership level prevents you from accessing this data. Please upgrade.", "e20r-tracker"));
-            wp_die();
+	        exit();
         }
 
         $exercise_id = isset($_POST['exercise_id']) ? $e20rTracker->sanitize($_POST['exercise_id']) : 0;
@@ -272,7 +272,8 @@ class e20rWorkout extends e20rSettings
         $e20rTracker = e20rTracker::getInstance();
 
         if (!is_user_logged_in()) {
-            wp_send_json_error('Please log in to access this service');
+            wp_send_json_error( __( 'Please log in to access this service', 'e20r-tracker' ) );
+	        exit();
         }
 
         check_ajax_referer('e20r-tracker-activity', 'e20r-tracker-activity-input-nonce');
@@ -285,6 +286,7 @@ class e20rWorkout extends e20rSettings
             dbg("e20rWorkout::saveExData_callback() - User indicated their workout is complete.");
             $id = $this->model->save_activity_status($_POST);
             wp_send_json_success(array('id' => $id));
+	        exit();
         }
 
         $data = array();
@@ -313,16 +315,26 @@ class e20rWorkout extends e20rSettings
 
         dbg("e20rWorkout::saveExData_callback() - Data array to use");
         // dbg($data);
-
-        $format = $e20rTracker->setFormatForRecord($data);
+        
+        try {
+	        $format = $e20rTracker->setFormatForRecord( $data );
+        } catch( Exception  $e ) {
+            dbg( "e20rWorkout::saveExData_callback() - Error setting format: " . $e->getMessage() );
+            
+            wp_send_json_error();
+            exit();
+        }
         // dbg($format);
 
         if (($id = $this->model->save_userData($data, $format)) === false) {
             dbg("e20rWorkout::saveExData_callback() - Error saving user data record!");
             wp_send_json_error();
+	        exit();
         }
+        
         dbg("e20rWorkout::saveExData_callback() - Saved record with ID: {$id}");
         wp_send_json_success(array('id' => $id));
+	    exit();
     }
 
     public function load_user_activity($activity_id, $user_id)
@@ -1182,9 +1194,11 @@ class e20rWorkout extends e20rSettings
             dbg("e20rWorkout::add_new_exercise_to_group_callback() - loaded Workout info: ");
 
             wp_send_json_success($exerciseData);
+	        exit();
         }
 
-        wp_send_json_error("Unknown error processing new exercise request.");
+        wp_send_json_error(__( "Unknown error processing new exercise request.", "e20r-tracker" ));
+	    exit();
     }
 
     public function add_new_exercise_group_callback()
@@ -1202,7 +1216,8 @@ class e20rWorkout extends e20rSettings
         $groupId = isset($_POST['e20r-workout-group-id']) ? $e20rTracker->sanitize($_POST['e20r-workout-group-id']) : null;
 
         if (!$groupId) {
-            wp_send_json_error('Unable to add more groups. Please contact support!');
+            wp_send_json_error(__( 'Unable to add more groups. Please contact support!', 'e20r-tracker' ) );
+	        exit();
         }
 
         dbg("e20rWorkout::add_new_exercise_group_callback() - Adding clean/default workout settings for new group. ID={$groupId}.");
@@ -1214,10 +1229,12 @@ class e20rWorkout extends e20rSettings
 
             dbg("e20rWorkout::add_new_exercise_group_callback() - New group table completed. Sending...");
             wp_send_json_success(array('html' => $data));
+	        exit();
         } else {
 
             dbg("e20rWorkout::add_new_exercise_group_callback() - No data (not even the default values!) generated.");
-            wp_send_json_error("Error: Unable to generate new group");
+            wp_send_json_error(__( "Error: Unable to generate new group", "e20r-tracker" ) );
+	        exit();
         }
     }
 } 

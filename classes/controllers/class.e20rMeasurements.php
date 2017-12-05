@@ -442,8 +442,8 @@ class e20rMeasurements {
 
             dbg("e20rMeasurements::ajax_deletePhoto_callback() - No attachment ID provided!");
 
-            wp_send_json_error( "Error: Image not found!");
-            wp_die();
+            wp_send_json_error( __( "Error: Image not found!", "e20r-tracker" ));
+	        exit();
         }
 
         if ( wp_delete_attachment( $imgId , true ) ) {
@@ -451,10 +451,17 @@ class e20rMeasurements {
             dbg("e20rMeasurements::ajax_deletePhoto_callback() - Attachment with ID {$imgId} successfully deleted");
         }
 
-        if ( $this->model->saveField( "{$imageSide}_image", NULL, $articleId, $programId, $post_date, $user_id ) === FALSE ) {
+        try {
+	        $retval = $this->model->saveField( "{$imageSide}_image", NULL, $articleId, $programId, $post_date, $user_id );
+        } catch ( Exception $e ) {
+        	$retval = false;
+        	dbg("e20rMeasurments::ajax_deletePhoto_callback() - Exception: " . $e->getMessage() );
+        }
+        
+        if ( $retval === FALSE ) {
 
-            wp_send_json_error( "Error removing the image from the database");
-            wp_die();
+            wp_send_json_error( __( "Error removing the image from the database", "e20r-tracker" ));
+	        exit();
         }
 
         $attLnk = wp_get_attachment_link( $imgId );
@@ -463,11 +470,12 @@ class e20rMeasurements {
         if ( 'Missing Attachment' === $attLnk ) {
 
             wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/img/no-image-uploaded.jpg" ) );
+	        exit();
         }
 
         dbg("e20rMeasurements::ajax_deletePhoto_callback() - Not deleted");
-        wp_send_json_error( "Error: Unable to delete image.");
-        wp_die();
+        wp_send_json_error( __( "Error: Unable to delete image.", "e20r-tracker" ));
+	    exit();
 
     }
 
@@ -494,8 +502,8 @@ class e20rMeasurements {
         }
         else {
             dbg( "e20rMeasurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$this->id}" );
-            wp_send_json_error( 'You do not have permission to access the data you requested.' );
-            wp_die();
+            wp_send_json_error( __( 'You do not have permission to access the data you requested.', 'e20r-tracker' ) );
+            exit();
         }
 
         dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data for {$this->id}");
@@ -1089,13 +1097,15 @@ class e20rMeasurements {
         if ( ! $post_date ) {
 
             dbg("e20rMeasurements::saveMeasurement() - No date specified for the measurement");
-            wp_send_json_error( "No date specified for the measurement" );
+            wp_send_json_error( __( "No date specified for the measurement", "e20r-tracker" ) );
+	        exit();
         }
 
         if ( ! $articleId ) {
 
             dbg("e20rMeasurements::saveMeasurement() - No article ID specified for the measurement ");
-            wp_send_json_error( "No article ID specified for the measurement ");
+            wp_send_json_error( __( "No article ID specified for the measurement ", "e20r-tracker" ) );
+	        exit();
         }
 
 /*        if ( ( ! $measurementType ) || ( ( ! $measurementValue ) && ( $measurementType != 'essay1' ) ) ) {
@@ -1106,11 +1116,13 @@ class e20rMeasurements {
         if ( ( $measurementType == 'completed') && ( $measurementValue == 1) ){
 
             dbg("e20rMeasurements::saveMeasurement() - Measurement form is being saved by the user. TODO: Display with correct header to show completion");
-            if ( $e20rAction->setArticleAsComplete( $current_user->ID, $articleId, $programId ) ) {
-                wp_send_json_success( "Progress saved for {$post_date}" );
+            if ( $e20rAction->setArticleAsComplete( $current_user->ID, $articleId ) ) {
+                wp_send_json_success( sprintf( __( "Progress saved for %s", "e20r-tracker" ), $post_date  ) );
+	            exit();
             }
             else {
-                wp_send_json_success( "Unable to save your progress measurements. Please try again" );
+                wp_send_json_success( __( "Unable to save your progress measurements. Please try again", "e20r-tracker" ) );
+	            exit();
             }
         }
 
@@ -1142,26 +1154,35 @@ class e20rMeasurements {
 
             if ( ! $this->model->saveField( $measurementType, $measurementValue, $articleId, $programId, $post_date, $user_id ) ) {
 
-                wp_send_json_error( "Unknown error saving measurement for {$measurementType}" );
-                exit;
+                wp_send_json_error( sprintf( __( "Unknown error saving measurement for %s", "e20r-tracker" ), $measurementType ) );
+	            exit();
             }
 
         }
         catch ( Exception $e ) {
             dbg("saveProgressForm() - Exception while saving the {$measurementType} measurement: " . $e->getMessage() );
-            wp_send_json_error( "Error saving {$measurementType} measurement" );
-            exit;
+            wp_send_json_error( sprintf( __( "Error saving %s measurement", "e20r-tracker" ), $measurementType ) );
+	        exit();
         }
 
         dbg("saveProgressForm() - {$measurementType} measurement saved for user ID {$user_id}");
-        wp_send_json_success( "Saved {$measurementType} for user ID {$user_id}" );
-        exit;
+        wp_send_json_success( sprintf( __( "Saved %s for user ID %d", "e20r-tracker" ), $measurementType, $user_id ) );
+	    exit();
     }
 
     public function saveMeasurement( $type, $value, $articleId, $programId, $post_date, $user_id ) {
 
         // $measurementType, $measurementValue, $articleId, $programId, $post_date, $user_id;
-        return $this->model->saveField( $type, $value, $articleId, $programId, $post_date, $user_id );
+	    try {
+		    $retval = $this->model->saveField( $type, $value, $articleId, $programId, $post_date, $user_id );
+	    } catch ( \Exception $e ) {
+		    
+	    	dbg("saveMeasurement() - Exception: " . $e->getMessage() );
+	    	$this->model->setFreshClientData();
+	    	$retval = false;
+	    }
+	    
+	    return $retval;
     }
 
     public function checkProgressFormCompletion_callback() {
@@ -1196,10 +1217,12 @@ class e20rMeasurements {
 
         if ( $articleId === null ) {
             wp_send_json_success( array( 'progress_form_completed' => false ) );
+	        exit();
         }
 
         if ($post_date === null) {
             wp_send_json_success( array( 'progress_form_completed' => false ) );
+            exit();
         }
 
         /*
@@ -1230,6 +1253,7 @@ class e20rMeasurements {
         );
 
         wp_send_json_success( $completed );
+	    exit();
     }
 
     /*********************************************************
