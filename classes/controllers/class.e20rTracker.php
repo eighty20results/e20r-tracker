@@ -986,7 +986,9 @@ class e20rTracker {
 
     public function dependency_warnings() {
 
-        if ( ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') )&& is_admin()) {
+        if ( ( !class_exists('PMProSequence') &&
+        !class_exists('E20R\Sequences\Sequence\Controller') ) &&
+        !class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) && is_admin()) {
 
             ?>
             <div class="error">
