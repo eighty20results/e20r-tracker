@@ -3,7 +3,7 @@
 Plugin Name: E20R Tracker
 Plugin URI: http://eighty20results.com/e20r-tracker
 Description: Track Coaching Activities
-Version: 1.7.1
+Version: 1.7.2
 Author: Wicked Strong Chicks, LLC <info@eighty20results.com>
 Author URI: http://eighty20results.com/thomas-sjolshagen
 Text Domain: e20r-tracker
@@ -33,7 +33,7 @@ if ( !defined( 'ABSPATH' ) ) {
 	die( "Sorry, you are not allowed to access this page directly." );
 }
 
-define('E20R_VERSION', '1.7.1');
+define('E20R_VERSION', '1.7.2');
 define('E20R_RUN_UNSERIALIZE', 0); // 0 == Do NOT Run, 1 == Run
 define('E20R_DB_VERSION', '11');
 define('E20R_NEW_DB_VERSION','9');
@@ -277,6 +277,7 @@ if (!function_exists('e20r_ajaxUnprivError')):
             'errno' => 3,
             'err_text' => __('You must be logged in to access/view tracker data', 'e20r_tracker')
         ));
+	    exit();
     }
 
 
