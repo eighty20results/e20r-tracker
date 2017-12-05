@@ -458,7 +458,7 @@ class e20rTables {
         }
 
         if ( empty ( $this->tables->{$name} ) ) {
-            throw new Exception( "The {$name} table is not defined" );
+            throw new Exception( __( "The {$name} table is not defined", "e20r-tracker" ) );
         }
 
         return $this->tables->{$name};
