@@ -554,18 +554,18 @@ class e20rAction extends e20rSettings
         if ($data['article_id'] == CONST_NULL_ARTICLE) {
             dbg("e20rAction::saveCheckin_callback() - No checkin needed/scheduled");
             wp_send_json_error();
-            wp_die();
+	        exit();
         }
 
         if (!$this->model->setCheckin($data)) {
 
             dbg("e20rAction::saveCheckin_callback() - Error saving checkin information...");
             wp_send_json_error();
-            wp_die();
+            exit();
         }
 
         wp_send_json_success();
-        wp_die();
+        exit();
     }
 
     public function save_check_in($checkin_data, $type = null)
@@ -621,6 +621,7 @@ class e20rAction extends e20rSettings
         if ((CONST_NULL_ARTICLE === $articleId) && (is_null($userId) || is_null($answerDate) || is_null($delay))) {
             dbg("e20rAction::dailyProgress_callback() - Can't save assignment info!");
             wp_send_json_error(__("Unable to save your answer. Please contact technical support!", "e20r-tracker"));
+	        exit();
         }
 
         if (count($questionIds) != count($answers)) {
@@ -725,8 +726,10 @@ class e20rAction extends e20rSettings
 
         if ($success == true) {
             wp_send_json_success();
+            exit();
         } else {
             wp_send_json_error(__("Unable to save your update", "e20rtracke"));
+            exit();
         }
     }
 
@@ -925,6 +928,7 @@ class e20rAction extends e20rSettings
 
             dbg("e20rAction::nextCheckin_callback() - Return login error and force redirect to login page.");
             wp_send_json_error(array('ecode' => 3));
+	        exit();
         }
 
         $e20rArticle = e20rArticle::getInstance();
@@ -965,10 +969,12 @@ class e20rAction extends e20rSettings
             if ((false === $access) && (empty($articles))) {
                 dbg("e20rAction::nextCheckin_callback() - Error: No article for user {$config->userId} in this program.");
                 wp_send_json_error(array('ecode' => 2));
+	            exit();
             } elseif ((false === $access) && (!empty($articles))) {
 
                 dbg("e20rAction::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post ");
                 wp_send_json_error(array('ecode' => 1));
+	            exit();
             }
 
             $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
@@ -984,11 +990,13 @@ class e20rAction extends e20rSettings
 
             dbg("e20rAction::nextCheckin_callback( - Article & post isn't available to this user yet due to delay vs today");
             wp_send_json_error(array('ecode' => 1));
+	        exit();
         }
 
         if (!$access) {
             dbg("e20rAction::nextCheckin_callback( - User doesn't have access to article.");
             wp_send_json_error(array('ecode' => 1));
+	        exit();
         }
 
         if (($html = $this->dailyProgress($config)) !== false) {
@@ -996,9 +1004,11 @@ class e20rAction extends e20rSettings
             dbg("e20rAction::nextCheckin_callback() - Sending new dailyProgress data (html)");
             // dbg($html);
             wp_send_json_success($html);
+            exit();
         }
 
         wp_send_json_error();
+        exit();
     }
 
     public function shortcode_dailyProgress($atts = null)

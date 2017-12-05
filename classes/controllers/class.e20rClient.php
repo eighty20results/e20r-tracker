@@ -1275,7 +1275,8 @@ class e20rClient
             $e20rMeasurements->updateMeasurementsForType($dimension, $value);
         } catch (Exception $e) {
             dbg("e20rClient::updateUnitTypes() - Error updating measurements for new measurement type(s): " . $e->getMessage());
-            wp_send_json_error("Error updating existing data: " . $e->getMessage());
+            wp_send_json_error(sprintf( __( "Error updating existing data: %s", "e20r-tracker" ), $e->getMessage() ) );
+	        exit();
         }
 
         // Save the actual setting for the current user
@@ -1296,12 +1297,13 @@ class e20rClient
             $this->model->saveUnitInfo($this->lengthunits, $this->weightunits);
         } catch (Exception $e) {
             dbg("e20rClient::updateUnitTypes() - Error updating measurement unit for {$dimension}");
-            wp_send_json_error("Unable to save new {$dimension} type ");
+            wp_send_json_error(sprintf( __( "Unable to save new %s type ", "e20r-tracker" ), $dimension ) );
+	        exit();
         }
 
         dbg("e20rClient::updateUnitTypes() - Unit type updated");
-        wp_send_json_success("All data updated ");
-        wp_die();
+        wp_send_json_success( __("All data updated ", "e20r-tracker" ));
+	    exit();
     }
 
     function ajax_getMemberlistForLevel()
@@ -1311,7 +1313,7 @@ class e20rClient
 
         $e20rTracker = e20rTracker::getInstance();
 
-        $levelId = (isset($_POST['hidden_e20r_level']) ? intval($_POST['hidden_e20r_level']) : 0);
+        $levelId = $e20rTracker->sanitize( 'hidden_e20r_level' );
 
         $this->init();
 
@@ -1332,6 +1334,7 @@ class e20rClient
         }
 
         wp_send_json_success($data);
+	    exit();
 
     }
 
@@ -1341,7 +1344,7 @@ class e20rClient
         ob_start(); ?>
         <html>
     <head>
-        <title><?php echo esc_attr( stripslashes( $subject ) ); ?></title>
+        <title><?php esc_attr_e( wp_unslash( $subject ) ); ?></title>
     </head>
     <body>
     <div id="the_content">
@@ -1588,6 +1591,7 @@ class e20rClient
 
             if (false === ($when = strtotime($email_args['time'] . " " . get_option('timezone_string')))) {
                 wp_send_json_error(array('error' => 3)); // 3 == 'Incorrect date/time provided'.
+	            exit();
             }
 
             dbg("e20rClient::ajax_sendClientMessage() - Scheduled to be sent at: {$when}");
@@ -1612,11 +1616,12 @@ class e20rClient
             dbg("e20rClient::ajax_sendClientMessage() - Successfully scheduled the message to be sent");
 
             wp_send_json_success();
-            wp_die();
+	        exit();
         }
 
         dbg("e20rClient::ajax_sendClientMessage() - Error while scheduling message to be sent");
         wp_send_json_error();
+	    exit();
     }
 
     public function set_html_content_type()
@@ -1654,6 +1659,7 @@ class e20rClient
 
             dbg("e20rClient::ajax_showClientMessage() - User isn't a coach. Return error & force redirect");
             wp_send_json_error(array('error' => 403));
+	        exit();
         }
 
         $userId = isset($_POST['client-id']) ? $e20rTracker->sanitize($_POST['client-id']) : $current_user->ID;
@@ -1666,6 +1672,7 @@ class e20rClient
         // $html = $this->view->viewMessageHistory( $userId, $messages );
 
         wp_send_json_success(array('html' => $html));
+	    exit();
     }
 
     public function ajax_showClientMessage()
@@ -1693,6 +1700,7 @@ class e20rClient
 
             dbg("e20rClient::ajax_showClientMessage() - User isn't a coach. Return error & force redirect");
             wp_send_json_error(array('error' => 403));
+	        exit();
         }
 
         $userId = isset($_POST['client-id']) ? $e20rTracker->sanitize($_POST['client-id']) : $current_user->ID;
@@ -1705,7 +1713,8 @@ class e20rClient
         dbg($a->id);
 
         if (!$e20rArticle->isSurvey($a->id)) {
-            wp_send_json_error(array('error' => 'Configuration error. Please report to tech support.'));
+            wp_send_json_error(array('error' => __( 'Configuration error. Please report to tech support.', 'e20r-tracker' ) ) );
+	        exit();
         } else {
             dbg("e20rClient::ajax_showClientMessage() - Loading article configuration for the survey!");
             $e20rArticle->init($a->id);
@@ -1719,6 +1728,7 @@ class e20rClient
         $html = $this->view->viewClientContact($userId);
 
         wp_send_json_success(array('html' => $html));
+	    exit();
     }
 
     public function ajax_clientDetail()
@@ -1731,13 +1741,16 @@ class e20rClient
 
             dbg("e20rClient::ajax_clientDetail() - User isn't logged in. Return error & force redirect");
             wp_send_json_error(array('error' => 403));
+	        exit();
         }
 
         if (!$e20rTracker->is_a_coach($current_user->ID)) {
 
             dbg("e20rClient::ajax_clientDetail() - User isn't a coach. Return error & force redirect");
             wp_send_json_error(array('error' => 403));
+	        exit();
         }
+        
         dbg('e20rClient::ajax_clientDetail() - Requesting client detail');
 
         check_ajax_referer('e20r-tracker-data', 'e20r-tracker-clients-nonce');
@@ -1766,6 +1779,7 @@ class e20rClient
 
         if (!$e20rArticle->isSurvey($a->id)) {
             wp_send_json_error(array('error' => 'Configuration error. Please report to tech support.'));
+	        exit();
         } else {
             dbg("e20rClient::ajax_clientDetail() - Loading article configuration for the survey!");
             $e20rArticle->init($a->id);
@@ -1799,6 +1813,7 @@ class e20rClient
         }
 
         wp_send_json_success(array('html' => $html));
+        exit();
     }
 
     public function load_clientDetail($clientId)

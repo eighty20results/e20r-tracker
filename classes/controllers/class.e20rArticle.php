@@ -736,11 +736,12 @@ class e20rArticle extends e20rSettings {
 
 			// dbg($html);
 			echo json_encode( $toBrowser );
-			wp_die();
+			exit();
 		}
 
 		dbg( "e20rArticle::remove_assignment_callback() - Error generating the metabox html!" );
-		wp_send_json_error( "No assignments found for this article!" );
+		wp_send_json_error( __( "No assignments found for this article!", "e20r-tracker" ) );
+		exit();
 	}
 
 	public function add_assignment_callback() {
@@ -912,6 +913,7 @@ class e20rArticle extends e20rSettings {
 
 		dbg( "e20rArticle::add_assignment_callback() - Transmitting new HTML for metabox" );
 		wp_send_json_success( array( 'html' => $html, 'reload' => $reloadPage ) );
+		exit();
 
 		// dbg("e20rArticle::add_assignment_callback() - Error generating the metabox html!");
 		// wp_send_json_error( "No assignments found for this article!" );
@@ -1081,8 +1083,9 @@ class e20rArticle extends e20rSettings {
 
 		$postId = isset( $_POST['post_ID'] ) ? intval( $_POST['post_ID'] ) : null;
 
-		if ( ! $postId ) {
-			wp_send_json_error( 'Error: Not a valid Post/Page' );
+		if ( empty( $postId ) ) {
+			wp_send_json_error( __('Error: Not a valid Post/Page', 'e20r-tracker' ) );
+			exit();
 		}
 
 		$dripFeedDelay = $e20rTracker->getDripFeedDelay( $postId );
@@ -1094,9 +1097,11 @@ class e20rArticle extends e20rSettings {
 				'nodelay' => false,
                 'summary' => $seo_summary,
 			) );
+			exit();
 		}
 
 		wp_send_json_success( array( 'nodelay' => true ) );
+		exit();
 	}
 
 	public function editor_metabox_setup( $post ) {

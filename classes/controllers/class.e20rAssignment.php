@@ -171,6 +171,7 @@ class e20rAssignment extends e20rSettings {
 
             dbg( "e20rAssignment::manage_option_list() - This is a new post. Ask user to click 'Publish'");
             wp_send_json_error( array( 'errno' => -9999 ) );
+	        exit();
         }
 
         $settings = $this->model->loadSettings( $post_id );
@@ -202,6 +203,7 @@ class e20rAssignment extends e20rSettings {
 
             dbg("e20rAssignment::manage_option_list() - Error: No operation requested!");
             wp_send_json_error( array( 'errno' => -1 ) );
+	        exit();
         }
 
         $existing_options = isset( $_POST['e20r-assignment-select_options'] ) ? $e20rTracker->sanitize( $_POST['e20r-assignment-select_options'] ) : array();
@@ -213,6 +215,7 @@ class e20rAssignment extends e20rSettings {
                 if ( empty( $new_option ) ) {
                     dbg("e20rAssignment::manage_option_list() - Error: Requested add operation, but no new option was supplied");
                     wp_send_json_error( array( 'errno' => -2 ) );
+	                exit();
                 }
 
                 $existing_options[] = $new_option;
@@ -250,10 +253,12 @@ class e20rAssignment extends e20rSettings {
 
             dbg("e20rAssignment::manage_option_list() - Saved settings of assignment {$settings->id}");
             wp_send_json_success( array( 'html' => $html ) );
+            exit();
         }
 
         dbg("e20rAssignment::manage_option_list() - Returning error because we didn't exist gracefully.");
         wp_send_json_error( array( 'errno' => -3 ) );
+        exit();
 
     }
 
@@ -350,12 +355,14 @@ class e20rAssignment extends e20rSettings {
                                 sprintf( __("Error: Unable to update the status for message: (#%s}).", "e20r-tracker"), $message_id )
                         )
                     );
+                    exit();
                 }
             }
         }
 
         dbg("e20rAssignment::update_message_status() - Completed status update...");
         wp_send_json_success();
+        exit();
     }
 
     public function add_assignment_reply() {
@@ -387,6 +394,7 @@ class e20rAssignment extends e20rSettings {
 
             dbg("e20rAssignment::add_assignment_reply() - ERROR: Missing data from front-end!!");
             wp_send_json_error( array('message' => sprintf( __( "Error: Unable to save assignment reply for assignment ID %d and user ID %d", "e20r-tracker"), $data['assignment_id'], $data['user_id'] ) ) );
+	        exit();
         }
 
         // $am_coach = $e20rTracker->is_a_coach($current_user->ID);
@@ -399,12 +407,13 @@ class e20rAssignment extends e20rSettings {
 
             dbg("e20rAssignment::add_assignment_reply() - ERROR: No previously existing assignment found, so shouldn't have been possible!");
             wp_send_json_error( array('message' => __( "Error: No assignment found to reply to!", "e20r-tracker")));
+	        exit();
         }
 
         if ( count( $existing_assignment) > 1) {
             dbg("e20rAssignment::add_assignment_reply() - ERROR: More than a single assignment record found for user/assignment");
             wp_send_json_error( array('message' => sprintf( __( "Error: Multiple (%d) assignments found for %d reply for assignment ID %d and user %d", "e20r-tracker" ), count($existing_assignment), $data['assignment_id'], $data['user_id']) ) );
-
+	        exit();
         }
 
         $assignment_info = array_pop( $existing_assignment );
@@ -419,6 +428,7 @@ class e20rAssignment extends e20rSettings {
         if ( false === $this->model->save_response( $data ) ) {
 
             wp_send_json_error( array('message' => __( "Error: Unable to save response, or update assignment information", "e20r-tracker") ) );
+            exit();
         }
 
         $history = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
@@ -444,6 +454,7 @@ class e20rAssignment extends e20rSettings {
         }
 
         wp_send_json_success( array('message_history' => $message_history ));
+        exit();
     }
 
 	public function listUserAssignments( $userId, $page_num = -1 ) {
@@ -925,9 +936,11 @@ class e20rAssignment extends e20rSettings {
 
             $html = $this->listUserAssignments( $client_id );
             wp_send_json_success(array('assignments' => $html));
+	        exit();
         }
 
         wp_send_json_error(array('message' => "No assignment data for client ({$client_id})"));
+	    exit();
     }
 
     public function ajax_paginateAssignments() {
@@ -948,8 +961,10 @@ class e20rAssignment extends e20rSettings {
 /*            $_SERVER['REQUEST_URI'] = $org_uri; */
 
             wp_send_json_success( array('assignments' => $html ));
+	        exit();
         }
 
         wp_send_json_error(array('message' => "No assignment data for client ({$client_id})"));
+	    exit();
     }
 }
