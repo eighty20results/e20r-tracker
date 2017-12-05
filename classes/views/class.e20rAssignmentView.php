@@ -58,7 +58,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		<div id="e20r-editform">
 		<?php wp_nonce_field( 'e20r-assignment-data', 'e20r-tracker-assignment-settings-nonce' ); ?>
 		<input type="hidden" name="hidden-e20r-assignment-id" id="hidden-e20r-assignment-id"
-		       value="<?php echo( ( ! empty( $assignmentData ) ) ? $assignmentData->id : 0 ); ?>">
+		       value="<?php echo( ( ! empty( $assignmentData ) ) ? esc_attr( $assignmentData->id ) : 0 ); ?>">
 		<table id="e20r-assignment-settings" class="wp-list-table widefat fixed">
 			<thead>
 			<tr>
@@ -85,7 +85,7 @@ class e20rAssignmentView extends e20rSettingsView {
 						<?php
 						foreach ( $answerTypes as $key => $descr ) { ?>
 							<option
-							value="<?php esc_attr_e( $key ); ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php echo $descr; ?></option><?php
+							value="<?php esc_attr_e( $key ); ?>" <?php selected( $assignmentData->field_type, $key ); ?>><?php esc_attr_e( wp_unslash( $descr ) ); ?></option><?php
 						}
 						?>
 					</select>
@@ -101,7 +101,7 @@ class e20rAssignmentView extends e20rSettingsView {
 							value="-1" <?php echo empty( $assignmentData->program_ids ) || in_array( - 1, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php _e( "No program defined", "e20r-tracker" ); ?></option><?php
 
 						foreach ( $pList as $p ) { ?>
-							<option value="<?php esc_attr_e( $p->id ); ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( $p->title ); ?></option><?php
+							<option value="<?php esc_attr_e( $p->id ); ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( wp_unslash( $p->title ) ); ?></option><?php
 						} ?>
 					</select>
 					<style>
