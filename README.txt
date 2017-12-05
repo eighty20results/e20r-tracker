@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
-Tested up to: 4.7.5
-Stable tag: 1.6.12
+Tested up to: 4.9.1
+Stable tag: 1.7.1
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,48 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.7.1 ==
+
+* BUG FIX: Incorrect dependency warning for certain versions of E20R Sequences
+
+== 1.7.0 ==
+
+* BUG FIX: Incorrect HTML (didn't terminate element) in meta box for AssignmentsView
+* BUG FIX: Didn't escape output in all cases for the AssignmentsView
+* BUG FIX: Returned incorrect info if the user had never logged in
+* BUG FIX: Fatal error in viewCompliance() method
+* BUG FIX: Didn't escape DB values
+* BUG FIX: Reply button didn't work on the Coaching page in wp-admin
+* BUG FIX: Didn't exit after returning JSON status in Assignments class
+* BUG FIX: Wouldn't return appropriate value when loading all programs/users
+* BUG FIX: Too many variables in the load_clientDetail() method call
+* BUG FIX: Didn't load JS for admin pages
+* BUG FIX: Sometimes would select the incorrect start date for the program or user
+* BUG FIX: Didn't escape output consistently in ActionView
+* BUG FIX: Not all strings are translatable in ActionView
+* BUG FIX: Invalid HTML in select2 drop-down in ActionView
+* BUG FIX: Don't show user notes in dashboard for coach(es)
+* BUG FIX: Didn't load select2 styles on some admin pages
+* BUG FIX: Ensure we load admin stuff on our admin pages (only)
+* ENHANCEMENT/FIX: Avoid PHP Notice
+* ENHANCEMENT: Removing unused code
+* ENHANCEMENT: Make more text translatable
+* ENHANCEMENT: Clean up debug output
+* ENHANCEMENT: Renamed the Sequence_Controller class to Controller in the E20R\Sequences\Sequence\ namespace
+* ENHANCEMENT: Fix translatable text and escape variables on page(s)
+* ENHANCEMENT: Show measurements in most recent first order
+* ENHANCEMENT: Escape variables on print
+* ENHANCEMENT: Be explicit about the field to order the data by
+* ENHANCEMENT: Set constant for the Select2 library version to use
+* ENHANCEMENT: More standardize weight of text on Client status page
+* ENHANCEMENT: PHPDoc for view and model variable in e20rSettings class
+* ENHANCEMENT: Reduce the debug logging footprint
+* ENHANCEMENT: More logical weighting of text on Client summary page (bolder = less recent interactions)
+* ENHANCEMENT: Unslash output for titles/textareas, etc in AssignmentsView
+* ENHANCEMENT: Unslash text proactively in ActionView
+* ENHANCEMENT: Set script type and language for select2 init.
+* ENHANCEMENT: Better formatting for the 'you don't have javascript enabled' warning.
 
 == 1.6.12 ==
 
