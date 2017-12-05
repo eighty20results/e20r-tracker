@@ -1948,19 +1948,30 @@ class e20rTracker {
 
         global $e20rAdminPage;
         global $e20rClientInfoPage;
-
-        $e20rTracker = e20rTracker::getInstance();
         global $post;
+        
         $e20rTracker = e20rTracker::getInstance();
-
+        
+        dbg("Loading the admin page: {$e20rAdminPage} or {$e20rClientInfoPage}");
+        
         wp_enqueue_style( 'fontawesome', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
-
-        $e20rTracker->load_adminJS();
-
-        if( $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
+        
+        $e20r_post_types = apply_filters( 'e20r_tracker_used_post_types', array(
+                    'e20r_assignments',
+                     'e20r_articles',
+                     'e20r_actions',
+                     'e20r_workout',
+                     'e20r_exercises',
+                     'e20r_programs',
+                     'e20r_girth_types',
+                )
+                );
+        
+        if( ( is_admin() && ( isset( $post->post_type ) && in_array( $post->post_type, $e20r_post_types ))) || $hook == $e20rAdminPage || $hook == $e20rClientInfoPage ) {
 
             dbg("Loading for Tracker admin page!");
-            
+            $e20rTracker->load_adminJS();
+
             global $e20r_plot_jscript;
 
             $e20r_plot_jscript = true;
