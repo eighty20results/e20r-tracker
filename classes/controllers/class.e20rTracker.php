@@ -4306,7 +4306,7 @@ class e20rTracker {
             $dripfeed_exists = true;
         }
 
-        if ( class_exists( 'E20R\Sequences\Sequence\Controller') || class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) {
+        if ( class_exists( 'E20R\Sequences\Sequence\Controller') || class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
             $dripfeed_exists = true;
         }
 
@@ -4342,7 +4342,7 @@ class e20rTracker {
                 }
 
                 if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
-                    $sequenceIds = E20R\Sequences\Sequence\Sequence_Controller::post_details( $id, $postId );
+                    $details = E20R\Sequences\Sequence\Sequence_Controller::post_details( $id, $postId );
                 }
 /*
                 $seq->get_options( $id );
