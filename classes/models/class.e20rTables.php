@@ -173,7 +173,6 @@ class e20rTables {
             'checkin_type'      => 'checkin_type',
             'checkin_date'      => 'checkin_date',
             'checkin_short_name' => 'checkin_short_name',
-            'checkin_type'      => 'checkin_type',
             'checkin_note'      => 'checkin_note',
         );
     }
