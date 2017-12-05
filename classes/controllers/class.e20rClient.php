@@ -1313,7 +1313,7 @@ class e20rClient
 
         $e20rTracker = e20rTracker::getInstance();
 
-        $levelId = $e20rTracker->sanitize( 'hidden_e20r_level' );
+        $levelId = !empty( $_REQUEST['hidden_e20r_level'] ) ? intval($_REQUEST['hidden_e20r_level'] ) : 0;
 
         $this->init();
 
