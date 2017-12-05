@@ -450,7 +450,14 @@ class e20rTables {
 		        dbg("e20rTables::loadFields() - No fields to load for {$name}");
         }
     }
-
+	
+	/**
+	 * @param null $name
+	 * @param bool $force
+	 *
+	 * @return string|null
+	 * @throws Exception
+	 */
     public function getTable( $name = null, $force = false  ) {
 
         if ( ! $name )  {
