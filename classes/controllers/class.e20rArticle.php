@@ -1080,8 +1080,8 @@ class e20rArticle extends e20rSettings {
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' );
 
 		dbg( "e20rArticle::getDelayValue() - Nonce is OK" );
-
-		$postId = isset( $_POST['post_ID'] ) ? intval( $_POST['post_ID'] ) : null;
+		
+		$postId = !empty( $_REQUEST['post_ID'] ) ? intval( $_REQUEST['post_ID'] ) : 0;
 
 		if ( empty( $postId ) ) {
 			wp_send_json_error( __('Error: Not a valid Post/Page', 'e20r-tracker' ) );
@@ -1091,7 +1091,7 @@ class e20rArticle extends e20rSettings {
 		$dripFeedDelay = $e20rTracker->getDripFeedDelay( $postId );
         $seo_summary = get_post_meta( $postId, '_yoast_wpseo_metadesc', true );
 
-		if ( $dripFeedDelay ) {
+		if ( !empty( $dripFeedDelay ) ) {
 			wp_send_json_success( array(
 				'delay'   => $dripFeedDelay,
 				'nodelay' => false,
