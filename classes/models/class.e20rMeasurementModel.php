@@ -15,8 +15,11 @@ class e20rMeasurementModel {
 
     public $all = array();
     public $byDate = array();
-
-    private $table = array();
+	
+	/**
+	 * @var null|string $table
+	 */
+    private $table = null;
     private $fields = array();
 
     private static $instance = null;
@@ -40,9 +43,14 @@ class e20rMeasurementModel {
 
 		    dbg( "e20rMeasurementModel::construct() - For user_id: {$user_id}" );
 	    }
-
-        $this->table = $e20rTables->getTable( 'measurements' );
-        $this->fields = $e20rTables->getFields( 'measurements' );
+	    
+	    try {
+		    $this->table  = $e20rTables->getTable( 'measurements' );
+		    $this->fields = $e20rTables->getFields( 'measurements' );
+	    } catch ( Exception $e ) {
+	    	dbg("Error configuring measurement table: " . $e->getMessage() );
+	    	return false;
+	    }
     }
 
 	/**
@@ -355,7 +363,7 @@ class e20rMeasurementModel {
      * @param $when
      * @param $user_id
      *
-     * @return bool|void
+     * @return bool
      * @throws Exception
      */
     public function saveField( $form_key, $value, $articleID, $programId, $when, $user_id ) {
@@ -366,7 +374,6 @@ class e20rMeasurementModel {
         if ( $this->client_id == 0 ) {
 
             throw new Exception( "User is not logged in" );
-            return;
         }
 
         if ( $this->client_id !== $user_id ) {
@@ -438,8 +445,6 @@ class e20rMeasurementModel {
 
             dbg("e20rMeasurementModel::saveField - Error updating database: " . $wpdb->print_error() );
             throw new Exception( "Error updating database: " . $wpdb->print_error() );
-            return false;
-
         }
 
         // Clear transients so the DB record gets loaded on next refresh
