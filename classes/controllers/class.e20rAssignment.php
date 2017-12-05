@@ -498,14 +498,17 @@ class e20rAssignment extends e20rSettings {
             dbg("e20rAssignment::heartbeat_received() - New message for user {$retval['e20r_message_client_id']}: {$retval['e20r_new_messages']}");
 
             wp_send_json_success( $retval );
+            exit();
         }
 
         if ( empty( $client_id ) ) {
             dbg("e20rAssignment::heartbeat_received() - Returning due to no client ID given");
-            return wp_send_json_error( array( 'errormsg' => 'no-client-provided') );
+            wp_send_json_error( array( 'errormsg' => 'no-client-provided') );
+            exit();
         }
 
         wp_send_json_error( array( 'errormsg' => __( "Unauthenticated polling request" , 'e20r-tracker' )) );
+        exit();
     }
 
     public function update_metadata() {
@@ -683,11 +686,12 @@ class e20rAssignment extends e20rSettings {
             'fields' => 'ids',
         ) );
 
+        
         $assignmentList = array(
             'pages' => $assignments->posts,
         );
-
-        foreach ( $assignmentList->posts as $k => $v ) {
+        
+        foreach ( $assignments->posts as $k => $v ) {
 
             if ( $v == get_the_ID() ) {
 
@@ -823,7 +827,10 @@ class e20rAssignment extends e20rSettings {
 
         return true;
     }
-
+	
+	/**
+	 * @param WP_Query $query
+	 */
     public function sort_column($query) {
 
         if( $query->is_main_query() && is_admin() && ( $orderby = $query->get('orderby'))) {
