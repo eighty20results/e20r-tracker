@@ -4306,7 +4306,7 @@ class e20rTracker {
             $dripfeed_exists = true;
         }
 
-        if ( class_exists( 'E20R\Sequences\Sequence\Controller') ) {
+        if ( class_exists( 'E20R\Sequences\Sequence\Controller') || class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) {
             $dripfeed_exists = true;
         }
 
@@ -4323,10 +4323,14 @@ class e20rTracker {
                 $sequenceIds = PMProSequence::sequences_for_post( $postId );
             }
 
-            if ( class_exists('E20R\Sequences\Sequence\Controller')) {
+            if ( class_exists('E20R\Sequences\Sequence\Controller') ) {
                 $sequenceIds = Sequence\Controller::sequences_for_post( $postId );
             }
 
+            if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+                $sequenceIds = E20R\Sequences\Sequence\Sequence_Controller::sequences_for_post( $postId );
+            }
+            
             foreach ($sequenceIds as $id ) {
 
                 if ( class_exists('PMProSequence')) {
@@ -4337,6 +4341,9 @@ class e20rTracker {
                     $details = Sequence\Controller::post_details( $id, $postId );
                 }
 
+                if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+                    $sequenceIds = E20R\Sequences\Sequence\Sequence_Controller::post_details( $id, $postId );
+                }
 /*
                 $seq->get_options( $id );
                 $details = $seq->get_post_details( $postId );
