@@ -1,1 +1,1 @@
-BUG FIX: Incorrect dependency warning for certain versions of E20R Sequences
+BUG FIX: Didn't account for all versions of E20R Sequences

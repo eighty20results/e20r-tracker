@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
 Tested up to: 4.9.1
-Stable tag: 1.7.1
+Stable tag: 1.7.4
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,31 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 1.7.4 ==
+
+* BUG FIX: Didn't account for all versions of E20R Sequences
+
+== 1.7.3 ==
+
+* BUG FIX: Didn't load Yoast summary/exerpt for Article
+* BUG FIX: Didn't return correct value for the level info
+* BUG FIX: Didn't account for all versions of E20R Sequences
+* BUG FIX: Didn't fetch Sequence info from older versions of E20R Sequences
+
+== 1.7.2 ==
+
+* BUG FIX: Duplicate keys for field definition in e20rTables
+* BUG FIX: Didn't translate exception message
+* BUG FIX: Didn't catch exception from table configuration
+* BUG FIX: Not returning value when throwing exception
+* BUG FIX: Error/Warning messages aren't always translatable
+* BUG FIX: Didn't use the right function to sanitize text (wp_unslash())
+* BUG FIX: Didn't always terminate after sending JSON message
+* BUG FIX: Didn't catch saveField() exceptions
+* BUG FIX: Didn't catch setFormatForRecord() exceptions
+* BUG FIX: Not all error/warning messages are translatable
+* ENHANCEMENT: Update PHPDoc documentation
 
 == 1.7.1 ==
 
