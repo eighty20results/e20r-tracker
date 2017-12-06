@@ -815,8 +815,12 @@ class e20rProgram extends e20rSettings {
         if (class_exists( 'E20R\Sequences\Sequence\Controller')) {
             return Sequence\Controller::all_sequences('publish');
         }
-
-        return false;
+	
+	    if (class_exists( 'E20R\Sequences\Sequence\Sequence_Controller')) {
+		    return Sequence\Sequence_Controller::all_sequences('publish');
+	    }
+	
+	    return false;
     }
 
     public function getValue( $programId, $fieldName = 'id' ) {

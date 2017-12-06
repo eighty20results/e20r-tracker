@@ -992,7 +992,7 @@ class e20rTracker {
 
             ?>
             <div class="error">
-            <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') ): ?>
+            <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') && !class_exists('E20R\Sequences\Sequence\Sequence_Controller' ) ) : ?>
                 <?php dbg("e20rTracker::Error -  The The Sequences plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20r-tracker' ); ?></p>
             <?php endif; ?>
