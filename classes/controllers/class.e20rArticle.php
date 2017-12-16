@@ -1342,7 +1342,7 @@ class e20rArticle extends e20rSettings {
 			dbg( $articles );
 		}
 
-		if ( empty( $articles ) && is_null( $article_id ) && is_null( $for_date ) ) {
+		if ( !empty($currentProgram->id ) && empty( $articles ) && is_null( $article_id ) && is_null( $for_date ) ) {
 
 			dbg( "e20rArticle::contentFilter() - Searching for article based on the ID of the current post: {$post->ID}" );
 			$articles = $this->findArticles( 'post_id', $post->ID, $currentProgram->id );

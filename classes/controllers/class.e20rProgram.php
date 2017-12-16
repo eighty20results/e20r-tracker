@@ -684,11 +684,11 @@ class e20rProgram extends e20rSettings {
             $this->model->loadSettings( $program_id );
         }
 
-        dbg("e20rProgram::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
+        // dbg("e20rProgram::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
         // dbg($currentProgram);
 
         // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
-        return strtotime( $currentProgram->startdate );
+        return !empty($currentProgram->startdate) ? strtotime( $currentProgram->startdate ) : current_time('timestamp' );
     }
 
     public function set_startdate_for_user( $ts, $user_id, $level )

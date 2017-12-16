@@ -776,10 +776,10 @@ class e20rAction extends e20rSettings
             $e20rProgram->init($config->programId);
         }
 
-        $dashboard = ($currentProgram->dashboard_page_id != null || $currentProgram->dashboard_page_id != -1) ? get_permalink($currentProgram->dashboard_page_id) : null;
+        $dashboard = ( isset( $currentProgram->dashboard_page_id ) && !empty($currentProgram->dashboard_page_id) || isset($currentProgram->dashboard_page_id) && $currentProgram->dashboard_page_id != -1) ? get_permalink($currentProgram->dashboard_page_id) : null;
         $config->url = $dashboard;
 
-        $config->startTS = strtotime($currentProgram->startdate);
+        $config->startTS = isset($currentProgram->startdate) && !empty($currentProgram->startdate) ? strtotime($currentProgram->startdate) : null;
 
         dbg("e20rAction::configure_dailyProgress() - POST vaues: " . print_r( $_POST, true ) );
 
@@ -836,7 +836,7 @@ class e20rAction extends e20rSettings
                 $articles = $e20rArticle->findArticlesNear('release_day', $config->delay, $config->programId, '<=');
 
                 dbg("e20rAction::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to requested day");
-                $article = $articles[0];
+                $article = !empty( $articles[0] ) ? $articles[0] : null;
                 $config->using_closest = true;
                 // $article = $e20rArticle->emptyArticle();
                 // $article->id = CONST_NULL_ARTICLE;
@@ -871,27 +871,30 @@ class e20rAction extends e20rSettings
             }
         }
 
-        dbg("e20rAction::configure_dailyProgress() - Loaded article info for {$currentArticle->id}");
-
-        switch( count( $currentArticle->assignment_ids )) {
-            case 0:
-                $config->assignment_id = 0;
-                break;
-            case 1:
-
-                if ( !is_array( $currentArticle->assignment_ids)) {
-                    $config->assignment_id = $currentArticle->assignment_ids;
-                } else {
-                    $assignment = $currentArticle->assignment_ids;
-                    $config->assignment_id = array_pop( $assignment);
-                }
-                break;
-
-            default:
-                $assignment = $currentArticle->assignment_ids;
-                $config->assignment_id = array_pop( $assignment);
+        dbg("e20rAction::configure_dailyProgress() - Loaded article info for: " . ( !empty( $currentArticle->id ) ? $currentArticle->id : 'Not found!' ) );
+        
+        if ( !empty( $currentArticle->assignment_ids ) ) {
+         
+	        switch ( count( $currentArticle->assignment_ids ) ) {
+		        case 0:
+			        $config->assignment_id = 0;
+			        break;
+		        case 1:
+			
+			        if ( ! is_array( $currentArticle->assignment_ids ) ) {
+				        $config->assignment_id = $currentArticle->assignment_ids;
+			        } else {
+				        $assignment            = $currentArticle->assignment_ids;
+				        $config->assignment_id = array_pop( $assignment );
+			        }
+			        break;
+		
+		        default:
+			        $assignment            = $currentArticle->assignment_ids;
+			        $config->assignment_id = array_pop( $assignment );
+	        }
         }
-
+        
         $config->delay = isset($currentArticle->release_day) ? $currentArticle->release_day : 0;
         $config->delay_byDate = $e20rTracker->getDelay();
         $config->is_survey = isset($currentArticle->is_survey) && ($currentArticle->is_survey == 0) ? false : true;
@@ -1087,7 +1090,7 @@ class e20rAction extends e20rSettings
         global $currentArticle;
 
         dbg("e20rAction::dailyProgress() - Start of dailyProgress(): " . $e20rTracker->whoCalledMe());
-        dbg("e20rAction::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
+        // dbg("e20rAction::dailyProgress() - Article Id: {$config->articleId} vs {$currentArticle->id}");
         // dbg( $config );
 
         if (!isset($config->delay) || $config->delay <= 0) {
