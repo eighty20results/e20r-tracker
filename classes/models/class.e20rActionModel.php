@@ -44,7 +44,7 @@ class e20rActionModel extends e20rSettingsModel {
         $default = new stdClass();
         $default->id = null;
         $default->user_id = $current_user->ID;
-        $default->program_id = $currentProgram->id;
+        $default->program_id = isset( $currentProgram->id ) ? $currentProgram->id : null;
         $default->article_id = CONST_NULL_ARTICLE;
         $default->checkin_date = date('Y-m-d', current_time('timestamp'));
         $default->checkin_type = $type;
