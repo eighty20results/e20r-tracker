@@ -1973,7 +1973,7 @@ blockquote > div:before {
 blockquote:before {
     font: bold 45px/1px Times, serif;
     color: #004DFF;
-    /* position: absolute; */
+    position: absolute;
 }
 blockquote:before {
     content: "\201C ";
