@@ -1178,13 +1178,23 @@ class e20rClient
             case 'length':
 
                 dbg("e20rClient::saveNewUnit() - Saving new length unit: {$unit}");
-                $this->model->saveUnitInfo($unit, $this->getWeightUnit());
+                try {
+	                $this->model->saveUnitInfo( $unit, $this->getWeightUnit() );
+                } catch( \Exception $exception ) {
+	                dbg("Unable to save length unit {$unit}: " . $exception->getMessage() );
+	                return false;
+                }
                 break;
 
             case 'weight':
 
                 dbg("e20rClient::saveNewUnit() - Saving new weight unit: {$unit}");
-                $this->model->saveUnitInfo($this->getLengthUnit(), $unit);
+                try {
+	                $this->model->saveUnitInfo( $this->getLengthUnit(), $unit );
+                } catch ( \Exception $exception ) {
+                    dbg("Unable to save Weight unit {$unit}: " . $exception->getMessage() );
+                    return false;
+                }
                 break;
         }
 
