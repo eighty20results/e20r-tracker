@@ -476,7 +476,7 @@ class e20rArticle extends e20rSettings {
 					}
 					*/
 
-					$activityField = '<input type="hidden" id="e20r-activity-activity_id" value="' . $postId . '" name="e20r-activity-activity_id">';
+					$activityField = sprintf('<input type="hidden" id="e20r-activity-activity_id" value="%d" name="e20r-activity-activity_id">', $postId );
 					$prefix        = null; // Using NULL prefix for activities
 					dbg( "e20rArticle::getExcerpt() - Loaded post ID ($postId) for the activity in article {$articleId}" );
 				}
@@ -524,10 +524,10 @@ class e20rArticle extends e20rSettings {
 		?>
         <h4>
 			<?php if ( false === $in_card ): ?><span
-                    class="e20r-excerpt-prefix"><?php echo "{$prefix} "; ?></span><?php endif; ?><?php echo get_the_title( $post->ID ); ?>
+                    class="e20r-excerpt-prefix"><?php esc_html_e($prefix ); ?></span><?php endif; ?><?php echo get_the_title( $post->ID ); ?>
         </h4>
 		<?php echo ! is_null( $activityField ) ? $activityField : null; ?>
-        <p class="e20r-descr e20r-descr-text"><?php echo $pExcerpt; ?></p> <?php
+        <p class="e20r-descr e20r-descr-text"><?php esc_html_e( $pExcerpt ); ?></p> <?php
 
 		if ( $type == 'action' ) {
 
@@ -543,7 +543,7 @@ class e20rArticle extends e20rSettings {
 
 		} ?>
         <p class="e20r-descr e20r-descr-link">
-        <a href="<?php echo $url; ?>" id="e20r-<?php echo $type; ?>-read-lnk"
+        <a href="<?php echo esc_url_raw( $url ); ?>" id="e20r-<?php esc_html_e( $type ); ?>-read-lnk"
            title="<?php get_the_title( $post->ID ); ?>">
 			<?php _e( 'Click to read', 'e20tracker' ); ?>
         </a>
