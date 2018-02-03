@@ -350,7 +350,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 
 		?>
-		<hr class="e20r-assignment-separator"/>
+		<!-- <hr class="e20r-assignment-separator"/> -->
 		<h2 class="e20r-daily-assignment-headline"><?php _e( "Your Daily Assignment", "e20r-tracker" ); ?></h2>
 		<div id="e20r-article-assignment">
 			<form id="e20r-assignment-answers">
@@ -449,7 +449,7 @@ class e20rAssignmentView extends e20rSettingsView {
 						</div>
 			</form>
 		</div>
-		<hr class="e20r-assignment-separator"/>
+		<!-- <hr class="e20r-assignment-separator"/> -->
 		<?php
 		$html .= ob_get_clean();
 		dbg( "e20rAssignmentView::viewAssignment() -  Returning HTML" );
