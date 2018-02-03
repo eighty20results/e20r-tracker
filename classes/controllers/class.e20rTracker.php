@@ -2736,18 +2736,22 @@ class e20rTracker {
                     $load_jq_plot = false;
 
                     $css = array_replace( $css, array(
-                        'select2' => 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',
+                        'select2' => "https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css",
                         "codetabs" => E20R_PLUGINS_URL . "/css/codetabs/codetabs.css",
                         "codetabs-animate" => E20R_PLUGINS_URL . "/css/codetabs/code.animate.css",
                         'e20r_action'  => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-action.css' : '/css/e20r-action.min.css' ),
                     ) );
-
+                    
+                    $css_dependencies = array(
+                        'e20r-tracker' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-tracker.css' : '/css/e20r-tracker.min.css'),
+                    );
+                    
                     // 'jquery.ui.tabs' => "//code.jquery.com/ui/1.11.2/jquery-ui.min.js",
                     //  'jquery-effects-core' => null,
                     $prereqs = array_replace( $prereqs, array(
                         'jquery' => null,
                         'jquery-ui-core' => null,
-                        'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
+                        'select2' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js',
                         'base64' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/js/libraries/Base64.js' : '/js/libraries/Base64.min.js' ),
                         /* 'jquery-touchpunch' => E20R_PLUGINS_URL . '/js/libraries/jquery.ui.touch-punch.min.js', */
                         'jquery.autoresize' => E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js',
@@ -2856,16 +2860,21 @@ class e20rTracker {
 
             dbg("e20rTracker::load_frontend_scripts() - For the script(s) -- wp_print_scripts( " . print_r( $list, true) . " )");
             wp_enqueue_script( $list );
-
+            
+            if ( !empty( $css_dependencies ) ) {
+                $css_deps = array_keys( $css_dependencies );
+            } else {
+                $css_deps = false;
+            }
 
             foreach( $css as $tag => $url ) {
 
                 $css_list[] = $tag;
-
+                
                 if ( !is_null( $url ) ) {
 
                     dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} CSS");
-                    wp_enqueue_style( $tag, $url, false, E20R_VERSION );
+                    wp_enqueue_style( $tag, $url, $css_deps, E20R_VERSION );
                 }
                 else {
 
