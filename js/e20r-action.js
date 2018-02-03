@@ -2,8 +2,10 @@
  * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
  *
+ * Version 2.0
+ *
  * License Information:
- *  the GPL v2 license(?)
+ *  the GPL v2 license
  */
 
 jQuery.noConflict();
@@ -986,11 +988,15 @@ jQuery(document).ready(function () {
 
                     var t_width = jQuery('div.e20r-action-notes').innerWidth();
                     var d_width = jQuery('#note-display').outerWidth();
+                    var n_width = jQuery( 'div.e20r-action-notes').outerWidth();
+
+                    n_width = int( n_width - 20 );
 
                     console.log("Width of textarea: ", t_width );
-                    console.log("Width of note area: ", d_width );
+                    console.log("Width of note area: ", n_width );
 
-                    return t_width + 'px';
+                    //return n_width + 'px';
+                    return '85%';
                 })
                 .css('height', function () {
 
@@ -1030,8 +1036,10 @@ jQuery(document).ready(function () {
                 })
                 .css('border-top', '2px solid #c5c5c5')
                 .css('overflow', 'hidden')
-                .css('padding-right', '10px')
+                // .css('padding-left', '15px')
                 .css('text-overflow', 'ellipsis')
+                .css( 'text-align', 'left' )
+                .css( 'margin-top', '-1px')
                 .fadeIn(fadeSpeed);
 
             // jQuery('#note-textarea').height( outer_height );
