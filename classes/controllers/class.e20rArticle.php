@@ -513,7 +513,7 @@ class e20rArticle extends e20rSettings {
 
 			dbg( "e20rArticle::getExcerpt() - Using the post summary." );
 			$pExcerpt = $post->post_content;
-			$pExcerpt = wp_trim_words( $pExcerpt, 30, " [...]" );
+			$pExcerpt = wp_trim_words( $pExcerpt, 20, " [...]" );
 		}
 
 		$image = ( has_post_thumbnail( $post->ID ) ? get_the_post_thumbnail( $post->ID ) : '<div class="noThumb"></div>' );
@@ -523,8 +523,7 @@ class e20rArticle extends e20rSettings {
 		ob_start();
 		?>
         <h4>
-			<?php if ( false === $in_card ): ?><span
-                    class="e20r-excerpt-prefix"><?php esc_html_e($prefix ); ?></span><?php endif; ?><?php echo get_the_title( $post->ID ); ?>
+			<?php if ( false === $in_card ): ?><span class="e20r-excerpt-prefix"><?php esc_html_e($prefix ); ?></span><?php endif; ?><?php echo get_the_title( $post->ID ); ?>
         </h4>
 		<?php echo ! is_null( $activityField ) ? $activityField : null; ?>
         <p class="e20r-descr e20r-descr-text"><?php esc_html_e( $pExcerpt ); ?></p> <?php
