@@ -43,6 +43,7 @@ class e20rWorkoutView extends e20rSettingsView
 
         global $current_user;
         global $currentProgram;
+        global $currentArticle;
         global $currentExercise;
         $e20rExercise = e20rExercise::getInstance();
 
@@ -61,8 +62,15 @@ class e20rWorkoutView extends e20rSettingsView
 
         ob_start();
         foreach ($workoutData as $w) {
-
-            $activity_page_url = get_permalink($currentProgram->activity_page_id);
+            
+            $print_args = array(
+                'activity-id' => $currentArticle->activity_id,
+                'article-id' => $currentArticle->id,
+                'for-date' => $currentArticle->release_date,
+                'activity-override' => $config->activity_override,
+            );
+            
+            $activity_page_url = add_query_arg( $print_args , get_permalink($currentProgram->activity_page_id) );
             $groups = isset($w->groups) ? $w->groups : null; ?>
 
             <h2><?php echo esc_attr($w->title); ?></h2>
