@@ -360,10 +360,10 @@ class e20rActionView extends e20rSettingsView {
                 <legend><?php _e( "Notes", "e20r-tracker" ); ?></legend>
                 <p><?php _e( "Please, feel free to add any notes that you'd like to record for this day. The notes are for your benefit; your coaches won't read them unless you ask them to.", "e20r-tracker" ); ?></p>
                 <div id="note-display">
-                    <div style="margin: 12px 22px;"><?php ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : 'hidden text'; ?></div>
+                    <div style="margin: 12px 22px;"><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ) ); ?></div>
                 </div>
-                <textarea name="value"
-                          id="note-textarea"><?php echo ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : null; ?></textarea>
+                <!-- TODO: Add a queryarg to let a coach override the default 'hide' behavior for the Checkin notes -->
+                <textarea name="value" id="note-textarea" <?php echo ( $is_a_coach ? 'class="coaching-notice"' : null ); ?>><?php echo ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ); ?></textarea>
                 <div id="note-display-overflow-pad"></div>
                 <div class="notification-entry-saved" style="width: auto; height: 30px; position: absolute;">
                     <div style="border: 1px solid #84c37e; width: 140px;"><?php _e( "Note saved", "e20r-tracker" ); ?></div>
