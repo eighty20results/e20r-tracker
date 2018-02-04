@@ -1625,17 +1625,20 @@ class e20rTracker {
     // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
     // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
 
+    /**
+     * Does the user ID belongs to somebody with the "Coach" role?
+     *
+     * @param int $user_id
+     *
+     * @return bool
+     */
 	public function is_a_coach( $user_id ) {
 
         $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
 
 		$wp_user = get_user_by( 'id', $user_id );
 
-		if ( $wp_user->has_cap( $user_roles['coach']['role'] ) ) {
-		    return true;
-        }
-
-        return false;
+		return $wp_user->has_cap( $user_roles['coach']['role'] );
 	}
 
     public function hasAccess( $userId, $postId ) {
@@ -2871,10 +2874,10 @@ class e20rTracker {
 
                 $css_list[] = $tag;
                 
-                if ( !is_null( $url ) ) {
+                if ( !empty( $url ) ) {
 
                     dbg("e20rTracker::load_frontend_scripts() - Adding {$tag} CSS");
-                    wp_enqueue_style( $tag, $url, $css_deps, E20R_VERSION );
+                    wp_enqueue_style( $tag, $url, false, E20R_VERSION );
                 }
                 else {
 
