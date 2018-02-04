@@ -2212,7 +2212,7 @@ class e20rTracker {
         }
 
 
-        if ( has_shortcode( $post->post_content, 'daily_progress' ) ) {
+        if ( 'e20r_articles' === $post->post_type || has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
             if ( !is_user_logged_in() ) {
 
@@ -2365,7 +2365,7 @@ class e20rTracker {
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
 
             dbg("e20rTracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
-            if ( ! $e20rClient->completeInterview( $userId, $programId ) ) {
+            if ( ! $e20rClient->completeInterview( $userId ) ) {
 
 	            dbg("e20rTracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
 
