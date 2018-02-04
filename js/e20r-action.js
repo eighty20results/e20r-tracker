@@ -10,8 +10,6 @@
 
 jQuery.noConflict();
 
-var $body = jQuery("body");
-
 /*
 jQuery(document).on({
     ajaxStart: function () {
@@ -24,12 +22,14 @@ jQuery(document).on({
 */
 jQuery(document).ready(function ($) {
 
+    var $body = $("body");
+
     var e20rCheckinEvent = {
         init: function () {
 
             this.is_running = true;
 
-            this.$body = $("body");
+            this.body = $("body");
             this.$header_tag = $("#e20r-daily-progress");
             this.$checkinOptions = $('fieldset.did-you input:radio');
             this.$checkinDate = $('#e20r-action-checkin_date').val();
@@ -77,24 +77,15 @@ jQuery(document).ready(function ($) {
             // To the next (tomorrow) day
             $(self.$tomorrowBtn).unbind('click').on('click', function () {
 
-                self.$body.addClass("loading");
-
                 event.preventDefault();
                 self.dayNav(self, this);
-
-                self.$body.removeClass("loading");
-
             });
 
             // To the previous (yesterday) day
             $(self.$yesterdayBtn).unbind('click').on('click', function () {
 
-                self.$body.addClass("loading");
-
                 event.preventDefault();
                 self.dayNav(self, this);
-
-                self.$body.removeClass("loading");
 
             });
 
@@ -102,25 +93,17 @@ jQuery(document).ready(function ($) {
             $(self.$activityLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for activity");
-
-                self.$body.addClass("loading");
                 event.preventDefault();
 
                 self.toActivity(self);
-
-                self.$body.removeClass("loading");
             });
 
             $(self.$actionLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for action");
-
-//                $("body").addClass("loading");
                 event.preventDefault();
 
                 self.toAction(this, self);
-
-//                $("body").removeClass("loading");
             });
 
         },
@@ -181,8 +164,6 @@ jQuery(document).ready(function ($) {
         },
         saveCheckin: function (elem, $a, self) {
 
-            self.$body.addClass("loading");
-
             var $data = {
                 action: 'e20r_saveCheckin',
                 'checkin-action': $a,
@@ -198,6 +179,117 @@ jQuery(document).ready(function ($) {
                 'checkin-short-name': $(elem).closest('fieldset.did-you').find('.e20r-action-checkin_short_name:first').val()
             };
 
+            $.ajax({
+                url: e20r_action.ajaxurl,
+                timeout: parseInt( e20r_action.timeout ),
+                dataType: 'json',
+                method: 'POST',
+                data: $data,
+                beforeSend: function() {
+                    window.console.log("Add the overlay");
+                    self.body.addClass( 'loading ');
+                },
+                success: function( response, textStatus, jqHXR) {
+                    if (!response.success) {
+
+                        var $string;
+                        $string = "An error occurred when trying to save your choice to the database. If you\'d like to try again, reload ";
+                        $string += "this page, and click your selection once more. \n\nIf you get this error a second time, please contact Technical Support by using our Contact form ";
+                        $string += "at the top of this page.";
+
+                        alert($string);
+                    }
+                    else {
+
+                        $(elem).data('__persisted', true);
+
+                        var ul = $(elem).parents('ul');
+
+                        var index = $(ul).children('li').index($(elem).parent());
+                        console.log("index: ", index);
+
+                        if (null !== $(ul).data('activeIndex')
+                            && index == $(ul).data('activeIndex'))
+                            return false;
+
+                        console.log("activeIndex..??");
+
+                        $(ul)
+                            .find('input[type=radio]')
+                            .parent('li')
+                            .removeClass('active');
+
+                        $(elem)
+                            .parent('li')
+                            .addClass('active');
+
+                        var notificationAnimation = function (fadeOutCallback) {
+                            $(ul)
+                                .next('.notification-entry-saved')
+                                .children('div')
+                                .fadeIn('medium', function () {
+                                    var _self = this;
+                                    setTimeout(function () {
+                                        $(_self)
+                                            .fadeOut('slow', fadeOutCallback);
+                                    }, 1200);
+                                });
+                        };
+
+                        var selectionSlideUp = function (self) {
+                            var activeItemOffsetTop = index * self.$itemHeight;
+
+                            $(ul)
+                                .css('margin-top', (activeItemOffsetTop) + 'px')
+                                .animate({
+                                    marginTop: 0
+                                }, 200 * index, function () {
+                                    notificationAnimation(function () {
+
+                                        $(ul)
+                                            .parents('fieldset.did-you')
+                                            .append('<button class="e20r-button edit-selection">Edit check-in</button>');
+
+                                        $(document).on('click', 'fieldset.did-you .edit-selection', function () {
+                                            console.log("Clicked the edit-selection button");
+                                            console.log("This = ", this);
+                                            console.log("Self = ", self);
+                                            self.editCheckin(this);
+                                        });
+
+                                    });
+                                });
+                        };
+
+                        var once = 0;
+
+                        $(ul)
+                            .children('li')
+                            .not('.active')
+                            .fadeOut('medium', function () {
+                                if (1 === once) // only run this callback once
+                                    return;
+
+                                selectionSlideUp(self);
+
+                                once = 1;
+                            });
+
+                        $(ul)
+                            .data('activeIndex', index)
+                            .data('updateMode', true);
+
+                        // console.log("Set .data: ");
+                    }
+                },
+                error: function( HXR, textStatus, errorThrown ) {
+                    window.console.log("Error: " + errorThrown + ", status: " + textStatus );
+                },
+                complete: function() {
+                    self.body.removeClass( 'loading' );
+                }
+            });
+            /*
             $.post(e20r_action.ajaxurl, $data, function (response) {
 
                 if (!response.success) {
@@ -294,7 +386,8 @@ jQuery(document).ready(function ($) {
 
             });
 
-            self.$body.removeClass("loading");
+            self.body.removeClass("loading");
+            */
         },
         editCheckin: function (elem) {
 
@@ -315,7 +408,7 @@ jQuery(document).ready(function ($) {
 
             event.preventDefault();
 
-//            $body.addClass("loading");
+//            body.addClass("loading");
 
             var navDay = $(elem).next("input[name^='e20r-action-day']").val();
             var today = $('#e20r-action-today').val();
@@ -340,9 +433,14 @@ jQuery(document).ready(function ($) {
                 type: 'POST',
                 timeout: e20r_action.timeout,
                 data: data,
+                beforeSend: function() {
+                    window.console.log("Add the overlay");
+                    self.body.addClass( 'loading ');
+                },
                 success: function (response) {
 
                     // console.log("Response: ", response);
+                    var $string;
 
                     if (response.success) {
 
@@ -363,8 +461,6 @@ jQuery(document).ready(function ($) {
 
                             self.$allowActivityOverride = false;
 
-                            var $string;
-
                             $string = "Sorry, we're not quite ready to show you that yet...\n\n";
                             $string += "If you want see what tomorrow\'s workout is, ";
                             $string += "head over to the Archives.";
@@ -375,8 +471,6 @@ jQuery(document).ready(function ($) {
                         if (2 === parseInt( response.data.ecode ) ) {
 
                             self.$allowActivityOverride = false;
-
-                            var $string;
 
                             $string = "This day that you are on is the first day of the program.\n\n";
                             $string += "There is no past beyond this! Feel free to try to navigate into ";
@@ -415,7 +509,8 @@ jQuery(document).ready(function ($) {
 
                 },
                 complete: function () {
-//                    $body.removeClass("loading");
+                    self.body.removeClass( 'loading' );
+//                    body.removeClass("loading");
                 }
             });
 
@@ -445,16 +540,14 @@ jQuery(document).ready(function ($) {
              }
              });
 
-             $body.removeClass("loading");
+             body.removeClass("loading");
              */
 
-//            $body.removeClass("loading");
+//            body.removeClass("loading");
         },
         toAction: function (elem, self) {
 
             console.log("Clicked the 'Read more' link for the action");
-            self.$body.addClass("loading");
-
             var $action_link = $(elem);
 
             console.log("Link for action link: ", $action_link.attr('href'));
@@ -473,7 +566,6 @@ jQuery(document).ready(function ($) {
         toActivity: function (self) {
 
             console.log("Processing the 'Read more' link for the activity");
-//            $('body').addClass("loading");
 
             var $url;
             var data = {
@@ -502,7 +594,7 @@ jQuery(document).ready(function ($) {
         init: function (assignmentElem) {
 
             console.log("Init of e20rDailyProgress() class.");
-
+            this.body = $('body');
             this.$assignment = assignmentElem;
             this.$saveAssignmentBtn = this.$assignment.find("#e20r-assignment-save");
             this.$answerForm = this.$assignment.find("form#e20r-assignment-answers");
@@ -597,6 +689,9 @@ jQuery(document).ready(function ($) {
                 timeout: e20r_action.timeout,
                 /* data: 'action=save_daily_checkin&' + self.$answerForm.serialize(), */
                 data: 'action=e20r_save_daily_progress&' + self.$answerForm.serialize(),
+                beforeSend: function() {
+                    self.body.addClass( 'loading ');
+                },
                 success: function ($response) {
 
                     $('#e20r-lesson-complete').hide();
@@ -627,6 +722,9 @@ jQuery(document).ready(function ($) {
 
                     alert($msg + $string);
 
+                },
+                complete: function() {
+                    self.body.removeClass('loading');
                 }
             });
 
@@ -635,7 +733,6 @@ jQuery(document).ready(function ($) {
         saveAnswers: function (self) {
 
             event.preventDefault();
-//            $body.addClass("loading");
 
             var $mc_answers = $('.e20r-select2-assignment-options');
 
@@ -657,6 +754,9 @@ jQuery(document).ready(function ($) {
                 'url': e20r_action.ajaxurl,
                 timeout: 10000,
                 'data': 'action=e20r_save_daily_progress&' + answers,
+                beforeSend: function() {
+                    self.body.addClass( 'loading ');
+                },
                 success: function ($response) {
 
                     $('#e20r-assignment-save-btn').hide();
@@ -684,17 +784,19 @@ jQuery(document).ready(function ($) {
                     $string += "at the top of this page.";
 
                     alert($msg + $string);
+                },
+                complete: function() {
+                    self.body.removeClass('loading');
                 }
             });
 
-//            $body.removeClass("loading");
             return false;
         }
     };
 
     var Note = {
         init: function () {
-
+            this.body = $('body');
             this.noteField = $('fieldset.notes');
             this.actionFields = $('fieldset.did-you.habit');
             this.activityFields = $('fieldset.did-you.workout');
@@ -784,7 +886,6 @@ jQuery(document).ready(function ($) {
         save_note: function ( self ) {
 
             console.log("Content of 'self': ", self);
-            $('body').addClass("loading");
 
             var $elem = $('#save-note');
             var $noteTextarea = $('#note-textarea');
@@ -796,7 +897,6 @@ jQuery(document).ready(function ($) {
                 && '' === $noteTextarea.val().strip()) {
 
                 console.log("Trigger the save operation while the textarea is empty logic");
-                $('body').removeClass("loading");
                 return $elem.triggerHandler('attempt_save_with_empty_textarea');
             }
 
@@ -839,6 +939,9 @@ jQuery(document).ready(function ($) {
                     timeout: e20r_action.timeout,
                     dataType: 'JSON',
                     data: data,
+                    beforeSend: function() {
+                        self.body.addClass( 'loading ');
+                    },
                     error: function( $response, $errString, $errType ) {
 
                         var $msg = '';
@@ -880,7 +983,7 @@ jQuery(document).ready(function ($) {
                                     notificationTimeout = setTimeout(function () {
                                         $(me)
                                             .fadeOut('slow');
-                                    }, 3000);
+                                    }, 1000);
                                 });
 
                             setTimeout(function () {
@@ -909,7 +1012,6 @@ jQuery(document).ready(function ($) {
                              return;
                         }
 */
-                        $('body').removeClass("loading");
                         console.log("Save operation is complete for user note");
                     }
                 });
@@ -919,9 +1021,7 @@ jQuery(document).ready(function ($) {
             } else {
 
                 self._setEditState();
-                $('body').removeClass("loading");
                 window.console.log("Changing edit state for note section");
-                return;
             }
         },
         edit_note: function() {
@@ -1056,7 +1156,7 @@ jQuery(document).ready(function ($) {
             // $('#note-textarea').height( outer_height );
 
             $class._setDisplayState();
-            $('body').removeClass("loading");
+            $class.body.removeClass("loading");
 
             return true;
         },
