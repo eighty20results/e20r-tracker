@@ -117,6 +117,7 @@ class e20rActionView extends e20rSettingsView {
                 <div class="e20r-daily-action-row e20r-as-cards">
 					<?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
                 </div>
+                <div class="modal"></div>
             </div>
 			<?php
 			
