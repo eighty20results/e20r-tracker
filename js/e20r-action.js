@@ -22,31 +22,31 @@ jQuery(document).on({
     }
 });
 */
-jQuery(document).ready(function () {
+jQuery(document).ready(function ($) {
 
     var e20rCheckinEvent = {
         init: function () {
 
             this.is_running = true;
 
-            this.$body = jQuery("body");
-            this.$header_tag = jQuery("#e20r-daily-progress");
-            this.$checkinOptions = jQuery('#e20r-daily-action-canvas fieldset.did-you input:radio');
-            this.$checkinDate = jQuery('#e20r-action-checkin_date').val();
-            this.$checkedinDate = jQuery('#e20r-action-checkedin_date').val();
-            this.$checkinAssignmentId = jQuery('#e20r-action-assignment_id').val();
-            this.$checkinArticleId = jQuery('#e20r-action-article_id').val();
-            this.$checkinProgramId = jQuery('#e20r-action-program_id').val();
-            this.$nonce = jQuery('#e20r-action-nonce').val();
-            this.$itemHeight = jQuery('#e20r-daily-action-canvas fieldset.did-you ul li').outerHeight();
+            this.$body = $("body");
+            this.$header_tag = $("#e20r-daily-progress");
+            this.$checkinOptions = $('fieldset.did-you input:radio');
+            this.$checkinDate = $('#e20r-action-checkin_date').val();
+            this.$checkedinDate = $('#e20r-action-checkedin_date').val();
+            this.$checkinAssignmentId = $('#e20r-action-assignment_id').val();
+            this.$checkinArticleId = $('#e20r-action-article_id').val();
+            this.$checkinProgramId = $('#e20r-action-program_id').val();
+            this.$nonce = $('#e20r-action-nonce').val();
+            this.$itemHeight = $('fieldset.did-you ul li').outerHeight();
             this.$ulList = this.$checkinOptions.parents('ul');
-            this.$progressNav = jQuery("#e20r-action-daynav");
+            this.$progressNav = $("#e20r-action-daynav");
             this.$tomorrowBtn = this.$progressNav.find("#e20r-action-tomorrow-lnk");
             this.$yesterdayBtn = this.$progressNav.find("#e20r-action-yesterday-lnk");
-            this.$activityLnk = jQuery("div.e20r-action-activity").find("#e20r-activity-read-lnk");
-            this.$actionLnk = jQuery(".e20r-action-lesson").find("#e20r-action-read-lnk");
+            this.$activityLnk = $("div.e20r-action-activity").find("#e20r-activity-read-lnk");
+            this.$actionLnk = $(".e20r-action-lesson").find("#e20r-action-read-lnk");
             this.$allowActivityOverride = false;
-            this.$cardSetting = jQuery('input[name="e20r-use-card-based-display"]').val();
+            this.$cardSetting = $('input[name="e20r-use-card-based-display"]').val();
 
             var me = this;
 
@@ -62,69 +62,72 @@ jQuery(document).ready(function () {
             self.$activityLnk = self.$header_tag.find("#e20r-activity-read-lnk");
             self.$actionLnk = self.$header_tag.find("#e20r-action-read-lnk");
 
-            self.$header_tag.find('#e20r-daily-action-canvas fieldset.did-you input:radio').unbind('click').on('click', function () {
+            self.$header_tag.find('fieldset.did-you input:radio').unbind('click').on('click', function () {
 
                 var $radioBtn = this;
 
                 console.log("Action button: ", this);
-                self.$actionOrActivity = jQuery(this).attr('name').split('-')[1].title();
+                self.$actionOrActivity = $(this).attr('name').split('-')[1].title();
                 console.log("Action or activity? ", self.$actionOrActivity);
                 self.saveCheckin(this, self.$actionOrActivity, self);
             });
 
             self.showBtn(self);
 
-            jQuery(self.$tomorrowBtn).unbind('click').on('click', function () {
+            // To the next (tomorrow) day
+            $(self.$tomorrowBtn).unbind('click').on('click', function () {
 
-                jQuery("body").addClass("loading");
-
-                event.preventDefault();
-                self.dayNav(self, this);
-
-                jQuery("body").removeClass("loading");
-
-            });
-
-            jQuery(self.$yesterdayBtn).unbind('click').on('click', function () {
-
-                jQuery("body").addClass("loading");
+                self.$body.addClass("loading");
 
                 event.preventDefault();
                 self.dayNav(self, this);
 
-                jQuery("body").removeClass("loading");
+                self.$body.removeClass("loading");
 
             });
 
-            jQuery(self.$activityLnk).unbind('click').on("click", function () {
+            // To the previous (yesterday) day
+            $(self.$yesterdayBtn).unbind('click').on('click', function () {
+
+                self.$body.addClass("loading");
+
+                event.preventDefault();
+                self.dayNav(self, this);
+
+                self.$body.removeClass("loading");
+
+            });
+
+            //
+            $(self.$activityLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for activity");
 
-                // jQuery("body").addClass("loading");
+                self.$body.addClass("loading");
                 event.preventDefault();
 
                 self.toActivity(self);
 
-                // jQuery("body").removeClass("loading");
+                self.$body.removeClass("loading");
             });
 
-            jQuery(self.$actionLnk).unbind('click').on("click", function () {
+            $(self.$actionLnk).unbind('click').on("click", function () {
 
                 console.log("Clicked the 'Read more' link for action");
 
-//                jQuery("body").addClass("loading");
+//                $("body").addClass("loading");
                 event.preventDefault();
 
                 self.toAction(this, self);
 
-//                jQuery("body").removeClass("loading");
+//                $("body").removeClass("loading");
             });
 
         },
         showBtn: function (self) {
 
-            var radioFieldsActivity = jQuery('fieldset.did-you.workout input:radio', '#e20r-daily-action-canvas');
-            var radioFieldsAction = jQuery('fieldset.did-you.habit input:radio', '#e20r-daily-action-canvas');
+            var radioFieldsActivity = $('fieldset.did-you.workout input:radio, fieldset.did-you.workout label', '#e20r-daily-action-canvas');
+            var radioFieldsAction = $('fieldset.did-you.habit input:radio, fieldset.did-you.habit label', '#e20r-daily-action-canvas');
 
             radioFieldsActivity
                 .add(radioFieldsAction)
@@ -140,10 +143,10 @@ jQuery(document).ready(function () {
 
             var setEditState = function (set) {
 
-                if ( !jQuery(set).parents('fieldset.did-you').find('button.edit-selection').length ) {
+                if ( !$(set).parents('fieldset.did-you').find('button.edit-selection').length ) {
 
                     console.log("No pre-existing edit button found. Adding it.", set );
-                    jQuery(set)
+                    $(set)
                         .not(':checked')
                         .parents('li')
                         .addClass('concealed')
@@ -154,11 +157,11 @@ jQuery(document).ready(function () {
 
             console.log("Deciding what to do with activity check-in", radioFieldsActivity);
 
-            if ( jQuery(radioFieldsActivity).filter(':checked').length ) {
+            if ( $(radioFieldsActivity).filter(':checked').length ) {
 
                 setEditState(radioFieldsActivity);
 
-                jQuery(document).unbind('click').on('click', '#e20r-daily-action-canvas .edit-selection', function () {
+                $(document).unbind('click').on('click', 'fieldset.did-you .edit-selection', function () {
 
                     self.editCheckin(this);
                 });
@@ -166,11 +169,11 @@ jQuery(document).ready(function () {
 
             console.log("Deciding what to do with action check-in", radioFieldsAction);
 
-            if ( jQuery(radioFieldsAction).filter(':checked').length ) {
+            if ( $(radioFieldsAction).filter(':checked').length ) {
 
                 setEditState(radioFieldsAction);
 
-                jQuery(document).unbind('click').on('click', '#e20r-daily-action-canvas .edit-selection', function () {
+                $(document).unbind('click').on('click', 'fieldset.did-you .edit-selection', function () {
 
                     self.editCheckin(this);
                 });
@@ -178,7 +181,7 @@ jQuery(document).ready(function () {
         },
         saveCheckin: function (elem, $a, self) {
 
-            // $body.addClass("loading");
+            self.$body.addClass("loading");
 
             var $data = {
                 action: 'e20r_saveCheckin',
@@ -189,13 +192,13 @@ jQuery(document).ready(function () {
                 'descr-id': self.$checkinAssignmentId,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
-                'checkedin': jQuery(elem).val(),
-                'checkin-type': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_type:first').val(),
-                'action-id': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-id:first').val(),
-                'checkin-short-name': jQuery(elem).closest('fieldset.did-you > div').find('.e20r-action-checkin_short_name:first').val()
+                'checkedin': $(elem).val(),
+                'checkin-type': $(elem).closest('fieldset.did-you').find('.e20r-action-checkin_type:first').val(),
+                'action-id': $(elem).closest('fieldset.did-you').find('.e20r-action-id:first').val(),
+                'checkin-short-name': $(elem).closest('fieldset.did-you').find('.e20r-action-checkin_short_name:first').val()
             };
 
-            jQuery.post(e20r_action.ajaxurl, $data, function (response) {
+            $.post(e20r_action.ajaxurl, $data, function (response) {
 
                 if (!response.success) {
 
@@ -208,36 +211,36 @@ jQuery(document).ready(function () {
                 }
                 else {
 
-                    jQuery(elem).data('__persisted', true);
+                    $(elem).data('__persisted', true);
 
-                    var ul = jQuery(elem).parents('ul');
+                    var ul = $(elem).parents('ul');
 
-                    var index = jQuery(ul).children('li').index(jQuery(elem).parent());
+                    var index = $(ul).children('li').index($(elem).parent());
                     console.log("index: ", index);
 
-                    if (null !== jQuery(ul).data('activeIndex')
-                        && index == jQuery(ul).data('activeIndex'))
+                    if (null !== $(ul).data('activeIndex')
+                        && index == $(ul).data('activeIndex'))
                         return false;
 
                     console.log("activeIndex..??");
 
-                    jQuery(ul)
+                    $(ul)
                         .find('input[type=radio]')
                         .parent('li')
                         .removeClass('active');
 
-                    jQuery(elem)
+                    $(elem)
                         .parent('li')
                         .addClass('active');
 
                     var notificationAnimation = function (fadeOutCallback) {
-                        jQuery(ul)
+                        $(ul)
                             .next('.notification-entry-saved')
                             .children('div')
                             .fadeIn('medium', function () {
                                 var _self = this;
                                 setTimeout(function () {
-                                    jQuery(_self)
+                                    $(_self)
                                         .fadeOut('slow', fadeOutCallback);
                                 }, 1200);
                             });
@@ -246,18 +249,18 @@ jQuery(document).ready(function () {
                     var selectionSlideUp = function (self) {
                         var activeItemOffsetTop = index * self.$itemHeight;
 
-                        jQuery(ul)
+                        $(ul)
                             .css('margin-top', (activeItemOffsetTop) + 'px')
                             .animate({
                                 marginTop: 0
                             }, 200 * index, function () {
                                 notificationAnimation(function () {
 
-                                    jQuery(ul)
+                                    $(ul)
                                         .parents('fieldset.did-you')
                                         .append('<button class="e20r-button edit-selection">Edit check-in</button>');
 
-                                    jQuery(document).on('click', '#e20r-daily-action-canvas .edit-selection', function () {
+                                    $(document).on('click', 'fieldset.did-you .edit-selection', function () {
                                         console.log("Clicked the edit-selection button");
                                         console.log("This = ", this);
                                         console.log("Self = ", self);
@@ -270,11 +273,11 @@ jQuery(document).ready(function () {
 
                     var once = 0;
 
-                    jQuery(ul)
+                    $(ul)
                         .children('li')
                         .not('.active')
                         .fadeOut('medium', function () {
-                            if (1 == once) // only run this callback once
+                            if (1 === once) // only run this callback once
                                 return;
 
                             selectionSlideUp(self);
@@ -282,7 +285,7 @@ jQuery(document).ready(function () {
                             once = 1;
                         });
 
-                    jQuery(ul)
+                    $(ul)
                         .data('activeIndex', index)
                         .data('updateMode', true);
 
@@ -291,20 +294,20 @@ jQuery(document).ready(function () {
 
             });
 
-            // $body.removeClass("loading");
+            self.$body.removeClass("loading");
         },
         editCheckin: function (elem) {
 
-            var button = jQuery(elem);
+            var button = $(elem);
 
-            jQuery(button)
+            $(button)
                 .parents('fieldset.did-you')
                 .find('ul')
                 .find('li')
                 .removeClass('concealed')
                 .css('display', 'block');
 
-            jQuery(button)
+            $(button)
                 .remove();
 
         },
@@ -314,8 +317,8 @@ jQuery(document).ready(function () {
 
 //            $body.addClass("loading");
 
-            var navDay = jQuery(elem).next("input[name^='e20r-action-day']").val();
-            var today = jQuery('#e20r-action-today').val();
+            var navDay = $(elem).next("input[name^='e20r-action-day']").val();
+            var today = $('#e20r-action-today').val();
 
             // console.log("Day Nav value: ", navDay );
 
@@ -332,7 +335,7 @@ jQuery(document).ready(function () {
 
             // console.log("toNext data: ", data);
 
-            jQuery.ajax({
+            $.ajax({
                 url: e20r_action.ajaxurl,
                 type: 'POST',
                 timeout: e20r_action.timeout,
@@ -349,12 +352,12 @@ jQuery(document).ready(function () {
                         self.init();
 
                         console.log("Re-init for Note object(s)");
-                        jQuery(Note.init());
+                        $(Note.init());
                     }
                     else {
                         console.log("success == false returned from AJAX call");
 
-                        if (1 == response.data.ecode) {
+                        if (1 === parseInt( response.data.ecode )) {
 
                             console.log("Give the user an error message");
 
@@ -369,7 +372,7 @@ jQuery(document).ready(function () {
                             alert($string);
                         }
 
-                        if (2 == response.data.ecode) {
+                        if (2 === parseInt( response.data.ecode ) ) {
 
                             self.$allowActivityOverride = false;
 
@@ -383,7 +386,7 @@ jQuery(document).ready(function () {
 
                         }
 
-                        if (3 == response.data.ecode) {
+                        if (3 === parseInt( response.data.ecode ) ) {
                             console.log("User needs to log in again.");
                             location.href = e20r_action.login_url;
                         }
@@ -417,7 +420,7 @@ jQuery(document).ready(function () {
             });
 
             /*
-             jQuery.post(e20r_action.ajaxurl, data, function(response) {
+             $.post(e20r_action.ajaxurl, data, function(response) {
 
              console.log("Daily progress response: ", response );
 
@@ -435,7 +438,7 @@ jQuery(document).ready(function () {
              }
              else {
 
-             jQuery('#e20r-daily-progress').html(response.data);
+             $('#e20r-daily-progress').html(response.data);
 
              self.bindProgressElements( self );
 
@@ -450,9 +453,9 @@ jQuery(document).ready(function () {
         toAction: function (elem, self) {
 
             console.log("Clicked the 'Read more' link for the action");
-            // jQuery('body').addClass("loading");
+            self.$body.addClass("loading");
 
-            var $action_link = jQuery(elem);
+            var $action_link = $(elem);
 
             console.log("Link for action link: ", $action_link.attr('href'));
 
@@ -465,12 +468,12 @@ jQuery(document).ready(function () {
 
             console.log("Data to possibly send to action page: ", data);
 
-            jQuery.redirect($action_link.attr('href'), data);
+            $.redirect($action_link.attr('href'), data);
         },
         toActivity: function (self) {
 
             console.log("Processing the 'Read more' link for the activity");
-//            jQuery('body').addClass("loading");
+//            $('body').addClass("loading");
 
             var $url;
             var data = {
@@ -478,7 +481,7 @@ jQuery(document).ready(function () {
                 'for-date': self.$checkinDate,
                 'article-id': self.$checkinArticleId,
                 'program-id': self.$checkinProgramId,
-                'activity-id': jQuery("#e20r-activity-activity_id").val(),
+                'activity-id': $("#e20r-activity-activity_id").val(),
                 'activity-override': self.$allowActivityOverride
             };
 
@@ -491,7 +494,7 @@ jQuery(document).ready(function () {
             }
 
             console.log("Using URL: ", $url);
-            jQuery.redirect($url, data );
+            $.redirect($url, data );
         }
     };
 
@@ -524,7 +527,7 @@ jQuery(document).ready(function () {
 
             this.checkcell_no.unbind('click').on('click', function() {
 
-                var checkbox_yes = jQuery(this).closest('tr').find('td.e20r-yes-checkbox > input.e20r-assignment-response');
+                var checkbox_yes = $(this).closest('tr').find('td.e20r-yes-checkbox > input.e20r-assignment-response');
                 if (true === checkbox_yes.is(':checked')) {
                     window.console.log("Uncheck the 'yes' checkbox" );
                     checkbox_yes.removeAttr('checked');
@@ -533,7 +536,7 @@ jQuery(document).ready(function () {
 
             this.checkcell_yes.unbind('click').on('click', function() {
 
-                var checkbox_no = jQuery(this).closest('tr').find('td.e20r-no-checkbox > input.e20r-assignment-response');
+                var checkbox_no = $(this).closest('tr').find('td.e20r-no-checkbox > input.e20r-assignment-response');
                 if (true === checkbox_no.is(':checked')) {
                     window.console.log("Uncheck the 'no' checkbox" );
                     checkbox_no.removeAttr('checked');
@@ -543,12 +546,12 @@ jQuery(document).ready(function () {
             this.$inputs.each(function () {
                 console.log("Working through response fields");
 
-                jQuery(this).focus(function () {
+                $(this).focus(function () {
 
                     console.log("Gave focus to", this);
-                    jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('.e20r-assignment-complete').each(function () {
-                        jQuery(this).hide();
+                    $('#e20r-assignment-save-btn').show();
+                    $('.e20r-assignment-complete').each(function () {
+                        $(this).hide();
                     });
                 });
             });
@@ -557,12 +560,12 @@ jQuery(document).ready(function () {
 
                 console.log("Working through likert fields");
 
-                jQuery(this).on('click', function () {
+                $(this).on('click', function () {
 
                     console.log("Gave focus to", this);
-                    jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('.e20r-assignment-complete').each(function () {
-                        jQuery(this).hide();
+                    $('#e20r-assignment-save-btn').show();
+                    $('.e20r-assignment-complete').each(function () {
+                        $(this).hide();
                     });
                 })
             });
@@ -570,14 +573,14 @@ jQuery(document).ready(function () {
             this.$multichoice.each(function () {
 
                 console.log("Working through multichoice fields");
-                jQuery(this).on('select2:open', function () {
+                $(this).on('select2:open', function () {
 
                     console.log(" Opening select2 entry.");
                     console.log("Clicked on:", this);
 
-                    jQuery('#e20r-assignment-save-btn').show();
-                    jQuery('.e20r-assignment-complete').each(function () {
-                        jQuery(this).hide();
+                    $('#e20r-assignment-save-btn').show();
+                    $('.e20r-assignment-complete').each(function () {
+                        $(this).hide();
                     });
                 })
             });
@@ -588,7 +591,7 @@ jQuery(document).ready(function () {
             event.preventDefault();
             console.log("lessonComplete()...");
 
-            jQuery.ajax({
+            $.ajax({
                 url: e20r_action.ajaxurl,
                 type: 'POST',
                 timeout: e20r_action.timeout,
@@ -596,10 +599,10 @@ jQuery(document).ready(function () {
                 data: 'action=e20r_save_daily_progress&' + self.$answerForm.serialize(),
                 success: function ($response) {
 
-                    jQuery('#e20r-lesson-complete').hide();
-                    jQuery(".e20r-lesson-highlight").hide();
-                    jQuery('.e20r-assignment-complete').each(function () {
-                        jQuery(this).show();
+                    $('#e20r-lesson-complete').hide();
+                    $(".e20r-lesson-highlight").hide();
+                    $('.e20r-assignment-complete').each(function () {
+                        $(this).show();
                     });
                 },
                 error: function ($response, $errString, $errType) {
@@ -634,11 +637,11 @@ jQuery(document).ready(function () {
             event.preventDefault();
 //            $body.addClass("loading");
 
-            var $mc_answers = jQuery('.e20r-select2-assignment-options');
+            var $mc_answers = $('.e20r-select2-assignment-options');
 
             $mc_answers.each(function () {
 
-                var $resp_val = jQuery(this);
+                var $resp_val = $(this);
                 var $h_resp = $resp_val.siblings('.e20r-assignment-select2-hidden');
 
                 console.log("Assignment answer(s) for this field: ", $resp_val.val());
@@ -649,16 +652,16 @@ jQuery(document).ready(function () {
             var answers = self.$answerForm.serialize();
             console.log("saveAssignment(): " + answers, self.$answerForm);
 
-            jQuery.ajax({
+            $.ajax({
                 'type': 'POST',
                 'url': e20r_action.ajaxurl,
                 timeout: 10000,
                 'data': 'action=e20r_save_daily_progress&' + answers,
                 success: function ($response) {
 
-                    jQuery('#e20r-assignment-save-btn').hide();
-                    jQuery('.e20r-assignment-complete').each(function () {
-                        jQuery(this).show();
+                    $('#e20r-assignment-save-btn').hide();
+                    $('.e20r-assignment-complete').each(function () {
+                        $(this).show();
                     });
 
                 },
@@ -692,17 +695,17 @@ jQuery(document).ready(function () {
     var Note = {
         init: function () {
 
-            this.noteField = jQuery('fieldset.notes');
-            this.actionFields = jQuery('fieldset.did-you.habit');
-            this.activityFields = jQuery('fieldset.did-you.workout');
+            this.noteField = $('fieldset.notes');
+            this.actionFields = $('fieldset.did-you.habit');
+            this.activityFields = $('fieldset.did-you.workout');
 
             this.note_id = this.noteField.find('.e20r-action-id').val();
             this.checkin_shortname = this.noteField.find('.e20r-action-checkin_short_name').val();
-            this.note_article = jQuery('#e20r-action-article_id').val();
-            this.note_assignment = jQuery('#e20r-action-assignment_id').val();
-            this.note_program = jQuery('#e20r-action-program_id').val();
-            this.note_date = jQuery('#e20r-action-checkin_date').val();
-            this.note_actualdate = jQuery('#e20r-action-checkedin_date').val();
+            this.note_article = $('#e20r-action-article_id').val();
+            this.note_assignment = $('#e20r-action-assignment_id').val();
+            this.note_program = $('#e20r-action-program_id').val();
+            this.note_date = $('#e20r-action-checkin_date').val();
+            this.note_actualdate = $('#e20r-action-checkedin_date').val();
             this.checkin_type = this.noteField.find('.e20r-action-checkin_type').val();
             this.checkin_value = this.actionFields.siblings('input[name^="did-action-today"]:checked').val();
 
@@ -710,21 +713,21 @@ jQuery(document).ready(function () {
 
             // console.log('Note object: ', self);
 
-            jQuery('#note-textarea').autoGrow();
+            $('#note-textarea').autoGrow();
 
-            self.noteValOnLoad = jQuery('#note-textarea').val().strip();
+            self.noteValOnLoad = $('#note-textarea').val().strip();
             self.hadValPreviously = bool(self.noteValOnLoad);
 
             setTimeout(function () {
 
-                jQuery('#note-textarea')
+                $('#note-textarea')
                     .css('height', function() {
 
                         var height;
 
                         if ( self.hadValPreviously ) {
 
-                            height = jQuery('#note-textarea').height() + 'px';
+                            height = $('#note-textarea').height() + 'px';
                         }
                         else {
                             height = '4em';
@@ -733,29 +736,29 @@ jQuery(document).ready(function () {
                         return height;
                     });
 
-                jQuery('#note-display')
+                $('#note-display')
                     .css('height', function() {
 
-                        var noteArea = jQuery('div#e20r-action-notes').closest('.e20r-daily-action-row').outerHeight();
+                        var noteArea = $('div#e20r-action-notes').closest('.e20r-daily-action-row').outerHeight();
                         console.log("Note area height: ", noteArea );
                         return noteArea + 'px';
                     })
                     .css('color', 'rgba(92, 92, 92, 0.9 )')
                     .css('background-size', '40px 40px');
 
-                jQuery('#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-display>div')
+                $('fieldset.notes #note-display>div')
                     .css('padding-bottom', '20px');
             }, 200);
 
-            if ( self.noteValOnLoad.length != 0 ) {
+            if ( self.noteValOnLoad.length !== 0 ) {
 
                 self._stickyNoteOverlay();
             }
 
-            jQuery('#save-note')
+            $('#save-note')
                 .bind('attempt_save_with_empty_textarea', function () {
-                    var $this = jQuery(this);
-                    var $noteTextarea = jQuery('#note-textarea');
+                    var $this = $(this);
+                    var $noteTextarea = $('#note-textarea');
 
                     $this
                         .addClass('tooltip-handle')
@@ -766,11 +769,11 @@ jQuery(document).ready(function () {
                     Tooltip.unbindHandle(this, {timeout: 1500});
                 });
 
-            jQuery('#save-note').unbind('click').on( 'click', function() {
+            $('#save-note').unbind('click').on( 'click', function() {
                 self.save_note( self );
             }); // click
 
-            jQuery(window).resize( function() {
+            $(window).resize( function() {
 
                 setTimeout(function () {
                     self._stickyNoteOverlay(0);
@@ -781,19 +784,19 @@ jQuery(document).ready(function () {
         save_note: function ( self ) {
 
             console.log("Content of 'self': ", self);
-            jQuery('body').addClass("loading");
+            $('body').addClass("loading");
 
-            var $elem = jQuery('#save-note');
-            var $noteTextarea = jQuery('#note-textarea');
+            var $elem = $('#save-note');
+            var $noteTextarea = $('#note-textarea');
 
             var notificationTimeout;
 
             // the note field is empty, and didn't have a value previously
             if (! self.hadValPreviously
-                && '' == $noteTextarea.val().strip()) {
+                && '' === $noteTextarea.val().strip()) {
 
                 console.log("Trigger the save operation while the textarea is empty logic");
-                jQuery('body').removeClass("loading");
+                $('body').removeClass("loading");
                 return $elem.triggerHandler('attempt_save_with_empty_textarea');
             }
 
@@ -801,20 +804,20 @@ jQuery(document).ready(function () {
             if (false === bool($elem.data('editMode'))) {
 
                 // Unassigned (which is ok.
-                if (self.note_assignment == '') {
+                if (self.note_assignment === '') {
 
                     self.note_assignment = 0;
                 }
 
                 // No defined article for this date/delay value (which is ok)
-                if (self.note_article == '') {
+                if (self.note_article === '') {
 
                     self.note_article = 0;
                 }
 
                 var data = {
                     action: 'e20r_saveCheckin',
-                    'e20r-action-nonce': jQuery('#e20r-action-nonce').val(),
+                    'e20r-action-nonce': $('#e20r-action-nonce').val(),
                     'action-id': self.note_id,
                     'checkin-short-name': self.checkin_shortname,
                     'checkin-date': self.note_date,
@@ -830,7 +833,7 @@ jQuery(document).ready(function () {
 
                 console.log("Note --- Sending: ", data );
 
-                jQuery.ajax({
+                $.ajax({
                     url: e20r_action.ajaxurl,
                     type: 'POST',
                     timeout: e20r_action.timeout,
@@ -868,14 +871,14 @@ jQuery(document).ready(function () {
 
                             // self.note_text_blurred();
 
-                            jQuery('fieldset.notes')
+                            $('fieldset.notes')
                                 .find('.notification-entry-saved')
                                 .children('div')
                                 .fadeIn('medium', function () {
 
                                     var me = this;
                                     notificationTimeout = setTimeout(function () {
-                                        jQuery(me)
+                                        $(me)
                                             .fadeOut('slow');
                                     }, 3000);
                                 });
@@ -906,7 +909,7 @@ jQuery(document).ready(function () {
                              return;
                         }
 */
-                        jQuery('body').removeClass("loading");
+                        $('body').removeClass("loading");
                         console.log("Save operation is complete for user note");
                     }
                 });
@@ -916,50 +919,58 @@ jQuery(document).ready(function () {
             } else {
 
                 self._setEditState();
-                jQuery('body').removeClass("loading");
-                console.log("Changing edit state for note section");
+                $('body').removeClass("loading");
+                window.console.log("Changing edit state for note section");
                 return;
             }
         },
         edit_note: function() {
 
             var $class = this;
-            var $html = jQuery('#note-textarea').val();
+            var $html = $('#note-textarea').val();
 
-            var divHtml = jQuery('div#note-display').html();
-            var editableText = jQuery('<textarea />');
+            var divHtml = $('div#note-display').html();
+            var editableText = $('<textarea />');
 
             editableText.val(divHtml);
 
             console.log("Content of editableText: ", editableText );
-            jQuery('div#note-display').replaceWith(editableText);
+            $('div#note-display').replaceWith(editableText);
 
             editableText.blur($class.note_text_blurred);
         },
         note_text_blurred: function() {
 
-            var html = jQuery('#note-textarea').val();
-            var viewableText = jQuery("<div>");
+            var html = $('#note-textarea').val();
+            var viewableText = $("<div>");
 
             viewableText.html(html);
-            jQuery(this).replaceWith(viewableText);
+            $(this).replaceWith(viewableText);
             viewableText.click($class.edit_note);
         },
         _setDisplayState: function () {
 
-            jQuery('#save-note')
+            var save_btn = $('#save-note');
+
+            save_btn
                 .data('editMode', true)
                 .text('Edit Note')
                 .trigger('blur');
 
-            var noteDisplay = jQuery('#note-display');
-            var noteText = jQuery('#note-textarea');
+            var noteDisplay = $('#note-display');
+            var noteText = $('#note-textarea');
 
             var overflowHeight = (noteText.outerHeight() - noteDisplay.outerHeight());
 
             console.log("Setting height for overflow: ", overflowHeight );
-            jQuery('#note-display-overflow-pad')
+            $('#note-display-overflow-pad')
                 .height(overflowHeight);
+
+            if ( noteText.hasClass('coaching-notice') ) {
+                console.log("The note text is being hidden for the coach");
+                save_btn.attr('disabled', true );
+                save_btn.text('No Access');
+            }
 
             noteText.focus();
             var v= noteText.val();
@@ -972,36 +983,36 @@ jQuery(document).ready(function () {
 
             var $class = this;
             var t_height;
-            var note = jQuery('#note-textarea')[0];
+            var note = $('#note-textarea')[0];
 
-            if ('' == jQuery(note).val().strip()) {
+            if ('' == $(note).val().strip()) {
                 return;
             }
 
-            jQuery('#note-display')
+            $('#note-display')
                 .children('div')
                 .html(function () {
-                    return jQuery('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
+                    return $('#note-textarea').val().replace(/[\r\n]/g, '<br />') + '<span id="note-para-end"></span>';
                 })
                 .end()
                 .css('width', function() {
 
-                    var t_width = jQuery('div.e20r-action-notes').innerWidth();
-                    var d_width = jQuery('#note-display').outerWidth();
-                    var n_width = jQuery( 'div.e20r-action-notes').outerWidth();
+                    var t_width = $('div.e20r-action-notes').innerWidth();
+                    var d_width = $('#note-display').outerWidth();
+                    var n_width = $( 'div.e20r-action-notes').outerWidth();
 
                     n_width = int( n_width - 20 );
 
                     console.log("Width of textarea: ", t_width );
                     console.log("Width of note area: ", n_width );
 
-                    //return n_width + 'px';
-                    return '85%';
+                    return n_width + 'px';
+                    // return '85%';
                 })
                 .css('height', function () {
 
-                    var textarea = jQuery('#note-textarea');
-                    var area = jQuery('fieldset.notes').closest('.e20r-action-notes');
+                    var textarea = $('#note-textarea');
+                    var area = $('fieldset.notes').closest('.e20r-action-notes');
                     var area_height = area.outerHeight();
                     var legend = area.find('fieldset.notes > legend').outerHeight();
                     var notification = area.find('.notification-entry-saved').outerHeight();
@@ -1023,7 +1034,7 @@ jQuery(document).ready(function () {
 
                     t_height = ( area_height - legend - descr_height - overflow_height - notification - button_height );
 
-                    // var t_height = jQuery('#note-textarea').outerHeight();
+                    // var t_height = $('#note-textarea').outerHeight();
                     console.log("Area height: ", area_height);
                     console.log("Legend height: ", legend );
                     console.log("Description height: ", descr_height );
@@ -1042,25 +1053,25 @@ jQuery(document).ready(function () {
                 .css( 'margin-top', '-1px')
                 .fadeIn(fadeSpeed);
 
-            // jQuery('#note-textarea').height( outer_height );
+            // $('#note-textarea').height( outer_height );
 
             $class._setDisplayState();
-            jQuery('body').removeClass("loading");
+            $('body').removeClass("loading");
 
             return true;
         },
         _setEditState: function () {
-            jQuery('#note-display')
+            $('#note-display')
                 .fadeOut('fast');
 
-            jQuery('#note-textarea')
+            $('#note-textarea')
                 .trigger('focus');
 
-            jQuery('#save-note')
+            $('#save-note')
                 .data('editMode', false)
                 .text('Save Note');
 
-            jQuery('#note-display-overflow-pad')
+            $('#note-display-overflow-pad')
                 .height(0);
         }
     };
@@ -1069,18 +1080,18 @@ jQuery(document).ready(function () {
         return;
     }
 
-    if (jQuery('#e20r-article-assignment').length > 0) {
+    if ($('#e20r-article-assignment').length > 0) {
 
-        jQuery(e20rDailyProgress.init(jQuery('#e20r-article-assignment')));
+        $(e20rDailyProgress.init($('#e20r-article-assignment')));
     }
 
-    if (jQuery("#e20r-daily-action-canvas").length > 0) {
+    if ($("#e20r-daily-progress").length > 0) {
 
-        jQuery(e20rCheckinEvent.init());
+        $(e20rCheckinEvent.init());
     }
 
-    if (jQuery("textarea#note-textarea").length > 0) {
+    if ($("textarea#note-textarea").length > 0) {
 
-        jQuery(Note.init());
+        $(Note.init());
     }
 });
