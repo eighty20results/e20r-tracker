@@ -105,41 +105,34 @@ class e20rExerciseView
         <div class="e20r-exercise-table e20r-exercise-detail">
             <div class="spacer">&nbsp;</div>
             <div class="e20r-exercise-table-header e20r-exercise-detail-row-1 clearfix">
-                <div class="e20r-exercise-title">
-                    <h4 class="e20r-tracker-detail-h4"><?php echo esc_attr($currentExercise->title); ?></h4>
-                </div>
-            </div>
-            <div class="spacer">&nbsp;</div>
-            <div class="e20r-exercise-table-body<?php echo( ( ( $show === true ) ||  ( true === $printing ) ) ? " show" : " startHidden"); ?> e20r-exercise-detail-row-2 clearfix">
-                <div class="e20r-exercise-table-column first-column e20r-exercise-reps">
-                    <p class="e20r-exercise-description">
-                        <span class="e20r-exercise-label"><?php echo esc_html( $e20rExercise->getExerciseType($currentExercise->type) ); ?>:</span>
-                        <span class="e20r-exercise-value"><?php echo "{$currentExercise->reps} {$type_label}"; ?></span>
-                    </p>
-                </div>
-                <div class="e20r-exercise-table-column second-column e20r-right e20r-exercise-rest-time">
-                    <p class="e20r-exercise-description">
+                <div class="e20r-exercise-title clearfix">
+                    <h4 class="e20r-exercise-title-h4"><?php esc_html_e($currentExercise->title); ?></h4>
+                    <div class="e20r-exercise-details">
+                        <span class="e20r-exercise-label"><?php esc_html_e( $e20rExercise->getExerciseType($currentExercise->type) ); ?>:</span>
+                        <span class="e20r-exercise-value"><?php esc_html_e( "{$currentExercise->reps} {$type_label}" ); ?></span>
                         <span class="e20r-exercise-label"><?php _e('Rest', 'e20r-tracker'); ?>:</span>
-                        <?php
-                        if (!empty($currentExercise->rest)) { ?>
-                            <span
-                                class="e20r-exercise-value"><?php echo $currentExercise->rest; ?> <?php _e('seconds', 'e20r-tracker'); ?></span><?php
-                        } else { ?>
-                            <span class="e20r-exercise-value"><?php _e('N/A', 'e20r-tracker'); ?></span><?php
-                        } ?>
-                    </p>
+                    <?php
+                    if (!empty($currentExercise->rest)) { ?>
+                        <span class="e20r-exercise-value"><?php esc_attr_e( $currentExercise->rest ); ?> <?php _e('seconds', 'e20r-tracker'); ?></span><?php
+                    } else { ?>
+                        <span class="e20r-exercise-value"><?php _e('N/A', 'e20r-tracker'); ?></span><?php
+                    } ?>
+                    </div>
                 </div>
             </div>
             <?php if ( false === $printing ): ?>
             <div class="e20r-exercise-detail-row-3 clearfix">
-                <div class="e20r-video e20r-exercise-table-column first-column e20r-exercise-video-column clearfix">
+                <div class="e20r-show-description-link">
+                    <button class="e20r-exercise-info-toggle"><?php _e( 'Click for exercise video and description', 'e20r-tracker' ); ?></button>
+                </div>
+                <div class="e20r-video e20r-exercise-table-column first-column e20r-exercise-video-column startHidden clearfix">
                     <div class="e20r-exercise-video">
                         <?php echo(!empty($display) ? $display : ''); ?>
                     </div>
                     <input type="hidden" class="e20r-display-exercise-id" name="e20r-activity-exercise-id[]"
-                           value="<?php echo $currentExercise->id; ?>"/>
+                           value="<?php esc_attr_e( $currentExercise->id ); ?>"/>
                 </div>
-                <div class="e20r-exercise-table-column second-column e20r-exercise-description clearfix">
+                <div class="e20r-exercise-table-column second-column e20r-exercise-description clearfix startHidden">
                     <p><?php echo wpautop(do_shortcode($currentExercise->descr)); ?></p>
                 </div>
             </div>
@@ -166,7 +159,10 @@ class e20rExerciseView
             dbg("e20rExerciseView::view_exercise_as_row() - Time is the selected exercise rep type");
             $type_label = __('seconds', 'e20r-tracker');
         }
-
+        ?>
+        <div class="e20r-exercise-content">
+            <div class="e20r-show-desription-link"></div>
+        <?php
         dbg("e20rExerciseViews::view_exercise_as_row() - Hidden status is: {$show}");
         $display = $this->generate_video_view();
 
@@ -224,6 +220,7 @@ class e20rExerciseView
                 <div class="spacer">&nbsp;</div>
 
             </div>
+        </div>
         </div>
         <?php
         $html = ob_get_clean();
