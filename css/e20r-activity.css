@@ -481,7 +481,25 @@ img.e20r-front-page-arrow {
 .top-link {
     margin-right: 5%;
 }
-
+.e20r-show-description-link {
+    margin: 20px 0;
+}
+.e20r-exercise-table-header.e20r-exercise-detail-row-1 {
+    width: 100%;
+}
+.e20r-exercise-title {
+    border-bottom: 2px solid lightgray;
+    width: 100%;
+}
+h4.e20r-exercise-title-h4 {
+    display: inline-block;
+    font-size: 1.75em;
+    float: left;
+}
+.e20r-exercise-title div.e20r-exercise-details {
+    display: inline-block;
+    float: right;
+}
 @media screen and (max-width: 1024px ) {
     table.e20r-measurement-table.e20r-resp-table {width:100%;}
     .e20r-measurement-table.e20r-resp-table thead {display: none;}
