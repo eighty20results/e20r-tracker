@@ -345,7 +345,7 @@ div.e20r-as-cards .e20r-toggle-button-group div label {
     text-align: center;
 }
 div.e20r-as-cards .e20r-toggle-button-group div input {
-    /* position: absolute; */
+    position: absolute;
     z-index: 1;
     cursor: pointer;
     opacity: 0;
