@@ -61,6 +61,15 @@ div.e20r-assignment-descr {
     right: 0;
     width: 50%;
 }
+.e20r-answers tr,
+.e20r-answers td,
+.e20r-answers th {
+    border: none;
+}
+.e20r-measurement-table a {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
 .e20r-assignments-question,
 .e20r-achievement-header,
 .e20r-achievement-descr {
