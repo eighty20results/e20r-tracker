@@ -170,4 +170,7 @@
     .e20r-activity-tracking-next {
         display: none !important;
     }
+    .e20r-show-description-link {
+        display: none !important;
+    }
 }
