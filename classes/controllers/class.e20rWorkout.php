@@ -736,9 +736,8 @@ class e20rWorkout extends e20rSettings
         return $activities;
     }
 
-    public function prepare_activity($config)
-    {
-
+    public function prepare_activity($config) {
+        
         global $current_user;
 
         $e20rProgram = e20rProgram::getInstance();
@@ -756,14 +755,21 @@ class e20rWorkout extends e20rSettings
         $config->activity_override = false;
         $config->show_tracking = 1;
         $config->dayNo = date_i18n('N', current_time('timestamp'));
-
+	
+	    $workoutData = array();
+	    
         // $config->hide_input = ( $tmp['hide_input'] == 0 ? false : true );
 
         dbg($config);
         dbg($_POST);
 
-        $actId_from_dash = isset($_POST['activity-id']) ? array( $e20rTracker->sanitize($_POST['activity-id']) ) : array();
-        $act_override = isset($_POST['activity-override']) ? $e20rTracker->sanitize($_POST['activity-override']) : false;
+        $actId_from_dash = isset($_REQUEST['activity-id']) ? $e20rTracker->sanitize($_REQUEST['activity-id']) : array();
+        
+        if ( !is_array( $actId_from_dash ) ) {
+            $actId_from_dash = array( $actId_from_dash );
+        }
+        
+        $act_override = isset($_REQUEST['activity-override']) ? $e20rTracker->sanitize($_REQUEST['activity-override']) : false;
 
         // Make sure we won't load anything but the short code requested activity
         if (empty($config->activity_id)) {
@@ -775,8 +781,8 @@ class e20rWorkout extends e20rSettings
             if ( (empty($config->activity_id) && !empty($actId_from_dash)) ||
                 ( false !== $act_override  && !empty($actId_from_dash) ) )  {
 
-                $articleId = isset($_POST['article-id']) ? $e20rTracker->sanitize($_POST['article-id']) : null;
-                $checkin_date = isset($_POST['for-date']) ? $e20rTracker->sanitize($_POST['for-date']) : null;
+                $articleId = isset($_REQUEST['article-id']) ? $e20rTracker->sanitize($_REQUEST['article-id']) : null;
+                $checkin_date = isset($_REQUEST['for-date']) ? $e20rTracker->sanitize($_REQUEST['for-date']) : null;
 
                 dbg("e20rWorkout::prepare_activity() - Original activity ID is: " . (isset($config->activity_id) ? $config->activity_id : 'Not defined'));
                 dbg("e20rWorkout::prepare_activity() - Dashboard requested " . count($actId_from_dash). " specific activity ID(s)");
@@ -840,11 +846,11 @@ class e20rWorkout extends e20rSettings
             dbg("e20rWorkout::prepare_activity() - No articles found!");
             $articles = array($e20rArticle->emptyArticle());
         }
-
+        
         // Process all articles we've found.
         foreach ($articles as $a_key => $article) {
 
-            if ( (true === $config->activity_override) && $config->delay != $article->release_day ) {
+            if ( (false === $config->activity_override ) && $config->delay != $article->release_day ) {
                 dbg("e20rWorkout::prepare_activity() - Skipping {$article->id} because its delay value is incorrect: {$config->delay} vs {$article->release_day}");
                 continue;
             }
@@ -895,11 +901,11 @@ class e20rWorkout extends e20rSettings
         }
 
 
-        $config->articleId = $currentArticle->id;
+        $config->articleId = isset( $currentArticle->id ) ? $currentArticle->id : null;
         $recorded = array();
 
         dbg("e20rWorkout::prepare_activity() - WorkoutData prior to processing");
-
+        
         foreach ($workoutData as $k => $w) {
 
             dbg("e20rWorkout::prepare_activity() - Processing workoutData entry {$k} to test whether to load user data");
