@@ -18,6 +18,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
+     * Return or instantiate this class
+     *
 	 * @return e20rActionView
 	 */
 	static function getInstance() {
@@ -29,6 +31,14 @@ class e20rActionView extends e20rSettingsView {
 		return self::$instance;
 	}
 	
+	/**
+     * Generate the HTML for the actual card(s) used in the Card based Dashboard
+     *
+	 * @param $config
+	 * @param $data
+	 *
+	 * @return null|string
+	 */
 	public function view_card( $config, $data ) {
 		
 		$html = null;
@@ -61,6 +71,17 @@ class e20rActionView extends e20rSettingsView {
 		return $html;
 	}
 	
+	/**
+     * Generates the New (card based) Dashboard for the tracker
+     *
+	 * @param      $config
+	 * @param      $action
+	 * @param      $activity
+	 * @param      $habit_entries
+	 * @param null $note_content
+	 *
+	 * @return string
+	 */
 	public function view_action_and_activity( $config, $action, $activity, $habit_entries, $note_content = null ) {
 		
 		$e20rTracker = e20rTracker::getInstance();
@@ -159,7 +180,14 @@ class e20rActionView extends e20rSettingsView {
 	
 		}
 	*/
-
+	
+	/**
+     * Generate the info banner for previous/future dashboard content
+     *
+	 * @param $config
+	 *
+	 * @return string
+	 */
 	public function validate_delay_info( $config ) {
 		
 		ob_start();
@@ -187,6 +215,11 @@ class e20rActionView extends e20rSettingsView {
 		
 	}
 	
+	/**
+     * Generate and return the <noscript> content
+     *
+	 * @return string
+	 */
 	private function load_noscript_notice() {
 		
 		global $currentProgram;
@@ -208,11 +241,25 @@ class e20rActionView extends e20rSettingsView {
 		return ob_get_clean();
 	}
 	
+	/**
+     * Generate the HTML for the Dashboard banner (navigation banner)
+     *
+	 * @param string $header_content
+	 *
+	 * @return string
+	 */
 	public function view_card_header( $header_content ) {
 	    
         return sprintf( '<div class="e20r-action-activity-banner today">%s</div>', $header_content );
 	}
 	
+	/**
+     * Show both action and activity info (cards) in old layout
+     *
+	 * @param $config
+	 *
+	 * @return string
+	 */
 	public function view_action_activity_cards( $config ) {
 		
 		$action_type = empty( $config->action_type ) ? 'Update' : $config->action_type;
@@ -232,6 +279,14 @@ class e20rActionView extends e20rSettingsView {
 		
 	}
 	
+	/**
+     * Show the "Activity" card (new layout)
+     *
+	 * @param \stdClass $config
+	 * @param \stdClass $activity
+	 *
+	 * @return string
+	 */
 	public function view_card_activity_action( $config, $activity ) {
 		
 		$yes           = __( "Yes", "e20r-tracker" );
@@ -290,6 +345,15 @@ class e20rActionView extends e20rSettingsView {
 		
 	}
 	
+	/**
+     * Show the habit card for the new dashboard layout
+     *
+	 * @param \stdClass $config
+	 * @param \stdClass $action
+	 * @param array $habit_entries
+	 *
+	 * @return string
+	 */
 	public function view_card_action( $config, $action, $habit_entries ) {
 		
 		$skip_yn = false;
@@ -300,9 +364,7 @@ class e20rActionView extends e20rSettingsView {
 			$skip_yn = true;
 		}
 		
-		ob_start();
-		
-		?>
+		ob_start();?>
         <div class="e20r-action-card">
             <fieldset class="did-you habit">
                 <h4><?php esc_attr_e( wp_unslash( $habit_entries[0]->item_text ) ); ?></h4>
@@ -343,6 +405,17 @@ class e20rActionView extends e20rSettingsView {
 		return $html;
 	}
 	
+	/**
+     * Display the Daily Progress notes field
+     *
+	 * @param \stdClass $config
+	 * @param \stdClass $action
+	 * @param string $note
+	 *
+	 * @return string
+     *
+     * @since 2.0 - ENHANCEMENT: Add ability to let coach override the hiding of the member's notes when they have explicit permission
+	 */
 	public function view_notes_card( $config, $action, $note ) {
 		
 		ob_start();
@@ -363,8 +436,7 @@ class e20rActionView extends e20rSettingsView {
                 <div id="note-display">
                     <div style="margin: 12px 22px;"><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ) ); ?></div>
                 </div>
-                <!-- TODO: Add a queryarg to let a coach override the default 'hide' behavior for the Checkin notes -->
-                <textarea name="value" id="note-textarea" <?php echo ( $is_a_coach ? 'class="coaching-notice"' : null ); ?>><?php echo ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ); ?></textarea>
+                <textarea name="value" id="note-textarea" <?php echo ( true === $is_a_coach ? 'class="coaching-notice"' : null ); ?>><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ) ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ); ?></textarea>
                 <div id="note-display-overflow-pad"></div>
                 <div class="notification-entry-saved" style="width: auto; height: 30px; position: absolute;">
                     <div style="border: 1px solid #84c37e; width: 140px;"><?php _e( "Note saved", "e20r-tracker" ); ?></div>
@@ -380,6 +452,17 @@ class e20rActionView extends e20rSettingsView {
 		return $html;
 	}
 	
+	/**
+     * Generate Dashboard HTML (uses old layout, now deprecated)
+     *
+	 * @param      $config
+	 * @param      $action
+	 * @param      $activity
+	 * @param      $habitEntries
+	 * @param null $note_content
+	 *
+	 * @return string
+	 */
 	public function view_actionAndActivityCheckin( $config, $action, $activity, $habitEntries, $note_content = null ) {
 		
 		$e20rTracker = e20rTracker::getInstance();
@@ -440,6 +523,13 @@ class e20rActionView extends e20rSettingsView {
 		return $html;
 	}
 	
+	/**
+     * Generate Dashboard HTML for the date based navigation bar
+     *
+	 * @param $config
+	 *
+	 * @return string
+	 */
 	public function view_date_navigation( $config ) {
 		
 		$e20rTracker = e20rTracker::getInstance();
@@ -727,6 +817,13 @@ class e20rActionView extends e20rSettingsView {
 		<?php
 	}
 	
+	/**
+     * Generate the User status page for achievements
+     *
+	 * @param $achievements
+	 *
+	 * @return string
+	 */
 	public function view_user_achievements( $achievements ) {
 		
 		$program_days  = $achievements['program_days'];
