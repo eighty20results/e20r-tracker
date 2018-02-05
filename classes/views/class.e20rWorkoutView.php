@@ -135,7 +135,7 @@ class e20rWorkoutView extends e20rSettingsView
                 <div class="e20r-activity-table-body">
                     <div class="e20r-exercise-row"><?php
                         $grp = 1;
-
+                        
                         foreach ($groups as $k => $g) {
 
                             $recorded = isset($g->saved_exercises) ? $g->saved_exercises : array();
