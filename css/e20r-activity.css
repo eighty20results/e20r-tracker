@@ -454,6 +454,12 @@ img.e20r-front-page-arrow {
 .e20r-activity-overview-table .e20r-exercise-row {
     width: 100%;
 }
+.e20r-exercise-row.e20r-exercise-tracking-row {
+    border-bottom: 4px solid black;
+}
+.e20r-exercise-row.e20r-exercise-tracking-row:last-of-type {
+    /* border-bottom: none; */
+}
 .e20r-activity-overview-table .fullwidth {
     width: 100%;
     float: initial;
@@ -471,12 +477,16 @@ img.e20r-front-page-arrow {
 }
 .e20r-activity-tracking-next a,
 .e20r-activity-tracking-next a:visited {
-    color: #004cff;
+    transition: none;
+    -webkit-transition: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    /* color: #004cff; */
     font-weight: 700;
 }
 .e20r-activity-tracking-next a:hover {
     font-weight: initial;
-    color: #004cff;
+    /* color: #004cff; */
 }
 .top-link {
     margin-right: 5%;
