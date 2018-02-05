@@ -1635,19 +1635,36 @@ class e20rTracker {
 	public function is_a_coach( $user_id ) {
 
         $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
-
+        $coach_override = isset( $_REQUEST['e20r_confirmed_coach_override'] ) ? (bool) intval( $_REQUEST['e20r_confirmed_coach_override'] ) : false;
+        
 		$wp_user = get_user_by( 'id', $user_id );
 
-		return $wp_user->has_cap( $user_roles['coach']['role'] );
+        // Pretend it's false
+        $is_a_coach = $wp_user->has_cap( $user_roles['coach']['role'] );
+
+        if (true === $is_a_coach && true === $coach_override ) {
+            dbg("Overriding the 'coach' role");
+            $is_a_coach = false;
+        }
+        
+		return $is_a_coach;
 	}
 
+	/**
+     * Should the User ID have access to the post ID provided
+     *
+     * @param int $userId
+     * @param int $postId
+     *
+     * @return bool
+     */
     public function hasAccess( $userId, $postId ) {
 
         $e20rArticle = e20rArticle::getInstance();
         $e20rProgram = e20rProgram::getInstance();
 
         global $currentArticle;
-
+        
         $retVal = false;
         $saved = $currentArticle;
 
@@ -1719,7 +1736,7 @@ class e20rTracker {
         }
 
         $currentArticle = $saved;
-
+        
         dbg("e20rTracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
         return $retVal;
     }
