@@ -198,15 +198,14 @@ class e20rWorkoutView extends e20rSettingsView
                                     <?php if ( false === $hide_print ): ?>
                                     <div id="<?php echo $tracking_input_id; ?>"></div>
                                     <div class="e20r-exercise-row e20r-exercise-tracking-row">
+                                        <?php
+                                        if ((isset($config->show_tracking)) && (true === $config->show_tracking)) { ?>
                                         <div class="e20r-activity-tracking-next right">
                                             <a href="#<?php echo $next_lnk; ?>"><?php ( $next_cnt == 1 && $next_grp == 1 ) ? _e("Back to first", "e20r-tracker") : _e("Record next", "e20r-tracker"); ?></a>
                                         </div>
+                                        
                                         <div class="e20r-activity-info-col">
-                                            <?php
-		                            if ((isset($config->show_tracking)) && (true === $config->show_tracking)) {
-			                            dbg( "Including the tracking row: {$config->show_tracking}" );
-			                            ?>
-                                        <div class="e20r-activity-exercise-tracking">
+                                            <div class="e20r-activity-exercise-tracking">
                                             <table class="e20r-resp-table">
                                                 <thead class="e20r-resp-table-header">
                                                 <tr>
@@ -798,9 +797,7 @@ class e20rWorkoutView extends e20rSettingsView
                                     <?php echo $e20rExercise->print_exercise($config->expanded); ?>
                                 </div><!-- End of exercise-row --><?php
 
-                                if ((isset($config->show_tracking)) && (true === $config->show_tracking)) {
-                                    dbg("Including the tracking row: {$config->show_tracking}");
-                                    ?>
+                                if ((isset($config->show_tracking)) && (true === $config->show_tracking)) { ?>
                                     <div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
                                         <div class="e20r-activity-info-col">
                                             <div class="e20r-activity-exercise-tracking">
