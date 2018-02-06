@@ -86,7 +86,7 @@ class e20rWorkoutView extends e20rSettingsView
 
                 <p><?php echo wpautop($w->excerpt); ?></p>
             </div>
-            <?php if ( false === $hide_print || (isset($config->show_tracking) && true === $config->show_tracking) ): ?>
+            <?php if ( false === $hide_print && (isset($config->show_tracking) && true === $config->show_tracking) ): ?>
             <div class="e20r-activity-tracking-next right clearfix top-link">
                 <a href="#e20r-exercise-tracking-input-1-1"><?php _e("Click to input tracking information", "e20r-tracker"); ?></a>
             </div>
@@ -195,7 +195,7 @@ class e20rWorkoutView extends e20rSettingsView
                                     <div class="e20r-exercise-row fullwidth clearfix">
                                             <?php echo $e20rExercise->print_exercise(false, 'new', false); ?>
                                     </div><!-- End of exercise-row -->
-                                    <?php if ( false === $hide_print ||  (isset($config->show_tracking) && true === $config->show_tracking) ): ?>
+                                    <?php if ( false === $hide_print && ( isset($config->show_tracking) && true === $config->show_tracking) ): ?>
                                     <div id="<?php echo $tracking_input_id; ?>"></div>
                                     <div class="e20r-exercise-row e20r-exercise-tracking-row">
                                         <div class="e20r-activity-tracking-next right">
