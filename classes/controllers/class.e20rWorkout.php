@@ -753,9 +753,12 @@ class e20rWorkout extends e20rSettings
         $config->userGroup = $e20rTracker->getGroupIdForUser($config->userId);
         $config->expanded = false;
         $config->activity_override = false;
-        $config->show_tracking = 1;
-        $config->dayNo = date_i18n('N', current_time('timestamp'));
-	
+	    $config->dayNo = date_i18n('N', current_time('timestamp'));
+     
+	    if ( !isset( $config->show_tracking ) ) {
+	        $config->show_tracking = true;
+        }
+        
 	    $workoutData = array();
 	    
         // $config->hide_input = ( $tmp['hide_input'] == 0 ? false : true );
@@ -846,11 +849,17 @@ class e20rWorkout extends e20rSettings
             dbg("e20rWorkout::prepare_activity() - No articles found!");
             $articles = array($e20rArticle->emptyArticle());
         }
-        
+	
+	    $ignore_delay_value = apply_filters( 'e20r-tracker-activity-override-delay', CONST_NULL_ARTICLE );
+	    
         // Process all articles we've found.
         foreach ($articles as $a_key => $article) {
-
-            if ( (false === $config->activity_override ) && $config->delay != $article->release_day ) {
+	
+	        if ( intval( $article->release_day ) === intval( $ignore_delay_value ) ) {
+		        $config->activity_override = true;
+	        }
+	
+	        if ( false === $config->activity_override && $config->delay != $article->release_day ) {
                 dbg("e20rWorkout::prepare_activity() - Skipping {$article->id} because its delay value is incorrect: {$config->delay} vs {$article->release_day}");
                 continue;
             }
@@ -1092,13 +1101,13 @@ class e20rWorkout extends e20rSettings
         }
 
         $config = new stdClass();
-        $config->show_tracking = 1;
+        $config->show_tracking = true;
         $config->display_type = 'row';
         $config->print_only = null;
 
         $tmp = shortcode_atts(array(
             'activity_id' => null,
-            'show_tracking' => 1,
+            'show_tracking' => true,
             'display_type' => 'row', // Valid types: 'row', 'column', 'print'
         ), $attributes);
 
@@ -1120,29 +1129,29 @@ class e20rWorkout extends e20rSettings
                 $config->{$key} = $val;
             }
         }
+        
+        if (false === in_array(strtolower( $config->show_tracking ), array('yes', 'no', 'true', 'false', 1, 0) ) ) {
 
-        if (!in_array($config->show_tracking, array('yes', 'no', 'true', 'false', 1, 0))) {
-
-            dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
-            return '<div class="error">Incorrect show_tracking value in the e20r_activity shortcode! (Valid values are: "yes", "no", "true", "false", "1", "0")</div>';
-
+            dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid show_tracking value in the shortcode!");
+            return sprintf( '<div class="error">%s</div>', __( 'Incorrect show_tracking value in the e20r_activity shortcode! (Valid values are: "yes", "no", "true", "false", "1", "0")', 'e20r-tracker' ) );
         }
+        
+        
         if (!in_array($config->display_type, array('row', 'column', 'print'))) {
 
             dbg("e20rWorkout::shortcode_activity() - User didn't specify a valid display_type in the shortcode!");
-            return '<div class="error">Incorrect display_type value in the e20r_activity shortcode! (Valid values are "row", "column", "print")</div>';
+            return sprintf('<div class="error">%s</div>', __( 'Incorrect display_type value in the e20r_activity shortcode! (Valid values are "row", "column", "print")', 'e20r-tracker' ) );
         }
-
-        if (in_array(strtolower($config->show_tracking), array('no', 'false', '0'))) {
-
-            $config->show_tracking = 0;
-        }
+	
+	    $config->show_tracking = in_array(strtolower( $config->show_tracking ), array( 'yes', 'true', 1 ) );
 
         if ('print' === $config->display_type) {
 
             $config->print_only = true;
         }
-
+        
+        dbg("Value of show_tracking is: {$config->show_tracking} -> " . ($config->show_tracking ? 'true' : 'false' ) );
+        
         echo $this->prepare_activity($config);
     }
 

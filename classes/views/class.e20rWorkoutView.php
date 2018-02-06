@@ -202,113 +202,120 @@ class e20rWorkoutView extends e20rSettingsView
                                             <a href="#<?php echo $next_lnk; ?>"><?php ( $next_cnt == 1 && $next_grp == 1 ) ? _e("Back to first", "e20r-tracker") : _e("Record next", "e20r-tracker"); ?></a>
                                         </div>
                                         <div class="e20r-activity-info-col">
-                                            <div class="e20r-activity-exercise-tracking">
-                                                <table class="e20r-resp-table">
-                                                    <thead class="e20r-resp-table-header">
-                                                    <tr>
-                                                        <th class="e20r-td-input-count">
-                                                            <div
-                                                                class="e20r-activity-group-track-s e20r-activity-var"><?php _e("Set", "e20r-tracker"); ?></div>
-                                                        </th>
-                                                        <th class="e20r-td-input-activity">
-                                                            <div
-                                                                class="e20r-activity-group-track-l e20r-activity-var"><?php echo ($currentExercise->type == 1) ? __("Weight", "e20r-tracker") : __("Time", "e20r-tracker"); ?></div>
-                                                        </th>
-                                                        <th class="e20r-td-input-activity">
-                                                            <div
-                                                                class="e20r-activity-group-track-r e20r-activity-var"><?php echo ($currentExercise->type != 1) ? __("Reps", "e20r-tracker") : __("Reps", "e20r-tracker"); ?></div>
-                                                        </th>
-                                                        <th></th>
+                                            <?php
+		                            if ((isset($config->show_tracking)) && (true === $config->show_tracking)) {
+			                            dbg( "Including the tracking row: {$config->show_tracking}" );
+			                            ?>
+                                        <div class="e20r-activity-exercise-tracking">
+                                            <table class="e20r-resp-table">
+                                                <thead class="e20r-resp-table-header">
+                                                <tr>
+                                                    <th class="e20r-td-input-count">
+                                                        <div
+                                                                class="e20r-activity-group-track-s e20r-activity-var"><?php _e( "Set", "e20r-tracker" ); ?></div>
+                                                    </th>
+                                                    <th class="e20r-td-input-activity">
+                                                        <div
+                                                                class="e20r-activity-group-track-l e20r-activity-var"><?php echo ( $currentExercise->type == 1 ) ? __( "Weight", "e20r-tracker" ) : __( "Time", "e20r-tracker" ); ?></div>
+                                                    </th>
+                                                    <th class="e20r-td-input-activity">
+                                                        <div
+                                                                class="e20r-activity-group-track-r e20r-activity-var"><?php echo ( $currentExercise->type != 1 ) ? __( "Reps", "e20r-tracker" ) : __( "Reps", "e20r-tracker" ); ?></div>
+                                                    </th>
+                                                    <th></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody class="e20r-resp-table-body">
+					                            <?php
+					                            for ( $i = 1; $i <= $g->group_set_count; $i ++ ) {
+						
+						                            if ( $currentExercise->type == 2 ) {
+							
+							                            dbg( "e20rWorkoutView::display_printable_activity() - Time/Reps type of exercise" );
+							                            $weight = $currentExercise->reps;
+						                            } else {
+							                            dbg( "e20rWorkoutView::display_printable_activity() - Weight/Reps type of exercise" );
+							                            $weight = isset( $recorded[ $exKey ]->set[ $i ]->weight ) ? $recorded[ $exKey ]->set[ $i ]->weight : null;
+						                            }
+						
+						                            $reps  = isset( $recorded[ $exKey ]->set[ $i ]->reps ) ? $recorded[ $exKey ]->set[ $i ]->reps : null;
+						                            $when  = isset( $recorded[ $exKey ]->set[ $i ]->recorded ) ? $recorded[ $exKey ]->set[ $i ]->recorded : null;
+						                            $ex_id = isset( $recorded[ $exKey ]->set[ $i ]->ex_id ) ? $recorded[ $exKey ]->set[ $i ]->ex_id : null;
+						                            $id    = isset( $recorded[ $exKey ]->set[ $i ]->id ) ? $recorded[ $exKey ]->set[ $i ]->id : null;
+						                            ?>
+                                                    <tr class="e20r-edit e20r-exercise-set-row">
+                                                        <td data-th="Set" class="e20r-td-input-activity-set">
+                                                            <input type="hidden"
+                                                                   class="e20r-activity-input-group_no"
+                                                                   name="e20r-activity-exercise-group_no[]"
+                                                                   value="<?php echo esc_attr( $k ); ?>">
+                                                            <input type="hidden" class="e20r-activity-input-set_no"
+                                                                   name="e20r-activity-exercise-set_no[]"
+                                                                   value="<?php echo esc_attr( $i ); ?>">
+                                                            <input type="hidden"
+                                                                   class="e20r-activity-input-record_id"
+                                                                   name="e20r-activity-exercise-record_id[]"
+                                                                   value="<?php echo esc_attr( $id ); ?>">
+                                                            <input type="hidden"
+                                                                   class="e20r-activity-input-recorded"
+                                                                   name="e20r-activity-exercise-recorded[]"
+                                                                   value="<?php echo esc_attr( $when ); ?>">
+                                                            <input type="hidden" class="e20r-activity-input-ex_id"
+                                                                   name="e20r-activity-exercise-ex_id[]"
+                                                                   value="<?php echo esc_attr( $ex_id ); ?>">
+                                                            <input type="hidden" class="e20r-activity-input-ex_key"
+                                                                   name="e20r-activity-exercise-ex_key[]"
+                                                                   value="<?php echo esc_attr( $exKey ); ?>">
+                                                            <input type="hidden"
+                                                                   class="e20r-activity-input-weight_h"
+                                                                   name="e20r-activity-exercise-weight_h[]"
+                                                                   value="<?php echo esc_attr( $weight ); ?>">
+                                                            <input type="hidden" class="e20r-activity-input-reps_h"
+                                                                   name="e20r-activity-exercise-reps_h[]"
+                                                                   value="<?php echo esc_attr( $reps ); ?>">
+                                                            <span
+                                                                    class="e20r-td-activity-label-set"><?php echo esc_attr( $i ); ?></span>
+                                                        </td>
+                                                        <td data-th="Weight" class="e20r-td-input-activity-weight">
+                                                            <input type="text" class="e20r-activity-input-weight"
+                                                                   name="e20r-activity-exercise-weight[]"
+                                                                   value="<?php echo esc_attr( $weight ); ?>"></td>
+                                                        <td data-th="Reps" class="e20r-td-input-activity-reps">
+                                                            <input type="number" class="e20r-activity-input-reps"
+                                                                   name="e20r-activity-exercise-reps[]"
+                                                                   value="<?php echo esc_attr( $reps ); ?>"></td>
+                                                        <td data-th="" class="e20r-td-input-button">
+                                                            <button
+                                                                    class="e20r-save-set-row alignright e20r-button<?php echo ( empty( $weight ) || empty( $reps ) ) ? '' : ' startHidden'; ?>">
+                                                                Save
+                                                            </button>
+                                                        </td>
                                                     </tr>
-                                                    </thead>
-                                                    <tbody class="e20r-resp-table-body">
-                                                    <?php
-                                                    for ($i = 1; $i <= $g->group_set_count; $i++) {
-
-                                                        if ($currentExercise->type == 2) {
-
-                                                            dbg("e20rWorkoutView::display_printable_activity() - Time/Reps type of exercise");
-                                                            $weight = $currentExercise->reps;
-                                                        } else {
-                                                            dbg("e20rWorkoutView::display_printable_activity() - Weight/Reps type of exercise");
-                                                            $weight = isset($recorded[$exKey]->set[$i]->weight) ? $recorded[$exKey]->set[$i]->weight : null;
-                                                        }
-
-                                                        $reps = isset($recorded[$exKey]->set[$i]->reps) ? $recorded[$exKey]->set[$i]->reps : null;
-                                                        $when = isset($recorded[$exKey]->set[$i]->recorded) ? $recorded[$exKey]->set[$i]->recorded : null;
-                                                        $ex_id = isset($recorded[$exKey]->set[$i]->ex_id) ? $recorded[$exKey]->set[$i]->ex_id : null;
-                                                        $id = isset($recorded[$exKey]->set[$i]->id) ? $recorded[$exKey]->set[$i]->id : null;
-                                                        ?>
-                                                        <tr class="e20r-edit e20r-exercise-set-row">
-                                                            <td data-th="Set" class="e20r-td-input-activity-set">
-                                                                <input type="hidden"
-                                                                       class="e20r-activity-input-group_no"
-                                                                       name="e20r-activity-exercise-group_no[]"
-                                                                       value="<?php echo esc_attr($k); ?>">
-                                                                <input type="hidden" class="e20r-activity-input-set_no"
-                                                                       name="e20r-activity-exercise-set_no[]"
-                                                                       value="<?php echo esc_attr($i); ?>">
-                                                                <input type="hidden"
-                                                                       class="e20r-activity-input-record_id"
-                                                                       name="e20r-activity-exercise-record_id[]"
-                                                                       value="<?php echo esc_attr($id); ?>">
-                                                                <input type="hidden"
-                                                                       class="e20r-activity-input-recorded"
-                                                                       name="e20r-activity-exercise-recorded[]"
-                                                                       value="<?php echo esc_attr($when); ?>">
-                                                                <input type="hidden" class="e20r-activity-input-ex_id"
-                                                                       name="e20r-activity-exercise-ex_id[]"
-                                                                       value="<?php echo esc_attr($ex_id); ?>">
-                                                                <input type="hidden" class="e20r-activity-input-ex_key"
-                                                                       name="e20r-activity-exercise-ex_key[]"
-                                                                       value="<?php echo esc_attr($exKey); ?>">
-                                                                <input type="hidden"
-                                                                       class="e20r-activity-input-weight_h"
-                                                                       name="e20r-activity-exercise-weight_h[]"
-                                                                       value="<?php echo esc_attr($weight); ?>">
-                                                                <input type="hidden" class="e20r-activity-input-reps_h"
-                                                                       name="e20r-activity-exercise-reps_h[]"
-                                                                       value="<?php echo esc_attr($reps); ?>">
+                                                    <tr class="e20r-saved startHidden">
+                                                        <td data-th="Set" class="e20r-td-input-count">
                                                                 <span
-                                                                    class="e20r-td-activity-label-set"><?php echo esc_attr($i); ?></span>
-                                                            </td>
-                                                            <td data-th="Weight" class="e20r-td-input-activity-weight">
-                                                                <input type="text" class="e20r-activity-input-weight"
-                                                                       name="e20r-activity-exercise-weight[]"
-                                                                       value="<?php echo esc_attr($weight); ?>"></td>
-                                                            <td data-th="Reps" class="e20r-td-input-activity-reps">
-                                                                <input type="number" class="e20r-activity-input-reps"
-                                                                       name="e20r-activity-exercise-reps[]"
-                                                                       value="<?php echo esc_attr($reps); ?>"></td>
-                                                            <td data-th="" class="e20r-td-input-button">
-                                                                <button
-                                                                    class="e20r-save-set-row alignright e20r-button<?php echo (empty($weight) || empty($reps)) ? '' : ' startHidden'; ?>">
-                                                                    Save
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                        <tr class="e20r-saved startHidden">
-                                                            <td data-th="Set" class="e20r-td-input-count">
-                                                                <span
-                                                                    class="e20r-saved-set-number"><?php echo esc_attr($i); ?></span>
-                                                            </td>
-                                                            <td data-th="Weight" class="e20r-td-input-activity">
-                                                                <!-- <span class="e20r-saved-weight-value">--><a
+                                                                        class="e20r-saved-set-number"><?php echo esc_attr( $i ); ?></span>
+                                                        </td>
+                                                        <td data-th="Weight" class="e20r-td-input-activity">
+                                                            <!-- <span class="e20r-saved-weight-value">--><a
                                                                     href="javascript:"
-                                                                    class="e20r-edit-weight-value"><?php echo empty($weight) ? 0 : esc_attr($weight); ?></a>
-                                                                <!--</span>-->
-                                                            </td>
-                                                            <td data-th="Reps" class="e20r-td-input-activity">
-                                                                <!-- <span class="e20r-saved-rep-value">--><a
+                                                                    class="e20r-edit-weight-value"><?php echo empty( $weight ) ? 0 : esc_attr( $weight ); ?></a>
+                                                            <!--</span>-->
+                                                        </td>
+                                                        <td data-th="Reps" class="e20r-td-input-activity">
+                                                            <!-- <span class="e20r-saved-rep-value">--><a
                                                                     href="javascript:"
-                                                                    class="e20r-edit-rep-value"><?php echo empty($reps) ? 0 : esc_attr($reps); ?></a>
-                                                                <!--</span>--></td>
-                                                            <td></td>
-                                                        </tr>
-                                                    <?php } ?>
-                                                    </tbody>
-                                                </table>
-                                            </div> <!-- end of activity-exercise-tracking -->
+                                                                    class="e20r-edit-rep-value"><?php echo empty( $reps ) ? 0 : esc_attr( $reps ); ?></a>
+                                                            <!--</span>--></td>
+                                                        <td></td>
+                                                    </tr>
+					                            <?php } ?>
+                                                </tbody>
+                                            </table>
+                                        </div> <!-- end of activity-exercise-tracking -->
+			                            <?php
+		                            }
+		                                ?>
                                         </div> <!-- End of info-col -->
                                     </div> <!-- end of exercise tracking row -->
                                     <?php endif; ?>
@@ -791,7 +798,8 @@ class e20rWorkoutView extends e20rSettingsView
                                     <?php echo $e20rExercise->print_exercise($config->expanded); ?>
                                 </div><!-- End of exercise-row --><?php
 
-                                if ((isset($config->show_tracking)) && (1 == $config->show_tracking)) {
+                                if ((isset($config->show_tracking)) && (true === $config->show_tracking)) {
+                                    dbg("Including the tracking row: {$config->show_tracking}");
                                     ?>
                                     <div class="e20r-exercise-row e20r-exercise-tracking-row startHidden">
                                         <div class="e20r-activity-info-col">
