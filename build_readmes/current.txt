@@ -1,1 +1,2 @@
-BUG FIX: Didn't account for all versions of E20R Sequences
+ENHANCEMENT/FIX: Border between exercise entries one workout page
+BUG FIX: Removed extra border for exercise tracking table

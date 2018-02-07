@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
-Tested up to: 4.9.1
-Stable tag: 1.7.4
+Tested up to: 4.9.3
+Stable tag: 2.3.2
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,64 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 2.3.2 ==
+
+* ENHANCEMENT/FIX: Border between exercise entries one workout page
+* BUG FIX: Removed extra border for exercise tracking table
+
+== 2.3.1 ==
+
+* BUG FIX: Would show tracking info regardless of setting in shortcode
+
+== 2.3 ==
+
+* BUG FIX: Incorrectly formatted HTML when hiding the Tracking functionality for Workouts
+
+== 2.2 ==
+
+* BUG FIX: Didn't hide the 'Track Next' button on the Workout page
+* BUG FIX: Would show button to send user to tracking fields when tracking is disabled
+
+== 2.1 ==
+
+* ENHANCEMENT: Actually activate the show/hide for the exercise description & video
+* BUG FIX: Didn't load the article when specified in the [e20r_activity] shortcode
+* BUG FIX: Didn't always honor the 'show tracking' attribute for the shortcode
+
+== 2.0 ==
+
+* ENHANCEMENT: Clean up documentation fo e20rTracker::is_a_coach() method and simplify the function
+* ENHANCEMENT: Only load User notes if the user looking isn't a coach.
+* ENHANCEMENT: Minor nit to simplify user action/activity check-in
+* ENHANCEMENT: Hide any row/cell underlines/borders in the Action/Activity/Measurement results table
+* ENHANCEMENT: Add license and re-run the YUI Compressor for the CSS files
+* ENHANCEMENT: WordPress Code Style applied
+* ENHANCEMENT: Add proper yesterday/tomorrow navigation bar for Card based Dashboard
+* ENHANCEMENT: Refactor the ActionView class
+* ENHANCEMENT: Trigger ajax status modal in Dashboard
+* ENHANCEMENT: Show overlay during AJAX operations on Dashboard page
+* ENHANCEMENT: Included minified files in commit
+* ENHANCEMENT: Enable toggle for showing/hiding the exercise video and description
+* ENHANCEMENT: Use $_REQUEST array (not $_POST)
+* ENHANCEMENT: More obvious separation between Training Routine Groups
+* ENHANCEMENT: Add override (query parameter: e20r_confirmed_coach_override -> accepts 0 or 1 ) to let coach see Daily Progress Notes for a member/user
+* ENHANCEMENT/FIX: Display Card based dashboard correctly
+* ENHANCEMENT/FIX: Include fewer words to not overflow on the Lesson/Reminder card
+* ENHANCEMENT/FIX: Add dependency handling for CSS files
+* ENHANCEMENT/FIX: Don't show 'Edit' for the notes if the active user is a coach
+* ENHANCEMENT/FIX: Print the workout being displayed on the page
+* ENHANCEMENT/FIX: Styling for the compressed workout/info page(s)
+* ENHANCEMENT/FIX: Improved documentation for the ActionView class
+* BUG FIX: Didn't generate the proper dynamic CSS for the User notes field
+* BUG FIX: Get rid of unneeded lines (<hr> elements) for the daily assignment shortcode
+* BUG FIX: Didn't save action & activity status in Card mode
+* BUG FIX: Better size the overlay for the text notes after they've been saved
+* BUG FIX: Didn't correctly load the e20rCheckingEvent() 'class'
+* BUG FIX: Didn't load action and assignment JavaScript on an e20r_articles post
+* BUG FIX: Typo in CSS for the arrow(s)
+* BUG FIX: PHP Warning messages when displaying/printing workout page
+* BUG FIX: Hide the exercise video/description toggle button when printing.
 
 == 1.7.4 ==
 
