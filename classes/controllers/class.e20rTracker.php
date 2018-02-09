@@ -95,7 +95,7 @@ class e20rTracker {
         $managed_types = apply_filters( 'e20r_tracker_duplicate_types', array(
                                                                 'e20r_programs',
                                                                 'e20r_workout',
-                                                                'e20r_articles',
+                                                                e20rArticleModel::post_type,
                                                                 'e20r_assignments',
                                                                 'e20r_exercises',
                                                             )
@@ -227,6 +227,8 @@ class e20rTracker {
 
 	        add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles'), 5, 1);
 
+	        add_action( 'template_redirect', array( e20rArticle::getInstance(), 'send_to_post' ), 4, 1 );
+	        
             add_action( 'init', array( $this, 'update_db'), 7 );
             add_action( 'init', array( $this, "dependency_warnings" ), 10 );
             add_action( 'init', array( $this, "e20r_program_taxonomy" ), 10 );
@@ -874,7 +876,7 @@ class e20rTracker {
 			'e20r_workout',
 			'e20r_assignments',
 			'e20r_programs',
-			'e20r_articles',
+			e20rArticleModel::post_type,
 			'e20r_exercises',
 			'e20r_actions'
 		);
@@ -965,7 +967,7 @@ class e20rTracker {
 
                 break;
 
-            case 'e20r_articles':
+            case e20rArticleModel::post_type:
 
                 $title = 'Enter Article Prefix Here';
 
@@ -1980,7 +1982,7 @@ class e20rTracker {
         
         $e20r_post_types = apply_filters( 'e20r_tracker_used_post_types', array(
                     'e20r_assignments',
-                     'e20r_articles',
+                     e20rArticleModel::post_type,
                      'e20r_actions',
                      'e20r_workout',
                      'e20r_exercises',
@@ -2029,7 +2031,7 @@ class e20rTracker {
 					$deps = array('jquery', 'jquery-ui-core', 'select2' );
                     break;
 
-                case 'e20r_articles':
+                case e20rArticleModel::post_type:
 
                     $type = 'article';
                     $deps = array( 'jquery', 'jquery-ui-core', 'select2' );
@@ -2229,7 +2231,7 @@ class e20rTracker {
         }
 
 
-        if ( 'e20r_articles' === $post->post_type || has_shortcode( $post->post_content, 'daily_progress' ) ) {
+        if ( e20rArticleModel::post_type === $post->post_type || has_shortcode( $post->post_content, 'daily_progress' ) ) {
 
             if ( !is_user_logged_in() ) {
 
@@ -3602,7 +3604,7 @@ class e20rTracker {
             $wpdb->prefix . 'e20r_measurements',
             $wpdb->prefix . 'e20r_client_info',
             $wpdb->prefix . 'e20r_workouts',
-            $wpdb->prefix . 'e20r_articles',
+            $wpdb->prefix . e20rArticleModel::post_type,
 //            $wpdb->prefix . 'e20r_programs',
 //            $wpdb->prefix . 'e20r_sets',
 
@@ -3749,7 +3751,7 @@ class e20rTracker {
         $labels =  array(
             'name' => __( 'Articles', 'e20r-tracker'  ),
             'singular_name' => __( 'Article', 'e20r-tracker' ),
-            'slug' => 'e20r_articles',
+            'slug' => e20rArticleModel::post_type,
             'add_new' => __( 'New Article', 'e20r-tracker' ),
             'add_new_item' => __( 'New Tracker Article', 'e20r-tracker' ),
             'edit' => __( 'Edit Article', 'pmprosequence' ),
@@ -3762,7 +3764,7 @@ class e20rTracker {
             'not_found_in_trash' => __( 'No Articles Found In Trash', 'e20r-tracker' )
         );
 
-        $error = register_post_type('e20r_articles',
+        $error = register_post_type(e20rArticleModel::post_type,
             array( 'labels' => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
                    'public' => true,
                    'show_ui' => true,
@@ -4877,7 +4879,7 @@ class e20rTracker {
         $cpt_info = array(
 			'e20r_workout' => null,
 			'e20r_assignments' => null,
-            'e20r_articles' => null,
+            e20rArticleModel::post_type => null,
 			'e20r_actions' => null,
 		);
 
@@ -4895,7 +4897,7 @@ class e20rTracker {
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
                     break;
 
-                case 'e20r_articles':
+                case e20rArticleModel::post_type:
 
                     $cpt_info[$cpt]->type = $e20rArticle->get_cpt_type();
                     $cpt_info[$cpt]->keylist["_e20r-{$cpt_info[$cpt]->type}-programs"] = "_e20r-{$cpt_info[$cpt]->type}-program_ids";
