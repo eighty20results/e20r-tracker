@@ -12,19 +12,35 @@
 if ( !defined( 'ABSPATH' ) ) {
 	die( "Sorry, you are not allowed to access this page directly." );
 }
-class e20rArticleModel extends e20rSettingsModel
-{
 
+class e20rArticleModel extends e20rSettingsModel {
+	
+	/**
+	 * The ID of the Article
+	 *
+	 * @var int|null $id
+	 */
     protected $id;
-
+	
+	/**
+	 * @var null|e20rArticleModel
+	 */
     private static $instance = null;
 
+    const post_type = 'e20r_articles';
+    
     // protected $settings;
-
     public function __construct()
     {
-
-        parent::__construct('article', 'e20r_articles');
+	    try {
+		    parent::__construct( 'article', self::post_type );
+	    } catch ( \Exception $exception ) {
+	    	
+	    	dbg( "Error instantiating the Article Model class: " . $exception->getMessage() );
+	    	return false;
+	    }
+	    
+	    return $this;
     }
 
 	/**
@@ -212,7 +228,7 @@ class e20rArticleModel extends e20rSettingsModel
 
         $args = array(
             'posts_per_page' => $limit,
-            'post_type' => 'e20r_articles',
+            'post_type' => self::post_type,
             'post_status' => 'publish',
             'order_by' => 'meta_value_num',
             'meta_key' => "_e20r-article-{$key}",
@@ -340,7 +356,7 @@ class e20rArticleModel extends e20rSettingsModel
 	    if ( $key != 'id' ) {
 		    $args = array(
 			    'posts_per_page' => -1,
-			    'post_type' => 'e20r_articles',
+			    'post_type' => self::post_type,
 			    'post_status' => 'publish',
 			    'order_by' => 'meta_value',
 			    'order' => 'DESC',
@@ -368,7 +384,7 @@ class e20rArticleModel extends e20rSettingsModel
 	    else {
 		    $args = array(
 			    'posts_per_page' => -1,
-			    'post_type' => 'e20r_articles',
+			    'post_type' => self::post_type,
 			    // 'post_status' => 'publish',
 			    'p' => $value,
 		    );
