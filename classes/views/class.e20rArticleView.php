@@ -20,7 +20,7 @@ class e20rArticleView extends e20rSettingsView {
 
     public function __construct( $data = null, $error = null ) {
 
-        parent::__construct( 'article', 'e20r_articles' );
+        parent::__construct( 'article', e20rArticleModel::post_type );
 
         $this->article = $data;
         $this->error = $error;
