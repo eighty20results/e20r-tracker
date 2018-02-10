@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) $today.year. - Eighty / 20 Results by Wicked Strong Chicks.
+ * Copyright (c) 2018 - Eighty / 20 Results by Wicked Strong Chicks.
  * ALL RIGHTS RESERVED
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+namespace E20R\Tracker\Controllers;
+
 use Defuse\Crypto\Encoding;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -24,11 +26,11 @@ use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 
-class E20R_Crypto {
+class Tracker_Crypto {
 	
 	public static function getUserKey( $userId = null ) {
 		
-		$controller = e20rTracker::getInstance();
+		$controller = Tracker::getInstance();
 		
 		global $post;
 		global $current_user;
@@ -43,10 +45,10 @@ class E20R_Crypto {
 			$userId = $current_user->ID;
 		}
 		
-		dbg( "E20R_Crypto::getUserKey() - Test if user ({$userId}) can access their AES key based on the post {$post->ID}." );
+		E20R_Tracker::dbg( "E20R_Crypto::getUserKey() - Test if user ({$userId}) can access their AES key based on the post {$post->ID}." );
 		
 		if ( true === $controller->hasAccess( $userId, $post->ID ) ) {
-			dbg( 'E20R_Crypto::getUserKey() - User is permitted to access their AES key.' );
+			E20R_Tracker::dbg( 'E20R_Crypto::getUserKey() - User is permitted to access their AES key.' );
 			
 			try {
 				$key = Encoding::hexToBin( get_user_meta( $userId, 'e20r_user_key', true ) );
@@ -56,13 +58,13 @@ class E20R_Crypto {
 				wp_die( sprintf( __( "There is something wrong with the encryption/decryption of your data. Please contact the webmaster. Error: %s", "e20r-tracker" ), $exception->getMessage() ) );
 			}
 			
-			// dbg( $key );
+			// E20R_Tracker::dbg( $key );
 			
 			if ( empty( $key ) ) {
 				
 				try {
 					
-					dbg( "E20R_Crypto::getUserKey() - Generating a new key for user {$userId}" );
+					E20R_Tracker::dbg( "E20R_Crypto::getUserKey() - Generating a new key for user {$userId}" );
 					$key = Key::createNewRandomKey();
 					
 					// WARNING: Do NOT encode $key with bin2hex() or base64_encode(),
@@ -70,19 +72,19 @@ class E20R_Crypto {
 					
 					if ( false === update_user_meta( $userId, 'e20r_user_key', Encoding::binToHex( $key ) ) ) {
 						
-						dbg( "E20R_Crypto::getUserKey() - ERROR: Unable to save the key for user {$userId}" );
+						E20R_Tracker::dbg( "E20R_Crypto::getUserKey() - ERROR: Unable to save the key for user {$userId}" );
 						
 						return null;
 					}
 					
-					dbg( "E20R_Crypto::getUserKey() - New key generated for user {$userId}" );
+					E20R_Tracker::dbg( "E20R_Crypto::getUserKey() - New key generated for user {$userId}" );
 				} catch ( EnvironmentIsBrokenException $ex ) {
 					
 					wp_die( sprintf( __( 'Could not create your encryption key in a secure way. Please contact the webmaster. Error: %s', 'e20r-tracker' ), $ex->getMessage() ) );
 				}
 			}
 			
-			dbg( "E20R_Crypto::getUserKey() - Returning key for user {$userId}" );
+			E20R_Tracker::dbg( "E20R_Crypto::getUserKey() - Returning key for user {$userId}" );
 			
 			return $key;
 		} else {
@@ -98,33 +100,33 @@ class E20R_Crypto {
 	 */
 	public static function encryptData( $data, $key ) {
 		
-		$controller = e20rTracker::getInstance();
+		$controller = Tracker::getInstance();
 		$enable     = (bool) $controller->loadOption( 'encrypt_surveys' );
 		
 		if ( $key === null ) {
 			
-			dbg( "E20R_Crypto::encryptData() - No key defined!" );
+			E20R_Tracker::dbg( "E20R_Crypto::encryptData() - No key defined!" );
 			
 			return base64_encode( $data );
 		}
 		
 		if ( empty( $key ) ) {
 			
-			dbg( "E20R_Crypto::encryptData() - Unable to load encryption engine/key. Using Base64... *sigh*" );
+			E20R_Tracker::dbg( "E20R_Crypto::encryptData() - Unable to load encryption engine/key. Using Base64... *sigh*" );
 			
 			return base64_encode( $data );
 		}
 		
 		if ( true === $enable ) {
 			
-			dbg( "E20R_Crypto::encryptData() - Configured to encrypt data." );
+			E20R_Tracker::dbg( "E20R_Crypto::encryptData() - Configured to encrypt data." );
 			
 			try {
 				
 				$ciphertext = Crypto::encrypt( $data, $key );
 				
 				return Encoding::binToHex( $ciphertext );
-			} catch ( TypeError $ex ) {
+			} catch ( \TypeError $ex ) {
 				
 				wp_die( sprintf( __( 'Programming error. Please report this issue to the webmaster. Error: %s', 'e20r-tracker' ), $ex->getMessage() ) );
 			} catch ( EnvironmentIsBrokenException $exception ) {
@@ -137,24 +139,24 @@ class E20R_Crypto {
 	
 	public static function decryptData( $encData, $key, $encrypted = null ) {
 		
-		$controller = e20rTracker::getInstance();
+		$controller = Tracker::getInstance();
 		if ( is_null( $encrypted ) ) {
 			
 			$encrypted = (bool) $controller->loadOption( 'encrypt_surveys' );
 		}
 		
-		dbg( "E20R_Crypto::decryptData() - Encryption is " . ( $encrypted ? 'enabled' : 'disabled' ) );
+		E20R_Tracker::dbg( "E20R_Crypto::decryptData() - Encryption is " . ( $encrypted ? 'enabled' : 'disabled' ) );
 		
 		if ( ( $key === null ) || ( false === $encrypted ) ) {
 			
-			dbg( "E20R_Crypto::decryptData() - No decryption key - or encryption is disabled: {$encrypted}" );
+			E20R_Tracker::dbg( "E20R_Crypto::decryptData() - No decryption key - or encryption is disabled: {$encrypted}" );
 			
 			return base64_decode( $encData );
 		}
 		
 		try {
 			
-			dbg( "E20R_Crypto::decryptData() - Attempting to decrypt data..." );
+			E20R_Tracker::dbg( "E20R_Crypto::decryptData() - Attempting to decrypt data..." );
 			
 			$data      = Encoding::hexToBin( $encData );
 			$decrypted = Crypto::decrypt( $data, $key );
@@ -170,7 +172,7 @@ class E20R_Crypto {
 		} catch ( EnvironmentIsBrokenException $ex ) {
 			
 			wp_die( sprintf( __( 'There was a problem decrypting your information. Please report this error to the webmaster. Error: %s', 'e20r-tracker' ), $ex->getMessage() ) );
-		} catch ( TypeError $ex ) {
+		} catch ( \TypeError $ex ) {
 			
 			wp_die( sprintf( __( 'Programming error. Please report this issue to the webmaster. Error: %s', 'e20r-tracker' ), $ex->getMessage() ) );
 		} catch ( BadFormatException $exception ) {
