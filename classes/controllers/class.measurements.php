@@ -1,15 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 10/25/14
- * Time: 1:50 PM
- */
+namespace E20R\Tracker\Controllers;
 
-class e20rMeasurements {
+use E20R\Tracker\Views\Measurement_View;
+use E20R\Tracker\Models\Measurement_Model;
+
+use E20R\Tracker\Models\Tables;
+
+class Measurements {
 
     private $id = null;
     private $girths = null;
+    
     private $model = null;
     private $view = null;
 
@@ -19,32 +20,20 @@ class e20rMeasurements {
     private static $instance = null;
 
     public function __construct( $user_id = null ) {
-
-        // $e20rMeasurements = e20rMeasurements::getInstance();
-        // $e20rTracker = e20rTracker::getInstance();
-
+    	
         global $current_user;
-        // global $currentClient;
 
-        $this->view = new e20rMeasurementViews();
-        $this->model = new e20rMeasurementModel( $user_id );
+        $this->view = new Measurement_View();
+        $this->model = new Measurement_Model( $user_id );
 
         if ( $user_id === null ) {
 
             $this->id = $current_user->ID;
         }
-
-        /*
-        if ( $e20rTracker->isEmpty( $e20rMeasurements ) ) {
-
-            dbg("e20rMeasurements::__construct() - Self-referencing for the e20rMeasurements global");
-            $e20rMeasurements = $this;
-        }
-        */
     }
 
 	/**
-	 * @return e20rMeasurements
+	 * @return Measurements|null
 	 */
 	static function getInstance() {
 
@@ -58,7 +47,7 @@ class e20rMeasurements {
     public function init( $forDate = null, $user_id = 0 ) {
 
         global $e20rMeasurementDate;
-        $e20rTracker = e20rTracker::getInstance();
+        $Tracker = Tracker::getInstance();
 
         if ( $user_id != 0 ) {
 
@@ -72,29 +61,29 @@ class e20rMeasurements {
             if ( $current_user->ID != 0 ) {
 
                 $this->id = $current_user->ID;
-                dbg("e20rMeasurements::init() - Loading measurements for user {$this->id}");
+                E20R_Tracker::dbg("Measurements::init() - Loading measurements for user {$this->id}");
             }
         }
 
         if ( ( $forDate !== null ) && ( $this->measurementDate == null ) ) {
 
-            dbg("e20rMeasurements::init() - Loading measurement dates based on article date of {$forDate}");
-            $this->dates = $e20rTracker->datesForMeasurements( $forDate );
+            E20R_Tracker::dbg("Measurements::init() - Loading measurement dates based on article date of {$forDate}");
+            $this->dates = $Tracker->datesForMeasurements( $forDate );
         }
         elseif ( $forDate !== null ) {
 
-            $this->dates = $e20rTracker->datesForMeasurements( $forDate );
+            $this->dates = $Tracker->datesForMeasurements( $forDate );
         }
         else {
-            $this->dates = $e20rTracker->datesForMeasurements();
+            $this->dates = $Tracker->datesForMeasurements();
         }
 
-        dbg("e20rMeasurements::init() - Setting date to the 'current' value of: " . $this->dates['current']);
-        dbg( $this->dates );
+        E20R_Tracker::dbg("Measurements::init() - Setting date to the 'current' value of: " . $this->dates['current']);
+        E20R_Tracker::dbg( $this->dates );
 
         $this->measurementDate = $this->dates['current'];
 
-        dbg("e20rMeasurements::init() - Loading data for: {$this->measurementDate}.");
+        E20R_Tracker::dbg("Measurements::init() - Loading data for: {$this->measurementDate}.");
 
         $e20rMeasurementDate = $this->measurementDate;
 
@@ -105,25 +94,25 @@ class e20rMeasurements {
 
         global $e20rMeasurementDate;
 	    
-        $e20rTracker = e20rTracker::getInstance();
+        $Tracker = Tracker::getInstance();
         
-        $this->dates = $e20rTracker->datesForMeasurements( $date );
+        $this->dates = $Tracker->datesForMeasurements( $date );
 
         if ( $date != $this->measurementDate ) {
             // Remove transient so it can be reloaded
-            dbg("e20rMeasurements::setMeasurementDate() - Given a new date. Clearing transient(s) for {$this->id}");
+            E20R_Tracker::dbg("Measurements::setMeasurementDate() - Given a new date. Clearing transient(s) for {$this->id}");
             delete_transient( "e20r_all_client_measurements_{$this->id}");
         }
 
-        dbg("e20rMeasurements::setMeasurementDate() - Date: {$date}, When: " . print_r( $this->dates, true ));
+        E20R_Tracker::dbg("Measurements::setMeasurementDate() - Date: {$date}, When: " . print_r( $this->dates, true ));
 
         if ( ( ! in_array( $date, array( 'current', 'last_week', 'next' ) ) ) &&
              ( strtotime( $date ) !== false ) ) {
-            dbg("e20rMeasurements::setMeasurementDate() - Specified an actual date value ({$date})");
+            E20R_Tracker::dbg("Measurements::setMeasurementDate() - Specified an actual date value ({$date})");
             $this->measurementDate = $date;
         }
         else {
-            dbg("e20rMeasurements::setMeasurementDate() - Specified a relative date value ({$date})");
+            E20R_Tracker::dbg("Measurements::setMeasurementDate() - Specified a relative date value ({$date})");
             $this->measurementDate = $this->dates[$date];
         }
 
@@ -132,24 +121,29 @@ class e20rMeasurements {
 
     public function getMeasurementDate() {
 
-        dbg("e20rMeasurements::getMeasurementDate() - Is POST configured..?");
-        dbg($_REQUEST);
+        E20R_Tracker::dbg("Measurements::getMeasurementDate() - Is POST configured..?");
+        E20R_Tracker::dbg($_REQUEST);
 
         if ( isset( $this->measurementDate ) ) {
-            dbg("e20rMeasurements::getMeasurementDate() - returning the configured date");
+            E20R_Tracker::dbg("Measurements::getMeasurementDate() - returning the configured date");
             return $this->measurementDate;
         }
         else {
-            dbg("e20rMeasurements::getMeasurementDate() - returning the current date");
+            E20R_Tracker::dbg("Measurements::getMeasurementDate() - returning the current date");
             return $this->dates['current'];
         }
     }
 
     public function areCaptured( $articleId, $programId, $userId, $mDate ) {
 
-        dbg("e20rMeasurements::areCaptured() - Checking if the user has recorded data already");
-        dbg("e20rMeasurements::areCaptured() - Article({$articleId}), Program({$programId}), User({$userId}), Date({$mDate})");
-        return $this->model->checkCompletion( $articleId, $programId, $userId, $mDate );
+        E20R_Tracker::dbg("Measurements::areCaptured() - Checking if the user has recorded data already");
+        E20R_Tracker::dbg("Measurements::areCaptured() - Article({$articleId}), Program({$programId}), User({$userId}), Date({$mDate})");
+        try {
+	        return $this->model->checkCompletion( $articleId, $programId, $userId, $mDate );
+        } catch( \Exception $exception ) {
+        	E20R_Tracker::dbg("Measurements:areCaptured() - Erro checking if measurements were found. Error: " . $exception->getMessage() );
+        	return null;
+        }
     }
 
     public function setClient( $client_id ) {
@@ -157,7 +151,7 @@ class e20rMeasurements {
         global $current_user;
 
         if ( $current_user->ID !== 0 ) {
-            dbg( "e20rMeasurements::setClient() - Changing client ID from {$this->id} to {$client_id}" );
+            E20R_Tracker::dbg( "Measurements::setClient() - Changing client ID from {$this->id} to {$client_id}" );
             $this->id = $client_id;
         }
 
@@ -175,10 +169,8 @@ class e20rMeasurements {
     public function setFilenameForClientUpload( $file ) {
 
         global $current_user;
-        global $pagenow;
-        global $post;
 	
-	    $e20rProgram = e20rProgram::getInstance();
+	    $Program = Program::getInstance();
 	    
 	    $imageFormats = array(
             'image/bmp',
@@ -188,9 +180,9 @@ class e20rMeasurements {
 		    'image/tiff'
 	    );
 
-        dbg("e20rMeasurements::setFilenameForClientUpload() - Data: ");
-        dbg( $file );
-        dbg( $_REQUEST );
+        E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - Data: ");
+        E20R_Tracker::dbg( $file );
+        E20R_Tracker::dbg( $_REQUEST );
 
 	    /* Skip non-image uploads. */
 	    if ( ! in_array( $file['type'], $imageFormats ) ) {
@@ -199,18 +191,18 @@ class e20rMeasurements {
 
         if ( ( $this->id == 0 ) || ( $this->id === null ) ) {
 
-            dbg("e20rMeasurements::setFilenameForClientUpload() - No Client ID available...");
-            $this->id == get_current_user_id();
+            E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - No Client ID available...");
+            $this->id = get_current_user_id();
         }
 
-        if ( !is_a( $current_user, "WP_User") ) {
-            dbg("e20rMeasurements::setFilenameForClientUpload() - Not a user");
+        if ( !is_a( $current_user, "\WP_User") ) {
+            E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - Not a user");
             return $file;
         }
 
-        $pgmId = $e20rProgram->getProgramIdForUser( $this->id );
+        $pgmId = $Program->getProgramIdForUser( $this->id );
 
-        dbg( "e20rMeasurements::setFilenameForClientUpload() - Filename was: {$file['name']}" );
+        E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload() - Filename was: {$file['name']}" );
         $timestamp = date( "Ymd", current_time( 'timestamp' ) );
         $side      = 'REPLACEME';
 
@@ -218,11 +210,11 @@ class e20rMeasurements {
         $fileName = explode( '.', $file['name'] );
         $ext      = $fileName[ ( count( $fileName ) - 1 ) ];
 
-        dbg( "e20rMeasurements::setFilenameForClientUpload(): " );
-        dbg( $_FILES );
+        E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload(): " );
+        E20R_Tracker::dbg( $_FILES );
 
         $file['name'] = "{$pgmId}-{$this->id}-{$timestamp}-{$side}.{$ext}";
-        dbg( "e20rMeasurements::setFilenameForClientUpload() - New filename: {$file['name']}" );
+        E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload() - New filename: {$file['name']}" );
 
         $img = getimagesize( $file['tmp_name'] );
 
@@ -245,17 +237,15 @@ class e20rMeasurements {
 
     public function clientMediaUploader( $strings ) {
 
-        global $current_user;
-
-        dbg("e20rMeasurements::clientMediaUploader() -- Do we remove tab(s) from teh media uploader?");
+        E20R_Tracker::dbg("Measurements::clientMediaUploader() -- Do we remove tab(s) from teh media uploader?");
 
         if ( current_user_can('edit_posts') ) {
 
-            dbg("e20rMeasurements::clientMediaUploader() -- User is an administrator so don't remove anything.");
+            E20R_Tracker::dbg("Measurements::clientMediaUploader() -- User is an administrator so don't remove anything.");
             return $strings;
         }
 
-        dbg("e20rMeasurements::clientMediaUploader() -- Regular user.");
+        E20R_Tracker::dbg("Measurements::clientMediaUploader() -- Regular user.");
         unset( $strings['mediaLibraryTitle'] ); //Media Library
         unset( $strings['createGalleryTitle'] ); //Create Gallery
         unset( $strings['setFeaturedImageTitle'] ); //Set Featured Image
@@ -267,10 +257,10 @@ class e20rMeasurements {
 
     private function load_girthTypes() {
 
-        dbg("loadGirthInfo() - Running function to grab all girth posts");
+        E20R_Tracker::dbg("loadGirthInfo() - Running function to grab all girth posts");
         $this->girths = array();
 
-        $girthQuery = new WP_Query(
+        $girthQuery = new \WP_Query(
             array(
                 'post_type' => 'e20r_girth_types',
                 'post_status' => 'publish',
@@ -280,20 +270,20 @@ class e20rMeasurements {
         );
 
         if ( $girthQuery->have_posts()) {
-            dbg("loadGirthInfo() - There are Girth posts listed..");
+            E20R_Tracker::dbg("loadGirthInfo() - There are Girth posts listed..");
 
             while ( $girthQuery->have_posts()) {
 
                 $girthQuery->the_post();
 
-                $obj = new stdClass();
+                $obj =  new \stdClass();
                 $obj->id = get_the_ID();
                 $obj->type = strtolower(get_the_title());
                 $obj->descr = get_the_content(); // TODO: Grab the get_the_excerpt() for the description (descr), use get_the_content() for the help?
                 $obj->sortOrder = get_post_meta( $obj->id, 'e20r_girth_type_sortorder', true );
 
                 if ( ! empty( $obj->sortOrder ) ) {
-                    // dbg("Sort order is specified: {$obj->sortOrder} for {$obj->type}");
+                    // E20R_Tracker::dbg("Sort order is specified: {$obj->sortOrder} for {$obj->type}");
                     $this->girths[$obj->sortOrder] = $obj;
                 }
                 else {
@@ -304,7 +294,7 @@ class e20rMeasurements {
             }
         }
         wp_reset_query();
-        // dbg("loadGirthInfo() - Girth Info: " . print_r($this->girths, true));
+        // E20R_Tracker::dbg("loadGirthInfo() - Girth Info: " . print_r($this->girths, true));
     }
 
     private function conversionFactor( $oldUnit, $newUnit ) {
@@ -337,30 +327,30 @@ class e20rMeasurements {
 
     public function updateMeasurementsForType( $unitType, $newUnit ) {
 
-        $e20rTables = e20rTables::getInstance();
-	    $e20rClient = e20rClient::getInstance();
+        $Tables = Tables::getInstance();
+	    $Client = Client::getInstance();
 
-        $fields = $e20rTables->getFields( 'measurements' );
+        $fields = $Tables->getFields( 'measurements' );
 	    $oldUnit = null;
 	    
         if ( $unitType == 'weight' ) {
-            $oldUnit = $e20rClient->getWeightUnit();
+            $oldUnit = $Client->getWeightUnit();
         }
 
         if ( $unitType == 'length' ) {
-            $oldUnit = $e20rClient->getLengthUnit();
+            $oldUnit = $Client->getLengthUnit();
         }
 
         $allData = $this->getMeasurement( 'all', false );
 
         $convFactor = $this->conversionFactor( $oldUnit, $newUnit );
-        dbg("e20rMeasurements::updateMeasurementsForType() - Conversion factor for {$oldUnit}->{$newUnit}: {$convFactor}");
+        E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Conversion factor for {$oldUnit}->{$newUnit}: {$convFactor}");
 
-        dbg("e20rMeasurements::updateMeasurementsForType() - All of the data for this user: " . print_r( $allData, true ) );
+        E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - All of the data for this user: " . print_r( $allData, true ) );
 
         if ( empty( $allData ) ) {
 
-            dbg("e20rMeasurements::updateMeasurementsForType() - No data to convert. Returning success!" );
+            E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - No data to convert. Returning success!" );
             return true;
         }
 
@@ -368,13 +358,13 @@ class e20rMeasurements {
 
             if ( $unitType == 'weight' ) {
 
-                dbg("e20rMeasurements::updateMeasurementsForType() - Converting weight for record # {$key}" );
+                E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Converting weight for record # {$key}" );
 
                 $allData[$key]->{$fields['weight']} = round( ( $record->{$fields['weight']} * $convFactor ), 3 );
             }
 
             if ( $unitType == 'length' ) {
-                dbg("e20rMeasurements::updateMeasurementsForType() - Converting lengths for record # {$key}" );
+                E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Converting lengths for record # {$key}" );
 
                 $allData[$key]->{$fields['girth_neck']} =  ( is_null( $record->{$fields['girth_neck']} ) ? null : round( ( $record->{$fields['girth_neck']} * $convFactor ), 3 ) );
                 $allData[$key]->{$fields['girth_shoulder']} =  ( is_null( $record->{$fields['girth_shoulder']} ) ? null : round( ( $record->{$fields['girth_shoulder']} * $convFactor ), 3 ) );
@@ -388,38 +378,42 @@ class e20rMeasurements {
             }
 
             // Save the updated record(s)
+	        try {
             $this->model->saveRecord( $allData[$key], $allData[$key]->{$fields['user_id']}, $allData[$key]->{$fields['recorded_date']});
+	        } catch( \Exception $exception ) {
+            	E20R_Tracker::dbg("Error saving Measurement record! Error: " . $exception->getMessage() );
+            	return false;
+	        }
 
         }
 
-        dbg("e20rMeasurements::updateMeasurementsForType() - Converted {$unitType}: " . print_r( $allData, true ) );
+        E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Converted {$unitType}: " . print_r( $allData, true ) );
 
         try {
             // Save the updated unit type.
-            $e20rClient->saveNewUnit( $unitType, $newUnit );
+            $Client->saveNewUnit( $unitType, $newUnit );
         }
-        catch ( Exception $e ) {
-            dbg("e20rMeasurements::updateMeasurementsForType() - Unable to save {$unitType} unit designation: " . $e->getMessage() );
+        catch ( \Exception $e ) {
+            E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Unable to save {$unitType} unit designation: " . $e->getMessage() );
             return false;
         }
 
-        dbg("e20rMeasurements::updateMeasurementsForType() - Done with conversion for {$unitType} units" );
+        E20R_Tracker::dbg("Measurements::updateMeasurementsForType() - Done with conversion for {$unitType} units" );
         return true;
     }
 
     public function ajax_deletePhoto_callback() {
 
         global $current_user;
-        $e20rMeasurements = e20rMeasurements::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
+        $Program = Program::getInstance();
 
-        dbg('e20rMeasurements::ajax_deletePhoto_callback() - Deleting uploaded photo');
+        E20R_Tracker::dbg('Measurements::ajax_deletePhoto_callback() - Deleting uploaded photo');
 
         check_ajax_referer('e20r-tracker-progress', 'e20r-progress-nonce');
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Nonce is OK");
+        E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Nonce is OK");
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Request: " . print_r( $_REQUEST, true ) );
+        E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Request: " . print_r( $_REQUEST, true ) );
         $imgId = isset( $_POST['image-id'] ) ? intval( $_POST['image-id'] ) : null;
         $user_id = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : $current_user->ID );
         $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
@@ -428,19 +422,19 @@ class e20rMeasurements {
         $imageSide = ( isset( $_POST['view'] ) ? sanitize_text_field($_POST['view']) : null );
 
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Setting program definition");
+        E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Setting program definition");
         if ( !is_null( $programId ) ) {
 
-            $e20rProgram->init( $programId );
+            $Program->init( $programId );
         }
         else {
 
-            $e20rProgram->getProgramIdForUser( $user_id );
+            $Program->getProgramIdForUser( $user_id );
         }
 
         if ( ! $imgId ) {
 
-            dbg("e20rMeasurements::ajax_deletePhoto_callback() - No attachment ID provided!");
+            E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - No attachment ID provided!");
 
             wp_send_json_error( __( "Error: Image not found!", "e20r-tracker" ));
 	        exit();
@@ -448,14 +442,14 @@ class e20rMeasurements {
 
         if ( wp_delete_attachment( $imgId , true ) ) {
 
-            dbg("e20rMeasurements::ajax_deletePhoto_callback() - Attachment with ID {$imgId} successfully deleted");
+            E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Attachment with ID {$imgId} successfully deleted");
         }
 
         try {
 	        $retval = $this->model->saveField( "{$imageSide}_image", NULL, $articleId, $programId, $post_date, $user_id );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
         	$retval = false;
-        	dbg("e20rMeasurments::ajax_deletePhoto_callback() - Exception: " . $e->getMessage() );
+        	E20R_Tracker::dbg("e20rMeasurments::ajax_deletePhoto_callback() - Exception: " . $e->getMessage() );
         }
         
         if ( $retval === FALSE ) {
@@ -466,14 +460,14 @@ class e20rMeasurements {
 
         $attLnk = wp_get_attachment_link( $imgId );
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Link: {$attLnk} ");
+        E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Link: {$attLnk} ");
         if ( 'Missing Attachment' === $attLnk ) {
 
             wp_send_json_success( array( 'imageLink' => E20R_PLUGINS_URL . "/img/no-image-uploaded.jpg" ) );
 	        exit();
         }
 
-        dbg("e20rMeasurements::ajax_deletePhoto_callback() - Not deleted");
+        E20R_Tracker::dbg("Measurements::ajax_deletePhoto_callback() - Not deleted");
         wp_send_json_error( __( "Error: Unable to delete image.", "e20r-tracker" ));
 	    exit();
 
@@ -482,42 +476,40 @@ class e20rMeasurements {
     // TODO: This is the current / active AJAX option
     public function ajax_getPlotDataForUser() {
 
-        $e20rTables = e20rTables::getInstance();
-        $e20rClient = e20rClient::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
+        $Tables = Tables::getInstance();
+        $Client = Client::getInstance();
+        $Program = Program::getInstance();
 
-        global $post;
-
-        dbg('e20rMeasurements::ajax_getPlotDataForUser() - Requesting measurement data');
+        E20R_Tracker::dbg('Measurements::ajax_getPlotDataForUser() - Requesting measurement data');
 
         check_ajax_referer('e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
 
-        dbg("e20rMeasurements::ajax_getPlotDataForUser() - Nonce is OK");
+        E20R_Tracker::dbg("Measurements::ajax_getPlotDataForUser() - Nonce is OK");
 
         $this->id = isset( $_POST['client_id'] ) ? intval( $_POST['client_id'] ) : null;
 
-        if ( $e20rClient->validateAccess( $this->id ) ) {
-            $e20rProgram->getProgramIdForuser( $this->id );
+        if ( $Client->validateAccess( $this->id ) ) {
+            $Program->getProgramIdForuser( $this->id );
             $this->init();
         }
         else {
-            dbg( "e20rMeasurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$this->id}" );
+            E20R_Tracker::dbg( "Measurements::ajax_getPlotDataForUser() - Logged in user ID does not have access to the data for user {$this->id}" );
             wp_send_json_error( __( 'You do not have permission to access the data you requested.', 'e20r-tracker' ) );
             exit();
         }
 
-        dbg("e20rMeasurements::ajax_getPlotDataForUser() - Loading client data for {$this->id}");
-        $e20rTables->init( $this->id );
+        E20R_Tracker::dbg("Measurements::ajax_getPlotDataForUser() - Loading client data for {$this->id}");
+        $Tables->init( $this->id );
 
 	    $this->model->setUser( $this->id );
 
-        dbg("e20rMeasurements::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
+        E20R_Tracker::dbg("Measurements::ajax_getPlotDataForUser() - Using measurement data & configure dimensions");
         $this->model->setFreshClientData();
         $measurements = $this->getMeasurement( 'all', false );
 
         if ( isset( $_POST['h_dimension'] ) ) {
 
-            dbg("e20rMeasurements::ajax_getPlotDataForUser() - We're displaying the front-end user progress summary");
+            E20R_Tracker::dbg("Measurements::ajax_getPlotDataForUser() - We're displaying the front-end user progress summary");
             $dimensions = array( 'width' => intval( $_POST['w_dimension'] ),
                                  'wtype' => sanitize_text_field($_POST['w_dimension_type']),
                                  'height' => intval( $_POST['h_dimension'] ),
@@ -528,19 +520,19 @@ class e20rMeasurements {
         }
         else {
 
-            dbg("e20rMeasurements::ajax_getPlotDataForUser() - We're displaying on the admin page.");
+            E20R_Tracker::dbg("Measurements::ajax_getPlotDataForUser() - We're displaying on the admin page.");
             $dimensions = array( 'width' => '650', 'height' => '500', 'htype' => 'px', 'wtype' => 'px' );
         }
 
-        dbg("e20rMeasurements::ajax_getPlotDataForuser() - Dimensions: ");
-        dbg($dimensions);
+        E20R_Tracker::dbg("Measurements::ajax_getPlotDataForuser() - Dimensions: ");
+        E20R_Tracker::dbg($dimensions);
 
         $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions );
 
         $weight = $this->generatePlotData( $measurements, 'weight' );
         $girth = $this->generatePlotData( $measurements, 'girth' );
 
-        dbg("e20rMeasurements::ajax_get_PlotDataForUser() - Generated plot data for measurements");
+        E20R_Tracker::dbg("Measurements::ajax_get_PlotDataForUser() - Generated plot data for measurements");
         $data = json_encode( array( 'success' => true, 'html' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
         echo $data;
         // wp_send_json_success( array( 'html' => $data, 'weight' => $weight, 'girth' => $girth ) );
@@ -554,25 +546,19 @@ class e20rMeasurements {
 		    auth_redirect();
 	    }
 
-        global $e20r_plot_jscript;
         global $current_user;
-        global $post;
 
-        global $currentClient;
+        $Tracker = Tracker::getInstance();
+        $Client = Client::getInstance();
+	    $Action = Action::getInstance();
+	    $Assignment = Assignment::getInstance();
+	    $Workout = Workout::getInstance();
+        $Program = Program::getInstance();
 
-        $e20rArticle = e20rArticle::getInstance();
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rClient = e20rClient::getInstance();
-	    $e20rAction = e20rAction::getInstance();
-	    $e20rAssignment = e20rAssignment::getInstance();
-	    $e20rWorkout = e20rWorkout::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
-        $e20rTables = e20rTables::getInstance();
-
-        dbg("e20rMeasurements::shortcode_progressOverview() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
+        E20R_Tracker::dbg("Measurements::shortcode_progressOverview() - Loading shortcode processor: " . $Tracker->whoCalledMe() );
 
         if ( $current_user->ID == 0 ) {
-            dbg("e20rMeasurements::shortcode_progressOverview() - User Isn't logged in! Redirect immediately");
+            E20R_Tracker::dbg("Measurements::shortcode_progressOverview() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
 
@@ -584,39 +570,39 @@ class e20rMeasurements {
             'something' => 0,
         ), $attributes ) );
 
-        if ( $e20rClient->validateAccess( $current_user->ID ) ) {
+        if ( $Client->validateAccess( $current_user->ID ) ) {
 
             $this->id = $current_user->ID;
-            $e20rProgram->getProgramIdForUser( $this->id );
+            $Program->getProgramIdForUser( $this->id );
 
-            dbg( "e20rMeasurements::shortcode_progressOverview() - User {$this->id} has access." );
+            E20R_Tracker::dbg( "Measurements::shortcode_progressOverview() - User {$this->id} has access." );
         }
         else {
-            dbg( "e20rMeasurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
+            E20R_Tracker::dbg( "Measurements::shortcode_progressOverview() - Logged in user ID does not have access to progress data" );
             return null;
         }
 
-        dbg("e20rMeasurements::shortcode_progressOverview() - Configure user specific data");
+        E20R_Tracker::dbg("Measurements::shortcode_progressOverview() - Configure user specific data");
 	    $this->model->setUser( $this->id );
 
-        $e20rClient->setClient( $this->id );
+        $Client->setClient( $this->id );
 
-        dbg("e20rMeasurements::shortcode_progressOverview() - Loading progress data... for {$this->id}");
+        E20R_Tracker::dbg("Measurements::shortcode_progressOverview() - Loading progress data... for {$this->id}");
         $measurements = $this->getMeasurement( 'all', false );
 
-        if ( $e20rClient->completeInterview( $this->id ) ) {
+        if ( $Client->completeInterview( $this->id ) ) {
 
-            $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true, false );
+            $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true );
         }
         else {
-            $measurement_view = '<div class="e20r-progress-no-measurement">' . $e20rProgram->incompleteIntakeForm() . '</div>';
+            $measurement_view = '<div class="e20r-progress-no-measurement">' . $Program->incompleteIntakeForm() . '</div>';
         }
 
         $tabs = array(
             'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
-            'Assignments' => '<div id="e20r-progress-assignments"><br/>' . $e20rAssignment->listUserAssignments( $this->id ) . '</div>',
-            'Activities' => '<div id="e20r-progress-activities">' . $e20rWorkout->listUserActivities( $this->id ) . '</div>',
-            'Achievements' => '<div id="e20r-progress-achievements">' . $e20rAction->listUserAccomplishments( $this->id ) . '</div>',
+            'Assignments' => '<div id="e20r-progress-assignments"><br/>' . $Assignment->listUserAssignments( $this->id ) . '</div>',
+            'Activities' => '<div id="e20r-progress-activities">' . $Workout->listUserActivities( $this->id ) . '</div>',
+            'Achievements' => '<div id="e20r-progress-achievements">' . $Action->listUserAccomplishments( $this->id ) . '</div>',
         );
 
         return $this->show_progress( $tabs, $pDimensions, true );
@@ -624,8 +610,10 @@ class e20rMeasurements {
 
     /**
      * Loads the view for the users progress overview (used by profile & progress_overview shortcodes)
+     *
      * @param array $progress_data - Array of tabs & tab content for progress view.
-     * @param array $dimensions - Array containing dimensions (not used)
+     * @param array|null $dimensions - Array containing dimensions (not used)
+     * @param bool $modal
      *
      * @returns string - HTML containing progress view w/tabs.
      *
@@ -639,49 +627,7 @@ class e20rMeasurements {
 
         return $this->view->viewTableOfMeasurements( $clientId, $measurements, $dimensions, $tabbed, $admin );
     }
-
-    /*
-    public function ajax_loadProgressSummary() {
-
-        dbg("e20rMeasurements::ajax_loadProgress() - Checking access");
-        dbg($_POST);
-        check_ajax_referer( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce');
-
-        dbg("e20rMeasurements::ajax_loadProgress() - Access approved");
-
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rClient = e20rClient::getInstance();
-        $e20rTables = e20rTables::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
-
-        $userId = ( isset( $_POST['user-id'] ) ? intval( $_POST['user-id'] ) : null );
-        $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
-
-        $programId = $e20rProgram->getProgramIdForUser( $userId,  $articleId );
-        $this->setClient( $userId );
-        $this->init();
-
-        dbg("e20rMeasurements::ajax_loadProgress() - Loading client data");
-        dbg("e20rMeasurements::ajax_loadProgress() - Using measurement data & configure dimensions");
-
-        $measurements = $this->getMeasurement('all', $programId);
-
-        $dimensions = array( 'width' => '650', 'height' => '350', 'htype' => 'px', 'wtype' => 'px' );
-
-        $data = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, true );
-
-        $weight = $this->generatePlotData( $measurements, 'weight' );
-        $girth = $this->generatePlotData( $measurements, 'girth' );
-
-        wp_send_json_success( array( 'data' => $data, 'weight' => $weight, 'girth' => $girth ) );
-        wp_die();
-
-        // $data = json_encode( array( 'success' => true, 'data' => $data, 'weight' => $weight, 'girth' => $girth ), JSON_NUMERIC_CHECK );
-        //echo $data;
-        //exit;
-
-    }
-*/
+    
     public function shortcode_weeklyProgress( $attributes ) {
 
 	    if (! is_user_logged_in()) {
@@ -691,47 +637,50 @@ class e20rMeasurements {
 
         global $e20r_plot_jscript;
         global $current_user;
-        $e20rArticle = e20rArticle::getInstance();
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rClient = e20rClient::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
+        
+        $Article = Article::getInstance();
+        $Tracker = Tracker::getInstance();
+        $Client = Client::getInstance();
+        $Program = Program::getInstance();
 
         global $currentClient;
         global $currentArticle;
 
         global $e20rMeasurementDate;
 
-        dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading shortcode processor: " . $e20rTracker->whoCalledMe() );
+        E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Loading shortcode processor: " . $Tracker->whoCalledMe() );
 
         $e20r_plot_jscript = true;
 
-        dbg("e20rMeasurements::shortcode_weeklyProgress() - Request: " . print_r( $_POST, true ) );
+        E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Request: " . print_r( $_POST, true ) );
 
         $mDate = ( isset( $_POST['e20r-progress-form-date'] ) ? ( strtotime( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null ) : null );
         $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
 
         // Get current article ID if it's not set as part of the $_POST variable.
 	    if ( empty( $articleId ) ) {
-	    	$delay = $e20rTracker->getDelay();
-	    	$program  = $e20rProgram->getProgramIdForUser( $current_user->ID );
-	    	$currentArticle = $e20rArticle->findArticles( 'release_day', $delay, $program )[0];
+	    	$delay = $Tracker->getDelay();
+	    	$program  = $Program->getProgramIdForUser( $current_user->ID );
+	    	$currentArticle = $Article->findArticles( 'release_day', $delay, $program )[0];
 
-	    	dbg("Current Article: " . print_r( $currentArticle, true ));
+	    	E20R_Tracker::dbg("Current Article: " . print_r( $currentArticle, true ));
 	    	$articleId = $currentArticle->id;
 
-	    	dbg("e20rMeasurements::shortcode_weeklyProgress() - Article ID is now: {$articleId}");
+	    	E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Article ID is now: {$articleId}");
 	    }
 
         if ( $mDate ) {
 
             $e20rMeasurementDate = $mDate;
-            dbg( "e20rMeasurements::shortcode_weeklyProgress() - Date to measure for requested: {$mDate}" );
+            E20R_Tracker::dbg( "Measurements::shortcode_weeklyProgress() - Date to measure for requested: {$mDate}" );
             $this->setMeasurementDate( $mDate );
         }
 
+        /*
         $day = 0;
         $from_programstart = 1;
         $use_article_id = 1;
+        */
         $demo_form = 0;
 
         extract( shortcode_atts( array(
@@ -746,83 +695,53 @@ class e20rMeasurements {
             global $e20rExampleProgress;
             $e20rExampleProgress = true; // TODO: Do something if it's an example progress form.
         }
-
-        /**
-        if ( $current_user->ID == 0 ) {
-
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - User Isn't logged in! Redirect immediately");
-            auth_redirect();
-        }
-        */
+        
 
         // TODO: Does user have permission...?
         try {
 
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
+            E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Loading the measurement data for {$this->measurementDate}");
             $this->init( $this->measurementDate, $this->id );
 
             if ( !is_object( $currentClient ) || ( isset( $currentClient->loadedDefaults) && (false == $currentClient->loadedDefaults) ) ||
                 ( true == $currentClient->loadedDefaults ) ) {
 
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading the e20rClient class()");
-                $e20rClient->loadClientInfo( $this->id );
+                E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Loading the Client class()");
+                $Client->loadClientInfo( $this->id );
             }
 
             if ( $this->loadData( $this->measurementDate ) == false ) {
-                dbg("e20rMeasurements::shortcode_weeklyProgress() - Error loading data for (user: {$current_user->ID}) for {$this->measurementDate}");
+                E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Error loading data for (user: {$current_user->ID}) for {$this->measurementDate}");
             }
 
-            dbg("e20rMeasurements::shortcode_weeklyProgress() - Loading progress form for {$this->measurementDate} by {$this->id}");
+            E20R_Tracker::dbg("Measurements::shortcode_weeklyProgress() - Loading progress form for {$this->measurementDate} by {$this->id}");
             return $this->load_EditProgress( $articleId );
 	        
         }
-        catch ( Exception $e ) {
-            dbg("Error displaying weekly progress form: " . $e->getMessage() );
+        catch ( \Exception $e ) {
+            E20R_Tracker::dbg("Error displaying weekly progress form: " . $e->getMessage() );
+            return sprintf( __( "Error displaying weekly progress form. Error message: %s", "e20r-tracker" ), $e->getMessage() );
         }
     }
-
-    /*
-    public function alreadyRecorded( $articleId, $userId, $date ) {
-
-        //
-        // if ( $userId != $this->id ) {
-        //    dbg("e20rMeasurements::alreadyRecorded() - User ID supplied ({$userId}) doesn't match ID ({$this->id})");
-        //    return false;
-        // }
-
-        $completion = $this->model->checkCompletion( $articleId, $userId, $date );
-
-        dbg("e20rMeasurements::alreadyRecorded() - Completion: {$completion}");
-
-        return $completion;
-    }
-*/
+    
     public function loadData( $when = 'all') {
 
-        dbg("e20rMeasurements::loadData() - Loading measurement data for {$when}");
+        E20R_Tracker::dbg("Measurements::loadData() - Loading measurement data for {$when}");
 
         try {
-            /*
-            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
-                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                    wp_die( "Unable to load e20rMeasurementModel class" );
-                }
-                dbg("Model Class loaded");
-            }
-            */
-            if ( !isset( $this->model ) ) {
+            
+            if ( empty( $this->model ) ) {
 
-                dbg("e20rMeasurements::loadData() - Init of measurement model");
-                $this->model = new e20rMeasurementModel( $this->id, $when );
+                E20R_Tracker::dbg("Measurements::loadData() - Init of measurement model");
+                $this->model = new Measurement_Model( $this->id );
             }
 
             $this->model->getByDate( $when );
 
         }
-        catch ( Exception $e ) {
+        catch ( \Exception $e ) {
 
-            dbg("e20rMeasurements::loadData() - Error loading measurement data: " . $e->getMessage() );
+            E20R_Tracker::dbg("Measurements::loadData() - Error loading measurement data: " . $e->getMessage() );
             return false;
         }
 
@@ -843,15 +762,15 @@ class e20rMeasurements {
 	
 	    global $current_user;
 	    
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
+        $Tracker = Tracker::getInstance();
+
 
         if ( ! isset( $this->id ) ) {
-            dbg("e20rMeasurements::getMeasurement() - User ID hasn't been set yet.");
+            E20R_Tracker::dbg("Measurements::getMeasurement() - User ID hasn't been set yet.");
 
             if ( $current_user->ID == 0 ) {
-                dbg("e20rMeasurements::getMeasurement() - No user ID defined.");
-                return;
+                E20R_Tracker::dbg("Measurements::getMeasurement() - No user ID defined.");
+                return array();
             }
 
             $this->id = $current_user->ID;
@@ -859,39 +778,36 @@ class e20rMeasurements {
 
         if ( !isset( $this->model ) ) {
 
-            dbg("e20rMeasurements::getMeasurement() - For some reason, the model isn't loaded yet!");
-            $this->model = new e20rMeasurementModel( $this->id );
+            E20R_Tracker::dbg("Measurements::getMeasurement() - For some reason, the model isn't loaded yet!");
+            $this->model = new Measurement_Model( $this->id );
             // $this->model->getFields( $when );
         }
 
-	    dbg("e20rMeasurements::getMeasurement() - Starting load for {$when} and parsing for Javascript: " . ( $forJS ? 'true' : 'false' ) );
+	    E20R_Tracker::dbg("Measurements::getMeasurement() - Starting load for {$when} and parsing for Javascript: " . ( $forJS ? 'true' : 'false' ) );
 
         $this->model->setUser( $this->id );
 
         $byDateArr = (array)$this->model->byDate;
 
         if ( empty($byDateArr) ) {
-            dbg("e20rMeasurements::getMeasurement() - No data loaded yet...");
+            E20R_Tracker::dbg("Measurements::getMeasurement() - No data loaded yet...");
         }
 
         if ( $when != 'all' ) {
 
-            dbg( "e20rMeasurements::getMeasurement({$when}, {$forJS}) was called by: " . $e20rTracker->whoCalledMe() );
+            E20R_Tracker::dbg( "Measurements::getMeasurement({$when}, {$forJS}) was called by: " . $Tracker->whoCalledMe() );
             $date = $this->dates[$when];
 
-            dbg( "e20rMeasurements::getMeasurement() - {$when}: " . $date );
+            E20R_Tracker::dbg( "Measurements::getMeasurement() - {$when}: " . $date );
 
             $data = $this->model->getByDate( $date );
 
         }
         else {
-                dbg("e20rMeasurements::getMeasurement() - Load all measurements");
+                E20R_Tracker::dbg("Measurements::getMeasurement() - Load all measurements");
                 $data = $this->model->getMeasurements();
             /**
-             * $data = array(
-             *      0 => stdClass( obj->id, obj->user_id ),
-             *      1 => stdClass( obj->id, obj->user_id ),
-             * )
+             * @var array $data -> array( 0 => stdClass( obj->id, obj->user_id ), 1 => stdClass( obj->id, obj->user_id ), )
              */
         }
 
@@ -900,16 +816,15 @@ class e20rMeasurements {
 
     private function transformForJS( $records ) {
 
-        $e20rClient = e20rClient::getInstance();
-        $e20rTables = e20rTables::getInstance();
+        $Tables = Tables::getInstance();
 
         global $currentClient;
 
         $retVal = array();
-        $fields = $e20rTables->getFields('measurements');
+        $fields = $Tables->getFields('measurements');
 
 	    if ( ! is_array( $records ) ) {
-		    dbg("e20rMeasurements::transformForJS() - Convert to array of results");
+		    E20R_Tracker::dbg("Measurements::transformForJS() - Convert to array of results");
 		    $records = array( $records );
 	    }
 
@@ -926,24 +841,20 @@ class e20rMeasurements {
             'back_image',
         );
 
-        dbg("e20rMeasurements::transformForJS() - DB  data:");
-/*
-        dbg( $fields );
-        dbg( $records );
-*/
+        E20R_Tracker::dbg("Measurements::transformForJS() - DB  data:");
+        
         foreach( $records as $data ) {
 
             foreach ( $data as $key => $value ) {
 
                 $mKey = array_search( $key, $fields );
 
-                // dbg( "e20rMeasurements::transformForJS() - Key ({$key}) is really {$mKey}" );
 
                 if ( ! in_array( $key, $exclude ) ) {
 
                     $retVal[ $mKey ] = array(
                         'value' => $value,
-                        'units' => ( $key != 'weight' ? $currentClient->lengthunits : $currentClient->weightunits ) // $e20rClient->getLengthUnit() : $e20rClient->getWeightUnit() ),
+                        'units' => ( $key != 'weight' ? $currentClient->lengthunits : $currentClient->weightunits ) // $Client->getLengthUnit() : $Client->getWeightUnit() ),
                     );
                 }
             }
@@ -955,73 +866,67 @@ class e20rMeasurements {
 	
 	    global $current_user;
 	    
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
-        $e20rArticle = e20rArticle::getInstance();
-        $e20rMeasurements = e20rMeasurements::getInstance();
-        $e20rTables = e20rTables::getInstance();
+        $Tracker = Tracker::getInstance();
+        $Program = Program::getInstance();
+        $Article = Article::getInstance();
 
-        dbg("e20rMeasurements::load_EditProgress() - Date supplied is: {$this->measurementDate}. " . $e20rTracker->whoCalledMe() );
-        $count = 1;
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Date supplied is: {$this->measurementDate}. " . $Tracker->whoCalledMe() );
 
 	    if ( is_null( $articleId ) ) {
 
-		    dbg("e20rMeasurements::load_EditProgress() - No article ID specified. Setting the ID to the NULL article");
+		    E20R_Tracker::dbg("Measurements::load_EditProgress() - No article ID specified. Setting the ID to the NULL article");
 		    $articleId = CONST_NULL_ARTICLE;
 	    }
-        $programId = $e20rProgram->getProgramIdForUser( $current_user->ID,  $articleId );
-        $img = $e20rArticle->isPhotoDay( $articleId );
+        $programId = $Program->getProgramIdForUser( $current_user->ID,  $articleId );
+        $img = $Article->isPhotoDay( $articleId );
 
-        dbg("e20rMeasurements::load_EditProgress() - Program ID for user ({$current_user->ID}): {$programId}");
-        dbg("e20rMeasurements::load_EditProgress() - Today is a photo day ({$img}) for user ({$current_user->ID})? " . print_r( $img, true) );
-        dbg("e20rMeasurements::load_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
-        dbg("e20rMeasurements::load_EditProgress() - Loading data for {$this->measurementDate}...");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Program ID for user ({$current_user->ID}): {$programId}");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Today is a photo day ({$img}) for user ({$current_user->ID})? " . print_r( $img, true) );
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Date for use with progress tracking form: {$this->measurementDate}");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Loading data for {$this->measurementDate}...");
 
         $measurements   = $this->model->getByDate( $this->measurementDate );
 
-        dbg("e20rMeasurements::load_EditProgress() - Views for measurements are loaded");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Views for measurements are loaded");
         $this->view->init( $this->measurementDate, $measurements );
 
         ob_start();
 
         echo $this->view->startProgressForm( $articleId, $programId );
-        dbg("e20rMeasurements::load_EditProgress() - Start of measurement form generated.");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Start of measurement form generated.");
 
         echo $this->view->showChangeBirthDate();
 
-        dbg("e20rMeasurements::load_EditProgress() - Birth date portion of measurement form generated.");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Birth date portion of measurement form generated.");
 
         echo $this->view->showWeightRow( );
 
-        dbg("e20rMeasurements::load_EditProgress() - Weight info for form generated.");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Weight info for form generated.");
         $this->load_girthTypes();
 
-        dbg("e20rMeasurements::load_EditProgress() - Girth Count: " . count($this->girths));
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Girth Count: " . count($this->girths));
         echo $this->view->showGirthRow( $this->girths );
-        dbg("e20rMeasurements::load_EditProgress() - Girth Row generated");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Girth Row generated");
 
         echo $this->view->showPhotoRow( $img );
-        dbg("e20rMeasurements::load_EditProgress() - Photo Row generated");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Photo Row generated");
 
         echo $this->view->showOtherIndicatorsRow( $img );
-        dbg("e20rMeasurements::load_EditProgress() - Other Indicators row generated");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Other Indicators row generated");
 
         echo $this->view->showProgressQuestionRow( $img );
-        dbg("e20rMeasurements::load_EditProgress() - Progress Questionnaire row generated");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Progress Questionnaire row generated");
 
         echo $this->view->endProgressForm();
 
         $html = ob_get_clean();
 
-        dbg("e20rMeasurements::load_EditProgress() - Weekly Measurements form has been loaded.");
+        E20R_Tracker::dbg("Measurements::load_EditProgress() - Weekly Measurements form has been loaded.");
         return $html;
     }
 
     public function generatePlotData( $data, $variable ) {
 
-        $e20rTables = e20rTables::getInstance();
-
-        $fields = $e20rTables->getFields( 'measurements' );
         $data_matrix = array();
 
 	    if ( empty( $data ) ) {
@@ -1046,32 +951,34 @@ class e20rMeasurements {
                 }
             }
         }
-        // dbg( $data_matrix );
+        // E20R_Tracker::dbg( $data_matrix );
         return $data_matrix;
     }
 
-    /***********************************************************
+    /**
+     *********************************************************
      * Any and all ajax callback functions
-     **********************************************************/
+     *********************************************************
+     */
 
     /**
      * Weekly progress form submission/save
      */
     public function saveMeasurement_callback() {
 
-        $e20rAction = e20rAction::getInstance();
-        $e20rProgram = e20rProgram::getInstance();
+        $Action = Action::getInstance();
+        $Program = Program::getInstance();
 
-        dbg("e20rMeasurements::saveMeasurement() - Checking access");
+        E20R_Tracker::dbg("Measurements::saveMeasurement() - Checking access");
 
         check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
 
-        dbg("e20rMeasurements::saveMeasurement() - Access approved");
+        E20R_Tracker::dbg("Measurements::saveMeasurement() - Access approved");
 
-        global $current_user, $e20rTables;
+        global $current_user;
 
         if ( !is_user_logged_in() ) {
-            dbg("e20rMeasurements::saveMeasurement() - User Isn't logged in! Redirect immediately");
+            E20R_Tracker::dbg("Measurements::saveMeasurement() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
 
@@ -1085,38 +992,33 @@ class e20rMeasurements {
 
         if ( !is_null( $programId ) ) {
 
-            $e20rProgram->init( $programId );
+            $Program->init( $programId );
         }
         else {
 
-            $e20rProgram->getProgramIdForUser( $user_id );
+            $Program->getProgramIdForUser( $user_id );
         }
 
-        dbg("e20rMeasurements::saveMeasurement() - Received from user {$user_id}- Type: {$measurementType}, Value: {$measurementValue}, Date: {$post_date}");
+        E20R_Tracker::dbg("Measurements::saveMeasurement() - Received from user {$user_id}- Type: {$measurementType}, Value: {$measurementValue}, Date: {$post_date}");
 
         if ( ! $post_date ) {
 
-            dbg("e20rMeasurements::saveMeasurement() - No date specified for the measurement");
+            E20R_Tracker::dbg("Measurements::saveMeasurement() - No date specified for the measurement");
             wp_send_json_error( __( "No date specified for the measurement", "e20r-tracker" ) );
 	        exit();
         }
 
         if ( ! $articleId ) {
 
-            dbg("e20rMeasurements::saveMeasurement() - No article ID specified for the measurement ");
+            E20R_Tracker::dbg("Measurements::saveMeasurement() - No article ID specified for the measurement ");
             wp_send_json_error( __( "No article ID specified for the measurement ", "e20r-tracker" ) );
 	        exit();
         }
-
-/*        if ( ( ! $measurementType ) || ( ( ! $measurementValue ) && ( $measurementType != 'essay1' ) ) ) {
-            dbg("Incomplete measurement data provided.");
-            wp_send_json_error("Incomplete measurement data provided.");
-        }
-*/
+        
         if ( ( $measurementType == 'completed') && ( $measurementValue == 1) ){
 
-            dbg("e20rMeasurements::saveMeasurement() - Measurement form is being saved by the user. TODO: Display with correct header to show completion");
-            if ( $e20rAction->setArticleAsComplete( $current_user->ID, $articleId ) ) {
+            E20R_Tracker::dbg("Measurements::saveMeasurement() - Measurement form is being saved by the user. TODO: Display with correct header to show completion");
+            if ( $Action->setArticleAsComplete( $current_user->ID, $articleId ) ) {
                 wp_send_json_success( sprintf( __( "Progress saved for %s", "e20r-tracker" ), $post_date  ) );
 	            exit();
             }
@@ -1129,8 +1031,7 @@ class e20rMeasurements {
         if ( $imageSide ) {
 
             $attachId = $measurementValue;
-            $post = get_post( $attachId );
-
+            
             $file = get_attached_file( $attachId );
             $path = pathinfo( $file );
 
@@ -1142,7 +1043,7 @@ class e20rMeasurements {
             $newfilename = str_replace( 'REPLACEME', $imageSide, $path['filename'] );
             $newfile = $path['dirname']."/".$newfilename.".".$path['extension'];
 
-            dbg("e20rMeasurements::saveMeasurement() - Renaming {$file['filename']} to {$newfilename}");
+            E20R_Tracker::dbg("Measurements::saveMeasurement() - Renaming {$file['filename']} to {$newfilename}");
 
             rename($file, $newfile);
             update_attached_file( $attachId, $newfile );
@@ -1150,8 +1051,8 @@ class e20rMeasurements {
         }
 
         try {
-            dbg( "e20rMeasurements::saveMeasurement() - Saving measurement: {$measurementType} -> {$measurementValue}");
-
+            E20R_Tracker::dbg( "Measurements::saveMeasurement() - Saving measurement: {$measurementType} -> {$measurementValue}");
+            
             if ( ! $this->model->saveField( $measurementType, $measurementValue, $articleId, $programId, $post_date, $user_id ) ) {
 
                 wp_send_json_error( sprintf( __( "Unknown error saving measurement for %s", "e20r-tracker" ), $measurementType ) );
@@ -1159,13 +1060,13 @@ class e20rMeasurements {
             }
 
         }
-        catch ( Exception $e ) {
-            dbg("saveProgressForm() - Exception while saving the {$measurementType} measurement: " . $e->getMessage() );
+        catch ( \Exception $e ) {
+            E20R_Tracker::dbg("saveProgressForm() - Exception while saving the {$measurementType} measurement: " . $e->getMessage() );
             wp_send_json_error( sprintf( __( "Error saving %s measurement", "e20r-tracker" ), $measurementType ) );
 	        exit();
         }
 
-        dbg("saveProgressForm() - {$measurementType} measurement saved for user ID {$user_id}");
+        E20R_Tracker::dbg("saveProgressForm() - {$measurementType} measurement saved for user ID {$user_id}");
         wp_send_json_success( sprintf( __( "Saved %s for user ID %d", "e20r-tracker" ), $measurementType, $user_id ) );
 	    exit();
     }
@@ -1177,7 +1078,7 @@ class e20rMeasurements {
 		    $retval = $this->model->saveField( $type, $value, $articleId, $programId, $post_date, $user_id );
 	    } catch ( \Exception $e ) {
 		    
-	    	dbg("saveMeasurement() - Exception: " . $e->getMessage() );
+	    	E20R_Tracker::dbg("saveMeasurement() - Exception: " . $e->getMessage() );
 	    	$this->model->setFreshClientData();
 	    	$retval = false;
 	    }
@@ -1189,19 +1090,19 @@ class e20rMeasurements {
 
         global $current_user;
 
-        $e20rProgram = e20rProgram::getInstance();
+        $Program = Program::getInstance();
 
         if ( !is_user_logged_in() ) {
-            dbg("e20rMeasurements::checkProgressFormCompletion_callback() - User Isn't logged in! Redirect immediately");
+            E20R_Tracker::dbg("Measurements::checkProgressFormCompletion_callback() - User Isn't logged in! Redirect immediately");
             auth_redirect();
         }
 
-        dbg("e20rMeasurements::checkProgressFormCompletion_callback() - Checking access");
+        E20R_Tracker::dbg("Measurements::checkProgressFormCompletion_callback() - Checking access");
 
         check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce');
 
-        dbg("e20rMeasurements::checkProgressFormCompletion_callback() - Access approved");
-        // dbg($_POST);
+        E20R_Tracker::dbg("Measurements::checkProgressFormCompletion_callback() - Access approved");
+        // E20R_Tracker::dbg($_POST);
 
         $articleId = ( isset( $_POST['article-id'] ) ? intval( $_POST['article-id'] ) : null );
         $programId = ( isset( $_POST['program-id'] ) ? intval( $_POST['program-id'] ) : null );
@@ -1209,10 +1110,10 @@ class e20rMeasurements {
 
         if ( !is_null( $programId ) ) {
 
-            $e20rProgram->init( $programId );
+            $Program->init( $programId );
         }
         else {
-            $e20rProgram->getProgramIdForUser( $current_user->ID );
+            $Program->getProgramIdForUser( $current_user->ID );
         }
 
         if ( $articleId === null ) {
@@ -1224,29 +1125,21 @@ class e20rMeasurements {
             wp_send_json_success( array( 'progress_form_completed' => false ) );
             exit();
         }
-
-        /*
-        if ( empty( $this->model ) ) {
-
-            dbg("Init of measurement model");
-            if ( ! class_exists( ' e20rMeasurementModel' ) ) {
-                dbg("Loading model class for measurements: " . E20R_PLUGIN_DIR );
-                if ( ! include_once( E20R_PLUGIN_DIR . "classes/models/class.e20rMeasurementModel.php" ) ) {
-                    wp_die( "Unable to load e20rMeasurementModel class" );
-                }
-                dbg("Class loaded");
-            }
-
-            $this->model = new e20rMeasurementModel( $this->id );
-        }
-*/
+        
         $this->init( $post_date, $current_user->ID );
-        $status = $this->model->checkCompletion( $articleId, $programId, $current_user->ID, $post_date );
+        
+        try {
+	        $status = $this->model->checkCompletion( $articleId, $programId, $current_user->ID, $post_date );
+        } catch ( \Exception $exception ) {
+        	E20R_Tracker::dbg("Can't figure out what the completion status is. Error: " . $exception->getMessage() );
+        	wp_send_json_error();
+        	exit();
+        }
 
-        dbg("e20rMeasurements::checkProgressFormCompletion_callback() - Status: ");
-        dbg($status);
+        E20R_Tracker::dbg("Measurements::checkProgressFormCompletion_callback() - Status: ");
+        E20R_Tracker::dbg($status);
 
-        dbg("e20rMeasurements::checkProgressFormCompletion_callback() - Response being sent to calling page");
+        E20R_Tracker::dbg("Measurements::checkProgressFormCompletion_callback() - Response being sent to calling page");
         $completed = array(
             'progress_form_completed' =>  $status['status'],
             'complete' => $status['percent']
@@ -1270,56 +1163,16 @@ class e20rMeasurements {
     private function loadSettings( $setting ) {
 
         $options = get_option( 'e20r-tracker' );
-
+	    $retval = null;
+	    
         switch ($setting) {
 
             case 'items':
-                return $options['measuring'];
+                $retval = $options['measuring'];
                 break;
 
         }
-    }
-
-    /**
-     *
-     */
-
-    private function getWeeklyUpdateSettings( $articleId = null, $from_programstart = 1, $day = 0 ) {
-
-        global $post, $e20rArticle, $e20rTracker, $e20rMeasurementDate;
-
-        if ($articleId === null ) {
-
-            global $post;
-            $articleId = $post->ID;
-        }
-
-        dbg("e20Measurements::getWeeklyUpdateSettings() - Article ID: {$articleId}");
-
-        // $article = new e20rArticle( $articleId );
-        $meta = $e20rArticle->getMeta();
-
-        dbg("e20rMeasurements::getWeeklyUpdateSettings() - Article Meta: " . print_r( $meta, true ) );
-        if ( $meta->is_measurement_day == 1 ) {
-            dbg("e20rMeasurements::getWeeklyUpdateSettings() -- Article has listed this post as a measurement post!");
-            $dates = $e20rTracker->datesForMeasurements( $meta['release_date'] );
-            dbg("e20rMeasurements::getWeeklyUpdateSettings() - Day is: {$dates['current']}");
-            $when = $dates['current'];
-            dbg("e20rMeasurements::getWeeklyUpdateSettings() - Measurement date is {$when}");
-            $e20rMeasurementDate = $when;
-        }
-
-        /*
-        if ( ( $from_programstart === 0 ) && ( $day !== 0 ) ) {
-
-        }
-        elseif ( ( $from_programstart === 0 ) ) {
-
-        }
-        else {
-            $when = null;
-        }
-    */
-        return $when;
+        
+        return $retval;
     }
 }
