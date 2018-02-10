@@ -649,10 +649,7 @@ class Program extends Settings {
             E20R_Tracker::dbg( "Program::startdate() - Loading new program {$program_id} in place of {$currentProgram->id}" );
             $this->model->loadSettings( $program_id );
         }
-
-        // E20R_Tracker::dbg("Program::startdate() - Using startdate as configured for user ({$userId}) in program {$currentProgram->id}: {$currentProgram->startdate}");
-        // E20R_Tracker::dbg($currentProgram);
-
+        
         // This is a date of the 'Y-m-d' PHP format. (eg 2015-01-01).
         return !empty($currentProgram->startdate) ? strtotime( $currentProgram->startdate ) : current_time('timestamp' );
     }
@@ -763,41 +760,6 @@ class Program extends Settings {
                 $user->add_role($ex_level);
             }
         }
-    }
-	
-	/**
-	 * Return the specified sequence ID (or all configured sequences)
-	 *
-	 * @param int $feedId
-	 *
-	 * @return mixed
-	 */
-    protected function loadDripFeed( $feedId ) {
-
-        if ( $feedId == 'all' ) {
-            $id = null;
-        }
-        else {
-            $id = $feedId;
-        }
-
-        if ( class_exists( 'PMProSequence' ) ) {
-
-            return PMProSequence::all_sequences('publish');
-        }
-
-        if (class_exists( 'E20R\Sequences\Sequence\Controller')) {
-            return Sequence\Controller::all_sequences('publish');
-        }
-	
-	    if (class_exists( 'E20R\Sequences\Sequence\Sequence_Controller')) {
-		    return Sequence\Sequence_Controller::all_sequences('publish');
-	    }
-	
-	    if ( class_exists( 'E20R\Sequences\Data\Model')) {
-        	return Model::all_sequences('publish');
-	    }
-	    return false;
     }
 
     public function getValue( $programId, $fieldName = 'id' ) {
