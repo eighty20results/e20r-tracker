@@ -1,4 +1,7 @@
 <?php
+
+namespace E20R\Tracker\Views;
+
 /**
  * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
@@ -7,20 +10,30 @@
  *  the GPL v2 license(?)
  */
 
-class e20rActionView extends e20rSettingsView {
+use E20R\Tracker\Models\Action_Model;
+
+use E20R\Tracker\Controllers\Tracker;
+use E20R\Tracker\Controllers\E20R_Tracker;
+
+class Action_View extends Settings_View {
 	
+	/**
+	 * @var null|Action_View
+	 */
 	private static $instance = null;
-	private $checkins = null;
 	
+	/**
+	 * Action_View constructor.
+	 */
 	public function __construct() {
 		
-		parent::__construct( 'action', 'e20r_actions' );
+		parent::__construct( 'action', Action_Model::post_type );
 	}
 	
 	/**
-     * Return or instantiate this class
-     *
-	 * @return e20rActionView
+	 * Return or instantiate this class
+	 *
+	 * @return Action_View
 	 */
 	static function getInstance() {
 		
@@ -32,10 +45,10 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generate the HTML for the actual card(s) used in the Card based Dashboard
-     *
-	 * @param $config
-	 * @param $data
+	 * Generate the HTML for the actual card(s) used in the Card based Dashboard
+	 *
+	 * @param \stdClass $config
+	 * @param \stdClass $data
 	 *
 	 * @return null|string
 	 */
@@ -72,8 +85,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generates the New (card based) Dashboard for the tracker
-     *
+	 * Generates the New (card based) Dashboard for the tracker
+	 *
 	 * @param      $config
 	 * @param      $action
 	 * @param      $activity
@@ -84,24 +97,14 @@ class e20rActionView extends e20rSettingsView {
 	 */
 	public function view_action_and_activity( $config, $action, $activity, $habit_entries, $note_content = null ) {
 		
-		$e20rTracker = e20rTracker::getInstance();
+		$Tracker = Tracker::getInstance();
 		global $currentArticle;
 		global $currentProgram;
 		
-		$action_date = $e20rTracker->getDateFromDelay( $config->delay );
-		$today       = $e20rTracker->getDateFromDelay();
+		$action_date = $Tracker->getDateFromDelay( $config->delay );
+		$today       = $Tracker->getDateFromDelay();
 		
-		dbg( "e20rActionView::view_action_and_activity() - We're requesting info for: $today vs $action_date " );
-		
-		if ( $action_date == $today ) {
-			
-			//dbg("e20rActionView::view_action_and_activity() - We're requesting info for: $today vs $action_date ");
-			$date = __( "Today", "e20r-tracker" );
-		} else {
-			
-			$date = esc_attr( $config->update_period );
-		}
-		
+		E20R_Tracker::dbg( "Action_View::view_action_and_activity() - We're requesting info for: $today vs $action_date " );
 		ob_start();
 		
 		echo $this->validate_delay_info( $config );
@@ -120,7 +123,7 @@ class e20rActionView extends e20rSettingsView {
                 <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id"
                        value="<?php echo( isset( $config->assignment_id ) && ! empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>"/>
                 <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date"
-                       value="<?php esc_attr_e( $e20rTracker->getDateFromDelay( ( $config->delay - 1 ) ) ); ?>"/>
+                       value="<?php esc_attr_e( $Tracker->getDateFromDelay( ( $config->delay - 1 ) ) ); ?>"/>
                 <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date"
                        value="<?php echo date( 'Y-m-d', current_time( 'timestamp' ) ); ?>"/>
                 <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id"
@@ -147,43 +150,9 @@ class e20rActionView extends e20rSettingsView {
 		return ob_get_clean();
 	}
 	
-	/*
-		public function view_action_activity_cards( $config ) {
-	
-			ob_start(); ?>
-	<!--
-			<?php//  if ( false === $config->use_cards ): ?>
-				<table id="e20r-action-content clear-after">
-					<tbody>
-					<tr>
-						<td id="e20r-action-activity" class="e20r-content-cell">
-							<?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">'.  __("Activity", "e20r-tracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20r-tracker") .'</p>' : wpautop( $config->activityExcerpt ) ); ?>
-						</td>
-						<td id="e20r-action-lesson" class="e20r-content-cell">
-							<?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">'. __("Lesson", "e20r-tracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No lesson scheduled", "e20r-tracker") . '</p>' : wpautop( $config->actionExcerpt ) ); ?>
-						</td>
-					</tr>
-					</tbody>
-				</table> -->
-			<?php // else: ?>
-					<div id="e20r-action-activity" class="e20r-content-cell">
-						<?php echo ( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">'.  __("Activity", "e20r-tracker") . '</h4><p class="e20r-descr e20r-descr-text">' . __("No activity scheduled.", "e20r-tracker") .'</p>' : $config->activityExcerpt ); ?>
-					</div>
-					<div id="e20r-action-lesson" class="e20r-content-cell">
-						<?php echo ( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">'. sprintf( __("%s", "e20r-tracker"), esc_attr( $config->action_type ) ). '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __("No %s scheduled", "e20r-tracker"), esc_attr( $config->action_type ) ) . '</p>' : wpautop( $config->actionExcerpt ) ); ?>
-					</div><?php
-			// endif;
-	
-			$html = ob_get_clean();
-	
-			return $html;
-	
-		}
-	*/
-	
 	/**
-     * Generate the info banner for previous/future dashboard content
-     *
+	 * Generate the info banner for previous/future dashboard content
+	 *
 	 * @param $config
 	 *
 	 * @return string
@@ -193,19 +162,37 @@ class e20rActionView extends e20rSettingsView {
 		ob_start();
 		
 		if ( ( $config->delay < $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ) { ?>
-            <div class="date-past-future notice"><?php printf( __( 'You are viewing a day in the past.  <a href="%s">Back to Today</a>', "e20r-tracker" ), $config->url ); ?></div><?php
+            <div class="date-past-future notice">
+			<?php printf( '%1$s  <a href="%2$s">%3$s</a>',
+				__( 'You are viewing a day in the past.', "e20r-tracker" ),
+				esc_url_raw( $config->url ),
+				__( 'Back to Today', 'e20r-tracker' )
+			); ?>
+            </div><?php
 		}
 		
 		if ( ( $config->delay > $config->delay_byDate ) && is_null( $config->maxDelayFlag ) ) { ?>
-            <div class="date-past-future notice"><?php printf( __( 'You are viewing a day in the future.  <a href="%s">Back to Today</a>', "e20r-tracker" ), $config->url ); ?></div><?php
+            <div class="date-past-future notice">
+			<?php printf(
+				'%1$s  <a href="%1%s">%2$s</a>',
+				__( 'You are viewing a day in the future.', "e20r-tracker" ),
+				esc_url_raw( $config->url ),
+				__( 'Back to Today', 'e20r-tracker' )
+			); ?>
+            </div><?php
 		}
 		
 		// The user is attempting to view a day >2 days after today.
 		if ( isset( $config->maxDelayFlag ) && ( $config->maxDelayFlag >= CONST_MAXDAYS_FUTURE ) ) { ?>
             <div class="date-past-future orange-notice">
             <h4><?php _e( "We love that you're interested!", "e20r-tracker" ); ?></h4>
-            <p><?php printf( __( 'However, we feel there\'s already plenty to keep yourself busy with for now, so please return
-                    <a href="%s">to the dashboard</a> for today\'s lesson.', "e20r-tracker" ), $config->url ); ?></p>
+            <p><?php printf(
+					__( 'However, we feel there is a lot to keep yourself busy with for now, so please return
+                    %1$sto the dashboard%2$s for today\'s reminder/lesson.', "e20r-tracker" ),
+					sprintf( '<a href="%s">',
+						esc_url_raw( $config->url ) ),
+					'</a>'
+				); ?></p>
             </div><?php
 		}
 		
@@ -216,8 +203,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generate and return the <noscript> content
-     *
+	 * Generate and return the <noscript> content
+	 *
 	 * @return string
 	 */
 	private function load_noscript_notice() {
@@ -242,20 +229,60 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generate the HTML for the Dashboard banner (navigation banner)
-     *
+	 * Generate the HTML for the Dashboard banner (navigation banner)
+	 *
 	 * @param string $header_content
 	 *
 	 * @return string
 	 */
 	public function view_card_header( $header_content ) {
-	    
-        return sprintf( '<div class="e20r-action-activity-banner today">%s</div>', $header_content );
+		
+		return sprintf( '<div class="e20r-action-activity-banner today">%s</div>', $header_content );
 	}
 	
 	/**
-     * Show both action and activity info (cards) in old layout
-     *
+	 * Generate Dashboard HTML for the date based navigation bar
+	 *
+	 * @param $config
+	 *
+	 * @return string
+	 */
+	public function view_date_navigation( $config ) {
+		
+		$Tracker = Tracker::getInstance();
+		
+		$date_for_today = $Tracker->getDateFromDelay( $config->delay - 1 );
+		$current        = date_i18n( 'D M. jS', strtotime( $date_for_today ) );
+		
+		ob_start(); ?>
+        <div id="e20r-action-daynav" class="clear">
+            <input type="hidden" value="<?php esc_attr_e( $config->use_cards ); ?>" name="e20r-use-card-based-display">
+            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today"
+                   value="<?php esc_attr_e( $config->delay ); ?>">
+			<?php if ( $config->delay >= 1 ): ?>
+                <div class="e20r-action-yesterday-nav">
+                    <a id="e20r-action-yesterday-lnk"
+                       href="<?php echo esc_url_raw( $config->url ); ?>"><?php esc_attr_e( $config->yesterday ); ?></a>
+                    <input type="hidden" name="e20r-action-day-yesterday" id="e20r-action-yesterday"
+                           value="<?php echo( ( $config->prev ) >= 0 ? ( esc_attr( $config->prev ) ) : 0 ); ?>">
+                </div>
+			<?php endif; ?>
+            <div class="e20r-action-current"><?php esc_attr_e( $current ); ?></div>
+            <div class="e20r-action-tomorrow-nav">
+                <a id="e20r-action-tomorrow-lnk"
+                   href="<?php echo esc_url_raw( $config->url ); ?>"><?php esc_attr_e( $config->tomorrow ); ?></a>
+                <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow"
+                       value="<?php esc_attr_e( $config->next ); ?>">
+            </div>
+        </div>
+		<?php
+		
+		return ob_get_clean();
+	}
+	
+	/**
+	 * Show both action and activity info (cards) in old layout
+	 *
 	 * @param $config
 	 *
 	 * @return string
@@ -266,12 +293,12 @@ class e20rActionView extends e20rSettingsView {
 		
 		ob_start(); ?>
         <div class="e20r-action-activity e20r-content-cell">
-            <?php echo( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">' . __( "Activity", "e20r-tracker" ) . '</h4><p class="e20r-descr e20r-descr-text">' . __( "No activity scheduled.", "e20r-tracker" ) . '</p>' : $config->activityExcerpt ); ?>
+			<?php echo( ! isset( $config->activityExcerpt ) ? '<h4 class="e20r-action-header">' . __( "Activity", "e20r-tracker" ) . '</h4><p class="e20r-descr e20r-descr-text">' . __( "No activity scheduled.", "e20r-tracker" ) . '</p>' : $config->activityExcerpt ); ?>
         </div>
         <div class="e20r-action-lesson e20r-content-cell">
-            <?php echo( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">' . sprintf( __( "%s", "e20r-tracker" ), esc_attr( $action_type ) ) . '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __( "No %s scheduled", "e20r-tracker" ), esc_attr( lcfirst( $action_type ) ) ) . '</p>' : $config->actionExcerpt ); ?>
+			<?php echo( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">' . sprintf( __( "%s", "e20r-tracker" ), esc_attr( $action_type ) ) . '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __( "No %s scheduled", "e20r-tracker" ), esc_attr( lcfirst( $action_type ) ) ) . '</p>' : $config->actionExcerpt ); ?>
         </div>
-        <?php
+		<?php
 		
 		$html = ob_get_clean();
 		
@@ -280,8 +307,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Show the "Activity" card (new layout)
-     *
+	 * Show the "Activity" card (new layout)
+	 *
 	 * @param \stdClass $config
 	 * @param \stdClass $activity
 	 *
@@ -346,11 +373,11 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Show the habit card for the new dashboard layout
-     *
+	 * Show the habit card for the new dashboard layout
+	 *
 	 * @param \stdClass $config
 	 * @param \stdClass $action
-	 * @param array $habit_entries
+	 * @param array     $habit_entries
 	 *
 	 * @return string
 	 */
@@ -360,11 +387,11 @@ class e20rActionView extends e20rSettingsView {
 		
 		if ( $habit_entries[0]->short_name == 'null_action' ) {
 			
-			dbg( "e20rActionView::view_card_action() - Have a null action, so skip Yes/No radio buttons" );
+			E20R_Tracker::dbg( "Action_View::view_card_action() - Have a null action, so skip Yes/No radio buttons" );
 			$skip_yn = true;
 		}
 		
-		ob_start();?>
+		ob_start(); ?>
         <div class="e20r-action-card">
             <fieldset class="did-you habit">
                 <h4><?php esc_attr_e( wp_unslash( $habit_entries[0]->item_text ) ); ?></h4>
@@ -406,27 +433,28 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Display the Daily Progress notes field
-     *
+	 * Display the Daily Progress notes field
+	 *
 	 * @param \stdClass $config
-	 * @param \stdClass $action
-	 * @param string $note
+	 * @param array     $action
+	 * @param \stdClass $note
 	 *
 	 * @return string
-     *
-     * @since 2.0 - ENHANCEMENT: Add ability to let coach override the hiding of the member's notes when they have explicit permission
+	 *
+	 * @since 2.0 - ENHANCEMENT: Add ability to let coach override the hiding of the member's notes when they have
+	 *        explicit permission
 	 */
 	public function view_notes_card( $config, $action, $note ) {
 		
 		ob_start();
 		global $current_user;
-		$e20rTracker = e20rTracker::getInstance();
-		$is_a_coach  = $e20rTracker->is_a_coach( $current_user->ID );
+		$Tracker    = Tracker::getInstance();
+		$is_a_coach = $Tracker->is_a_coach( $current_user->ID );
 		?>
         <div class="e20r-action-notes">
             <fieldset class="notes">
                 <input type="hidden" name="e20r-action-id" class="e20r-action-id"
-                       value="<?php esc_attr_e( $action->id ); ?>"/>
+                       value="<?php esc_attr_e( $action['id'] ); ?>"/>
                 <input type="hidden" name="e20r-action-checkin_type" class="e20r-action-checkin_type"
                        value="<?php esc_attr_e( CHECKIN_NOTE ); ?>"/>
                 <input type="hidden" name="e20r-action-checkin_short_name" class="e20r-action-checkin_short_name"
@@ -434,9 +462,10 @@ class e20rActionView extends e20rSettingsView {
                 <legend><?php _e( "Notes", "e20r-tracker" ); ?></legend>
                 <p><?php _e( "Please, feel free to add any notes that you'd like to record for this day. The notes are for your benefit; your coaches won't read them unless you ask them to.", "e20r-tracker" ); ?></p>
                 <div id="note-display">
-                    <div style="margin: 12px 22px;"><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ) ); ?></div>
+                    <div style="margin: 12px 22px;"><?php echo( ! empty( $note->checkin_note ) && false === $is_a_coach ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ) ); ?></div>
                 </div>
-                <textarea name="value" id="note-textarea" <?php echo ( true === $is_a_coach ? 'class="coaching-notice"' : null ); ?>><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ) ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ); ?></textarea>
+                <textarea name="value"
+                          id="note-textarea" <?php echo( true === $is_a_coach ? 'class="coaching-notice"' : null ); ?>><?php echo ( ! empty( $note->checkin_note ) && false === $is_a_coach ) ? base64_decode( $note->checkin_note ) : __( 'Hidden/Encrypted notes from the member', 'e20r-tracker' ); ?></textarea>
                 <div id="note-display-overflow-pad"></div>
                 <div class="notification-entry-saved" style="width: auto; height: 30px; position: absolute;">
                     <div style="border: 1px solid #84c37e; width: 140px;"><?php _e( "Note saved", "e20r-tracker" ); ?></div>
@@ -453,8 +482,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generate Dashboard HTML (uses old layout, now deprecated)
-     *
+	 * Generate Dashboard HTML (uses old layout, now deprecated)
+	 *
 	 * @param      $config
 	 * @param      $action
 	 * @param      $activity
@@ -465,7 +494,7 @@ class e20rActionView extends e20rSettingsView {
 	 */
 	public function view_actionAndActivityCheckin( $config, $action, $activity, $habitEntries, $note_content = null ) {
 		
-		$e20rTracker = e20rTracker::getInstance();
+		$Tracker = Tracker::getInstance();
 		global $currentArticle;
 		global $currentProgram;
 		
@@ -478,9 +507,9 @@ class e20rActionView extends e20rSettingsView {
 		
 		ob_start();
 		
-		$date_for_today = $e20rTracker->getDateFromDelay( $config->delay - 1 );
+		$date_for_today = $Tracker->getDateFromDelay( $config->delay - 1 );
 		$current        = date_i18n( 'D M. jS', strtotime( $date_for_today ) );
-		dbg( "e20rActionView::view_actionAndActivityCheckin() - Date for today ({$config->delay}): {$date_for_today} -> {$current}" );
+		E20R_Tracker::dbg( "Action_View::view_actionAndActivityCheckin() - Date for today ({$config->delay}): {$date_for_today} -> {$current}" );
 		
 		echo $this->validate_delay_info( $config );
 		
@@ -500,7 +529,7 @@ class e20rActionView extends e20rSettingsView {
                     <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id"
                            value="<?php echo( isset( $config->assignment_id ) && ! empty( $config->assignment_id ) ? esc_attr( $config->assignment_id ) : 0 ); ?>"/>
                     <input type="hidden" name="e20r-action-checkin_date" id="e20r-action-checkin_date"
-                           value="<?php esc_attr_e( $e20rTracker->getDateFromDelay( ( $config->delay - 1 ) ) ); ?>"/>
+                           value="<?php esc_attr_e( $Tracker->getDateFromDelay( ( $config->delay - 1 ) ) ); ?>"/>
                     <input type="hidden" name="e20r-action-checkedin_date" id="e20r-action-checkedin_date"
                            value="<?php esc_attr( date( 'Y-m-d', current_time( 'timestamp' ) ) ); ?>"/>
                     <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id"
@@ -521,46 +550,6 @@ class e20rActionView extends e20rSettingsView {
 		$html = ob_get_clean();
 		
 		return $html;
-	}
-	
-	/**
-     * Generate Dashboard HTML for the date based navigation bar
-     *
-	 * @param $config
-	 *
-	 * @return string
-	 */
-	public function view_date_navigation( $config ) {
-		
-		$e20rTracker = e20rTracker::getInstance();
-		
-		$date_for_today = $e20rTracker->getDateFromDelay( $config->delay - 1 );
-		$current        = date_i18n( 'D M. jS', strtotime( $date_for_today ) );
-		
-		ob_start(); ?>
-        <div id="e20r-action-daynav" class="clear">
-            <input type="hidden" value="<?php esc_attr_e( $config->use_cards ); ?>" name="e20r-use-card-based-display">
-            <input type="hidden" name="e20r-action-day-today" id="e20r-action-today"
-                   value="<?php esc_attr_e( $config->delay ); ?>">
-			<?php if ( $config->delay >= 1 ): ?>
-                <div class="e20r-action-yesterday-nav">
-                    <a id="e20r-action-yesterday-lnk"
-                       href="<?php echo esc_url_raw( $config->url ); ?>"><?php esc_attr_e( $config->yesterday ); ?></a>
-                    <input type="hidden" name="e20r-action-day-yesterday" id="e20r-action-yesterday"
-                           value="<?php echo( ( $config->prev ) >= 0 ? ( esc_attr( $config->prev ) ) : 0 ); ?>">
-                </div>
-			<?php endif; ?>
-            <div class="e20r-action-current"><?php esc_attr_e( $current ); ?></div>
-            <div class="e20r-action-tomorrow-nav">
-                <a id="e20r-action-tomorrow-lnk"
-                   href="<?php echo esc_url_raw( $config->url ); ?>"><?php esc_attr_e( $config->tomorrow ); ?></a>
-                <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow"
-                       value="<?php esc_attr_e( $config->next ); ?>">
-            </div>
-        </div>
-		<?php
-		
-		return ob_get_clean();
 	}
 	
 	public function view_activity( $config, $activity ) {
@@ -630,7 +619,7 @@ class e20rActionView extends e20rSettingsView {
 		
 		if ( $habit_entries[0]->short_name == 'null_action' ) {
 			
-			dbg( "e20rActionView::view_action() - Have a null action, so skip Yes/No radio buttons" );
+			E20R_Tracker::dbg( "Action_View::view_action() - Have a null action, so skip Yes/No radio buttons" );
 			$skip_yn = true;
 		}
 		
@@ -645,7 +634,7 @@ class e20rActionView extends e20rSettingsView {
 						<?php
 						
 						$cnt = count( $habit_entries );
-						dbg( "e20rActionView::view_action() - We're dealing with {$cnt} habits today" );
+						E20R_Tracker::dbg( "Action_View::view_action() - We're dealing with {$cnt} habits today" );
 						
 						switch ( $cnt ) {
 						case 3: ?>
@@ -692,7 +681,7 @@ class e20rActionView extends e20rSettingsView {
 	
 	public function viewSettingsBox( $checkinData, $programs ) {
 		
-		dbg( "e20rActionView::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
+		E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
 		?>
         <form action="" method="post">
 			<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-action-settings' ); ?>
@@ -724,15 +713,15 @@ class e20rActionView extends e20rSettingsView {
 					<?php
 					
 					/**
-					 * @var DateTime|null $start
+					 * @var \DateTime|null $start
 					 */
 					$start = null;
 					/**
-					 * @var DateTime|null $end
+					 * @var \DateTime|null $end
 					 */
 					$end = null;
 					
-					dbg( "e20rActionView::viewSettingsBox() - Processing startdate: {$checkinData->startdate}" );
+					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Processing startdate: {$checkinData->startdate}" );
 					if ( is_null( $checkinData->startdate ) ) {
 						
 						$start = null;
@@ -741,12 +730,12 @@ class e20rActionView extends e20rSettingsView {
 							$start = new \DateTime( $checkinData->startdate );
 							$start = $start->format( 'Y-m-d' );
 						} catch ( \Exception $e ) {
-							dbg( "e20rActionView::viewSettingsBox() -  Error: " . $e->getMessage() );
+							E20R_Tracker::dbg( "Action_View::viewSettingsBox() -  Error: " . $e->getMessage() );
 							$start = "1970-01-01";
 						}
 					}
 					
-					dbg( "e20rActionView::viewSettingsBox() - Processing enddate: {$checkinData->enddate}" );
+					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Processing enddate: {$checkinData->enddate}" );
 					if ( is_null( $checkinData->enddate ) ) {
 						
 						$end = null;
@@ -755,19 +744,19 @@ class e20rActionView extends e20rSettingsView {
 							$end = new \DateTime( $checkinData->enddate );
 							$end = $end->format( 'Y-m-d' );
 						} catch ( \Exception $e ) {
-							dbg( "e20rActionView::viewSettingsBox() -  Error: " . $e->getMessage() );
+							E20R_Tracker::dbg( "Action_View::viewSettingsBox() -  Error: " . $e->getMessage() );
 							$end = "2031-01-01";
 						}
 					}
 					
-					dbg( "e20rActionView::viewSettingsBox() - Processing maxcount, etc: {maxcount}" );
+					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Processing maxcount, etc: {maxcount}" );
 					if ( ( $checkinData->maxcount <= 0 ) && ( ! empty( $checkinData->enddate ) ) ) {
 						
 						$interval              = ! empty( $start ) ? $start->diff( $end ) : null;
 						$checkinData->maxcount = ! empty( $interval ) ? $interval->format( '%a' ) : null;
 					}
 					
-					dbg( "e20rActionView::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
+					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
 					?>
                     <tr id="<?php esc_attr_e( $checkinData->id ); ?>" class="action-inputs">
                         <td>
@@ -818,8 +807,8 @@ class e20rActionView extends e20rSettingsView {
 	}
 	
 	/**
-     * Generate the User status page for achievements
-     *
+	 * Generate the User status page for achievements
+	 *
 	 * @param $achievements
 	 *
 	 * @return string
@@ -878,8 +867,8 @@ class e20rActionView extends e20rSettingsView {
 					
 					if ( ! empty( $achievements ) ) {
 						
-						dbg( "e20rActionView::view_user_achievements() - User has supplied answers..." );
-						// dbg($achievements);
+						E20R_Tracker::dbg( "Action_View::view_user_achievements() - User has supplied answers..." );
+						// E20R_Tracker::dbg($achievements);
 						$achievements = array_reverse( $achievements, true );
 						
 						foreach ( $achievements as $key => $answer ) {
@@ -961,7 +950,7 @@ class e20rActionView extends e20rSettingsView {
             </div>
         </div>
 		<?php
-		dbg( "e20rActionView::view_user_achievement() - Finished generating view.." );
+		E20R_Tracker::dbg( "Action_View::view_user_achievement() - Finished generating view.." );
 		$html = ob_get_clean();
 		
 		return $html;
