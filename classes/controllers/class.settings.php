@@ -269,19 +269,19 @@ class Settings {
 			$id = $feedId;
 		}
 		
-		if ( class_exists( 'E20R\Sequences\Sequence\Controller' ) ) {
+		if ( class_exists( 'E20R\Sequences\\Sequence\\Controller' ) ) {
 			return Sequence\Controller::all_sequences( 'publish' );
 		}
 		
-		if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+		if ( class_exists( 'E20R\\Sequences\\Sequence\\Sequence_Controller' ) ) {
 			return Sequence\Sequence_Controller::all_sequences( 'publish' );
 		}
 		
-		if ( class_exists( 'E20R\Sequences\Data\Model' ) ) {
+		if ( class_exists( 'E20R\\Sequences\\Data\\Model' ) ) {
 			return Model::all_sequences( 'publish' );
 		}
 		
-		return null;
+		return array();
 	}
 	
 	/**
