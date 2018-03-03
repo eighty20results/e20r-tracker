@@ -314,9 +314,9 @@ class Action extends Settings {
 		$results['program_days']  = 1; //$user_delay;
 		$results['program_score'] = 0;
 		
-		$bronze_max = apply_filters( 'e20r-tracker-achievement-score-bronze-max', 0.7 );
-		$silver_min = apply_filters( 'e20r-tracker-achievement-score-silver-min', 0.7 );
-		$gold_min   = apply_filters( 'e20r-tracker-achievement-score-gold-min', 0.85 );
+		$bronze_max = apply_filters( 'e20r-tracker-achievement-score-bronze-max', 0.6 );
+		$silver_min = apply_filters( 'e20r-tracker-achievement-score-silver-min', 0.6 );
+		$gold_min   = apply_filters( 'e20r-tracker-achievement-score-gold-min', 0.80 );
 		
 		foreach ( $program_actions as $program_action ) {
 			
