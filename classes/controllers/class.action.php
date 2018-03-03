@@ -10,6 +10,7 @@ namespace E20R\Tracker\Controllers;
  *  the GPL v2 license(?)
  */
 
+use E20R\Tracker\Models\Program_Model;
 use E20R\Tracker\Models\Tables;
 use E20R\Tracker\Models\Action_Model;
 use E20R\Tracker\Views\Action_View;
@@ -19,6 +20,7 @@ class Action extends Settings {
 	private static $instance = null;
 	protected $model;
 	protected $view;
+	
 	protected $types = array(
 		'none'       => 0,
 		'action'     => CHECKIN_ACTION, // 1
@@ -48,7 +50,7 @@ class Action extends Settings {
 		$this->model = new Action_Model();
 		$this->view  = new Action_View();
 		
-		parent::__construct( 'action', 'e20r_actions', $this->model, $this->view );
+		parent::__construct( 'action', Action_Model::post_type, $this->model, $this->view );
 	}
 	
 	/**
@@ -63,29 +65,63 @@ class Action extends Settings {
 		return self::$instance;
 	}
 	
+	/**
+	 * Add Custom columns to Action list
+	 *
+	 * @param array $columns
+	 *
+	 * @return array
+	 */
 	public function set_custom_edit_columns( $columns ) {
 		
 		unset( $columns['post_type'] );
 		
-		$columns['e20r_checkin_type'] = __( "Action Type", "e20r-tracker" );
+		$columns['e20r_action_type'] = __( "Action Type", "e20r-tracker" );
+		$columns['e20r_program']     = __( "Program", "e20r-tracker" );
 		
 		return $columns;
 	}
 	
+	/**
+	 * Display column content for the action type and for the program name
+	 *
+	 * @param string $column
+	 * @param int    $post_id
+	 */
 	public function custom_column( $column, $post_id ) {
 		
-		if ( $column == 'e20r_checkin_type' ) {
+		if ( $column == 'e20r_action_type' ) {
 			
-			$typeId = get_post_meta( $post_id, '_e20r-checkin-checkin_type', true );
+			$typeId = get_post_meta( $post_id, '_e20r-action-checkin_type', true );
 			
-			E20R_Tracker::dbg( "Action::custom_column() - Type ID: {$typeId}" );
+			E20R_Tracker::dbg( "Action::custom_column() - Type ID: {$typeId} for {$post_id}" );
 			$type = $this->getTypeDescr( $typeId );
 			
 			E20R_Tracker::dbg( "Action::custom_column() - Type Name: {$type}" );
 			echo ucfirst( $type );
 		}
+		
+		if ( 'e20r_program' === $column ) {
+			
+			$program_ids = get_post_meta( $post_id, '_e20r-action-program_ids' );
+			
+			if ( ! empty( $program_ids ) ) {
+				foreach ( $program_ids as $program_id ) {
+					printf( '%1$s %2$s', get_the_title( $program_id ), '<br/>' );
+				}
+			} else {
+				_e( 'Not selected', 'e20r-tracker' );
+			}
+		}
 	}
 	
+	/**
+	 * Return the description label for the action type
+	 *
+	 * @param int $typeId
+	 *
+	 * @return null|string
+	 */
 	public function getTypeDescr( $typeId ) {
 		
 		$descr = array_search( $typeId, $this->types );
@@ -97,8 +133,16 @@ class Action extends Settings {
 		return null;
 	}
 	
+	/**
+	 * Make Action Type and Program Name sortable columns
+	 *
+	 * @param array $columns
+	 *
+	 * @return array
+	 */
 	public function sortable_column( $columns ) {
-		$columns['e20r_checkin_type'] = 'e20r_checkin_type';
+		$columns['e20r_action_type'] = array( 'e20r_action_type', true );
+		$columns['e20r_program']     = array( 'e20r_program', true );
 		
 		return $columns;
 	}
@@ -113,7 +157,7 @@ class Action extends Settings {
 		if ( $query->is_main_query() && is_admin() && ( $orderby = $query->get( 'orderby' ) ) ) {
 			
 			switch ( $orderby ) {
-				case 'e20r_checkin_type':
+				case 'e20r_action_type':
 					$query->set( 'meta_key', '_e20r-action-checkin_type' );
 					$query->set( 'orderby', 'meta_value_num' );
 					break;
@@ -160,12 +204,12 @@ class Action extends Settings {
 	    		    FROM {$table_name}
 	    		    WHERE article_id = %d AND user_id = %d AND
 	    		    	program_id = %d AND checkin_type = %d",
-            $articleId, $userId, $currentProgram->id
-        );
+			$articleId, $userId, $currentProgram->id
+		);
 		
 		if ( false !== ( $result = $wpdb->query( $sql ) ) ) {
-		    return $result;
-        }
+			return $result;
+		}
 	}
 	
 	public function get_shortname( $checkin_id ) {
@@ -182,6 +226,14 @@ class Action extends Settings {
 		$Article = Article::getInstance();
 	}
 	
+	/**
+	 * Flag the specified article as 'read' (complete)
+	 *
+	 * @param int $userId
+	 * @param int $articleId
+	 *
+	 * @return bool
+	 */
 	public function setArticleAsComplete( $userId, $articleId ) {
 		
 		$Article = Article::getInstance();
@@ -211,28 +263,39 @@ class Action extends Settings {
 		return false;
 	}
 	
-	public function listUserAccomplishments( $userId ) {
+	/**
+	 * Load all user checkin's, actions, activities (aka accomplishments)
+	 *
+	 * @param null|int $userId
+	 *
+	 * @return string
+	 */
+	public function listUserAccomplishments( $userId = null ) {
+		
+		if ( empty( $userId ) ) {
+			return null;
+		}
 		
 		global $currentProgram;
 		global $current_user;
 		
-		$Article    = Article::getInstance();
+		$Article = Article::getInstance();
 		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
 		// $config = new \stdClass();
+		E20R_Tracker::dbg( "Action::listUserAccomplishments()" );
 		
 		if ( $userId != $current_user->ID ) {
 			
 			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Validate that the current user has rights to access this data!" );
-			if ( ! $Tracker->is_a_coach( $current_user->ID ) ) {
+			if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 				
 				return null;
 			}
 			
 		}
-		
-		$user_delay = $Tracker->getDelay( 'now', $userId );
 		
 		if ( empty( $currentProgram->id ) ) {
 			
@@ -240,43 +303,138 @@ class Action extends Settings {
 		}
 		
 		$programId = $currentProgram->id;
+		$dates     = array();
 		
-		$art_list = $Article->findArticles( 'release_day', $user_delay, $programId, '<=' );
+		$program_actions   = $this->model->getProgramActions( $programId, $this->types['action'] );
+		$user_action_types = array( $this->types['action'], $this->types['activity'] );
+		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $program_actions ) . " actions for program {$programId}" );
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Loading accomplishments related to " . count( $art_list ) . " articles related to user ({$userId}) in program {$programId}" );
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Article list loaded: " . count( $art_list ) . " articles" );
-		// E20R_Tracker::dbg($art_list);
+		$results                  = array();
+		$results['program_days']  = 1; //$user_delay;
+		$results['program_score'] = 0;
 		
-		if ( empty( $art_list ) || ( 0 == count( $art_list ) ) ) {
+		$bronze_max = apply_filters( 'e20r-tracker-achievement-score-bronze-max', 0.7 );
+		$silver_min = apply_filters( 'e20r-tracker-achievement-score-silver-min', 0.7 );
+		$gold_min   = apply_filters( 'e20r-tracker-achievement-score-gold-min', 0.85 );
+		
+		foreach ( $program_actions as $program_action ) {
+			
+			$dates['min'] = $program_action->startdate;
+			$dates['max'] = $program_action->enddate;
+			
+			$start      = $Tracker->getDelay( $program_action->startdate, $userId );
+			$end        = $Tracker->getDelay( $program_action->enddate, $userId );
+			$find_range = array( $start, $end );
+			
+			$action_days = ( $end - $start );
+			
+			$article_list = $Article->findArticles( 'release_day', $find_range, $programId, 'BETWEEN' );
+			$article_ids  = wp_list_pluck( $article_list, 'id' );
+			
+			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $article_ids ) . " article(s) for program {$programId} with a release_day between {$find_range[0]} and {$find_range[1]} " );
+			
+			$user_checkins = $this->model->loadCheckinsForUser( $userId, $article_ids, $user_action_types, $dates );
+			$user_lessons  = $this->model->loadCheckinsForUser( $userId, $article_ids, array( $this->types['assignment'] ), $dates );
+			
+			$action_count     = $this->count_actions( $user_checkins, $this->types['action'], $program_action->startdate, $program_action->enddate );
+			$activity_count   = $this->count_actions( $user_checkins, $this->types['activity'], $program_action->startdate, $program_action->enddate );
+			$assignment_count = $this->count_actions( $user_lessons, $this->types['assignment'], $program_action->startdate, $program_action->enddate );
+			
+			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_checkins ) . " lessons and found {$action_count} actions" );
+			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_checkins ) . " lessons and found {$activity_count} activities" );
+			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_lessons ) . " lessons and found {$assignment_count} assignments" );
+			
+			$avg_score = 0;
+			
+			foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
+				
+				$var_name = "{$key}_count";
+				
+				// Init the array (if needed)
+				if ( ! isset( $results[ $program_action->startdate ] ) ) {
+					
+					$results[ $program_action->startdate ]                 = array();
+					$results[ $program_action->startdate ]['action_title'] = sprintf(
+						'%1$s %6$s%4$s(%2$s to %3$s)%5$s',
+						wp_unslash( $program_action->item_text ),
+						date( 'M jS, Y', strtotime( $program_action->startdate ) ),
+						date( 'M jS, Y', strtotime( $program_action->enddate ) ),
+						'<span class="e20r-date-header">',
+						'</span>',
+						'<br />'
+					);
+					
+				}
+				
+				/**
+				 * Add the action (if needed)
+				 */
+				if ( ! isset( $results[ $program_action->startdate ][ $key ] ) ) {
+					$results[ $program_action->startdate ][ $key ]       = new \stdClass();
+					$results[ $program_action->startdate ][ $key ]->days = $action_days;
+					
+				}
+				
+				// Calculate score for this action
+				$score = round( ( ${$var_name} / $results[ $program_action->startdate ][ $key ]->days ), 2 );
+				$badge = null;
+				
+				// Set the appropriate badge to use
+				if ( ( $score >= $bronze_max ) && ( $score < $silver_min ) ) {
+					$badge = 'bronze';
+				} else if ( ( $score >= $silver_min ) && ( $score < $gold_min ) ) {
+					
+					$badge = 'silver';
+				} else if ( ( $score >= $gold_min ) ) {
+					
+					$badge = 'gold';
+				}
+				
+				// Save the score and badge
+				$results[ $program_action->startdate ][ $key ]->badge = $badge;
+				$results[ $program_action->startdate ][ $key ]->score = $score;
+				$avg_score                                            += $score;
+			}
+			
+			$results['program_days'] += $results[ $program_action->startdate ][ $key ]->days;
+			$avg_score               = ( $avg_score / 3 );
+			
+			// All $action->shortname entries minus the two program_* entries in the array.
+			$result_count = count( $results ) - 2;
+			
+			// Set the overall program score for this user.
+			$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
+		}
+		
+		// E20R_Tracker::dbg( "Results: " . print_r( $results, true ) );
+		
+		return $this->view->view_user_achievements( $results );
+		/*
+		// No articles yet/found so returning immediately
+		if ( empty( $article_list ) || ( 0 == count( $article_list ) ) ) {
 			
 			E20R_Tracker::dbg( "Action::listUserAccomplishments() - No articles to check against." );
 			
 			$results = array();
 			
-			$results['program_days']  = 0; //$user_delay;
+			$results['program_days']  = 1; //$user_delay;
 			$results['program_score'] = 0;
 			
 			return $this->view->view_user_achievements( $results );
 		}
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Loaded " . count( $art_list ) . " articles between start of program #{$programId} and day #{$user_delay}" );
-		
-		$results = array();
-		$aIds    = array();
-		$dates   = array();
-		$delays  = array();
-		$actions = array();
+		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Loaded " . count( $article_list ) . " articles between start of program #{$programId} and day #{$user_delay}" );
 		
 		// Get all articleIds to look for:
-		foreach ( $art_list as $article ) {
+		foreach ( $article_list as $article ) {
 			
-			if ( isset( $article->id ) /* &&  ( isset( $article->is_preview_day) && ( 0 == $article->is_preview_day ) ) */ ) {
+			if ( isset( $article->id ) ) {
 				
 				if ( 0 < $article->release_day ) {
 					
-					$aIds[]   = $article->id;
-					$delays[] = $article->release_day;
+					$articleIds[] = $article->id;
+					$delays[]     = $article->release_day;
 					
 				}
 			}
@@ -287,8 +445,8 @@ class Action extends Settings {
 			// Sort the delays (to find min/max delays)
 			sort( $delays, SORT_NUMERIC );
 			
-			$dates['min'] = $Tracker->getDateForPost( $delays[0], $userId );
-			$dates['max'] = $Tracker->getDateForPost( $delays[ ( count( $delays ) - 1 ) ], $userId );
+			$dates['min'] = Time_Calculations::getDateForPost( $delays[0], $userId );
+			$dates['max'] = Time_Calculations::getDateForPost( $delays[ ( count( $delays ) - 1 ) ], $userId );
 		} else {
 			$dates['min'] = date( 'Y-m-d', current_time( 'timestamp' ) );
 			$dates['max'] = date( 'Y-m-d', current_time( 'timestamp' ) );
@@ -297,12 +455,15 @@ class Action extends Settings {
 		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Dates between: {$dates['min']} and {$dates['max']}" );
 		
 		// Get an array of actions & Activities to match the max date for the $programId
-		$cTypes          = array( $this->types['action'], $this->types['activity'] );
-		$curr_action_ids = $this->model->findActionByDate( $Tracker->getDateForPost( $user_delay, $userId ), $programId );
+		$curr_action_ids = $this->model->findActionByDate( Time_Calculations::getDateForPost( $user_delay, $userId ), $programId );
+		
+		E20R_Tracker::dbg( "Action::listUserAccomplishments() - " . count( $curr_action_ids ) . " action IDs found: " . print_r( $curr_action_ids, true ) );
+		
 		
 		foreach ( $curr_action_ids as $id ) {
 			
-			$type = $this->model->getSetting( $id, 'checkin_type' );
+			$type       = $this->model->getSetting( $id, 'checkin_type' );
+			$start_date = $this->model->getSetting( $id, 'startdate' );
 			
 			switch ( $type ) {
 				
@@ -323,79 +484,82 @@ class Action extends Settings {
 			}
 			
 			// Get all actions of this type.
-			$actions[ $type_string ] = $this->model->getActions( $id, $type, - 1 );
+			$actions[ $start_date ][ $type_string ] = $this->model->getActions( $id, $type, - 1 );
 			
 		}
 		
-		$results['program_days']  = 0; //$user_delay;
-		$results['program_score'] = 0;
+		$start_date = null;
 		
-		if ( ! empty( $aIds ) ) {
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Loaded " . count( $actions ) . " defined actions. I.e. all possible 'check-ins' for this program so far." );
-			$checkins = $this->model->loadCheckinsForUser( $userId, $aIds, $cTypes, $dates );
-			$lessons  = $this->model->loadCheckinsForUser( $userId, $aIds, array( $this->types['assignment'] ), $dates );
+		if ( ! empty( $articleIds ) ) {
+			
+			foreach ( $actions as $start_date => $type_list ) {
+				E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $articleIds ) . " articles. I.e. looking through all possible 'check-ins' for this program so far." );
+				
+			}
 		}
 		
-		foreach ( $actions as $type => $a_list ) {
+		foreach ( $actions as $start_date => $type_list ) {
 			
-			foreach ( $a_list as $action ) {
+			foreach ( $type_list as $type => $a_list ) {
 				
-				// Skip
-				if ( $action->checkin_type != $this->types['action'] ) {
+				foreach ( $a_list as $action ) {
 					
-					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Skipping {$action->id} since it's not an action/habit: {$this->types['action']}" );
-					E20R_Tracker::dbg( $action );
-					continue;
-				}
-				
-				$results[ $action->startdate ]             = new \stdClass();
-				$results[ $action->startdate ]->actionText = $action->item_text;
-				$results[ $action->startdate ]->days       = $this->days_of_action( $action );
-				
-				E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " actions" );
-				$action_count = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
-				
-				E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " activities" );
-				$activity_count = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
-				
-				E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $lessons ) . " assignments" );
-				$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
-				
-				$avg_score = 0;
-				
-				foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
+					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Action to process for {$type}: " . print_r( $action, true ) );
 					
-					$var_name = "{$key}_count";
-					
-					$results[ $action->startdate ]->{$key} = new \stdClass();
-					$score                                 = round( ( ${$var_name} / $results[ $action->startdate ]->days ), 2 );
-					$badge                                 = null;
-					
-					if ( ( $score >= 0.7 ) && ( $score < 0.8 ) ) {
+					// Skip
+					if ( $action->checkin_type != $this->types['action'] ) {
 						
-						$badge = 'bronze';
-					} else if ( ( $score >= 0.8 ) && ( $score < 0.9 ) ) {
-						
-						$badge = 'silver';
-					} else if ( ( $score >= 0.9 ) && ( $score <= 1.0 ) ) {
-						
-						$badge = 'gold';
+						E20R_Tracker::dbg( "Action::listUserAccomplishments() - Skipping {$action->id} since it's not an action/habit of type {$this->types['action']}" );
+						continue;
 					}
 					
-					$results[ $action->startdate ]->{$key}->badge = $badge;
-					$results[ $action->startdate ]->{$key}->score = $score;
-					$avg_score                                    += $score;
+					$results[ $start_date ][ $type ]             = new \stdClass();
+					$results[ $start_date ][ $type ]->actionText = $action->item_text;
+					$results[ $start_date ][ $type ]->days       = $this->days_of_action( $action );
+					
+					$action_count = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
+					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " lessons and found {$action_count} actions" );
+					
+					$activity_count = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
+					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " lessons and found {$activity_count} activities" );
+					$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
+					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $lessons ) . " lessons and found {$assignment_count} assignments" );
+					$avg_score = 0;
+					
+					foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
+						
+						$var_name = "{$key}_count";
+						
+						$results[ $action->startdate ][ $type ]->{$key} = new \stdClass();
+						$score                                          = round( ( ${$var_name} / $results[ $action->startdate ][ $type ]->days ), 2 );
+						$badge                                          = null;
+						
+						if ( ( $score >= 0.7 ) && ( $score < 0.8 ) ) {
+							
+							$badge = 'bronze';
+						} else if ( ( $score >= 0.8 ) && ( $score < 0.9 ) ) {
+							
+							$badge = 'silver';
+						} else if ( ( $score >= 0.9 ) && ( $score <= 1.0 ) ) {
+							
+							$badge = 'gold';
+						}
+						
+						$results[ $action->startdate ][ $type ]->{$key}->badge = $badge;
+						$results[ $action->startdate ][ $type ]->{$key}->score = $score;
+						$avg_score                                             += $score;
+					}
+					
+					
+					$results['program_days'] += $results[ $action->startdate ][ $type ]->days;
+					$avg_score               = ( $avg_score / 3 );
+					
+					// All $action->shortname entries minus the two program_* entries in the array.
+					$result_count = count( $results ) - 2;
+					
+					// Set the overall program score for this user.
+					$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
 				}
-				
-				
-				$results['program_days'] += $results[ $action->startdate ]->days;
-				$avg_score               = ( $avg_score / 3 );
-				
-				// All $action->shortname entries minus the two program_* entries in the array.
-				$result_count = count( $results ) - 2;
-				
-				// Set the overall program score for this user.
-				$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
 			}
 		}
 		
@@ -404,23 +568,19 @@ class Action extends Settings {
 		// Get list of actions we could have completed until now (as array w/articleId as key).
 		
 		return $this->view->view_user_achievements( $results );
+		*/
 	}
 	
-	private function days_of_action( $checkin ) {
-		
-		$Tracker = Tracker::getInstance();
-		
-		if ( $checkin->enddate <= date( 'Y-m-d', current_time( 'timestamp' ) ) ) {
-			
-			$days_to_add = $checkin->maxcount;
-		} else {
-			// Calculate the # of days passed since start of current action
-			$days_to_add = $Tracker->daysBetween( strtotime( $checkin->startdate . " 00:00:00" ), current_time( 'timestamp' ), get_option( 'timezone_string' ) );
-		}
-		
-		return $days_to_add;
-	}
-	
+	/**
+	 * Count the number of completed actions of the specified type between the start & end date
+	 *
+	 * @param array  $action_list
+	 * @param int    $type
+	 * @param string $start_date
+	 * @param string $end_date
+	 *
+	 * @return int
+	 */
 	private function count_actions( $action_list, $type, $start_date, $end_date ) {
 		
 		$action_count = 0;
@@ -442,6 +602,9 @@ class Action extends Settings {
 		return $action_count;
 	}
 	
+	/**
+	 * AJAX: Save the check-in action by the user
+	 */
 	public function saveCheckin_callback() {
 		
 		E20R_Tracker::dbg( "Action::saveCheckin_callback() - Attempting to save checkin for user." );
@@ -504,6 +667,14 @@ class Action extends Settings {
 		exit();
 	}
 	
+	/**
+	 * Pass-through of the the check-in save operation to the model
+	 *
+	 * @param      $checkin_data
+	 * @param null $type
+	 *
+	 * @return bool
+	 */
 	public function save_check_in( $checkin_data, $type = null ) {
 		
 		if ( ! isset( $checkin_data['checkin_type'] ) && ( ! is_null( $type ) ) ) {
@@ -519,6 +690,9 @@ class Action extends Settings {
 		return false;
 	}
 	
+	/**
+	 * AJAX: Save the assignment answer
+	 */
 	public function dailyProgress_callback() {
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' );
@@ -647,6 +821,9 @@ class Action extends Settings {
 		}
 	}
 	
+	/**
+	 * AJAX: Load the page for the next check-in/article by day
+	 */
 	public function nextCheckin_callback() {
 		
 		E20R_Tracker::dbg( "Action::nextCheckin_callback() - Checking ajax referrer privileges" );
@@ -740,6 +917,13 @@ class Action extends Settings {
 		exit();
 	}
 	
+	/**
+	 * Defines the settings for the Daily Progress page
+	 *
+	 * @param bool $is_callback
+	 *
+	 * @return \stdClass
+	 */
 	public function configure_dailyProgress( $is_callback = false ) {
 		
 		$Program = Program::getInstance();
@@ -909,13 +1093,24 @@ class Action extends Settings {
 		
 	}
 	
+	/**
+	 * Return the closest article in a list of articles
+	 *
+	 * @param int   $day
+	 * @param array $articles
+	 *
+	 * @return null|\stdClass
+	 *
+	 * @since v3.0 - BUG FIX: Didn't verify that the $closest article had a valid release_day
+	 */
 	public function getClosest( $day, $articles ) {
 		
 		$closest = null;
 		
 		foreach ( $articles as $article ) {
 			
-			if ( $closest === null || abs( $day - $closest->release_day ) > abs( $article->release_day - $day ) ) {
+			if ( $closest === null ||
+			     ( ( isset( $closest->release_day ) ? abs( $day - $closest->release_day ) : abs( $day ) ) > abs( $article->release_day - $day ) ) ) {
 				$closest = $article;
 			}
 		}
@@ -923,12 +1118,19 @@ class Action extends Settings {
 		return $closest;
 	}
 	
+	/**
+	 * Generate the Daily Progress page for the Tracker
+	 *
+	 * @param array $config
+	 *
+	 * @return null|string
+	 */
 	public function dailyProgress( $config ) {
 		
-		$Tracker     = Tracker::getInstance();
-		$Article     = Article::getInstance();
-		$Assignment  = Assignment::getInstance();
-		$Workout = Workout::getInstance();
+		$Tracker    = Tracker::getInstance();
+		$Article    = Article::getInstance();
+		$Assignment = Assignment::getInstance();
+		$Workout    = Workout::getInstance();
 		global $currentArticle;
 		
 		E20R_Tracker::dbg( "Action::dailyProgress() - Start of dailyProgress(): " . $Tracker->whoCalledMe() );
@@ -1023,7 +1225,7 @@ class Action extends Settings {
 				
 				$this->checkin[ CHECKIN_ACTIVITY ] = $this->model->get_user_checkin( $config, $config->userId, CHECKIN_ACTIVITY );
 				
-				$config->post_date = $Tracker->getDateForPost( $config->delay );
+				$config->post_date = Time_Calculations::getDateForPost( $config->delay );
 				$checkinIds        = $this->model->findActionByDate( $config->post_date, $config->programId );
 			}
 			
@@ -1161,6 +1363,11 @@ class Action extends Settings {
 		}
 	}
 	
+	/**
+	 * Create a default (empty) check-in array
+	 *
+	 * @return array
+	 */
 	public function load_default_checkins() {
 		
 		$defaults = array();
@@ -1172,6 +1379,16 @@ class Action extends Settings {
 		return $defaults;
 	}
 	
+	/**
+	 * Test whether the user has completed the assignment for the article on the specific delay (day)
+	 *
+	 * @param int      $articleId
+	 * @param null|int $postId
+	 * @param null|int $userId
+	 * @param null|int $delay
+	 *
+	 * @return bool
+	 */
 	public function hasCompletedLesson( $articleId, $postId = null, $userId = null, $delay = null ) {
 		
 		E20R_Tracker::dbg( "Action::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson." );
@@ -1238,6 +1455,14 @@ class Action extends Settings {
 		
 	}
 	
+	/**
+	 * Load the check-in card for a user
+	 *
+	 * @param array $config
+	 * @param array $checkinArr
+	 *
+	 * @return null|string
+	 */
 	public function load_UserCheckin( $config, $checkinArr ) {
 		
 		$Tracker = Tracker::getInstance();
@@ -1323,27 +1548,33 @@ class Action extends Settings {
 		return $view;
 	}
 	
-	public function shortcode_dailyProgress( $atts = null ) {
+	/**
+	 * Process the Daily Progress short-code
+	 *
+	 * @param null|array $atts
+	 *
+	 * @return string
+	 */
+	public function shortcode_dailyProgress( $attrs = null ) {
 		
+		/**
+		 * Send 'em to the login page...
+		 */
 		if ( ! is_user_logged_in() ) {
 			
 			auth_redirect();
 		}
 		
-		$Article = Article::getInstance();
-		
-		global $post;
-		
-		$articles = array();
-		
 		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Processing the daily_progress short code" );
 		
+		// Configure the daily progress page for today's actions/assignments/activities
 		$config = $this->configure_dailyProgress();
 		
+		// Process the short code
 		$code_atts = shortcode_atts( array(
 			'type'      => 'action',
 			'use_cards' => false,
-		), $atts );
+		), $attrs );
 		
 		// Add shortcode settings to the $config object
 		foreach ( $code_atts as $key => $val ) {
@@ -1352,24 +1583,23 @@ class Action extends Settings {
 			$config->{$key} = $val;
 		}
 		
+		// Should we use the grid of cards, or the old table?
 		if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
 			
 			E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - User requested card based dashboard: {$config->use_cards}" );
 			$config->use_cards = true;
-		}
-		
-		if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
+		} else if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
 			
 			E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - User requested old-style dashboard: {$config->use_cards}" );
 			$config->use_cards = false;
 		}
 		
+		// Nothing explicit stated in the shortcode so going for the default
 		if ( ! isset( $config->use_cards ) ) {
 			$config->use_cards = false;
 		}
 		
-		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Config is currently: " );
-		E20R_Tracker::dbg( $config );
+		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Config is currently: " . print_r( $config, true ) );
 		/*
 				if ($config->type == 'assignment') {
 		
@@ -1379,8 +1609,8 @@ class Action extends Settings {
 		*/
 		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Article ID is currently set to: {$config->articleId}" );
 		
-		ob_start();
-		?>
+		// Load the daily progress HTML and return it (shortcode)
+		ob_start(); ?>
         <div id="e20r-daily-progress">
 			<?php echo $this->dailyProgress( $config ); ?>
         </div>
@@ -1388,6 +1618,13 @@ class Action extends Settings {
 		return ob_get_clean();
 	}
 	
+	/**
+	 * Load all peers for the check-in
+	 *
+	 * @param null|int $checkinId
+	 *
+	 * @return array
+	 */
 	public function getPeers( $checkinId = null ) {
 		
 		if ( is_null( $checkinId ) ) {
@@ -1431,6 +1668,11 @@ class Action extends Settings {
 		return $checkinList;
 	}
 	
+	/**
+	 * Add metabox for the Action edit page
+	 *
+	 * @param \WP_Post $post
+	 */
 	public function editor_metabox_setup( $post ) {
 		
 		if ( isset( $post->ID ) ) {
@@ -1440,10 +1682,15 @@ class Action extends Settings {
 		add_meta_box( 'e20r-tracker-checkin-settings', __( 'Action Settings', 'e20r-tracker' ), array(
 			&$this,
 			"addMeta_Settings",
-		), 'e20r_actions', 'normal', 'high' );
+		), Action_Model::post_type, 'normal', 'high' );
 		
 	}
 	
+	/**
+	 * Load the settings for the program(s)
+	 *
+	 * @since 3.0 - BUG FIX: Didn't return and empty array of Program posts
+	 */
 	public function addMeta_Settings() {
 		
 		global $post;
@@ -1458,7 +1705,7 @@ class Action extends Settings {
 		
 		// Query to load all available programs (used with check-in definition)
 		$query = array(
-			'post_type'      => 'e20r_programs',
+			'post_type'      => Program_Model::post_type,
 			'post_status'    => apply_filters( 'e20r_tracker_checkin_status', $def_status ),
 			'posts_per_page' => - 1,
 		);
@@ -1471,6 +1718,7 @@ class Action extends Settings {
 		if ( empty( $checkins ) ) {
 			
 			E20R_Tracker::dbg( "Action::addMeta_Settings() - No programs found!" );
+			$checkins = array();
 		}
 		
 		wp_reset_postdata();
@@ -1479,9 +1727,15 @@ class Action extends Settings {
 		$settings = $this->model->loadSettings( $post->ID );
 		
 		echo $this->view->viewSettingsBox( $settings, $checkins );
-		
 	}
 	
+	/**
+	 * Save the Action settings
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool|int|void
+	 */
 	public function saveSettings( $post_id ) {
 		
 		$post = get_post( $post_id );
@@ -1495,5 +1749,25 @@ class Action extends Settings {
 		}
 		
 		parent::saveSettings( $post_id );
+	}
+	
+	/**
+	 * Calculates the # of days the check-in was supposed to be active for
+	 *
+	 * @param mixed $checkin
+	 *
+	 * @return int
+	 */
+	private function days_of_action( $checkin ) {
+		
+		if ( $checkin->enddate <= date( 'Y-m-d', current_time( 'timestamp' ) ) ) {
+			
+			$days_to_add = $checkin->maxcount;
+		} else {
+			// Calculate the # of days passed since start of current action
+			$days_to_add = Time_Calculations::daysBetween( strtotime( $checkin->startdate . " 00:00:00" ), current_time( 'timestamp' ), get_option( 'timezone_string' ) );
+		}
+		
+		return $days_to_add;
 	}
 }
