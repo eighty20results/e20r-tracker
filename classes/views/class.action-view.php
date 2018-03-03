@@ -827,6 +827,10 @@ class Action_View extends Settings_View {
 		unset( $achievements['program_days'] );
 		unset( $achievements['program_score'] );
 		
+		$bronze_max = apply_filters( 'e20r-tracker-achievement-score-bronze-max', 0.6 );
+		$silver_min = apply_filters( 'e20r-tracker-achievement-score-silver-min', 0.6 );
+		$gold_min   = apply_filters( 'e20r-tracker-achievement-score-gold-min', 0.80 );
+		
 		ob_start(); ?>
         <!-- TODO: Add Celebration/Icon related to the program days (participation trophy) -->
         <div class="e20r-achievement-description">
@@ -835,19 +839,19 @@ class Action_View extends Settings_View {
                     <h4 class="e20r-ribbon-small"><?php _e( "Gold Ribbon", "e20r-tracker" ); ?></h4>
                     <img class="e20r-ribbon-small"
                          src="<?php echo esc_url( E20R_PLUGINS_URL . '/img/gold-badge.png' ); ?>">
-                    <p class="achivement-descr-small"><?php _e( "The gold ribbon is awarded when your consistency is greater than 80 percent", "e20r-tracker" ); ?></p>
+                    <p class="achivement-descr-small"><?php printf( __( "The gold ribbon is awarded when your consistency is greater than %d percent", "e20r-tracker" ), ($gold_min * 100 ) ); ?></p>
                 </div>
                 <div class="column_2_3">
                     <h4 class="e20r-ribbon-small"><?php _e( "Silver Ribbon", "e20r-tracker" ); ?></h4>
                     <img class="e20r-ribbon-small"
                          src="<?php echo esc_url( E20R_PLUGINS_URL . '/img/silver-badge.png' ); ?>">
-                    <p class="achivement-descr-small"><?php _e( "The sliver ribbon is awarded when your consistency is between 70 and 80 percent", "e20r-tracker" ); ?></p>
+                    <p class="achivement-descr-small"><?php printf( __( "The sliver ribbon is awarded when your consistency is between %d and %d percent", "e20r-tracker" ),( $silver_min * 100 ), ($gold_min * 100 ) ); ?></p>
                 </div>
                 <div class="column_3_3">
                     <h4 class="e20r-ribbon-small"><?php _e( "Bronze Ribbon", "e20r-tracker" ); ?></h4>
                     <img class="e20r-ribbon-small"
                          src="<?php echo esc_url( E20R_PLUGINS_URL . '/img/bronze-badge.png' ); ?>">
-                    <p class="achivement-descr-small"><?php _e( "The bronze ribbon is awarded when your consistency is 70 percent or less", "e20rtracekr" ); ?></p>
+                    <p class="achivement-descr-small"><?php printf( __( "The bronze ribbon is awarded when your consistency is %d percent or less", "e20rtracekr" ), $bronze_max * 100 ); ?></p>
                 </div>
             </div>
         </div>
