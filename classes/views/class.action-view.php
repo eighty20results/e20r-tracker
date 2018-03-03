@@ -16,6 +16,10 @@ use E20R\Tracker\Controllers\Tracker;
 use E20R\Tracker\Controllers\E20R_Tracker;
 use E20R\Tracker\Controllers\Tracker_Access;
 
+/**
+ * Class Action_View
+ * @package E20R\Tracker\Views
+ */
 class Action_View extends Settings_View {
 	
 	/**
