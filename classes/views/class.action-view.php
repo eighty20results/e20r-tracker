@@ -14,6 +14,7 @@ use E20R\Tracker\Models\Action_Model;
 
 use E20R\Tracker\Controllers\Tracker;
 use E20R\Tracker\Controllers\E20R_Tracker;
+use E20R\Tracker\Controllers\Tracker_Access;
 
 class Action_View extends Settings_View {
 	
@@ -77,8 +78,7 @@ class Action_View extends Settings_View {
 
                 </footer>
             </article>
-        </div>
-		<?php
+        </div><?php
 		$html = ob_get_clean();
 		
 		return $html;
@@ -142,8 +142,7 @@ class Action_View extends Settings_View {
 					<?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
                 </div>
                 <div class="modal"></div>
-            </div>
-			<?php
+            </div><?php
 			
 		}
 		
@@ -211,8 +210,7 @@ class Action_View extends Settings_View {
 		
 		global $currentProgram;
 		
-		ob_start();
-		?>
+		ob_start();?>
         <noscript>
         <div class="red-notice" style="font-size: 18px; line-height: 22px;">
             <strong style="display: block; margin-bottom: 8px;"><?php _e( "There's a little problem...", "e20r-tracker" ); ?></strong>
@@ -274,8 +272,7 @@ class Action_View extends Settings_View {
                 <input type="hidden" name="e20r-action-day-tomorrow" id="e20r-action-tomorrow"
                        value="<?php esc_attr_e( $config->next ); ?>">
             </div>
-        </div>
-		<?php
+        </div><?php
 		
 		return ob_get_clean();
 	}
@@ -297,8 +294,7 @@ class Action_View extends Settings_View {
         </div>
         <div class="e20r-action-lesson e20r-content-cell">
 			<?php echo( ! isset( $config->actionExcerpt ) ? '<h4 class="e20r-action-header">' . sprintf( __( "%s", "e20r-tracker" ), esc_attr( $action_type ) ) . '</h4><p class="e20r-descr e20r-descr-text">' . sprintf( __( "No %s scheduled", "e20r-tracker" ), esc_attr( lcfirst( $action_type ) ) ) . '</p>' : $config->actionExcerpt ); ?>
-        </div>
-		<?php
+        </div><?php
 		
 		$html = ob_get_clean();
 		
@@ -363,8 +359,7 @@ class Action_View extends Settings_View {
                     </div>
                 </div>
             </fieldset><!--//left-->
-        </div>
-		<?php
+        </div><?php
 		
 		$html = ob_get_clean();
 		
@@ -425,8 +420,7 @@ class Action_View extends Settings_View {
                     <div><?php _e( "Action check-in saved", "e20r-tracker" ); ?></div>
                 </div>
             </fieldset><!--.did-you //right-->
-        </div>
-		<?php
+        </div><?php
 		$html = ob_get_clean();
 		
 		return $html;
@@ -448,9 +442,9 @@ class Action_View extends Settings_View {
 		
 		ob_start();
 		global $current_user;
-		$Tracker    = Tracker::getInstance();
-		$is_a_coach = $Tracker->is_a_coach( $current_user->ID );
-		?>
+		$Access = Tracker_Access::getInstance();
+		
+		$is_a_coach = $Access->is_a_coach( $current_user->ID );?>
         <div class="e20r-action-notes">
             <fieldset class="notes">
                 <input type="hidden" name="e20r-action-id" class="e20r-action-id"
@@ -474,8 +468,7 @@ class Action_View extends Settings_View {
                     <button id="save-note" class="e20r-button"><?php _e( "Save Note", "e20r-tracker" ); ?></button>
                 </div>
             </fieldset><!--.notes-->
-        </div>
-		<?php
+        </div><?php
 		$html = ob_get_clean();
 		
 		return $html;
@@ -518,12 +511,12 @@ class Action_View extends Settings_View {
 			echo $this->load_noscript_notice();
 			echo $this->view_date_navigation( $config ); ?>
             <div class="clear-after"></div>
-			<?php echo $this->view_action_activity_cards( $config ); ?>
+            <?php echo $this->view_action_activity_cards( $config ); ?>
             <div class="clear-after"></div>
             <div id="e20r-daily-action-container" class="progress-container">
                 <h3><?php _e( "Daily Coaching <span>Update</span>", "e20r-tracker" ); ?></h3>
                 <div id="e20r-daily-action-canvas" class="progress-canvas">
-					<?php wp_nonce_field( 'e20r-action-data', 'e20r-action-nonce' ); ?>
+                    <?php wp_nonce_field( 'e20r-action-data', 'e20r-action-nonce' ); ?>
                     <input type="hidden" name="e20r-action-article_id" id="e20r-action-article_id"
                            value="<?php echo isset( $currentArticle->id ) ? esc_attr( $currentArticle->id ) : null; ?>"/>
                     <input type="hidden" name="e20r-action-assignment_id" id="e20r-action-assignment_id"
@@ -535,23 +528,30 @@ class Action_View extends Settings_View {
                     <input type="hidden" name="e20r-action-program_id" id="e20r-action-program_id"
                            value="<?php echo isset( $currentProgram->id ) ? esc_attr( $currentProgram->id ) : - 1; ?>"/>
                     <div class="e20r-daily-action-row clearfix">
-						<?php echo $this->view_activity( $config, $activity ); ?>
-						<?php echo $this->view_action( $config, $action, $habitEntries ); ?>
+                        <?php echo $this->view_activity( $config, $activity ); ?>
+                        <?php echo $this->view_action( $config, $action, $habitEntries ); ?>
                     </div> <!--Action/Activity row -->
                     <hr/>
                     <div class="e20r-daily-action-row clearfix">
-						<?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
+                        <?php echo $this->view_notes_card( $config, $action, $note_content ); ?>
                     </div>
                 </div><!--#e20r-daily-action-canvas-->
-            </div><!--#e20r-daily-action-container-->
-		<?php } ?>
-        <div class="modal"></div>
-		<?php
+            </div><!--#e20r-daily-action-container--><?php
+		 } ?>
+            <div class="modal"></div><?php
 		$html = ob_get_clean();
 		
 		return $html;
 	}
 	
+	/**
+     * Add the Activity entry (old-style layout)
+     *
+	 * @param array $config
+	 * @param \stdClass $activity
+	 *
+	 * @return string
+	 */
 	public function view_activity( $config, $activity ) {
 		
 		ob_start();
@@ -566,8 +566,7 @@ class Action_View extends Settings_View {
 			$no            = __( "No", "e20r-tracker" );
 			$partially     = __( "Partially", "e20r-tracker" );
 			$not_scheduled = __( "None scheduled", "e20r-tracker" );
-		}
-		?>
+		} ?>
         <div class="e20r-activity-card clearfix">
             <fieldset class="did-you workout">
                 <legend><?php _e( "Did you complete your activity today?", "e20r-tracker" ); ?></legend>
@@ -605,14 +604,22 @@ class Action_View extends Settings_View {
                     </div>
                 </div>
             </fieldset><!--//left-->
-        </div>
-		<?php
+        </div><?php
 		
 		$html = ob_get_clean();
 		
 		return $html;
 	}
 	
+	/**
+     * Add the Action entry (old-style layout)
+     *
+	 * @param array $config
+	 * @param \stdClass $action
+	 * @param array $habit_entries
+	 *
+	 * @return string
+	 */
 	public function view_action( $config, $action, $habit_entries ) {
 		
 		$skip_yn = false;
@@ -623,15 +630,12 @@ class Action_View extends Settings_View {
 			$skip_yn = true;
 		}
 		
-		ob_start();
-		
-		?>
+		ob_start();?>
         <div class="e20r-action-card">
             <fieldset class="did-you habit">
                 <legend style="padding-bottom: 9px;"><?php _e( "Did you complete your action today?", "e20r-tracker" ); ?></legend>
                 <div class="clearfix">
-                    <p style="margin-bottom: 4px;" id="habit-names">
-						<?php
+                    <p style="margin-bottom: 4px;" id="habit-names"><?php
 						
 						$cnt = count( $habit_entries );
 						E20R_Tracker::dbg( "Action_View::view_action() - We're dealing with {$cnt} habits today" );
@@ -672,17 +676,21 @@ class Action_View extends Settings_View {
                     </div>
                 </div>
             </fieldset><!--.did-you //right-->
-        </div>
-		<?php
+        </div><?php
 		$html = ob_get_clean();
 		
 		return $html;
 	}
 	
+	/**
+     * Load metabox for Action Settings
+     *
+	 * @param \stdClass $checkinData
+	 * @param \WP_Post[] $programs
+	 */
 	public function viewSettingsBox( $checkinData, $programs ) {
 		
-		E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) );
-		?>
+		E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Supplied data: " . print_r( $checkinData, true ) ); ?>
         <form action="" method="post">
 			<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-action-settings' ); ?>
             <div class="e20r-editform">
@@ -756,8 +764,7 @@ class Action_View extends Settings_View {
 						$checkinData->maxcount = ! empty( $interval ) ? $interval->format( '%a' ) : null;
 					}
 					
-					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" );
-					?>
+					E20R_Tracker::dbg( "Action_View::viewSettingsBox() - Checkin - Start: {$start}, End: {$end}" ); ?>
                     <tr id="<?php esc_attr_e( $checkinData->id ); ?>" class="action-inputs">
                         <td>
                             <select id="e20r-action-checkin_type" name="e20r-action-checkin_type">
@@ -802,8 +809,7 @@ class Action_View extends Settings_View {
                     </tbody>
                 </table>
             </div>
-        </form>
-		<?php
+        </form><?php
 	}
 	
 	/**
@@ -871,71 +877,74 @@ class Action_View extends Settings_View {
 						// E20R_Tracker::dbg($achievements);
 						$achievements = array_reverse( $achievements, true );
 						
-						foreach ( $achievements as $key => $answer ) {
-							
-							if ( isset( $answer->action ) ) { ?>
+						foreach( $achievements as $date => $a_list ) {
+							$a_list = array_reverse( $a_list, true );
+							foreach ( $a_list as $key => $answer ) {
+								
+								if ( isset( $answer->action ) ) { ?>
 
-                                <div class="e20r-achievement-row-bg <?php echo ( $counter % 2 ) == 0 ? 'e20rEven' : 'e20rOdd' ?>">
+                                    <div class="e20r-achievement-row-bg <?php echo ( $counter % 2 ) == 0 ? 'e20rEven' : 'e20rOdd' ?>">
 
-                                    <div class="e20r-achievement-row <?php echo ( $counter % 2 ) == 0 ? 'e20rEven' : 'e20rOdd' ?> clear-after">
-                                        <div class="e20r-achievements-col_1_4 e20r-tracker-action-descr"><?php esc_attr_e( wp_unslash( $answer->actionText ) ); ?></div>
-                                        <div class="e20r-achievements-col_2_4 e20r-tracker-action">
-                                            <div class="e20r-action-table clear-after">
-                                                <div class="e20r-action-row e20r-achievement-header small-viewport">
-                                                    <div class="e20r-action-col-1_1"><a
-                                                                title="<?php _e( "The daily actions", "e20r-tracker" ); ?>"><?php _e( "Action", "e20r-tracker" ); ?></a>
+                                        <div class="e20r-achievement-row <?php echo ( $counter % 2 ) == 0 ? 'e20rEven' : 'e20rOdd' ?> clear-after">
+                                            <div class="e20r-achievements-col_1_4 e20r-tracker-action-descr"><?php esc_attr_e( wp_unslash( $answer->actionText ) ); ?></div>
+                                            <div class="e20r-achievements-col_2_4 e20r-tracker-action">
+                                                <div class="e20r-action-table clear-after">
+                                                    <div class="e20r-action-row e20r-achievement-header small-viewport">
+                                                        <div class="e20r-action-col-1_1"><a
+                                                                    title="<?php _e( "The daily actions", "e20r-tracker" ); ?>"><?php _e( "Action", "e20r-tracker" ); ?></a>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="e20r-action-row">
-                                                    <div class="e20r-action-col-1_1 e20r-tracker-<?php echo isset( $answer->action->badge ) ? esc_attr( $answer->action->badge ) : 'no'; ?>-badge"></div>
-                                                </div>
-                                                <div class="e20r-action-row">
-                                                    <div class="e20r-action-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->action->score * 100 ); ?>
-                                                        &#37;
+                                                    <div class="e20r-action-row">
+                                                        <div class="e20r-action-col-1_1 e20r-tracker-<?php echo isset( $answer->action->badge ) ? esc_attr( $answer->action->badge ) : 'no'; ?>-badge"></div>
+                                                    </div>
+                                                    <div class="e20r-action-row">
+                                                        <div class="e20r-action-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->action->score * 100 ); ?>
+                                                            &#37;
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="e20r-achievements-col_3_4 e20r-tracker-activity">
-                                            <div class="e20r-activity-table clear-after">
-                                                <div class="e20r-activity-row e20r-achievement-header small-viewport">
-                                                    <div class="e20r-activity-col-1_1"><a
-                                                                title="<?php _e( "The activities (exercise, etc)", "e20r-tracker" ); ?>"><?php _e( "Activity", "e20r-tracker" ); ?></a>
+                                            <div class="e20r-achievements-col_3_4 e20r-tracker-activity">
+                                                <div class="e20r-activity-table clear-after">
+                                                    <div class="e20r-activity-row e20r-achievement-header small-viewport">
+                                                        <div class="e20r-activity-col-1_1"><a
+                                                                    title="<?php _e( "The activities (exercise, etc)", "e20r-tracker" ); ?>"><?php _e( "Activity", "e20r-tracker" ); ?></a>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="e20r-activity-row">
-                                                    <div class="e20r-activity-col-1_1 e20r-tracker-<?php echo isset( $answer->activity->badge ) ? esc_attr( $answer->activity->badge ) : 'no'; ?>-badge"></div>
-                                                </div>
-                                                <div class="e20r-activity-row">
-                                                    <div class="e20r-activity-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->activity->score * 100 ); ?>
-                                                        &#37;
+                                                    <div class="e20r-activity-row">
+                                                        <div class="e20r-activity-col-1_1 e20r-tracker-<?php echo isset( $answer->activity->badge ) ? esc_attr( $answer->activity->badge ) : 'no'; ?>-badge"></div>
+                                                    </div>
+                                                    <div class="e20r-activity-row">
+                                                        <div class="e20r-activity-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->activity->score * 100 ); ?>
+                                                            &#37;
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="e20r-achievements-col_3_4 e20r-tracker-assignment">
-                                            <div class="e20r-assignment-table clear-after">
-                                                <div class="e20r-assignment-row e20r-achievement-header small-viewport">
-                                                    <div class="e20r-assignment-col-1_1"><a
-                                                                title="<?php _e( "The daily assignments", "e20r-tracker" ); ?>"><?php _e( "Assignments", "e20r-tracker" ); ?></a>
+                                            <div class="e20r-achievements-col_3_4 e20r-tracker-assignment">
+                                                <div class="e20r-assignment-table clear-after">
+                                                    <div class="e20r-assignment-row e20r-achievement-header small-viewport">
+                                                        <div class="e20r-assignment-col-1_1"><a
+                                                                    title="<?php _e( "The daily assignments", "e20r-tracker" ); ?>"><?php _e( "Assignments", "e20r-tracker" ); ?></a>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="clear-after"></div>
-                                                <div class="e20r-assignment-row">
-                                                    <div class="e20r-assignment-col-1_1 e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? esc_attr( $answer->assignment->badge ) : 'no'; ?>-badge"></div>
-                                                </div>
-                                                <div class="e20r-assignment-row">
-                                                    <div class="e20r-assignment-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->assignment->score * 100 ); ?>
-                                                        &#37;
+                                                    <div class="clear-after"></div>
+                                                    <div class="e20r-assignment-row">
+                                                        <div class="e20r-assignment-col-1_1 e20r-tracker-<?php echo isset( $answer->assignment->badge ) ? esc_attr( $answer->assignment->badge ) : 'no'; ?>-badge"></div>
+                                                    </div>
+                                                    <div class="e20r-assignment-row">
+                                                        <div class="e20r-assignment-col-1_1 e20r-tracker-score"><?php esc_attr_e( $answer->assignment->score * 100 ); ?>
+                                                            &#37;
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-								
-								<?php
-								$counter ++;
+									
+									<?php
+									$counter ++;
+								}
 							}
 						}
 					} else { ?>
@@ -948,9 +957,8 @@ class Action_View extends Settings_View {
 					<?php } ?>
                 </div>
             </div>
-        </div>
-		<?php
-		E20R_Tracker::dbg( "Action_View::view_user_achievement() - Finished generating view.." );
+        </div><?php
+		E20R_Tracker::dbg( "Action_View::view_user_achievements() - Finished generating view.." );
 		$html = ob_get_clean();
 		
 		return $html;
