@@ -519,26 +519,26 @@ class Measurement_View {
                 <input type="hidden" name="w_dimension_type" id="w_dimension_type" value="<?php esc_attr_e( $dimensions['wtype'] ); ?>">
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_client_detail_nonce'); ?>
             </div>
-
         <?php if ( true === $tabbed ): ?>
+            <!-- TODO: Move this JS to a file we can load and optimize -->
             <script type="text/javascript">
             /* <![CDATA[ */
-                    jQuery(function() {
+                    jQuery(function($) {
                     console.log("Configure tabs for weight/girth");
 
-                    var $tabs = jQuery('div#inner-tabs');
+                    var $tabs = $('div#inner-tabs');
 
                     $tabs.tabs({
                         heightStyle: "content"
                     });
 
-                    jQuery('.load_progress_data').on("click", function() {
+                    $('.load_progress_data').on("click", function() {
 
                         console.log("Loading progress data...", this );
                         progMeasurements.loadProgressPage( this );
                     });
 
-                    jQuery('#inner-tabs').on('tabsactivate', function(event, ui) {
+                    $('#inner-tabs').on('tabsactivate', function(event, ui) {
 
                         if ( ui.newTab.index() === 0 ) {
 
@@ -580,7 +580,7 @@ class Measurement_View {
             <div id="girth_chart" style="height: <?php echo $height; ?>;width: <?php echo $width; ?>;"></div>
         <?php endif; ?>
             <div class="e20r-measurements-container">
-                <h4>Measurements for <?php esc_attr_e( $user->first_name ); ?></h4>
+                <h4><?php printf( __('Measurements for %s', 'e20r-tracker' ), esc_attr( $user->first_name ) ); ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav">
                     <table class="e20r-measurement-table e20r-resp-table">
@@ -623,8 +623,7 @@ class Measurement_View {
 			                            <td class="e20r_mData">
 				                            <div class="date">
 					                            <!-- <span> --><?php
-					                            if ( $showLink ) {
-						                            ?>
+					                            if ( $showLink ) { ?>
 						                            <form method="POST" class="article_data"
 						                                  action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>">
 							                            <input type="hidden" name="e20r-progress-form-date"
@@ -646,8 +645,7 @@ class Measurement_View {
 					                            } else {
 						                            ?>
 						                            <?php echo date_i18n( "M j, Y", strtotime( $measurement->recorded_date ) );
-					                            }
-					                            ?>
+					                            }?>
 				                            </div>
 				                            <div
 					                            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
@@ -663,8 +661,7 @@ class Measurement_View {
 			                            <td data-th="<?php echo sprintf( __("Calf (%s)","e20r-tracker"), $Client->getLengthUnit()); ?>" class="e20r_mData"><?php echo( is_null( $measurement->calf ) || ( $measurement->calf == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->calf, 2 ), 2 ) ); ?></td>
 			                            <td data-th="<?php echo sprintf( __("Total Girth (%s)","e20r-tracker"), $Client->getLengthUnit() ); ?>" class="e20r_mData"><?php echo( is_null( $measurement->girth ) || ( $measurement->girth == 0 ) ? '&mdash;' : number_format( (float) round( $measurement->girth, 2 ), 2 ) ); ?></td>
 			                            <td data-th="<?php _e("Photo","e20r-tracker"); ?>" class="smallPhoto"><?php echo $this->getProgressPhoto( $measurement, $user->ID, $key ); ?></td>
-		                            </tr>
-		                            <?php
+		                            </tr><?php
 		                            $counter ++;
 	                            }
                             } ?>
@@ -676,61 +673,49 @@ class Measurement_View {
             if ( ! $Tables->isBetaClient() ) { ?>
             <!-- Load 'Other Progress Indicators' (the user isn't a beta group member) -->
             <div class="e20r-measurements-container">
-                <h4>Other Progress Indicators</h4>
+                <h4><?php _e('Other Progress Indicators', 'e20r-tracker' ); ?></h4>
                 <a class="close" href="#">X</a>
                 <div class="quick-nav other">
                     <table class="e20r-measurement-table">
-                        <tbody>
-                        <?php
+                        <tbody><?php
                             $counter = 0;
                             if ( empty( $measurements ) ) { ?>
                                 <tr>
                                     <td colspan="2"><?php _e("No Progress indicators recorded.", "e20r-tracker"); ?></td>
-                                </tr>
-                            <?php
-                            }
-                            else {
+                                </tr><?php
+                            } else {
 
                                 foreach ( $measurements as $key => $measurement ) {
 
                                     $when     = date_i18n( "Y-m-d", strtotime( $measurement->recorded_date ) );
-                                    $showLink = ( $clientId == $current_user->ID ? true : false );
-
-                                    ?>
-                                    <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
-                                        <td class="measurement-date">
-                                            <div class="date">
-                                                <form method="POST">
-                                                    <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
-                                                    <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
-                                                    <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
-                                                </form>
-                                                <!-- <span> -->
-                                                <?php
-                                                if ( $showLink ) {
-                                                    ?>
-                                                    <a href="#load_progress" target="_blank"
-                                                       alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
-                                                        <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
-                                                    </a>
-                                                <?php
-                                                } else {
-                                                    ?>
+                                    $showLink = ( $clientId == $current_user->ID ? true : false );?>
+                                <tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?>">
+                                    <td class="measurement-date">
+                                        <div class="date">
+                                            <form method="POST">
+                                                <input type="hidden" name="date" id="date" data-measurement-type="date" value="<?php echo $when; ?>">
+                                                <input type="hidden" name="article_id" id="article_id" data-measurement-type="article_id" value="<?php echo $measurement->article_id; ?>">
+                                                <input type="hidden" name="program_id" id="program_id" data-measurement-type="program_id" value="<?php echo $measurement->program_id; ?>">
+                                            </form>
+                                            <!-- <span> --><?php
+                                            if ( $showLink ) {?>
+                                                <a href="#load_progress" target="_blank"
+                                                   alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
                                                     <?php echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) ); ?>
-                                                <?php
-                                                }
-                                                ?>
-                                            </div>
-                                            <div
-                                                class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
-                                        </td>
-                                        <td>
-                                            <div class="other-progress-info">
-                                                <?php echo $measurement->essay1; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <?php
+                                                </a><?php
+                                            } else {
+                                                echo date_i18n( 'M j, Y', strtotime( $measurement->recorded_date ) );
+                                            }?>
+                                        </div>
+                                        <div
+                                            class="timeago timeagosize"><?php echo date_i18n( "Y/m/d", strtotime( $measurement->recorded_date ) ); ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="other-progress-info">
+                                            <?php echo $measurement->essay1; ?>
+                                        </div>
+                                    </td>
+                                </tr><?php
                                     $counter ++;
                                 }
                             } ?>
