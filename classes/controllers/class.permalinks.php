@@ -16,6 +16,7 @@
 
 namespace E20R\Tracker\Controllers;
 
+use E20R\Utilities\Utilities;
 
 class Permalinks {
 	
@@ -85,7 +86,7 @@ class Permalinks {
 		
 		if ( false === strpos( $permalink, '%article_date%' ) ) {
 			
-			E20R_Tracker::dbg("Permalinks::process_post_link() - No permalink containing the %article_date% tag");
+			Utilities::get_instance()->log("No permalink containing the %article_date% tag");
 			return $permalink;
 		}
 		
@@ -103,7 +104,7 @@ class Permalinks {
 			$permalink = str_replace( '%article_date%/', '', $permalink );
 		}
 		
-		// E20R_Tracker::dbg("Permalinks::process_post_link() - Using permalink: {$permalink}");
+		// Utilities::get_instance()->log("Using permalink: {$permalink}");
 		return esc_url($permalink);
 	}
 }
