@@ -14,6 +14,7 @@ use E20R\Tracker\Models\Program_Model;
 use E20R\Tracker\Models\Tables;
 use E20R\Tracker\Models\Action_Model;
 use E20R\Tracker\Views\Action_View;
+use E20R\Utilities\Utilities;
 
 class Action extends Settings {
 	
@@ -45,7 +46,7 @@ class Action extends Settings {
 	
 	public function __construct() {
 		
-		E20R_Tracker::dbg( "Action::__construct() - Initializing Action class" );
+		Utilities::get_instance()->log( "Initializing Action class" );
 		
 		$this->model = new Action_Model();
 		$this->view  = new Action_View();
@@ -94,10 +95,10 @@ class Action extends Settings {
 			
 			$typeId = get_post_meta( $post_id, '_e20r-action-checkin_type', true );
 			
-			E20R_Tracker::dbg( "Action::custom_column() - Type ID: {$typeId} for {$post_id}" );
+			Utilities::get_instance()->log( "Type ID: {$typeId} for {$post_id}" );
 			$type = $this->getTypeDescr( $typeId );
 			
-			E20R_Tracker::dbg( "Action::custom_column() - Type Name: {$type}" );
+			Utilities::get_instance()->log( "Type Name: {$type}" );
 			echo ucfirst( $type );
 		}
 		
@@ -187,14 +188,14 @@ class Action extends Settings {
 		}
 		if ( ( empty( $currentArticle ) ) || ( $currentArticle->id != $articleId ) ) {
 			
-			E20R_Tracker::dbg( " Action::hasCheckedIn() - loading settings for article: {$articleId} (ID)" );
+			Utilities::get_instance()->log( " loading settings for article: {$articleId} (ID)" );
 			$currentArticle = $this->model->loadSettings( $articleId );
 		}
 		
 		try {
 			$table_name = $Tables->getTable( 'action' );
 		} catch ( \Exception $exception ) {
-			E20R_Tracker::dbg( "Error fetching Action table. Error: " . $exception->getMessage() );
+			Utilities::get_instance()->log( "Error fetching Action table. Error: " . $exception->getMessage() );
 			
 			return false;
 		}
@@ -253,12 +254,12 @@ class Action extends Settings {
 		);
 		
 		if ( $this->model->setCheckin( $defaults ) ) {
-			E20R_Tracker::dbg( "Action::setArticleAsComplete() - Check-in for user {$userId}, article {$articleId} in program {$programId} has been saved" );
+			Utilities::get_instance()->log( "Check-in for user {$userId}, article {$articleId} in program {$programId} has been saved" );
 			
 			return true;
 		}
 		
-		E20R_Tracker::dbg( "Action::setArticleAsComplete() - Unable to save check-in value!" );
+		Utilities::get_instance()->log( "Unable to save check-in value!" );
 		
 		return false;
 	}
@@ -270,7 +271,7 @@ class Action extends Settings {
 	 *
 	 * @return string
 	 */
-	public function listUserAccomplishments( $userId = null ) {
+	public function listUserAchievements( $userId = null ) {
 		
 		if ( empty( $userId ) ) {
 			return null;
@@ -285,11 +286,10 @@ class Action extends Settings {
 		$Access  = Tracker_Access::getInstance();
 		
 		// $config = new \stdClass();
-		E20R_Tracker::dbg( "Action::listUserAccomplishments()" );
-		
+  
 		if ( $userId != $current_user->ID ) {
 			
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Validate that the current user has rights to access this data!" );
+			Utilities::get_instance()->log( "Validate that the current user has rights to access this data!" );
 			if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 				
 				return null;
@@ -307,7 +307,7 @@ class Action extends Settings {
 		
 		$program_actions   = $this->model->getProgramActions( $programId, $this->types['action'] );
 		$user_action_types = array( $this->types['action'], $this->types['activity'] );
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $program_actions ) . " actions for program {$programId}" );
+		Utilities::get_instance()->log( "Found " . count( $program_actions ) . " actions for program {$programId}" );
 		
 		
 		$results                  = array();
@@ -325,14 +325,24 @@ class Action extends Settings {
 			
 			$start      = $Tracker->getDelay( $program_action->startdate, $userId );
 			$end        = $Tracker->getDelay( $program_action->enddate, $userId );
-			$find_range = array( $start, $end );
 			
-			$action_days = ( $end - $start );
+			$find_range = array( $start, $end );
 			
 			$article_list = $Article->findArticles( 'release_day', $find_range, $programId, 'BETWEEN' );
 			$article_ids  = wp_list_pluck( $article_list, 'id' );
 			
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $article_ids ) . " article(s) for program {$programId} with a release_day between {$find_range[0]} and {$find_range[1]} " );
+			$recent_article = $Article->findArticlesNear( 'release_day', $end, $programId );
+			
+			Utilities::get_instance()->log("Nearest article to enddate: " . print_r( $recent_article[0]->release_day, true ) );
+			
+			if ( $end > $recent_article[0]->release_day ) {
+				
+			    $end = $recent_article[0]->release_day;
+			}
+			
+			$action_days = ( $end - $start );
+			
+			Utilities::get_instance()->log( "Found " . count( $article_ids ) . " article(s) for program {$programId} with a release_day between {$find_range[0]} and {$find_range[1]} " );
 			
 			$user_checkins = $this->model->loadCheckinsForUser( $userId, $article_ids, $user_action_types, $dates );
 			$user_lessons  = $this->model->loadCheckinsForUser( $userId, $article_ids, array( $this->types['assignment'] ), $dates );
@@ -341,9 +351,9 @@ class Action extends Settings {
 			$activity_count   = $this->count_actions( $user_checkins, $this->types['activity'], $program_action->startdate, $program_action->enddate );
 			$assignment_count = $this->count_actions( $user_lessons, $this->types['assignment'], $program_action->startdate, $program_action->enddate );
 			
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_checkins ) . " lessons and found {$action_count} actions" );
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_checkins ) . " lessons and found {$activity_count} activities" );
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $user_lessons ) . " lessons and found {$assignment_count} assignments" );
+			Utilities::get_instance()->log( "Processing " . count( $user_checkins ) . " lessons and found {$action_count} actions" );
+			Utilities::get_instance()->log( "Processing " . count( $user_checkins ) . " lessons and found {$activity_count} activities" );
+			Utilities::get_instance()->log( "Processing " . count( $user_lessons ) . " lessons and found {$assignment_count} assignments" );
 			
 			$avg_score = 0;
 			
@@ -407,14 +417,12 @@ class Action extends Settings {
 			$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
 		}
 		
-		// E20R_Tracker::dbg( "Results: " . print_r( $results, true ) );
-		
 		return $this->view->view_user_achievements( $results );
 		/*
 		// No articles yet/found so returning immediately
 		if ( empty( $article_list ) || ( 0 == count( $article_list ) ) ) {
 			
-			E20R_Tracker::dbg( "Action::listUserAccomplishments() - No articles to check against." );
+			Utilities::get_instance()->log( "No articles to check against." );
 			
 			$results = array();
 			
@@ -424,7 +432,7 @@ class Action extends Settings {
 			return $this->view->view_user_achievements( $results );
 		}
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Loaded " . count( $article_list ) . " articles between start of program #{$programId} and day #{$user_delay}" );
+		Utilities::get_instance()->log( "Loaded " . count( $article_list ) . " articles between start of program #{$programId} and day #{$user_delay}" );
 		
 		// Get all articleIds to look for:
 		foreach ( $article_list as $article ) {
@@ -452,12 +460,12 @@ class Action extends Settings {
 			$dates['max'] = date( 'Y-m-d', current_time( 'timestamp' ) );
 		}
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - Dates between: {$dates['min']} and {$dates['max']}" );
+		Utilities::get_instance()->log( "Dates between: {$dates['min']} and {$dates['max']}" );
 		
 		// Get an array of actions & Activities to match the max date for the $programId
 		$curr_action_ids = $this->model->findActionByDate( Time_Calculations::getDateForPost( $user_delay, $userId ), $programId );
 		
-		E20R_Tracker::dbg( "Action::listUserAccomplishments() - " . count( $curr_action_ids ) . " action IDs found: " . print_r( $curr_action_ids, true ) );
+		Utilities::get_instance()->log( "" . count( $curr_action_ids ) . " action IDs found: " . print_r( $curr_action_ids, true ) );
 		
 		
 		foreach ( $curr_action_ids as $id ) {
@@ -480,7 +488,7 @@ class Action extends Settings {
 					break;
 				
 				default:
-					E20R_Tracker::dbg( "Action::getAllUserAccomplishments() - No activity type specified in record! ($id)" );
+					Utilities::get_instance()->log( "No activity type specified in record! ($id)" );
 			}
 			
 			// Get all actions of this type.
@@ -493,7 +501,7 @@ class Action extends Settings {
 		if ( ! empty( $articleIds ) ) {
 			
 			foreach ( $actions as $start_date => $type_list ) {
-				E20R_Tracker::dbg( "Action::listUserAccomplishments() - Found " . count( $articleIds ) . " articles. I.e. looking through all possible 'check-ins' for this program so far." );
+				Utilities::get_instance()->log( "Found " . count( $articleIds ) . " articles. I.e. looking through all possible 'check-ins' for this program so far." );
 				
 			}
 		}
@@ -504,12 +512,12 @@ class Action extends Settings {
 				
 				foreach ( $a_list as $action ) {
 					
-					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Action to process for {$type}: " . print_r( $action, true ) );
+					Utilities::get_instance()->log( "Action to process for {$type}: " . print_r( $action, true ) );
 					
 					// Skip
 					if ( $action->checkin_type != $this->types['action'] ) {
 						
-						E20R_Tracker::dbg( "Action::listUserAccomplishments() - Skipping {$action->id} since it's not an action/habit of type {$this->types['action']}" );
+						Utilities::get_instance()->log( "Skipping {$action->id} since it's not an action/habit of type {$this->types['action']}" );
 						continue;
 					}
 					
@@ -518,12 +526,12 @@ class Action extends Settings {
 					$results[ $start_date ][ $type ]->days       = $this->days_of_action( $action );
 					
 					$action_count = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
-					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " lessons and found {$action_count} actions" );
+					Utilities::get_instance()->log( "Processing " . count( $checkins ) . " lessons and found {$action_count} actions" );
 					
 					$activity_count = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
-					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $checkins ) . " lessons and found {$activity_count} activities" );
+					Utilities::get_instance()->log( "Processing " . count( $checkins ) . " lessons and found {$activity_count} activities" );
 					$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
-					E20R_Tracker::dbg( "Action::listUserAccomplishments() - Processing " . count( $lessons ) . " lessons and found {$assignment_count} assignments" );
+					Utilities::get_instance()->log( "Processing " . count( $lessons ) . " lessons and found {$assignment_count} assignments" );
 					$avg_score = 0;
 					
 					foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
@@ -597,7 +605,7 @@ class Action extends Settings {
 			}
 		}
 		
-		E20R_Tracker::dbg( "Action::count_actions() - Counted {$action_count} completed actions of type {$type} between {$start_date} and {$end_date}" );
+		Utilities::get_instance()->log( "Counted {$action_count} completed actions of type {$type} between {$start_date} and {$end_date}" );
 		
 		return $action_count;
 	}
@@ -607,12 +615,12 @@ class Action extends Settings {
 	 */
 	public function saveCheckin_callback() {
 		
-		E20R_Tracker::dbg( "Action::saveCheckin_callback() - Attempting to save checkin for user." );
-		E20R_Tracker::dbg( "Action::saveCheckin_callback() - Checking ajax referrer privileges" );
+		Utilities::get_instance()->log( "Attempting to save checkin for user." );
+		Utilities::get_instance()->log( "Checking ajax referrer privileges" );
 		
 		check_ajax_referer( 'e20r-action-data', 'e20r-action-nonce' );
 		
-		E20R_Tracker::dbg( "Action::saveCheckin_callback() - Checking ajax referrer has the right privileges" );
+		Utilities::get_instance()->log( "Checking ajax referrer has the right privileges" );
 		
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
@@ -624,8 +632,7 @@ class Action extends Settings {
 		$Tracker = Tracker::getInstance();
 		$Program = Program::getInstance();
 		
-		E20R_Tracker::dbg( "Action::saveCheckin_callback() - Content of POST variable:" );
-		E20R_Tracker::dbg( $_POST );
+		Utilities::get_instance()->log( "Content of POST variable:" . print_r( $_POST, true ));
 		
 		$data = array(
 			'user_id'            => $current_user->ID,
@@ -651,14 +658,14 @@ class Action extends Settings {
 		}
 		
 		if ( $data['article_id'] == CONST_NULL_ARTICLE ) {
-			E20R_Tracker::dbg( "Action::saveCheckin_callback() - No checkin needed/scheduled" );
+			Utilities::get_instance()->log( "No checkin needed/scheduled" );
 			wp_send_json_error();
 			exit();
 		}
 		
 		if ( ! $this->model->setCheckin( $data ) ) {
 			
-			E20R_Tracker::dbg( "Action::saveCheckin_callback() - Error saving checkin information..." );
+			Utilities::get_instance()->log( "Error saving checkin information..." );
 			wp_send_json_error();
 			exit();
 		}
@@ -696,9 +703,7 @@ class Action extends Settings {
 	public function dailyProgress_callback() {
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-assignment-answer' );
-		E20R_Tracker::dbg( "Action::dailyProgress_callback() - Ajax calleee has the right privileges" );
-		
-		E20R_Tracker::dbg( $_POST );
+		Utilities::get_instance()->log( "Ajax calleee has the right privileges: " . print_r( $_POST, true ) );
 		
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
@@ -726,17 +731,15 @@ class Action extends Settings {
 		$programId = $Program->getProgramIdForUser( $userId, $articleId );
 		
 		if ( ( CONST_NULL_ARTICLE === $articleId ) && ( is_null( $userId ) || is_null( $answerDate ) || is_null( $delay ) ) ) {
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Can't save assignment info!" );
+			Utilities::get_instance()->log( "Can't save assignment info!" );
 			wp_send_json_error( __( "Unable to save your answer. Please contact technical support!", "e20r-tracker" ) );
 			exit();
 		}
 		
 		if ( count( $questionIds ) != count( $answers ) ) {
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Mismatch for # of questions and # of answers provided/supplied. " );
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Questions: " );
-			E20R_Tracker::dbg( $questionIds );
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Answers: " );
-			E20R_Tracker::dbg( $answers );
+			Utilities::get_instance()->log( "Mismatch for # of questions and # of answers provided/supplied. " );
+			Utilities::get_instance()->log( "Questions: ", print_r( $questionIds, true ) );
+			Utilities::get_instance()->log( "Answers: " . print_r( $answers, true ) );
 			
 			// Is this a default "read this lesson" button?
 			if ( empty( $answers ) && ( 1 == count( $fieldTypes ) ) && ( 0 == $fieldTypes[0] ) ) {
@@ -747,7 +750,7 @@ class Action extends Settings {
 			// wp_send_json_error( __( "You didn't answer all of the questions we had for you. We're saving what we received.", "e20r-tracker" ) );
 		}
 		
-		E20R_Tracker::dbg( "Action::dailyProgress_callback() - Have an array of answers to process.." );
+		Utilities::get_instance()->log( "Have an array of answers to process.." );
 		
 		// Build answer objects to save to database
 		foreach ( $answerIds as $key => $id ) {
@@ -768,7 +771,7 @@ class Action extends Settings {
 				'checkedin'          => ( ! empty( $answers[ $key ] ) || ( ( $answerIsDefaultBtn ) && ( 0 == $fieldTypes[0] ) ) ),
 			);
 			
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Saving answer(s) for assignment # {$id} " );
+			Utilities::get_instance()->log( "Saving answer(s) for assignment # {$id} " );
 			
 			$answer = array(
 				/* 'id' => $id, */
@@ -787,25 +790,24 @@ class Action extends Settings {
 				$answer['id'] = $recordIds[ $key ];
 			}
 			
-			E20R_Tracker::dbg( 'Action::dailyProgress_callback() - Answer Provided: ' );
-			E20R_Tracker::dbg( $answer );
+			Utilities::get_instance()->log( 'Answer Provided: ' . print_r( $answer, true ));
 			
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Saving answer to question # {$answer['question_id']}" );
+			Utilities::get_instance()->log( "Saving answer to question # {$answer['question_id']}" );
 			$new     = $Assignment->saveAssignment( $answer );
 			$success = ( $success && $new );
 		}
 		
-		E20R_Tracker::dbg( "Action::dailyProgress_callback() - Make sure check-in isn't empty" );
+		Utilities::get_instance()->log( "Make sure check-in isn't empty" );
 		
 		if ( ( ! empty( $checkin ) ) ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress_callback() - Saving checkin for date {$checkin['checkin_date']}" );
+			Utilities::get_instance()->log( "Saving checkin for date {$checkin['checkin_date']}" );
 			$ok = $this->model->setCheckin( $checkin );
 			
 			if ( ! $ok ) {
 				
 				global $wpdb;
-				E20R_Tracker::dbg( "Action::dailyProgress_callback() - DB error: " . $wpdb->last_error );
+				Utilities::get_instance()->log( "DB error: " . $wpdb->last_error );
 			} else {
 				
 				$success = true;
@@ -826,20 +828,20 @@ class Action extends Settings {
 	 */
 	public function nextCheckin_callback() {
 		
-		E20R_Tracker::dbg( "Action::nextCheckin_callback() - Checking ajax referrer privileges" );
+		Utilities::get_instance()->log( "Checking ajax referrer privileges" );
 		check_ajax_referer( 'e20r-action-data', 'e20r-action-nonce' );
 		
-		E20R_Tracker::dbg( "Action::nextCheckin_callback() - Checking ajax referrer has the right privileges" );
+		Utilities::get_instance()->log( "Checking ajax referrer has the right privileges" );
 		
 		if ( ! is_user_logged_in() ) {
 			
-			E20R_Tracker::dbg( "Action::nextCheckin_callback() - Return login error and force redirect to login page." );
+			Utilities::get_instance()->log( "Return login error and force redirect to login page." );
 			wp_send_json_error( array( 'ecode' => 3 ) );
 			exit();
 		}
 		
 		$Article = Article::getInstance();
-		$Tracker = Tracker::getInstance();
+		$Access = Tracker_Access::getInstance();
 		
 		global $currentArticle;
 		
@@ -847,11 +849,10 @@ class Action extends Settings {
 		
 		if ( $config->delay != $currentArticle->release_day ) {
 			
-			E20R_Tracker::dbg( "Action::nextCheckin_callback() - Need to load a new article (by delay)" );
+			Utilities::get_instance()->log( "Need to load a new article (by delay)" );
 			
 			$articles = $Article->findArticles( 'release_day', $config->delay, $config->programId );
-			E20R_Tracker::dbg( "Action::nextCheckin_callback() - Found " . count( $articles ) . " articles for program {$config->programId} and with a release day of {$config->delay}" );
-			E20R_Tracker::dbg( $articles );
+			Utilities::get_instance()->log( "Found " . count( $articles ) . " articles for program {$config->programId} and with a release day of {$config->delay}". print_r( $articles, true ) );
 			
 			if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
 				
@@ -861,25 +862,25 @@ class Action extends Settings {
 			// Single article returned.
 			if ( ! empty( $articles ) ) {
 				
-				E20R_Tracker::dbg( "Action::nextCheckin_callback() - Loading the article info for the requested day" );
+				Utilities::get_instance()->log( "Loading the article info for the requested day" );
 				$Article->init( $articles->id );
 				$config->articleId = $articles->id;
 				
-				E20R_Tracker::dbg( "Action::nextCheckin_callback() - Checking access to post # {$articles->post_id} for user ID {$config->userId}" );
-				$access = $Tracker->hasAccess( $config->userId, $articles->post_id );
-				E20R_Tracker::dbg( "Action::nextCheckin_callback() - Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}" );
+				Utilities::get_instance()->log( "Checking access to post # {$articles->post_id} for user ID {$config->userId}" );
+				$access = $Access->hasAccess( $config->userId, $articles->post_id );
+				Utilities::get_instance()->log( "Access to post # {$articles->post_id} for user ID {$config->userId}: {$access}" );
 			} else {
 				
 				$access = false;
 			}
 			
 			if ( ( false === $access ) && ( empty( $articles ) ) ) {
-				E20R_Tracker::dbg( "Action::nextCheckin_callback() - Error: No article for user {$config->userId} in this program." );
+				Utilities::get_instance()->log( "Error: No article for user {$config->userId} in this program." );
 				wp_send_json_error( array( 'ecode' => 2 ) );
 				exit();
 			} else if ( ( false === $access ) && ( ! empty( $articles ) ) ) {
 				
-				E20R_Tracker::dbg( "Action::nextCheckin_callback() - Error: User {$config->userId} DOES NOT have access to post " );
+				Utilities::get_instance()->log( "Error: User {$config->userId} DOES NOT have access to post " );
 				wp_send_json_error( array( 'ecode' => 1 ) );
 				exit();
 			}
@@ -888,27 +889,27 @@ class Action extends Settings {
 			$config->articleId = isset( $currentArticle->id ) ? $currentArticle->id : CONST_NULL_ARTICLE;
 		}
 		
-		E20R_Tracker::dbg( "Action::nextCheckin_callback() - Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}" );
+		Utilities::get_instance()->log( "Article: {$config->articleId}, Program: {$config->programId}, delay: {$config->delay}, start: {$config->startTS}, delay_byDate: {$config->delay_byDate}, post: {$config->post_id}" );
 		
-		$access = $Tracker->hasAccess( $config->userId, $currentArticle->post_id );
-		E20R_Tracker::dbg( "Action::nextCheckin_callback() - Access: " . ( $access ? 'true' : 'false' ) . ". Using closest article and not current_day: " . ( $config->using_closest ? 'true' : 'false' ) . ". delay_byDate: {$config->delay_byDate} vs delay: {$config->delay}" );
+		$access = $Access->hasAccess( $config->userId, $config->post_id );
+		Utilities::get_instance()->log( "Access: " . ( $access ? 'true' : 'false' ) . ". Using closest article and not current_day: " . ( $config->using_closest ? 'true' : 'false' ) . ". delay_byDate: {$config->delay_byDate} vs delay: {$config->delay}" );
 		
 		if ( $access && $config->using_closest && ( $config->delay > $config->delay_byDate ) ) {
 			
-			E20R_Tracker::dbg( "Action::nextCheckin_callback( - Article & post isn't available to this user yet due to delay vs today" );
+			Utilities::get_instance()->log( "Article & post isn't available to this user yet due to delay vs today" );
 			wp_send_json_error( array( 'ecode' => 1 ) );
 			exit();
 		}
 		
 		if ( ! $access ) {
-			E20R_Tracker::dbg( "Action::nextCheckin_callback( - User doesn't have access to article." );
+			Utilities::get_instance()->log( "User doesn't have access to article." );
 			wp_send_json_error( array( 'ecode' => 1 ) );
 			exit();
 		}
 		
 		if ( ( $html = $this->dailyProgress( $config ) ) !== false ) {
 			
-			E20R_Tracker::dbg( "Action::nextCheckin_callback() - Sending new dailyProgress data (html)" );
+			Utilities::get_instance()->log( "Sending new dailyProgress data (html)" );
 			wp_send_json_success( $html );
 			exit();
 		}
@@ -952,10 +953,10 @@ class Action extends Settings {
 		$config->update_period = 'Today';
 		$config->using_closest = false;
 		$config->today         = null;
+		$config->post_id       = null;
 		
 		if ( isset( $currentArticle->id ) && ( $post->ID == $currentArticle->post_id ) ) {
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - Article data already loaded: {$currentArticle->post_id} vs {$post->ID}" );
-			E20R_Tracker::dbg( $currentArticle );
+			Utilities::get_instance()->log( "Article data already loaded: {$currentArticle->post_id} vs {$post->ID} -> " .print_r( $currentArticle, true ) );
 			$article_configured = true;
 		}
 		
@@ -971,14 +972,14 @@ class Action extends Settings {
 		
 		$config->startTS = isset( $currentProgram->startdate ) && ! empty( $currentProgram->startdate ) ? strtotime( $currentProgram->startdate ) : null;
 		
-		E20R_Tracker::dbg( "Action::configure_dailyProgress() - POST vaues: " . print_r( $_POST, true ) );
+		Utilities::get_instance()->log( "POST vaues: " . print_r( $_POST, true ) );
 		
 		if ( isset( $_POST['e20r-use-card-based-display'] ) ) {
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - Card status from the calling page/post: {$_POST['e20r-use-card-based-display']}" );
+			Utilities::get_instance()->log( "Card status from the calling page/post: {$_POST['e20r-use-card-based-display']}" );
 			$card_setting      = $Tracker->sanitize( $_POST['e20r-use-card-based-display'] );
 			$config->use_cards = ( $card_setting ? true : false );
 			
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - using card-based display setting from calling page: " . ( false === $config->use_cards ? 'false' : 'true' ) );
+			Utilities::get_instance()->log( "Using card-based display setting from calling page: " . ( false === $config->use_cards ? 'false' : 'true' ) );
 		}
 		
 		if ( isset( $_POST['e20r-action-day'] ) ) {
@@ -986,38 +987,38 @@ class Action extends Settings {
 			$config->delay = $Tracker->getDelay( $Tracker->sanitize( $_POST['e20r-action-day'] ), $config->userId );
 			$config->today = isset( $_POST['e20r-today'] ) ? $Tracker->sanitize( $_POST['e20r-today'] ) : $Tracker->getDelay();
 			
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - Was given a specific release_day to load the article for: {$config->delay}" );
+			Utilities::get_instance()->log( "Was given a specific release_day to load the article for: {$config->delay}" );
 		}
 		
 		if ( isset( $_POST['article-id'] ) ) {
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - Article ID is specified: {$_POST['article-id']}" );
+			Utilities::get_instance()->log( "Article ID is specified: {$_POST['article-id']}" );
 		}
 		
 		if ( isset( $_POST['article-id'] ) && ! isset( $config->delay ) ) {
 			
 			$config->articleId = $Tracker->sanitize( $_POST['article-id'] );
-			E20R_Tracker::dbg( "Action::configure_dailyProgress() - Loading article based on specified article ID ({$config->articleId}) from POST variable" );
+			Utilities::get_instance()->log( "Loading article based on specified article ID ({$config->articleId}) from POST variable" );
 			
 			// Article ID given in POST variable so load the requested article
 			$Article->init( $config->articleId );
 		} else {
 			
-			if ( ! isset( $config->delay ) && ( false === $article_configured ) ) {
+			if ( ! isset( $config->delay ) && ( false === $article_configured ) && isset( $post->ID ) ) {
 				
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - Trying to load article based on post_id" );
+				Utilities::get_instance()->log( "Trying to load article based on post_id" );
 				
 				$articles = $Article->findArticles( 'post_id', $post->ID, $config->programId );
 				
 				if ( empty( $articles ) ) {
 					
-					E20R_Tracker::dbg( "Action::configure_dailyProgress() - post_id got us nowhere so using the present ('now') as a delay value to try to find a valid article" );
+					Utilities::get_instance()->log( "post_id got us nowhere so using the present ('now') as a delay value to try to find a valid article" );
 					$config->delay = $Tracker->getDelay( 'now', $config->userId );
 				}
 			}
 			
 			if ( isset( $config->delay ) && empty( $articles ) && ( false === $article_configured ) ) {
 				
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - Loading article (list?) based on the release day (delay value)" );
+				Utilities::get_instance()->log( "Loading article (list?) based on the release day (delay value)" );
 				$articles = $Article->findArticles( 'release_day', $config->delay, $config->programId );
 			}
 			
@@ -1025,7 +1026,7 @@ class Action extends Settings {
 				
 				$articles = $Article->findArticlesNear( 'release_day', $config->delay, $config->programId, '<=' );
 				
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - Empty article for the actual day, so we're looking for the one the closest to requested day" );
+				Utilities::get_instance()->log( "Empty article for the actual day, so we're looking for the one the closest to requested day" );
 				$article               = ! empty( $articles[0] ) ? $articles[0] : null;
 				$config->using_closest = true;
 			}
@@ -1035,7 +1036,7 @@ class Action extends Settings {
 				$article = array_pop( $articles );
 				
 			} else if ( 1 < count( $articles ) && ( false === $article_configured ) ) {
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - WARNING: Multiple articles have been returned. Select the one with a release data == the delay." );
+				Utilities::get_instance()->log( "WARNING: Multiple articles have been returned. Select the one with a release data == the delay." );
 				
 				if ( empty( $config->delay ) ) {
 					
@@ -1045,12 +1046,11 @@ class Action extends Settings {
 					$use = $config->delay;
 				}
 				
-				$article = $this->getClosest( $use, $articles );
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - Found an article w/what we think is the correct release_day and program ID. Using it: {$article->id}." );
+				$article = $Article->getClosest( $use, $articles );
+				Utilities::get_instance()->log( "Found an article w/what we think is the correct release_day and program ID. Using it: {$article->id}." );
 				
 			} else if ( is_object( $articles ) && ( false === $article_configured ) ) {
-				E20R_Tracker::dbg( "Action::configure_dailyProgress() - Articles object: " . gettype( $articles ) );
-				E20R_Tracker::dbg( $articles );
+				Utilities::get_instance()->log( "Articles object: " . gettype( $articles ) . " -> " . print_r( $articles, true ) );
 				$article = $articles;
 			}
 			
@@ -1059,7 +1059,7 @@ class Action extends Settings {
 			}
 		}
 		
-		E20R_Tracker::dbg( "Action::configure_dailyProgress() - Loaded article info for: " . ( ! empty( $currentArticle->id ) ? $currentArticle->id : 'Not found!' ) );
+		Utilities::get_instance()->log( "Loaded article info for: " . ( ! empty( $currentArticle->id ) ? $currentArticle->id : 'Not found!' ) );
 		
 		if ( ! empty( $currentArticle->assignment_ids ) ) {
 			
@@ -1083,6 +1083,7 @@ class Action extends Settings {
 			}
 		}
 		
+		$config->post_id      = isset( $currentArticle->post_id ) ? $currentArticle->post_id : null;
 		$config->delay        = isset( $currentArticle->release_day ) ? $currentArticle->release_day : 0;
 		$config->delay_byDate = $Tracker->getDelay();
 		$config->is_survey    = isset( $currentArticle->is_survey ) && ( $currentArticle->is_survey == 0 ) ? false : true;
@@ -1091,31 +1092,6 @@ class Action extends Settings {
 		
 		return $config;
 		
-	}
-	
-	/**
-	 * Return the closest article in a list of articles
-	 *
-	 * @param int   $day
-	 * @param array $articles
-	 *
-	 * @return null|\stdClass
-	 *
-	 * @since v3.0 - BUG FIX: Didn't verify that the $closest article had a valid release_day
-	 */
-	public function getClosest( $day, $articles ) {
-		
-		$closest = null;
-		
-		foreach ( $articles as $article ) {
-			
-			if ( $closest === null ||
-			     ( ( isset( $closest->release_day ) ? abs( $day - $closest->release_day ) : abs( $day ) ) > abs( $article->release_day - $day ) ) ) {
-				$closest = $article;
-			}
-		}
-		
-		return $closest;
 	}
 	
 	/**
@@ -1133,17 +1109,17 @@ class Action extends Settings {
 		$Workout    = Workout::getInstance();
 		global $currentArticle;
 		
-		E20R_Tracker::dbg( "Action::dailyProgress() - Start of dailyProgress(): " . $Tracker->whoCalledMe() );
+		Utilities::get_instance()->log( "Start of dailyProgress(): " . $Tracker->whoCalledMe() );
 		
 		if ( ! isset( $config->delay ) || $config->delay <= 0 ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Negative delay value. No article to be found." );
+			Utilities::get_instance()->log( "Negative delay value. No article to be found." );
 			$config->articleId = CONST_NULL_ARTICLE;
 		}
 		
 		if ( ! isset( $currentArticle->post_id ) || ( $config->articleId != $currentArticle->id ) ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - No or wrong article is active. Updating..." );
+			Utilities::get_instance()->log( "No or wrong article is active. Updating..." );
 			$Article->init( $config->articleId );
 		}
 		
@@ -1155,7 +1131,7 @@ class Action extends Settings {
 		$config->prev = $config->delay - 1;
 		$config->next = $config->delay + 1;
 		
-		E20R_Tracker::dbg( "Action::dailyProgress() - Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}" );
+		Utilities::get_instance()->log( "Delay info: Now = {$config->delay}, 'tomorrow' = {$config->next}, 'yesterday' = {$config->prev}" );
 		
 		$t                = $Tracker->getDateFromDelay( ( $config->next - 1 ) );
 		$config->tomorrow = date_i18n( 'D M. jS', strtotime( $t ) );
@@ -1171,16 +1147,16 @@ class Action extends Settings {
 		
 		$this->checkin = $this->load_default_checkins();
 		
-		E20R_Tracker::dbg( "Action::dailyProgress() - currentArticle is {$currentArticle->id} " );
+		Utilities::get_instance()->log( "currentArticle is {$currentArticle->id} " );
 		$config->complete = $this->hasCompletedLesson( $config->articleId, $currentArticle->post_id, $config->userId );
 		
 		if ( ( strtolower( $config->type ) == 'action' ) || ( strtolower( $config->type ) == 'activity' ) ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Processing action or activity" );
+			Utilities::get_instance()->log( "Processing action or activity" );
 			
 			if ( ! isset( $config->articleId ) || empty( $config->articleId ) ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() -  No articleId specified. Searching..." );
+				Utilities::get_instance()->log( " No articleId specified. Searching..." );
 				
 				$articles = $Article->findArticles( 'release_day', $config->delay, $config->programId );
 				
@@ -1189,25 +1165,25 @@ class Action extends Settings {
 					if ( $config->delay == $article->release_day ) {
 						
 						$config->articleId = $article->id;
-						E20R_Tracker::dbg( "Action::dailyProgress() -  Found article # {$config->articleId}" );
+						Utilities::get_instance()->log( " Found article # {$config->articleId}" );
 						break;
 					}
 				}
 				
 				if ( empty( $articles ) ) {
-					E20R_Tracker::dbg( "Action::dailyProgress() - No article found. Using default of: " . CONST_NULL_ARTICLE );
+					Utilities::get_instance()->log( "No article found. Using default of: " . CONST_NULL_ARTICLE );
 					$config->articleId = CONST_NULL_ARTICLE;
 				}
 			}
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Configured daily action check-ins for article ID(s):" );
+			Utilities::get_instance()->log( "Configured daily action check-ins for article ID(s):" );
 			
 			// if ( !is_array( $config->articleId ) && ( $config->articleId !== CONST_NULL_ARTICLE ) ) {
 			// if ( $config->articleId !== CONST_NULL_ARTICLE ) {
-			E20R_Tracker::dbg( "Action::dailyProgress() - Generating excerpt for daily action lesson/reminder" );
+			Utilities::get_instance()->log( "Generating excerpt for daily action lesson/reminder" );
 			$config->actionExcerpt = $Article->getExcerpt( $config->articleId, $config->userId, 'action', $config->use_cards );
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Generating excerpt for daily activity" );
+			Utilities::get_instance()->log( "Generating excerpt for daily activity" );
 			$config->activityExcerpt = $Article->getExcerpt( $config->articleId, $config->userId, 'activity', $config->use_cards );
 			//}
 			
@@ -1216,7 +1192,7 @@ class Action extends Settings {
 			
 			if ( empty( $checkinIds ) ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() - No check-in ids stored for this user/article Id..." );
+				Utilities::get_instance()->log( "No check-in ids stored for this user/article Id..." );
 				
 				// Set default checkin data (to ensure rendering of form).
 				$this->checkin[ CHECKIN_ACTION ]               = $this->model->get_user_checkin( $config, $config->userId, CHECKIN_ACTION );
@@ -1229,38 +1205,36 @@ class Action extends Settings {
 				$checkinIds        = $this->model->findActionByDate( $config->post_date, $config->programId );
 			}
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Checkin info loaded (count): " . count( $checkinIds ) );
-			// E20R_Tracker::dbg( $checkinIds );
+			Utilities::get_instance()->log( "Checkin info loaded (count): " . count( $checkinIds ) );
 			
 			// $activity = $Article->getActivity( $config->articleId, $config->userId );
-			// E20R_Tracker::dbg( "Action::dailyProgress() - Activity info loaded (count): " . count( $activity ) );
-			// E20R_Tracker::dbg($activity);
+			// Utilities::get_instance()->log( "Activity info loaded (count): " . count( $activity ) );
 			
 			$note = null;
 			
 			foreach ( $checkinIds as $id ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() - Processing checkin ID {$id}" );
+				Utilities::get_instance()->log( "Processing checkin ID {$id}" );
 				$settings = $this->model->loadSettings( $id );
 				
 				switch ( $settings->checkin_type ) {
 					
 					case $this->types['assignment']:
 						
-						E20R_Tracker::dbg( "Action::dailyProgress() - Loading data for assignment check-in" );
+						Utilities::get_instance()->log( "Loading data for assignment check-in" );
 						$checkin = null;
 						break;
 					
 					case $this->types['survey']:
 						
-						E20R_Tracker::dbg( "Action::dailyProgress() - Loading data for survey check-in" );
+						Utilities::get_instance()->log( "Loading data for survey check-in" );
 						// TODO: Load view for survey data (pick up survey(s) from Gravity Forms entry.
 						$checkin = null;
 						break;
 					
 					case $this->types['action']:
 						
-						E20R_Tracker::dbg( "Action::dailyProgress() - Loading data for daily action check-in & action list" );
+						Utilities::get_instance()->log( "Loading data for daily action check-in & action list" );
 						
 						$checkin             = $this->model->get_user_checkin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
 						$note                = $this->model->get_user_checkin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
@@ -1270,20 +1244,20 @@ class Action extends Settings {
 					
 					case $this->types['activity']:
 						
-						E20R_Tracker::dbg( "Action::dailyProgress() - Loading data for daily activity check-in" );
+						Utilities::get_instance()->log( "Loading data for daily activity check-in" );
 						$checkin = $this->model->get_user_checkin( $config, $config->userId, $settings->checkin_type, $settings->short_name );
 						break;
 					
 					case $this->types['note']:
 						// We handle this in the action check-in.
-						E20R_Tracker::dbg( "Action::dailyProgress() - Explicitly loading data for daily activity note(s)" );
+						Utilities::get_instance()->log( "Explicitly loading data for daily activity note(s)" );
 						$note = $this->model->get_user_checkin( $config, $config->userId, CHECKIN_NOTE, $settings->short_name );
 						break;
 					
 					default:
 						
 						// Load action and acitvity view.
-						E20R_Tracker::dbg( "Action::dailyProgress() - No default action to load!" );
+						Utilities::get_instance()->log( "No default action to load!" );
 						$checkin = null;
 				}
 				
@@ -1295,38 +1269,37 @@ class Action extends Settings {
 					
 					if ( ! $Tracker->isEmpty( $note ) ) {
 						
-						E20R_Tracker::dbg( "Action::dailyProgress() - Including data for daily progress note" );
+						Utilities::get_instance()->log( "Including data for daily progress note" );
 						$this->checkin[ CHECKIN_NOTE ] = $note;
 					}
 				}
 				
 			} // End of foreach()
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Loading checkin for user {$config->userId} and delay {$config->delay}.." );
-			E20R_Tracker::dbg( $this->checkin );
+			Utilities::get_instance()->log( "Loading checkin for user {$config->userId} and delay {$config->delay}.." . print_r( $this->checkin, true ) );
 			
 			return $this->load_UserCheckin( $config, $this->checkin );
 		}
 		
 		if ( strtolower( $config->type ) == 'assignment' ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Processing assignment" );
+			Utilities::get_instance()->log( "Processing assignment" );
 			
 			if ( $config->articleId === false ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() - No article defined. Quitting." );
+				Utilities::get_instance()->log( "No article defined. Quitting." );
 				
 				return null;
 			}
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Loading pre-existing data for the lesson/assignment " );
+			Utilities::get_instance()->log( "Loading pre-existing data for the lesson/assignment " );
 			
 			// TODO: Decide whether or not the daily assignment is supposed to be a survey or not.
 			$assignments = $Article->getAssignments( $config->articleId, $config->userId );
 			
 			if ( true === $config->is_survey ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() - We're being asked to render a survey with the article" );
+				Utilities::get_instance()->log( "We're being asked to render a survey with the article" );
 				
 			}
 			
@@ -1335,28 +1308,28 @@ class Action extends Settings {
 		
 		if ( strtolower( $config->type == 'show_assignment' ) ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Processing display of assignments status" );
+			Utilities::get_instance()->log( "Processing display of assignments status" );
 			
-			E20R_Tracker::dbg( "Action::dailyProgress[show_assignment]() - Loading Assignment list" );
+			Utilities::get_instance()->log( "Loading Assignment list" );
 			
 			return $Assignment->listUserAssignments( $config );
 		}
 		
 		if ( strtolower( $config->type == 'survey' ) ) {
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Process a survey assignment/page" );
+			Utilities::get_instance()->log( "Process a survey assignment/page" );
 			
 			if ( $config->articleId === false ) {
 				
-				E20R_Tracker::dbg( "Action::dailyProgress() - No article defined. Quitting." );
+				Utilities::get_instance()->log( "No article defined. Quitting." );
 				
 				return null;
 			}
 			
-			E20R_Tracker::dbg( "Action::dailyProgress() - Loading pre-existing data for the lesson/assignment " );
+			Utilities::get_instance()->log( "Loading pre-existing data for the lesson/assignment " );
 			
 			$assignments = $Article->getAssignments( $config->articleId, $config->userId );
-			E20R_Tracker::dbg( $assignments );
+			Utilities::get_instance()->log( "Found assignments: " . print_r( $assignments, true ) );
 			
 			return $Assignment->showAssignment( $assignments, $config );
 			
@@ -1391,7 +1364,7 @@ class Action extends Settings {
 	 */
 	public function hasCompletedLesson( $articleId, $postId = null, $userId = null, $delay = null ) {
 		
-		E20R_Tracker::dbg( "Action::hasCompletedLesson() - Verify whether the current UserId has checked in for this lesson." );
+		Utilities::get_instance()->log( "Verify whether the current UserId has checked in for this lesson." );
 		
 		global $currentArticle;
 		global $currentProgram;
@@ -1412,11 +1385,11 @@ class Action extends Settings {
 			$Program->getProgramIdForUser( $userId );
 		}
 		
-		E20R_Tracker::dbg( "Action::hasCompletedLesson() - Requested post ID #{$postId} v.s. currentArticle post_id: {$currentArticle->post_id}" );
+		Utilities::get_instance()->log( "Requested post ID #{$postId} v.s. currentArticle post_id: {$currentArticle->post_id}" );
 		
 		if ( isset( $currentArticle->post_id ) && ( $currentArticle->post_id != $postId ) ) {
 			
-			E20R_Tracker::dbg( "Action::hasCompletedLesson() - loading settings for article post #{$postId} (ID)" );
+			Utilities::get_instance()->log( "loading settings for article post #{$postId} (ID)" );
 			$Article->init( $postId );
 		}
 		
@@ -1424,7 +1397,7 @@ class Action extends Settings {
 		
 		if ( ! isset( $config->articleId ) ) {
 			
-			E20R_Tracker::dbg( "Action::hasCompletedLesson() - No article ID defined..? Exiting." );
+			Utilities::get_instance()->log( "No article ID defined..? Exiting." );
 			
 			return false;
 		}
@@ -1436,17 +1409,17 @@ class Action extends Settings {
 			$config->delay = $Article->releaseDay( $config->articleId );
 		}
 		
-		E20R_Tracker::dbg( "Action::hasCompletedLesson() - Check if the database indicates a completed lesson..." );
+		Utilities::get_instance()->log( "Check if the database indicates a completed lesson..." );
 		$checkin = $this->model->get_user_checkin( $config, $userId, CHECKIN_ASSIGNMENT );
 		
 		if ( isset( $checkin->checkedin ) && ( $checkin->checkedin == 1 ) ) {
 			
-			E20R_Tracker::dbg( "Action::hasCompletedLesson() - User has completed this check-in." );
+			Utilities::get_instance()->log( "User has completed this check-in." );
 			
 			return true;
 		} else {
 			
-			E20R_Tracker::dbg( "Action::hasCompletedLesson() - No user check-in found." );
+			Utilities::get_instance()->log( "No user check-in found." );
 			
 			return false;
 		}
@@ -1474,32 +1447,31 @@ class Action extends Settings {
 		$survey     = null;
 		$view       = null;
 		
-		E20R_Tracker::dbg( "Action::load_UserCheckin() - For type: {$config->type}" );
+		Utilities::get_instance()->log( "For type: {$config->type}" );
 		
 		if ( ! empty( $checkinArr ) ) {
 			
-			E20R_Tracker::dbg( "Action::load_UserCheckin() - Array of checkin values isn't empty..." );
-			// E20R_Tracker::dbg($checkinArr);
+			Utilities::get_instance()->log( "Array of checkin values isn't empty..." );
 			
 			foreach ( $checkinArr as $type => $c ) {
 				
-				E20R_Tracker::dbg( "Action::load_UserCheckin() - Loading view type {$type} for checkin" );
+				Utilities::get_instance()->log( "Loading view type {$type} for checkin" );
 				
 				if ( $type == CHECKIN_ACTION ) {
 					
-					E20R_Tracker::dbg( "Action::load_UserCheckin() - Loading Action checkin data" );
+					Utilities::get_instance()->log( "Loading Action checkin data" );
 					$action = $c;
 				}
 				
 				if ( $type == CHECKIN_ACTIVITY ) {
 					
-					E20R_Tracker::dbg( "Action::load_UserCheckin() - Loading Activity checkin data" );
+					Utilities::get_instance()->log( "Loading Activity checkin data" );
 					$activity = $c;
 				}
 				
 				if ( $type == CHECKIN_NOTE ) {
 					
-					E20R_Tracker::dbg( "Action::load_UserCheckin() - Loading check-in note(s)" );
+					Utilities::get_instance()->log( "Loading check-in note(s)" );
 					$note = $c;
 				}
 				
@@ -1515,15 +1487,15 @@ class Action extends Settings {
 			
 			if ( ( ! $Tracker->isEmpty( $action ) ) && ( ! $Tracker->isEmpty( $activity ) ) ) {
 				
-				E20R_Tracker::dbg( "Action::load_UserCheckin() - Loading the view for the Dashboard" );
+				Utilities::get_instance()->log( "Loading the view for the Dashboard" );
 				
 				if ( ! isset( $config->use_cards ) || ( false === $config->use_cards ) ) {
 					
-					E20R_Tracker::dbg( "Action::load_UserCheckin() - Using old view layout" );
+					Utilities::get_instance()->log( "Using old view layout" );
 					$view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList, $note );
 				} else if ( true === $config->use_cards ) {
 					
-					E20R_Tracker::dbg( "Action::load_UserCheckin() - Using new view layout" );
+					Utilities::get_instance()->log( "Using new view layout" );
 					$view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
 				}
 			}
@@ -1533,14 +1505,14 @@ class Action extends Settings {
 		          ( $config->type == $this->getTypeDescr( CHECKIN_ACTIVITY ) )
 		) {
 			
-			E20R_Tracker::dbg( "Action::load_UserCheckin() - An activity or action check-in requested..." );
+			Utilities::get_instance()->log( "An activity or action check-in requested..." );
 			if ( ! isset( $config->use_cards ) || ( false === $config->use_cards ) ) {
 				
-				E20R_Tracker::dbg( "Action::load_UserCheckin() - Using old view layout" );
+				Utilities::get_instance()->log( "Using old view layout" );
 				$view = $this->view->view_actionAndActivityCheckin( $config, $action, $activity, $action->actionList, $note );
 			} else if ( true === $config->use_cards ) {
 				
-				E20R_Tracker::dbg( "Action::load_UserCheckin() - Using new view layout" );
+				Utilities::get_instance()->log( "Using new view layout" );
 				$view = $this->view->view_action_and_activity( $config, $action, $activity, $action->actionList, $note );
 			}
 		}
@@ -1551,7 +1523,7 @@ class Action extends Settings {
 	/**
 	 * Process the Daily Progress short-code
 	 *
-	 * @param null|array $atts
+	 * @param null|array $attrs
 	 *
 	 * @return string
 	 */
@@ -1565,7 +1537,7 @@ class Action extends Settings {
 			auth_redirect();
 		}
 		
-		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Processing the daily_progress short code" );
+		Utilities::get_instance()->log( "Processing the daily_progress short code" );
 		
 		// Configure the daily progress page for today's actions/assignments/activities
 		$config = $this->configure_dailyProgress();
@@ -1579,18 +1551,18 @@ class Action extends Settings {
 		// Add shortcode settings to the $config object
 		foreach ( $code_atts as $key => $val ) {
 			
-			E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - daily_progress shortcode --> Key: {$key} -> {$val}" );
+			Utilities::get_instance()->log( "daily_progress shortcode --> Key: {$key} -> {$val}" );
 			$config->{$key} = $val;
 		}
 		
 		// Should we use the grid of cards, or the old table?
 		if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
 			
-			E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - User requested card based dashboard: {$config->use_cards}" );
+			Utilities::get_instance()->log( "User requested card based dashboard: {$config->use_cards}" );
 			$config->use_cards = true;
 		} else if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
 			
-			E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - User requested old-style dashboard: {$config->use_cards}" );
+			Utilities::get_instance()->log( "User requested old-style dashboard: {$config->use_cards}" );
 			$config->use_cards = false;
 		}
 		
@@ -1599,15 +1571,15 @@ class Action extends Settings {
 			$config->use_cards = false;
 		}
 		
-		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Config is currently: " . print_r( $config, true ) );
+		Utilities::get_instance()->log( "Config is currently: " . print_r( $config, true ) );
 		/*
 				if ($config->type == 'assignment') {
 		
-					E20R_Tracker::dbg("Action::shortcode_dailyProgress() - Finding article info by post_id: {$post->ID}");
+					Utilities::get_instance()->log("Finding article info by post_id: {$post->ID}");
 					$articles = $Article->findArticles('post_id', $post->ID, $config->programId);
 				}
 		*/
-		E20R_Tracker::dbg( "Action::shortcode_dailyProgress() - Article ID is currently set to: {$config->articleId}" );
+		Utilities::get_instance()->log( "Article ID is currently set to: {$config->articleId}" );
 		
 		// Load the daily progress HTML and return it (shortcode)
 		ob_start(); ?>
@@ -1717,13 +1689,13 @@ class Action extends Settings {
 		
 		if ( empty( $checkins ) ) {
 			
-			E20R_Tracker::dbg( "Action::addMeta_Settings() - No programs found!" );
+			Utilities::get_instance()->log( "No programs found!" );
 			$checkins = array();
 		}
 		
 		wp_reset_postdata();
 		
-		E20R_Tracker::dbg( "Action::addMeta_Settings() - Loading settings metabox for checkin page {$post->ID}" );
+		Utilities::get_instance()->log( "Loading settings metabox for checkin page {$post->ID}" );
 		$settings = $this->model->loadSettings( $post->ID );
 		
 		echo $this->view->viewSettingsBox( $settings, $checkins );
