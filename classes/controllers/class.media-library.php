@@ -1,13 +1,18 @@
 <?php
 /**
- * The E20R Tracker Plugin – a coaching client management plugin for WordPress. Tracks client training, habits, educational reminders, etc.
- * Copyright (c) 2018, Wicked Strong Chicks, LLC
+ * The E20R Tracker Plugin – a coaching client management plugin for WordPress. Tracks client training, habits,
+ * educational reminders, etc. Copyright (c) 2018, Wicked Strong Chicks, LLC
  *
- * The E20R Tracker Plugin is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License or (at your option) any later version.
+ * The E20R Tracker Plugin is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 2 of the License or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>
+ * You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>
  *
  * You can contact us at info@eighty20results.com
  *
@@ -16,7 +21,14 @@
 
 namespace E20R\Tracker\Controllers;
 
+use E20R\Utilities\Utilities;
 
+/**
+ * Class Media_Library
+ * @package E20R\Tracker\Controllers
+ *
+ * @since 3.0 - ENHANCEMENT: Refactored media library management to own class (Media_Library)
+ */
 class Media_Library {
 	
 	/**
@@ -31,6 +43,28 @@ class Media_Library {
 	}
 	
 	/**
+	 * Loading hooks for the Media Library (as needed)
+	 */
+	public function loadHooks() {
+		
+		
+		Utilities::get_instance()->log( "Loading filter to change the upload directory for Nourish clients" );
+		add_filter( 'media_view_strings', array( $this, 'clientMediaUploader' ), 10 );
+		
+		Utilities::get_instance()->log( "Loaded filter to change the Media Library settings for client uploads" );
+		add_filter( "wp_handle_upload_prefilter", array( $this, "pre_upload" ) );
+		add_filter( "wp_handle_upload", array( $this, "post_upload" ) );
+		Utilities::get_instance()->log( "Loaded filter to change the upload directory for Nourish clients" );
+		
+		Utilities::get_instance()->log( "Control Access to media uploader for Tracker users" );
+		
+		/* Control access to the media uploader for Nourish users */
+		add_action( 'pre_get_posts', array( $this, 'restrict_media_library' ) );
+	}
+	
+	/**
+	 * Get or instantiate the Media_Library class
+	 *
 	 * @return Media_Library|null;
 	 */
 	static function getInstance() {
@@ -43,96 +77,124 @@ class Media_Library {
 	}
 	
 	/**
-	 * Loading hooks for the Media Library (as needed)
+	 * Add the custom upload dir filter handler when on the right page(s)
+	 *
+	 * @param string $file
+	 *
+	 * @return string
 	 */
-	public function loadHooks() {
-	
-	}
-	
 	public function pre_upload( $file ) {
 		
-		E20R_Tracker::dbg("Tracker::pre_upload() -- Set upload directory path for the progress photos.");
+		Utilities::get_instance()->log( "Set upload directory path for the progress photos." );
 		add_filter( 'upload_dir', array( &$this, "e20r_set_upload_dir" ) );
-		E20R_Tracker::dbg("Tracker::pre_upload() -- New upload directory path for the progress photos has been configured.");
+		Utilities::get_instance()->log( "New upload directory path for the progress photos has been configured." );
 		
 		return $file;
 	}
 	
+	/**
+	 * Remove the custom upload directory destination
+	 *
+	 * @param mixed $fileinfo
+	 *
+	 * @return mixed
+	 */
 	public function post_upload( $fileinfo ) {
 		
-		E20R_Tracker::dbg("Tracker::post_upload() -- Removing upload directory path hook.");
-		remove_filter( "upload_dir", array( $this, "e20r_set_upload_dir") );
+		Utilities::get_instance()->log( "Removing upload directory path hook." );
+		remove_filter( "upload_dir", array( $this, "e20r_set_upload_dir" ) );
+		
 		return $fileinfo;
 	}
 	
+	/**
+	 * Configure the upload directory for members when using the Tracker
+	 *
+	 * @param array $param
+	 *
+	 * @return array
+	 */
 	public function e20r_set_upload_dir( $param ) {
 		
 		$Client = Client::getInstance();
+		global $currentClient;
 		global $current_user;
 		global $post;
 		
-		E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Do we need to modify the upload directory?");
-		E20R_Tracker::dbg("Post ID: {$post->ID}" );
-		/*
-				if ( ! class_exists( "\E20R\Tracker\Controller\Client" ) ) {
-
-					E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - No client class defined?!??");
-					return $param;
-				}
-
-				if ( ! isset( $post->ID ) ) {
-
-					E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - No page ID defined...");
-					return $param;
-				}
-
-
-				if ( ! $Client->client_loaded ) {
-
-					E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Need to load the Client information/settings...");
-					E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Set ID for client info");
-					$Client->setClient( $current_user->ID );
-					E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Load default Client info");
-					$Client->init();
-				}
-
-				E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Fetching the upload path for client ID: " . $Client->clientId());
-				$path = $Client->getUploadPath( $Client->clientId() );
-
-				$param['path'] = $param['basedir'] . "/{$path}";
-				$param['url'] = $param['baseurl'] . "/{$path}";
-				*/
-		E20R_Tracker::dbg("Tracker::set_progress_upload_dir() - Directory: {$param['path']}");
+		Utilities::get_instance()->log( "Do we need to modify the upload directory when processing post {$post->ID}?" );
+		
+		if ( ! class_exists( '\E20R\Tracker\Controller\Client' ) ) {
+			
+			Utilities::get_instance()->log( "No client class defined?!??" );
+			
+			return $param;
+		}
+		
+		if ( ! isset( $post->ID ) ) {
+			
+			Utilities::get_instance()->log( "No page ID defined..." );
+			
+			return $param;
+		}
+		
+		
+		if ( ! $Client->client_loaded ) {
+			
+			Utilities::get_instance()->log( "Need to load the Client information/settings..." );
+			Utilities::get_instance()->log( "Set ID for client info" );
+			$Client->setClient( $current_user->ID );
+			Utilities::get_instance()->log( "Load default Client info" );
+			$Client->init();
+		}
+		
+		Utilities::get_instance()->log( "Fetching the upload path for client ID: " . $currentClient->user_id );
+		$path = $Client->getClientDataField( $currentClient->user_id, 'program_photo_dir' );
+		
+		$param['path'] = $param['basedir'] . "/{$path}";
+		$param['url']  = $param['baseurl'] . "/{$path}";
+		
+		Utilities::get_instance()->log( "Directory: {$param['path']}" );
+		
 		return $param;
 	}
 	
 	/**
+	 * Don't allow non-authors (or higher) edit the media library
+	 *
 	 * @param \WP_Query $wp_query_obj
 	 */
-	public function restrict_media_library( $wp_query_obj) {
+	public function restrict_media_library( $wp_query_obj ) {
 		
 		global $current_user, $pagenow;
 		
-		E20R_Tracker::dbg("Tracker::restrict_media_library() - Check whether to restrict access to the media library...");
+		Utilities::get_instance()->log( "Check whether to restrict access to the media library..." );
 		
-		if ( !is_a( $current_user, "\\WP_User") ) {
-			
+		if ( ! is_a( $current_user, '\WP_User' ) ) {
+			Utilities::get_instance()->log('Current user is not a WP_User object!');
 			return;
 		}
 		
-		if( 'admin-ajax.php' != $pagenow || $_REQUEST['action'] != 'query-attachments' ) {
+		if ( 'admin-ajax.php' != $pagenow || $_REQUEST['action'] != 'query-attachments' ) {
+			Utilities::get_instance()->log('Not processing ajax and querying attachments');
 			return;
 		}
 		
-		if( ! current_user_can( 'manage_media_library') ) {
+		if ( ! current_user_can( 'manage_media_library' ) ) {
 			
-			E20R_Tracker::dbg("Tracker::restrict_media_library() - User {$current_user->ID} is an author or better and has access to managing the media library");
+			Utilities::get_instance()->log( "User {$current_user->ID} is an author or better and has access to managing the media library" );
 			$wp_query_obj->set( 'author', $current_user->ID );
 		}
 		
 		return;
 	}
 	
+	/**
+	 * Potentially update the media tab type
+	 *
+	 * @param string $tabName
+	 *
+	 * @return mixed
+	 */
 	public function default_media_tab( $tabName ) {
 		
 		if ( isset( $_REQUEST['post_id'] ) && ! empty( $_REQUEST['post_id'] ) ) {
@@ -140,7 +202,7 @@ class Media_Library {
 			
 			if ( $post_type ) {
 				if ( 'page' == $post_type ) {
-					E20R_Tracker::dbg("Tracker::default_media_tab: {$tabName}");
+					Utilities::get_instance()->log( "Tracker::default_media_tab: {$tabName}" );
 					// return 'type';
 				}
 			}
@@ -149,17 +211,26 @@ class Media_Library {
 		return $tabName;
 	}
 	
+	/**
+	 * Remove tabs from the Media Uploader when a regular user (aka a client) is attempting to access it
+	 *
+	 * @param array $strings
+	 *
+	 * @return array
+	 */
 	public function clientMediaUploader( $strings ) {
 		
-		E20R_Tracker::dbg("Measurements::clientMediaUploader() -- Do we remove tab(s) from teh media uploader?");
+		Utilities::get_instance()->log( "Do we remove tab(s) from the media uploader?" );
 		
-		if ( current_user_can('edit_posts') ) {
+		if ( current_user_can( 'edit_posts' ) ) {
 			
-			E20R_Tracker::dbg("Measurements::clientMediaUploader() -- User is an administrator so don't remove anything.");
+			Utilities::get_instance()->log( "User is an administrator/contributor so don't remove anything." );
+			
 			return $strings;
 		}
 		
-		E20R_Tracker::dbg("Measurements::clientMediaUploader() -- Regular user.");
+		Utilities::get_instance()->log( "Regular user." );
+		
 		unset( $strings['mediaLibraryTitle'] ); //Media Library
 		unset( $strings['createGalleryTitle'] ); //Create Gallery
 		unset( $strings['setFeaturedImageTitle'] ); //Set Featured Image
@@ -169,11 +240,18 @@ class Media_Library {
 		return $strings;
 	}
 	
+	/**
+	 * Set the expected file name for the upload (when the client is uploading images)
+	 *
+	 * @param array $file
+	 *
+	 * @return array
+	 */
 	public function setFilenameForClientUpload( $file ) {
 		
 		global $current_user;
 		
-		$Program = Program::getInstance();
+		$Program      = Program::getInstance();
 		$Measurements = Measurements::getInstance();
 		
 		$imageFormats = array(
@@ -181,12 +259,11 @@ class Media_Library {
 			'image/gif',
 			'image/jpeg',
 			'image/png',
-			'image/tiff'
+			'image/tiff',
 		);
 		
-		E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - Data: ");
-		E20R_Tracker::dbg( $file );
-		E20R_Tracker::dbg( $_REQUEST );
+		Utilities::get_instance()->log( "Data: " . print_r( $file, true ) );
+		Utilities::get_instance()->log( "Request: " . print_r( $_REQUEST, true)  );
 		
 		/* Skip non-image uploads. */
 		if ( ! in_array( $file['type'], $imageFormats ) ) {
@@ -197,18 +274,19 @@ class Media_Library {
 		
 		if ( ( $user_id == 0 ) || ( $user_id === null ) ) {
 			
-			E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - No Client ID available...");
+			Utilities::get_instance()->log( "No Client ID available..." );
 			$user_id = get_current_user_id();
 		}
 		
-		if ( !is_a( $current_user, "\WP_User") ) {
-			E20R_Tracker::dbg("Measurements::setFilenameForClientUpload() - Not a user");
+		if ( ! is_a( $current_user, '\WP_User' ) ) {
+			Utilities::get_instance()->log( "Not a user" );
+			
 			return $file;
 		}
 		
 		$pgmId = $Program->getProgramIdForUser( $user_id );
 		
-		E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload() - Filename was: {$file['name']}" );
+		Utilities::get_instance()->log( "Filename was: {$file['name']}" );
 		$timestamp = date( "Ymd", current_time( 'timestamp' ) );
 		$side      = 'REPLACEME';
 		
@@ -216,24 +294,22 @@ class Media_Library {
 		$fileName = explode( '.', $file['name'] );
 		$ext      = $fileName[ ( count( $fileName ) - 1 ) ];
 		
-		E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload(): " );
-		E20R_Tracker::dbg( $_FILES );
+		Utilities::get_instance()->log( print_r( $_FILES, true ) );
 		
 		$file['name'] = "{$pgmId}-{$user_id}-{$timestamp}-{$side}.{$ext}";
-		E20R_Tracker::dbg( "Measurements::setFilenameForClientUpload() - New filename: {$file['name']}" );
+		Utilities::get_instance()->log( "New filename: {$file['name']}" );
 		
 		$img = getimagesize( $file['tmp_name'] );
 		
-		$minimum = array('width' => '1280', 'height' => '1024');
+		$minimum = array( 'width' => '1280', 'height' => '1024' );
 		
-		$width= $img[0];
-		$height =$img[1];
+		$width  = $img[0];
+		$height = $img[1];
 		
-		if ($width < $minimum['width'] ) {
+		if ( $width < $minimum['width'] ) {
 			
 			return array( "error" => "Image dimensions are too small. Minimum width is {$minimum['width']}px. Uploaded image width is $width px" );
-		}
-		elseif ($height <  $minimum['height']) {
+		} else if ( $height < $minimum['height'] ) {
 			
 			return array( "error" => "Image dimensions are too small. Minimum height is {$minimum['height']}px. Uploaded image height is $height px" );
 		}
@@ -241,44 +317,50 @@ class Media_Library {
 		return $file;
 	}
 	
+	/**
+	 * Allow user to upload to the(ir) media library
+	 *
+	 * @param \WP_Query $wp_query
+	 */
 	public function current_user_only( $wp_query ) {
 		
-		if ( strpos( $_SERVER[ 'REQUEST_URI' ], 'wp-admin/upload.php' )
-		     || strpos( $_SERVER[ 'REQUETST_URI' ], 'wp-admin/edit.php' )
-		     || strpos( $_SERVER[ 'REQUEST_URI' ], 'wp-admin/ajax-upload.php' ) ) {
+		if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/upload.php' )
+		     || strpos( $_SERVER['REQUETST_URI'], 'wp-admin/edit.php' )
+		     || strpos( $_SERVER['REQUEST_URI'], 'wp-admin/ajax-upload.php' ) ) {
 			
-			E20R_Tracker::dbg("Media_Library::current_user_only - Uploading files...");
+			Utilities::get_instance()->log( "Media_Library::current_user_only - Uploading files..." );
 			
-			if ( current_user_can( 'upload_files' )) {
+			if ( current_user_can( 'upload_files' ) ) {
 				global $current_user;
-				$wp_query->set( 'author', $current_user->ID);
+				$wp_query->set( 'author', $current_user->ID );
 			}
 		}
 	}
+	
 	/*
-    public function media_view_settings( $settings, $post ) {
-
-        global $e20rMeasurementDate, $Tracker;
-
-//        unset( $settings['mimeTypes']['audio'] );
-//        unset( $settings['mimeTypes']['video'] );
-
-        E20R_Tracker::dbg("Tracker::media_view_settings() - Measurement date: {$e20rMeasurementDate}");
-
-        $monthYear = date('F Y',strtotime( $e20rMeasurementDate ) );
-        $settings['currentMonth'] = $monthYear;
-
-        foreach ( $settings['months'] as $key => $month ) {
-
-            if ( $month->text != $monthYear ) {
-                unset( $settings['months'][$key]);
-            }
-        }
-
-        E20R_Tracker::dbg("Tracker::media_view_settings() - Now using: ");
-        E20R_Tracker::dbg($settings);
-
-        return $settings;
-    }
-*/
+	public function media_view_settings( $settings, $post ) {
+	
+		global $e20rMeasurementDate, $Tracker;
+	
+	//        unset( $settings['mimeTypes']['audio'] );
+	//        unset( $settings['mimeTypes']['video'] );
+	
+		Utilities::get_instance()->log("Measurement date: {$e20rMeasurementDate}");
+	
+		$monthYear = date('F Y',strtotime( $e20rMeasurementDate ) );
+		$settings['currentMonth'] = $monthYear;
+	
+		foreach ( $settings['months'] as $key => $month ) {
+	
+			if ( $month->text != $monthYear ) {
+				unset( $settings['months'][$key]);
+			}
+		}
+	
+		Utilities::get_instance()->log("Now using: ");
+		Utilities::get_instance()->log($settings);
+	
+		return $settings;
+	}
+	*/
 }
