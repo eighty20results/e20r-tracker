@@ -16,6 +16,7 @@
 
 namespace E20R\Tracker\Controllers;
 
+use E20R\Utilities\Utilities;
 
 class Tracker_Access {
 	/**
@@ -48,6 +49,97 @@ class Tracker_Access {
 	
 	}
 	
+	/**
+	 * Should the User ID have access to the post ID provided
+	 *
+	 * @param int $userId
+	 * @param int $postId
+	 *
+	 * @return bool
+	 */
+	public function hasAccess( $userId, $postId ) {
+		
+		$Article = Article::getInstance();
+		$Program = Program::getInstance();
+		$Tracker = Tracker::getInstance();
+		
+		global $currentArticle;
+		
+		$retVal = false;
+		$saved = $currentArticle;
+		
+		Utilities::get_instance()->log("Checking {$userId}'s access to {$postId}" );
+		
+		if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
+			
+			Utilities::get_instance()->log("Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
+			return true;
+		}
+		
+		Utilities::get_instance()->log("Checking whether to use PMPro's pmpro_has_membership_access() function" );
+		
+		if ( function_exists( 'pmpro_has_membership_access' ) ) {
+			
+			Utilities::get_instance()->log("Preferring to use access check as provided by PMPro");
+			// $levels = pmpro_getMembershipLevelsForUser( $userId );
+			$result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
+			Utilities::get_instance()->log("Checking if post {$postId} is accessible by {$userId}: " . print_r($result, true));
+			
+			$retVal = $result[0];
+			
+			/*
+			if ( true == $result[0] ) {
+				
+				Utilities::get_instance()->log("Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
+				
+				$filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
+				$retVal = ( $filterVal == 1 ? true : false );
+				
+				Utilities::get_instance()->log( "After filter of access value for {$userId}: " . ( $retVal == true ? 'yes' : 'no' ));
+			}
+			*/
+		}
+		else {
+			Utilities::get_instance()->log("No membership access function found for Paid Memberships Pro");
+		}
+		
+		$current_delay = $Tracker->getDelay( 'now', $userId );
+		$found = false;
+		
+		if ( empty( $postId) ) {
+			Utilities::get_instance()->log("No post ID given to check, will use the currentArticle post ID: {$currentArticle->post_id}");
+			$postId = $currentArticle->post_id;
+		}
+		
+		$programId = $Program->getProgramIdForUser( $userId );
+		
+		Utilities::get_instance()->log("Looking up by post ID: {$postId}");
+		$articles = $Article->findArticles( 'post_id', $postId, $programId );
+		// Utilities::get_instance()->log( $articles);
+		
+		// if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
+		if ( !empty( $articles ) ) {
+			
+			$found = $Tracker->get_closest_release_day( $current_delay, $articles );
+			
+			// Utilities::get_instance()->log( $found );
+			
+			if ( !is_null($found) && ( $found->release_day <= $current_delay ) ) {
+				Utilities::get_instance()->log("Retval = " . ($retVal ? 'True' : 'False') . " & User {$userId} in program {$programId} has access to {$postId} because {$found->release_day} <= {$current_delay}");
+				$retVal = $retVal && true;
+			}
+			else {
+				
+				$retVal = false;
+			}
+			
+		}
+		
+		$currentArticle = $saved;
+		
+		Utilities::get_instance()->log("Tracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $Tracker->whoCalledMe() );
+		return $retVal;
+	}
 	
 	/**
 	 * Default permission check function.
@@ -79,9 +171,9 @@ class Tracker_Access {
 		
 		
 		if ( $permitted ) {
-			E20R_Tracker::dbg( "Tracker::userCanEdit() - User id ({$user_id}) has permission" );
+			Utilities::get_instance()->log( "Tracker::userCanEdit() - User id ({$user_id}) has permission" );
 		} else {
-			E20R_Tracker::dbg( "Tracker::userCanEdit() - User id ({$user_id}) does NOT have permission" );
+			Utilities::get_instance()->log( "Tracker::userCanEdit() - User id ({$user_id}) does NOT have permission" );
 		}
 		
 		return $permitted;
@@ -105,7 +197,7 @@ class Tracker_Access {
 		$is_a_coach = $wp_user->has_cap( $user_roles['coach']['role'] );
 		
 		if ( true === $is_a_coach && true === $coach_override ) {
-			E20R_Tracker::dbg( "Overriding the 'coach' role" );
+			Utilities::get_instance()->log( "Overriding the 'coach' role" );
 			$is_a_coach = false;
 		}
 		
@@ -122,7 +214,7 @@ class Tracker_Access {
 		
 		$controller = Tracker::getInstance();
 		
-		E20R_Tracker::dbg("Tracker_Access::auth_timeout_reset() - Testing whether user's auth cookie needs to be reset");
+		Utilities::get_instance()->log("Testing whether user's auth cookie needs to be reset");
 		
 		if ( is_user_logged_in() ) {
 			
@@ -136,21 +228,21 @@ class Tracker_Access {
 						
 						$max_days = (int)$controller->loadOption('remember_me_auth_timeout');
 						
-						E20R_Tracker::dbg("Tracker::auth_timeout_reset() - Found login cookie for user ID {$current_user->ID}");
+						Utilities::get_instance()->log("Tracker::auth_timeout_reset() - Found login cookie for user ID {$current_user->ID}");
 						
 						$timeout = $cookie_arr[1];
 						
 						if ( $timeout > ( current_time('timestamp', true ) + $max_days*3600*24 ) ) {
 							
-							E20R_Tracker::dbg("Tracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
+							Utilities::get_instance()->log("Tracker::auth_timeout_reset() - Will need to reset the auth cookie. Timeout is {$timeout}");
 							
-							$days_since = $controller->daysBetween( current_time('timestamp', true ), $timeout );
+							$days_since = Time_Calculations::daysBetween( current_time('timestamp', true ), $timeout );
 							
-							E20R_Tracker::dbg("Tracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
+							Utilities::get_instance()->log("Tracker::auth_timeout_reset() - Days until: {$days_since} vs max ({$max_days}) ");
 							
 							if ( $days_since > $max_days ) {
 								
-								E20R_Tracker::dbg("Tracker::auth_timeout_reset() - It will be {$days_since} days until the user ({$current_user->ID}) has to log in... Resetting the login cookie.");
+								Utilities::get_instance()->log("Tracker::auth_timeout_reset() - It will be {$days_since} days until the user ({$current_user->ID}) has to log in... Resetting the login cookie.");
 								wp_set_auth_cookie( $current_user->ID, false );
 							}
 						}
@@ -175,23 +267,24 @@ class Tracker_Access {
 	public function login_timeout( $seconds, $user_id, $remember ) {
 		
 		$expire_in = 0;
+		$Tracker = Tracker::getInstance();
 		
-		E20R_Tracker::dbg("Tracker::login_timeout() - Length requested by login process: {$seconds}, User: {$user_id}, Remember: {$remember}");
+		Utilities::get_instance()->log("Tracker::login_timeout() - Length requested by login process: {$seconds}, User: {$user_id}, Remember: {$remember}");
 		
 		/* "remember me" is checked */
 		if ( $remember ) {
 			
-			E20R_Tracker::dbg( "Tracker::login_timeout() - Remember me timeout value: " . $this->loadOption('remember_me_auth_timeout') );
-			$expire_in = 60*60*24 * intval( $this->loadOption( 'remember_me_auth_timeout' ) );
+			Utilities::get_instance()->log( "Tracker::login_timeout() - Remember me timeout value: " . $Tracker->loadOption('remember_me_auth_timeout') );
+			$expire_in = 60*60*24 * intval( $Tracker->loadOption( 'remember_me_auth_timeout' ) );
 			
 			if ( $expire_in <= 0 ) { $expire_in = 60*60*24*1; } // 1 Day is the default
 			
-			E20R_Tracker::dbg("Tracker::login_timeout() - Setting session timeout for user with 'Remember me' checked to: {$expire_in}");
+			Utilities::get_instance()->log("Tracker::login_timeout() - Setting session timeout for user with 'Remember me' checked to: {$expire_in}");
 			
 		} else {
 			
-			E20R_Tracker::dbg( "Tracker::login_timeout() - Timeout value in hours: " . $this->loadOption('auth_timeout') );
-			$expire_in = 60 * 60 * intval( $this->loadOption( 'auth_timeout' ) );
+			Utilities::get_instance()->log( "Tracker::login_timeout() - Timeout value in hours: " . $Tracker->loadOption('auth_timeout') );
+			$expire_in = 60 * 60 * intval( $Tracker->loadOption( 'auth_timeout' ) );
 			
 			if ( $expire_in <= 0 ) {
 				
@@ -206,7 +299,7 @@ class Tracker_Access {
 			$expire_in =  PHP_INT_MAX - time() - 5;
 		}
 		
-		E20R_Tracker::dbg("Tracker::login_timeout() - Setting session timeout for user {$user_id} to: {$expire_in}");
+		Utilities::get_instance()->log("Tracker::login_timeout() - Setting session timeout for user {$user_id} to: {$expire_in}");
 		
 		return $expire_in;
 	}
@@ -226,24 +319,24 @@ class Tracker_Access {
 		
 		$ret = array( 'user' => false, 'group' => false );
 		
-		E20R_Tracker::dbg("Tracker_Access::allowedActivityAccess() - User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
+		Utilities::get_instance()->log("User: {$uId}, Group: {$grpId} and Activity: {$activity->id}");
 		
 		$statuses = apply_filters( 'e20r_tracker_article_post_status', array( 'publish', 'future', 'private' ));
 		
 		if ( !in_array( get_post_status( $activity->id ), $statuses ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::allowedActivityAccess() - Access denied since activity post isn't in an allowed status");
+			Utilities::get_instance()->log("Access denied since activity post isn't in an allowed status");
 			return $ret;
 		}
 		
 		// Check against list of users for the specified activity.
-		E20R_Tracker::dbg("Tracker_Access::allowedActivityAccess() - Check access for user ID {$uId}");
+		Utilities::get_instance()->log("Check access for user ID {$uId}");
 		$ret['user'] = $this->inUserList( $uId, $activity->assigned_user_id );
 		
 		// Check against group list(s) first.
 		// Loop through any list of groups the user belongs to
 		
-		E20R_Tracker::dbg("Tracker_Access::allowedActivityAccess() - Check access for group ID {$grpId} vs " . print_r($activity->assigned_usergroups, true));
+		Utilities::get_instance()->log("Check access for group ID {$grpId} vs " . print_r($activity->assigned_usergroups, true));
 		$ret['group'] = $this->inGroup( $grpId, $activity->assigned_usergroups );
 		
 		// Return true if either user or group access is true.
@@ -261,23 +354,23 @@ class Tracker_Access {
 		
 		if ( in_array( 0, $userList ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::inUserList() - Admin has set 'Not Applicable' for user list. Returning false");
+			Utilities::get_instance()->log("Admin has set 'Not Applicable' for user list. Returning false");
 			return false;
 		}
 		
 		if ( in_array( -1, $userList ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::inUserList() - Admin has set 'All Users'. Returning true");
+			Utilities::get_instance()->log("Admin has set 'All Users'. Returning true");
 			return true;
 		}
 		
 		if ( in_array( $id, $userList ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::inUserList() - User ID {$id} is in the list of users. Returning true");
+			Utilities::get_instance()->log("User ID {$id} is in the list of users. Returning true");
 			return true;
 		}
 		
-		E20R_Tracker::dbg("Tracker_Access::inUserList() - None of the tests returned true. Default is 'No access!'");
+		Utilities::get_instance()->log("None of the tests returned true. Default is 'No access!'");
 		return false;
 		
 	}
@@ -294,25 +387,25 @@ class Tracker_Access {
 		
 		if ( in_array( -1, $grpList ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::inGroup() - Admin has set 'All Groups'. Returning true");
+			Utilities::get_instance()->log("Admin has set 'All Groups'. Returning true");
 			return true;
 		}
 		
 		if ( in_array( $id, $grpList ) ) {
 			
-			E20R_Tracker::dbg("Tracker_Access::inGroup() - Group ID {$id} is in the group list. Returning true");
+			Utilities::get_instance()->log("Group ID {$id} is in the group list. Returning true");
 			return true;
 		}
 		
 		
-		E20R_Tracker::dbg("Tracker_Access::inGroup() - None of the tests returned true. Default is 'No access!'");
+		Utilities::get_instance()->log("None of the tests returned true. Default is 'No access!'");
 		return false;
 	}
 	
 	public function admin_access_filter($access, $post, $user ) {
 		
 		if ( ( current_user_can('manage_options') ) ) {
-			// E20R_Tracker::dbg("Tracker::admin_access_filter() - Administrator is attempting to access protected content.");
+			// Utilities::get_instance()->log("Tracker::admin_access_filter() - Administrator is attempting to access protected content.");
 			return true;    //level 2 (and administrator) ALWAYS has access
 		}
 		
