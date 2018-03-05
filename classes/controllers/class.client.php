@@ -19,12 +19,18 @@ namespace E20R\Tracker\Controllers;
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+use Braintree\Util;
 use E20R\Tracker\Views\Client_Views;
 use E20R\Tracker\Models\Client_Model;
-use E20R\Tracker\Controllers\Tracker_Crypto;
 use E20R\Tracker\Models\Tables;
+use E20R\Utilities\Utilities;
 
-
+/**
+ * Class Client
+ * @package E20R\Tracker\Controllers
+ *
+ * @since   1.0
+ */
 class Client {
 	
 	/**
@@ -32,17 +38,50 @@ class Client {
 	 */
 	private static $instance = null;
 	
+	/**
+	 * @var bool $client_loaded
+	 */
 	public $client_loaded = false; // Client Model.
+	
+	/**
+	 * @var bool $actionsLoaded
+	 */
 	public $actionsLoaded = false; // Client Views.
+	
+	/**
+	 * @var bool $scriptsLoaded
+	 */
 	public $scriptsLoaded = false;
 	
 	private $id;
+	/**
+	 * @var Client_Model|null
+	 */
 	private $model = null;
+	
+	/**
+	 * @var Client_Views|null
+	 */
 	private $view = null;
+	
+	/**
+	 * @var string $weightunits
+	 */
 	private $weightunits;
+	
+	/**
+	 * @var string $lengthunits
+	 */
 	private $lengthunits;
 	
+	/**
+	 * @var bool $interview_status
+	 */
 	private $interview_status = false;
+	
+	/**
+	 * @var bool $interview_status_loaded
+	 */
 	private $interview_status_loaded = false;
 	
 	/**
@@ -55,7 +94,7 @@ class Client {
 		global $currentClient;
 		
 		$this->model = new Client_Model();
-		$this->view  = new Client_Views( $user_id );
+		$this->view  = new Client_Views();
 		
 		if ( $user_id !== null ) {
 			
@@ -65,6 +104,8 @@ class Client {
 	}
 	
 	/**
+	 * Get or instantiate the Client class
+	 *
 	 * @return Client
 	 */
 	static function getInstance() {
@@ -76,14 +117,19 @@ class Client {
 		return self::$instance;
 	}
 	
+	/**
+	 * Save the login action for client(s)
+	 *
+	 * @param string $user_login
+	 */
 	public function record_login( $user_login ) {
 		$user = get_user_by( 'login', $user_login );
 		
-		E20R_Tracker::dbg( "Client::record_login() - Check that {$user_login} has a valid role..." );
+		Utilities::get_instance()->log( "Check that {$user_login} has a valid role..." );
 		$this->check_role_setting( $user->ID );
 		
 		if ( $user->ID != 0 ) {
-			E20R_Tracker::dbg( "Client::record_login() - Saving login information about {$user_login}" );
+			Utilities::get_instance()->log( "Saving login information about {$user_login}" );
 			update_user_meta( $user->ID, '_e20r-tracker-last-login', current_time( 'timestamp' ) );
 		}
 	}
@@ -92,13 +138,13 @@ class Client {
 	 * Validate that the user ID has an exercise level role on the system
 	 * Set to "beginner" if they don't.
 	 *
-	 * @param       integer $user_id The User ID to check
+	 * @param       int $user_id The User ID to check
 	 *
 	 * @return      true
 	 */
 	public function check_role_setting( $user_id ) {
 		
-		E20R_Tracker::dbg( "Client::check_role_setting() - Make sure {$user_id} has an exercise experience role configured" );
+		Utilities::get_instance()->log( "Make sure {$user_id} has an exercise experience role configured" );
 		
 		$user       = new \WP_User( $user_id );
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
@@ -111,10 +157,10 @@ class Client {
 			$has_role = $has_role || in_array( $role['role'], $user->roles );
 		}
 		
-		E20R_Tracker::dbg( "Client::check_role_setting() - {$user_id} DOES have the exercise experience role configured? " . ( $has_role === true ? 'Yes' : 'No' ) );
+		Utilities::get_instance()->log( "{$user_id} DOES have the exercise experience role configured? " . ( $has_role === true ? 'Yes' : 'No' ) );
 		
 		if ( false === $has_role ) {
-			E20R_Tracker::dbg( "Client::check_role_setting() - Assigning a default role (Beginner) until they complete the Welcome interview" );
+			Utilities::get_instance()->log( "Assigning a default role (Beginner) until they complete the Welcome interview" );
 			$user->add_role( $user_roles['beginner']['role'] );
 			$has_role = true;
 		}
@@ -122,23 +168,27 @@ class Client {
 		return $has_role;
 	}
 	
-	public function clientId() {
-		
-		global $currentClient;
-		
-		return $currentClient->user_id;
+	/**
+	 * Pass-through: Returns field specific data for a client
+	 *
+	 * @param int    $user_id
+	 * @param string $field_name
+	 *
+	 * @return mixed
+	 */
+	public function getClientDataField( $user_id, $field_name ) {
+		return $this->model->get_data( $user_id, $field_name );
 	}
 	
-	public function getBirthdate( $user_id ) {
-		
-		return $this->model->get_data( $user_id, 'birthdate' );
-	}
-	
-	public function getUploadPath( $user_id ) {
-		
-		return $this->model->get_data( $user_id, 'program_photo_dir' );
-	}
-	
+	/**
+	 * Returns the URL to the user-uploaded image(s)
+	 *
+	 * @param int    $who
+	 * @param string $when
+	 * @param string $imageSide
+	 *
+	 * @return bool|string
+	 */
 	public function getUserImgUrl( $who, $when, $imageSide ) {
 		
 		$Tables = Tables::getInstance();
@@ -151,47 +201,71 @@ class Client {
 		return false;
 	}
 	
+	/**
+	 * Compatibility layer (Deprecated)
+	 *
+	 * @param int $user_id
+	 *
+	 * return false
+	 */
 	public function isNourishClient( $user_id = 0 ) {
 		__return_false();
 	}
 	
-	public function get_data( $clientId, $private = false, $basic = false ) {
+	/**
+	 * Returns client data for the specified $client_id
+	 *
+	 * @param  int $client_id
+	 * @param bool $private
+	 * @param bool $basic
+	 *
+	 * @return array|bool|mixed
+	 */
+	public function get_data( $client_id, $private = false, $basic = false ) {
 		
 		if ( ! $this->client_loaded ) {
 			
-			E20R_Tracker::dbg( "Client::get_data() - No client data loaded yet..." );
-			$this->setClient( $clientId );
-			// $this->get_data( $clientId );
+			Utilities::get_instance()->log( "No client data loaded yet..." );
+			$this->setClient( $client_id );
+			// $this->get_data( $client_id );
 		}
 		
 		if ( true === $basic ) {
-			E20R_Tracker::dbg( "Client::get_data() - Loading basic client data - not full survey." );
-			$data = $this->model->load_basic_clientdata( $clientId );
+			Utilities::get_instance()->log( "Loading basic client data - not full survey." );
+			$data = $this->model->load_basic_clientdata( $client_id );
 		} else {
-			E20R_Tracker::dbg( "Client::get_data() - Loading all client data including survey" );
-			$data = $this->model->get_data( $clientId );
+			Utilities::get_instance()->log( "Loading all client data including survey" );
+			$data = $this->model->get_data( $client_id );
 		}
 		
 		if ( true === $private ) {
 			
-			E20R_Tracker::dbg( "Client::get_data() - Removing private data" );
+			Utilities::get_instance()->log( "Removing private data" );
 			$data = $this->strip_private_data( $data );
 		}
 		
-		E20R_Tracker::dbg( "Client::get_data() - Returned data for {$clientId} from client_info table:" );
+		Utilities::get_instance()->log( "Returned data for {$client_id} from client_info table:" );
 		
-		// E20R_Tracker::dbg($data);
+		// Utilities::get_instance()->log($data);
 		
 		return $data;
 	}
 	
-	public function setClient( $userId ) {
+	/**
+	 * Load the client data for the $user_id
+	 *
+	 * @param int $user_id
+	 */
+	public function setClient( $user_id ) {
 		
 		$this->client_loaded = false;
-		$this->model->setUser( $userId );
+		$this->model->setUser( $user_id );
 		$this->init();
 	}
 	
+	/**
+	 * Load client specific info (the basics)
+	 */
 	public function init() {
 		
 		$Tracker = Tracker::getInstance();
@@ -204,21 +278,25 @@ class Client {
 			$currentClient->user_id = $current_user->ID;
 		}
 		
-		E20R_Tracker::dbg( 'Client::init() - Running INIT for Client Controller: ' . $Tracker->whoCalledMe() );
+		Utilities::get_instance()->log( 'Running INIT for Client Controller: ' . $Tracker->whoCalledMe() );
 		
-		if ( $this->client_loaded !== true ) {
+		if ( $this->client_loaded !== true && true === $currentClient->user_id ) {
 			
 			$this->model->setUser( $currentClient->user_id );
-			$this->model->load_basic_clientdata( $currentClient->user_id );
+			$this->model->load_client_settings( $currentClient->user_id );
 			$this->client_loaded = true;
 		}
 		
 	}
 	
+	/**
+	 * Remove data that should not be shown (private)
+	 *
+	 * @param array $cData
+	 *
+	 * @return array
+	 */
 	private function strip_private_data( $cData ) {
-		
-		$birthdateSet = false;
-		$genderSet    = false;
 		
 		$data = $cData;
 		
@@ -263,6 +341,11 @@ class Client {
 		return $data;
 	}
 	
+	/**
+	 * Return the gender for the currently loaded Client
+	 *
+	 * @return string
+	 */
 	public function getGender() {
 		
 		global $currentClient;
@@ -270,402 +353,16 @@ class Client {
 		return strtolower( $this->model->get_data( $currentClient->user_id, 'gender' ) );
 	}
 	
+	/**
+	 * Get/configure all client info for the $client_id
+	 *
+	 * @param int $client_id
+	 *
+	 * @return mixed
+	 */
 	public function get_client_info( $client_id ) {
 		
 		return $this->model->load_client_settings( $client_id );
-	}
-	
-	public function load_interview( $form ) {
-		
-		$Tracker = Tracker::getInstance();
-		global $currentClient;
-		global $current_user;
-		global $post;
-		
-		E20R_Tracker::dbg( "Client::load_interview() - Start: " . $Tracker->whoCalledMe() );
-		
-		// E20R_Tracker::dbg( $form );
-		
-		if ( stripos( $form['cssClass'], 'nourish-interview-identifier' ) === false ) {
-			
-			E20R_Tracker::dbg( 'Client::load_interview()  - Not the Program Interview form: ' . $form['cssClass'] );
-			
-			return $form;
-		} else {
-			E20R_Tracker::dbg( "Client::load_interview() - Processing a Program Interview form" );
-		}
-		
-		if ( ! is_user_logged_in() ) {
-			
-			E20R_Tracker::dbg( "Tracker::load_interview()  - User accessing form without being logged in." );
-			
-			return $form;
-		}
-		
-		E20R_Tracker::dbg( "Client::load_interview() - Loading form data: " . count( $form ) . " elements" );
-		// E20R_Tracker::dbg( "Form: " . print_r( $form, true) );
-		
-		E20R_Tracker::dbg( "Client::load_interview() Processing form object as to load existing info if needed. " );
-		
-		if ( ! isset( $currentClient->user_id ) || ( $current_user->ID !== $currentClient->user_id ) ) {
-			
-			E20R_Tracker::dbg( "Client::load_interview_data_for_client() - Loading interview for user ID {$current_user->ID} (currentClient->user_id is either undefined or different)" );
-			$this->setClient( $current_user->ID );
-		}
-		
-		return $this->model->load_interview_data_for_client( $current_user->ID, $form );
-		
-		// return $form;
-	}
-	
-	/**
-	 * @param $entry -- Survey entry (gravity forms entry object)
-	 * @param $form  -- Form object
-	 *
-	 * @return bool -- True/False
-	 */
-	public function save_interview( $entry, $form ) {
-		
-		$Tracker = Tracker::getInstance();
-		global $current_user;
-		global $post;
-		
-		E20R_Tracker::dbg( "Tracker::save_interview() - Start" );
-		
-		if ( false === stripos( $form['cssClass'], 'nourish-interview-identifier' ) ) {
-			
-			E20R_Tracker::dbg( 'Tracker::save_interview()  - Not the BitBetter Interview form: ' . $form['cssClass'] );
-			
-			return false;
-		}
-		
-		if ( ! is_user_logged_in() ) {
-			
-			E20R_Tracker::dbg( "Tracker::save_interview()  - User accessing form without being logged in." );
-			
-			return false;
-		}
-		
-		if ( ! $Tracker->hasAccess( $current_user->ID, $post->ID ) ) {
-			
-			E20R_Tracker::dbg( "Tracker::save_interview()  - User does NOT have access to this form." );
-			
-			return false;
-		}
-		
-		E20R_Tracker::dbg( "Tracker::save_interview() - Processing the Bit Better Interview form(s)." );
-		
-		$Measurements = Measurements::getInstance();
-		global $current_user;
-		$Program = Program::getInstance();
-		$Tracker = Tracker::getInstance();
-		$Article = Article::getInstance();
-		global $page;
-		
-		global $currentProgram;
-		global $currentArticle;
-		
-		$userId           = $current_user->ID;
-		$userProgramId    = ! empty( $currentProgram->id ) ? $currentProgram->id : $Program->getProgramIdForUser( $userId );
-		$userProgramStart = $currentProgram->startdate;
-		$eKey             = Tracker_Crypto::getUserKey( $userId );
-		$surveyArticle    = $Article->findArticles( 'post_id', $currentProgram->intake_form, $userProgramId );
-		
-		// E20R_Tracker::dbg($currentProgram);
-		E20R_Tracker::dbg( $surveyArticle );
-		
-		$db_Data = array(
-			'user_id'            => $userId,
-			'program_id'         => $currentProgram->id,
-			'page_id'            => ( isset( $page->ID ) ? $page->ID : CONST_NULL_ARTICLE ),
-			// 'article_id' => $currentArticle->id,
-			'article_id'         => $surveyArticle[0]->id,
-			'program_start'      => $currentProgram->startdate,
-			'user_enc_key'       => $eKey,
-			'progress_photo_dir' => "e20r_pics/client_{$userProgramId}_{$userId}",
-		);
-		
-		$fieldList = array( 'text', 'textarea', 'number', 'email', 'phone' );
-		
-		E20R_Tracker::dbg( "Client::save_interview() - Processing the Welcome Interview form" );
-		/*        E20R_Tracker::dbg($form['fields']);
-                E20R_Tracker::dbg($entry);
-        */
-		foreach ( $form['fields'] as $item ) {
-			
-			$skip = true;
-			
-			E20R_Tracker::dbg( "Client::save_interview() - Processing field type: {$item['type']}" );
-			
-			if ( 'section' != $item['type'] ) {
-				
-				$fieldName = $item['label'];
-				$subm_key  = $item['id'];
-				
-				if ( in_array( $item['type'], $fieldList ) ) {
-					
-					$skip = false;
-				}
-				
-				if ( $item['type'] == 'date' ) {
-					
-					$skip                  = true;
-					$db_Data[ $fieldName ] = date( 'Y-m-d', strtotime( $this->filterResponse( $entry[ $item['id'] ] ) ) );
-				}
-				
-				if ( $item['type'] == 'checkbox' ) {
-					
-					$checked = array();
-					
-					foreach ( $item['inputs'] as $k => $i ) {
-						
-						if ( ! empty( $entry[ $i['id'] ] ) ) {
-							
-							$checked[] = $this->filterResponse( $item['choices'][ $k ]['value'] );
-						}
-					}
-					
-					if ( ! empty( $checked ) ) {
-						
-						$db_Data[ $fieldName ] = join( ';', $checked );
-						
-					}
-					
-					$skip = true;
-				}
-				
-				if ( ( $fieldName == 'calculated_weight_lbs' ) && ( ! empty( $entry[ $item['id'] ] ) ) ) {
-					
-					E20R_Tracker::dbg( "Client::save_interview() - Saving weight as LBS..." );
-					$skip = false;
-					$Measurements->saveMeasurement( 'weight', $entry[ $item['id'] ], - 1, $userProgramId, $userProgramStart, $userId );
-				}
-				
-				if ( ( $fieldName == 'calculated_weight_kg' ) && ( ! empty( $entry[ $item['id'] ] ) ) ) {
-					
-					E20R_Tracker::dbg( "Client::save_interview() - Saving weight as KG" );
-					$skip = false;
-					$Measurements->saveMeasurement( 'weight', $entry[ $item['id'] ], - 1, $userProgramId, $userProgramStart, $userId );
-				}
-				
-				if ( $item['type'] == 'survey' ) {
-					
-					$key      = $entry[ $item['id'] ];
-					$subm_key = $item['id'];
-					
-					if ( $item['inputType'] == 'likert' ) {
-						
-						foreach ( $item['choices'] as $k => $i ) {
-							
-							foreach ( $i as $lk => $val ) {
-								
-								if ( $entry[ $subm_key ] == $item['choices'][ $k ]['value'] ) {
-									
-									$entry[ $subm_key ] = $item['choices'][ $k ]['score'];
-									$skip               = false;
-								}
-							}
-						}
-					}
-				}
-				
-				if ( $item['type'] == 'address' ) {
-					
-					E20R_Tracker::dbg( "Client::save_interview() - Saving address information: " );
-					// E20R_Tracker::dbg($entry);
-					
-					// $key = $item['id'];
-					
-					foreach ( $item['inputs'] as $k => $i ) {
-						
-						$key = $i['id'];
-						$val = $entry["{$key}"];
-						
-						$splt = preg_split( "/\./", $key );
-						
-						switch ( $splt[1] ) {
-							case '1':
-								$fieldName = 'address_1';
-								break;
-							
-							case '2':
-								$fieldName = 'address_2';
-								break;
-							
-							case '3':
-								$fieldName = 'address_city';
-								break;
-							
-							case '4':
-								$fieldName = 'address_state';
-								break;
-							
-							case '5':
-								$fieldName = 'address_zip';
-								break;
-							
-							case '6':
-								$fieldName = 'address_country';
-								break;
-						}
-						
-						E20R_Tracker::dbg( "Client::save_interview() - Field: {$fieldName}, Item #: {$key} -> Value: {$val}" );
-						
-						// E20R_Tracker::dbg($entry[ {$i['id']} ]);
-						
-						
-						if ( ! empty( $val ) ) {
-							
-							E20R_Tracker::dbg( "Client::save_interview() - Saving address item {$fieldName} -> {$val}" );
-							$db_Data[ $fieldName ] = $this->filterResponse( $val );
-						}
-						
-					}
-					
-					$skip = true;
-				}
-				
-				if ( $item['type'] == 'multiselect' ) {
-					
-					E20R_Tracker::dbg( "Client::save_interview() - Processing MultiSelect" );
-					
-					if ( isset( $entry[ $subm_key ] ) ) {
-
-//                        $selections = explode(",", $entry[$subm_key]);
-//                        E20R_Tracker::dbg( $selections );
-						
-						E20R_Tracker::dbg( "Client::save_interview() - Multiselect - Field: {$fieldName}, subm_key={$subm_key}, entryVal={$entry[$subm_key]}, item={$item['choices'][$k]['value']}" );
-						$db_Data[ $fieldName ] = $this->filterResponse( $entry[ $subm_key ] );
-					}
-				}
-				
-				if ( $item['type'] == 'select' ) {
-					
-					if ( ! empty( $entry[ $subm_key ] ) ) {
-						
-						foreach ( $item['choices'] as $k => $v ) {
-							
-							E20R_Tracker::dbg( "Client::save_interview() - Select item: Field: {$fieldName}, subm_key={$subm_key}, entryVal={$entry[$subm_key]}, item={$item['choices'][$k]['value']}" );
-							
-							if ( $item['choices'][ $k ]['value'] == $entry[ $subm_key ] ) {
-								
-								$db_Data[ $fieldName ] = $this->filterResponse( $item['choices'][ $k ]['value'] );
-							}
-						}
-					}
-				}
-				
-				if ( $item['type'] == 'radio' ) {
-					
-					if ( ! empty( $entry[ $subm_key ] ) ) {
-						
-						// Handle cases where Yes/No fields have 0/1 values.
-						E20R_Tracker::dbg( "Client::save_interview() - Processing numeric radio button value: {$entry[$subm_key]}" );
-						/*
-                                                if ( in_array( $entry[$subm_key], array( 'Yes', 'No' ) ) ) {
-
-                                                    switch ( $entry[$subm_key] ) {
-                                                        case 'No':
-                                                            $db_Data[ $fieldName ] = 0;
-                                                            break;
-
-                                                        case 'Yes':
-                                                            $db_Data[ $fieldName ] = 1;
-                                                            break;
-                                                    }
-                                                    // $data[ $fieldName ] = $this->filterResponse( $entry[$subm_key] );
-                                                    $skip = true;
-                                                }
-                        */
-						foreach ( $item['choices'] as $k => $v ) {
-							
-							// E20R_Tracker::dbg($item['choices'][$k]);
-							
-							if ( $item['choices'][ $k ]['value'] == $entry[ $subm_key ] ) {
-								
-								E20R_Tracker::dbg( "Client::save_interview() - Processing radio button: Value: {$item['choices'][ $k ]['value']}" );
-								$db_Data[ $fieldName ] = $this->filterResponse( $item['choices'][ $k ]['value'] );
-								$skip                  = true;
-							}
-						}
-					}
-				}
-				
-				if ( ! $skip ) {
-					
-					if ( empty( $entry[ $subm_key ] ) ) {
-						
-						continue;
-					}
-					
-					$data = trim( $entry[ $subm_key ] );
-					E20R_Tracker::dbg( "Client::save_interview() - Data being stored: .{$data}." );
-					
-					if ( 'textarea' == $item['type'] ) {
-						
-						$data = wp_kses_post( $data );
-					}
-					
-					// Encrypt the data.
-					$encData               = $this->filterResponse( $data );
-					$db_Data[ $fieldName ] = $encData;
-				} else {
-					E20R_Tracker::dbg( "Client::save_interview() - Skipped field of type: {$item['type']} and with value: " . ( isset( $entry[ $item['id'] ] ) ? $entry[ $item['id'] ] : 'null' ) );
-				}
-			}
-		} // End of foreach loop for submitted form
-		
-		if ( WP_DEBUG ) {
-			E20R_Tracker::dbg( "Client::save_interview() - Data to save: " );
-			E20R_Tracker::dbg( $db_Data );
-		}
-		
-		E20R_Tracker::dbg( "Client::save_interview() - Assigning a coach for this user " );
-		$db_Data['coach_id'] = $this->assign_coach( $userId, $db_Data['gender'] );
-		
-		E20R_Tracker::dbg( "Client::save_interview() - Configure the exercise level for this user" );
-		$this->assign_exercise_level( $userId, $db_Data );
-		
-		E20R_Tracker::dbg( "Client::save_interview() - Saving the client interview data to the DB. " );
-		
-		if ( $this->model->save_client_interview( $db_Data ) ) {
-			
-			E20R_Tracker::dbg( "Client::save_interview() - Saved data to the database " );
-			
-			E20R_Tracker::dbg( "Client::save_interview() - Removing any GF entry data from database." );
-			$this->remove_survey_form_entry( $entry );
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private function filterResponse( $data ) {
-		
-		switch ( $data ) {
-			
-			case 'Yes':
-				$data = 1;
-				break;
-			
-			case 'No':
-				$data = 0;
-				break;
-			
-			case 'M':
-				$data = 'm';
-				break;
-			
-			case 'F':
-				$data = 'f';
-				break;
-		}
-		
-		// Preserve \n in textboxes
-		$data = implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $data ) ) );
-		
-		return $data;
 	}
 	
 	/**
@@ -681,7 +378,7 @@ class Client {
 		$Program = Program::getInstance();
 		global $currentProgram;
 		
-		E20R_Tracker::dbg( "Client::assign_coach() - Loading program settings for {$user_id}" );
+		Utilities::get_instance()->log( "Loading program settings for {$user_id}" );
 		
 		$old_program = $currentProgram;
 		$Program->getProgramIdForUser( $user_id );
@@ -690,25 +387,25 @@ class Client {
 		
 		switch ( strtolower( $gender ) ) {
 			case 'm':
-				E20R_Tracker::dbg( "Client::assign_coach() - attempting to find a male coach for {$user_id} in program {$currentProgram->id}" );
-				E20R_Tracker::dbg( $currentProgram );
+				Utilities::get_instance()->log( "attempting to find a male coach for {$user_id} in program {$currentProgram->id}" );
+				Utilities::get_instance()->log( $currentProgram );
 				
 				$coach = $this->find_next_coach( $currentProgram->male_coaches, $currentProgram->id );
 				break;
 			
 			case 'f':
-				E20R_Tracker::dbg( "Client::assign_coach() - attempting to find a female coach for {$user_id} in program {$currentProgram->id}" );
+				Utilities::get_instance()->log( "attempting to find a female coach for {$user_id} in program {$currentProgram->id}" );
 				$coach = $this->find_next_coach( $currentProgram->female_coaches, $currentProgram->id );
 				break;
 			
 			default:
-				E20R_Tracker::dbg( "Client::assign_coach() - attempting to find a coach for {$user_id} in program {$currentProgram->id}" );
+				Utilities::get_instance()->log( "attempting to find a coach for {$user_id} in program {$currentProgram->id}" );
 				$coaches = array_merge( $currentProgram->male_coaches, $currentProgram->female_coaches );
 				$coach   = $this->find_next_coach( $coaches, $currentProgram->id );
 		}
 		
 		if ( false !== $coach ) {
-			E20R_Tracker::dbg( "Client::assign_coach() - Found coach: {$coach} for {$user_id}" );
+			Utilities::get_instance()->log( "Found coach: {$coach} for {$user_id}" );
 			$this->assign_client_to_coach( $currentProgram->id, $coach, $user_id );
 			$coach_id = $coach;
 		}
@@ -717,16 +414,23 @@ class Client {
 		return $coach_id;
 	}
 	
+	/**
+	 * Locate the next available coach for the program (ID)
+	 *
+	 * @param array $coach_arr
+	 * @param int   $program_id
+	 *
+	 * @return bool|int|null|string
+	 */
 	public function find_next_coach( $coach_arr, $program_id ) {
-		E20R_Tracker::dbg( "Client::find_next_coach() - Searching for the coach with the fewest clients so far.." );
+		Utilities::get_instance()->log( "Searching for the coach with the fewest clients so far.." );
 		
 		$coaches = array();
 		
 		foreach ( $coach_arr as $cId ) {
 			
 			$client_list = get_user_meta( $cId, 'e20r-tracker-client-program-list', true );
-			E20R_Tracker::dbg( "Client::find_next_coach() - Client list for coach {$cId} consists of " . ( false === $client_list ? 'None' : count( $client_list ) . " entries" ) );
-			E20R_Tracker::dbg( $client_list );
+			Utilities::get_instance()->log( "Client list for coach {$cId} consists of " . ( false === $client_list ? 'None' : count( $client_list ) . " entries: " . print_r($client_list, true ) ) );
 			
 			if ( ( false !== $client_list ) && ( ! empty( $client_list ) ) ) {
 				
@@ -736,15 +440,14 @@ class Client {
 			}
 		}
 		
-		E20R_Tracker::dbg( "Client::find_next_coach() - List of coaches and the number of clients they have been assigned..." );
-		E20R_Tracker::dbg( $coaches );
+		Utilities::get_instance()->log( "List of coaches and the number of clients they have been assigned... " . print_r( $coaches, true ) );
 		
 		if ( asort( $coaches ) ) {
 			
 			reset( $coaches );
 			$coach_id = key( $coaches );
 			
-			E20R_Tracker::dbg( "Client::find_next_coach() - Selected coach with ID: {$coach_id} in program {$program_id}" );
+			Utilities::get_instance()->log( "Selected coach with ID: {$coach_id} in program {$program_id}" );
 			
 			return $coach_id;
 		}
@@ -752,10 +455,19 @@ class Client {
 		return false;
 	}
 	
+	/**
+	 * Assign a coach ($coach_id) to the specified client for the program ID
+	 *
+	 * @param int $program_id
+	 * @param int $coach_id
+	 * @param int $client_id
+	 *
+	 * @return bool|int
+	 */
 	public function assign_client_to_coach( $program_id, $coach_id, $client_id ) {
+		
 		$client_list = get_user_meta( $coach_id, 'e20r-tracker-client-program-list', true );
-		E20R_Tracker::dbg( "Client::assign_client_to_coach() - Coach {$coach_id} has the following programs & clients he/she is coaching: " );
-		E20R_Tracker::dbg( $client_list );
+		Utilities::get_instance()->log( "Coach {$coach_id} has the following programs & clients he/she is coaching: "  . print_r($client_list, true ));
 		
 		if ( $client_list == false ) {
 			
@@ -782,15 +494,14 @@ class Client {
 			$client_list[ $program_id ] = $clients;
 		}
 		
-		E20R_Tracker::dbg( "Client::assign_client_to_coach() - Assigned client list for program {$program_id}: " );
-		E20R_Tracker::dbg( $client_list );
+		Utilities::get_instance()->log( "Assigned client list for program {$program_id}: " . print_r( $client_list, true ));
 		
-		E20R_Tracker::dbg( "Client::assign_client_to_coach() - Assigned user {$client_id} in program {$program_id} to coach {$coach_id}" );
+		Utilities::get_instance()->log( "Assigned user {$client_id} in program {$program_id} to coach {$coach_id}" );
 		if ( false !== ( $clients = get_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids' ) ) ) {
 			
 			if ( ! in_array( $client_id, $clients ) ) {
 				
-				E20R_Tracker::dbg( "Client::assign_client_to_coach() - Saved client Id to the array of clients for this coach ($coach_id)" );
+				Utilities::get_instance()->log( "Saved client Id to the array of clients for this coach ($coach_id)" );
 				add_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids', $client_id );
 			}
 		}
@@ -799,7 +510,7 @@ class Client {
 			
 			if ( ! in_array( $program_id, $programs ) ) {
 				
-				E20R_Tracker::dbg( "Client::assign_client_to_coach() - Saved program id to the array of programs for this coach ($coach_id)" );
+				Utilities::get_instance()->log( "Saved program id to the array of programs for this coach ($coach_id)" );
 				add_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids', $program_id );
 			}
 		}
@@ -821,23 +532,23 @@ class Client {
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		$el_score   = 0;
 		
-		E20R_Tracker::dbg( $data );
+		Utilities::get_instance()->log( $data );
 		
 		switch ( $data['exercise_level'] ) {
 			case 'complete-beginner':
 			case 'some-experience':
-				E20R_Tracker::dbg( "Client::assign_exercise_level() -  Self-reported as inexperienced exerciser" );
+				Utilities::get_instance()->log( " Self-reported as inexperienced exerciser" );
 				$el_score = 1;
 				break;
 			
 			case 'comfortable':
-				E20R_Tracker::dbg( "Client::assign_exercise_level() -  Self-reported as intermediate exerciser" );
+				Utilities::get_instance()->log( " Self-reported as intermediate exerciser" );
 				$el_score = 2;
 				break;
 			
 			case 'very-experienced':
 			case 'advanced':
-				E20R_Tracker::dbg( "Client::assign_exercise_level() -  Self-reported as experienced exerciser" );
+				Utilities::get_instance()->log( " Self-reported as experienced exerciser" );
 				$el_score = 3;
 				break;
 		}
@@ -845,7 +556,7 @@ class Client {
 		// Lower the user's exercise level score if they're injured
 		if ( 'yes' === strtolower( $data['limiting_injuries'] ) ) {
 			
-			E20R_Tracker::dbg( "Client::assign_exercise_level() -  Lowering exercise level score due to injury." );
+			Utilities::get_instance()->log( " Lowering exercise level score due to injury." );
 			
 			if ( 1 === $el_score ) {
 				$el_score = 1;
@@ -882,31 +593,29 @@ class Client {
 				$hw_score = 0;
 		}
 		
-		E20R_Tracker::dbg( "Client::assign_exercise_level() -  Exercise per hour score: {$hw_score}" );
+		Utilities::get_instance()->log( " Exercise per hour score: {$hw_score}" );
 		
 		// Can't be "experienced" if they don't currently exercise
-		if ( 1 == $data['exercise_plan'] ) {
-			E20R_Tracker::dbg( "Client::assign_exercise_level() -  Performs regular exercise, so is allowed to be selected for experienced level." );
-			$can_be_ex = true;
-		} else {
-			$can_be_ex = false;
+		if ( 1 !== $data['exercise_plan'] ) {
+			Utilities::get_instance()->log( " Performs regular exercise, so is allowed to be selected for experienced level." );
+			$can_be_ex = false || $can_be_ex;
 		}
 		
 		$total_exp = $el_score + $hw_score;
 		
 		// "experienced"
 		if ( true === $can_be_ex && ( 6 === $total_exp || ( 3 === $el_score && $hw_score == 2 ) ) ) {
-			E20R_Tracker::dbg( "Client::assign_exercise_level() -  User {$user_id} qualifies as 'Experienced'" );
+			Utilities::get_instance()->log( " User {$user_id} qualifies as 'Experienced'" );
 			$role = $user_roles['experienced']['role'];
 			
 			// $el_score = 1 or 2 and $hw_score = 1, 2, 3 ('intermediate')
 		} else if ( $total_exp <= 5 || $total_exp >= 3 ) {
-			E20R_Tracker::dbg( "Client::assign_exercise_level() -  User {$user_id} qualifies as 'Intermediate'" );
+			Utilities::get_instance()->log( " User {$user_id} qualifies as 'Intermediate'" );
 			$role = $user_roles['intermediate']['role'];
 			
 			// Beginner
 		} else {
-			E20R_Tracker::dbg( "Client::assign_exercise_level() -  User {$user_id} qualifies as 'New to Exercise'" );
+			Utilities::get_instance()->log( " User {$user_id} qualifies as 'New to Exercise'" );
 			$role = $user_roles['beginner']['role'];
 		}
 		
@@ -915,23 +624,25 @@ class Client {
 		// Clean up any pre-existing roles for this user
 		foreach ( $user->roles as $r ) {
 			
-			E20R_Tracker::dbg( "Client::assign_exercise_level() - Checking role '{$r}' for user {$user_id}" );
+			Utilities::get_instance()->log( "Checking role '{$r}' for user {$user_id}" );
 			
 			if ( in_array( $r, array( 'e20r_tracker_exp_1', 'e20r_tracker_exp_2', 'e20r_tracker_exp_3' ) ) ) {
-				E20R_Tracker::dbg( "Client::assign_exercise_level() - User has pre-existing role {$r}. Being removed" );
+				Utilities::get_instance()->log( "User has pre-existing role {$r}. Being removed" );
 				$user->remove_role( $r );
 			}
 		}
 		
-		E20R_Tracker::dbg( "Client::assign_exercise_level() - Do we need to upgrade the user ({$user->ID}) from their current {$role} exericse level?" );
+		Utilities::get_instance()->log( "Do we need to upgrade the user ({$user->ID}) from their current {$role} exericse level?" );
 		$this->maybe_upgrade_role( $user, $role );
 		
 		// assign new exercise exerience role
-		E20R_Tracker::dbg( "Client::assign_exercise_level() - Adding role {$role} to user {$user_id}." );
+		Utilities::get_instance()->log( "Adding role {$role} to user {$user_id}." );
 		$user->add_role( $role );
 	}
 	
 	/**
+	 * Do we upgrade the user's exercise role (based on past history)
+	 *
 	 * @param \WP_User $user
 	 * @param string   $role_name
 	 */
@@ -955,19 +666,19 @@ class Client {
 		
 		if ( $current_day >= $first_upgrade_day && $current_day < $second_upgrade_day ) {
 			$new_role = $this->select_next_role( $role_name );
-			E20R_Tracker::dbg( "Client::maybe_upgrade_role() - Yes we do.. Upgrading from {$role_name} to {$new_role} on day # {$first_upgrade_day}" );
+			Utilities::get_instance()->log( "Yes we do.. Upgrading from {$role_name} to {$new_role} on day # {$first_upgrade_day}" );
 		}
 		
 		if ( $current_day >= $second_upgrade_day ) {
 			$new_role = $this->select_next_role( $role_name );
-			E20R_Tracker::dbg( "Client::maybe_upgrade_role() - Yes we do (2nd upgrade). Upgrading from {$role_name} to {$new_role} on day # {$second_upgrade_day}" );
+			Utilities::get_instance()->log( "Yes we do (2nd upgrade). Upgrading from {$role_name} to {$new_role} on day # {$second_upgrade_day}" );
 		}
 		
 		$user_upgrade_level = get_user_meta( $user->ID, '_Tracker_upgraded_to', true );
 		
 		if ( ( ! is_null( $new_role ) && $user_upgrade_level !== $new_role ) ) {
 			
-			E20R_Tracker::dbg( "Client::maybe_upgrade_role() - Changing user role from " );
+			Utilities::get_instance()->log( "Changing user role from " );
 			$user->add_role( $new_role );
 			$user->remove_role( $role_name );
 			
@@ -975,6 +686,13 @@ class Client {
 		}
 	}
 	
+	/**
+	 * Select the role to assign
+	 *
+	 * @param string $role_name
+	 *
+	 * @return mixed
+	 */
 	private function select_next_role( $role_name ) {
 		
 		$roles = apply_filters( 'e20r-tracker-configured-roles', array() );
@@ -1001,173 +719,42 @@ class Client {
 	}
 	
 	/**
-	 * Prevents Gravity Form entries from being stored in the database.
+	 * Returns the coach ID(s) for the specified client
 	 *
-	 * @global object $wpdb  The WP database object.
+	 * @param null $client_id
+	 * @param null $program_id
 	 *
-	 * @param array   $entry Array of entry data.
-	 *
-	 * @return bool - False or nothing if error/nothing to do.
+	 * @return string[]
 	 */
-	public function remove_survey_form_entry( $entry ) {
-		
-		$Tracker = Tracker::getInstance();
-		global $current_user;
-		global $post;
-		
-		global $currentProgram;
-		global $currentArticle;
-		
-		$ids = array();
-		
-		if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $post->ID == $currentProgram->intake_form ) ) {
-			
-			E20R_Tracker::dbg( "Client::remove_survey_form_entry() - Processing on the intake form page with the gravityform shortcode present" );
-			$ids = $this->find_gf_id( $post->post_content );
-		}
-		
-		if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $currentArticle->is_survey == 1 ) && ( $currentArticle->post_id == $post->ID ) ) {
-			
-			E20R_Tracker::dbg( "Client::remove_survey_form_entry() - Processing on a survey article page with the gravityform shortcode present" );
-			$ids = $this->find_gf_id( $post->post_content );
-		}
-		
-		if ( empty( $ids ) ) {
-			
-			E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - This is not the BitBetter Interview form!" );
-			
-			return false;
-		}
-		
-		if ( ! is_user_logged_in() ) {
-			
-			E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - User accessing form without being logged in." );
-			
-			return false;
-		}
-		
-		if ( ! $Tracker->hasAccess( $current_user->ID, $post->ID ) ) {
-			
-			E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - User doesn't have access to this form." );
-			
-			return false;
-		}
-		
-		global $wpdb;
-		
-		// Prepare variables.
-		$lead_id                = $entry['id'];
-		$lead_table             = \RGFormsModel::get_lead_table_name();
-		$lead_notes_table       = \RGFormsModel::get_lead_notes_table_name();
-		$lead_detail_table      = \RGFormsModel::get_lead_details_table_name();
-		$lead_detail_long_table = \RGFormsModel::get_lead_details_long_table_name();
-		
-		E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - Removing entries from the lead_detail_long_table" );
-		// Delete from lead detail long.
-		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_long_table WHERE lead_detail_id IN(SELECT id FROM $lead_detail_table WHERE lead_id = %d)", $lead_id );
-		$wpdb->query( $sql );
-		
-		E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - Removing entries from the lead_detail_table" );
-		
-		// Delete from lead details.
-		$wpdb->delete( $lead_detail_table, array( 'lead_id' => $lead_id ), array( '%d' ) );
-		
-		// Delete from lead notes.
-		E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - Removing entries from the lead_notes_table" );
-		$wpdb->delete( $lead_notes_table, array( 'lead_id' => $lead_id ), array( '%d' ) );
-		
-		// Delete from lead.
-		E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - Removing entries from the lead_table" );
-		$wpdb->delete( $lead_table, array( 'id' => $lead_id ), array( '%d' ) );
-		
-		E20R_Tracker::dbg( "Tracker::remove_survey_form_entry()  - Removing entries from any addons" );
-		// Finally, ensure everything is deleted (like stuff from Addons).
-		\GFAPI::delete_entry( $lead_id );
-		
-		return true;
-	}
-	
-	private function find_gf_id( $content ) {
-		
-		preg_match_all( "/\[[^\]]*\]/", $content, $matches );
-		
-		foreach ( $matches as $k => $match ) {
-			
-			foreach ( $match as $sc ) {
-				
-				preg_match( '/id="(\d*)"/', $sc, $ids );
-			}
-		}
-		
-		return $ids;
-	}
-	
 	public function get_coach( $client_id = null, $program_id = null ) {
 		
-		E20R_Tracker::dbg( "Client::get_coach() - Loading coach information for program with ID: " . ( is_null( $program_id ) ? 'Undefined' : $program_id ) );
+		Utilities::get_instance()->log( "Loading coach information for program with ID: " . ( is_null( $program_id ) ? 'Undefined' : $program_id ) );
 		
 		$coaches = $this->model->get_coach( $client_id, $program_id );
-		E20R_Tracker::dbg( "Client::get_coach() - Returning coaches: " );
-		E20R_Tracker::dbg( $coaches );
+		Utilities::get_instance()->log( "Returning coaches: " . print_r( $coaches, true ) );
 		
 		return $coaches;
 	}
 	
-	public function process_gf_fields( $value, $field, $name ) {
-		
-		global $currentClient;
-		
-		$type = \GFFormsModel::get_input_type( $field );
-		
-		if ( ( 'likert' == $type ) && $field->allowsPrepopulate ) {
-			
-			$col_value = null;
-			
-			foreach ( $field->choices as $i ) {
-				
-				if ( $i['isSelected'] == 1 ) {
-					
-					return $i['value'];
-				}
-			}
-		}
-		
-		if ( ( 'multichoice' == $type ) && $field->allowsPrepopulate ) {
-			
-			$col_value = null;
-			
-			foreach ( $field->choices as $i ) {
-				
-				if ( 1 == $i['isSelected'] ) {
-					
-					return $i['value'];
-				}
-			}
-		}
-		
-		if ( ( 'address' == $type ) && $field->allowsPrepopulate && ! is_null( $currentClient->user_id ) ) {
-			
-			$val = $this->model->get_data( $currentClient->user_id, $name );
-			
-			E20R_Tracker::dbg( "Client::process_gf_fields() - Found the {$name} field for user ({$currentClient->user_id}): {$val}" );
-			
-			return $val;
-		}
-		
-		return $value;
-	}
-	
+	/**
+	 * Save the weight or length unit (when updated by the user)
+	 *
+	 * @param string $type
+	 * @param string $unit
+	 *
+	 * @return bool
+	 */
 	public function saveNewUnit( $type, $unit ) {
 		
 		switch ( $type ) {
 			
 			case 'length':
 				
-				E20R_Tracker::dbg( "Client::saveNewUnit() - Saving new length unit: {$unit}" );
+				Utilities::get_instance()->log( "Saving new length unit: {$unit}" );
 				try {
 					$this->model->saveUnitInfo( $unit, $this->getWeightUnit() );
 				} catch ( \Exception $exception ) {
-					E20R_Tracker::dbg( "Unable to save length unit {$unit}: " . $exception->getMessage() );
+					Utilities::get_instance()->log( "Unable to save length unit {$unit}: " . $exception->getMessage() );
 					
 					return false;
 				}
@@ -1175,11 +762,11 @@ class Client {
 			
 			case 'weight':
 				
-				E20R_Tracker::dbg( "Client::saveNewUnit() - Saving new weight unit: {$unit}" );
+				Utilities::get_instance()->log( "Saving new weight unit: {$unit}" );
 				try {
 					$this->model->saveUnitInfo( $this->getLengthUnit(), $unit );
 				} catch ( \Exception $exception ) {
-					E20R_Tracker::dbg( "Unable to save Weight unit {$unit}: " . $exception->getMessage() );
+					Utilities::get_instance()->log( "Unable to save Weight unit {$unit}: " . $exception->getMessage() );
 					
 					return false;
 				}
@@ -1189,31 +776,60 @@ class Client {
 		return true;
 	}
 	
+	/**
+	 * Return the configured weight unit for the $currentClient
+	 *
+	 * @return bool|string
+	 *
+	 * @since 3.0 - ENHANCEMENT: Added caching for the weight unit
+	 */
 	public function getWeightUnit() {
 		
 		global $currentClient;
+		global $client_weight_unit;
 		
-		return $this->model->get_data( $currentClient->user_id, 'weightunits' );
+		if ( empty( $client_weight_unit ) ) {
+			$client_weight_unit = $this->model->get_data( $currentClient->user_id, 'weightunits' );
+		}
+		
+		return $client_weight_unit;
 	}
 	
+	/**
+	 * Return the configured length unit for the $currentClient
+	 *
+	 * @return bool|string
+	 *
+	 * @since 3.0 - ENHANCEMENT: Added caching for the length unit
+	 */
 	public function getLengthUnit() {
 		
 		global $currentClient;
+		global $client_length_unit;
 		
-		return $this->model->get_data( $currentClient->user_id, 'lengthunits' );
+		if ( empty( $client_length_unit ) ) {
+			$client_length_unit = $this->model->get_data( $currentClient->user_id, 'lengthunits' );
+		}
+		
+		return $client_length_unit;
 	}
 	
+	/**
+	 * Load the client data we have to the $currentClient global for the $user_id
+	 *
+	 * @param int $user_id
+	 */
 	public function loadClientInfo( $user_id ) {
 		
 		try {
 			
-			E20R_Tracker::dbg( "Client::loadClientInfo() - Loading data for client model" );
+			Utilities::get_instance()->log( "Loading data for client model" );
 			$this->model->setUser( $user_id );
 			$this->model->get_data( $user_id );
 			
 		} catch ( \Exception $e ) {
 			
-			E20R_Tracker::dbg( "Error loading user data for ({$user_id}): " . $e->getMessage() );
+			Utilities::get_instance()->log( "Error loading user data for ({$user_id}): " . $e->getMessage() );
 		}
 		
 	}
@@ -1224,13 +840,11 @@ class Client {
 	public function render_client_page( $lvlName = '', $client_id = 0 ) {
 		
 		global $current_user;
-		global $currentClient;
-		global $currentProgram;
 		
-		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
-		if ( ! $Tracker->is_a_coach( $current_user->ID ) ) {
+		if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 			
 			$this->set_not_coach_msg();
 		}
@@ -1245,7 +859,7 @@ class Client {
 		
 		if ( $client_id != 0 ) {
 			
-			E20R_Tracker::dbg( "Client::render_client_page() - Forcing client ID to {$client_id}" );
+			Utilities::get_instance()->log( "Forcing client ID to {$client_id}" );
 			$this->setClient( $client_id );
 		}
 		
@@ -1253,16 +867,19 @@ class Client {
 		
 		$this->model->get_data( $client_id );
 		
-		E20R_Tracker::dbg( "Client::render_client_page() - Loading admin page for the Client {$client_id}" );
+		Utilities::get_instance()->log( "Loading admin page for the Client {$client_id}" );
 		echo $this->view->viewClientAdminPage( $lvlName, $w_level );
-		E20R_Tracker::dbg( "Client::render_client_page() - Admin page for client {$client_id} has been loaded" );
+		Utilities::get_instance()->log( "Admin page for client {$client_id} has been loaded" );
 	}
 	
+	/**
+	 * Deny access to Coaching page (backend) if not a registered coach
+	 */
 	private function set_not_coach_msg() {
 		
 		$Tracker = Tracker::getInstance();
 		
-		E20R_Tracker::dbg( "Client::set_not_coach_msg() - User isn't a coach. Return error & force redirect" );
+		Utilities::get_instance()->log( "User isn't a coach. Return error & force redirect" );
 		
 		$error = '<div class="error">';
 		$error .= '    <p>' . __( "Sorry, as far as the Web Monkey knows, you are not a coach and will not be allowed to access the Coach's Page.", "e20r-tracker" ) . '</p>';
@@ -1273,13 +890,16 @@ class Client {
 		
 	}
 	
+	/**
+	 * AJAX handler for Lenght/Weight Unit updates (including recalculating)
+	 */
 	public function updateUnitTypes() {
 		
-		E20R_Tracker::dbg( "Client::updateUnitTypes() - Attempting to update the Length or weight Units via AJAX" );
+		Utilities::get_instance()->log( "Attempting to update the Length or weight Units via AJAX" );
 		
 		check_ajax_referer( 'e20r-tracker-progress', 'e20r-progress-nonce' );
 		
-		E20R_Tracker::dbg( "Client::updateUnitTypes() - POST content: " . print_r( $_POST, true ) );
+		Utilities::get_instance()->log( "POST content: " . print_r( $_POST, true ) );
 		
 		global $current_user;
 		global $currentClient;
@@ -1299,7 +919,7 @@ class Client {
 			
 			$Measurements->updateMeasurementsForType( $dimension, $value );
 		} catch ( \Exception $e ) {
-			E20R_Tracker::dbg( "Client::updateUnitTypes() - Error updating measurements for new measurement type(s): " . $e->getMessage() );
+			Utilities::get_instance()->log( "Error updating measurements for new measurement type(s): " . $e->getMessage() );
 			wp_send_json_error( sprintf( __( "Error updating existing data: %s", "e20r-tracker" ), $e->getMessage() ) );
 			exit();
 		}
@@ -1321,34 +941,33 @@ class Client {
 		try {
 			$this->model->saveUnitInfo( $this->lengthunits, $this->weightunits );
 		} catch ( \Exception $e ) {
-			E20R_Tracker::dbg( "Client::updateUnitTypes() - Error updating measurement unit for {$dimension}" );
+			Utilities::get_instance()->log( "Error updating measurement unit for {$dimension}" );
 			wp_send_json_error( sprintf( __( "Unable to save new %s type ", "e20r-tracker" ), $dimension ) );
 			exit();
 		}
 		
-		E20R_Tracker::dbg( "Client::updateUnitTypes() - Unit type updated" );
+		Utilities::get_instance()->log( "Unit type updated" );
 		wp_send_json_success( __( "All data updated ", "e20r-tracker" ) );
 		exit();
 	}
 	
-	function ajax_getMemberlistForLevel() {
-		// E20R_Tracker::dbg($_POST);
+	/**
+	 * Return the list of user(s) for a specific membership level
+	 */
+	public function ajax_getMemberlistForLevel() {
+		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' );
-		
-		$Tracker = Tracker::getInstance();
-		
 		$levelId = ! empty( $_REQUEST['hidden_e20r_level'] ) ? intval( $_REQUEST['hidden_e20r_level'] ) : 0;
 		
 		$this->init();
 		
-		E20R_Tracker::dbg( "Client::getMemberListForLevel() - Program requested: {$levelId}" );
+		Utilities::get_instance()->log( "Program requested: {$levelId}" );
 		
 		if ( $levelId != 0 ) {
 			
 			// $levels = $Tracker->getMembershipLevels( $levelId );
 			// $this->load_levels( $levelObj->name );
-			// E20R_Tracker::dbg("Client::getMemberListForLevel() - Loading members:");
-			// E20R_Tracker::dbg($levels);
+			// Utilities::get_instance()->log("Loading members: " . print_r( $levels, true ) );
 			
 			$data = $this->view->viewMemberSelect( $levelId );
 		} else {
@@ -1362,7 +981,14 @@ class Client {
 		
 	}
 	
-	public function updateRoleForUser( $userId ) {
+	/**
+	 * Update the role (exercise level) for the user_id
+	 *
+	 * @param int $user_id
+	 *
+	 * @return bool
+	 */
+	public function updateRoleForUser( $user_id ) {
 		
 		// global $currentProgram;
 		$Tracker = Tracker::getInstance();
@@ -1376,9 +1002,9 @@ class Client {
 		
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		
-		E20R_Tracker::dbg( "Tracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$userId}" );
+		Utilities::get_instance()->log( "Tracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$user_id}" );
 		
-		$u = get_user_by( 'id', $userId );
+		$u = get_user_by( 'id', $user_id );
 		
 		if ( ! empty( $role_name ) ) {
 			
@@ -1386,52 +1012,54 @@ class Client {
 		} else {
 			if ( in_array( $user_roles['coach']['role'], $u->roles ) ) {
 				
-				E20R_Tracker::dbg( "Client::updateRoleForUser() - Removing 'coach' capability/role for user {$userId}" );
+				Utilities::get_instance()->log( "Removing 'coach' capability/role for user {$user_id}" );
 				$u->remove_role( $user_roles['coach']['role'] );
 			}
-			
-			// wp_die( "Unable to remove the {$role_name} role for this user ({$userId})" );
 		}
 		
-		
-		if ( false !== ( $pgmList = get_user_meta( $userId, "e20r-tracker-coaching-program_ids" ) ) ) {
+		if ( false !== ( $pgmList = get_user_meta( $user_id, "e20r-tracker-coaching-program_ids" ) ) ) {
 			
 			foreach ( $programs as $p ) {
 				
 				if ( ! in_array( $p, $pgmList ) ) {
-					E20R_Tracker::dbg( "Client::updateRoleForUser() - Adding program IDs this user is a coach for" );
-					E20R_Tracker::dbg( $programs );
-					add_user_meta( $userId, 'e20r-tracker-coaching-program_ids', $programs );
+					Utilities::get_instance()->log( "Adding program IDs this user is a coach for: " . print_r( $programs, true ) );
+					add_user_meta( $user_id, 'e20r-tracker-coaching-program_ids', $programs );
 				}
 			}
 		}
 		
 		
-		if ( false === ( $pgms = get_user_meta( $userId, 'e20r-tracker-coaching-program_ids' ) ) ) {
+		if ( false === ( $pgms = get_user_meta( $user_id, 'e20r-tracker-coaching-program_ids' ) ) ) {
 			
 			wp_die( "Unable to save the list of programs this user is a coach for" );
 		}
 		
-		E20R_Tracker::dbg( "Client::updateRoleForUser() - User roles are now: " );
-		E20R_Tracker::dbg( $u->caps );
-		E20R_Tracker::dbg( "Client::updateRoleForUser() - And they are a coach for: " );
-		E20R_Tracker::dbg( $pgms );
+		Utilities::get_instance()->log( "User roles are now: " . print_r( $u->caps, true ) );
+		Utilities::get_instance()->log( "And they are a coach for: " . print_r( $pgms, true ) );
 		
 		return true;
 	}
 	
+	/**
+	 * Generate 'select role' dialog on User's profile page (for admins)
+	 *
+	 * @param \WP_User $user
+	 */
 	public function selectRoleForUser( $user ) {
 		
 		$Program = Program::getInstance();
 		
-		E20R_Tracker::dbg( "Client::selectRoleForUser() - Various roles & capabilities for user {$user->ID}" );
+		Utilities::get_instance()->log( "Various roles & capabilities for user {$user->ID}" );
 		
 		$allPrograms = $Program->get_programs();
-		E20R_Tracker::dbg( $allPrograms );
+		Utilities::get_instance()->log( "Programs: " . print_r( $allPrograms, true ) );
 		
 		echo $this->view->profile_view_user_settings( $user->ID, $allPrograms );
 	}
 	
+	/**
+	 * Queue an email message to the client (from the coach/admin)
+	 */
 	public function ajax_sendClientMessage() {
 		
 		$Tracker = Tracker::getInstance();
@@ -1439,15 +1067,13 @@ class Client {
 		
 		global $currentProgram;
 		
-		$headers = array();
-		$when    = null;
-		E20R_Tracker::dbg( 'Client::ajax_sendClientMessage() - Requesting client detail' );
+		$when = null;
+		Utilities::get_instance()->log( 'Requesting client detail' );
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' );
 		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Nonce is OK" );
-		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Request: " . print_r( $_REQUEST, true ) );
+		Utilities::get_instance()->log( "Nonce is OK" );
+		Utilities::get_instance()->log( "Request: " . print_r( $_REQUEST, true ) );
 		
 		// $to_uid = isset( $_POST['email-to-id']) ? $Tracker->sanitize( $_POST['email-to-id']) : null;
 		$email_args['to_email']  = isset( $_POST['email-to'] ) ? $Tracker->sanitize( $_POST['email-to'] ) : null;
@@ -1461,7 +1087,7 @@ class Client {
 		$email_args['content']   = stripslashes_deep( $email_args['content'] );
 		
 		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Checking whether to schedule sending this message: {$email_args['time']}" );
+		Utilities::get_instance()->log( "Checking whether to schedule sending this message: {$email_args['time']}" );
 		if ( ! empty( $email_args['time'] ) ) {
 			
 			if ( false === ( $when = strtotime( $email_args['time'] . " " . get_option( 'timezone_string' ) ) ) ) {
@@ -1469,45 +1095,56 @@ class Client {
 				exit();
 			}
 			
-			E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Scheduled to be sent at: {$when}" );
+			Utilities::get_instance()->log( "Scheduled to be sent at: {$when}" );
 		}
 		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Get the User info for the sender" );
+		Utilities::get_instance()->log( "Get the User info for the sender" );
+		
 		if ( ! is_null( $email_args['from_uid'] ) ) {
-			$f = get_user_by( 'id', $email_args['from_uid'] );
+			$email_args['from_user'] = get_user_by( 'id', $email_args['from_uid'] );
 		}
 		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Get the User info for the receiver" );
+		Utilities::get_instance()->log( "Get the User info for the receiver" );
+		
 		$email_args['to_user'] = get_user_by( 'email', $email_args['to_email'] );
 		$Program->getProgramIdForUser( $email_args['to_user']->ID );
 		
 		$email_args['program_id'] = $currentProgram->id;
 		
 		// $sendTo = "{$to->display_name} <{$to_email}>";
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Try to schedule the email for transmission" );
+		Utilities::get_instance()->log( "Try to schedule the email for transmission" );
+		
 		$status = $this->schedule_email( $email_args, $when );
 		
 		if ( true == $status ) {
-			E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Successfully scheduled the message to be sent" );
+			Utilities::get_instance()->log( "Successfully scheduled the message to be sent" );
 			
 			wp_send_json_success();
 			exit();
 		}
 		
-		E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Error while scheduling message to be sent" );
+		Utilities::get_instance()->log( "Error while scheduling message to be sent" );
 		wp_send_json_error();
 		exit();
 	}
 	
+	/**
+	 * Schedule when to send the email
+	 *
+	 * @param array $email_args
+	 * @param null  $when
+	 *
+	 * @return bool
+	 */
 	public function schedule_email( $email_args, $when = null ) {
 		
 		if ( is_null( $when ) ) {
-			E20R_Tracker::dbg( "Client::schedule_email() - No need to schedule the email for transmission. We're sending it right away." );
+			Utilities::get_instance()->log( "No need to schedule the email for transmission. We're sending it right away." );
 			
 			return $this->send_email_to_client( $email_args );
 		} else {
 			// Send message to user at specified time.
-			E20R_Tracker::dbg( "Client::schedule_email() - Schedule the email for transmission. {$when}" );
+			Utilities::get_instance()->log( "Schedule the email for transmission. {$when}" );
 			$ret = wp_schedule_single_event( $when, 'e20r_schedule_email_for_client', array( $email_args ) );
 			
 			if ( is_null( $ret ) ) {
@@ -1518,40 +1155,39 @@ class Client {
 		return false;
 	}
 	
+	/**
+	 * Trigger wp_mail() operation for client message(s)
+	 *
+	 * @param array $email_array
+	 *
+	 * @return bool
+	 */
 	public function send_email_to_client( $email_array ) {
-		
-		// E20R_Tracker::dbg($email_array);
+	 
 		$headers[] = "Content-type: text/html";
 		$headers[] = "Cc: " . $email_array['cc'];
 		$headers[] = "From: " . $email_array['from'];
 		
 		$message = $this->createEmailBody( $email_array['subject'], $email_array['content'] );
 		
-		// $headers[] = "From: \"{$from_name}\" <{$from}>";
-
-//        E20R_Tracker::dbg($email_array['to_email']);
-//        E20R_Tracker::dbg($headers);
-//        E20R_Tracker::dbg($email_array['subject']);
-//        E20R_Tracker::dbg($message);
-//
-//        add_filter('wp_mail', array($this, 'test_wp_mail'));
-		
+		// Add filters that are email specific
 		add_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type' ) );
+		add_action( 'wp_mail_failed', array( $this, 'logMailFailure' ), 10, 1 );
 		
 		$status = wp_mail( sanitize_email( $email_array['to_email'] ), sanitize_text_field( $email_array['subject'] ), $message, $headers, null );
 		
 		remove_filter( 'wp_mail_content_type', array( $this, 'set_html_content_type' ) );
 		
 		if ( true == $status ) {
-			E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Successfully transferred the info to wp_mail()" );
+			Utilities::get_instance()->log( "Successfully transferred the info to wp_mail()" );
 			
 			if ( ! $this->model->save_message_to_history( $email_array['to_user']->ID, $email_array['program_id'], $email_array['from_uid'], $message, $email_array['subject'] ) ) {
-				E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Error while saving message history for {$email_array['to_user']->ID}" );
+				Utilities::get_instance()->log( "Error while saving message history for {$email_array['to_user']->ID}" );
 				
 				return false;
 			}
 			
-			E20R_Tracker::dbg( "Client::ajax_sendClientMessage() - Successfully saved the message to the user message history table" );
+			Utilities::get_instance()->log( "Successfully saved the message to the user message history table" );
 			
 			return true;
 		}
@@ -1559,19 +1195,54 @@ class Client {
 		return false;
 	}
 	
+	/**
+	 * Log info about a failed email message and display it in the backend (if applicable)
+	 *
+	 * @param \WP_Error $wp_error
+	 *
+	 * @since 3.0 - ENHANCEMENT: Better logging of errors during email transmission
+	 */
+	public function logMailFailure( $wp_error ) {
+		
+		if ( is_wp_error( $wp_error ) ) {
+			
+			$utils         = Utilities::get_instance();
+			$message_info = $wp_error->get_error_data( 'wp_mail_failed' );
+			
+			foreach ( $message_info['to'] as $to ) {
+				$msg = sprintf(
+					__( 'Warning: Did not send "%1$s" to "%2$s"! Status: %3$s', 'scba-customizations' ),
+					$message_info['subject'],
+					$to,
+					$wp_error->get_error_message( 'wp_mail_failed' )
+				);
+				
+				$utils->log( $msg );
+				$utils->add_message( $msg, 'error' );
+			}
+		}
+	}
+	/**
+	 * Generate the email message body
+	 *
+	 * @param string $subject
+	 * @param string $content
+	 *
+	 * @return string
+	 */
 	private function createEmailBody( $subject, $content ) {
 		
 		ob_start();
 		?>
         <html>
-        <head>
-            <title><?php esc_attr_e( wp_unslash( $subject ) ); ?></title>
-        </head>
-        <body>
-        <div id="the_content">
-			<?php echo wp_kses_post( $content ); ?>
-        </div>
-        </body>
+            <head>
+                <title><?php esc_attr_e( wp_unslash( $subject ) ); ?></title>
+            </head>
+            <body>
+                <div id="the_content">
+                    <?php echo wp_kses_post( $content ); ?>
+                </div>
+            </body>
         </html>
 		<?php
 		$html = ob_get_clean();
@@ -1579,281 +1250,366 @@ class Client {
 		return $html;
 	}
 	
+	/**
+	 * Save the user's Interview responses (securely)
+	 *
+	 * @param $data
+	 * @param $entry
+	 *
+	 * @return bool
+	 */
+	public function saveInterview( $data, $entry ) {
+		
+		try {
+			$this->model->save_client_interview( $data );
+		} catch ( \Exception $exception ) {
+			Utilities::get_instance()->log( "Problem saving the client interview. Error: " . $exception->getMessage() );
+			
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Set the wp_mail() content type to HTML
+	 *
+	 * @return string
+	 */
 	public function set_html_content_type() {
 		
 		return 'text/html';
 	}
 	
+	/**
+	 * Debug logging of the mail message
+	 *
+	 * @param array $args
+	 */
 	public function test_wp_mail( $args ) {
 		
 		$debug = var_export( $args, true );
-		E20R_Tracker::dbg( $debug );
+		Utilities::get_instance()->log( $debug );
 	}
 	
+	/**
+	 * Fetch and generate the client's email message history
+	 */
 	public function ajax_ClientMessageHistory() {
 		
-		E20R_Tracker::dbg( 'Client::ajax_ClientMessageHistory() - Requesting client detail' );
+		Utilities::get_instance()->log( 'Requesting client detail' );
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' );
 		
-		E20R_Tracker::dbg( "Client::ajax_ClientMessageHistory() - Nonce is OK" );
+		Utilities::get_instance()->log( "Nonce is OK" );
 		
-		E20R_Tracker::dbg( "Client::ajax_ClientMessageHistory() - Request: " . print_r( $_REQUEST, true ) );
+		Utilities::get_instance()->log( "Request: " . print_r( $_REQUEST, true ) );
 		
 		global $current_user;
 		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
-		global $currentProgram;
-		global $currentClient;
-		
-		if ( ! $Tracker->is_a_coach( $current_user->ID ) ) {
+		if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 			
-			E20R_Tracker::dbg( "Client::ajax_showClientMessage() - User isn't a coach. Return error & force redirect" );
+			Utilities::get_instance()->log( "User isn't a coach. Return error & force redirect" );
 			wp_send_json_error( array( 'error' => 403 ) );
 			exit();
 		}
 		
-		$userId = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
-		$Program->getProgramIdForUser( $userId );
+		$user_id = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
+		$Program->getProgramIdForUser( $user_id );
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Loading message history from DB for {$userId}" );
-		$html = $this->loadClientMessages( $userId );
+		Utilities::get_instance()->log( "Loading message history from DB for {$user_id}" );
+		$html = $this->loadClientMessages( $user_id );
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Generating message history HTML" );
-		// $html = $this->view->viewMessageHistory( $userId, $messages );
+		Utilities::get_instance()->log( "Generating message history HTML" );
+		// $html = $this->view->viewMessageHistory( $user_id, $messages );
 		
 		wp_send_json_success( array( 'html' => $html ) );
 		exit();
 	}
 	
-	public function loadClientMessages( $clientId ) {
+	/**
+	 * Load previously sent messages between client and coach
+	 *
+	 * @param int $client_id
+	 *
+	 * @return string
+	 */
+	public function loadClientMessages( $client_id ) {
 		
 		global $currentClient;
 		global $currentProgram;
 		
 		if ( ! isset( $currentClient->user_id ) ) {
-			$this->setClient( $clientId );
+			$this->setClient( $client_id );
 		}
 		
 		if ( ! isset( $currentProgram->id ) ) {
 			$Program = Program::getInstance();
 			
-			$Program->getProgramIdForUser( $clientId );
+			$Program->getProgramIdForUser( $client_id );
 		}
 		
-		$client_messages = $this->model->load_message_history( $clientId );
+		$client_messages = $this->model->load_message_history( $client_id );
 		
-		return $this->view->viewMessageHistory( $clientId, $client_messages );
+		return $this->view->viewMessageHistory( $client_id, $client_messages );
 	}
 	
+	/**
+	 * Send client message history (formatted) to front-end
+	 */
 	public function ajax_showClientMessage() {
 		
-		E20R_Tracker::dbg( 'Client::ajax_showClientMessage() - Requesting client detail' );
+		Utilities::get_instance()->log( 'Requesting client detail' );
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' );
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Nonce is OK" );
+		Utilities::get_instance()->log( "Nonce is OK" );
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Request: " . print_r( $_REQUEST, true ) );
+		Utilities::get_instance()->log( "Request: " . print_r( $_REQUEST, true ) );
 		
 		global $current_user;
-		$Program      = Program::getInstance();
-		$Measurements = Measurements::getInstance();
-		$Article      = Article::getInstance();
+		$Program = Program::getInstance();
+		$Article = Article::getInstance();
 		
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
 		global $currentProgram;
-		global $currentClient;
 		
-		if ( ! $Tracker->is_a_coach( $current_user->ID ) ) {
+		if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 			
-			E20R_Tracker::dbg( "Client::ajax_showClientMessage() - User isn't a coach. Return error & force redirect" );
+			Utilities::get_instance()->log( "User isn't a coach. Return error & force redirect" );
 			wp_send_json_error( array( 'error' => 403 ) );
 			exit();
 		}
 		
-		$userId = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
-		$Program->getProgramIdForUser( $userId );
+		$user_id = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
+		$Program->getProgramIdForUser( $user_id );
 		
 		$articles = $Article->findArticles( 'post_id', $currentProgram->intake_form, $currentProgram->id );
 		$a        = $articles[0];
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Article ID: " );
-		E20R_Tracker::dbg( $a->id );
+		Utilities::get_instance()->log( "Article ID: {$a->id}" );
 		
 		if ( ! $Article->isSurvey( $a->id ) ) {
 			wp_send_json_error( array( 'error' => __( 'Configuration error. Please report to tech support.', 'e20r-tracker' ) ) );
 			exit();
 		} else {
-			E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Loading article configuration for the survey!" );
+			Utilities::get_instance()->log( "Loading article configuration for the survey!" );
 			$Article->init( $a->id );
 		}
 		
-		E20R_Tracker::dbg( "Client::ajax_showClientMessage() - Load client data..." );
+		Utilities::get_instance()->log( "Load client data..." );
 		
 		// Loads the program specific client information we've got stored.
-		$this->model->get_data( $userId );
+		$this->model->get_data( $user_id );
 		
-		$html = $this->view->viewClientContact( $userId );
+		$html = $this->view->viewClientContact( $user_id );
 		
 		wp_send_json_success( array( 'html' => $html ) );
 		exit();
 	}
 	
+	/**
+	 * Send client data details to the front-end
+	 */
 	public function ajax_clientDetail() {
 		
 		global $current_user;
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
 		if ( ! is_user_logged_in() ) {
 			
-			E20R_Tracker::dbg( "Client::ajax_clientDetail() - User isn't logged in. Return error & force redirect" );
+			Utilities::get_instance()->log( "User isn't logged in. Return error & force redirect" );
 			wp_send_json_error( array( 'error' => 403 ) );
 			exit();
 		}
 		
-		if ( ! $Tracker->is_a_coach( $current_user->ID ) ) {
+		$nonce             = isset( $_POST['e20r-tracker-clients-nonce'] ) ? $_POST['e20r-tracker-clients-nonce'] : null;
+		$user_profile_page = $Tracker->sanitize( 'tracker-user-profile-page' );
+		
+		$valid_nonce = wp_verify_nonce( $nonce, 'e20r-tracker-data' );
+		
+		if ( ! $Access->is_a_coach( $current_user->ID ) && false === $user_profile_page ) {
 			
-			E20R_Tracker::dbg( "Client::ajax_clientDetail() - User isn't a coach. Return error & force redirect" );
+			Utilities::get_instance()->log( "User isn't a coach. Return error & force redirect" );
 			wp_send_json_error( array( 'error' => 403 ) );
 			exit();
 		}
 		
-		E20R_Tracker::dbg( 'Client::ajax_clientDetail() - Requesting client detail' );
+		if ( false === $valid_nonce ) {
+			Utilities::get_instance()->log( "Invalid Nonce" );
+			wp_send_json_error( array( 'error' => 403 ) );
+			exit();
+		} else {
+			Utilities::get_instance()->log( "Nonce is OK" );
+		}
 		
-		check_ajax_referer( 'e20r-tracker-data', 'e20r-tracker-clients-nonce' );
+		Utilities::get_instance()->log( 'Requesting client detail' );
+		Utilities::get_instance()->log( "Request: " . print_r( $_REQUEST, true ) );
 		
-		E20R_Tracker::dbg( "Client::ajax_clientDetail() - Nonce is OK" );
-		
-		E20R_Tracker::dbg( "Client::ajax_clientDetail() - Request: " . print_r( $_REQUEST, true ) );
-		
-		$Program      = Program::getInstance();
-		$Measurements = Measurements::getInstance();
-		$Article      = Article::getInstance();
+		$Program = Program::getInstance();
+		$Article = Article::getInstance();
 		
 		global $currentProgram;
-		global $currentArticle;
-		global $currentClient;
 		
-		$userId = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
-		$type   = isset( $_POST['tab-id'] ) ? $Tracker->sanitize( $_POST['tab-id'] ) : 'client-info';
-		$Program->getProgramIdForUser( $userId );
+		$user_id = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : $current_user->ID;
+		$type    = isset( $_POST['tab-id'] ) ? $Tracker->sanitize( $_POST['tab-id'] ) : 'client-info';
+		$Program->getProgramIdForUser( $user_id );
 		
 		$articles = $Article->findArticles( 'post_id', $currentProgram->intake_form, $currentProgram->id );
 		$a        = $articles[0];
 		
-		E20R_Tracker::dbg( "Client::ajax_clientDetail() - Article ID: " );
-		E20R_Tracker::dbg( $a->id );
+		Utilities::get_instance()->log( "Article ID: " );
+		Utilities::get_instance()->log( $a->id );
 		
 		if ( ! $Article->isSurvey( $a->id ) ) {
 			wp_send_json_error( array( 'error' => 'Configuration error. Please report to tech support.' ) );
 			exit();
 		} else {
-			E20R_Tracker::dbg( "Client::ajax_clientDetail() - Loading article configuration for the survey!" );
+			Utilities::get_instance()->log( "Loading article configuration for the survey!" );
 			$Article->init( $a->id );
 		}
 		
 		switch ( $type ) {
 			case 'client-info':
-				E20R_Tracker::dbg( "Client::ajax_clientDetail() - Loading client data" );
-				$html = $this->load_clientDetail( $userId );
+				Utilities::get_instance()->log( "Loading client data" );
+				$html = $this->load_clientDetail( $user_id );
 				break;
 			
 			case 'achievements':
-				E20R_Tracker::dbg( "Client::ajax_clientDetail() - Loading client achievement data" );
-				$html = $this->load_achievementsData( $userId );
-				// E20R_Tracker::dbg($html);
+				Utilities::get_instance()->log( "Loading client achievement data" );
+				$html = $this->load_achievementsData( $user_id );
+				// Utilities::get_instance()->log($html);
 				break;
 			
 			case 'assignments':
-				E20R_Tracker::dbg( "Client::ajax_clientDetail() - Loading client assignment data" );
-				$html = $this->load_assignmentsData( $userId );
+				Utilities::get_instance()->log( "Loading client assignment data" );
+				$html = $this->load_assignmentsData( $user_id );
 				break;
 			
 			case 'activities':
-				E20R_Tracker::dbg( "Client::ajax_clientDetail() - Loading client activity data" );
-				$html = $this->load_activityData( $userId );
+				Utilities::get_instance()->log( "Loading client activity data" );
+				$html = $this->load_activityData( $user_id );
 				break;
 			
 			default:
-				E20R_Tracker::dbg( "Client::ajax_clientDetail() - Default: Loading client information" );
-				$html = $this->load_clientDetail( $userId );
+				Utilities::get_instance()->log( "Default: Loading client information" );
+				$html = $this->load_clientDetail( $user_id );
 		}
 		
 		wp_send_json_success( array( 'html' => $html ) );
 		exit();
 	}
 	
-	public function load_clientDetail( $clientId ) {
+	/**
+	 * Generate client detail to display/include
+	 *
+	 * @param int $client_id
+	 *
+	 * @return null|string
+	 */
+	public function load_clientDetail( $client_id ) {
 		
-		E20R_Tracker::dbg( "Client::load_clientDetail() - Load client data..." );
+		Utilities::get_instance()->log( "Load client data..." );
 		$Program = Program::getInstance();
 		$Article = Article::getInstance();
 		
 		global $currentProgram;
 		global $currentArticle;
 		
-		E20R_Tracker::dbg( "Client::load_clientDetail() - Load program info for this clientID." );
+		Utilities::get_instance()->log( "Load program info for this clientID." );
 		// Loads the program specific client information we've got stored.
-		$Program->getProgramIdForUser( $clientId );
+		$Program->getProgramIdForUser( $client_id );
 		
 		if ( empty( $currentProgram->id ) ) {
-			E20R_Tracker::dbg( "Client::load_clientDetail() - ERROR: No program ID defined for user {$clientId}!!!" );
+			Utilities::get_instance()->log( "ERROR: No program ID defined for user {$client_id}!!!" );
 			
 			return null;
 		}
 		
-		E20R_Tracker::dbg( "Client::load_clientDetail() - Find article ID for the intake form {$currentProgram->intake_form} for the program ({$currentProgram->id})." );
+		Utilities::get_instance()->log( "Find article ID for the intake form {$currentProgram->intake_form} for the program ({$currentProgram->id})." );
 		$article = $Article->findArticles( 'post_id', $currentProgram->intake_form, $currentProgram->id );
 		
-		E20R_Tracker::dbg( "Client::load_clientDetail() - Returned " . count( $article ) . " articles on behalf of the intake form" );
+		Utilities::get_instance()->log( "Returned " . count( $article ) . " articles on behalf of the intake form" );
 		
 		if ( ! empty( $article ) ) {
 			
-			E20R_Tracker::dbg( "Client::load_clientDetail() - Load article configuration." );
-			E20R_Tracker::dbg( $article[0] );
+			Utilities::get_instance()->log( "Load article configuration. " . print_r( $article[0], true ) );
+			
 			$Article->init( $article[0]->id );
 		} else {
-			E20R_Tracker::dbg( "Client::load_clientDetail() - ERROR: No article defined for the Welcome Survey!!!" );
+			Utilities::get_instance()->log( "ERROR: No article defined for the Welcome Survey!!!" );
 			
 			return null;
 		}
 		
-		E20R_Tracker::dbg( "Client::load_clientDetail() - Load the client information for {$clientId} in program {$currentProgram->id} for article {$currentArticle->id}" );
-		$this->model->get_data( $clientId );
+		Utilities::get_instance()->log( "Load the client information for {$client_id} in program {$currentProgram->id} for article {$currentArticle->id}" );
+		$this->model->get_data( $client_id );
 		
-		E20R_Tracker::dbg( "Client::ajax_clientDetail() - Show client detail for {$clientId} related to {$currentArticle->id} and {$currentProgram->id}" );
+		Utilities::get_instance()->log( "Show client detail for {$client_id} related to {$currentArticle->id} and {$currentProgram->id}" );
 		
-		return $this->view->viewClientDetail( $clientId );
+		return $this->view->viewClientDetail( $client_id );
 	}
 	
-	public function load_achievementsData( $clientId ) {
+	/**
+	 * Generate Achievement list for $client_id
+	 *
+	 * @param int $client_id
+	 *
+	 * @return string
+	 */
+	public function load_achievementsData( $client_id ) {
 		
 		$Action = Action::getInstance();
 		
-		return $Action->listUserAccomplishments( $clientId );
+		return $Action->listUserAchievements( $client_id );
 	}
 	
-	public function load_assignmentsData( $clientId ) {
+	/**
+	 * Generate Assignment list for $client_id
+	 *
+	 * @param int $client_id
+	 *
+	 * @return string
+	 */
+	public function load_assignmentsData( $client_id ) {
 		
 		$Assignment = Assignment::getInstance();
 		
-		return $Assignment->listUserAssignments( $clientId );
+		return $Assignment->listUserAssignments( $client_id );
 	}
 	
-	public function load_activityData( $clientId ) {
+	/**
+	 * Generate Activity list for $client_id
+	 *
+	 * @param int $client_id
+	 *
+	 * @return string
+	 */
+	public function load_activityData( $client_id ) {
 		
 		$Workout = Workout::getInstance();
 		
-		return $Workout->listUserActivities( $clientId );
+		return $Workout->listUserActivities( $client_id );
 	}
 	
+	/**
+	 * Short Code Handler: Client Profile page(s)
+	 *
+	 * @param null|array  $atts
+	 * @param null|string $content
+	 *
+	 * @return null|string
+	 */
 	public function shortcode_clientProfile( $atts = null, $content = null ) {
 		
-		E20R_Tracker::dbg( "Client::shortcode_clientProfile() - Loading shortcode data for the client profile page." );
-		// E20R_Tracker::dbg($content);
+		Utilities::get_instance()->log( "Loading shortcode data for the client profile page." );
+		// Utilities::get_instance()->log($content);
 		
 		global $current_user;
 		
@@ -1864,21 +1620,18 @@ class Client {
 		$Article      = Article::getInstance();
 		$Measurements = Measurements::getInstance();
 		
-		global $currentProgram;
 		global $currentArticle;
 		
 		$html = null;
-		$tabs = array();
 		
-		if ( ! is_user_logged_in() || ( ! $this->validateAccess( $current_user->ID ) ) ) {
+		if ( ! is_user_logged_in() || ( ! $this->hasDataAccess( $current_user->ID ) ) ) {
 			
 			auth_redirect();
 		} else {
 			
-			$userId = $current_user->ID;
-			$Program->getProgramIdForUser( $userId );
+			$user_id = $current_user->ID;
+			$Program->getProgramIdForUser( $user_id );
 		}
-		
 		
 		/* Load views for the profile page tabs */
 		$config = $Action->configure_dailyProgress();
@@ -1889,19 +1642,19 @@ class Client {
 		
 		foreach ( $code_atts as $key => $val ) {
 			
-			E20R_Tracker::dbg( "Client::shortcode_clientProfile() - e20r_profile shortcode --> Key: {$key} -> {$val}" );
+			Utilities::get_instance()->log( "e20r_profile shortcode --> Key: {$key} -> {$val}" );
 			$config->{$key} = $val;
 		}
 		
 		if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
 			
-			E20R_Tracker::dbg( "Client::shortcode_clientProfile() - User requested card based dashboard: {$config->use_cards}" );
+			Utilities::get_instance()->log( "User requested card based dashboard: {$config->use_cards}" );
 			$config->use_cards = true;
 		}
 		
 		if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
 			
-			E20R_Tracker::dbg( "Client::shortcode_clientProfile() - User requested old-style dashboard: {$config->use_cards}" );
+			Utilities::get_instance()->log( "User requested old-style dashboard: {$config->use_cards}" );
 			$config->use_cards = false;
 		}
 		
@@ -1921,15 +1674,15 @@ class Client {
 		
 		if ( ! $currentArticle->is_preview_day ) {
 			
-			E20R_Tracker::dbg( "Client::shortcode_clientProfile() - Configure user specific data" );
+			Utilities::get_instance()->log( "Configure user specific data" );
 			
 			$this->model->setUser( $config->userId );
-			// $this->setClient($userId);
+			// $this->setClient($user_id);
 			
-			$dimensions  = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-			$pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
+			$dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
+			// $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
 			
-			E20R_Tracker::dbg( "Client::shortcode_clientProfile() - Loading progress data..." );
+			Utilities::get_instance()->log( "Loading progress data..." );
 			$measurements = $Measurements->getMeasurement( 'all', false );
 			
 			if ( true === $this->completeInterview( $config->userId ) ) {
@@ -1940,7 +1693,7 @@ class Client {
 			
 			$assignments  = $Assignment->listUserAssignments( $config->userId );
 			$activities   = $Workout->listUserActivities( $config->userId );
-			$achievements = $Action->listUserAccomplishments( $config->userId );
+			$achievements = $Action->listUserAchievements( $config->userId );
 			
 			$progress = array(
 				'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
@@ -1961,7 +1714,7 @@ class Client {
             */
 			$progress_html = array(
 				'Your progress',
-				'<div id="e20r-profile-status">' . $Measurements->show_progress( $progress, null, false ) . '</div>',
+				'<div id="e20r-profile-status">' . $Measurements->showProgress( $progress, null, false ) . '</div>',
 			);
 			
 			$tabs = array(
@@ -1985,70 +1738,97 @@ class Client {
 		}
 		
 		$html = $this->view->view_clientProfile( $tabs );
-		E20R_Tracker::dbg( "Client::shortcode_clientProfile() - Display the HTML for the e20r_profile short code: " . strlen( $html ) );
+		Utilities::get_instance()->log( "Display the HTML for the e20r_profile short code: " . strlen( $html ) );
 		
 		return $html;
 		
 	}
 	
-	public function validateAccess( $clientId ) {
+	/**
+	 * Does the $client_id have the permission to access data
+	 *
+	 * @param int $client_id
+	 *
+	 * @return bool
+	 */
+	public function hasDataAccess( $client_id ) {
 		
 		global $current_user;
+		global $currentClient;
+		
 		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
-		E20R_Tracker::dbg( "Client::validateAccess() - Client being validated: " . $clientId );
+		Utilities::get_instance()->log( "Client being validated: " . $client_id );
 		
-		if ( $clientId ) {
+		if ( ! empty( $client_id ) ) {
 			
-			$client = get_user_by( 'id', $clientId );
-			E20R_Tracker::dbg( "Client::validateAccess() - Real user Id provided " );
+			// $client = get_user_by( 'id', $client_id );
+			Utilities::get_instance()->log( "Real user Id provided " );
 			
-			if ( ( $current_user->ID != $clientId ) &&
-			     ( ( $Tracker->isActiveClient( $clientId ) ) ||
-			       ( $Tracker->is_a_coach( $current_user->ID ) ) )
+			$has_access = false;
+			if ( ( $current_user->ID != $client_id ) &&
+			     ( ( $Tracker->isActiveClient( $client_id ) ) ||
+			       ( $Access->is_a_coach( $current_user->ID ) ) )
 			) {
 				
-				return true;
-			} else if ( $current_user->ID == $clientId ) {
-				return true;
+				$has_access = true;
+			} else if ( $current_user->ID == $client_id ) {
+				$has_access = true;
 			}
-			// Make sure the $current_user has the right to view the data for $clientId
+			
+			if ( true == $has_access && ( empty( $currentClient->user_id ) || empty( $currentClient->program_id ) ) ) {
+				$this->setClient( $client_id );
+			}
+			// Make sure the $current_user has the right to view the data for $client_id
 			
 		}
 		
-		return false;
+		return $has_access;
 	}
 	
-	public function completeInterview( $userId ) {
+	/**
+	 * Verify whether the user completed their intake interview
+	 *
+	 * @param int $user_id
+	 *
+	 * @return bool
+	 */
+	public function completeInterview( $user_id ) {
 		
-		E20R_Tracker::dbg( "Client::completeInterview() - Checking if interview was completed" );
-		// $data = $this->model->get_data( $userId, 'completed_date');
+		Utilities::get_instance()->log( "Checking if interview was completed" );
+		// $data = $this->model->get_data( $user_id, 'completed_date');
 		
 		if ( ! isset( $this->interview_status_loaded ) || ( false === $this->interview_status_loaded ) ) {
 			
-			E20R_Tracker::dbg( "Client::completeInterview() - Not previously checked for interview status. Doing so now." );
-			$is_complete = $this->model->interview_complete( $userId );
+			Utilities::get_instance()->log( "Not previously checked for interview status. Doing so now." );
+			$is_complete = $this->model->interview_complete( $user_id );
 			
 			$this->interview_status        = $is_complete;
 			$this->interview_status_loaded = true;
 		} else {
-			E20R_Tracker::dbg( "Client::completeInterview() - Interview status has been checked already. Returning status" );
+			Utilities::get_instance()->log( "Interview status has been checked already. Returning status" );
 			$is_complete = $this->interview_status;
 		}
-		// E20R_Tracker::dbg("Client::completeInterview() - completed_date field contains: ");
-		// E20R_Tracker::dbg($data);
-		E20R_Tracker::dbg( "Client::completeInterview() - Returning interview status of: " . ( $is_complete ? 'true' : 'false' ) );
+		// Utilities::get_instance()->log("completed_date field contains: ");
+		// Utilities::get_instance()->log($data);
+		Utilities::get_instance()->log( "Returning interview status of: " . ( $is_complete ? 'true' : 'false' ) );
 		
 		return ( ! $is_complete ? false : true );
 	}
 	
-	public function view_interview( $clientId ) {
+	/**
+	 * Generate the Interview information
+	 *
+	 * @param int $client_id
+	 *
+	 * @return string
+	 */
+	public function view_interview( $client_id ) {
 		
 		$Article = Article::getInstance();
 		
 		global $currentProgram;
-		
-		global $current_user;
 		
 		$content = null;
 		
@@ -2058,37 +1838,42 @@ class Client {
 			
 			if ( isset( $interview->post_content ) && ! empty( $interview->post_content ) ) {
 				
-				E20R_Tracker::dbg( "Client::view_interview() - Applying the content filter to the interview page content" );
+				Utilities::get_instance()->log( "Applying the content filter to the interview page content" );
 				$content = apply_filters( 'the_content', $interview->post_content );
 				
-				E20R_Tracker::dbg( "Client::view_interview() - Validate whether the interview has been completed by the user" );
-				$complete = $this->completeInterview( $clientId );
+				Utilities::get_instance()->log( "Validate whether the interview has been completed by the user" );
+				$complete = $this->completeInterview( $client_id );
 				
-				E20R_Tracker::dbg( "Client::view_interview() - Loading the Welcome interview page & the users interview is saved already" );
+				Utilities::get_instance()->log( "Loading the Welcome interview page & the users interview is saved already" );
 				
 				$update_reminder = $Article->interviewCompleteLabel( $interview->post_title, $complete );
 				
 				$content = $update_reminder . $content;
 			}
 		} else {
-			E20R_Tracker::dbg( "Client::view_interview() - ERROR: No client Interview form has been configured! " );
+			Utilities::get_instance()->log( "ERROR: No client Interview form has been configured! " );
 		}
 		
-		E20R_Tracker::dbg( "Client::view_interview() - Returning HTML" );
+		Utilities::get_instance()->log( "Returning HTML" );
 		
 		return $content;
 	}
 	
+	/**
+	 * Generate the front-end "Coaching" page list of clients (and their status)
+	 *
+	 * @param null|array $attributes
+	 *
+	 * @return string
+	 */
 	public function shortcode_clientList( $attributes = null ) {
 		
-		E20R_Tracker::dbg( "Client::shortcode_clientList() - Loading shortcode for the coach list of clients" );
+		Utilities::get_instance()->log( "Loading shortcode for the coach list of clients" );
 		
-		$Action  = Action::getInstance();
 		$Program = Program::getInstance();
-		$Tracker = Tracker::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
 		global $currentProgram;
-		
 		global $current_user;
 		
 		if ( ! is_user_logged_in() ) {
@@ -2097,7 +1882,7 @@ class Client {
 			wp_die();
 		}
 		
-		if ( ( ! $Tracker->is_a_coach( $current_user->ID ) ) ) {
+		if ( ( ! $Access->is_a_coach( $current_user->ID ) ) ) {
 			
 			$this->set_not_coach_msg();
 			wp_die();
@@ -2129,7 +1914,7 @@ class Client {
 					krsort( $mHistory );
 					reset( $mHistory );
 					
-					E20R_Tracker::dbg( "Client::shortcode_clientList() - Sorted message history for user {$client->ID}" );
+					Utilities::get_instance()->log( "Sorted message history for user {$client->ID}" );
 					$when = key( $mHistory );
 					$msg  = isset( $mHistory[ $when ] ) ? $mHistory[ $when ] : null;
 					
@@ -2140,8 +1925,8 @@ class Client {
 					$client->status->last_message_sender = null;
 				}
 				
-				E20R_Tracker::dbg( "Client::shortcode_clientList() - Most recent message:" );
-				E20R_Tracker::dbg( $client->status->last_message );
+				Utilities::get_instance()->log( "Most recent message:" );
+				Utilities::get_instance()->log( $client->status->last_message );
 				
 				if ( ! isset( $list[ $currentProgram->id ] ) ) {
 					
@@ -2152,9 +1937,9 @@ class Client {
 			}
 		}
 		
-		E20R_Tracker::dbg( "Client::shortcode_clientList() - Showing client information" );
+		Utilities::get_instance()->log( "Showing client information" );
 		
-		// E20R_Tracker::dbg($list);
+		// Utilities::get_instance()->log($list);
 		
 		return $this->view->display_client_list( $list );
 		
