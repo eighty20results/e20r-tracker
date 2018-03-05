@@ -16,6 +16,7 @@
 
 namespace E20R\Tracker\Controllers;
 
+use E20R\Utilities\Utilities;
 
 class Time_Calculations {
 	
@@ -75,7 +76,7 @@ class Time_Calculations {
 		$dStart = new \DateTime( date( 'Y-m-d', $startTS ), new \DateTimeZone( $tz ) );
 		$dEnd   = new \DateTime( date( 'Y-m-d', $endTS ), new \DateTimeZone( $tz ) );
 		
-		E20R_Tracker::dbg("Tracker::daysBetween() - StartTS: {$startTS}, endTS: {$endTS} " );
+		Utilities::get_instance()->log("StartTS: {$startTS}, endTS: {$endTS} " );
 		
 		if ( version_compare( PHP_VERSION, "5.3", '>=' ) ) {
 			
@@ -109,7 +110,7 @@ class Time_Calculations {
 		
 		// Correct the $days value because include the "to" day.
 		$days = $days + 1;
-		E20R_Tracker::dbg("Tracker::daysBetween() - Returning: {$days}");
+		Utilities::get_instance()->log("Returning: {$days}");
 		return $days;
 	}
 	
@@ -123,7 +124,7 @@ class Time_Calculations {
 	 */
 	public static function getDateForPost( $days, $userId = null ) {
 		
-		E20R_Tracker::dbg("Time_Calculations::getDateForPost() - Loading function...");
+		Utilities::get_instance()->log("Loading function...");
 		
 		global $current_user;
 		
@@ -138,21 +139,21 @@ class Time_Calculations {
 		
 		if (! $startDateTS ) {
 			
-			E20R_Tracker::dbg("Time_Calculations::getDateForPost( {$days} ) -> No startdate found for user with ID of {$userId}");
+			Utilities::get_instance()->log("{$days} -> No startdate found for user with ID of {$userId}");
 			return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
 		}
 		
 		if ( empty( $days ) || ( $days == 'now' ) ) {
-			E20R_Tracker::dbg("Time_Calculations::getDateForPost() - Calculating 'now' based on current time and startdate for the user");
+			Utilities::get_instance()->log("Calculating 'now' based on current time and startdate for the user");
 			$days = self::daysBetween( $startDateTS, current_time('timestamp') );
 		}
 		
 		$startDate = date( 'Y-m-d', $startDateTS );
-		E20R_Tracker::dbg("Time_Calculations::getDateForPost( {$days} ) -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
+		Utilities::get_instance()->log("{$days} -> Startdate found for user with ID of {$userId}: {$startDate} and days: {$days}");
 		
 		$releaseDate = date( 'Y-m-d', strtotime( "{$startDate} +" . ($days -1 ) ." days") );
 		
-		E20R_Tracker::dbg("Time_Calculations::getDateForPost( {$days} ) -> Calculated date for delay of {$days}: {$releaseDate}");
+		Utilities::get_instance()->log("{$days} -> Calculated date for delay of {$days}: {$releaseDate}");
 		return $releaseDate;
 	}
 }
