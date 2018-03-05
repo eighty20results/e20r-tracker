@@ -28,6 +28,12 @@ use E20R\Tracker\Controllers\Tracker;
 use E20R\Tracker\Controllers\Measurements;
 use E20R\Tracker\Controllers\Program;
 
+/**
+ * Class GF_Integration
+ * @package E20R\Tracker\Models
+ *
+ * @since 3.0
+ */
 class GF_Integration {
 	
 	/**
