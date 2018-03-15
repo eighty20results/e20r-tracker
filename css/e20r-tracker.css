@@ -90,6 +90,8 @@ div#e20r-progress-achievements {
     max-width: 940px;
     min-width:300px;
     width: 97%;
+    margin-left: auto;
+    margin-right: auto;
 }
 .e20r-confirmation-background {
     background-color: rgba( 0, 76, 255, 0.2);
@@ -1124,6 +1126,8 @@ a.load_progress_data {
     min-width: 80%;
     width: 95%;
     max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
     /* z-index: 100; */
     padding: 30px 14px 14px 14px;
     /* display: none; */
@@ -1987,6 +1991,7 @@ blockquote:before {
 .nourish_hide {
     display: none !important;
 }
+/*
 .e20r-coaching-presale input.button {
     width: 100%;
     margin: 0 auto;
@@ -2012,6 +2017,7 @@ blockquote:before {
 .e20r-presale-table {
     border: 1px solid #b5b5b5;
 }
+*/
 ::-webkit-input-placeholder {
     color:    #b5b5b5;
     opacity:  1;
@@ -2585,6 +2591,10 @@ div.e20r-popupfoot {
 }
 div.e20r-message-content p {
     text-align: left;
+}
+.e20r-date-header {
+    font-weight: normal;
+    font-size: 1em;
 }
 @media screen and (max-width:1040px), screen and (min-width:380px) {
     .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
