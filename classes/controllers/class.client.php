@@ -1925,8 +1925,7 @@ class Client {
 					$client->status->last_message_sender = null;
 				}
 				
-				Utilities::get_instance()->log( "Most recent message:" );
-				Utilities::get_instance()->log( $client->status->last_message );
+				Utilities::get_instance()->log( "Most recent message: " . print_r( $client->status->last_message, true ) );
 				
 				if ( ! isset( $list[ $currentProgram->id ] ) ) {
 					
