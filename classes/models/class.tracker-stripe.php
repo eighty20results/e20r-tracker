@@ -1,4 +1,6 @@
 <?php
+namespace E20R\Tracker\Models;
+
 /**
  * Created by Wicked Strong Chicks, LLC.
  * User: Thomas Sjolshagen
@@ -9,12 +11,19 @@
  *  the GPL v2 license(?)
  */
 
-class e20rStripe {
+use Stripe\Stripe;
+use Stripe\Plan;
+use Stripe\Customer;
+use Stripe\Subscription;
+use E20R\Utilities\Utilities;
+
+
+class Tracker_Stripe {
 
 	private static $instance = null;
 
 	/**
-	 * @return e20rStripe
+	 * @return Tracker_Stripe
 	 */
 	static function getInstance() {
 
@@ -29,7 +38,7 @@ class e20rStripe {
 
         if(!class_exists("Stripe")) {
 
-            dbg( "Loading supporting libraries for Stripe" );
+            Utilities::get_instance()->log( "Loading supporting libraries for Stripe" );
             require_once( dirname( __FILE__ ) . "/../../plugins/paid-memberships-pro/includes/lib/Stripe/Stripe.php" );
         }
 
@@ -52,11 +61,11 @@ class e20rStripe {
 
         //if ( $next_payment ) {
 
-        $last_day = new DateTime( date('Y-m-d', $next_payment ) );
-        $today = new DateTime();
+        $last_day = new \DateTime( date('Y-m-d', $next_payment ) );
+        $today = new \DateTime();
 
         $days_left = $today->diff( $last_day );
-        dbg("Last Day: {$last_day->format('Y-m-d')}, Today: {$today->format('Y-m-d')} Days: {$days_left->format('%a')}" );
+        Utilities::get_instance()->log("Last Day: {$last_day->format('Y-m-d')}, Today: {$today->format('Y-m-d')} Days: {$days_left->format('%a')}" );
 
         if ( ! empty( $nourish ) ) {
 
@@ -69,22 +78,22 @@ class e20rStripe {
             );
         }
         else {
-            dbg("Error: Unable to fetch valid Nourish level info");
+            Utilities::get_instance()->log("Error: Unable to fetch valid Nourish level info");
             return false;
         }
 
         if ( class_exists( 'Stripe' ) ) {
 
-            dbg( "Stripe class is loaded" );
+            Utilities::get_instance()->log( "Stripe class is loaded" );
 
             try {
                 // Stripe::setApiKey( pmpro_getOption( "stripe_secretkey" ) );
                 // Use test key & test user.
                 Stripe::setApiKey( "sk_test_J57vfoBXUGCNnJWY6gwuVt8I" );
             }
-            catch ( Exception $e ) {
+            catch ( \Exception $e ) {
 
-                dbg( "Unable to set the API key: " . $e->getMessage() );
+                Utilities::get_instance()->log( "Unable to set the API key: " . $e->getMessage() );
                 return false;
             }
 
@@ -118,24 +127,24 @@ class e20rStripe {
                 // Create new temporary plan
                 try {
 
-                    Stripe_Plan::create( $new_plan );
-                    dbg( "New temporary S3F plan created: {$new_plan['name']}" );
+                    Plan::create( $new_plan );
+                    Utilities::get_instance()->log( "New temporary S3F plan created: {$new_plan['name']}" );
                 }
-                catch ( Exception $e ) {
+                catch ( \Exception $e ) {
 
-                    dbg( "Error creating new plan: " . $e->getMessage() );
+                    Utilities::get_instance()->log( "Error creating new plan: " . $e->getMessage() );
                     return false;
                 }
 
                 try {
 
-                    $cu = Stripe_Customer::retrieve($customer_id);
-                    dbg("Fetched customer data from Stripe systems for " . $customer_id );
+                    $cu = Customer::retrieve($customer_id);
+                    Utilities::get_instance()->log("Fetched customer data from Stripe systems for " . $customer_id );
 
                 }
-                catch ( Exception $e ) {
+                catch ( \Exception $e ) {
 
-                    dbg("Stripe is unable to locate customer data: " . $e->getMessage());
+                    Utilities::get_instance()->log("Stripe is unable to locate customer data: " . $e->getMessage());
                     return false;
                 }
 
@@ -148,30 +157,33 @@ class e20rStripe {
                 try {
 
                     $subscriptions = $cu->subscriptions->all();
-                    dbg("Fetched " . count( $subscriptions->data ) . " subscriptions for user");
+                    Utilities::get_instance()->log("Fetched " . count( $subscriptions->data ) . " subscriptions for user");
 
                 }
-                catch ( Exception $e ) {
+                catch ( \Exception $e ) {
 
-                    dbg("Stripe is unable to locate subscriptions: " . $e->getMessage());
+                    Utilities::get_instance()->log("Stripe is unable to locate subscriptions: " . $e->getMessage());
                     return false;
                 }
 
                 if ( count( $subscriptions->data ) < 2 ) {
+	                /**
+	                 * @var Subscription $subscr
+	                 */
                     foreach ($subscriptions->data as $subscr) {
 
                         try {
 
                             $plan = $cu->subscriptions->retrieve($subscr->id);
-                            dbg("Subscription detail returned");
+                            Utilities::get_instance()->log("Subscription detail returned");
                         }
-                        catch ( Exception $e ) {
+                        catch ( \Exception $e ) {
 
-                            dbg( "Error fetching subscription detail: " . $e->getMessage() );
+                            Utilities::get_instance()->log( "Error fetching subscription detail: " . $e->getMessage() );
                             return false;
                         }
 
-                        dbg( "Subscription ID: {$subscr->id}" );
+                        Utilities::get_instance()->log( "Subscription ID: {$subscr->id}" );
 
                         try {
 
@@ -181,12 +193,12 @@ class e20rStripe {
                             $new_subcr = $subscr->save();
 
                             /* TODO: Update info in pmpro_memberhip_orders and pmpro_memberships_users for the user we're downgrading */
-                            dbg("Updated subscription for Nourish: " . print_r( $new_subcr, true ) );
+                            Utilities::get_instance()->log("Updated subscription for Nourish: " . print_r( $new_subcr, true ) );
 
 
                         }
-                        catch ( Exception $e ) {
-                            dbg(" Error saving new plan... - " . $e->getMessage() );
+                        catch ( \Exception $e ) {
+                            Utilities::get_instance()->log(" Error saving new plan... - " . $e->getMessage() );
                             return false;
                         }
 
@@ -197,31 +209,31 @@ class e20rStripe {
                 // Delete temporary plan
                 try {
 
-                    $tmp = Stripe_Plan::retrieve( $new_plan['id'] );
+                    $tmp = Plan::retrieve( $new_plan['id'] );
                     $res = $tmp->delete();
 
                     if ( $res->deleted ) {
 
-                        dbg("New temporary S3F plan deleted");
+                        Utilities::get_instance()->log("New temporary S3F plan deleted");
                     }
                     else {
 
-                        dbg("Error: Unable to delete temporary plan!");
+                        Utilities::get_instance()->log("Error: Unable to delete temporary plan!");
                     }
                 }
-                catch ( Exception $e ) {
+                catch ( \Exception $e ) {
 
-                    dbg( "Error deleting plan: " . $e->getMessage() );
+                    Utilities::get_instance()->log( "Error deleting plan: " . $e->getMessage() );
                     return false;
                 }
             }
             else {
-                dbg("No active customer plans in the local database for user with ID: {$user_id}");
+                Utilities::get_instance()->log("No active customer plans in the local database for user with ID: {$user_id}");
             } // endif
 
         }
         else {
-            dbg("Error: Stripe libraries not loaded!");
+            Utilities::get_instance()->log("Error: Stripe libraries not loaded!");
         }
     }
 }

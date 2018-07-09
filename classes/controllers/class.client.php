@@ -1,7 +1,4 @@
 <?php
-
-namespace E20R\Tracker\Controllers;
-
 /*
     Copyright 2015-2018 Thomas Sjolshagen / Wicked Strong Chicks, LLC (info@eighty20results.com)
 
@@ -18,6 +15,8 @@ namespace E20R\Tracker\Controllers;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+namespace E20R\Tracker\Controllers;
 
 use Braintree\Util;
 use E20R\Tracker\Views\Client_Views;
@@ -122,11 +121,15 @@ class Client {
 	 *
 	 * @param string $user_login
 	 */
-	public function record_login( $user_login ) {
+	public function recordLogin( $user_login ) {
 		$user = get_user_by( 'login', $user_login );
 		
+		if ( empty( $user ) ) {
+			return;
+		}
+		
 		Utilities::get_instance()->log( "Check that {$user_login} has a valid role..." );
-		$this->check_role_setting( $user->ID );
+		$this->checkRoleSetting( $user->ID );
 		
 		if ( $user->ID != 0 ) {
 			Utilities::get_instance()->log( "Saving login information about {$user_login}" );
@@ -142,16 +145,17 @@ class Client {
 	 *
 	 * @return      true
 	 */
-	public function check_role_setting( $user_id ) {
+	public function checkRoleSetting( $user_id ) {
 		
 		Utilities::get_instance()->log( "Make sure {$user_id} has an exercise experience role configured" );
 		
 		$user       = new \WP_User( $user_id );
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		
-		// assume the user does _NOT_ have one of the expected roles
+		// Assume the user does _NOT_ have one of the expected roles
 		$has_role = false;
 		
+		// Verify whether they have one of the expected roles
 		foreach ( $user_roles as $key => $role ) {
 			
 			$has_role = $has_role || in_array( $role['role'], $user->roles );
@@ -159,25 +163,16 @@ class Client {
 		
 		Utilities::get_instance()->log( "{$user_id} DOES have the exercise experience role configured? " . ( $has_role === true ? 'Yes' : 'No' ) );
 		
+		// No role yet. Have to give them a basic beginner role...
 		if ( false === $has_role ) {
+			
 			Utilities::get_instance()->log( "Assigning a default role (Beginner) until they complete the Welcome interview" );
 			$user->add_role( $user_roles['beginner']['role'] );
+			wp_cache_flush();
 			$has_role = true;
 		}
 		
 		return $has_role;
-	}
-	
-	/**
-	 * Pass-through: Returns field specific data for a client
-	 *
-	 * @param int    $user_id
-	 * @param string $field_name
-	 *
-	 * @return mixed
-	 */
-	public function getClientDataField( $user_id, $field_name ) {
-		return $this->model->get_data( $user_id, $field_name );
 	}
 	
 	/**
@@ -221,7 +216,7 @@ class Client {
 	 *
 	 * @return array|bool|mixed
 	 */
-	public function get_data( $client_id, $private = false, $basic = false ) {
+	public function getClientData( $client_id, $private = false, $basic = false ) {
 		
 		if ( ! $this->client_loaded ) {
 			
@@ -354,185 +349,20 @@ class Client {
 	}
 	
 	/**
-	 * Get/configure all client info for the $client_id
-	 *
-	 * @param int $client_id
-	 *
-	 * @return mixed
-	 */
-	public function get_client_info( $client_id ) {
-		
-		return $this->model->load_client_settings( $client_id );
-	}
-	
-	/**
-	 * Assign a coach for the new client/user
-	 *
-	 * @param   integer     $user_id
-	 * @param   string|null $gender
-	 *
-	 * @return bool|mixed
-	 */
-	public function assign_coach( $user_id, $gender = null ) {
-		
-		$Program = Program::getInstance();
-		global $currentProgram;
-		
-		Utilities::get_instance()->log( "Loading program settings for {$user_id}" );
-		
-		$old_program = $currentProgram;
-		$Program->getProgramIdForUser( $user_id );
-		
-		$coach_id = false;
-		
-		switch ( strtolower( $gender ) ) {
-			case 'm':
-				Utilities::get_instance()->log( "attempting to find a male coach for {$user_id} in program {$currentProgram->id}" );
-				Utilities::get_instance()->log( $currentProgram );
-				
-				$coach = $this->find_next_coach( $currentProgram->male_coaches, $currentProgram->id );
-				break;
-			
-			case 'f':
-				Utilities::get_instance()->log( "attempting to find a female coach for {$user_id} in program {$currentProgram->id}" );
-				$coach = $this->find_next_coach( $currentProgram->female_coaches, $currentProgram->id );
-				break;
-			
-			default:
-				Utilities::get_instance()->log( "attempting to find a coach for {$user_id} in program {$currentProgram->id}" );
-				$coaches = array_merge( $currentProgram->male_coaches, $currentProgram->female_coaches );
-				$coach   = $this->find_next_coach( $coaches, $currentProgram->id );
-		}
-		
-		if ( false !== $coach ) {
-			Utilities::get_instance()->log( "Found coach: {$coach} for {$user_id}" );
-			$this->assign_client_to_coach( $currentProgram->id, $coach, $user_id );
-			$coach_id = $coach;
-		}
-		$currentProgram = $old_program;
-		
-		return $coach_id;
-	}
-	
-	/**
-	 * Locate the next available coach for the program (ID)
-	 *
-	 * @param array $coach_arr
-	 * @param int   $program_id
-	 *
-	 * @return bool|int|null|string
-	 */
-	public function find_next_coach( $coach_arr, $program_id ) {
-		Utilities::get_instance()->log( "Searching for the coach with the fewest clients so far.." );
-		
-		$coaches = array();
-		
-		foreach ( $coach_arr as $cId ) {
-			
-			$client_list = get_user_meta( $cId, 'e20r-tracker-client-program-list', true );
-			Utilities::get_instance()->log( "Client list for coach {$cId} consists of " . ( false === $client_list ? 'None' : count( $client_list ) . " entries: " . print_r($client_list, true ) ) );
-			
-			if ( ( false !== $client_list ) && ( ! empty( $client_list ) ) ) {
-				
-				$coaches[ $cId ] = count( $client_list[ $program_id ] );
-			} else {
-				$coaches[ $cId ] = 0;
-			}
-		}
-		
-		Utilities::get_instance()->log( "List of coaches and the number of clients they have been assigned... " . print_r( $coaches, true ) );
-		
-		if ( asort( $coaches ) ) {
-			
-			reset( $coaches );
-			$coach_id = key( $coaches );
-			
-			Utilities::get_instance()->log( "Selected coach with ID: {$coach_id} in program {$program_id}" );
-			
-			return $coach_id;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Assign a coach ($coach_id) to the specified client for the program ID
-	 *
-	 * @param int $program_id
-	 * @param int $coach_id
-	 * @param int $client_id
-	 *
-	 * @return bool|int
-	 */
-	public function assign_client_to_coach( $program_id, $coach_id, $client_id ) {
-		
-		$client_list = get_user_meta( $coach_id, 'e20r-tracker-client-program-list', true );
-		Utilities::get_instance()->log( "Coach {$coach_id} has the following programs & clients he/she is coaching: "  . print_r($client_list, true ));
-		
-		if ( $client_list == false ) {
-			
-			$client_list = array();
-		}
-		
-		if ( isset( $client_list[ $program_id ] ) ) {
-			
-			$clients = $client_list[ $program_id ];
-		} else {
-			
-			$client_list[ $program_id ] = null;
-			$clients                    = $client_list[ $program_id ];
-		}
-		
-		if ( empty( $clients ) ) {
-			
-			$clients = array();
-		}
-		
-		if ( ! in_array( $client_id, $clients ) ) {
-			
-			$clients[]                  = $client_id;
-			$client_list[ $program_id ] = $clients;
-		}
-		
-		Utilities::get_instance()->log( "Assigned client list for program {$program_id}: " . print_r( $client_list, true ));
-		
-		Utilities::get_instance()->log( "Assigned user {$client_id} in program {$program_id} to coach {$coach_id}" );
-		if ( false !== ( $clients = get_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids' ) ) ) {
-			
-			if ( ! in_array( $client_id, $clients ) ) {
-				
-				Utilities::get_instance()->log( "Saved client Id to the array of clients for this coach ($coach_id)" );
-				add_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids', $client_id );
-			}
-		}
-		
-		if ( false !== ( $programs = get_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids' ) ) ) {
-			
-			if ( ! in_array( $program_id, $programs ) ) {
-				
-				Utilities::get_instance()->log( "Saved program id to the array of programs for this coach ($coach_id)" );
-				add_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids', $program_id );
-			}
-		}
-		
-		return update_user_meta( $coach_id, 'e20r-tracker-client-program-list', $client_list );
-	}
-	
-	/**
 	 * Automatically propose/recommend an exercise experience level for the user based
 	 * on survey results.
 	 *
 	 * @param integer $user_id - The User ID to update the role for
 	 * @param array   $data    - The survey response(s) given
 	 */
-	public function assign_exercise_level( $user_id, $data ) {
+	public function assignExerciseLevel( $user_id, $data ) {
 		
 		// can the client even be at the "experienced" level (by default, no).
 		$can_be_ex  = false;
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		$el_score   = 0;
 		
-		Utilities::get_instance()->log( $data );
+		Utilities::get_instance()->log( print_r( $data, true) );
 		
 		switch ( $data['exercise_level'] ) {
 			case 'complete-beginner':
@@ -634,27 +464,25 @@ class Client {
 		
 		Utilities::get_instance()->log( "Do we need to upgrade the user ({$user->ID}) from their current {$role} exericse level?" );
 		$this->maybe_upgrade_role( $user, $role );
-		
-		// assign new exercise exerience role
-		Utilities::get_instance()->log( "Adding role {$role} to user {$user_id}." );
-		$user->add_role( $role );
 	}
 	
 	/**
 	 * Do we upgrade the user's exercise role (based on past history)
 	 *
 	 * @param \WP_User $user
-	 * @param string   $role_name
+	 * @param string   $existing_role
 	 */
-	public function maybe_upgrade_role( $user, $role_name ) {
+	public function maybe_upgrade_role( $user, $existing_role ) {
 		
 		if ( ! $user->exists() ) {
 			return;
 		}
 		
-		if ( $role_name === 'e20r_tracker_exp_3' ) {
+		if ( $existing_role === 'e20r_tracker_exp_3' ) {
 			return;
 		}
+		
+		$old_roles = $user->roles;
 		
 		$Tracker = Tracker::getInstance();
 		
@@ -665,24 +493,36 @@ class Client {
 		$new_role = null;
 		
 		if ( $current_day >= $first_upgrade_day && $current_day < $second_upgrade_day ) {
-			$new_role = $this->select_next_role( $role_name );
-			Utilities::get_instance()->log( "Yes we do.. Upgrading from {$role_name} to {$new_role} on day # {$first_upgrade_day}" );
+			$new_role = $this->select_next_role( $existing_role );
+			Utilities::get_instance()->log( "Yes we do.. Upgrading from {$existing_role} to {$new_role} on day # {$first_upgrade_day}" );
 		}
 		
 		if ( $current_day >= $second_upgrade_day ) {
-			$new_role = $this->select_next_role( $role_name );
-			Utilities::get_instance()->log( "Yes we do (2nd upgrade). Upgrading from {$role_name} to {$new_role} on day # {$second_upgrade_day}" );
+			$new_role = $this->select_next_role( $existing_role );
+			Utilities::get_instance()->log( "Yes we do (2nd upgrade). Upgrading from {$existing_role} to {$new_role} on day # {$second_upgrade_day}" );
 		}
 		
 		$user_upgrade_level = get_user_meta( $user->ID, '_Tracker_upgraded_to', true );
 		
 		if ( ( ! is_null( $new_role ) && $user_upgrade_level !== $new_role ) ) {
 			
-			Utilities::get_instance()->log( "Changing user role from " );
-			$user->add_role( $new_role );
-			$user->remove_role( $role_name );
+			if ( ( $key = array_search( $existing_role, $old_roles ) ) !== false ) {
+				unset( $old_roles[ $key ] );
+			}
+			
+			if ( ! in_array( $new_role, $old_roles ) ) {
+				$old_roles[] = $new_role;
+			}
+			
+			$user->set_role( '' );
+			
+			foreach ( $old_roles as $role_name ) {
+				Utilities::get_instance()->log( "Updating roles for user {$user->ID} " );
+				$user->add_role( $role_name );
+			}
 			
 			update_user_meta( $user->ID, '_Tracker_upgraded_to', $new_role );
+			wp_cache_flush();
 		}
 	}
 	
@@ -716,24 +556,6 @@ class Client {
 		}
 		
 		return $roles[ $role_to_use ]['role'];
-	}
-	
-	/**
-	 * Returns the coach ID(s) for the specified client
-	 *
-	 * @param null $client_id
-	 * @param null $program_id
-	 *
-	 * @return string[]
-	 */
-	public function get_coach( $client_id = null, $program_id = null ) {
-		
-		Utilities::get_instance()->log( "Loading coach information for program with ID: " . ( is_null( $program_id ) ? 'Undefined' : $program_id ) );
-		
-		$coaches = $this->model->get_coach( $client_id, $program_id );
-		Utilities::get_instance()->log( "Returning coaches: " . print_r( $coaches, true ) );
-		
-		return $coaches;
 	}
 	
 	/**
@@ -836,21 +658,24 @@ class Client {
 	
 	/**
 	 * Render page on back-end for client data (admin selectable).
+	 *
+	 * @param string $lvlName
+	 * @param int    $client_id
 	 */
-	public function render_client_page( $lvlName = '', $client_id = 0 ) {
+	public function renderClientPage( $lvlName = '', $client_id = 0 ) {
 		
 		global $current_user;
 		
-		$Tracker = Tracker::getInstance();
-		$Access  = Tracker_Access::getInstance();
+		$utils  = Utilities::get_instance();
+		$Access = Tracker_Access::getInstance();
 		
 		if ( ! $Access->is_a_coach( $current_user->ID ) ) {
 			
-			$this->set_not_coach_msg();
+			$this->setNotCoachMsg();
 		}
 		
-		$w_client = isset( $_GET['e20r-client-id'] ) ? $Tracker->sanitize( $_GET['e20r-client-id'] ) : null;
-		$w_level  = isset( $_GET['e20r-level-id'] ) ? $Tracker->sanitize( $_GET['e20r-level-id'] ) : - 1;
+		$w_client = $utils->get_variable( 'e20r-client-id', 0 );
+		$w_level  = $utils->get_variable( 'e20r-level-id', - 1 );
 		
 		if ( ! is_null( $w_client ) ) {
 			
@@ -864,18 +689,15 @@ class Client {
 		}
 		
 		$this->init();
-		
 		$this->model->get_data( $client_id );
 		
-		Utilities::get_instance()->log( "Loading admin page for the Client {$client_id}" );
 		echo $this->view->viewClientAdminPage( $lvlName, $w_level );
-		Utilities::get_instance()->log( "Admin page for client {$client_id} has been loaded" );
 	}
 	
 	/**
 	 * Deny access to Coaching page (backend) if not a registered coach
 	 */
-	private function set_not_coach_msg() {
+	private function setNotCoachMsg() {
 		
 		$Tracker = Tracker::getInstance();
 		
@@ -886,8 +708,530 @@ class Client {
 		$error .= '</div><!-- /.error -->';
 		
 		$Tracker->updateSetting( 'unserialize_notice', $error );
-		wp_redirect( admin_url() );
 		
+		wp_redirect( admin_url() );
+		exit();
+	}
+	
+	/**
+	 * Load data and display the Client Settings page for the Tracker
+	 *
+	 * @param null|int $client_id
+	 */
+	public function renderClientSettingsPage( $client_id = null ) {
+		
+		global $current_user;
+		global $currentClient;
+		
+		$Access   = Tracker_Access::getInstance();
+		$Programs = Program::getInstance();
+		$utils    = Utilities::get_instance();
+		
+		if ( ! $Access->is_a_coach( $current_user->ID ) ) {
+			
+			$this->setNotCoachMsg();
+		}
+		
+		$w_client       = $utils->get_variable( 'e20r_tracker_client', 0 );
+		$newProgramIDs  = $utils->get_variable( 'e20r-tracker-user-program', array() );
+		$exerciseLevel  = $utils->get_variable( 'e20r-tracker-user-assigned_role', '' );
+		$clientGender   = $utils->get_variable( 'e20r-tracker-user-gender', '' );
+		$newCoachIDs    = $utils->get_variable( 'e20r-tracker-user-coach_id', array() );
+		$resetPage      = $utils->get_variable( 'e20r-tracker-reset-btn', null );
+		$startedOn      = $utils->get_variable( 'e20r-tracker-user-program_start_date', '' );
+		$memberRecordId = $utils->get_variable( 'e20r-tracker-client-record_id', 0 );
+		
+		if ( ! empty( $resetPage ) ) {
+			
+			// page=e20r-client-settings
+			wp_redirect( add_query_arg( 'page', 'e20r-client-settings', admin_url( 'admin.php' ) ) );
+			exit();
+		}
+		
+		if ( empty( $client_id ) && ! empty( $w_client ) ) {
+			$client_id = $w_client;
+		}
+		
+		$client = get_user_by( 'ID', $client_id );
+		
+		if ( empty( $client ) ) {
+			$client = isset( $currentClient->user_id ) && ! empty( $currentClient->user_id ) ? get_user_by( 'ID', $currentClient->user_id ) : $current_user;
+		}
+		
+		if ( empty( $clientGender ) ) {
+			$this->getClientInfo( $client->ID );
+			$clientGender = $this->getClientDataField( $client->ID, 'gender' );
+		}
+		
+		$utils->log( "User: {$client->ID}: " . print_r( $currentClient, true ) );
+		
+		if ( ! empty( $startedOn ) && $startedOn != $currentClient->program_start ) {
+			$currentClient->program_start = $startedOn;
+		}
+		
+		$client->gender = $clientGender;
+		$client->member_record_id = $memberRecordId;
+		
+		if ( ! empty( $memberRecordId ) || ( ! empty( $client->ID ) &&
+		                                     ( ( ! empty( $client->ID ) && ! empty( $newProgramIDs ) ) ||
+		                                       ( ! empty( $client->ID ) && ! empty( $exerciseLevel ) ) ||
+		                                       ( ! empty( $client->ID ) && ! empty( $newCoachIDs ) ) ||
+		                                       ( ! empty( $client->ID ) && ! empty( $startedOn ) ) ) )
+		) {
+		 
+			$utils->log( "Saving settings for {$client->ID}" );
+			$this->saveSettingsForClient( $client, $newProgramIDs, $exerciseLevel, $newCoachIDs );
+		}
+		
+		$coach_id = null;
+		
+		$programlist   = $Programs->getProgramList();
+		$activeProgram = $Programs->getProgramIdForUser( $client->ID, null );
+		
+		$utils->log( "Loading coach for the specific user ({$client->ID})" );
+		$coach_ids = $this->get_coach( $client->ID, $activeProgram );
+		
+		if ( empty( $coach_ids ) && ( false !== $activeProgram ) ) {
+			
+			$utils->log( "No coach found for user {$client->ID}, but since they're members of a program we'll try to assign one automatically." );
+			$this->getClientInfo( $client->ID );
+			
+			if ( isset( $currentClient->loadedDefaults ) && ( false !== $currentClient->loadedDefaults ) ) {
+				
+				$utils->log( "Didn't have a coach but is member of a program so assigning a coach to user {$client->ID} with gender {$currentClient->gender}" );
+				$id = $this->assignCoach( $client->ID, $currentClient->gender );
+				
+				if ( empty( $id ) || $id === - 1 ) {
+					$coach_ids = array( - 1 => __( 'Unassigned', 'e20r-tracker' ) );
+				} else {
+					$u         = get_user_by( 'id', $id );
+					$coach_ids = array( $id => $u->display_name );
+				}
+				
+			} else {
+				$utils->log( "User hasn't completed their intake interview so can't select coach automatically" );
+				$coach_ids = array( - 1 => 'Unassigned' );
+			}
+		}
+		
+		$coachList = $this->get_coach();
+		
+		$utils->log( "Active Program: {$activeProgram}" );
+		
+		echo $this->view->viewClientSettingsPage(
+			$programlist,
+			$activeProgram,
+			$coachList,
+			$coach_ids,
+			$client
+		);
+	}
+	
+	/**
+	 * Get/configure all client info for the $client_id
+	 *
+	 * @param int $client_id
+	 *
+	 * @return mixed
+	 */
+	public function getClientInfo( $client_id ) {
+		
+		return $this->model->load_client_settings( $client_id );
+	}
+	
+	/**
+	 * Pass-through: Returns field specific data for a client
+	 *
+	 * @param int    $user_id
+	 * @param string $field_name
+	 *
+	 * @return mixed
+	 */
+	public function getClientDataField( $user_id, $field_name ) {
+		return $this->model->get_data( $user_id, $field_name );
+	}
+	
+	/**
+	 * Set/Assign the program for the user ID
+	 *
+	 * @param \WP_User $client - The USER
+	 *
+	 * @return bool -- DIE()s if we're unable to save the settings.
+	 */
+	public function saveSettingsForClient( $client, $newProgramIDs, $exerciseLevel, $newCoachIDs ) {
+		
+		global $currentProgram;
+		global $currentClient;
+		
+		$Program = Program::getInstance();
+		$utils   = Utilities::get_instance();
+		
+		if ( ! current_user_can( 'edit_user' ) ) {
+			return false;
+		}
+		
+		$gender    = isset( $client->gender ) ? $client->gender : null;
+		$startdate = isset( $client->program_start ) ? $client->program_start : $currentClient->program_start;
+		
+		Utilities::get_instance()->log( "Setting program IDs for user with ID of {$client->ID}: " . print_r( $newProgramIDs, true ) );
+		
+		$oldProgramIDs    = get_user_meta( $client->ID, 'e20r-tracker-program-id', false );
+		$removeProgramIDs = array_diff( $oldProgramIDs, $newProgramIDs );
+		
+		Utilities::get_instance()->log( "Remove the following Program IDs for {$client->ID}: " . print_r( $removeProgramIDs, true ) );
+		
+		if ( ! empty( $removeProgramIDs ) ) {
+			
+			foreach ( $removeProgramIDs as $programId ) {
+				if ( false === delete_user_meta( $client->ID, 'e20r-tracker-program-id', $programId ) ) {
+					$utils->log( "Unable to remove user {$client->ID} from program {$programId}" );
+				}
+			}
+		}
+		
+		// TODO: Doesn't _remove_ a user from the program if they're cleared on the settings page...
+		foreach ( $newProgramIDs as $programId ) {
+			
+			update_user_meta( $client->ID, 'e20r-tracker-program-id', $programId );
+			Utilities::get_instance()->log( "Testing whether to add user to program list for {$programId}" );
+			
+			if ( ! isset( $currentProgram->id ) || ( $programId != $currentProgram->id ) ) {
+				
+				$Program->init( $programId );
+			}
+			
+			if ( ! in_array( $client->ID, $currentProgram->users ) ) {
+				
+				$currentProgram->users[] = $client->ID;
+				Utilities::get_instance()->log( "Updating program 'users' list with new user" );
+				$Program->setValue( $currentProgram->users, 'users', $currentProgram->id );
+			}
+		}
+		
+		$existingCoachIDs = get_user_meta( $client->ID, 'e20r-tracker-user-coach_id', false );
+		
+		// FIXME: Doesn't return the IDs for the difference between the selected and the previously assigned coaches
+		$removingCoachIDs = array_diff( $existingCoachIDs, $newCoachIDs );
+		
+		Utilities::get_instance()->log( "Existing IDs for {$client->ID}: " . print_r( $existingCoachIDs, true ) );
+		Utilities::get_instance()->log( "New IDs for {$client->ID}: " . print_r( $newCoachIDs, true ) );
+		Utilities::get_instance()->log( "Removing coach IDs for {$client->ID}: " . print_r( $removingCoachIDs, true ) );
+		
+		foreach ( $removingCoachIDs as $removeCoachID ) {
+			
+			Utilities::get_instance()->log( "Removing coach {$removeCoachID} for user with ID {$client->ID}" );
+			
+			if ( false === delete_user_meta( $client->ID, 'e20r-tracker-user-coach_id', $removeCoachID ) ) {
+				Utilities::get_instance()->log( "Error removing coach {$removeCoachID} from user meta for {$client->ID}" );
+			}
+			
+			if ( false === delete_user_meta( $removeCoachID, 'e20r-tracker-coaching-client_ids', $client->ID ) ) {
+				Utilities::get_instance()->log( "Error removing {$client->ID} from coach's meta (Coach ID: {$removeCoachID})" );
+			}
+		}
+		
+		foreach ( $newCoachIDs as $coach_id ) {
+			
+			Utilities::get_instance()->log( "Assigning & saving coach {$coach_id} for user with ID {$client->ID}" );
+			
+			if ( false === $this->maybeAssignClientToCoach( $client->ID, $coach_id, $programId ) ) {
+				Utilities::get_instance()->log( "Error assigning coach {$coach_id} for to user {$client->ID}" );
+			}
+			
+			if ( ! in_array( $coach_id, $existingCoachIDs ) ) {
+				if ( false === add_user_meta( $client->ID, 'e20r-tracker-user-coach_id', $coach_id ) ) {
+					Utilities::get_instance()->log( "Error adding {$coach_id} to user's metadata for {$client->ID}" );
+				}
+			}
+		}
+		
+		// Add role for user if it's not already added
+		if ( ! empty( $exerciseLevel ) ) {
+			
+			$existing_roles = $client->roles;
+			
+			$roles = wp_roles();
+			
+			if ( null === $roles->get_role( $exerciseLevel ) ) {
+				Utilities::get_instance()->log( "Role {$exerciseLevel} not found on system!!!" );
+			}
+			
+			if ( ! in_array( $exerciseLevel, $existing_roles ) ) {
+				
+				$client->set_role( '' );
+				$existing_roles[] = $exerciseLevel;
+				
+				foreach ( $existing_roles as $role_name ) {
+					Utilities::get_instance()->log( "Adding exercise level {$exerciseLevel} for user {$client->ID}" );
+					$client->add_role( $role_name );
+				}
+				
+				wp_cache_flush();
+			}
+		}
+		
+		if ( ! empty( $gender ) ) {
+			
+			$client_data           = (array) $this->getClientInfo( $client->ID );
+			
+			$client_data['gender'] = $gender;
+			
+			if ( ! empty( $startdate ) ) {
+				$client_data['started_date']  = $startdate;
+				$client_data['program_start'] = $startdate;
+			}
+			
+			if ( !empty( $client->member_record_id ) ) {
+				$client_data['id'] = $client->member_record_id;
+			}
+			
+			try {
+				$this->model->saveData( $client_data );
+			} catch ( \Exception $exception ) {
+				$utils->log( "Error saving client data: " . $exception->getMessage() );
+			}
+		}
+	}
+	
+	/**
+	 * Assign a coach ($coach_id) to the specified client for the program ID
+	 *
+	 * @param int $client_id
+	 * @param int $coach_id
+	 * @param int $program_id
+	 *
+	 * @return bool
+	 */
+	public function maybeAssignClientToCoach( $client_id, $coach_id, $program_id ) {
+		
+		$program_coach_client_list = get_user_meta( $coach_id, 'e20r-tracker-client-program-list', true );
+		
+		Utilities::get_instance()->log( "Coach {$coach_id} has the following programs & clients he/she is coaching: " . print_r( $program_coach_client_list, true ) );
+		
+		// Clean up the client list (just in case)
+		$program_coach_client_list = $this->cleanCoachClientList( $coach_id, $program_coach_client_list );
+		
+		if ( empty( $program_coach_client_list ) ) {
+			
+			$program_coach_client_list = array();
+		}
+		
+		if ( ! isset( $program_coach_client_list[ $program_id ] ) ) {
+			
+			$program_coach_client_list[ $program_id ] = array();
+		}
+		
+		$existing_program_client_list = $program_coach_client_list[ $program_id ];
+		
+		// Add client to list of program clients (save if needed)
+		if ( ! in_array( $client_id, $existing_program_client_list ) ) {
+			
+			$existing_program_client_list[]           = $client_id;
+			$program_coach_client_list[ $program_id ] = $existing_program_client_list;
+			
+		}
+		
+		$coach_client_list = get_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids', false );
+		
+		Utilities::get_instance()->log( "Assigned user {$client_id} in program {$program_id} to coach {$coach_id}" );
+		// TODO: Have to be able to remove clients from the coach's list too!
+		
+		if ( ! empty( $coach_client_list ) ) {
+			
+			if ( ! in_array( $client_id, $coach_client_list ) ) {
+				
+				Utilities::get_instance()->log( "Saved client Id to the array of clients for this coach ($coach_id)" );
+				add_user_meta( $coach_id, 'e20r-tracker-coaching-client_ids', $client_id );
+			}
+		}
+		
+		if ( false !== ( $programs = get_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids' ) ) ) {
+			
+			if ( ! in_array( $program_id, $programs ) ) {
+				
+				Utilities::get_instance()->log( "Saved program id to the array of programs for this coach ($coach_id)" );
+				add_user_meta( $coach_id, 'e20r-tracker-coaching-program_ids', $program_id );
+			}
+		}
+		
+		return $this->saveCoachesClientList( $coach_id, $coach_client_list );
+	}
+	
+	/**
+	 * Fix/Clean up the program/client list for a coach
+	 *
+	 * @param int   $coach_id
+	 * @param array $client_list
+	 *
+	 * @return array
+	 */
+	private function cleanCoachClientList( $coach_id, $client_list ) {
+		
+		$new_list = array();
+		
+		if ( empty( $client_list ) ) {
+			return $new_list;
+		}
+		
+		foreach ( $client_list as $program_id => $clients ) {
+			
+			if ( ! empty( $program_id ) && ! empty( $clients ) ) {
+				$new_list[ $program_id ] = $clients;
+			}
+		}
+		
+		if ( ! empty( $new_list ) ) {
+			$this->saveCoachesClientList( $coach_id, $new_list );
+		}
+		
+		return $new_list;
+	}
+	
+	/**
+	 * Save the list of programs and clients managed by the coach (ID)
+	 *
+	 * @param int   $coach_id
+	 * @param int[] $client_list
+	 *
+	 * @return bool
+	 */
+	private function saveCoachesClientList( $coach_id, $client_list ) {
+		
+		if ( empty( $coach_id ) ) {
+			return false;
+		}
+		
+		if ( empty( $client_list ) || ! is_array( $client_list ) ) {
+			return false;
+		}
+		
+		return update_user_meta( $coach_id, 'e20r-tracker-client-program-list', $client_list );
+	}
+	
+	/**
+	 * Returns the coach ID(s) for the specified client
+	 *
+	 * @param null $client_id
+	 * @param null $program_id
+	 *
+	 * @return string[]
+	 */
+	public function get_coach( $client_id = null, $program_id = null ) {
+		
+		Utilities::get_instance()->log( "Loading coach information for program with ID: " . ( is_null( $program_id ) ? 'Undefined' : $program_id ) );
+		
+		$coaches = $this->model->get_coach( $client_id, $program_id );
+		Utilities::get_instance()->log( "Returning coaches: " . print_r( $coaches, true ) );
+		
+		return $coaches;
+	}
+	
+	/**
+	 * Assign a coach for the new client/user
+	 *
+	 * @param   integer     $user_id
+	 * @param   string|null $gender
+	 *
+	 * @return bool|mixed
+	 */
+	public function assignCoach( $user_id, $gender = null ) {
+		
+		$Program = Program::getInstance();
+		global $currentProgram;
+		
+		Utilities::get_instance()->log( "Loading program settings for {$user_id}" );
+		
+		$old_program = $currentProgram;
+		$Program->getProgramIdForUser( $user_id );
+		
+		$coach_id = false;
+		
+		switch ( strtolower( $gender ) ) {
+			case 'm':
+				Utilities::get_instance()->log( "attempting to find a male coach for {$user_id} in program {$currentProgram->id}: " . print_r( $currentProgram, true ) );
+				
+				$coach = $this->findNextCoach( $currentProgram->male_coaches, $currentProgram->id );
+				break;
+			
+			case 'f':
+				Utilities::get_instance()->log( "attempting to find a female coach for {$user_id} in program {$currentProgram->id}" );
+				$coach = $this->findNextCoach( $currentProgram->female_coaches, $currentProgram->id );
+				break;
+			
+			default:
+				Utilities::get_instance()->log( "attempting to find a coach for {$user_id} in program {$currentProgram->id}" );
+				$coaches = array_merge( $currentProgram->male_coaches, $currentProgram->female_coaches );
+				$coach   = $this->findNextCoach( $coaches, $currentProgram->id );
+		}
+		
+		if ( ! empty( $coach ) ) {
+			Utilities::get_instance()->log( "Found coach: {$coach} for {$user_id}" );
+			$this->maybeAssignClientToCoach( $currentProgram->id, $coach, $user_id );
+			$coach_id = $coach;
+		}
+		
+		$currentProgram = $old_program;
+		
+		return $coach_id;
+	}
+	
+	/**
+	 * Locate the next available coach for the program (ID)
+	 *
+	 * @param array $coach_arr
+	 * @param int   $program_id
+	 *
+	 * @return bool|int|null|string
+	 */
+	public function findNextCoach( $coach_arr, $program_id ) {
+		
+		Utilities::get_instance()->log( "Searching for the coach with the fewest clients so far.." );
+		
+		if ( empty( $coach_arr ) ) {
+			return false;
+		}
+		
+		$coaches = array();
+		
+		foreach ( $coach_arr as $cId ) {
+			
+			Utilities::get_instance()->log( "Processing coach info: " . print_r( $cId, true ) );
+			
+			$client_list = get_user_meta( $cId, 'e20r-tracker-client-program-list', true );
+			
+			if ( ( false !== $client_list ) && ( ! empty( $client_list ) ) ) {
+				
+				$coaches[ $cId ] = count( $client_list[ $program_id ] );
+			} else if ( empty( $cId ) ) {
+				$coaches[ - 1 ] = 0;
+			} else {
+				$coaches[ $cId ] = 0;
+			}
+			
+			Utilities::get_instance()->log( "Client list for coach consists of " . ( false === $client_list ? 'None' : count( $client_list ) . " entries: " . print_r( $client_list, true ) ) );
+			
+		}
+		
+		Utilities::get_instance()->log( "List of coaches and the number of clients they have been assigned... " . print_r( $coaches, true ) );
+		
+		if ( asort( $coaches ) ) {
+			
+			reset( $coaches );
+			$coach_id = key( $coaches );
+			
+			Utilities::get_instance()->log( "Selected coach with ID: {$coach_id} in program {$program_id}" );
+			
+			return $coach_id;
+		}
+		
+		return false;
+	}
+	
+	public function updateForClientInfo( $program_action ) {
+		
+		Utilities::get_instance()->log( "Program Action to update: " . print_r( $program_action, true ) );
+		
+		return $program_action;
 	}
 	
 	/**
@@ -990,52 +1334,70 @@ class Client {
 	 */
 	public function updateRoleForUser( $user_id ) {
 		
-		// global $currentProgram;
-		$Tracker = Tracker::getInstance();
+		$utils = Utilities::get_instance();
 		
 		if ( ! current_user_can( 'edit_user' ) ) {
 			return false;
 		}
 		
-		$role_name = isset( $_POST['e20r-tracker-user-role'] ) ? $Tracker->sanitize( $_POST['e20r-tracker-user-role'] ) : null;
-		$programs  = isset( $_POST['e20r-tracker-coach-for-programs'] ) ? $Tracker->sanitize( $_POST['e20r-tracker-coach-for-programs'] ) : array();
+		$role_name   = $utils->get_variable( 'e20r-tracker-user-role', '' );
+		$newPrograms = $utils->get_variable( 'e20r-tracker-coach-for-programs', array() );
 		
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		
-		Utilities::get_instance()->log( "Tracker::updateRoleForUser() - Setting role name to: ({$role_name}) for user with ID of {$user_id}" );
+		if ( empty( $role_name ) ) {
+			return false;
+		}
+		
+		$utils->log( "Setting role name to: ({$role_name}) for user with ID of {$user_id}. Available roles: " . print_r( $user_roles, true ) );
 		
 		$u = get_user_by( 'id', $user_id );
 		
-		if ( ! empty( $role_name ) ) {
+		if ( ! empty( $u ) && ! empty( $role_name ) ) {
 			
 			$u->add_role( $role_name );
-		} else {
+		} else if ( ! empty( $u ) ) {
 			if ( in_array( $user_roles['coach']['role'], $u->roles ) ) {
 				
-				Utilities::get_instance()->log( "Removing 'coach' capability/role for user {$user_id}" );
+				$utils->log( "Removing 'coach' capability/role for user {$user_id}" );
 				$u->remove_role( $user_roles['coach']['role'] );
 			}
 		}
 		
-		if ( false !== ( $pgmList = get_user_meta( $user_id, "e20r-tracker-coaching-program_ids" ) ) ) {
-			
-			foreach ( $programs as $p ) {
-				
-				if ( ! in_array( $p, $pgmList ) ) {
-					Utilities::get_instance()->log( "Adding program IDs this user is a coach for: " . print_r( $programs, true ) );
-					add_user_meta( $user_id, 'e20r-tracker-coaching-program_ids', $programs );
+		if ( ! empty( $u ) ) {
+			wp_cache_flush();
+		}
+		
+		$existing_programs = get_user_meta( $user_id, "e20r-tracker-coaching-program_ids", false );
+		$remove_programs   = array_diff( $existing_programs, $newPrograms );
+		
+		if ( ! empty( $remove_programs ) ) {
+			foreach ( $remove_programs as $remove_program ) {
+				if ( false === delete_user_meta( $user_id, 'e20r-tracker-coaching-program_ids', $remove_program ) ) {
+					$utils->log( "Unable to delete program id {$remove_program} for user {$user_id}" );
 				}
 			}
 		}
 		
-		
-		if ( false === ( $pgms = get_user_meta( $user_id, 'e20r-tracker-coaching-program_ids' ) ) ) {
+		foreach ( $newPrograms as $p ) {
 			
-			wp_die( "Unable to save the list of programs this user is a coach for" );
+			if ( ! in_array( $p, $existing_programs ) ) {
+				$utils->log( "Adding program IDs this user is a coach for: " . print_r( $newPrograms, true ) );
+				update_user_meta( $user_id, 'e20r-tracker-coaching-program_ids', $p );
+			}
+		}
+		
+		$current_programs = get_user_meta( $user_id, 'e20r-tracker-coaching-program_ids', false );
+		
+		if ( false === $current_programs ) {
+			
+			$utils->log( "Unable to save the list of programs this user is a coach for" );
+			
+			return false;
 		}
 		
 		Utilities::get_instance()->log( "User roles are now: " . print_r( $u->caps, true ) );
-		Utilities::get_instance()->log( "And they are a coach for: " . print_r( $pgms, true ) );
+		Utilities::get_instance()->log( "And they are a coach for: " . print_r( $current_programs, true ) );
 		
 		return true;
 	}
@@ -1051,10 +1413,10 @@ class Client {
 		
 		Utilities::get_instance()->log( "Various roles & capabilities for user {$user->ID}" );
 		
-		$allPrograms = $Program->get_programs();
+		$allPrograms = $Program->getPrograms();
 		Utilities::get_instance()->log( "Programs: " . print_r( $allPrograms, true ) );
 		
-		echo $this->view->profile_view_user_settings( $user->ID, $allPrograms );
+		echo $this->view->profileViewUserSettings( $user->ID, $allPrograms );
 	}
 	
 	/**
@@ -1082,7 +1444,7 @@ class Client {
 		$email_args['from']      = isset( $_POST['email-from'] ) ? $Tracker->sanitize( $_POST['email-from'] ) : null;
 		$email_args['from_name'] = isset( $_POST['email-from-name'] ) ? $Tracker->sanitize( $_POST['email-from-name'] ) : null;
 		$email_args['subject']   = isset( $_POST['subject'] ) ? $Tracker->sanitize( $_POST['subject'] ) : ' ';
-		$email_args['content']   = isset( $_POST['content'] ) ? wp_kses_post( $_POST['content'] ) : null;
+		$email_args['content']   = isset( $_POST['e20r-message-content'] ) ? wp_kses_post( $_POST['e20r-message-content'] ) : null;
 		$email_args['time']      = isset( $_POST['when-to-send'] ) ? $Tracker->sanitize( $_POST['when-to-send'] ) : null;
 		$email_args['content']   = stripslashes_deep( $email_args['content'] );
 		
@@ -1163,7 +1525,7 @@ class Client {
 	 * @return bool
 	 */
 	public function send_email_to_client( $email_array ) {
-	 
+		
 		$headers[] = "Content-type: text/html";
 		$headers[] = "Cc: " . $email_array['cc'];
 		$headers[] = "From: " . $email_array['from'];
@@ -1196,33 +1558,6 @@ class Client {
 	}
 	
 	/**
-	 * Log info about a failed email message and display it in the backend (if applicable)
-	 *
-	 * @param \WP_Error $wp_error
-	 *
-	 * @since 3.0 - ENHANCEMENT: Better logging of errors during email transmission
-	 */
-	public function logMailFailure( $wp_error ) {
-		
-		if ( is_wp_error( $wp_error ) ) {
-			
-			$utils         = Utilities::get_instance();
-			$message_info = $wp_error->get_error_data( 'wp_mail_failed' );
-			
-			foreach ( $message_info['to'] as $to ) {
-				$msg = sprintf(
-					__( 'Warning: Did not send "%1$s" to "%2$s"! Status: %3$s', 'scba-customizations' ),
-					$message_info['subject'],
-					$to,
-					$wp_error->get_error_message( 'wp_mail_failed' )
-				);
-				
-				$utils->log( $msg );
-				$utils->add_message( $msg, 'error' );
-			}
-		}
-	}
-	/**
 	 * Generate the email message body
 	 *
 	 * @param string $subject
@@ -1235,19 +1570,47 @@ class Client {
 		ob_start();
 		?>
         <html>
-            <head>
-                <title><?php esc_attr_e( wp_unslash( $subject ) ); ?></title>
-            </head>
-            <body>
-                <div id="the_content">
-                    <?php echo wp_kses_post( $content ); ?>
-                </div>
-            </body>
+        <head>
+            <title><?php esc_attr_e( wp_unslash( $subject ) ); ?></title>
+        </head>
+        <body>
+        <div id="the_content">
+			<?php echo wp_kses_post( $content ); ?>
+        </div>
+        </body>
         </html>
 		<?php
 		$html = ob_get_clean();
 		
 		return $html;
+	}
+	
+	/**
+	 * Log info about a failed email message and display it in the backend (if applicable)
+	 *
+	 * @param \WP_Error $wp_error
+	 *
+	 * @since 3.0 - ENHANCEMENT: Better logging of errors during email transmission
+	 */
+	public function logMailFailure( $wp_error ) {
+		
+		if ( is_wp_error( $wp_error ) ) {
+			
+			$utils        = Utilities::get_instance();
+			$message_info = $wp_error->get_error_data( 'wp_mail_failed' );
+			
+			foreach ( $message_info['to'] as $to ) {
+				$msg = sprintf(
+					__( 'Warning: Did not send "%1$s" to "%2$s"! Status: %3$s', 'scba-customizations' ),
+					$message_info['subject'],
+					$to,
+					$wp_error->get_error_message( 'wp_mail_failed' )
+				);
+				
+				$utils->log( print_r( $msg, true) );
+				$utils->add_message( $msg, 'error' );
+			}
+		}
 	}
 	
 	/**
@@ -1261,7 +1624,7 @@ class Client {
 	public function saveInterview( $data, $entry ) {
 		
 		try {
-			$this->model->save_client_interview( $data );
+			$this->model->saveClientInterview( $data );
 		} catch ( \Exception $exception ) {
 			Utilities::get_instance()->log( "Problem saving the client interview. Error: " . $exception->getMessage() );
 			
@@ -1289,7 +1652,7 @@ class Client {
 	public function test_wp_mail( $args ) {
 		
 		$debug = var_export( $args, true );
-		Utilities::get_instance()->log( $debug );
+		Utilities::get_instance()->log( print_r( $debug, true) );
 	}
 	
 	/**
@@ -1465,7 +1828,7 @@ class Client {
 		$a        = $articles[0];
 		
 		Utilities::get_instance()->log( "Article ID: " );
-		Utilities::get_instance()->log( $a->id );
+		Utilities::get_instance()->log( print_r( $a->id, true) );
 		
 		if ( ! $Article->isSurvey( $a->id ) ) {
 			wp_send_json_error( array( 'error' => 'Configuration error. Please report to tech support.' ) );
@@ -1737,7 +2100,7 @@ class Client {
 			);
 		}
 		
-		$html = $this->view->view_clientProfile( $tabs );
+		$html = $this->view->viewClientProfile( $tabs );
 		Utilities::get_instance()->log( "Display the HTML for the e20r_profile short code: " . strlen( $html ) );
 		
 		return $html;
@@ -1884,7 +2247,7 @@ class Client {
 		
 		if ( ( ! $Access->is_a_coach( $current_user->ID ) ) ) {
 			
-			$this->set_not_coach_msg();
+			$this->setNotCoachMsg();
 			wp_die();
 		}
 		
@@ -1902,7 +2265,7 @@ class Client {
 				
 				$client->status                = new \stdClass();
 				$client->status->program_id    = $Program->getProgramIdForUser( $client->ID );
-				$client->status->program_start = $Program->get_program_start( $client->status->program_id, $client->ID );
+				$client->status->program_start = $Program->getProgramStart( $client->status->program_id, $client->ID );
 				$client->status->coach         = array( $currentProgram->id => key( $coach ) );
 				$client->status->recent_login  = get_user_meta( $client->ID, '_e20r-tracker-last-login', true );
 				$mHistory                      = $this->model->load_message_history( $client->ID );
@@ -1940,7 +2303,7 @@ class Client {
 		
 		// Utilities::get_instance()->log($list);
 		
-		return $this->view->display_client_list( $list );
+		return $this->view->displayClientList( $list );
 		
 	}
 }

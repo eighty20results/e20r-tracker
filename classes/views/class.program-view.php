@@ -1,25 +1,56 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 12/15/14
- * Time: 1:20 PM
+/*
+    Copyright 2015-2018 Thomas Sjolshagen / Wicked Strong Chicks, LLC (info@eighty20results.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-class e20rProgramView {
+namespace E20R\Tracker\Views;
 
+use E20R\Tracker\Controllers\Tracker;
+use E20R\Tracker\Controllers\Client;
+use E20R\Utilities\Utilities;
+
+/**
+ * Class Program_View
+ * @package E20R\Tracker\Views
+ */
+class Program_View extends Settings_View {
+    
+    /**
+     * Instance of this class
+     * @var null|Program_View
+     */
+    private static $instance = null;
+    
+    /**
+     * @var null|\stdClass
+     */
     private $programs = null;
 
-    private static $instance = null;
-
+    /**
+     * Program_View constructor.
+     *
+     * @param null|\stdClass  $programData
+     */
     public function __construct( $programData = null ) {
 
         $this->programs = $programData;
-
     }
 
     /**
-	 * @return e20rProgramView
+	 * @return Program_View|null
 	 */
 	static function getInstance() {
 
@@ -30,88 +61,11 @@ class e20rProgramView {
 	    return self::$instance;
 	}
 
-    public function profile_view_client_settings( $programList, $activePgm, $coachList, $coach_id, $user ) {
-
-	    if ( empty( $programList ) ) {
-		    $programList = array();
-	    }
-
-        dbg("e20rProgramView::profile_view_client_settings() - Looking for coach: ");
-        dbg($coach_id);
-
-        ob_start();
-        ?>
-        <h3><?php _e("E20R Tracker - Program Settings", "e20r-tracker"); ?></h3>
-        <table class="form-table">
-            <tr>
-                <th><label for="e20r-tracker-user-program"><?php _e( "Member of program", "e20r-tracker"); ?></label></th>
-                <td>
-                    <select id="e20r-tracker-user-program" name="e20r-tracker-user-program" class="select2-container">
-                        <option value="0" <?php selected( $activePgm, 0 ) ?>>Not Applicable</option>
-                        <?php
-
-                        foreach( $programList as $id => $obj ) {
-                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( $activePgm, $id ); ?>><?php echo esc_attr($obj->title); ?></option> <?php
-                        }
-
-                        ?>
-                    </select>
-                </td>
-            </tr>
-            <tr><?php
-                        $user_roles = apply_filters('e20r-tracker-configured-roles', array() );
-
-                        $has_exercise_role = (
-                            user_can($user->ID, $user_roles['beginner']['role']) ||
-                            user_can($user->ID, $user_roles['intermediate']['role']) ||
-                            user_can($user->ID, $user_roles['experienced']['role']) ||
-                            user_can($user->ID, $user_roles['coach']['role']) ); ?>
-                <th><label for="e20r-tracker-user-assigned_role"><?php _e( "Exercise Experience", "e20r-tracker"); ?></label></th>
-                <td>
-                    <select id="e20r-tracker-user-assigned_role" name="e20r-tracker-user-assigned_role" class="select2-container">
-                        <option value="0" <?php echo (false === $has_exercise_role ? 'selected="selected"' : null);  ?>>Unassigned</option>
-                        <?php
-
-                        foreach( $user_roles as $key => $role_def ) { ?>
-
-                            <option value="<?php echo esc_attr($role_def['role']); ?>" <?php echo (true === user_can( $user->ID, $role_def['role'])? 'selected="selected"' : null); ?>>
-                                <?php echo esc_attr($role_def['label']); ?>
-                            </option> <?php
-                        } ?>
-
-                    </select>
-                </td>
-
-            </tr>
-            <tr>
-                <th><label for="e20r-tracker-user-coach_id"><?php _e( "Assigned Coach", "e20r-tracker"); ?></label></th>
-                <td>
-                    <select id="e20r-tracker-user-coach_id" name="e20r-tracker-user-coach_id" class="select2-container">
-                        <option value="0" <?php selected( key( $coach_id ), 0 ) ?>>Unassigned</option>
-                        <?php
-
-                        foreach( $coachList as $id => $name ) {
-                            ?><option value="<?php echo esc_attr($id); ?>" <?php selected( key( $coach_id ), $id ); ?>><?php echo esc_attr($name); ?></option> <?php
-                        }
-
-                        ?>
-                    </select>
-                </td>
-            </tr>
-
-        </table>
-        <?php
-
-        $html = ob_get_clean();
-        return $html;
-    }
-
     public function old_viewSettingsBox( $programData, $feeds ) {
 
-        $e20rTracker = e20rTracker::getInstance();
-
-        dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
-        ?>
+        $Tracker = Tracker::getInstance();
+        
+        Utilities::get_instance()->log("Supplied data: " . print_r($programData, true)); ?>
         <form action="" method="post">
             <?php wp_nonce_field('e20r-tracker-data', 'e20r-tracker-program-settings'); ?>
             <div class="e20r-editform">
@@ -135,18 +89,18 @@ class e20rProgramView {
                         if ( is_null( $programData->startdate ) ) {
                             $start = '';
                         } else {
-                            $start = new DateTime( $programData->startdate );
+                            $start = new \DateTime( $programData->startdate );
                             $start = $start->format( 'Y-m-d' );
                         }
 
                         if ( is_null( $programData->enddate ) ) {
                             $end = '';
                         } else {
-                            $end = new DateTime( $programData->enddate );
+                            $end = new \DateTime( $programData->enddate );
                             $end = $end->format( 'Y-m-d' );
                         }
 
-                        dbg( "Program - Start: {$start}, End: {$end}" );
+                        Utilities::get_instance()->log( "Program - Start: {$start}, End: {$end}" );
                         ?>
                         <tr id="<?php echo $programData->id; ?>" class="program-inputs">
                             <td class="text-input">
@@ -159,7 +113,7 @@ class e20rProgramView {
                                 <select class="select2-container" id="e20r-program-group" name="e20r-program-group">
                                     <option value="-1" <?php selected( $programData->group, 0 ); ?>><?php _e("Not Applicable", "e20r-tracker"); ?></option>
                                     <?php
-                                        $levels = $e20rTracker->getMembershipLevels( null, true );
+                                        $levels = $Tracker->getMembershipLevels( null, true );
 
                                         foreach( $levels as $id => $name ) { ?>
 
@@ -184,9 +138,6 @@ class e20rProgramView {
                                             <option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
                                 <?php   } ?>
                                 </select>
-                                <style>
-                                    .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-                                </style>
                             </td>
 	                        <td>
 		                        <select class="select2-container" id="e20r-program-intake_form" name="e20r-program-intake_form">
@@ -207,28 +158,6 @@ class e20rProgramView {
                                     ?>
 		                        </select>
 	                        </td>
-
-	                        <!--	                        <td>
-									<select class="select2-container" id="e20r-program-activity_sequences" name="e20r-program-activity_sequences[]" multiple="multiple">
-										<option value="0">Not configured</option>
-										<?php
-
-										foreach($feeds as $df) {
-
-											$selected = ( in_array( $df->ID, $programData->sequences ) ? ' selected="selected" ' : null ); ?>
-											<option value="<?php echo $df->ID;?>"<?php echo $selected; ?>><?php echo esc_textarea($df->post_title);?> (#<?php echo $df->ID;?>)</option>
-										<?php   } ?>
-									</select>
-									<style>
-										.select2-container {min-width: 75px; max-width: 300px; width: 90%;}
-									</style>
-									<script>
-										jQuery("#e20r-program-groups").select2();
-										jQuery('#e20r-program-sequences').select2();
-										jQuery('#e20r-program-activity_sequences').select2();
-									</script>
-								</td>
-	-->
                         </tr>
                     </tbody>
                 </table>
@@ -239,23 +168,26 @@ class e20rProgramView {
 
     public function viewSettingsBox( $programData, $feeds ) {
 
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rClient = e20rClient::getInstance();
-
+        $Tracker = Tracker::getInstance();
+        $Client = Client::getInstance();
+        
         $pages = get_pages();
         $posts = get_posts();
 
         $list = array_merge( $pages, $posts );
-      
-        $coaches = $e20rClient->get_coach();
+        $weekdays = array(
+                0 => __( 'Sunday', 'e20r-tracker' ),
+                1 => __('Monday', 'e20r-tracker'),
+                2 => __('Tuesday', 'e20r-tracker'),
+                3 => __('Wednesday', 'e20r-tracker'),
+                4 => __('Thursday', 'e20r-tracker'),
+                5 => __('Friday', 'e20r-tracker'),
+                6 => __('Saturday', 'e20r-tracker'),
+        );
+        
+        $coaches = $Client->get_coach();
 
-        dbg("e20rProgramView::viewProgramSettingsBox() - Supplied data: " . print_r($programData, true));
-        dbg( "e20rProgramView::viewProgramSettingsBox() - Defined coaches in system: ");
-        dbg( $coaches );
-
-        wp_reset_postdata();
-
-        ?>
+        wp_reset_postdata(); ?>
         <style>
             .select2-container {min-width: 75px; max-width: 300px; width: 90%;}
         </style>
@@ -280,18 +212,18 @@ class e20rProgramView {
                             $start = '';
                         } else {
 
-                            $start = new DateTime( $programData->startdate);
+                            $start = new \DateTime( $programData->startdate);
                             $start = $start->format('Y-m-d');
                         }
 
                         if ( empty( $programData->enddate ) ) {
                             $end = '';
                         } else {
-                            $end = new DateTime( $programData->enddate );
+                            $end = new \DateTime( $programData->enddate );
                             $end = $end->format( 'Y-m-d' );
                         }
 
-                        dbg( "e20rProgramView::viewSettingsBox() - Program - Start: {$start}, End: {$end}" );
+                        Utilities::get_instance()->log( "Program - Start: {$start}, End: {$end}" );
                         ?>
                         <tr id="<?php echo $programData->id; ?>" class="program-inputs">
                             <td class="text-input">
@@ -302,13 +234,11 @@ class e20rProgramView {
                             </td>
 	                        <td>
                                 <select class="select2-container" name="e20r-program-measurement_day" id="e20r-program-measurement_day">
-                                    <option value="0" <?php selected( 0, $programData->measurement_day); ?>>Sunday</option>
-                                    <option value="1" <?php selected( 1, $programData->measurement_day); ?>>Monday</option>
-                                    <option value="2" <?php selected( 2, $programData->measurement_day); ?>>Tuesday</option>
-                                    <option value="3" <?php selected( 3, $programData->measurement_day); ?>>Wednesday</option>
-                                    <option value="4" <?php selected( 4, $programData->measurement_day); ?>>Thursday</option>
-                                    <option value="5" <?php selected( 5, $programData->measurement_day); ?>>Friday</option>
-                                    <option value="6" <?php selected( 6, $programData->measurement_day); ?>>Saturday</option>
+                                <?php
+                                foreach ($weekdays as $day_id => $day ) { ?>
+                                    <option value="0" <?php selected( $day_id, $programData->measurement_day); ?>><?php esc_attr_e( $day ); ?></option>
+                                <?php
+                                } ?>
                                 </select>
                             </td>
                         </tr>
@@ -332,18 +262,18 @@ class e20rProgramView {
                                 <select class="select2-container" id="e20r-program-group" name="e20r-program-group">
                                     <option value="-1" <?php selected( $programData->group, 0 ); ?>><?php _e("Not Applicable", "e20r-tracker"); ?></option>
                                     <?php
-                                        $levels = $e20rTracker->getMembershipLevels( null, true );
+                                        $levels = $Tracker->getMembershipLevels( null, true );
 
                                         foreach( $levels as $id => $name ) { ?>
 
-                                            <option value="<?php echo $id; ?>" <?php echo selected( $programData->group, $id ); ?>><?php echo $name; ?></option> <?php
+                                            <option value="<?php esc_attr_e( $id ); ?>" <?php selected( $programData->group, $id ); ?>><?php esc_html_e( $name ); ?></option> <?php
                                         }
                                     ?>
                                 </select>
                             </td>
                             <td>
                                 <select class="select2-container" id="e20r-program-sequences" name="e20r-program-sequences[]" multiple="multiple">
-                                    <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>>Not configured</option>
+                                    <option value="0" <?php echo in_array( 0, $programData->sequences ) ? ' selected="selected" ' : null; ?>><?php _e('Not configured', 'e20r-tracker' ); ?></option>
                                     <?php
                                         foreach($feeds as $df) {
 
@@ -371,7 +301,7 @@ class e20rProgramView {
                                     <option value="-1" <?php echo ( empty( $programData->sales_page_ids) || in_array( -1, $programData->sales_page_ids)  ? 'selected="selected"' : null); ?>><?php _e("No page defined", "e20r-tracker");?></option><?php
 
                                 foreach( $list as $p ) { ?>
-                                    <option value="<?php echo $p->ID;?>"<?php echo ( isset( $programData->sales_page_ids) && in_array( $p->ID, $programData->sales_page_ids) ? 'selected="selected"' : null); ?>><?php echo esc_textarea($p->post_title);?></option><?php
+                                    <option value="<?php esc_attr_e( $p->ID ) ;?>"<?php echo ( isset( $programData->sales_page_ids) && in_array( $p->ID, $programData->sales_page_ids) ? 'selected="selected"' : null); ?>><?php echo esc_textarea($p->post_title);?></option><?php
                                 } ?>
                                 </select>
                             </td>
@@ -574,7 +504,7 @@ class e20rProgramView {
             <select name="e20r_choose_programs" id="e20r-choose-program">
                 <?php
 
-                // dbg("Select List " . print_r( $this->programs, true ) );
+                // Utilities::get_instance()->log("Select List " . print_r( $this->programs, true ) );
 
                 foreach( $this->programs as $program ) {
                     ?><option value="<?php echo esc_attr( $this->program->id ); ?>"  <?php selected( $this->programId, $this->program->id, true); ?>><?php echo esc_attr( $this->program->program_name ); ?></option><?php
@@ -601,14 +531,11 @@ class e20rProgramView {
         <?
     }
 
-    private function showSequenceListForMetaBox() {
-
-    }
-
     public function viewProgramEditSelect() {
 
         //$this->programs = $this->load_program_info( null, true ); // Load all programs & generate a select <div></div>
-
+        $utils = Utilities::get_instance();
+        
         ob_start();
 
         ?>
@@ -617,14 +544,14 @@ class e20rProgramView {
                 <?php wp_nonce_field( 'e20r-tracker-data', 'e20r_tracker_select_programs_nonce' ); ?>
                 <div class="e20r-select">
                     <input type="hidden" name="hidden_e20r_program_id" id="hidden_e20r_program_id" value="0" >
-                    <label for="e20r_programs">Select Program</label>
+                    <label for="e20r_programs"><?php _e('Select Program', 'e20r-tracker'); ?></label>
                     <span class="e20r-program-select-span">
                         <select name="e20r_programs" id="e20r_programs">
                             <?php
 
-                            dbg("e20rProgramView:: - List: " . print_r( $this->programs, true ) );
+                            Utilities::get_instance()->log("Program_View:: - List: " . print_r( $this->programs, true ) );
                             foreach( $this->programs as $program ) {
-                                ?><option value="<?php echo esc_attr( $program->id ); ?>"  ><?php echo esc_attr( $program->program_name ); ?></option><?php
+                                ?><option value="<?php esc_attr_e( $program->id ); ?>"  ><?php esc_html_e( $program->program_name ); ?></option><?php
                             }
                             ?>
                         </select>
@@ -643,9 +570,11 @@ class e20rProgramView {
 
     public function view_listPrograms() {
 
+        $utils = Utilities::get_instance();
+        
         // Fetch the Checkin Item we're looking to manage
         // $program_list = $this->load_program_info( null, false );
-        dbg("e20rProgramView::view_listPrograms() - Loading list of programs");
+        Utilities::get_instance()->log("Loading list of programs");
         ob_start();
         ?>
         <H1>List of Programs</H1>
@@ -657,17 +586,17 @@ class e20rProgramView {
                 <table id="e20r-list-programs-table">
                     <thead>
                     <tr>
-                        <th class="e20r-label header"><label for="e20r-program_id">Edit</label></th>
-                        <th class="e20r-label header"><label for="e20r-program_id">ID</label></th>
-                        <th class="e20r-label header"><label for="e20r-program_name">Name</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-startdate">Starts on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-enddate">Ends on</label></th>
-                        <th class="e20r-label header"><label for="e20r-program-descr">Description</label></th>
-                        <th class="e20r-label header"><label for="e20r-memberships">Belongs to (Membership)</label></th>
-                        <th class="e20r-save-col hidden">Save</td>
-                        <th class="e20r-cancel-col hidden">Cancel</td>
-                        <th class="e20r-delete-col hidden">Remove</td>
-                        <th class="e20r-label header hidden"></td>
+                        <th class="e20r-label header"><label for="e20r-program_id"><?php _e('Edit', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program_id"><?php _e('ID', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program_name"><?php _e('Name', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-startdate"><?php _e('Starts on', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-enddate"><?php _e('Ends on', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-program-descr"><?php _e( 'Description', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-label header"><label for="e20r-memberships"><?php _e('Belongs to (Membership)', 'e20r-tracker'); ?></label></th>
+                        <th class="e20r-save-col hidden"><?php _e('Save', 'e20r-tracker'); ?></th>
+                        <th class="e20r-cancel-col hidden"><?php _e('Cancel', 'e20r-tracker'); ?></th>
+                        <th class="e20r-delete-col hidden"><?php _e('Remove', 'e20r-tracker'); ?></th>
+                        <th class="e20r-label header hidden"></th>
                     </tr>
                     <tr>
                         <td colspan="11"><hr/></td>
@@ -684,54 +613,54 @@ class e20rProgramView {
                             if ( is_null( $program->startdate ) ) {
                                 $start = '';
                             } else {
-                                $start = new DateTime( $program->startdate );
+                                $start = new \DateTime( $program->startdate );
                                 $start = $start->format( 'Y-m-d' );
                             }
 
                             if ( is_null( $program->enddate ) ) {
                                 $end = '';
                             } else {
-                                $end = new DateTime( $program->enddate );
+                                $end = new \DateTime( $program->enddate );
                                 $end = $end->format( 'Y-m-d' );
                             }
 
                             $pid = $program->id;
 
-                            dbg( "Program - Start: {$start}, End: {$end}" );
+                            Utilities::get_instance()->log( "Program - Start: {$start}, End: {$end}" );
                             ?>
-                            <tr id="<?php echo $pid; ?>" class="program-inputs">
+                            <tr id="<?php esc_attr_e( $pid ); ?>" class="program-inputs">
                                 <td class="text-input">
-                                    <input type="checkbox" name="edit_<?php echo $pid; ?>" id="edit_<?php echo $pid ?>">
+                                    <input type="checkbox" name="edit_<?php esc_attr_e( $pid ); ?>" id="edit_<?php echo $pid ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="text" id="e20r-program_id_<?php echo $pid; ?>" disabled name="e20r_program_id" size="5" value="<?php echo( ( ! empty( $program->id ) ) ? $program->id : null ); ?>">
+                                    <input type="text" id="e20r-program_id_<?php esc_attr_e( $pid ); ?>" disabled name="e20r_program_id" size="5" value="<?php echo( ( ! empty( $program->id ) ) ? $program->id : null ); ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="text" id="e20r-program_name_<?php echo $pid; ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
+                                    <input type="text" id="e20r-program_name_<?php esc_attr_e( $pid ); ?>" disabled name="e20r_program_name" size="25" value="<?php echo( ( ! empty( $program->program_name ) ) ? $program->program_name : null ); ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-startdate_<?php echo $pid; ?>" disabled name="e20r_program_startdate" value="<?php echo $start; ?>">
+                                    <input type="date" id="e20r-program-startdate_<?php esc_attr_e( $pid ); ?>" disabled name="e20r_program_startdate" value="<?php echo $start; ?>">
                                 </td>
                                 <td class="text-input">
-                                    <input type="date" id="e20r-program-enddate_<?php echo $pid; ?>" disabled name="e20r_program_enddate" value="<?php echo $end; ?>">
+                                    <input type="date" id="e20r-program-enddate_<?php esc_attr_e( $pid ); ?>" disabled name="e20r_program_enddate" value="<?php echo $end; ?>">
                                 </td>
                                 <td class="text-descr">
-                                    <textarea class="expand" id="e20r-program-descr_<?php echo $pid; ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
+                                    <textarea class="expand" id="e20r-program-descr_<?php esc_attr_e( $pid ); ?>" disabled name="e20r_program_descr" rows="1" wrap="soft"><?php echo ( ! empty( $program->description ) ) ? $program->description : null; ?></textarea>
                                 </td>
                                 <td class="select-input">
                                     <?php echo $this->view_selectMemberships( $program->member_id, $pid ); ?>
                                 </td>
-                                <td class="hidden save-button-row" id="e20r-td-save_<?php echo $pid; ?>">
+                                <td class="hidden save-button-row" id="e20r-td-save_<?php esc_attr_e( $pid ); ?>">
                                     <a href="#" class="e20r-save-edit-program button">Save</a>
                                 </td>
-                                <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php echo $pid; ?>">
+                                <td class="hidden cancel-button-row" id="e20r-td-cancel_<?php esc_attr_e( $pid ); ?>">
                                     <a href="#" class="e20r-cancel-edit-program button">Cancel</a>
                                 </td>
-                                <td class="hidden delete-button-row" id="e20r-td-delete_<?php echo $pid; ?>">
+                                <td class="hidden delete-button-row" id="e20r-td-delete_<?php esc_attr_e( $pid ); ?>">
                                     <a href="#" class="e20r-delete-program button">Remove</a>
                                 </td>
                                 <td class="hidden-input">
-                                    <input type="hidden" class="hidden_id" value="<?php echo $pid; ?>">
+                                    <input type="hidden" class="hidden_id" value="<?php esc_attr_e( $pid ); ?>">
                                 </td>
                             </tr>
                         <?php
@@ -739,7 +668,7 @@ class e20rProgramView {
                     }
                     else { ?>
                         <tr>
-                            <td colspan="7">No programs found in the database. Please add a new program by clicking the "Add New" button.</td>
+                            <td colspan="7"><?php _e('No programs found in the database. Please add a new program by clicking the "Add New" button.', 'e20r-tracker'); ?></td>
                         </tr><?php
                     }
                     ?>
@@ -759,10 +688,10 @@ class e20rProgramView {
                         <td class="text-input"><input type="date" id="e20r-program-enddate" name="e20r_program_enddate" value=""></td>
                         <td class="text-descr"><textarea class="expand" id="e20r-program-descr" name="e20r_program_descr" rows="1" wrap="soft"></textarea></td>
                         <td class="select-input"><?php echo $this->view_selectMemberships( 0, null ); ?></td>
-                        <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#">Save</a></td>
-                        <td class="cancel"><a class="e20r-button button" id="e20r-cancel-new-program" href="#">Cancel</a></td>
+                        <td class="save"><a class="e20r-button button" id="e20r-save-new-program" href="#"><?php _e('Save', 'e20r-tracker'); ?></a></td>
+                        <td class="cancel"><a class="e20r-button button" id="e20r-cancel-new-program" href="#"><?php _e('Cancel', 'e20r-tracker'); ?></a></td>
                         <td class="hidden"><!-- Nothing here, it's for the delete/remove button --></td>
-                        <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php echo $pid; ?>"></td>
+                        <td class="hidden-input"><input type="hidden" class="hidden_id" value="<?php esc_attr_e( $pid ); ?>"></td>
                     </tr>
                     </tfoot>
                 </table>
@@ -775,7 +704,6 @@ class e20rProgramView {
         return $html;
     }
 
-
     public function view_selectMemberships( $mId, $rowId = null ) {
 
         if ( function_exists( 'pmpro_getAllLevels' ) ) {
@@ -786,7 +714,7 @@ class e20rProgramView {
 
             if ( ! empty( $rowId ) ) {
 
-                ?><select name="e20r-memberships_<?php echo $rowId; ?>" id="e20r-memberships_<?php echo $rowId; ?>" disabled><?php
+                ?><select name="e20r-memberships_<?php esc_attr_e($rowId ); ?>" id="e20r-memberships_<?php esc_attr_e( $rowId ); ?>" disabled><?php
             }
             else {
 
@@ -806,17 +734,39 @@ class e20rProgramView {
         return $html;
     }
 
+    public function view_programPostMetabox() {
+        $utils = Utilities::get_instance();
+        Utilities::get_instance()->log("Rendering metabox...");
+
+        ob_start();
+        ?>
+        <div class="submitbox" id="e20r-program-postmeta">
+            <?php wp_nonce_field('e20r-tracker-program-meta', 'e20r-tracker-program-nonce');?>
+            <div id="minor-publishing">
+                <div id="e20r-postmeta-setprogram">
+                    <?php echo $this->view_programMetaTable(); ?>
+                </div>
+            </div>
+        </div>
+        <?php
+
+        $metabox = ob_get_clean();
+
+        echo $metabox;
+
+    }
 
     public function view_programMetaTable() {
 
         global $post;
-
+        $utils = Utilities::get_instance();
+        
         // $this->init();
 
         $pgms = get_post_meta($post->ID, 'e20r_tracker_program_ids', true);
         $pgms = array_unique( $pgms );
 
-        dbg("e20rProgramView:: Read from post meta for {$post->ID}: " . print_r( $pgms, true));
+        Utilities::get_instance()->log("Program_View:: Read from post meta for {$post->ID}: " . print_r( $pgms, true));
 
         $belongs_to = array();
 
@@ -838,7 +788,7 @@ class e20rProgramView {
         <table style="width: 100%;" id="e20r-program-metatable">
             <tbody>
             <?php foreach( $belongs_to as $id ) { ?>
-                <?php dbg("e20rProgramView:: - Adding rows for {$id}");?>
+                <?php Utilities::get_instance()->log("Program_View:: - Adding rows for {$id}");?>
                 <tr><td><fieldset></td></tr>
                 <tr class="select-row-label<?php echo ( $id == 0 ? ' new-program-select-label' : ' program-select-label' ); ?>">
                     <td>
@@ -848,13 +798,13 @@ class e20rProgramView {
                 <tr class="e20r-select-row-input<?php echo ( $id == 0 ? ' new-e20rprogram-select' : ' program-select' ); ?>">
                     <td class="program-list-dropdown">
                         <select class="<?php echo ( $id == 0 ? 'new-e20rprogram-select' : 'e20r-tracker-memberof-programs'); ?>" name="e20r-tracker-programs[]">
-                            <option value="0" <?php echo ( $id == 0 ? 'selected' : '' ); ?>><?php _e("Not assigned", "e20r-tracker"); ?></option>
+                            <option value="0" <?php selected( $id, 0 ); ?>><?php _e("Not assigned", "e20r-tracker"); ?></option>
                             <?php
                             // Loop through all of the sequences & create an option list
                             foreach ( $this->programs as $program ) {
                                 if ( $program->id != 0 ) {
                                     ?>
-                                    <option value="<?php echo $program->id; ?>" <?php echo selected( $program->id, $id ); ?>><?php echo $program->program_name; ?></option><?php
+                                    <option value="<?php echo $program->id; ?>" <?php echo selected( $program->id, $id ); ?>><?php esc_html_e( $program->program_name ); ?></option><?php
                                 }
                             }
                             ?>
@@ -875,25 +825,7 @@ class e20rProgramView {
         return ob_get_clean();
     }
 
-    public function view_programPostMetabox() {
-
-        dbg("e20rProgramView::view_programPostMetabox() - Rendering metabox...");
-
-        ob_start();
-        ?>
-        <div class="submitbox" id="e20r-program-postmeta">
-            <?php wp_nonce_field('e20r-tracker-program-meta', 'e20r-tracker-program-nonce');?>
-            <div id="minor-publishing">
-                <div id="e20r-postmeta-setprogram">
-                    <?php echo $this->view_programMetaTable(); ?>
-                </div>
-            </div>
-        </div>
-        <?php
-
-        $metabox = ob_get_clean();
-
-        echo $metabox;
+    private function showSequenceListForMetaBox() {
 
     }
 

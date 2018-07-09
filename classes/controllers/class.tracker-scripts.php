@@ -22,6 +22,8 @@ use E20R\Tracker\Models\Action_Model;
 use E20R\Tracker\Models\Program_Model;
 use E20R\Tracker\Models\Workout_Model;
 
+use E20R\Utilities\Utilities;
+
 /**
  * Class Tracker_Scripts
  * @package E20R\Tracker\Controllers
@@ -84,7 +86,7 @@ class Tracker_Scripts {
 			wp_enqueue_style('jquery-ui-css', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 			wp_enqueue_style('jquery-ui-datetimepicker', E20R_PLUGINS_URL . "/css/jquery.datetimepicker.min.css", false, E20R_VERSION);
 			
-			E20R_Tracker::dbg("Tracker_Scripts::load_adminJS() - Loading admin javascript");
+			Utilities::get_instance()->log("Tracker_Scripts::load_adminJS() - Loading admin javascript");
 			wp_register_script( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/" . E20R_SELECT2_VER ."/js/select2.min.js", array('jquery'), E20R_SELECT2_VER, true );
 			wp_register_script( 'jquery.timeago', E20R_PLUGINS_URL . '/js/libraries/jquery.timeago.min.js', array( 'jquery' ), '0.1', true );
 			wp_register_script( 'jquery.autoresize', E20R_PLUGINS_URL . '/js/libraries/jquery.autogrowtextarea.min.js' , array('jquery'), E20R_VERSION, true );
@@ -139,7 +141,7 @@ class Tracker_Scripts {
 		
 		if ( $e20r_plot_jscript || ( !is_null($hook) && $hook == $ClientInfoPage ) || ( !is_null($hook) && $hook == $e20rAdminPage ) || has_shortcode( $post->post_content, 'user_progress_info' ) ) {
 			
-			E20R_Tracker::dbg( "Tracker::register_plotSW() - Plotting javascript being registered." );
+			Utilities::get_instance()->log( "Tracker::register_plotSW() - Plotting javascript being registered." );
 			
 			wp_deregister_style( 'jqplot' );
 			wp_enqueue_style( 'jqplot', E20R_PLUGINS_URL . '/js/jQPlot/core/jquery.jqplot.min.css', false, E20R_VERSION );
@@ -184,7 +186,7 @@ class Tracker_Scripts {
 		
 		if ( $e20r_plot_jscript || $hook == $ClientInfoPage || $hook == $e20rAdminPage || has_shortcode( $post->post_content, 'progress_overview' ) ) {
 			
-			E20R_Tracker::dbg("Tracker::enqueue_plotSW() -- Loading javascript for graph generation");
+			Utilities::get_instance()->log("Tracker::enqueue_plotSW() -- Loading javascript for graph generation");
 			
 			wp_print_scripts( array(
 					'jqplot', 'jqplot_export', 'jqplot_pie', 'jqplot_text', 'jqplot_mobile', 'jqplot_date', 'jqplot_label', 'jqplot_pntlabel', 'jqplot_ticks',
@@ -232,14 +234,14 @@ class Tracker_Scripts {
 	 */
 	public function enqueue_admin_scripts( $hook ) {
 		
-		E20R_Tracker::dbg("Tracker::enqueue_admin_scripts() - Loading javascript");
+		Utilities::get_instance()->log("Tracker::enqueue_admin_scripts() - Loading javascript");
 		
 		global $e20rAdminPage;
 		global $ClientInfoPage;
 		global $post;
 		
 		
-		E20R_Tracker::dbg("Loading the admin page: {$e20rAdminPage} or {$ClientInfoPage}");
+		Utilities::get_instance()->log("Loading the admin page: {$e20rAdminPage} or {$ClientInfoPage}");
 		
 		wp_enqueue_style( 'fontawesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', false, '4.4.0' );
 		
@@ -256,7 +258,7 @@ class Tracker_Scripts {
 		
 		if( ( is_admin() && ( isset( $post->post_type ) && in_array( $post->post_type, $e20r_post_types ))) || $hook == $e20rAdminPage || $hook == $ClientInfoPage ) {
 			
-			E20R_Tracker::dbg("Loading for Tracker admin page!");
+			Utilities::get_instance()->log("Loading for Tracker admin page!");
 			$this->load_adminJS();
 			
 			global $e20r_plot_jscript;
@@ -271,6 +273,7 @@ class Tracker_Scripts {
 			wp_enqueue_style( 'select2', "//cdnjs.cloudflare.com/ajax/libs/select2/" . E20R_SELECT2_VER ."/css/select2.min.css", null, E20R_SELECT2_VER );
 			wp_enqueue_script( 'jquery.timeago' );
 			wp_enqueue_script( 'select2' );
+			wp_enqueue_editor();
 			
 		}
 		
@@ -319,7 +322,7 @@ class Tracker_Scripts {
 					$type = null;
 			}
 			
-			E20R_Tracker::dbg("Tracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
+			Utilities::get_instance()->log("Tracker::enqueue_admin_scripts() - Loading Custom Post Type specific admin script");
 			
 			if ( $type !== null ) {
 				
@@ -361,7 +364,7 @@ class Tracker_Scripts {
 		
 		if (defined('DOING_AJAX') && DOING_AJAX) {
 			
-			E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Doing AJAX call. No need to load any scripts/styling");
+			Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Doing AJAX call. No need to load any scripts/styling");
 			return;
 		}
 		
@@ -385,7 +388,7 @@ class Tracker_Scripts {
 		
 		$load_jq_plot = false;
 		
-		E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
+		Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading " . count( $events ) . " script events");
 		foreach( $events as $event ) {
 			
 			$css_list = array( 'print', 'e20r-tracker', 'e20r-tracker-activity' );
@@ -408,7 +411,7 @@ class Tracker_Scripts {
 				case 'article_summary':
 					
 					$load_jq_plot = false;
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading CSS for the article summary page.");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading CSS for the article summary page.");
 					
 					$css = array_replace( $css, array(
 							'e20r-article-summary' => E20R_PLUGINS_URL . ( true === WP_DEBUG ? '/css/e20r-article-summary.css' : '/css/e20r-article-summary.min.css' ),
@@ -430,7 +433,7 @@ class Tracker_Scripts {
 				
 				case 'client_overview':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'e20r_client_overview' shortcode");
 					$load_jq_plot = false;
 					
 					$prereqs = array_replace( $prereqs, array(
@@ -448,7 +451,7 @@ class Tracker_Scripts {
 				
 				case 'profile':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'e20r_profile' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'e20r_profile' shortcode");
 					$load_jq_plot = true;
 					
 					$css = array_replace( $css, array(
@@ -481,8 +484,8 @@ class Tracker_Scripts {
 				
 				case 'assignments':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading the assignments javascripts");
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Path to thickbox: " . home_url( '/' . WPINC . "/js/thickbox/thickbox.css" ));
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading the assignments javascripts");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Path to thickbox: " . home_url( '/' . WPINC . "/js/thickbox/thickbox.css" ));
 					
 					$css = array_replace( $css, array(
 						"thickbox" => null,
@@ -520,7 +523,7 @@ class Tracker_Scripts {
 				
 				case 'progress_overview':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'progress_overview' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'progress_overview' shortcode");
 					
 					$load_jq_plot = true;
 					
@@ -567,7 +570,7 @@ class Tracker_Scripts {
 				
 				case 'exercise':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'exercise' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'exercise' shortcode");
 					$load_jq_plot = false;
 					
 					$css = array_replace( $css, array(
@@ -604,7 +607,7 @@ class Tracker_Scripts {
 				
 				case 'activity':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'activity' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'activity' shortcode");
 					$load_jq_plot = true;
 					
 					$css = array_replace( $css, array(
@@ -642,7 +645,7 @@ class Tracker_Scripts {
 				
 				case 'daily_progress':
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading for the 'daily_progress' shortcode");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading for the 'daily_progress' shortcode");
 					$load_jq_plot = false;
 					
 					$css = array_replace( $css, array(
@@ -695,13 +698,13 @@ class Tracker_Scripts {
 				
 				case 'default':
 					$load_jq_plot = false;
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading CSS for the standard formatting & gravity forms pages.");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading CSS for the standard formatting & gravity forms pages.");
 					break;
 				
 			}
 
-//            E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Scripts to print, prerequisites, scripts and CSS:");
-//            E20R_Tracker::dbg($prereqs);
+//            Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Scripts to print, prerequisites, scripts and CSS:");
+//            Utilities::get_instance()->log($prereqs);
 			
 			$prereq = array( 'jquery', 'jquery-ui-core'/* 'jquery-touchpunch' , */ );
 			
@@ -711,20 +714,20 @@ class Tracker_Scripts {
 					
 					if ( !empty( $url ) ) {
 						
-						E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Adding {$tag} as prerequisite for {$event}");
+						Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Adding {$tag} as prerequisite for {$event}");
 						$this->register_script( $tag, $url, $prereqs['dependencies'][$tag] );
 					}
 					
 					if ( !in_array( $tag, $prereq ) ) {
 						
-						E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Adding {$tag} to list of prerequisites to print/enqueue");
+						Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Adding {$tag} to list of prerequisites to print/enqueue");
 						$prereq[] = $tag;
 					}
 				}
 			}
 			
 			// $prereq = array_keys( $prereq );
-			E20R_Tracker::dbg("Tracker::load_frontend_scripts() - For the prerequisites -- wp_print_scripts( " . print_r( $prereq, true) . " )");
+			Utilities::get_instance()->log("Tracker::load_frontend_scripts() - For the prerequisites -- wp_print_scripts( " . print_r( $prereq, true) . " )");
 			wp_enqueue_script( $prereq );
 			
 			$list = array();
@@ -735,13 +738,13 @@ class Tracker_Scripts {
 					
 					if ( !empty( $url ) ) {
 						
-						E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Adding {$tag} as script for {$event}");
+						Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Adding {$tag} as script for {$event}");
 						$this->register_script( $tag, $url, $scripts['dependencies'][$tag] );
 					}
 					
 					if ( !in_array( $tag, $list ) ) {
 						
-						E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Adding {$tag} to list of scripts to print/enqueue");
+						Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Adding {$tag} to list of scripts to print/enqueue");
 						$list[] = $tag;
 					}
 				}
@@ -749,7 +752,7 @@ class Tracker_Scripts {
 			
 			if ( ( !empty( $script) ) && ( !empty($id) ) ) {
 				
-				E20R_Tracker::dbg("Tracker::load_frontendscripts() - localizing tag ({$script}) with name {$id}");
+				Utilities::get_instance()->log("Tracker::load_frontendscripts() - localizing tag ({$script}) with name {$id}");
 				$Client = Client::getInstance();
 				
 				wp_localize_script( $script, $id,
@@ -768,7 +771,7 @@ class Tracker_Scripts {
 				);
 			}
 			
-			E20R_Tracker::dbg("Tracker::load_frontend_scripts() - For the script(s) -- wp_print_scripts( " . print_r( $list, true) . " )");
+			Utilities::get_instance()->log("Tracker::load_frontend_scripts() - For the script(s) -- wp_print_scripts( " . print_r( $list, true) . " )");
 			wp_enqueue_script( $list );
 			
 			if ( !empty( $css_dependencies ) ) {
@@ -783,7 +786,7 @@ class Tracker_Scripts {
 				
 				if ( !empty( $url ) ) {
 					
-					E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Adding {$tag} CSS");
+					Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Adding {$tag} CSS");
 					wp_enqueue_style( $tag, $url, false, E20R_VERSION );
 				}
 				else {
@@ -797,7 +800,7 @@ class Tracker_Scripts {
 			
 						if ( $depKey ) {
 			
-							E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Removing the dummy entry 'dependencies' from the list of scripts to enqueue/print");
+							Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Removing the dummy entry 'dependencies' from the list of scripts to enqueue/print");
 							unset( $list[$depKey] );
 						}
 			*/
@@ -806,14 +809,14 @@ class Tracker_Scripts {
 		$e20r_plot_jscript = $load_jq_plot;
 		
 		$this->register_plotSW();
-		E20R_Tracker::dbg("Tracker::load_frontend_scripts() - Loading CSS for front-end");
+		Utilities::get_instance()->log("Tracker::load_frontend_scripts() - Loading CSS for front-end");
 		
 		$this->enqueue_plotSW();
 		$e20r_plot_jscript = false;
 		
 		// Extract the javascripts scripts to load/print for the short code.
 		// $list = array_keys( $list );
-		// E20R_Tracker::dbg("Tracker::load_frontend_scripts() - wp_print_scripts( " . print_r( $list, true) . " )");
+		// Utilities::get_instance()->log("Tracker::load_frontend_scripts() - wp_print_scripts( " . print_r( $list, true) . " )");
 		// wp_print_scripts( $list );
 	}
 	
@@ -826,8 +829,8 @@ class Tracker_Scripts {
 	 */
 	private function register_script( $script, $location, $deps ) {
 		
-		E20R_Tracker::dbg("Tracker_Scripts::register_script() - script: {$script}, location: {$location}, dependencies ");
-		// E20R_Tracker::dbg($deps);
+		Utilities::get_instance()->log("Tracker_Scripts::register_script() - script: {$script}, location: {$location}, dependencies ");
+		// Utilities::get_instance()->log($deps);
 		
 		wp_register_script( $script, $location, $deps, E20R_VERSION, true );
 	}
@@ -838,7 +841,7 @@ class Tracker_Scripts {
 		
 		if ( ! isset( $post->ID ) ) {
 			
-			E20R_Tracker::dbg("Tracker::has_gravityforms_shortcode() - No post ID present?");
+			Utilities::get_instance()->log("Tracker::has_gravityforms_shortcode() - No post ID present?");
 			return;
 		}
 		
@@ -862,7 +865,7 @@ class Tracker_Scripts {
 		
 		if ( ! isset( $post->ID ) ) {
 			
-			E20R_Tracker::dbg("Tracker::has_measurementprogress_shortcode() - No post ID present?");
+			Utilities::get_instance()->log("Tracker::has_measurementprogress_shortcode() - No post ID present?");
 			return;
 		}
 		
@@ -878,11 +881,11 @@ class Tracker_Scripts {
 			
 			if ( !isset( $currentClient->loadedDefaults ) || ( $currentClient->loadedDefaults == true ) ) {
 				
-				E20R_Tracker::dbg( "Tracker::has_measurementprogress_shortcode() - Have to init Client class & grab data..." );
+				Utilities::get_instance()->log( "Tracker::has_measurementprogress_shortcode() - Have to init Client class & grab data..." );
 				$Client->init();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_measurementprogress_shortcode() - Loading scripts and styles for assignments and progress_overview");
+			Utilities::get_instance()->log("Tracker::has_measurementprogress_shortcode() - Loading scripts and styles for assignments and progress_overview");
 			$this->load_frontend_scripts( array(
 					'assignments',
 					'activity',
@@ -907,7 +910,7 @@ class Tracker_Scripts {
 				auth_redirect();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
+			Utilities::get_instance()->log("Tracker::has_exercise_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
 			$this->load_frontend_scripts( 'exercise' );
 		}
 		
@@ -928,7 +931,7 @@ class Tracker_Scripts {
 				auth_redirect();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_summary_shortcode() - Load CSS for weekly summary post");
+			Utilities::get_instance()->log("Tracker::has_summary_shortcode() - Load CSS for weekly summary post");
 			$this->load_frontend_scripts( 'article_summary' );
 		}
 	}
@@ -955,7 +958,7 @@ class Tracker_Scripts {
 			
 			$Program->getProgramIdForUser( $current_user->ID );
 			
-			E20R_Tracker::dbg("Tracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
+			Utilities::get_instance()->log("Tracker::has_activity_shortcode() -- Loading & adapting user javascripts for activity/exercise form(s). ");
 			$this->load_frontend_scripts( 'activity' );
 		}
 		
@@ -985,7 +988,7 @@ class Tracker_Scripts {
 			
 			$Program->getProgramIdForUser( $current_user->ID );
 			
-			E20R_Tracker::dbg("Tracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+			Utilities::get_instance()->log("Tracker::has_dailyProgress_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
 			
 			$this->load_frontend_scripts( array( 'daily_progress', 'assignments' ) );
 		}
@@ -1002,7 +1005,7 @@ class Tracker_Scripts {
 				auth_redirect();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_clientlist_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
+			Utilities::get_instance()->log("Tracker::has_clientlist_shortcode() -- Loading & adapting activity/assignment CSS & Javascripts. ");
 			
 			$this->load_frontend_scripts('client_overview');
 		}
@@ -1022,7 +1025,7 @@ class Tracker_Scripts {
 				auth_redirect();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_profile_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
+			Utilities::get_instance()->log("Tracker::has_profile_shortcode() -- Loading & adapting user javascripts for exercise form(s). ");
 			$this->load_frontend_scripts( array( 'assignments', 'progress_overview', 'daily_progress', 'profile' ) );
 		}
 		
@@ -1057,7 +1060,7 @@ class Tracker_Scripts {
 				auth_redirect();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Found the weekly progress shortcode on page: {$post->ID}: ");
 			
 			$this->register_plotSW();
 			
@@ -1079,7 +1082,7 @@ class Tracker_Scripts {
 				$articleId = $currentArticle->id;
 				$programId = $program;
 				
-				E20R_Tracker::dbg("Measurements::has_weeklyProgress_shortcode() - Article ID is now: {$articleId} for program {$programId}");
+				Utilities::get_instance()->log("Measurements::has_weeklyProgress_shortcode() - Article ID is now: {$articleId} for program {$programId}");
 			}
 			
 			// $articleId = $Article->init( $articleId );
@@ -1087,21 +1090,21 @@ class Tracker_Scripts {
 			$articleURL = $Article->getPostUrl( $articleId );
 			
 			if ( ! $Tracker->isActiveUser( $userId ) ) {
-				E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - User isn't a valid user. Not loading any data.");
+				Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - User isn't a valid user. Not loading any data.");
 				return;
 			}
 			
 			if ( ! $Client->client_loaded ) {
 				
-				E20R_Tracker::dbg( "Tracker::has_weeklyProgress_shortcode() - Have to init Client class & grab data..." );
+				Utilities::get_instance()->log( "Tracker::has_weeklyProgress_shortcode() - Have to init Client class & grab data..." );
 				$Client->setClient( $userId );
 				$Client->init();
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Loading measurements for: " . ( !isset( $measurementDate ) ? 'No date given' : $measurementDate ) );
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Loading measurements for: " . ( !isset( $measurementDate ) ? 'No date given' : $measurementDate ) );
 			$e20rMeasurements->init( $measurementDate, $userId );
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Register scripts");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Register scripts");
 			
 			$this->enqueue_plotSW();
 			wp_register_script( 'e20r-jquery-json', E20R_PLUGINS_URL . '/js/libraries/jquery.json.min.js', array( 'jquery' ), '0.1', false );
@@ -1118,28 +1121,28 @@ class Tracker_Scripts {
 			}
 			
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Find last weeks measurements");
 			
 			$lw_measurements = $e20rMeasurements->getMeasurement( 'last_week', true );
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Measurements from last week loaded:");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Measurements from last week loaded:");
 			
-			$bDay = $Client->getBirthdate( $userId );
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
+			$bDay = $Client->getClientDataField( $userId, 'birthdate' );
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Birthdate for {$userId} is: {$bDay}");
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Check if user has completed Interview?");
 			if ( ! $Client->completeInterview( $userId ) ) {
 				
-				E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
+				Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - No USER DATA found in the database. Redirect to User interview info!");
 				
 				
 				if ( empty( $currentProgram->incomplete_intake_form_page ) ) {
-					$url = $Program->get_welcomeSurveyLink( $userId );
+					$url = $Program->getWelcomeSurveyLink( $userId );
 				}
 				else {
 					$url = get_permalink( $currentProgram->incomplete_intake_form_page );
 				}
 				
-				E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - URL to redirect to: {$url}");
+				Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - URL to redirect to: {$url}");
 				if ( !empty( $url ) ) {
 					
 					wp_redirect( $url, 302 );
@@ -1147,12 +1150,12 @@ class Tracker_Scripts {
 					// wp_die("Tried to redirect to");
 				}
 				else {
-					E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - No URL defined! Can't redirect.");
+					Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - No URL defined! Can't redirect.");
 				}
 			}
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Loading survey data for user - {$articleURL} - ...");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Localizing progress script for use on measurement page");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Loading survey data for user - {$articleURL} - ...");
 			
 			$dashboardLnk = get_permalink( $Program->getValue( $programId, 'dashboard_page_id') );
 			
@@ -1165,7 +1168,7 @@ class Tracker_Scripts {
 						'article_id'        => $articleId,
 						'lengthunit'        => $Client->getLengthUnit(),
 						'weightunit'        => $Client->getWeightUnit(),
-						'interview_url'     => $Program->get_welcomeSurveyLink($userId),
+						'interview_url'     => $Program->getWelcomeSurveyLink($userId),
 						'imagepath'         => E20R_PLUGINS_URL . '/img/',
 						'overrideDiff'      => ( isset( $lw_measurements->id ) ? false : true ),
 						'measurementSaved'  => ( !empty( $articleURL ) ? $dashboardLnk : E20R_COACHING_URL . 'home/' ),
@@ -1175,7 +1178,7 @@ class Tracker_Scripts {
 						'last_week' => json_encode( $lw_measurements, JSON_NUMERIC_CHECK ),
 					),
 					'user_info'    => array(
-						'userdata'          => json_encode( $Client->get_data( $userId, true, true ), JSON_NUMERIC_CHECK ),
+						'userdata'          => json_encode( $Client->getClientData( $userId, true, true ), JSON_NUMERIC_CHECK ),
 						'interview_complete' => $Client->completeInterview( $userId ),
 //                        'progress_pictures' => '',
 //                        'display_birthdate' => ( empty( $bDay ) ? false : true ),
@@ -1184,10 +1187,10 @@ class Tracker_Scripts {
 				)
 			);
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Loading scripts in footer of page");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Loading scripts in footer of page");
 			wp_enqueue_media();
 			
-			E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Add manually created javascript");
+			Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Add manually created javascript");
 			
 			wp_print_scripts( 'jquery-colorbox' );
 			wp_print_scripts( 'e20r-jquery-json' );
@@ -1196,7 +1199,7 @@ class Tracker_Scripts {
 			
 			if ( ! wp_style_is( 'e20r-tracker', 'enqueued' )) {
 				
-				E20R_Tracker::dbg("Tracker::has_weeklyProgress_shortcode() - Need to load CSS for Tracker.");
+				Utilities::get_instance()->log("Tracker::has_weeklyProgress_shortcode() - Need to load CSS for Tracker.");
 				wp_deregister_style("e20r-tracker");
 				wp_enqueue_style( "e20r-tracker", E20R_PLUGINS_URL . '/css/e20r-tracker.min.css', false, E20R_VERSION );
 			}

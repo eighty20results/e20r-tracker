@@ -236,7 +236,7 @@ class Article extends Settings {
 			Utilities::get_instance()->log( "Received " . count( $cards ) . " cards for day # {$article->release_day}" );
 		}
 		
-		Utilities::get_instance()->log( $cards );
+		Utilities::get_instance()->log( print_r( $cards, true ) );
 	}
 	
 	/**
@@ -518,7 +518,7 @@ class Article extends Settings {
 //		    Utilities::get_instance()->log($currentArticle);
 		}
 		
-		// Utilities::get_instance()->log( $currentArticle );
+		// Utilities::get_instance()->log( print_r( $currentArticle, true) );
 		
 		if ( ( $this->articleId !== false ) && ( $currentArticle->id != $article_id ) ) {
 			
@@ -824,7 +824,7 @@ class Article extends Settings {
 		
 		$artSettings = $currentArticle;
 		Utilities::get_instance()->log( "Article settings for ({$articleId}): " );
-		Utilities::get_instance()->log( $artSettings );
+		Utilities::get_instance()->log( print_r( $artSettings, true) );
 		
 		$assignment = $Assignment->loadAssignment( $assignmentId );
 		
@@ -915,7 +915,7 @@ class Article extends Settings {
 		$this->model->loadSettings( $articleId );
 		
 		Utilities::get_instance()->log( "Article settings for ({$articleId}): " );
-		Utilities::get_instance()->log( $currentArticle );
+		Utilities::get_instance()->log( print_r( $currentArticle, true) );
 		
 		$assignment             = $Assignment->loadAssignment( $assignmentId );
 		$assignment->order_num  = $new_order_num;
@@ -1087,7 +1087,7 @@ class Article extends Settings {
 			$settings = $this->model->loadSettings( $articleId );
 			$defaults = $this->model->defaultSettings();
 			
-			Utilities::get_instance()->log( $settings );
+			Utilities::get_instance()->log( print_r( $settings, true) );
 			
 			if ( ! $settings ) {
 				
@@ -1099,7 +1099,7 @@ class Article extends Settings {
 				$tmp = isset( $_POST["e20r-article-{$field}"] ) ? $Tracker->sanitize( $_POST["e20r-article-{$field}"] ) : null;
 				
 				Utilities::get_instance()->log( "Page data : {$field}->" );
-				Utilities::get_instance()->log( $tmp );
+				Utilities::get_instance()->log( print_r( $tmp, true) );
 				
 				if ( 'assignment_ids' == $field ) {
 					
@@ -1139,7 +1139,7 @@ class Article extends Settings {
 						}
 						
 						Utilities::get_instance()->log( "Assignments array after processing: " );
-						Utilities::get_instance()->log( $tmp );
+						Utilities::get_instance()->log( print_r( $tmp, true) );
 					}
 				}
 				
@@ -1549,7 +1549,7 @@ class Article extends Settings {
 			$measured     = $Measurements->areCaptured( $currentArticle->id, $programId, $current_user->ID, $rDate );
 			
 			Utilities::get_instance()->log( "Result from Measurements::areCaptured: " );
-			Utilities::get_instance()->log( $measured );
+			Utilities::get_instance()->log( print_r( $measured, true) );
 			Utilities::get_instance()->log( "Check whether it's a measurement day or not: {$md} " );
 			
 			if ( $md && ! $measured['status'] ) {

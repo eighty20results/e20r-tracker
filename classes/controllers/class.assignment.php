@@ -13,7 +13,7 @@ define( "E20R_ASSIGNMENT_META_VER", 1 );
 
 use E20R\Tracker\Models\Assignment_Model;
 use E20R\Tracker\Views\Assignment_View;
-
+use E20R\Utilities\Utilities;
 use E20R\Tracker\Models\Tables;
 
 class Assignment extends Settings {
@@ -36,7 +36,7 @@ class Assignment extends Settings {
 	 */
 	public function __construct() {
 		
-		E20R_Tracker::dbg( "Assignment::__construct() - Initializing Assignment class" );
+		Utilities::get_instance()->log( "Initializing Assignment class" );
 		
 		$this->model = new Assignment_Model();
 		$this->view  = new Assignment_View();
@@ -65,13 +65,13 @@ class Assignment extends Settings {
 	 */
 	public function createDefaultAssignment( $article ) {
 		
-		E20R_Tracker::dbg( "Assignment::createDefaultAssignment() - Loading a dummy title based on the article ID " );
+		Utilities::get_instance()->log( "Loading a dummy title based on the article ID " );
 		
 		$title = get_the_title( $article->id );
 		
 		if ( false !== ( $assignmentId = $this->model->createDefaultAssignment( $article, $title ) ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::createDefaultAssignment() - Created new default assignment with ID: {$assignmentId} " );
+			Utilities::get_instance()->log( "Created new default assignment with ID: {$assignmentId} " );
 		}
 		
 		return $assignmentId;
@@ -101,7 +101,7 @@ class Assignment extends Settings {
 			$currentAssignment     = $this->model->loadSettings( $assignmentId );
 			$currentAssignment->id = $assignmentId;
 			
-			E20R_Tracker::dbg( "Assignment::init() - Loaded settings for {$currentAssignment->id}" );
+			Utilities::get_instance()->log( "Loaded settings for {$currentAssignment->id}" );
 		}
 		
 		return $currentAssignment;
@@ -109,7 +109,7 @@ class Assignment extends Settings {
 	
 	public function saveAssignment( $aArray ) {
 		
-		E20R_Tracker::dbg( 'Assignment::saveAssignment() - Saving assignment data for user... ' );
+		Utilities::get_instance()->log( 'Saving assignment data for user... ' );
 		
 		return $this->model->saveUserAssignment( $aArray );
 	}
@@ -121,7 +121,7 @@ class Assignment extends Settings {
 		
 		if ( is_null( $currentArticle ) || ( $currentArticle->id != $articleID ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::load_userAssignment() - Loading article settings for {$articleID}" );
+			Utilities::get_instance()->log( "Loading article settings for {$articleID}" );
 			$Article->init( $articleID );
 			
 		}
@@ -136,16 +136,16 @@ class Assignment extends Settings {
 		
 		$Tracker = Tracker::getInstance();
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Checking ajax referrer privileges" );
+		Utilities::get_instance()->log( "Checking ajax referrer privileges" );
 		check_ajax_referer( 'e20r-assignment-data', 'e20r-tracker-assignment-settings-nonce' );
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Checking ajax referrer has the right privileges" );
+		Utilities::get_instance()->log( "Checking ajax referrer has the right privileges" );
 		
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
 		}
 		
-		E20R_Tracker::dbg( $_POST );
+		Utilities::get_instance()->log( print_r( $_POST, true) );
 		
 		$post_id    = isset( $_POST['e20r-assignment-question_id'] ) ? $Tracker->sanitize( $_POST['e20r-assignment-question_id'] ) : null;
 		$field_type = isset( $_POST['e20r-assignment-field_type'] ) ? $Tracker->sanitize( $_POST['e20r-assignment-field_type'] ) : null;;
@@ -154,11 +154,11 @@ class Assignment extends Settings {
 		$program_ids = isset( $_POST['e20r-assignment-program_ids'] ) ? $Tracker->sanitize( $_POST['e20r-assignment-program_ids'] ) : array();
 		$operation   = isset( $_POST['operation'] ) ? $Tracker->sanitize( $_POST['operation'] ) : null;
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Post ID for assignment is: {$post_id}" );
+		Utilities::get_instance()->log( "Post ID for assignment is: {$post_id}" );
 		
 		if ( empty( $post_id ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - This is a new post. Ask user to click 'Publish'" );
+			Utilities::get_instance()->log( "This is a new post. Ask user to click 'Publish'" );
 			wp_send_json_error( array( 'errno' => - 9999 ) );
 			exit();
 		}
@@ -166,26 +166,26 @@ class Assignment extends Settings {
 		$settings = $this->model->loadSettings( $post_id );
 		
 		if ( ! is_null( $field_type ) && ( 4 != $settings->field_type ) ) {
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Update field type from {$settings->field_type} to 4" );
+			Utilities::get_instance()->log( "Update field type from {$settings->field_type} to 4" );
 			$settings->field_type = 4;
 		}
 		
 		if ( ! is_null( $order_num ) && ( $order_num != $settings->order_num ) ) {
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Update order_num to {$order_num}" );
+			Utilities::get_instance()->log( "Update order_num to {$order_num}" );
 			$settings->order_num = $order_num;
 		}
 		
 		if ( $delay != $settings->delay ) {
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Update delay to {$delay}" );
+			Utilities::get_instance()->log( "Update delay to {$delay}" );
 			$settings->delay = $delay;
 		}
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Settings loaded for assignment {$settings->id}" );
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Requested operation: {$operation}" );
+		Utilities::get_instance()->log( "Settings loaded for assignment {$settings->id}" );
+		Utilities::get_instance()->log( "Requested operation: {$operation}" );
 		
 		if ( is_null( $operation ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Error: No operation requested!" );
+			Utilities::get_instance()->log( "Error: No operation requested!" );
 			wp_send_json_error( array( 'errno' => - 1 ) );
 			exit();
 		}
@@ -197,7 +197,7 @@ class Assignment extends Settings {
 			case 'save':
 				
 				if ( empty( $new_option ) ) {
-					E20R_Tracker::dbg( "Assignment::manage_option_list() - Error: Requested add operation, but no new option was supplied" );
+					Utilities::get_instance()->log( "Error: Requested add operation, but no new option was supplied" );
 					wp_send_json_error( array( 'errno' => - 2 ) );
 					exit();
 				}
@@ -212,19 +212,19 @@ class Assignment extends Settings {
 				foreach ( $to_delete as $dVal ) {
 					
 					if ( ( $key = array_search( $dVal, $existing_options ) ) !== false ) {
-						E20R_Tracker::dbg( "Assignment::manage_option_list() - Removing option #{$key}: {$existing_options[$key]}" );
+						Utilities::get_instance()->log( "Removing option #{$key}: {$existing_options[$key]}" );
 						unset( $existing_options[ $key ] );
 					}
 				}
 				break;
 		}
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Current list of options: " );
-		E20R_Tracker::dbg( $existing_options );
+		Utilities::get_instance()->log( "Current list of options: " );
+		Utilities::get_instance()->log( print_r( $existing_options, true) );
 		
 		if ( empty( $existing_options ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Empty list of existing options. Resetting." );
+			Utilities::get_instance()->log( "Empty list of existing options. Resetting." );
 			$existing_options = array();
 		}
 		
@@ -234,12 +234,12 @@ class Assignment extends Settings {
 			
 			$html = $this->view->viewOptionListTable( $settings );
 			
-			E20R_Tracker::dbg( "Assignment::manage_option_list() - Saved settings of assignment {$settings->id}" );
+			Utilities::get_instance()->log( "Saved settings of assignment {$settings->id}" );
 			wp_send_json_success( array( 'html' => $html ) );
 			exit();
 		}
 		
-		E20R_Tracker::dbg( "Assignment::manage_option_list() - Returning error because we didn't exist gracefully." );
+		Utilities::get_instance()->log( "Returning error because we didn't exist gracefully." );
 		wp_send_json_error( array( 'errno' => - 3 ) );
 		exit();
 		
@@ -251,21 +251,21 @@ class Assignment extends Settings {
 		global $post;
 		
 		if ( empty( $assignmentId ) ) {
-			E20R_Tracker::dbg( "Assignment::saveSettings() - No Assignment ID supplied" );
+			Utilities::get_instance()->log( "No Assignment ID supplied" );
 			
 			return false;
 		}
 		
 		if ( is_null( $settings ) && ( ( ! isset( $post->post_type ) ) || ( $post->post_type !== Assignment_Model::post_type ) ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::saveSettings() - Not an assignment. " );
+			Utilities::get_instance()->log( "Not an assignment. " );
 			
 			return $assignmentId;
 		}
 		
 		if ( empty( $assignmentId ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::saveSettings() - No post ID supplied" );
+			Utilities::get_instance()->log( "No post ID supplied" );
 			
 			return false;
 		}
@@ -284,7 +284,7 @@ class Assignment extends Settings {
 		
 		if ( empty( $settings ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::saveSettings()  - Saving metadata from edit.php page, related to the Assignment post_type" );
+			Utilities::get_instance()->log( "Assignment::saveSettings()  - Saving metadata from edit.php page, related to the Assignment post_type" );
 			
 			$this->model->init( $assignmentId );
 			
@@ -300,8 +300,8 @@ class Assignment extends Settings {
 				
 				$tmp = isset( $_POST["e20r-assignment-{$field}"] ) ? $Tracker->sanitize( $_POST["e20r-assignment-{$field}"] ) : null;
 				
-				E20R_Tracker::dbg( "Assignment::saveSettings() - Page data : {$field} -> " );
-				E20R_Tracker::dbg( $tmp );
+				Utilities::get_instance()->log( "Page data : {$field} -> " );
+				Utilities::get_instance()->log( print_r( $tmp, true) );
 				
 				if ( is_null( $tmp ) ) {
 					
@@ -318,26 +318,26 @@ class Assignment extends Settings {
 			
 			if ( ! empty( $settings->select_options ) && ( 4 != $settings->field_type ) ) {
 				
-				E20R_Tracker::dbg( "Assignment::saveSettings() - Forcing select_options to null..." );
+				Utilities::get_instance()->log( "Forcing select_options to null..." );
 				$settings->select_options = null;
 			}
 			
-			E20R_Tracker::dbg( "Assignment::saveSettings() - Saving: " . print_r( $settings, true ) );
+			Utilities::get_instance()->log( "Saving: " . print_r( $settings, true ) );
 			
 			if ( ! $this->model->saveSettings( $settings ) ) {
 				
-				E20R_Tracker::dbg( "Assignment::saveSettings() - Error saving settings!" );
+				Utilities::get_instance()->log( "Error saving settings!" );
 				
 				return false;
 			}
 			
 		} else if ( get_class( $settings ) != 'WP_Post' ) {
 			
-			E20R_Tracker::dbg( "Assignment::saveSettings() - Received settings from calling function." );
+			Utilities::get_instance()->log( "Received settings from calling function." );
 			
 			if ( ! $this->model->saveSettings( $settings ) ) {
 				
-				E20R_Tracker::dbg( "Assignment::saveSettings() - Error saving settings!" );
+				Utilities::get_instance()->log( "Error saving settings!" );
 			}
 			
 			$post = get_post( $assignmentId );
@@ -367,14 +367,14 @@ class Assignment extends Settings {
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
 		
-		E20R_Tracker::dbg( "Assignment::update_message_status() - Showing the content of the REQUEST" );
+		Utilities::get_instance()->log( "Showing the content of the REQUEST" );
 		
 		$message_ids    = isset( $_POST['message-id'] ) ? json_decode( stripslashes( $_POST['message-id'] ) ) : null;
 		$message_status = isset( $_POST['message-status'] ) ? intval( $_POST['message-status'] ) : false;
 		$status_type    = isset( $_POST['status-type'] ) ? $Tracker->sanitize( $_POST['status-type'] ) : null;
 		
-		E20R_Tracker::dbg( "Assignment::update_message_status() - Message ids: " . print_r( $message_ids, true ) );
-		E20R_Tracker::dbg( "Assignment::update_message_status() - Status type: {$status_type}" );
+		Utilities::get_instance()->log( "Message ids: " . print_r( $message_ids, true ) );
+		Utilities::get_instance()->log( "Status type: {$status_type}" );
 		
 		if ( ! is_null( $status_type ) ) {
 			
@@ -393,13 +393,13 @@ class Assignment extends Settings {
 		
 		if ( ! empty( $message_ids ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::update_message_status() - Found message ids to update status for!" );
+			Utilities::get_instance()->log( "Found message ids to update status for!" );
 			
 			foreach ( $message_ids as $message_id ) {
 				
 				if ( false === $this->model->update_reply_status( $message_id, $message_status, $status_field ) ) {
 					
-					E20R_Tracker::dbg( "Assignment::update_message_status() - Error updating status for record #{$message_id}" );
+					Utilities::get_instance()->log( "Error updating status for record #{$message_id}" );
 					
 					wp_send_json_error(
 						array(
@@ -412,20 +412,19 @@ class Assignment extends Settings {
 			}
 		}
 		
-		E20R_Tracker::dbg( "Assignment::update_message_status() - Completed status update..." );
+		Utilities::get_instance()->log( "Completed status update..." );
 		wp_send_json_success();
 		exit();
 	}
 	
 	public function add_assignment_reply() {
 		
-		$Tracker = Tracker::getInstance();
-		global $current_user;
-		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
+		$Tracker = Tracker::getInstance();
+		$Access = Tracker_Access::getInstance();
 		
-		E20R_Tracker::dbg( "Assignment::add_assignment_reply() - Showing the content of the REQUEST" );
-		E20R_Tracker::dbg( $_POST );
+		Utilities::get_instance()->log( "Showing the content of the REQUEST" );
+		Utilities::get_instance()->log( print_r( $_POST, true) );
 		
 		$data                  = array();
 		$data['assignment_id'] = isset( $_POST['assignment-id'] ) ? $Tracker->sanitize( $_POST['assignment-id'] ) : null;
@@ -444,26 +443,26 @@ class Assignment extends Settings {
 		
 		if ( is_null( $data['assignment_id'] ) || is_null( $data['article_id'] ) || is_null( $data['program_id'] ) || is_null( $data['message_time'] ) || is_null( $data['message'] ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::add_assignment_reply() - ERROR: Missing data from front-end!!" );
+			Utilities::get_instance()->log( "ERROR: Missing data from front-end!!" );
 			wp_send_json_error( array( 'message' => sprintf( __( "Error: Unable to save assignment reply for assignment ID %d and user ID %d", "e20r-tracker" ), $data['assignment_id'], $data['user_id'] ) ) );
 			exit();
 		}
 		
-		// $am_coach = $Tracker->is_a_coach($current_user->ID);
+		// $am_coach = $Access->is_a_coach($current_user->ID);
 		
-		E20R_Tracker::dbg( "Assignment::add_assignment_reply() - We have data to process/update for {$data['client_id']}" );
+		Utilities::get_instance()->log( "We have data to process/update for {$data['client_id']}" );
 		// $existing_assignment = $this->model->loadUserAssignment( $data['article_id'], $data['user_id'], $delay , $data['assignment_id'] );
 		$existing_assignment = $this->model->load_user_assignment_info( $data['client_id'], $data['assignment_id'], $data['article_id'] );
 		
 		if ( empty( $existing_assignment ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::add_assignment_reply() - ERROR: No previously existing assignment found, so shouldn't have been possible!" );
+			Utilities::get_instance()->log( "ERROR: No previously existing assignment found, so shouldn't have been possible!" );
 			wp_send_json_error( array( 'message' => __( "Error: No assignment found to reply to!", "e20r-tracker" ) ) );
 			exit();
 		}
 		
 		if ( count( $existing_assignment ) > 1 ) {
-			E20R_Tracker::dbg( "Assignment::add_assignment_reply() - ERROR: More than a single assignment record found for user/assignment" );
+			Utilities::get_instance()->log( "ERROR: More than a single assignment record found for user/assignment" );
 			wp_send_json_error( array( 'message' => sprintf( __( "Error: Multiple (%d) assignments found for %d reply for assignment ID %d and user %d", "e20r-tracker" ), count( $existing_assignment ), $data['assignment_id'], $data['user_id'] ) ) );
 			exit();
 		}
@@ -474,8 +473,8 @@ class Assignment extends Settings {
 		$data['record_id'] = isset( $assignment_info->id ) ? $assignment_info->id : null;
 		// }
 		
-		E20R_Tracker::dbg( 'Assignment::add_assignment_reply() - Assignment reply data: ' );
-		E20R_Tracker::dbg( $data );
+		Utilities::get_instance()->log( 'Assignment reply data: ' );
+		Utilities::get_instance()->log( print_r( $data, true) );
 		
 		if ( false === $this->model->save_response( $data ) ) {
 			
@@ -486,9 +485,9 @@ class Assignment extends Settings {
 		$history         = $this->model->get_history( $data['assignment_id'], $data['program_id'], $data['article_id'], $data['client_id'] );
 		$message_history = $this->view->message_history( $history, $data['recipient_id'], $data['assignment_id'] );
 		
-		if ( ( $data['client_id'] != $data['recipient_id'] ) && ( $Tracker->is_a_coach( $data['recipient_id'] ) ) ) {
+		if ( ( $data['client_id'] != $data['recipient_id'] ) && ( $Access->is_a_coach( $data['recipient_id'] ) ) ) {
 			
-			E20R_Tracker::dbg( 'Assignment::add_assignment_reply() - Sending notification email to coach' );
+			Utilities::get_instance()->log( 'Sending notification email to coach' );
 			
 			$coach  = get_user_by( 'id', $data['recipient_id'] );
 			$client = get_user_by( 'id', $data['client_id'] );
@@ -511,7 +510,7 @@ class Assignment extends Settings {
 	
 	public function heartbeat_received() {
 		
-		E20R_Tracker::dbg( "Assignment::heartbeat_received() - Checking coach/client messaging status" );
+		Utilities::get_instance()->log( "Checking coach/client messaging status" );
 		
 		$nonce     = isset( $_REQUEST['e20r-message-nonce'] ) ? $_REQUEST['e20r-message-nonce'] : null;
 		$client_id = isset( $_REQUEST['e20r-message-client-id'] ) ? intval( $_REQUEST['e20r-message-client-id'] ) : null;
@@ -521,22 +520,22 @@ class Assignment extends Settings {
 			'e20r_message_client_id' => $client_id,
 		);
 		
-		E20R_Tracker::dbg( "Assignment::heartbeat_received() - Checking NONCE" );
+		Utilities::get_instance()->log( "Checking NONCE" );
 		
 		if ( wp_verify_nonce( $nonce, 'e20r-coach-message' ) && ! is_null( $retval['e20r_message_client_id'] ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::heartbeat_received() - Received heartbeat. Checking for new messages" );
+			Utilities::get_instance()->log( "Received heartbeat. Checking for new messages" );
 			
 			$retval['e20r_new_messages'] = $this->client_has_unread_messages( $retval['e20r_message_client_id'] );
 			
-			E20R_Tracker::dbg( "Assignment::heartbeat_received() - New message for user {$retval['e20r_message_client_id']}: {$retval['e20r_new_messages']}" );
+			Utilities::get_instance()->log( "New message for user {$retval['e20r_message_client_id']}: {$retval['e20r_new_messages']}" );
 			
 			wp_send_json_success( $retval );
 			exit();
 		}
 		
 		if ( empty( $client_id ) ) {
-			E20R_Tracker::dbg( "Assignment::heartbeat_received() - Returning due to no client ID given" );
+			Utilities::get_instance()->log( "Returning due to no client ID given" );
 			wp_send_json_error( array( 'errormsg' => 'no-client-provided' ) );
 			exit();
 		}
@@ -560,7 +559,7 @@ class Assignment extends Settings {
 			return;
 		}
 		
-		E20R_Tracker::dbg( "Assignment::update_metadata() - Test for required metadata update." );
+		Utilities::get_instance()->log( "Test for required metadata update." );
 		$Tracker = Tracker::getInstance();
 		
 		$old_meta_key = 'program_id';
@@ -572,21 +571,21 @@ class Assignment extends Settings {
 		
 		if ( ( false == $version ) || ( $version < E20R_ASSIGNMENT_META_VER ) ) {
 			
-			E20R_Tracker::dbg( "Assignment::update_metadata() - Need to update metadata for key: {$old_meta_key}." );
+			Utilities::get_instance()->log( "Need to update metadata for key: {$old_meta_key}." );
 			$assignments = $this->getAllAssignments();
 			
 			foreach ( $assignments as $k => $a ) {
 				
-				E20R_Tracker::dbg( $a );
+				Utilities::get_instance()->log( "Found: " . print_r( $a, true ) );
 				
 				if ( ! property_exists( $a, $old_meta_key ) ) {
-					E20R_Tracker::dbg( "Assignment::update_metadata() - ERROR: Old key ({$old_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!" );
+					Utilities::get_instance()->log( "ERROR: Old key ({$old_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!" );
 					
 					return;
 				}
 				
 				if ( ! property_exists( $a, $new_meta_key ) ) {
-					E20R_Tracker::dbg( "Assignment::update_metadata() - ERROR: New key ({$new_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!" );
+					Utilities::get_instance()->log( "ERROR: New key ({$new_meta_key}) is not present in the default configuration for Assignments. Must be included in the model->defaultSettings() function!" );
 					
 					return;
 				}
@@ -603,17 +602,17 @@ class Assignment extends Settings {
 						break;
 				}
 				
-				// E20R_Tracker::dbg("Assignment::update_metadata() - Saving assignments # {$a->id} with new settings: ");
-				// E20R_Tracker::dbg($a);
+				// Utilities::get_instance()->log("Saving assignments # {$a->id} with new settings: ");
+				// Utilities::get_instance()->log($a);
 				if ( false !== $this->saveSettings( $a->id, $a ) ) {
 					
-					E20R_Tracker::dbg( "Assignment::update_metadata() - Removing assignment # {$a->id}'s {$old_meta_key} setting. " );
+					Utilities::get_instance()->log( "Removing assignment # {$a->id}'s {$old_meta_key} setting. " );
 					delete_post_meta( $a->id, "_e20r-assignments-{$old_meta_key}" );
 				}
 				
 			}
 			
-			E20R_Tracker::dbg( "Assignment::update_metadata() - Save the new meta version: " . ( E20R_ASSIGNMENT_META_VER + 1 ) );
+			Utilities::get_instance()->log( "Save the new meta version: " . ( E20R_ASSIGNMENT_META_VER + 1 ) );
 			$Tracker->updateSetting( 'assignment_meta', ( E20R_ASSIGNMENT_META_VER + 1 ) );
 		}
 		
@@ -624,7 +623,7 @@ class Assignment extends Settings {
 		$assignments = $this->model->loadAllAssignments();
 		
 		if ( count( $assignments ) >= 1 ) {
-			E20R_Tracker::dbg( "Assignment::getAllAssignments() - Process the assignments?" );
+			Utilities::get_instance()->log( "Process the assignments?" );
 		}
 		
 		return $assignments;
@@ -634,14 +633,14 @@ class Assignment extends Settings {
 		
 		global $post;
 		
-		E20R_Tracker::dbg( "Assignment::addMeta_answers() - Loading the article answers metabox for {$post->ID}, a {$post->post_type} CPT" );
+		Utilities::get_instance()->log( "Loading the article answers metabox for {$post->ID}, a {$post->post_type} CPT" );
 		
 		echo $this->configureArticleMetabox( $post->ID );
 	}
 	
 	public function configureArticleMetabox( $articleId, $ajax = false ) {
 		
-		E20R_Tracker::dbg( "Assignment::configureArticleMetabox() - For article {$articleId}" );
+		Utilities::get_instance()->log( "For article {$articleId}" );
 		$Article = Article::getInstance();
 		
 		$assignments = array();
@@ -652,7 +651,7 @@ class Assignment extends Settings {
 		
 		if ( count( $assignments ) < 1 ) {
 			
-			E20R_Tracker::dbg( "Assignment::configureArticleMetabox() - No assignments defined. Using default" );
+			Utilities::get_instance()->log( "No assignments defined. Using default" );
 			
 			$assignments = array();
 			
@@ -740,7 +739,7 @@ class Assignment extends Settings {
 		
 		global $post;
 		
-		E20R_Tracker::dbg( "Assignment::addMeta_Settings() - Loading settings metabox for assignment page {$post->ID}" );
+		Utilities::get_instance()->log( "Loading settings metabox for assignment page {$post->ID}" );
 		$assignmentData = $this->model->loadSettings( $post->ID );
 		
 		echo $this->view->viewSettingsBox( $assignmentData, $this->model->getAnswerDescriptions() );
@@ -758,7 +757,7 @@ class Assignment extends Settings {
 					$query->set( 'meta_key', '_e20r-assignments-delay' );
 					$query->set( 'orderby', 'meta_value_num' );
 					
-					E20R_Tracker::dbg( "Assignment::sort_column() - Order by is: " . $orderby );
+					Utilities::get_instance()->log( "Order by is: " . $orderby );
 					break;
 			}
 			
@@ -825,7 +824,7 @@ class Assignment extends Settings {
 		$Tracker = Tracker::getInstance();
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
-		E20R_Tracker::dbg( "Assignment::ajax_assignmentData() - Got a valid NONCE" );
+		Utilities::get_instance()->log( "Got a valid NONCE" );
 		
 		$client_id = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : null;
 		
@@ -840,8 +839,12 @@ class Assignment extends Settings {
 		exit();
 	}
 	
-	public function listUserAssignments( $userId, $page_num = - 1 ) {
+	public function listUserAssignments( $userId = null, $page_num = - 1 ) {
 		
+	    if ( empty( $userId ) ) {
+	        return null;
+        }
+        
 		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
 		
@@ -863,7 +866,7 @@ class Assignment extends Settings {
 		$Tracker = Tracker::getInstance();
 		
 		check_ajax_referer( 'e20r-tracker-data', 'e20r-assignment-nonce' );
-		E20R_Tracker::dbg( "Assignment::ajax_paginateAssignments() - Got a valid NONCE" );
+		Utilities::get_instance()->log( "Got a valid NONCE" );
 		
 		$client_id = isset( $_POST['client-id'] ) ? $Tracker->sanitize( $_POST['client-id'] ) : null;
 		$page_num  = isset( $_REQUEST['page_num'] ) ? $Tracker->sanitize( $_REQUEST['page_num'] ) : 1;

@@ -27,6 +27,7 @@ use E20R\Tracker\Views\Workout_View;
 
 use E20R\Sequences\Sequence AS Sequence;
 use E20R\Sequences\Data\Model;
+use E20R\Utilities\Utilities;
 
 class Settings {
 	
@@ -214,7 +215,7 @@ class Settings {
 		remove_meta_box( 'wpseo_meta', $this->cpt_slug, 'side' );
 		add_meta_box( 'postexcerpt', __( ucfirst( $this->type ) . ' Summary' ), 'post_excerpt_meta_box', $this->cpt_slug, 'normal', 'high' );
 		
-		// E20R_Tracker::dbg("Settings::addMeta_Settings() - Loading metabox for {$this->type} settings");
+		// Utilities::get_instance()->log("Settings::addMeta_Settings() - Loading metabox for {$this->type} settings");
 		echo $this->view->viewSettingsBox( $this->model->loadSettings( $post->ID ), $this->loadDripFeed( 'all' ) );
 	}
 	
@@ -231,7 +232,7 @@ class Settings {
 			return false;
 		}
 		
-		E20R_Tracker::dbg( "e20r" . ucfirst( $this->type ) . "::init() - Loading basic {$this->type} settings for id: {$postId}" );
+		Utilities::get_instance()->log( "e20r" . ucfirst( $this->type ) . "::init() - Loading basic {$this->type} settings for id: {$postId}" );
 		
 		$settingsId = get_post_meta( $postId, "_e20r-{$this->type}-id", true );
 		
@@ -240,11 +241,11 @@ class Settings {
 			$settingsId = $postId;
 		}
 		
-		E20R_Tracker::dbg( "e20r" . ucfirst( $this->type ) . "::init() - Loaded {$this->type} id: {$settingsId}" );
+		Utilities::get_instance()->log( "e20r" . ucfirst( $this->type ) . "::init() - Loaded {$this->type} id: {$settingsId}" );
 		
 		if ( false === ( $settings = $this->model->loadSettings( $settingsId ) ) ) {
 			
-			E20R_Tracker::dbg( "e20r" . ucfirst( $this->type ) . "::init() - FAILED to load settings for {$settingsId}" );
+			Utilities::get_instance()->log( "e20r" . ucfirst( $this->type ) . "::init() - FAILED to load settings for {$settingsId}" );
 			
 			return false;
 		}
@@ -267,10 +268,6 @@ class Settings {
 			$id = null;
 		} else {
 			$id = $feedId;
-		}
-		
-		if ( class_exists( 'E20R\Sequences\\Sequence\\Controller' ) ) {
-			return Sequence\Controller::all_sequences( 'publish' );
 		}
 		
 		if ( class_exists( 'E20R\\Sequences\\Sequence\\Sequence_Controller' ) ) {
@@ -296,15 +293,16 @@ class Settings {
 		global $post;
 		
 		$Tracker = Tracker::getInstance();
+		$utils = Utilities::get_instance();
 		
 		if ( ( ! isset( $post->post_type ) ) || ( $post->post_type != $this->model->get_slug() ) ) {
-			E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings() - Incorrect post type for " . $this->model->get_slug() );
+			$utils->log( ucfirst( $this->type ) . ": Incorrect post type for " . $this->model->get_slug() );
 			
 			return $post_id;
 		}
 		
 		if ( empty( $post_id ) ) {
-			E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings() - No post ID supplied" );
+			$utils->log( ucfirst( $this->type ) . ":  No post ID supplied" );
 			
 			return false;
 		}
@@ -317,7 +315,7 @@ class Settings {
 			return $post_id;
 		}
 		
-		E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings()  - Saving metadata for the {$this->type} post type" );
+		$utils->log( ucfirst( $this->type ) . ": Saving metadata for the {$this->type} post type" );
 		$this->model->init( $post_id );
 		
 		$settings = $this->model->loadSettings( $post_id );
@@ -325,18 +323,18 @@ class Settings {
 		
 		if ( ! $settings ) {
 			
-			E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings()  - No previous settings found. Using defaults!" );
+			$utils->log( ucfirst( $this->type ) . ": No previous settings found. Using defaults!" );
 			$settings = $defaults;
 		}
 		
 		foreach ( $settings as $field => $setting ) {
 			
-			$tmp = isset( $_POST["e20r-{$this->type}-{$field}"] ) ? $Tracker->sanitize( $_POST["e20r-{$this->type}-{$field}"] ) : null;
+			$tmp = $utils->get_variable("e20r-{$this->type}-{$field}", null );
 			
-			E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings() - Being saved : {$field} -> " );
-			E20R_Tracker::dbg( $tmp );
+			$utils->log( ucfirst( $this->type ) . ": Being saved : {$field} -> " );
+			$utils->log( print_r( $tmp, true ) );
 			
-			if ( empty( $tmp ) ) {
+			if ( isset( $defaults->{$field} ) && empty( $tmp ) ) {
 				
 				$tmp = $defaults->{$field};
 			}
@@ -345,13 +343,13 @@ class Settings {
 		}
 		
 		// Add post ID (checkin ID)
-		$settings->id = isset( $_REQUEST["post_ID"] ) ? intval( $_REQUEST["post_ID"] ) : null;
+		$settings->id = $utils->get_variable( 'post_ID', null );
 		
-		E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings() - Saving: " . print_r( $settings, true ) );
+		$utils->log( ucfirst( $this->type ) . ": Saving: " . print_r( $settings, true ) );
 		
 		if ( ! $this->model->saveSettings( $settings ) ) {
 			
-			E20R_Tracker::dbg( ucfirst( $this->type ) . "::saveSettings() - Error saving settings!" );
+			$utils->log( ucfirst( $this->type ) . ": Error saving settings!" );
 			
 			return $post_id;
 		}
@@ -369,7 +367,7 @@ class Settings {
 	 */
 	public function addPrograms( $gid, $programIds ) {
 		
-		E20R_Tracker::dbg( ucfirst( $this->type ) . "::addProgram() - Adding " . count( $programIds ) . " programs to $this->type {$gid}" );
+		Utilities::get_instance()->log( ucfirst( $this->type ) . "::addProgram() - Adding " . count( $programIds ) . " programs to $this->type {$gid}" );
 		
 		$settings = $this->model->loadSettings( $gid );
 		
@@ -385,7 +383,7 @@ class Settings {
 			
 			if ( ! in_array( $pId, $settings->program_ids ) ) {
 				
-				E20R_Tracker::dbg( "e20r" . ucfirst( $this->type ) . "::addProgram() - Adding program {$pId} to {$this->type} {$gid}" );
+				Utilities::get_instance()->log( "e20r" . ucfirst( $this->type ) . "::addProgram() - Adding program {$pId} to {$this->type} {$gid}" );
 				$settings->program_ids[] = $pId;
 			}
 		}

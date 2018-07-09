@@ -1,25 +1,45 @@
 <?php
-
 /**
- * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
- * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ * The E20R Tracker Plugin – a coaching client management plugin for WordPress. Tracks client training, habits, educational reminders, etc.
+ * Copyright (c) 2018, Wicked Strong Chicks, LLC
  *
- * License Information:
- *  the GPL v2 license(?)
+ * The E20R Tracker Plugin is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>
+ *
+ * You can contact us at info@eighty20results.com
+ *
+ *
  */
-class e20rAssignmentView extends e20rSettingsView {
+
+namespace E20R\Tracker\Views;
+
+use E20R\Tracker\Controllers\Assignment;
+use E20R\Tracker\Controllers\Program;
+use E20R\Tracker\Controllers\Tracker;
+use E20R\Tracker\Controllers\Article;
+use E20R\Tracker\Controllers\Client;
+use E20R\Tracker\Controllers\Tracker_Access;
+use E20R\Tracker\Models\Assignment_Model;
+use E20R\Tracker\Controllers\Time_Calculations;
+use E20R\Utilities\Utilities;
+
+class Assignment_View extends  Settings_View {
 
 	private $assignments = null;
 
 	private static $instance = null;
 
+	
 	public function __construct() {
 
-		parent::__construct( 'assignment', 'e20r_assignments' );
+		parent::__construct( 'assignment', Assignment_Model::post_type );
 	}
 
 	/**
-	 * @return e20rAssignmentView
+	 * @return Assignment_View
 	 */
 	static function getInstance() {
 
@@ -38,11 +58,11 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewSettingsBox( $assignmentData, $answerTypes ) {
 
-		$e20rProgram = e20rProgram::getInstance();
+		$Program = Program::getInstance();
 
-		dbg( "e20rAssignmentView::viewSettingsBox() - Supplied data: " . print_r( $assignmentData, true ) );
+		Utilities::get_instance()->log( "Supplied data: " . print_r( $assignmentData, true ) );
 
-		$pList = $e20rProgram->getProgramList();
+		$pList = $Program->getProgramList();
 		if ( is_null( $assignmentData->program_ids ) ) {
 			$assignmentData->program_ids = array();
 		}
@@ -104,13 +124,6 @@ class e20rAssignmentView extends e20rSettingsView {
 							<option value="<?php esc_attr_e( $p->id ); ?>"<?php echo in_array( $p->id, $assignmentData->program_ids ) ? 'selected="selected"' : null; ?>><?php echo esc_textarea( wp_unslash( $p->title ) ); ?></option><?php
 						} ?>
 					</select>
-					<style>
-						.select2-container {
-							min-width: 75px;
-							max-width: 300px;
-							width: 90%;
-						}
-					</style>
 					<script>
 						jQuery("#e20r-assignment-program_ids").select2();
 					</script>
@@ -212,7 +225,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	public function viewArticle_Assignments( $articleId = CONST_NULL_ARTICLE, $assignments, $answerDefs = null ) {
 
-		$e20rAssignment = e20rAssignment::getInstance();
+		$Assignment = Assignment::getInstance();
 		global $currentArticle;
 
 		$multi_select = false;
@@ -222,7 +235,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		}
 
 		// $this->displayError();
-		dbg( "e20rAssignments::viewArticle_Assignments() - Processing " . count( $assignments ) . " assignments for display" );
+		Utilities::get_instance()->log( "Assignments::viewArticle_Assignments() - Processing " . count( $assignments ) . " assignments for display" );
 
 		ob_start();
 		?>
@@ -239,7 +252,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			<?php
 
 			$count = 1;
-			dbg( "e20rAssignmentView::viewArticle_Assignments() - Processing previously defined assignment definitions." );
+			Utilities::get_instance()->log( "Processing previously defined assignment definitions." );
 
 			foreach ( $assignments as $a ) {
 
@@ -248,16 +261,13 @@ class e20rAssignmentView extends e20rSettingsView {
 					$multi_select = true;
 				}
 
-				dbg( "e20rAssignmentView::viewArticle_Assignments() - Processing assignment w/id: {$a->question_id}" );
-				dbg( $a );
-				?>
-
+				Utilities::get_instance()->log( "Processing assignment w/id: {$a->question_id} -> " . print_r( $a, true ) ); ?>
 				<tr class="e20r-assignment-list">
 				<td class="e20r-assignment-hdr_order"><?php echo $a->order_num . "."; ?></td>
 				<td class="e20r-assignment-hdr_title"><?php echo $a->question; ?></td>
 				<td class="e20r-assignment-hdr_type">
 					<?php
-					dbg( "e20rAssignmentView::viewArticle_Assignments() - field type = {$a->field_type}" );
+					Utilities::get_instance()->log( "field type = {$a->field_type}" );
 					if ( $answerDefs !== null ) {
 
 						echo $answerDefs[ isset( $a->field_type ) ? $a->field_type : 0 ];
@@ -270,15 +280,15 @@ class e20rAssignmentView extends e20rSettingsView {
 				</td>
 				<td class="e20r-assignment-buttons">
 					<a class="e20r-assignment-edit"
-					   href="javascript:e20r_assignmentEdit(<?php echo $a->question_id; ?>, <?php echo $a->order_num; ?>); void(0);"><?php _e( "Edit", "e20r-tracker" ); ?></a>
+                       href="<?php printf( 'javascript:e20r_assignmentEdit(%s, %d); void(0);',esc_attr( $a->question_id ), $a->order_num); ?>"><?php _e( "Edit",  "e20r-tracker" ) ?></a>
 				</td>
 				<td class="e20r-assignment-buttons">
 					<a class="e20r-assignment-remove"
-					   href="javascript:e20r_assignmentRemove(<?php echo $a->question_id; ?>); void(0);"><?php _e( "Remove", "e20r-tracker" ); ?></a>
+					   href="<?php printf( 'javascript:e20r_assignmentRemove(%d); void(0);', esc_attr( $a->question_id ) ); ?>"><?php _e( "Remove", "e20r-tracker" ); ?></a>
 					<input type="hidden" class="e20r-assignment-id" name="e20r-assignment-id[]"
-					       value="<?php echo $a->question_id ?>"/>
+					       value="<?php esc_attr_e( $a->question_id ); ?>"/>
 					<input type="hidden" class="e20r-article-assignment_ids" name="e20r-article-assignment_ids[]"
-					       value="<?php echo $a->question_id ?>"/>
+					       value="<?php  esc_attr_e( $a->question_id ); ?>"/>
 				</td>
 				</tr><?php
 			} ?>
@@ -305,18 +315,24 @@ class e20rAssignmentView extends e20rSettingsView {
 					<td>
 						<select class="e20r-select2-container select2" id="e20r-add-assignment-id"
 						        name="e20r-assignment-id">
-							<option value="0">No defined Assignments</option><?php
-							dbg( "e20rAssignmentView::viewArticle_Assignments() - Loading all possible assignments" );
+							<option value="0"><?php _e('No defined Assignments', 'e20r-tracker' );?></option>
+                            <?php
+							Utilities::get_instance()->log( "Loading all possible assignments" );
 
-							$all = $e20rAssignment->getAllAssignments();
+							$all = $Assignment->getAllAssignments();
 
-							dbg( "e20rAssignmentView::viewArticle_Assignments() - Loaded " . count( $all ) . ' assignments' );
+							Utilities::get_instance()->log( "Loaded " . count( $all ) . ' assignments' );
 
 							foreach ( $all as $id => $assignment ) {
 
-								if ( ( $id != 0 ) && ( $assignment->delay == $currentArticle->release_day ) ) { ?>
-									<option
-									value="<?php echo $id; ?>"><?php echo $assignment->question . " (Day # {$assignment->delay}/{$assignment->order_num})"; ?></option><?php
+								if ( ( $id != 0 ) && ( $assignment->delay == $currentArticle->release_day ) ) {
+									printf(
+									        '<option value="%d">%s (Day # %d/%d)</option>' ,
+                                            esc_attr( $id ),
+                                            esc_html( $assignment->question ),
+                                            esc_attr( $assignment->delay ),
+                                            esc_attr( $assignment->order_num )
+                                    );
 								}
 
 							} ?>
@@ -333,7 +349,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		</div>
 		<?php
 
-		dbg( "e20rAssignmentView::viewArticle_Assignments() - Done generating metabox" );
+		Utilities::get_instance()->log( "Done generating metabox" );
 
 		$html = ob_get_clean();
 
@@ -361,18 +377,18 @@ class e20rAssignmentView extends e20rSettingsView {
 				<input type="hidden" value="<?php echo date_i18n( 'Y-m-d', current_time( 'timestamp' ) ); ?>" name="e20r-assignment-answer_date" id="e20r-assignment-answer_date" />
 				<?php
 
-				dbg( "e20rAssignmentView::viewAssignment() - Processing for " . count( $assignmentData ) . " assignments" );
+				Utilities::get_instance()->log( "Processing for " . count( $assignmentData ) . " assignments" );
 				foreach ( $assignmentData as $orderId => $assignment ) { ?>
 
 					<input type="hidden" value="<?php echo( isset( $assignment->id ) && ( 0 != $assignment->id ) ? esc_attr( $assignment->id ) : null ); ?>" name="e20r-assignment-id[]" class="e20r-assignment-id" /><?php
 
-					dbg( $assignment );
+					Utilities::get_instance()->log( print_r( $assignment, true ) );
 
 					if ( ( $assignment->field_type == 0 ) && ( isset( $assignment->id ) ) &&
 					     ( ! is_null( $assignment->id ) && ( 0 != $assignment->id ) )
 					) {
 
-						dbg( "e20rAssignmentView::viewAssignment() - Forcing 'complete' to true since there's a non-zero/non-null assignment Id configured" );
+						Utilities::get_instance()->log( "Forcing 'complete' to true since there's a non-zero/non-null assignment Id configured" );
 						$articleConfig->complete = true;
 					}
 
@@ -410,18 +426,18 @@ class e20rAssignmentView extends e20rSettingsView {
 							break;
 
 						default: // Button "Assignment read"
-							dbg( "e20rAssignmentView::viewAssignment() - Default field_type value. Using showAssignmentButton()" );
+							Utilities::get_instance()->log( "Default field_type value. Using showAssignmentButton()" );
 							echo $this->showAssignmentButton( $assignment, $articleConfig->complete );
 
 					}
 				}
 
-				dbg( "e20rAssignmentView::viewAssignment() - Assignments: " . count( $assignmentData ) . " and last field type: {$assignment->field_type}" );
-				dbg( "e20rAssignmentView::viewAssignment() - Is article assignment/check-in complete: {$articleConfig->complete}" );
+				Utilities::get_instance()->log( "Assignments: " . count( $assignmentData ) . " and last field type: {$assignment->field_type}" );
+				Utilities::get_instance()->log( "Is article assignment/check-in complete: {$articleConfig->complete}" );
 
 				if ( ( count( $assignmentData ) >= 1 ) && ( $assignment->field_type != 0 ) ) {
 
-				dbg( "e20rAssignmentView::viewAssignment() -  Have assignment data to process." );
+				Utilities::get_instance()->log( " Have assignment data to process." );
 
 				if ( isset( $articleConfig->complete ) && true != $articleConfig->complete ) { ?>
 				<div id="e20r-assignment-save-btn"><?php
@@ -433,15 +449,14 @@ class e20rAssignmentView extends e20rSettingsView {
 					</div><?php
 					}
 
-					dbg( "e20rAssignmentView::viewAssignment() - Config for article: " );
-					dbg( $articleConfig );
+					Utilities::get_instance()->log( "Config for article: " . print_r( $articleConfig, true ));
 
 					if ( true == $articleConfig->complete ) { ?>
 
 					<div class="e20r-assignment-complete"><?php
 						}
 						else {
-						dbg( "e20rAssignmentView::viewAssignment() -  Assignment isn't complete: " . ( $articleConfig->complete ? 'Yes' : 'No' ) ); ?>
+						Utilities::get_instance()->log( " Assignment isn't complete: " . ( $articleConfig->complete ? 'Yes' : 'No' ) ); ?>
 
 						<div class="e20r-assignment-complete" style="display: none;"><?php
 							}
@@ -452,7 +467,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		<!-- <hr class="e20r-assignment-separator"/> -->
 		<?php
 		$html .= ob_get_clean();
-		dbg( "e20rAssignmentView::viewAssignment() -  Returning HTML" );
+		Utilities::get_instance()->log( " Returning HTML" );
 
 		return $html;
 	}
@@ -475,7 +490,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		ob_start();
 
 		if ( is_array( $assignment->answer ) ) {
-			dbg( "e20rAssignmentView::showMultipleChoice() - Answer is an array and contains: " . json_encode( $assignment->answer ) );
+			Utilities::get_instance()->log( "Answer is an array and contains: " . json_encode( $assignment->answer ) );
 			$answer = json_encode( $assignment->answer );
 		} else {
 			$answer = $assignment->answer;
@@ -489,7 +504,7 @@ class e20rAssignmentView extends e20rSettingsView {
             <h5 class="e20r-assignment-question"><?php echo esc_attr_e( $assignment->question ); ?></h5><?php
             if ( isset( $assignment->descr ) && ! empty( $assignment->descr ) ) { ?>
                 <div class="e20r-assignment-descr">
-                    <?php echo wp_autop( $assignment->descr ); ?>
+                    <?php echo wpautop( $assignment->descr ); ?>
                     <p class="e20r-assignment-select"><?php _e( "Select one or more applicable responses", "e20r-tracker" ); ?></p>
                 </div><?php
             } ?>
@@ -622,7 +637,7 @@ class e20rAssignmentView extends e20rSettingsView {
 			<textarea class="e20r-assignment-response e20r-textarea" name="e20r-assignment-answer[]" rows="7" cols="80"
 			          placeholder="<?php _e( "Type your response, and after responding to all assignments, click 'Save Answers', please...", "e20r-tracker" ); ?>"><?php
 				if ( ! empty( $assignment->answer ) ) {
-					dbg( "e20rAssignmentView::showAssignmentParagraph() - Loading actual answer..." );
+					Utilities::get_instance()->log( "Loading actual answer..." );
 					echo trim( stripslashes( $assignment->answer ) );
 				} ?></textarea>
 		</div>
@@ -632,7 +647,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 	private function showAssignmentButton( $assignment, $isComplete = false ) {
 
-		dbg( "e20rAssignmentView::showAssignmentButton() - Using assignment configuration: " );
+		Utilities::get_instance()->log( "Using assignment configuration: " );
 
 		ob_start();
 		?>
@@ -671,7 +686,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		?>
 		<div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
 			<p>
-				<strong><?php echo sprintf( __( "You have completed this %s.", "e20rTracker" ), lcfirst( $prefix ) ); ?></strong>
+				<strong><?php echo sprintf( __( "You have completed this %s.", "Tracker" ), lcfirst( $prefix ) ); ?></strong>
 			</p>
 		</div>
 		<?php
@@ -680,16 +695,22 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		return $html;
 	}
-
+	
+	/**
+	 * @param \stdClass $config
+	 * @param array $answers
+	 *
+	 * @return string
+	 */
 	public function viewAssignmentList( $config, $answers ) {
 
 		global $current_user;
-		$e20rTracker = e20rTracker::getInstance();
-		$e20rArticle = e20rArticle::getInstance();
-		$e20rClient = e20rClient::getInstance();
-
+		$Article = Article::getInstance();
+		$Client = Client::getInstance();
+        $Access = Tracker_Access::getInstance();
+        
 		$add_message = false;
-		$is_coach    = $e20rTracker->is_a_coach( $current_user->ID );
+		$is_coach    = $Access->is_a_coach( $current_user->ID );
 		$is_client   = $is_coach ? false : true;
 
 		if ( isset( $answers['max_num_pages'] ) ) {
@@ -701,7 +722,7 @@ class e20rAssignmentView extends e20rSettingsView {
 		}
 
 		if ( $is_coach && is_admin() ) {
-			dbg( "e20rAssignmentView::viewAssignmentList() - Include Coaching UI info." );
+			Utilities::get_instance()->log( "Include Coaching UI info." );
 			$add_message = true;
 		}
 
@@ -714,48 +735,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 		ob_start();
 
-		// TODO: Use $e20rArticle::get_feedback() function to load a feedback item for user (or coach).
-        /*
-		if ( !is_null($max_num_pages) && $max_num_pages > 1 ) {
-
-			$big        = 99999999;
-
-			$config->userId;
-
-			error_log("Current page: {$current_page}");
-			// $translated = __( "Page", "e20r-tracker" );
-			$translated = ''; ?>
-
-
-            <nav class="e20r-pagination-links navigation" role="navigation">
-            <input type="hidden" id="e20r-page-name" value="assignment_answer_list">
-            <input type="hidden" id="e20r-assignment-pagination-cid" value="<?php esc_attr_e( $config->userId ); ?>">
-			<?php wp_nonce_field( 'e20r-tracker-data', 'e20r-assignment-nonce' ); ?>
-            <!-- <span class="e20r-page-nav"><?php echo $translated; ?></span> -->
-			<?php
-			// structure of "format" depends on whether we're using pretty permalinks
-
-			$pagination_args = array(
-				'base'               => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-				'format'             => '?paged=%#%',
-				'current'            => $current_page,
-				'total'              => $max_num_pages,
-				'mid_size'           => 2,
-				'end_size'           => 1,
-				'prev_next'          => true,
-				'before_page_number' => '<span class="screen-reader-text">' .$translated . '</span>',
-			);
-
-			global $wp_rewrite;
-			if ( $wp_rewrite->using_permalinks() ) {
-				$pagination_args['base'] = user_trailingslashit( trailingslashit( remove_query_arg('paged', get_pagenum_link(1) ) ) . 'page/%#%/', 'paged');
-			}
-
-			echo paginate_links( $pagination_args );
-			?>
-            </nav><?php
-		}
-        */
+		// TODO: Use $Article::get_feedback() function to load a feedback item for user (or coach).
 		?>
 		<div id="e20r-assignment_answer_list" class="e20r-measurements-container">
 			<h4><?php _e( "Assignments", "e20r-tracker" ) ?></h4>
@@ -768,18 +748,18 @@ class e20rAssignmentView extends e20rSettingsView {
 					$counter = 0;
 					if ( ! empty( $answers ) ) {
 
-						dbg( "e20rAssignmentView::viewAssignmentList() - User has supplied answers..." );
-						// dbg($answers);
+						Utilities::get_instance()->log( "User has supplied answers..." );
+						// Utilities::get_instance()->log($answers);
 
 						foreach ( $answers as $key => $answer ) {
 
 							if ( $answer->field_type == 0 ) {
 
-								dbg( "e20rAssignmentView::viewAssignmentList() - {$answer->id} has no answer (It's a 'lesson complete' button)." );
+								Utilities::get_instance()->log( "{$answer->id} has no answer (It's a 'lesson complete' button)." );
 								continue;
 							}
 
-							$when     = date_i18n( "Y-m-d", strtotime( $e20rTracker->getDateForPost( $answer->delay, $config->userId ) ) );
+							$when     = date_i18n( "Y-m-d", strtotime( Time_Calculations::getDateForPost( $answer->delay, $config->userId ) ) );
 							$showLink = ( $config->userId == $current_user->ID ? true : false );
 
 							if ( ! $is_coach && ( isset( $answer->new_messages ) && ( 1 >= $answer->new_messages ) ) ) {
@@ -801,7 +781,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 
 							if ( 1 < count( $answer->article_ids ) ) {
-								dbg( "e20rAssignmentView::viewAssignmentList() - Error: Number of article IDs for answer # {$answer->id}/{$answer->question_id}: " . count( $answer->article_ids ) . " Content: " . print_r( $answer->article_ids, true ) );
+								Utilities::get_instance()->log( "Error: Number of article IDs for answer # {$answer->id}/{$answer->question_id}: " . count( $answer->article_ids ) . " Content: " . print_r( $answer->article_ids, true ) );
 							} elseif ( 1 == count( $answer->article_ids ) ) {
 								$answer->article_ids = array_pop( $answer->article_ids );
 							} else {
@@ -823,30 +803,28 @@ class e20rAssignmentView extends e20rSettingsView {
 
 							if ( false === $is_coach ) {
 
-								$coaches = $e20rClient->get_coach( $current_user->ID, $config->programId );
+								$coaches = $Client->get_coach( $current_user->ID, $config->programId );
 
 								if ( empty( $coaches ) ) {
 
-									$e20rClient->assign_coach( $current_user->ID );
-									$coaches = $e20rClient->get_coach( $current_user->ID, $config->programId );
+									$Client->assignCoach( $current_user->ID );
+									$coaches = $Client->get_coach( $current_user->ID, $config->programId );
 								}
 
-								dbg( "e20rAssignmentView::viewAssignmentList() - Found coach info for current_user->ID: " );
-								dbg( $coaches );
+								Utilities::get_instance()->log( "Found coach info for current_user->ID: " . print_r( $coaches, true ) );
 
 							} else {
-								dbg( "e20rAssignmentView::viewAssignmentList() - current_user->ID IS a coach: " );
 								$coaches = array( $current_user->ID => $current_user->display_name );
-								dbg( $coaches );
+								Utilities::get_instance()->log( "current_user->ID IS a coach: " . print_r( $coaches, true ) );
 							}
 
 							foreach ( $coaches as $c_id => $name ) {
 
-								dbg( "e20rAssignmentView::viewAssignmentList() - Assigned coach will be: {$c_id}" );
+								Utilities::get_instance()->log( "Assigned coach will be: {$c_id}" );
 								$coach_id = $c_id;
 							}
 
-							dbg( "e20rAssignmentView::viewAssignmentList() - Client ID: {$client_id}, Coach ID: {$coach_id} " );
+							Utilities::get_instance()->log( "Client ID: {$client_id}, Coach ID: {$coach_id} " );
 
 							$button_status = null;
 
@@ -876,9 +854,9 @@ class e20rAssignmentView extends e20rSettingsView {
 
 							$not_from_self = true;
 
-							dbg( "e20rAssignmentView::viewAssignmentList() - Assignment/Question ID: {$answer->question_id}" );
-							dbg( "e20rAssignmentView::viewAssignmentList() - New message for the coach: " . ( $new_message_for_coach ? 'true' : 'false' ) );
-							dbg( "e20rAssignmentView::viewAssignmentList() - New message for the client: " . ( $new_message_for_user ? 'true' : 'false' ) );
+							Utilities::get_instance()->log( "Assignment/Question ID: {$answer->question_id}" );
+							Utilities::get_instance()->log( "New message for the coach: " . ( $new_message_for_coach ? 'true' : 'false' ) );
+							Utilities::get_instance()->log( "New message for the client: " . ( $new_message_for_user ? 'true' : 'false' ) );
 
 							?>
 							<tr class="<?php echo( ( $counter % 2 == 0 ) ? "e20rEven" : "e20rOdd" ) ?> <?php echo( true == $answer->new_messages ? 'e20r-messages-new' : null ); ?>">
@@ -899,9 +877,9 @@ class e20rAssignmentView extends e20rSettingsView {
 										<!-- <span> -->
 										<?php
 										if ( $showLink ) {
-											//dbg( "e20rAssignmentView::viewAssignmentList() - Want to show link for article {$answer->article_id}" );
+											//Utilities::get_instance()->log( "Want to show link for article {$answer->article_id}" );
 											?>
-											<a href="<?php echo $e20rArticle->getPostUrl( $answer->article_id ); ?>"
+											<a href="<?php echo $Article->getPostUrl( $answer->article_id ); ?>"
 											   target="_blank"
 											   alt="<?php _e( "Opens in a separate window", 'e20r-tracker' ); ?>">
 												<?php echo date_i18n( 'M j, Y', strtotime( $when ) ); ?>
@@ -991,9 +969,7 @@ class e20rAssignmentView extends e20rSettingsView {
 										</a>
 									<div id="assignment_reply_<?php echo $answer->id; ?>"
 									     class="e20r-message-history-content" style="display:none">
-										<?php dbg( "e20rAssignmentView::viewAssignmentList() - Loaded answer information:" ); ?>
-										<?php dbg( $answer );
-
+										<?php Utilities::get_instance()->log( "Loaded answer information: " . print_r( $answer, true ) );
 										// I'm a coach, but not "the" coach, or I'm "the" coach; Use the coaches ID...
 										if ( ! $is_coach ) {
 											$recipient_id = $coach_id;
@@ -1001,7 +977,7 @@ class e20rAssignmentView extends e20rSettingsView {
 											$recipient_id = $client_id;
 										}
 
-										dbg( "e20rAssignmentView::viewAssignmentList() - Recipient Id: {$recipient_id}" );
+										Utilities::get_instance()->log( "Recipient Id: {$recipient_id}" );
 										?>
 										<input type="hidden" name="e20r-assignment-client_id[]"
 										       value="<?php echo esc_attr( $client_id ); ?>">
@@ -1060,8 +1036,9 @@ class e20rAssignmentView extends e20rSettingsView {
 				<?php
 
 				// TODO: Make shortcode and pagination AJAX based
-				error_log( "Total # of pages: " . $max_num_pages );
-
+				Utilities::get_instance()->log( "Total # of pages: " . $max_num_pages );
+                Utilities::get_instance()->log("Request value: " . print_r( $_REQUEST, true ));
+                
 				// only bother with the rest if we have more than 1 page!
 				if ( !is_null($max_num_pages) && $max_num_pages > 1 ) {
 
@@ -1069,7 +1046,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 					$config->userId;
 
-					error_log("Current page: {$current_page}");
+					Utilities::get_instance()->log("Current page: {$current_page}");
 					// $translated = __( "Page", "e20r-tracker" );
                     $translated = ''; ?>
 
@@ -1113,13 +1090,11 @@ class e20rAssignmentView extends e20rSettingsView {
 	}
 
 	public function message_history( $history, $user_id, $assignment_id ) {
-
-		$e20rTables = e20rTables::getInstance();
-		$e20rTracker = e20rTracker::getInstance();
-
+	    
+        $Access = Tracker_Access::getInstance();
+		
 		global $current_user;
-
-		// $reply_fields = $e20rTables->getFields('response');
+		
 		$record_num = 0;
 		$total      = count( $history ) - 1;
 
@@ -1131,8 +1106,7 @@ class e20rAssignmentView extends e20rSettingsView {
 
 			foreach ( $history as $r ) {
 
-				dbg( "e20rAssignmentView::message_history() - Loading the view for message: {$r->response_id}, record # {$record_num}" );
-				dbg( $r );
+				Utilities::get_instance()->log( "Loading the view for message: {$r->response_id}, record # {$record_num}: " . print_r( $r, true ) );
 
 				$read_message = false;
 				$user         = get_user_by( 'id', $r->message_sender_id );
@@ -1149,25 +1123,25 @@ class e20rAssignmentView extends e20rSettingsView {
 				}
 
 				$is_archived   = ( $r->archived == 1 ? true : false );
-				$user_is_coach = $e20rTracker->is_a_coach( $current_user->ID );
+				$user_is_coach = $Access->is_a_coach( $current_user->ID );
 				$is_read       = ( $r->read_status == 1 ? true : false );
 				$is_last       = ( ++ $record_num <= $total ? false : true );
 
-				dbg( "e20rAssignmentView::message_history() - For {$r->response_id}: is_read: " . ( $is_read ? 'true' : 'false' ) );
-				dbg( "e20rAssignmentView::message_history() -              : from_me: " . ( $from_me ? 'true' : 'false' ) );
-				dbg( "e20rAssignmentView::message_history() -              : is_archived: " . ( $is_archived ? 'true' : 'false' ) );
-				dbg( "e20rAssignmentView::message_history() -              : user_is_coach: " . ( $user_is_coach ? 'true' : 'false' ) );
-				dbg( "e20rAssignmentView::message_history() -              : is_last: " . ( $is_last ? 'true' : 'false' ) );
+				Utilities::get_instance()->log( "For {$r->response_id}: is_read: " . ( $is_read ? 'true' : 'false' ) );
+				Utilities::get_instance()->log( "             : from_me: " . ( $from_me ? 'true' : 'false' ) );
+				Utilities::get_instance()->log( "             : is_archived: " . ( $is_archived ? 'true' : 'false' ) );
+				Utilities::get_instance()->log( "             : user_is_coach: " . ( $user_is_coach ? 'true' : 'false' ) );
+				Utilities::get_instance()->log( "             : is_last: " . ( $is_last ? 'true' : 'false' ) );
 
 				if ( ( ( false === $is_archived ) && ( false === $user_is_coach ) ) || ( true === $user_is_coach ) ) {
 
-					dbg( "e20rAssignmentView::message_history() - Loading history HTML for non-archived messages" );
+					Utilities::get_instance()->log( "Loading history HTML for non-archived messages" );
 
 					if ( false === $is_last ) {
-						dbg( "e20rAssignmentView::message_history() - Older unread message ID {$r->response_id} with timestamp: {$r->message_time}" ); ?>
+						Utilities::get_instance()->log( "Older unread message ID {$r->response_id} with timestamp: {$r->message_time}" ); ?>
 						<div class="e20r-message-history-message clearfix"><?php
 					} else {
-						dbg( "e20rAssignmentView::message_history() - Most recent message: {$r->response_id} with timestamp: {$r->message_time}" ); ?>
+						Utilities::get_instance()->log( "Most recent message: {$r->response_id} with timestamp: {$r->message_time}" ); ?>
 						<input type="hidden" name="e20r-assignment-answer[]"
 						       value="<?php echo esc_attr( stripslashes( $r->message ) ); ?>">
 						<div class="e20r-message-history-message clearfix e20r-message-most-recent"><?php
@@ -1198,21 +1172,21 @@ class e20rAssignmentView extends e20rSettingsView {
 				}
 
 				/*
-								if ( $e20rTracker->is_a_coach( $current_user->ID ) ) {
+								if ( $Access->is_a_coach( $current_user->ID ) ) {
 
-									dbg("e20rAssignmentView::message_history() - Loading history HTML for unread messages to the back-end coaching page");
+									Utilities::get_instance()->log("Loading history HTML for unread messages to the back-end coaching page");
 
 									if ( false === $is_last ) {
-										dbg("e20rAssignmentView::message_history() - Older message with ID {$r->response_id} and timestamp: {$r->message_time}");?>
+										Utilities::get_instance()->log("Older message with ID {$r->response_id} and timestamp: {$r->message_time}");?>
 									<div class="e20r-message-history-message clearfix"><?php
 									} else {
-										dbg("e20rAssignmentView::message_history() - Most recent message: {$r->response_id} with timestamp: {$r->message_time}");?>
+										Utilities::get_instance()->log("Most recent message: {$r->response_id} with timestamp: {$r->message_time}");?>
 									<input type="hidden" name="e20r-assignment-answer[]" value="<?php echo esc_attr(stripslashes( $r->message )); ?>">
 									<div class="e20r-message-history-message clearfix e20r-message-most-recent"><?php
 									}
 
 									if ( false == $r->read_status ) {
-										dbg("e20rAssignmentView::message_history() - Message is not acked by user/admin");?>
+										Utilities::get_instance()->log("Message is not acked by user/admin");?>
 										<div class="<?php echo ($from_me == false ? 'e20r-message-history-unread ' : 'e20r-message-history '); ?><?php echo ( ($record_num <= $total) ? 'e20r-message-history-not-last ' : null); ?>clearfix"><?php
 									}?>
 											<div class="e20r-message-history-who">
@@ -1226,7 +1200,7 @@ class e20rAssignmentView extends e20rSettingsView {
 											</div><?php
 
 									if ( ( false === $is_read ) && ( false == $from_me ) ) {
-										dbg("e20rAssignmentView::message_history() - Adding Archive (button)"); ?>
+										Utilities::get_instance()->log("Adding Archive (button)"); ?>
 											<div class="e20r-message-ack">
 												<button class="button primary e20r-message-ack-button"><?php _e( "Archive", "e20r-tracker"); ?></button>
 											</div><?php
@@ -1240,12 +1214,12 @@ class e20rAssignmentView extends e20rSettingsView {
 				*/
 			} // End of foreach loop
 		} else {
-			dbg( "e20rAssignmentView::message_history() - No messages found for {$user_id} about {$assignment_id}" );
+			Utilities::get_instance()->log( "No messages found for {$user_id} about {$assignment_id}" );
 		}
 
 		$message_history = ob_get_clean();
 
-		dbg( "e20rAssignmentView::message_history() - Returned message history for {$user_id} and {$assignment_id}" );
+		Utilities::get_instance()->log( "Returned message history for {$user_id} and {$assignment_id}" );
 
 		return $message_history;
 	}

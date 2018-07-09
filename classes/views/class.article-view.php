@@ -1,4 +1,6 @@
 <?php
+namespace E20R\Tracker\Views;
+
 /**
  * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
@@ -7,27 +9,38 @@
  *  the GPL v2 license(?)
  */
 
+use E20R\Tracker\Models\Article_Model;
+use E20R\Tracker\Models\Action_Model;
+
+use E20R\Tracker\Controllers\Assignment;
+use E20R\Tracker\Controllers\Tracker;
+use E20R\Tracker\Controllers\Exercise;
+use E20R\Tracker\Controllers\Workout;
+use E20R\Tracker\Controllers\Time_Calculations;
+use E20R\Utilities\Utilities;
+
+use E20R\Tracker\Models\Program_Model;
+
 /* Prevent direct access to the plugin */
 if ( !defined( 'ABSPATH' ) ) {
         die( "Sorry, you are not allowed to access this page directly." );
 }
 
-class e20rArticleView extends e20rSettingsView {
-
-    private $article = null;
+class Article_View extends Settings_View {
 
     private static $instance = null;
+    private $article = null;
 
     public function __construct( $data = null, $error = null ) {
 
-        parent::__construct( 'article', e20rArticleModel::post_type );
+        parent::__construct( 'article',  Article_Model::post_type );
 
         $this->article = $data;
         $this->error = $error;
     }
 
-    	/**
-	 * @return e20rArticleView
+    /**
+	 * @return Article_View
 	 */
 	static function getInstance() {
 
@@ -43,8 +56,8 @@ class e20rArticleView extends e20rSettingsView {
         global $currentArticle;
 		ob_start();
 
-        dbg("e20rArticleView::viewLessonComplete() -  Assignment is complete: " . ( ( isset( $currentArticle->complete ) && ( $currentArticle->complete) ) ? 'Yes' : 'No') );
-        dbg($currentArticle);
+        Utilities::get_instance()->log("Assignment is complete: " . ( ( isset( $currentArticle->complete ) && ( $currentArticle->complete) ) ? 'Yes' : 'No') );
+        Utilities::get_instance()->log( print_r( $currentArticle, true ) );
 
         $prefix = preg_replace('/\[|\]/', '', $currentArticle->prefix );
 
@@ -57,7 +70,7 @@ class e20rArticleView extends e20rSettingsView {
         <div class="e20r-assignment-complete" style="display: none;"><?php
         } ?>
             <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL;  ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p><strong><?php echo sprintf( __("You have completed this %s.", "e20rTracker"), lcfirst( $prefix ) ); ?></strong></p>
+                <p><strong><?php echo sprintf( __("You have completed this %s.", "Tracker"), lcfirst( esc_attr( $prefix ) ) ); ?></strong></p>
             </div>
         </div>
 		<?php
@@ -75,7 +88,7 @@ class e20rArticleView extends e20rSettingsView {
 
         ob_start(); ?>
         <div class="e20r-article-post-summary">
-        <?php if ( !empty( $articles ) ): ?>
+        <?php if ( !empty( $articles ) ) { ?>
             <h5 class="e20r-article-post-summary-heading"><?php echo ( !empty($title) ? esc_attr($title) : sprintf( __("%s summary", "e20r-tracker"), esc_attr( ucfirst($type) ) )); ?></h5>
             <p class="e20r-article-post-summary-dates"><?php echo sprintf( __( "For the period between %s and %s", "e20r-tracker" ), $startdate, $enddate ); ?></p>
             <?php if ( !empty( $article_summary ) ) {?>
@@ -84,14 +97,13 @@ class e20rArticleView extends e20rSettingsView {
             foreach( $articles as $article ) {
                 $days = $article['day'] - 1;
                 $timestamp = strtotime("{$currentProgram->startdate} +{$days} days");
-                $day_name = date('l', $timestamp);
-            ?>
+                $day_name = date('l', $timestamp); ?>
             <div class="e20r-article-post-summary-tile">
-                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed...", "e20r-tracker" ), $day_name, $type, $article['title'] ); ?></p>
+                <p class="e20r-article-post-summary-about"><?php echo sprintf( __("On %s the %s was titled '%s' and we discussed...", "e20r-tracker" ), esc_attr( $day_name ), esc_attr( $type ) , esc_attr( $article['title'] ) ); ?></p>
                 <p class="e20r-article-post-summary-text"><?php echo esc_html( $article['summary'] ) ; ?></p>
             </div><?php
             } ?>
-        <?php endif; ?>
+        <?php } ?>
         </div><?php
         $html = ob_get_clean();
 
@@ -105,15 +117,15 @@ class e20rArticleView extends e20rSettingsView {
             ?>
             <div class="green-notice big"
                  style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p class="e20r-completed-notice"><?php echo sprintf(__("Great, you have already saved this '%s' interview.", 'e20r-tracker'), $page_title) ?></p>
-                <p class="e20r-completed-notice"><?php _e("If you need to update any information, make sure to save it before you leave. Or you can simply navigate away from the page without updating anything.", "e20rTracker"); ?></p>
+                <p class="e20r-completed-notice"><?php echo sprintf(__("Great, you have already saved this '%s' interview.", 'e20r-tracker'), esc_attr( $page_title ) ); ?></p>
+                <p class="e20r-completed-notice"><?php _e("If you need to update any information, make sure to save it before you leave. Or you can simply navigate away from the page without updating anything.", "Tracker"); ?></p>
             </div>
             <?php
         }
         else { ?>
             <div class="red-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/warning.png ); margin: 12px 0pt; background-position: 24px 9px;">
-                <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20r-tracker'), $page_title) ?></p>
-                <p class="e20r-completed-notice"><?php _e("To help us better understand your health profile and fitness level, and take that information to help you achieve your health and fitness goals, please complete the interview now. Then save it.", "e20rTracker"); ?></p>
+                <p class="e20r-completed-notice"><?php echo sprintf(__("We noticed you haven't completed this '%s' interview yet.", 'e20r-tracker'), esc_attr( $page_title )) ?></p>
+                <p class="e20r-completed-notice"><?php _e("To help us better understand your health profile and fitness level, and take that information to help you achieve your health and fitness goals, please complete the interview now. Then save it.", "Tracker"); ?></p>
             </div>
             <?php
         }
@@ -128,32 +140,36 @@ class e20rArticleView extends e20rSettingsView {
         global $currentProgram;
         global $currentArticle;
 
-        $e20rAssignment = e20rAssignment::getInstance();
+        $Assignment = Assignment::getInstance();
         global $current_user;
 
-        $unread_messages = $e20rAssignment->client_has_unread_messages( $current_user->ID );
+        $unread_messages = $Assignment->client_has_unread_messages( $current_user->ID );
 
-        dbg("e20rArticleView::new_message_warning() - Found unread messages: {$unread_messages}");
+        Utilities::get_instance()->log(" Found unread messages: {$unread_messages}");
 
         ob_start(); ?>
         <div class="e20r-new-message-alert orange-notice <?php echo ( 0 == $unread_messages ? 'startHidden' : null );  ?>">
-            <input type="hidden" name="e20r-message-user-id" value="<?php echo $current_user->ID;?>" id="e20r-message-user-id">
-            <input type="hidden" name="e20r-message-new-count" value="<?php echo $unread_messages; ?>" id="e20r-messages-previous-count">
+            <input type="hidden" name="e20r-message-user-id" value="<?php esc_attr_e( $current_user->ID );?>" id="e20r-message-user-id">
+            <input type="hidden" name="e20r-message-new-count" value="<?php esc_attr_e( $unread_messages ); ?>" id="e20r-messages-previous-count">
             <h4><span class="highlighted"><?php _e("New message!", "e20r-tracker"); ?></span></h4>
 
             <div class="e20r-tracker-new-message-alert-txt">
+            <ul>
                 <li><?php _e("Your coach has sent you a new message.", "e20r-tracker");?> <a href="javascript:void(0);" id="e20r-read-messages-btn"><?php _e("Click to read message(s)", "e20r-tracker"); ?> &raquo;</a></li>
-                <form action="<?php echo get_permalink($currentProgram->progress_page_id); ?>" method="POST" id="e20r-start">
-                    <input type="hidden" value="<?php echo ( isset( $currentArticle->id ) ? $currentArticle->id : null) ; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
-                </form>
+            </ul>
+            <form action="<?php echo get_permalink($currentProgram->progress_page_id); ?>" method="POST" id="e20r-start">
+                <input type="hidden" value="<?php echo ( isset( $currentArticle->id ) ? $currentArticle->id : null) ; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+            </form>
+           
                 <button id="e20r-new-message-dismiss-button" class="e20r-dismiss-button button"><?php _e("Hide", "e20r-tracker"); ?></button>
+            <ul>
                 <li>
                     <span class="e20r-help-description-text">
                         <?php _e("You can read and reply to your messages via the 'Assignments' tab on the 'Progress' page/tab.", "e20r-tracker"); ?>
                         <?php _e("The assignment response row will be an <span class='orange-background'>orange row</span> wherever there are unread messages.", "e20r-tracker"); ?>
                     </span>
                 </li>
-
+            </ul>
             </div>
         </div>
         <?php
@@ -163,26 +179,22 @@ class e20rArticleView extends e20rSettingsView {
 
     public function viewMeasurementComplete( $day, $measurements = 0, $articleId ) {
 
-        $e20rTracker = e20rTracker::getInstance();
+        $Tracker = Tracker::getInstance();
         global $currentProgram;
         global $currentArticle;
-        // $postDate = $e20rTracker->getDateForPost( $day );
-        // $progressLink = '<a href="' . home_url("/nutrition-coaching/weekly-progress/?for={$postDate}") . '" target="_blank">Click to edit</a> your measurements';
 
         ob_start();
         ?>
         <div class="green-notice big" style="background-image: url( <?php echo E20R_PLUGINS_URL; ?>/img/checked.png ); margin: 12px 0pt; background-position: 24px 9px;">
             <p>
-            <strong><?php printf( __("You have completed this %s.", "e20rTracker"), $currentArticle->prefix ); ?></strong>
-            <?php
-                if ( $measurements !== 0 ) { ?>
-                <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "e20rTracker"); ?></strong>  &raquo;</a>
-                <form action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>" method="POST" id="e20r-start" style="display: none;">
-                    <input type="hidden" value="<?php echo $e20rTracker->getDateForPost( $day ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
-                    <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
-                </form>
-
-        <?php } ?>
+                <strong><?php printf( __("You have completed this %s.", "Tracker"), $currentArticle->prefix ); ?></strong>
+                <?php if ( 0 !== $measurements ): ?>
+                    <a href="javascript:document.getElementById('e20r-start').submit();" id="e20r-begin-btn" style="display: inline;"><strong><?php _e("Update progress", "Tracker"); ?></strong>  &raquo;</a>
+                    <form action="<?php echo get_permalink( $currentProgram->measurements_page_id ); ?>" method="POST" id="e20r-start" style="display: none;">
+                        <input type="hidden" value="<?php esc_attr_e(  Time_Calculations::getDateForPost( $day ) ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
+                        <input type="hidden" value="<?php esc_attr_e( $articleId ); ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+                    </form>
+                <?php endif; ?>
             </p>
         </div>
 
@@ -194,8 +206,8 @@ class e20rArticleView extends e20rSettingsView {
 
     public function viewMeasurementAlert( $photos, $day, $articleId = null ) {
 
-        dbg("e20rArticleView::viewMeasurementAlert() - Photos: {$photos} for {$day}");
-        $e20rTracker = e20rTracker::getInstance();
+        Utilities::get_instance()->log(" Photos: {$photos} for {$day}");
+        $Tracker = Tracker::getInstance();
         global $currentProgram;
 
         $html = null;
@@ -224,8 +236,8 @@ class e20rArticleView extends e20rSettingsView {
                             <?php endif; ?>
                         </ul>
                         <form action="<?php echo get_permalink($currentProgram->measurements_page_id); ?>" method="POST" id="e20r-start">
-                            <input type="hidden" value="<?php echo $e20rTracker->getDateForPost($day); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
-                            <input type="hidden" value="<?php echo $articleId; ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
+                            <input type="hidden" value="<?php esc_attr_e( Time_Calculations::getDateForPost($day) ); ?>" name="e20r-progress-form-date" id="e20r-progress-form-date">
+                            <input type="hidden" value="<?php esc_attr_e( $articleId ); ?>" name="e20r-progress-form-article" id="e20r-progress-form-article">
                         </form>
                         <a href="javascript:document.getElementById('e20r-start').submit();return false;" id="e20r-begin-btn"><?php _e("Begin", "e20r-tracker"); ?> &raquo;</a>
                     </div>
@@ -242,7 +254,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewCheckinSettings( $settings, $checkinList ) {
 
         global $post;
-        $e20rTracker = e20rTracker::getInstance();
+        $Tracker = Tracker::getInstance();
 
         if ( ! current_user_can( 'manage_options ') ) {
             return false;
@@ -270,12 +282,18 @@ class e20rArticleView extends e20rSettingsView {
         return $checkinMeta;
     }
 
+    /**
+      * @param array $settings
+      * @param \WP_Query $lessons
+      * @param null|array $checkinList
+      *
+      * @return bool
+      */
     public function viewArticleSettings( $settings, $lessons, $checkinList = null ) {
 
         global $post;
-        $e20rTracker = e20rTracker::getInstance();
 
-        dbg($settings);
+        Utilities::get_instance()->log(print_r( $settings, true ) );
 
         $savePost = $post;
 
@@ -323,10 +341,10 @@ class e20rArticleView extends e20rSettingsView {
                             </style>
                         </td>
                         <td style="min-width: 50px !important; width: 33%;">
-                            <input type="number" id="e20r-article-release_day" name="e20r-article-release_day" value="<?php echo esc_attr( $settings->release_day ); ?>">
+                            <input type="number" id="e20r-article-release_day" name="e20r-article-release_day" value="<?php esc_attr_e( $settings->release_day ); ?>">
                         </td>
                         <td style="vertical-align: top;">
-                            <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php echo esc_attr( $settings->prefix ); ?>">
+                            <input style="width: 100%;" type="text" id="e20r-article-prefix" name="e20r-article-prefix" value="<?php esc_attr_e( $settings->prefix ); ?>">
                         </td>
                     </tr>
                     </tbody>
@@ -389,17 +407,17 @@ class e20rArticleView extends e20rSettingsView {
 
                                 wp_reset_query();
 
-                                $programs = new WP_Query( array(
-                                    'post_type' => 'e20r_programs',
+                                $programs = new \WP_Query( array(
+                                    'post_type' => Program_Model::post_type,
                                     'posts_per_page' => -1,
 	                                'post_status' => 'publish',
                                     'order_by' => 'title',
                                     'order' => 'ASC',
-                                    'fields' => array( 'ID', 'title')
+                                    'fields' => array( 'ID', 'title'),
                                 ));
 
-                                // $programs = $e20rTracker->getMembershipLevels();
-                                dbg("e20rArticleView::viewArticleSettings() - Grabbed {$programs->post_count} programs");
+                                // $programs = $Tracker->getMembershipLevels();
+                                Utilities::get_instance()->log(" Grabbed {$programs->post_count} programs");
 
                                 while ( $programs->have_posts() ) {
 
@@ -436,18 +454,18 @@ class e20rArticleView extends e20rSettingsView {
 
                                 wp_reset_query();
 
-                                $checkins = new WP_Query( array(
-                                    'post_type' => 'e20r_actions',
+                                $checkins = new \WP_Query( array(
+                                    'post_type' => Action_Model::post_type,
                                     'posts_per_page' => -1,
                                     'order_by' => 'title',
 	                                'post_status' => 'publish',
                                     'order' => 'ASC',
-                                    'fields' => array( 'id', 'title')
+                                    'fields' => array( 'id', 'title'),
                                 ));
 
-                                // $programs = $e20rTracker->getMembershipLevels();
-                                dbg("e20rArticleView::viewArticleSettings() - Grabbed " .$checkins->post_count . " checkin options");
-                                // dbg("e20rArticleView::viewArticleSettings() - " . print_r( $checkins, true));
+                                // $programs = $Tracker->getMembershipLevels();
+                                Utilities::get_instance()->log(" Grabbed " .$checkins->post_count . " checkin options");
+                                // Utilities::get_instance()->log(" " . print_r( $checkins, true));
 
                                 while ( $checkins->have_posts() ) {
 
@@ -474,15 +492,15 @@ class e20rArticleView extends e20rSettingsView {
 		                    <select class="select2-container" id="e20r-article-activity_id" name="e20r-article-activity_id[]" multiple="multiple">
 			                    <option value="-1" <?php echo $selected ?>>No defined activity</option>
 			                    <?php
-			                    $e20rWorkout = e20rWorkout::getInstance();
+			                    $Workout = Workout::getInstance();
 
-			                    dbg("e20rArticleView::viewArticleSettings() - Load all defined activities");
-			                    $activities = $e20rWorkout->getActivities();
+			                    Utilities::get_instance()->log(" Load all defined activities");
+			                    $activities = $Workout->getActivities();
 
 			                    foreach( $activities as $activity ) {
 
-				                    dbg("e20rArticleView::viewArticleSettings() - Activity definition: {$activity->id}");
-				                    // dbg($activity);
+				                    Utilities::get_instance()->log(" Activity definition: {$activity->id}");
+				                    // Utilities::get_instance()->log($activity);
 
 				                    if ( is_array( $settings->activity_id ) ) {
 
@@ -512,7 +530,7 @@ class e20rArticleView extends e20rSettingsView {
     public function viewSettings_Checkin( $data ) {
 
         global $post;
-        $e20rTracker = e20rTracker::getInstance();
+        $Tracker = Tracker::getInstance();
 
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
@@ -527,10 +545,11 @@ class e20rArticleView extends e20rSettingsView {
 
     public function viewSettingsBox( $data, $posts ) {
 
-        global $post, $e20rTracker;
+        global $post;
+        $Tracker = Tracker::getInstance();
 
 
-        dbg("e20rArticleView::viewArticleSettingsBox() - Supplied data: " . print_r($data, true));
+        Utilities::get_instance()->log(" Supplied data: " . print_r($data, true));
         ?>
         <style>
             .select2-container { min-width: 75px; max-width: 250px; width: 100%;}
@@ -618,7 +637,7 @@ class e20rArticleView extends e20rSettingsView {
 
                                                 foreach ( $members as $userData ) {
 
-                                                    $active = $e20rTracker->isActiveUser( $userData->ID );
+                                                    $active = $Tracker->isActiveUser( $userData->ID );
                                                     if ( $active ) { ?>
 
                                                         <option value="<?php echo $userData->ID; ?>"<?php selected( $data->user_id, $userData->ID ); ?>>
@@ -661,10 +680,10 @@ class e20rArticleView extends e20rSettingsView {
                             </td>
                         </tr>
                         <?php
-                        dbg("e20rArticleView::viewSettingsBox() - Loading " . count($data->groups) . " groups of exercises");
+                        Utilities::get_instance()->log(" Loading " . count($data->groups) . " groups of exercises");
                         foreach( $data->groups as $key => $group ) {
 
-                            dbg("e20rArticleView::viewSettingsBox() - Group # {$key} for article {$data->ID}");
+                            Utilities::get_instance()->log(" Group # {$key} for article {$data->ID}");
                             echo $this->newExerciseGroup( $data->groups[$key], $key);
                         }
                         ?>
@@ -682,7 +701,7 @@ class e20rArticleView extends e20rSettingsView {
 
     public function newExerciseGroup( $group, $group_id ) {
 
-        $e20rExercise = e20rExercise::getInstance();
+        $Exercise = Exercise::getInstance();
         ob_start();
     ?>
         <tr><td colspan="2"><hr width="100%" /></td></tr>
@@ -729,7 +748,7 @@ class e20rArticleView extends e20rSettingsView {
                                             foreach ( $group->exercises as $exId => $info ) {
 
                                                 $exercise   = get_post( $exId );
-                                                // $exSettings = $e20rExercise->getExerciseSettings( $exId );
+                                                // $exSettings = $Exercise->getExerciseSettings( $exId );
                                                 switch ( $info->type ) {
                                                     case 0:
                                                         $type = 'Reps';
@@ -780,7 +799,7 @@ class e20rArticleView extends e20rSettingsView {
                                                 <?php
 
                                                 $postArgs = array(
-                                                    'post_type' => 'e20r_exercises',
+                                                    'post_type' => Exercise::post_type,
                                                     'post_status' => 'publish',
                                                 );
 
@@ -831,7 +850,7 @@ class e20rArticleView extends e20rSettingsView {
         </tr>
     <?php
 
-        dbg("e20rArticleView::newExerciseGroup() -- HTML generation completed.");
+        Utilities::get_instance()->log(" Article_View::newExerciseGroup() -- HTML generation completed.");
         return ob_get_clean();
     }
 }

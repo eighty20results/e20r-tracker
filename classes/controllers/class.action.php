@@ -284,6 +284,7 @@ class Action extends Settings {
 		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
 		$Access  = Tracker_Access::getInstance();
+		$Client = Client::getInstance();
 		
 		// $config = new \stdClass();
   
@@ -320,6 +321,8 @@ class Action extends Settings {
 		
 		foreach ( $program_actions as $program_action ) {
 			
+		    $program_action = $Client->updateForClientInfo( $program_action );
+		    
 			$dates['min'] = $program_action->startdate;
 			$dates['max'] = $program_action->enddate;
 			
@@ -333,9 +336,7 @@ class Action extends Settings {
 			
 			$recent_article = $Article->findArticlesNear( 'release_day', $end, $programId );
 			
-			Utilities::get_instance()->log("Nearest article to enddate: " . print_r( $recent_article[0]->release_day, true ) );
-			
-			if ( $end > $recent_article[0]->release_day ) {
+			if ( isset($recent_article[0]) && $end > $recent_article[0]->release_day ) {
 				
 			    $end = $recent_article[0]->release_day;
 			}
@@ -418,165 +419,6 @@ class Action extends Settings {
 		}
 		
 		return $this->view->view_user_achievements( $results );
-		/*
-		// No articles yet/found so returning immediately
-		if ( empty( $article_list ) || ( 0 == count( $article_list ) ) ) {
-			
-			Utilities::get_instance()->log( "No articles to check against." );
-			
-			$results = array();
-			
-			$results['program_days']  = 1; //$user_delay;
-			$results['program_score'] = 0;
-			
-			return $this->view->view_user_achievements( $results );
-		}
-		
-		Utilities::get_instance()->log( "Loaded " . count( $article_list ) . " articles between start of program #{$programId} and day #{$user_delay}" );
-		
-		// Get all articleIds to look for:
-		foreach ( $article_list as $article ) {
-			
-			if ( isset( $article->id ) ) {
-				
-				if ( 0 < $article->release_day ) {
-					
-					$articleIds[] = $article->id;
-					$delays[]     = $article->release_day;
-					
-				}
-			}
-		}
-		
-		if ( ! empty( $delays ) ) {
-			
-			// Sort the delays (to find min/max delays)
-			sort( $delays, SORT_NUMERIC );
-			
-			$dates['min'] = Time_Calculations::getDateForPost( $delays[0], $userId );
-			$dates['max'] = Time_Calculations::getDateForPost( $delays[ ( count( $delays ) - 1 ) ], $userId );
-		} else {
-			$dates['min'] = date( 'Y-m-d', current_time( 'timestamp' ) );
-			$dates['max'] = date( 'Y-m-d', current_time( 'timestamp' ) );
-		}
-		
-		Utilities::get_instance()->log( "Dates between: {$dates['min']} and {$dates['max']}" );
-		
-		// Get an array of actions & Activities to match the max date for the $programId
-		$curr_action_ids = $this->model->findActionByDate( Time_Calculations::getDateForPost( $user_delay, $userId ), $programId );
-		
-		Utilities::get_instance()->log( "" . count( $curr_action_ids ) . " action IDs found: " . print_r( $curr_action_ids, true ) );
-		
-		
-		foreach ( $curr_action_ids as $id ) {
-			
-			$type       = $this->model->getSetting( $id, 'checkin_type' );
-			$start_date = $this->model->getSetting( $id, 'startdate' );
-			
-			switch ( $type ) {
-				
-				case CHECKIN_ACTION:
-					$type_string = 'action';
-					break;
-				
-				case CHECKIN_ACTIVITY:
-					$type_string = 'activity';
-					break;
-				
-				case CHECKIN_ASSIGNMENT:
-					$type_string = 'assignment';
-					break;
-				
-				default:
-					Utilities::get_instance()->log( "No activity type specified in record! ($id)" );
-			}
-			
-			// Get all actions of this type.
-			$actions[ $start_date ][ $type_string ] = $this->model->getActions( $id, $type, - 1 );
-			
-		}
-		
-		$start_date = null;
-		
-		if ( ! empty( $articleIds ) ) {
-			
-			foreach ( $actions as $start_date => $type_list ) {
-				Utilities::get_instance()->log( "Found " . count( $articleIds ) . " articles. I.e. looking through all possible 'check-ins' for this program so far." );
-				
-			}
-		}
-		
-		foreach ( $actions as $start_date => $type_list ) {
-			
-			foreach ( $type_list as $type => $a_list ) {
-				
-				foreach ( $a_list as $action ) {
-					
-					Utilities::get_instance()->log( "Action to process for {$type}: " . print_r( $action, true ) );
-					
-					// Skip
-					if ( $action->checkin_type != $this->types['action'] ) {
-						
-						Utilities::get_instance()->log( "Skipping {$action->id} since it's not an action/habit of type {$this->types['action']}" );
-						continue;
-					}
-					
-					$results[ $start_date ][ $type ]             = new \stdClass();
-					$results[ $start_date ][ $type ]->actionText = $action->item_text;
-					$results[ $start_date ][ $type ]->days       = $this->days_of_action( $action );
-					
-					$action_count = $this->count_actions( $checkins, $this->types['action'], $action->startdate, $action->enddate );
-					Utilities::get_instance()->log( "Processing " . count( $checkins ) . " lessons and found {$action_count} actions" );
-					
-					$activity_count = $this->count_actions( $checkins, $this->types['activity'], $action->startdate, $action->enddate );
-					Utilities::get_instance()->log( "Processing " . count( $checkins ) . " lessons and found {$activity_count} activities" );
-					$assignment_count = $this->count_actions( $lessons, $this->types['assignment'], $action->startdate, $action->enddate );
-					Utilities::get_instance()->log( "Processing " . count( $lessons ) . " lessons and found {$assignment_count} assignments" );
-					$avg_score = 0;
-					
-					foreach ( array( 'action', 'activity', 'assignment' ) as $key ) {
-						
-						$var_name = "{$key}_count";
-						
-						$results[ $action->startdate ][ $type ]->{$key} = new \stdClass();
-						$score                                          = round( ( ${$var_name} / $results[ $action->startdate ][ $type ]->days ), 2 );
-						$badge                                          = null;
-						
-						if ( ( $score >= 0.7 ) && ( $score < 0.8 ) ) {
-							
-							$badge = 'bronze';
-						} else if ( ( $score >= 0.8 ) && ( $score < 0.9 ) ) {
-							
-							$badge = 'silver';
-						} else if ( ( $score >= 0.9 ) && ( $score <= 1.0 ) ) {
-							
-							$badge = 'gold';
-						}
-						
-						$results[ $action->startdate ][ $type ]->{$key}->badge = $badge;
-						$results[ $action->startdate ][ $type ]->{$key}->score = $score;
-						$avg_score                                             += $score;
-					}
-					
-					
-					$results['program_days'] += $results[ $action->startdate ][ $type ]->days;
-					$avg_score               = ( $avg_score / 3 );
-					
-					// All $action->shortname entries minus the two program_* entries in the array.
-					$result_count = count( $results ) - 2;
-					
-					// Set the overall program score for this user.
-					$results['program_score'] = ( $results['program_score'] + $avg_score ) / ( $result_count + 1 );
-				}
-			}
-		}
-		
-		// Get list of articles (assignment check-ins) we could have completed until now (as array w/articleId as key).
-		// Get list of activities we could have completed until now (as array w/articleId as key).
-		// Get list of actions we could have completed until now (as array w/articleId as key).
-		
-		return $this->view->view_user_achievements( $results );
-		*/
 	}
 	
 	/**

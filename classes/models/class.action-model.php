@@ -12,7 +12,7 @@ namespace E20R\Tracker\Models;
 use E20R\Tracker\Controllers\Tracker;
 use E20R\Tracker\Controllers\Program;
 use E20R\Tracker\Controllers\Article;
-use E20R\Tracker\Controllers\E20R_Tracker;
+use E20R\Utilities\Utilities;
 use E20R\Tracker\Controllers\Time_Calculations;
 
 /**
@@ -42,7 +42,7 @@ class Action_Model extends Settings_Model {
 		try {
 			parent::__construct( 'action', Action_Model::post_type );
 		} catch ( \Exception $exception ) {
-			E20R_Tracker::dbg( "Unable to instantiate the Action Model class: " . $exception->getMessage() );
+			Utilities::get_instance()->log( "Unable to instantiate the Action Model class: " . $exception->getMessage() );
 			
 			return false;
 		}
@@ -109,7 +109,7 @@ class Action_Model extends Settings_Model {
 		);
 		
 		if ( is_wp_error( $error ) ) {
-			E20R_Tracker::dbg( 'ERROR: Failed to register e20r_actions CPT: ' . $error->get_error_message );
+			Utilities::get_instance()->log( 'ERROR: Failed to register e20r_actions CPT: ' . $error->get_error_message );
 		}
 	}
 	
@@ -147,7 +147,7 @@ class Action_Model extends Settings_Model {
 			return;
 		}
 		
-		E20R_Tracker::dbg( "Tracker::rename_action_cpt() - Found " . count( $results ) . " old metadata keys to convert" );
+		Utilities::get_instance()->log( "Tracker::rename_action_cpt() - Found " . count( $results ) . " old metadata keys to convert" );
 		
 		foreach ( $results as $record ) {
 			
@@ -186,7 +186,7 @@ class Action_Model extends Settings_Model {
 		$old_key = $record->meta_key;
 		$new_key = str_replace( $old, $new, $old_key );
 		
-		E20R_Tracker::dbg( "Action_Model::replace_metakey() - Changing key {$old_key} to {$new_key} for {$record->meta_id} in {$wpdb->postmeta}" );
+		Utilities::get_instance()->log( "Action_Model::replace_metakey() - Changing key {$old_key} to {$new_key} for {$record->meta_id} in {$wpdb->postmeta}" );
 		
 		$upd = $wpdb->update( "{$wpdb->prefix}postmeta",
 			array( 'meta_key' => $new_key ),
@@ -196,11 +196,11 @@ class Action_Model extends Settings_Model {
 		);
 		
 		if ( false !== $upd ) {
-			E20R_Tracker::dbg( "Action_Model::replace_metakey() - Changed key for {$record->meta_id} in {$wpdb->prefix}postmeta" );
+			Utilities::get_instance()->log( "Action_Model::replace_metakey() - Changed key for {$record->meta_id} in {$wpdb->prefix}postmeta" );
 			
 			return true;
 		} else {
-			E20R_Tracker::dbg( "Action_Model::replace_metakey() - Error for record {$record->meta_id}!!!" );
+			Utilities::get_instance()->log( "Action_Model::replace_metakey() - Error for record {$record->meta_id}!!!" );
 			
 			return false;
 		}
@@ -290,12 +290,12 @@ class Action_Model extends Settings_Model {
 		
 		global $currentProgram;
 		
-		E20R_Tracker::dbg( "Action_Model::getActions() - id: {$id}, type: {$type}, records: {$numBack}" );
+		Utilities::get_instance()->log( "Action_Model::getActions() - id: {$id}, type: {$type}, records: {$numBack}" );
 		
 		$start_date = $this->getSetting( $id, 'startdate' );
 		$checkins   = array();
 		
-		E20R_Tracker::dbg( "Action_Model::getActions() - Loaded startdate: {$start_date} for id {$id}" );
+		Utilities::get_instance()->log( "Action_Model::getActions() - Loaded startdate: {$start_date} for id {$id}" );
 		
 		$args = array(
 			'posts_per_page' => $numBack,
@@ -327,8 +327,8 @@ class Action_Model extends Settings_Model {
 		);
 		
 		$query = new \WP_Query( $args );
-		E20R_Tracker::dbg( "Action_Model::getActions() - Returned checkins: {$query->post_count}" );
-		// E20R_Tracker::dbg($args);
+		Utilities::get_instance()->log( "Action_Model::getActions() - Returned checkins: {$query->post_count}" );
+		// Utilities::get_instance()->log($args);
 		
 		while ( $query->have_posts() ) {
 			
@@ -384,14 +384,23 @@ class Action_Model extends Settings_Model {
 	 */
 	public function loadCheckinsForUser( $userId, $articleArr, $typeArr, $dateArr ) {
 		
+		if ( empty( $typeArr ) ) {
+			return array();
+		}
+		
+		if ( empty( $articleArr ) ) {
+			return array();
+		}
+		
 		global $wpdb;
-		global $current_user;
+		
 		$Tracker = Tracker::getInstance();
 		$Program = Program::getInstance();
 		
 		$programId = $Program->getProgramIdForUser( $userId );
 		
 		$checkin_list = $Tracker->prepare_in( "c.checkin_type IN ([IN])", $typeArr );
+		
 		// Add the article ID array
 		$article_in = $Tracker->prepare_in( " IN ([IN]) ) ", $articleArr );
 		
@@ -406,19 +415,17 @@ class Action_Model extends Settings_Model {
 		$sql = $wpdb->prepare( $sql,
 			$userId,
 			$programId,
-			$dateArr['min'] . " 00:00:00",
-			$dateArr['max'] . " 23:59:59"
+			"{$dateArr['min']} 00:00:00",
+			"{$dateArr['max']} 23:59:59"
 		);
 		
-		E20R_Tracker::dbg( "Action_Model::loadCheckinsForUser({$userId}) - Using SQL: {$sql}" );
-		
-		// E20R_Tracker::dbg("Action_Model::loadCheckinsForUser() - SQL: {$sql}");
+		Utilities::get_instance()->log( "Using SQL: {$sql}" );
 		
 		$results = $wpdb->get_results( $sql );
 		
 		if ( is_wp_error( $results ) ) {
 			
-			E20R_Tracker::dbg( "Action_Model::loadCheckinsForUser() - Error: {$wpdb->last_error}" );
+			Utilities::get_instance()->log( "Error: {$wpdb->last_error}" );
 			
 			return array();
 		}
@@ -444,7 +451,7 @@ class Action_Model extends Settings_Model {
 		$Program = Program::getInstance();
 		$Article = Article::getInstance();
 		
-		E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Loading type {$type} check-ins for user {$userId}" );
+		Utilities::get_instance()->log( "Loading type {$type} check-ins for user {$userId}" );
 		
 		$programId = $Program->getProgramIdForUser( $userId );
 		
@@ -454,13 +461,12 @@ class Action_Model extends Settings_Model {
 		} else {
 			$date = $Article->releaseDate( $config->articleId );
 		}
-		// if ( $currentAction->articleId )
 		
-		E20R_Tracker::dbg( "Action_Model::get_user_checkin() - date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}" );
+		Utilities::get_instance()->log( "Date for article # {$config->articleId} in program {$programId} for user {$userId}: {$date}" );
 		
 		if ( is_null( $short_name ) ) {
 			
-			E20R_Tracker::dbg( "Action_Model::get_user_checkin() - No short_name defined..." );
+			Utilities::get_instance()->log( "No short_name defined..." );
 			$sql = $wpdb->prepare(
 				"SELECT *
                  FROM {$this->table} AS c
@@ -476,7 +482,7 @@ class Action_Model extends Settings_Model {
 				$config->articleId
 			);
 		} else {
-			E20R_Tracker::dbg( "Action_Model::get_user_checkin() - short_name defined: {$short_name}" );
+			Utilities::get_instance()->log( "Short_name defined: {$short_name}" );
 			$sql = $wpdb->prepare(
 				"SELECT *
                  FROM {$this->table} AS c
@@ -495,22 +501,20 @@ class Action_Model extends Settings_Model {
 			);
 		}
 		
-		// E20R_Tracker::dbg("Action_Model::get_user_checkin() - SQL: {$sql}");
-		
 		$result = $wpdb->get_row( $sql );
 		
 		if ( $result === false ) {
 			
-			E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Error loading check-in: " . $wpdb->last_error );
+			Utilities::get_instance()->log( "Error loading check-in: " . $wpdb->last_error );
 			
 			return null;
 		}
 		
-		E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Loaded {$wpdb->num_rows} check-in records" );
+		Utilities::get_instance()->log( "Loaded {$wpdb->num_rows} check-in records" );
 		
 		if ( empty( $result ) ) {
 			
-			E20R_Tracker::dbg( "Action_Model::get_user_checkin() - No check-in records found for this user (ID: {$current_user->ID})" );
+			Utilities::get_instance()->log( "No check-in records found for this user (ID: {$current_user->ID})" );
 			
 			/*
 			if ( empty( $this->settings ) ) {
@@ -524,22 +528,22 @@ class Action_Model extends Settings_Model {
 			
 			if ( is_array( $a ) && ( count( $a ) >= 1 ) ) {
 				
-				E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Default action: Found one or more ids" );
+				Utilities::get_instance()->log( "Default action: Found one or more ids" );
 				
 				foreach ( $a as $i ) {
 					
 					$n_type = $this->getSetting( $i, 'checkin_type' );
 					
-					E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Default action: Type settings for {$i}: {$n_type}" );
+					Utilities::get_instance()->log( "Default action: Type settings for {$i}: {$n_type}" );
 					
 					if ( $n_type == $type ) {
 						
-						E20R_Tracker::dbg( 'Action_Model::get_user_checkin() - Default action: the type settings are correct. Using it...' );
+						Utilities::get_instance()->log( 'Default action: the type settings are correct. Using it...' );
 						$result->id = $i;
 						break;
 					}
 					
-					E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Default action: the type mismatch {$n_type} != {$type}. Looping again." );
+					Utilities::get_instance()->log( "Default action: the type mismatch {$n_type} != {$type}. Looping again." );
 				}
 				
 			}
@@ -554,8 +558,7 @@ class Action_Model extends Settings_Model {
 			$result->checkedin          = null;
 			$result->checkin_short_name = $short_name;
 			
-			E20R_Tracker::dbg( "Action_Model::get_user_checkin() - Default action: No user record found" );
-			// E20R_Tracker::dbg($result);
+			Utilities::get_instance()->log( "Default action: No user record found" );
 		}
 		
 		return $result;
@@ -572,7 +575,7 @@ class Action_Model extends Settings_Model {
 	public function findActionByDate( $date, $programId ) {
 		
 		
-		E20R_Tracker::dbg( "Action_Model::findActionByDate() - Searching by date {$date} in {$programId}" );
+		Utilities::get_instance()->log( "Action_Model::findActionByDate() - Searching by date {$date} in {$programId}" );
 		
 		$actions = array();
 		
@@ -610,15 +613,15 @@ class Action_Model extends Settings_Model {
 		);
 		
 		$query = new \WP_Query( $args );
-		E20R_Tracker::dbg( "Action_Model::findActionByDate() - Returned actions: {$query->post_count} for query... " );
-		// E20R_Tracker::dbg($args);
+		Utilities::get_instance()->log( "Action_Model::findActionByDate() - Returned actions: {$query->post_count} for query... " );
+		// Utilities::get_instance()->log($args);
 		
 		$curr_action_ids = $query->get_posts();
 		wp_reset_postdata();
 		
-		E20R_Tracker::dbg( "Action_Model::findActionByDate() - Returning " . count( $curr_action_ids ) . " action ids" );
+		Utilities::get_instance()->log( "Action_Model::findActionByDate() - Returning " . count( $curr_action_ids ) . " action ids" );
 		
-		// E20R_Tracker::dbg( $actions );
+		// Utilities::get_instance()->log( $actions );
 		
 		return $curr_action_ids;
 	}
@@ -633,7 +636,9 @@ class Action_Model extends Settings_Model {
 	 */
 	public function getProgramActions( $program_id, $action_type ) {
 		
-		E20R_Tracker::dbg( "Loading actions ({$action_type}) for program {$program_id}" );
+		global $currentClient;
+		
+		Utilities::get_instance()->log( "Loading actions ({$action_type}) for program {$program_id}" );
 		
 		$action_args = array(
 			'posts_per_page' => - 1,
@@ -659,7 +664,7 @@ class Action_Model extends Settings_Model {
 		$actions     = new \WP_Query( $action_args );
 		$new_actions = array();
 		
-		E20R_Tracker::dbg( "Action_Model::getProgramActions() - Returned actions: {$actions->post_count}" );
+		Utilities::get_instance()->log( "Action_Model::getProgramActions() - Returned actions: {$actions->post_count}" );
 		
 		// Return an empty array if there are no actions found
 		if ( empty( $actions ) ) {
@@ -709,18 +714,16 @@ class Action_Model extends Settings_Model {
 		
 		global $wpdb;
 		
-		E20R_Tracker::dbg( "Action_Model::setCheckin() - Check if the record exists already" );
+		Utilities::get_instance()->log( "Action_Model::setCheckin() - Check if the record exists already" );
 		
 		if ( ( $result = $this->exists( $checkin ) ) !== false ) {
 			
-			E20R_Tracker::dbg( "Action_Model::setCheckin() - found existing record: " );
-			E20R_Tracker::dbg( $result->id );
+			Utilities::get_instance()->log( "Action_Model::setCheckin() - found existing record: {$result->id}" );
 			
 			$checkin['id'] = $result->id;
 		}
 		
-		E20R_Tracker::dbg( "Action_Model::setCheckin() - Checkin record:" );
-		E20R_Tracker::dbg( $checkin );
+		Utilities::get_instance()->log( "Action_Model::setCheckin() - Checkin record: " . print_r( $checkin, true ) );
 		
 		if ( false !== $wpdb->replace( $this->table, $checkin ) ) {
 			
@@ -743,7 +746,7 @@ class Action_Model extends Settings_Model {
 		
 		global $wpdb;
 		
-		E20R_Tracker::dbg( "Action_Model::exists() -  Data: " . print_r( $checkin, true ) );
+		Utilities::get_instance()->log( "Action_Model::exists() -  Data: " . print_r( $checkin, true ) );
 		
 		if ( ! is_array( $checkin ) ) {
 			
@@ -772,8 +775,7 @@ class Action_Model extends Settings_Model {
 		
 		if ( ! empty( $result ) ) {
 			
-			E20R_Tracker::dbg( "Action_Model::exists() - Got a result returned: " );
-			E20R_Tracker::dbg( $result );
+			Utilities::get_instance()->log( "Action_Model::exists() - Got a result returned: " . print_r( $result, true ));
 			
 			return $result;
 		}
@@ -792,18 +794,17 @@ class Action_Model extends Settings_Model {
 		
 		global $wpdb;
 		
-		E20R_Tracker::dbg( "Action_Model::setCheckin() - Check if the record exists already" );
+		Utilities::get_instance()->log( "Action_Model::setCheckin() - Check if the record exists already" );
 		
 		if ( ( $result = $this->exists( $checkin ) ) !== false ) {
 			
-			E20R_Tracker::dbg( "Action_Model::setCheckin() - found existing record: " );
-			E20R_Tracker::dbg( $result->id );
+			Utilities::get_instance()->log( "Action_Model::setCheckin() - found existing record: {$result->id}" );
 			
 			$checkin['id'] = $result->id;
 		}
 		
-		E20R_Tracker::dbg( "Action_Model::setCheckin() - Checkin record:" );
-		E20R_Tracker::dbg( $checkin );
+		Utilities::get_instance()->log( "Action_Model::setCheckin() - Checkin record:" );
+		Utilities::get_instance()->log( print_r( $checkin, true ) );
 		
 		return ( $wpdb->replace( $this->table, $checkin ) ? true : false );
 	}
@@ -821,7 +822,7 @@ class Action_Model extends Settings_Model {
 		
 		$defaults = $this->defaultSettings();
 		
-		E20R_Tracker::dbg( "Action_Model::saveSettings() - Saving checkin Metadata: " . print_r( $settings, true ) );
+		Utilities::get_instance()->log( "Action_Model::saveSettings() - Saving checkin Metadata: " . print_r( $settings, true ) );
 		
 		$error = false;
 		
@@ -833,7 +834,7 @@ class Action_Model extends Settings_Model {
 			
 			if ( false === $this->settings( $checkinId, 'update', $key, $settings->{$key} ) ) {
 				
-				E20R_Tracker::dbg( "Action_Model::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for check-in definition with ID: {$checkinId}" );
+				Utilities::get_instance()->log( "Action_Model::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for check-in definition with ID: {$checkinId}" );
 				
 				$error = true;
 			}

@@ -67,14 +67,14 @@ class GF_Integration {
 	public function loadHooks() {
 		
 		/* Gravity Forms data capture for Check-Ins, Assignments, Surveys, etc */
-		add_action( 'gform_after_submission', array( $this, 'save_interview' ), 10, 2 );
-		add_filter( 'gform_pre_render', array( $this, 'load_interview' ), 10, 1 );
-		add_filter( 'gform_field_value', array( $this, 'process_gf_fields' ), 10, 3 );
+		add_action( 'gform_after_submission', array( $this, 'saveInterview' ), 10, 2 );
+		add_filter( 'gform_pre_render', array( $this, 'loadInterviewForGF' ), 10, 1 );
+		add_filter( 'gform_field_value', array( $this, 'processGFFields' ), 10, 3 );
 		
-		//add_action( 'gform_entry_post_save', array( Client::getInstance(), 'save_interview'), 10, 2);
-		//add_filter( 'gform_pre_validation', array( Client::getInstance(), 'load_interview' ) );
-		//add_filter( 'gform_admin_pre_render', array( Client::getInstance(), 'load_interview' ) );
-		//add_filter( 'gform_pre_submission_filter', array( Client::getInstance(), 'load_interview' ) );
+		//add_action( 'gform_entry_post_save', array( Client::getInstance(), 'saveInterview'), 10, 2);
+		//add_filter( 'gform_pre_validation', array( Client::getInstance(), 'loadInterviewForGF' ) );
+		//add_filter( 'gform_admin_pre_render', array( Client::getInstance(), 'loadInterviewForGF' ) );
+		//add_filter( 'gform_pre_submission_filter', array( Client::getInstance(), 'loadInterviewForGF' ) );
 		//add_filter( 'gform_confirmation', array( &$this, 'gravity_form_confirmation') , 10, 4 );
 	}
 	
@@ -86,7 +86,7 @@ class GF_Integration {
 	 *
 	 * @return bool -- True/False
 	 */
-	public function save_interview( $entry, $form ) {
+	public function saveInterview( $entry, $form ) {
 		
 		$Access = Tracker_Access::getInstance();
 		
@@ -133,7 +133,7 @@ class GF_Integration {
 		$surveyArticle    = $Article->findArticles( 'post_id', $currentProgram->intake_form, $userProgramId );
 		
 		// Utilities::get_instance()->log($currentProgram);
-		Utilities::get_instance()->log( $surveyArticle );
+		Utilities::get_instance()->log( print_r( $surveyArticle, true ) );
 		
 		$db_Data = array(
 			'user_id'            => $userId,
@@ -362,15 +362,14 @@ class GF_Integration {
 		} // End of foreach loop for submitted form
 		
 		if ( WP_DEBUG ) {
-			Utilities::get_instance()->log( "Data to save: " );
-			Utilities::get_instance()->log( $db_Data );
+			Utilities::get_instance()->log( "Data to save: " . print_r( $db_Data, true ));
 		}
 		
 		Utilities::get_instance()->log( "Assigning a coach for this user " );
-		$db_Data['coach_id'] = Client::getInstance()->assign_coach( $userId, $db_Data['gender'] );
+		$db_Data['coach_id'] = Client::getInstance()->assignCoach( $userId, $db_Data['gender'] );
 		
 		Utilities::get_instance()->log( "Configure the exercise level for this user" );
-		Client::getInstance()->assign_exercise_level( $userId, $db_Data );
+		Client::getInstance()->assignExerciseLevel( $userId, $db_Data );
 		
 		Utilities::get_instance()->log( "Saving the client interview data to the DB. " );
 		
@@ -379,7 +378,7 @@ class GF_Integration {
 			Utilities::get_instance()->log( "Saved data to the database " );
 			Utilities::get_instance()->log( "Removing any GF entry data from database." );
 			
-			return $this->remove_survey_form_entry( $entry );
+			return $this->removeSurveyFormEntry( $entry );
 		}
 		
 		return false;
@@ -428,7 +427,7 @@ class GF_Integration {
 	 *
 	 * @return bool - False or nothing if error/nothing to do.
 	 */
-	public function remove_survey_form_entry( $entry ) {
+	public function removeSurveyFormEntry( $entry ) {
 		
 		$Access = Tracker_Access::getInstance();
 		
@@ -443,13 +442,13 @@ class GF_Integration {
 		if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $post->ID == $currentProgram->intake_form ) ) {
 			
 			Utilities::get_instance()->log( "Processing on the intake form page with the gravityform shortcode present" );
-			$ids = $this->find_gf_id( $post->post_content );
+			$ids = $this->findGFId( $post->post_content );
 		}
 		
 		if ( has_shortcode( $post->post_content, 'gravityform' ) && ( $currentArticle->is_survey == 1 ) && ( $currentArticle->post_id == $post->ID ) ) {
 			
 			Utilities::get_instance()->log( "Processing on a survey article page with the gravityform shortcode present" );
-			$ids = $this->find_gf_id( $post->post_content );
+			$ids = $this->findGFId( $post->post_content );
 		}
 		
 		if ( empty( $ids ) ) {
@@ -515,7 +514,7 @@ class GF_Integration {
 	 *
 	 * @return int
 	 */
-	private function find_gf_id( $content ) {
+	private function findGFId( $content ) {
 		
 		preg_match_all( "/\[[^\]]*\]/", $content, $matches );
 		
@@ -537,7 +536,7 @@ class GF_Integration {
 	 * @param \GFForms    $form
 	 */
 	public function loadInterview( $user_id, $form ) {
-		$this->load_interview_data_for_client( $user_id, $form );
+		$this->loadInterviewDataForClient( $user_id, $form );
 	}
 	
 	/**
@@ -548,15 +547,14 @@ class GF_Integration {
 	 *
 	 * @return mixed
 	 */
-	public function load_interview_data_for_client( $clientId, $form ) {
+	public function loadInterviewDataForClient( $clientId, $form ) {
 		
 		$Client = Client::getInstance();
 		
 		// $c_data = $this->get_data( $clientId );
-		$c_data = $Client->get_client_info( $clientId );
+		$c_data = $Client->getClientInfo( $clientId );
 		
-		Utilities::get_instance()->log( "Client Data from DB:" );
-		Utilities::get_instance()->log( $c_data );
+		Utilities::get_instance()->log( "Client Data from DB:" . print_r( $c_data, true ) );
 		
 		if ( isset( $c_data->incomplete_interview ) && ( 1 == $c_data->incomplete_interview ) ) {
 			
@@ -617,6 +615,7 @@ class GF_Integration {
 						
 						$msArr = preg_split( '/,/', $c_data->{$item['label']} );
 					}
+					
 					if ( empty( $msArr ) && ! isset( $c_data->{$item['label']} ) && empty( $c_data->{$item['label']} ) && ( 0 !== $c_data->{$item['label']} ) ) {
 						Utilities::get_instance()->log( "{$item['label']} is empty? " . $c_data->{$item['label']} );
 						continue;
@@ -728,7 +727,7 @@ class GF_Integration {
 	 *
 	 * @return mixed
 	 */
-	public function load_interview( $form ) {
+	public function loadInterviewForGF( $form ) {
 		
 		$Tracker = Tracker::getInstance();
 		global $currentClient;
@@ -755,7 +754,7 @@ class GF_Integration {
 		Utilities::get_instance()->log( "Loading form data: " . count( $form ) . " elements" );
 		// Utilities::get_instance()->log( "Form: " . print_r( $form, true) );
 		
-		Utilities::get_instance()->log( "GF_Integration::load_interview() Processing form object as to load existing info if needed. " );
+		Utilities::get_instance()->log( "Processing form object as to load existing info if needed. " );
 		
 		if ( ! isset( $currentClient->user_id ) || ( $current_user->ID !== $currentClient->user_id ) ) {
 			
@@ -764,9 +763,7 @@ class GF_Integration {
 			Client::getInstance()->setClient( $current_user->ID );
 		}
 		
-		return $this->load_interview_data_for_client( $current_user->ID, $form );
-		
-		// return $form;
+		return $this->loadInterviewDataForClient( $current_user->ID, $form );
 	}
 	
 	/**
@@ -778,7 +775,7 @@ class GF_Integration {
 	 *
 	 * @return mixed
 	 */
-	public function process_gf_fields( $value, $field, $name ) {
+	public function processGFFields( $value, $field, $name ) {
 		
 		global $currentClient;
 		$Client = Client::getInstance();

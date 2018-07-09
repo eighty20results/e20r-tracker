@@ -3,7 +3,7 @@
  * The E20R Tracker Plugin – a coaching client management plugin for WordPress. Tracks client training, habits,
  * educational reminders, etc.
  *
- * Copyright (c) 2018, Wicked Strong Chicks, LLC
+ * Copyright (c) 2014-2018, Wicked Strong Chicks, LLC
  *
  * The E20R Tracker Plugin is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 2 of the License
@@ -32,6 +32,7 @@ use E20R\Tracker\Models\Action_Model;
 use E20R\Tracker\Models\Program_Model;
 
 use E20R\Tracker\Models\Tables;
+use E20R\Utilities\Utilities;
 
 class Tracker {
 
@@ -45,8 +46,6 @@ class Tracker {
     private $hooksLoaded = false;
 
     public function __construct() {
-
-        $this->model = new Tracker_Model();
 
         // Set defaults (in case there are none saved already
         $this->settings = get_option( $this->setting_name, array(
@@ -67,11 +66,8 @@ class Tracker {
                             'converted_metadata_e20r_actions' => false,
             )
         );
-
-        E20R_Tracker::dbg("Tracker::constructor() - Loading the types of posts we'll be allowed to manage");
-        $this->managed_types = apply_filters("e20r-tracker-post-types", array("post", "page") );
-
-        //E20R_Tracker::dbg("Tracker::constructor() - Loading Tables class");
+        
+        //Utilities::get_instance()->log("Loading Tables class");
         //$this->tables = new Tables();
     }
     
@@ -82,7 +78,7 @@ class Tracker {
 		if ( ( ! empty( $user->roles ) ) && is_array( $user->roles ) ) {
 			if ( in_array( 'nourish-beta', $user->roles ) ) {
 				
-				E20R_Tracker::dbg( "User {$user->display_name} is in the Nourish Beta group" );
+				Utilities::get_instance()->log( "User {$user->display_name} is in the Nourish Beta group" );
 				
 				return true;
 			}
@@ -90,13 +86,13 @@ class Tracker {
 		} else if ( ! empty( $user->roles ) ) {
 			if ( $user->roles == 'nourish-beta' ) {
 				
-				E20R_Tracker::dbg( "User {$user->display_name} is in the Nourish Beta group" );
+				Utilities::get_instance()->log( "User {$user->display_name} is in the Nourish Beta group" );
 				
 				return true;
 			}
 		}
 		
-		// E20R_Tracker::dbg("User {$user->display_name} is NOT in the Nourish Beta group");
+		// Utilities::get_instance()->log("User {$user->display_name} is NOT in the Nourish Beta group");
 		return false;
 	}
 
@@ -117,7 +113,7 @@ class Tracker {
         global $current_user;
         $access = Tracker_Access::getInstance();
         
-        E20R_Tracker::dbg("Tracker::duplicate_cpt_link() - Checking whether to add a 'Duplicate' link for the {$post->post_type} post type");
+        Utilities::get_instance()->log("Checking whether to add a 'Duplicate' link for the {$post->post_type} post type");
 
         $managed_types = apply_filters( 'e20r_tracker_duplicate_types', array(
                                                                 Program_Model::post_type,
@@ -132,7 +128,7 @@ class Tracker {
                 ($access->userCanEdit( $current_user->ID ) ||
                 $access->is_a_coach( $current_user->ID )) ) {
 
-            E20R_Tracker::dbg("Tracker::duplicate_cpt_link() - Adding 'Duplicate' action for {$post->post_type} post(s)");
+            Utilities::get_instance()->log("Adding 'Duplicate' action for {$post->post_type} post(s)");
             $actions['duplicate'] = sprintf(
                     '<a href="admin.php?post=%d&amp;action=e20r_duplicate_as_draft" title="%s" rel="permalink">%s</a>',
                     $post->ID,
@@ -147,17 +143,15 @@ class Tracker {
     /**
       * Duplicate a E20R Tracker CPT and save the duplicate as 'draft'
       */
-    public function duplicate_cpt_as_draft() {
+    public function duplicateCPTAsDraft() {
 
         global $wpdb;
 
-        E20R_Tracker::dbg("Tracker::duplicate_cpt_as_draft() - Requested duplication of a CPT");
-        E20R_Tracker::dbg( $_GET['post'] );
-        // E20R_Tracker::dbg( $_POST['post'] );
-        E20R_Tracker::dbg( $_REQUEST['action'] );
-
+        Utilities::get_instance()->log("Requested duplication of a CPT " . print_r( $_GET['post'], true ) );
+        Utilities::get_instance()->log("Requested duplication of a CPT (action): " . print_r( $_REQUEST['action'], true ) );
+        
         if ( !isset( $_GET['post'] ) && !isset( $_POST['post'] ) ) {
-            E20R_Tracker::dbg("Tracker::duplicate_cpt_as_draft() - One of the expected globals isn't set correctly?");
+            Utilities::get_instance()->log("One of the expected globals isn't set correctly?");
             wp_die("No E20R Tracker Custom Post Type found to duplicate!");
         }
 
@@ -193,14 +187,12 @@ class Tracker {
             );
 
 
-            E20R_Tracker::dbg("Tracker::duplicate_cpt_as_draft() - Content for new post: ");
-            E20R_Tracker::dbg( $new_post );
+            Utilities::get_instance()->log("Content for new post: " . print_r( $new_post, true ) );
 
             $new_id = wp_insert_post( $new_post, true );
 
             if ( is_wp_error( $new_id ) ) {
-                E20R_Tracker::dbg("Tracker::duplicate_cpt_as_draft() - Error: ");
-                E20R_Tracker::dbg( $new_id );
+                Utilities::get_instance()->log("Error: {$new_id}");
                 wp_die("Unable to save the duplicate post!");
             }
             $taxonomies = get_object_taxonomies( $e20r_post->post_type );
@@ -216,7 +208,7 @@ class Tracker {
                     FROM {$wpdb->postmeta}
                     WHERE post_id = {$e20r_post_id} AND meta_key LIKE '%e20r-%';";
 
-            E20R_Tracker::dbg( "Tracker::duplicate_cpt_as_draft() - SQL for postmeta: " . $sql );
+            Utilities::get_instance()->log( "SQL for postmeta: " . $sql );
 
             $meta_data = $wpdb->get_results( $sql );
 
@@ -238,7 +230,7 @@ class Tracker {
                 $wpdb->query( $sql );
             }
 
-            wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_id ) );
+            wp_redirect( add_query_arg( array( 'action' => 'edit', 'post' => $new_id ), admin_url( 'post.php') ) );
             exit;
         }
         else {
@@ -246,10 +238,16 @@ class Tracker {
         }
     }
 
+    /**
+     * Sanitize the supplied field (data)
+     *
+     * @param $field
+     *
+     * @return array|int|string
+     */
     public function sanitize( $field ) {
 
         if ( ! is_numeric( $field ) ) {
-            // E20R_Tracker::dbg( "setFormat() - {$value} is NOT numeric" );
 
             if ( is_array( $field ) ) {
 
@@ -289,35 +287,123 @@ class Tracker {
         return $field;
     }
 
+    /**
+     * Check whether the specified object is empty (or not)
+     *
+     * @param \stdClass $obj
+     *
+     * @return bool
+     */
 	public function isEmpty( $obj ) {
 
 		if ( ! is_object( $obj ) ) {
-            E20R_Tracker::dbg('Tracker::isEmpty() - Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
-            // E20R_Tracker::dbg($obj);
+            Utilities::get_instance()->log('Type is an array and the array contains data? ' . (empty( $obj ) === true ? 'No' : 'Yes'));
 			return empty( $obj );
 		}
 
 		$o = (array)$obj;
-        E20R_Tracker::dbg('Tracker::isEmpty() - Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
-        // E20R_Tracker::dbg( $o );
+        Utilities::get_instance()->log('Type is an object but does it contain data?: ' . ( empty($o) === true ? 'No' : 'Yes') );
 		return empty( $o );
+	}
+	
+	/**
+     * Load hook/action handlers for content manipulation
+     */
+	public function loadContentHooks() {
+        
+        add_action( 'template_redirect', array( Article::getInstance(), 'send_to_post' ), 4, 1 );
+        
+        Utilities::get_instance()->log("Loading the types of posts we'll be allowed to manage");
+        $this->managed_types = apply_filters("e20r-tracker-post-types", array("post", "page") );
+        
+        add_filter( 'the_content', array( Article::getInstance(), 'contentFilter' ) );
+        add_filter( 'pmpro_member_startdate', array( Program::getInstance(), 'setProgramForUser'), 11, 3 );
+        add_filter( 'pmpro_email_data', array( $this, 'filter_changeConfirmationMessage' ), 10, 2 );
+        add_filter( "pmpro_has_membership_access_filter", array( Tracker_Access::getInstance(), "admin_access_filter" ), 10, 3);
+        
+        // add_filter( 'pmpro_after_change_membership_level', array( $this, 'setUserProgramStart') );
+        global $pagenow;
+        
+        Utilities::get_instance()->log("Pagenow = {$pagenow}" );
+        
+        $post_id = ( ! empty( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : null );
+		
+		if ( ( ! empty( $post_id ) ) && ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php' ) ) {
+			
+			$parent = get_post( $post_id )->post_parent;
+			
+			if ( has_shortcode( get_post( $post_id )->post_content, 'weekly_progress' ) ||
+			     ( ! ( ( 'post' == get_post_type( $post_id ) ) || ( 'page' == get_post_type( $post_id ) ) ) )
+			) {
+				Media_Library::getInstance()->loadHooks();
+                add_filter( 'wp_handle_upload_prefilter', array( Measurements::getInstance(), 'setFilenameForClientUpload', ) );
+
+			}
+		}
+		
+        add_filter( 'embed_defaults', array( Exercise::getInstance(), 'embed_default' ) );
+        add_filter( 'page_attributes_dropdown_pages_args', array( Exercise::getInstance(), 'changeSetParentType'), 10, 2);
+        add_filter( 'enter_title_here', array( $this, 'setEmptyTitleString' ) );
+        
+        //add_filter( 'wp_video_shortcode',  array( Exercise::getInstance(), 'responsive_wp_video_shortcode' ), 10, 5 );
+	}
+	
+	public function loadWPLoadedHooks() {
+
+        add_action( 'wp', array( GF_Integration::getInstance() ,'loadHooks') );
+        add_filter( 'auth_cookie_expiration', array( Tracker_Access::getInstance(), 'login_timeout'), 100, 3 );
+        
+        add_action( 'wp_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'loadHooks') );
+        add_action( 'e20r_schedule_email_for_client', array( Client::getInstance(), 'send_email_to_client' ), 10, 2 );
+        
+        add_action( 'wp_ajax_e20r_addAssignment', array( Article::getInstance(), 'add_assignment_callback') );
+        add_action( 'wp_ajax_e20r_getDelayValue', array( Article::getInstance(), 'getDelayValue_callback' ) );
+        add_action( 'wp_ajax_e20r_removeAssignment', array( Article::getInstance(), 'remove_assignment_callback') );
+        add_action( 'wp_ajax_e20r_add_reply', array( Assignment::getInstance(), 'add_assignment_reply') );
+        add_action( 'wp_ajax_e20r_assignmentData', array( Assignment::getInstance(), 'ajax_assignmentData' ) );
+        add_action( 'wp_ajax_e20r_manage_option_list', array( Assignment::getInstance(), 'manage_option_list') );
+        add_action( 'wp_ajax_e20r_update_message_status', array( Assignment::getInstance(), 'update_message_status') );
+        add_action( 'wp_ajax_e20r_daynav', array( Action::getInstance(), 'nextCheckin_callback' ) );
+        add_action( 'wp_ajax_e20r_save_item_data', array( Action::getInstance(), 'ajax_save_item_data' ) );
+        add_action( 'wp_ajax_e20r_saveCheckin', array( Action::getInstance(), 'saveCheckin_callback' ) );
+        add_action( 'wp_ajax_e20r_save_daily_progress', array( Action::getInstance(), 'dailyProgress_callback' ) );
+        add_action( 'wp_ajax_e20r_clientDetail', array( Client::getInstance(), 'ajax_clientDetail' ) );
+        add_action( 'wp_ajax_e20r_complianceData', array( Client::getInstance(), 'ajax_complianceData' ) );
+        add_action( 'wp_ajax_e20r_getMemberListForLevel', array( Client::getInstance(), 'ajax_getMemberlistForLevel' ) );
+        add_action( 'wp_ajax_e20r_sendClientMessage', array( Client::getInstance(), 'ajax_sendClientMessage' ) );
+        add_action( 'wp_ajax_e20r_showClientMessage', array( Client::getInstance(), 'ajax_showClientMessage' ) );
+        add_action( 'wp_ajax_e20r_showMessageHistory', array( Client::getInstance(), 'ajax_ClientMessageHistory') );
+        add_action( 'wp_ajax_e20r_updateUnitTypes', array( Client::getInstance(), 'updateUnitTypes') );
+        add_action( 'wp_ajax_e20r_userinfo', array( Client::getInstance(), 'ajax_userInfo_callback' ) );
+        add_action( 'wp_ajax_e20r_checkCompletion', array( Measurements::getInstance(), 'checkProgressFormCompletionCallback' ) );
+        add_action( 'wp_ajax_e20r_deletePhoto', array( Measurements::getInstance(), 'ajaxDeletePhotoCallback' ) );
+        add_action( 'wp_ajax_e20r_loadProgress', array( Measurements::getInstance(), 'ajax_loadProgressSummary' ) );
+        add_action( 'wp_ajax_e20r_measurementDataForUser', array( Measurements::getInstance(), 'ajaxGetPlotDataForUser' ) );
+        add_action( 'wp_ajax_e20r_saveMeasurementForUser', array( Measurements::getInstance(), 'saveMeasurementCallback' ) );
+        add_action( 'wp_ajax_e20r_add_exercise', array( Workout::getInstance(), 'add_new_exercise_to_group_callback' ) );
+        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( Workout::getInstance(), 'add_new_exercise_group_callback' ) );
+        add_action( 'wp_ajax_e20r_addWorkoutGroup', array( Workout::getInstance(), 'ajax_addGroup_callback' ) );
+        add_action( 'wp_ajax_e20r_load_activity_stats', array( Workout::getInstance(), 'ajaxGetPlotDataForUser' ) );
+        add_action( 'wp_ajax_e20r_save_activity', array( Workout::getInstance(), 'saveExData_callback' ) );
+        add_action( 'wp_ajax_e20r_paginate_assignment_answer_list', array( Assignment::getInstance(), 'ajax_paginateAssignments' ) );
+        add_action( 'wp_ajax_e20r_paginate_measurements_list', array( Assignment::getInstance(), 'ajax_paginateMeasurements' ) );
+        add_action( 'wp_ajax_e20r_coach_message', array( Assignment::getInstance(), 'heartbeat_received'),10, 2);
+        add_action( 'wp_ajax_e20r_save_activity', array( Workout::getInstance(), 'saveExData_callback' ) );
+        add_action( 'wp_ajax_e20r_manage_option_list', array( Assignment::getInstance(), 'manage_option_list') );
+        
+        Utilities::get_instance()->log("Loading Short Codes");
+        add_action( 'wp', array( Shortcodes::getInstance(), 'loadHooks' ) );
 	}
 	
 	public function loadAllHooks() {
 
-        global $current_user;
-        global $pagenow;
-        global $post;
-
         if ( ! $this->hooksLoaded ) {
-
-            E20R_Tracker::dbg("Tracker::loadAllHooks() - Adding action hooks for plugin");
-
-	        $plugin = E20R_PLUGIN_NAME;
+            
+            Utilities::get_instance()->log("Adding action hooks for plugin");
 
 	        add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles'), 5, 1);
-
-	        add_action( 'template_redirect', array( Article::getInstance(), 'send_to_post' ), 4, 1 );
+	        
+	        add_action( 'plugins_loaded', array( Permalinks::getInstance(), 'loadHooks' ), 99 );
 	        
             add_action( 'init', array( $this, 'update_db'), 7 );
             add_action( 'init', array( $this, "dependency_warnings" ), 10 );
@@ -331,220 +417,123 @@ class Tracker {
             add_action( "init", 'E20R\Tracker\Models\Exercise_Model::registerCPT', 15 );
             add_action( "init", 'E20R\Tracker\Models\Tracker_Model::registerCPT', 16 );
             
-            add_action( 'init', array( Permalinks::getInstance(), 'add_endpoint' ), 10 );
-            add_action( 'init', array( Permalinks::getInstance(), 'add_rewrite_tags' ), 10);
-
+            add_action( 'init', array( Tracker_Access::getInstance(), 'auth_timeout_reset'), 10 );
+            
             // add_action( 'heartbeat_received', array( Assignment::getInstance(), 'heartbeat_received'), 10, 2);
             // add_filter( 'heartbeat_send', array( Assignment::getInstance(), 'heartbeat_send'), 10, 2 );
             // add_action( 'plugins_loaded', array( $this, "define_Tracker_roles" ) );
 
-            add_action( "wp_login", array( Client::getInstance(), "record_login" ), 99, 2 );
-            
             $action = ( isset( $_REQUEST['action'] ) && (false !== strpos($_REQUEST['action'], 'e20r')) ) ? $this->sanitize($_REQUEST['action']) : null;
 
             if ( !is_null( $action ) ) {
                add_action( "wp_ajax_nopriv_{$action}", array( E20R_Tracker::getInstance(), "ajaxUnprivError" ) );
             }
-
-            add_filter( 'post_link', array( Permalinks::getInstance(), 'process_post_link' ), 10, 3 );
-
-            // add_filter( 'pmpro_after_change_membership_level', array( $this, 'setUserProgramStart') );
-
-            add_filter( 'pmpro_member_startdate', array( Program::getInstance(), 'setProgramForUser'), 11, 3 );
-            add_filter( 'auth_cookie_expiration', array( Tracker_Access::getInstance(), 'login_timeout'), 100, 3 );
-            add_filter( 'pmpro_email_data', array( $this, 'filter_changeConfirmationMessage' ), 10, 2 );
-
-            add_post_type_support( 'page', 'excerpt' );
-
-            if ( !is_user_logged_in() ) {
+            
+            add_action( "wp_login", array( Client::getInstance(), "recordLogin" ), 99, 2 );
+            
+            if ( !is_user_logged_in() && ! ( defined('DOING_AJAX' ) && DOING_AJAX ) && !is_admin() ) {
+                Utilities::get_instance()->log("User isn't logged in!!!");
                 return;
             }
-
-            add_action( 'init', array( Tracker_Access::getInstance(), 'auth_timeout_reset'), 10 );
-
-            add_action( 'wp_ajax_e20r_coach_message', array( Assignment::getInstance(), 'heartbeat_received'),10, 2);
-            add_action( 'wp_ajax_e20r_save_activity', array( Workout::getInstance(), 'saveExData_callback' ) );
-	        add_action( 'wp_ajax_e20r_manage_option_list', array( Assignment::getInstance(), 'manage_option_list') );
-            add_action( 'e20r_schedule_email_for_client', array( Client::getInstance(), 'send_email_to_client' ), 10, 2 );
-
-            add_filter( 'the_content', array( Article::getInstance(), 'contentFilter' ) );
-
-            // add_action( 'init', array( Assignment::getInstance(), 'update_metadata' ), 20 );
-
-            add_action( "admin_action_e20r_duplicate_as_draft", array( $this, 'duplicate_cpt_as_draft') );
-            add_action( 'admin_notices', array( $this, 'display_admin_notice'  ) );
-
-	        add_filter( "pmpro_has_membership_access_filter", array( Tracker_Access::getInstance(), "admin_access_filter" ), 10, 3);
-	        add_filter( 'embed_defaults', array( Exercise::getInstance(), 'embed_default' ) );
-
-	        // E20R_Tracker::dbg("Tracker::loadAllHooks() - Load upload directory filter? ". $Client->isNourishClient( $current_user->ID));
-            E20R_Tracker::dbg("Tracker::loadAllHooks() - Pagenow = {$pagenow}" );
-
-            $post_id =  ( !empty( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : null );
-
-            if ( ( ! empty( $post_id ) ) && ( $pagenow == 'async-upload.php' || $pagenow == 'media-upload.php') ) {
-
-                $parent = get_post($post_id)->post_parent;
-
-                if (has_shortcode(get_post($post_id)->post_content, 'weekly_progress') ||
-                    (!(('post' == get_post_type($post_id)) || ('page' == get_post_type($post_id))))
-                ) {
-
-
-                    E20R_Tracker::dbg("Tracker::loadAllHooks() - Loading filter to change the upload directory for Nourish clients");
-                    add_filter('media_view_strings', array(Media_Library::getInstance(), 'clientMediaUploader'), 10);
-
-                    E20R_Tracker::dbg("Tracker::loadAllHooks() - Loaded filter to change the Media Library settings for client uploads");
-                    add_filter("wp_handle_upload_prefilter", array( Media_Library::getInstance(), "pre_upload"));
-                    add_filter("wp_handle_upload", array( Media_Library::getInstance(), "post_upload"));
-                    E20R_Tracker::dbg("Tracker::loadAllHooks() - Loaded filter to change the upload directory for Nourish clients");
-
-                    E20R_Tracker::dbg("Tracker::loadAllHooks() - Control Access to media uploader for Tracker users");
-
-                    /* Control access to the media uploader for Nourish users */
-                    add_action( 'pre_get_posts', array( Media_Library::getInstance(), 'restrict_media_library') );
-                    add_filter( 'wp_handle_upload_prefilter', array( Measurements::getInstance(), 'setFilenameForClientUpload' ) );
-
-                }
-            }
-
-            add_filter( 'page_attributes_dropdown_pages_args', array( Exercise::getInstance(), 'changeSetParentType'), 10, 2);
-            add_filter( 'enter_title_here', array( $this, 'setEmptyTitleString' ) );
-
-            // add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_frontend_css') );
-            // add_action( 'wp_footer', array( &$this, 'enqueue_user_scripts' ) );
-            // add_action( 'wp_print_scripts', array( Client::getInstance(), 'load_scripts' ) );
-            // add_action( '', array( $Client, 'save_gravityform_entry'), 10, 2 );
-
-            add_action( 'wp_ajax_e20r_addAssignment', array( Article::getInstance(), 'add_assignment_callback') );
-            add_action( 'wp_ajax_e20r_getDelayValue', array( Article::getInstance(), 'getDelayValue_callback' ) );
-	        add_action( 'wp_ajax_e20r_removeAssignment', array( Article::getInstance(), 'remove_assignment_callback') );
-            add_action( 'wp_ajax_e20r_add_reply', array( Assignment::getInstance(), 'add_assignment_reply') );
-            add_action( 'wp_ajax_e20r_assignmentData', array( Assignment::getInstance(), 'ajax_assignmentData' ) );
-            add_action( 'wp_ajax_e20r_manage_option_list', array( Assignment::getInstance(), 'manage_option_list') );
-            add_action( 'wp_ajax_e20r_update_message_status', array( Assignment::getInstance(), 'update_message_status') );
-            add_action( 'wp_ajax_e20r_daynav', array( Action::getInstance(), 'nextCheckin_callback' ) );
-            add_action( 'wp_ajax_e20r_save_item_data', array( Action::getInstance(), 'ajax_save_item_data' ) );
-            add_action( 'wp_ajax_e20r_saveCheckin', array( Action::getInstance(), 'saveCheckin_callback' ) );
-	        add_action( 'wp_ajax_e20r_save_daily_progress', array( Action::getInstance(), 'dailyProgress_callback' ) );
-            add_action( 'wp_ajax_e20r_clientDetail', array( Client::getInstance(), 'ajax_clientDetail' ) );
-            add_action( 'wp_ajax_e20r_complianceData', array( Client::getInstance(), 'ajax_complianceData' ) );
-            add_action( 'wp_ajax_e20r_getMemberListForLevel', array( Client::getInstance(), 'ajax_getMemberlistForLevel' ) );
-            add_action( 'wp_ajax_e20r_sendClientMessage', array( Client::getInstance(), 'ajax_sendClientMessage' ) );
-            add_action( 'wp_ajax_e20r_showClientMessage', array( Client::getInstance(), 'ajax_showClientMessage' ) );
-            add_action( 'wp_ajax_e20r_showMessageHistory', array( Client::getInstance(), 'ajax_ClientMessageHistory') );
-            add_action( 'wp_ajax_e20r_updateUnitTypes', array( Client::getInstance(), 'updateUnitTypes') );
-            add_action( 'wp_ajax_e20r_userinfo', array( Client::getInstance(), 'ajax_userInfo_callback' ) );
-            add_action( 'wp_ajax_e20r_checkCompletion', array( Measurements::getInstance(), 'checkProgressFormCompletion_callback' ) );
-            add_action( 'wp_ajax_e20r_deletePhoto', array( Measurements::getInstance(), 'ajax_deletePhoto_callback' ) );
-            add_action( 'wp_ajax_e20r_loadProgress', array( Measurements::getInstance(), 'ajax_loadProgressSummary' ) );
-            add_action( 'wp_ajax_e20r_measurementDataForUser', array( Measurements::getInstance(), 'ajax_getPlotDataForUser' ) );
-            add_action( 'wp_ajax_e20r_saveMeasurementForUser', array( Measurements::getInstance(), 'saveMeasurement_callback' ) );
-            add_action( 'wp_ajax_e20r_add_exercise', array( Workout::getInstance(), 'add_new_exercise_to_group_callback' ) );
-	        add_action( 'wp_ajax_e20r_add_new_exercise_group', array( Workout::getInstance(), 'add_new_exercise_group_callback' ) );
-            add_action( 'wp_ajax_e20r_addWorkoutGroup', array( Workout::getInstance(), 'ajax_addGroup_callback' ) );
-            add_action( 'wp_ajax_e20r_load_activity_stats', array( Workout::getInstance(), 'ajax_getPlotDataForUser' ) );
-	        add_action( 'wp_ajax_e20r_save_activity', array( Workout::getInstance(), 'saveExData_callback' ) );
-			add_action( 'wp_ajax_e20r_paginate_assignment_answer_list', array( Assignment::getInstance(), 'ajax_paginateAssignments' ) );
-			add_action( 'wp_ajax_e20r_paginate_measurements_list', array( Assignment::getInstance(), 'ajax_paginateMeasurements' ) );
-
-            /* AJAX call-backs if user is unprivileged */
-
-            if ( is_admin() ) {
-
-                add_action( 'current_screen', array( $this, 'current_screen_hooks' ), 10 );
-
-                add_action( 'save_post', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( Program::getInstance(), 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( Exercise::getInstance(), 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( Workout::getInstance(), 'saveSettings' ), 10, 2 );
-                add_action( 'save_post', array( Action::getInstance(), 'saveSettings' ), 10, 20);
-                add_action( 'save_post', array( Article::getInstance(), 'saveSettings' ), 10, 20);
-                add_action( 'save_post', array( Assignment::getInstance(), 'saveSettings' ), 10, 20);
-
-                add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
-                add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ) );
-                add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ) );
-                add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ) );
-                add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ) );
-                add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ) );
-                add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ) );
-
-                add_action( 'add_meta_boxes_e20r_articles', array( Article::getInstance(), 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_assignments', array( Assignment::getInstance(), 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_programs', array( Program::getInstance(), 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_exercises', array( Exercise::getInstance(), 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_workout', array( Workout::getInstance(), 'editor_metabox_setup') );
-                add_action( 'add_meta_boxes_e20r_actions', array( Action::getInstance(), 'editor_metabox_setup') );
-
-                add_action( 'admin_init', array( $this, 'registerSettingsPage' ) );
-
-                add_action( 'admin_head', array( $this, 'post_type_icon' ) );
-                add_action( 'admin_menu', array( $this, 'loadAdminPage') );
-                add_action( 'admin_menu', array( $this, 'registerAdminPages' ) );
-                add_action( 'admin_menu', array( $this, "renderGirthTypesMetabox" ) );
-
-                /* Allow admin to set the program ID for the user in their profile(s) */
-                add_action( 'show_user_profile', array( Program::getInstance(), 'selectProgramForUser' ) );
-                add_action( 'edit_user_profile', array( Program::getInstance(), 'selectProgramForUser' ) );
-                add_action( 'edit_user_profile_update', array( Program::getInstance(), 'updateProgramForUser') );
-                add_action( 'personal_options_update', array( Program::getInstance(), 'updateProgramForUser') );
-
-                add_action( 'show_user_profile', array( Client::getInstance(), 'selectRoleForUser' ) );
-                add_action( 'edit_user_profile', array( Client::getInstance(), 'selectRoleForUser' ) );
-                add_action( 'edit_user_profile_update', array( Client::getInstance(), 'updateRoleForUser') );
-                add_action( 'personal_options_update', array( Client::getInstance(), 'updateRoleForUser') );
-                add_filter( "plugin_action_links_$plugin", array( $this, 'plugin_add_settings_link' ) );
-
-                // Custom columns
-                add_filter( 'manage_edit-e20r_actions_columns', array( Action::getInstance(), 'set_custom_edit_columns' ) );
-                add_filter( 'manage_edit-e20r_assignments_columns', array( Assignment::getInstance(), 'set_custom_edit_columns' ) );
-
-                add_action( 'manage_e20r_actions_posts_custom_column' , array( Action::getInstance(), 'custom_column'), 10, 2 );
-                add_action( 'manage_e20r_assignments_posts_custom_column' , array( Assignment::getInstance(), 'custom_column'), 10, 2 );
-
-                add_filter( 'manage_edit-e20r_actions_sortable_columns', array( Action::getInstance(), 'sortable_column' ) );
-                add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( Assignment::getInstance(), 'sortable_column' ) );
-
-                add_filter( 'pre_get_posts', array(Action::getInstance(), 'sort_column') );
-                add_filter( 'pre_get_posts', array(Assignment::getInstance(), 'sort_column') );
-				add_filter( 'posts_orderby', array(Assignment::getInstance(), 'order_by') );
-
-                // add_filter('manage_e20r_assignments_posts_columns', array( Assignment::getInstance(), 'assignment_col_head' ) );
-                // add_action('manage_e20r_assignments_posts_custom_column', array( Assignment::getInstance(), 'assignment_col_content' ), 10, 2);
-
-                add_filter('manage_e20r_exercises_posts_columns', array( Exercise::getInstance(), 'col_head' ) );
-                add_action('manage_e20r_exercises_posts_custom_column', array( Exercise::getInstance(), 'col_content' ), 10, 2);
-
-            }
-
-            E20R_Tracker::dbg("Tracker::loadAllHooks() - Scripts and CSS");
-            /* Load scripts & CSS */
-            add_action( 'admin_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'enqueue_admin_scripts') );
-            add_action( 'wp_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'loadHooks') );
             
-            E20R_Tracker::dbg("Tracker::loadAllHooks() - Loading Short Codes");
-            add_shortcode( 'weekly_progress', array( Measurements::getInstance(), 'shortcode_weeklyProgress' ) );
-            add_shortcode( 'progress_overview', array( Measurements::getInstance(), 'shortcode_progressOverview') );
-            add_shortcode( 'daily_progress', array( Action::getInstance(), 'shortcode_dailyProgress' ) );
-	        add_shortcode( 'e20r_activity', array( Workout::getInstance(), 'shortcode_activity' ) );
-	        add_shortcode( 'e20r_activity_archive', array( Workout::getInstance(), 'shortcode_act_archive' ) );
-	        add_shortcode( 'e20r_exercise', array( Exercise::getInstance(), 'shortcode_exercise' ) );
-            add_shortcode( 'e20r_profile', array( Client::getInstance(), 'shortcode_clientProfile' ) );
-            add_shortcode( 'e20r_client_overview', array( Client::getInstance(), 'shortcode_clientList') );
-            add_shortcode( 'e20r_article_summary', array( Article::getInstance(), 'shortcode_article_summary') );
-            add_shortcode( 'e20r_article_archive', array( Article::getInstance(), 'article_archive_shortcode') );
-
-            add_action( 'plugins_loaded', array( GF_Integration::getInstance() ,'loadHooks') );
-
-	        //add_filter( 'wp_video_shortcode',  array( Exercise::getInstance(), 'responsive_wp_video_shortcode' ), 10, 5 );
-
-
-	        E20R_Tracker::dbg("Tracker::loadAllHooks() - Action hooks for plugin are loaded");
+            add_action( 'init', array( $this, 'loadWPLoadedHooks' ), -1 );
+            add_action( 'wp', array( $this, 'loadContentHooks' ), -1 );
+            
+            if ( is_admin() ) {
+                
+                $this->loadAdminHooks();
+            }
+            
+            $this->model = new Tracker_Model();
+            
+            // add_action( 'init', array( Assignment::getInstance(), 'update_metadata' ), 20 );
+	        Utilities::get_instance()->log("Action hooks for plugin are loaded");
         }
 
         $this->hooksLoaded = true;
     }
+	
+	public function loadAdminHooks() {
+        
+        $plugin = E20R_PLUGIN_NAME;
+        
+        add_post_type_support( 'page', 'excerpt' );
+        
+        add_action( "admin_action_e20r_duplicate_as_draft", array( $this, 'duplicateCPTAsDraft') );
+        add_action( 'admin_notices', array( $this, 'display_admin_notice'  ) );
+
+        Utilities::get_instance()->log("Scripts and CSS");
+        /* Load scripts & CSS */
+        add_action( 'admin_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'enqueue_admin_scripts') );
+        
+        if ( is_admin() ) {
+
+            add_action( 'current_screen', array( $this, 'current_screen_hooks' ), 10 );
+
+            add_action( 'save_post', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( Program::getInstance(), 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( Exercise::getInstance(), 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( Workout::getInstance(), 'saveSettings' ), 10, 2 );
+            add_action( 'save_post', array( Action::getInstance(), 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( Article::getInstance(), 'saveSettings' ), 10, 20);
+            add_action( 'save_post', array( Assignment::getInstance(), 'saveSettings' ), 10, 20);
+
+            add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
+            add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ) );
+            add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ) );
+            add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ) );
+            add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ) );
+            add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ) );
+            add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ) );
+
+            add_action( 'add_meta_boxes_e20r_articles', array( Article::getInstance(), 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_assignments', array( Assignment::getInstance(), 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_programs', array( Program::getInstance(), 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_exercises', array( Exercise::getInstance(), 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_workout', array( Workout::getInstance(), 'editor_metabox_setup') );
+            add_action( 'add_meta_boxes_e20r_actions', array( Action::getInstance(), 'editor_metabox_setup') );
+
+            add_action( 'admin_init', array( $this, 'registerSettingsPage' ) );
+
+            add_action( 'admin_head', array( $this, 'post_type_icon' ) );
+            add_action( 'admin_menu', array( $this, 'loadAdminPage') );
+            add_action( 'admin_menu', array( $this, 'registerAdminPages' ) );
+            add_action( 'admin_menu', array( $this, "renderGirthTypesMetabox" ) );
+
+            /* Allow admin to set the program ID for the user in their profile(s) */
+            // add_action( 'show_user_profile', array( Program::getInstance(), 'selectProgramForUser' ) );
+            // add_action( 'edit_user_profile', array( Program::getInstance(), 'selectProgramForUser' ) );
+            // add_action( 'edit_user_profile_update', array( Program::getInstance(), 'updateProgramForUser'), 9999 );
+            // add_action( 'personal_options_update', array( Program::getInstance(), 'updateProgramForUser'), 9999 );
+
+            add_action( 'show_user_profile', array( Client::getInstance(), 'selectRoleForUser' ) );
+            add_action( 'edit_user_profile', array( Client::getInstance(), 'selectRoleForUser' ) );
+            add_action( 'edit_user_profile_update', array( Client::getInstance(), 'updateRoleForUser'), 9999 );
+            add_action( 'personal_options_update', array( Client::getInstance(), 'updateRoleForUser'), 9999 );
+            add_filter( "plugin_action_links_{$plugin}", array( $this, 'pluginAddSettingsLink' ) );
+
+            // Custom columns
+            add_filter( 'manage_edit-e20r_actions_columns', array( Action::getInstance(), 'set_custom_edit_columns' ) );
+            add_filter( 'manage_edit-e20r_assignments_columns', array( Assignment::getInstance(), 'set_custom_edit_columns' ) );
+
+            add_action( 'manage_e20r_actions_posts_custom_column' , array( Action::getInstance(), 'custom_column'), 10, 2 );
+            add_action( 'manage_e20r_assignments_posts_custom_column' , array( Assignment::getInstance(), 'custom_column'), 10, 2 );
+
+            add_filter( 'manage_edit-e20r_actions_sortable_columns', array( Action::getInstance(), 'sortable_column' ) );
+            add_filter( 'manage_edit-e20r_assignments_sortable_columns', array( Assignment::getInstance(), 'sortable_column' ) );
+
+            add_filter( 'pre_get_posts', array(Action::getInstance(), 'sort_column') );
+            add_filter( 'pre_get_posts', array(Assignment::getInstance(), 'sort_column') );
+            add_filter( 'posts_orderby', array(Assignment::getInstance(), 'order_by') );
+
+            // add_filter('manage_e20r_assignments_posts_columns', array( Assignment::getInstance(), 'assignment_col_head' ) );
+            // add_action('manage_e20r_assignments_posts_custom_column', array( Assignment::getInstance(), 'assignment_col_content' ), 10, 2);
+
+            add_filter('manage_e20r_exercises_posts_columns', array( Exercise::getInstance(), 'col_head' ) );
+            add_action('manage_e20r_exercises_posts_custom_column', array( Exercise::getInstance(), 'col_content' ), 10, 2);
+
+        }
+	}
 
     /**
       * Load duplicate links on Edit page
@@ -569,40 +558,6 @@ class Tracker {
         }
     }
     
-    
-
-	public function loadOption( $optionName ) {
-
-		$value = false;
-
-        // E20R_Tracker::dbg("Tracker::loadOption() - Looking for option with name: {$optionName}");
-        $options = get_option( $this->setting_name );
-
-        if ( empty( $options ) ) {
-
-            // E20R_Tracker::dbg("Tracker::loadOption() - No options defined at all!");
-            return false;
-        }
-
-        if ( empty( $options[$optionName] ) ) {
-            // E20R_Tracker::dbg("Tracker::loadOption() - Option {$optionName} exists but contains no data!");
-            return false;
-        }
-        else {
-            // E20R_Tracker::dbg("Tracker::loadOption() - Option {$optionName} exists...");
-
-            if ( 'e20r_interview_page' == $optionName ) {
-                return E20R_COACHING_URL . "/welcome-questionnaire/";
-            }
-
-            return $options[$optionName];
-        }
-	}
-
-	
-
-	
-
     public function getURLToPageWithShortcode( $short_code = '' ) {
 
         $urls = array();
@@ -619,11 +574,38 @@ class Tracker {
                 break;
         }
        
-        E20R_Tracker::dbg("Tracker::getURLToPageWithShortcode() - Short code: {$short_code} -> Url(s): ");
-        E20R_Tracker::dbg($urls);
+        Utilities::get_instance()->log("Short code: {$short_code} -> Url(s): " . print_r( $urls, true ));
 
         return $urls;
     }
+	
+	public function loadOption( $optionName ) {
+
+		$value = false;
+
+        // Utilities::get_instance()->log("Looking for option with name: {$optionName}");
+        $options = get_option( $this->setting_name );
+
+        if ( empty( $options ) ) {
+
+            // Utilities::get_instance()->log("No options defined at all!");
+            return false;
+        }
+
+        if ( empty( $options[$optionName] ) ) {
+            // Utilities::get_instance()->log("Option {$optionName} exists but contains no data!");
+            return false;
+        }
+        else {
+            // Utilities::get_instance()->log("Option {$optionName} exists...");
+
+            if ( 'e20r_interview_page' == $optionName ) {
+                return E20R_COACHING_URL . "/welcome-questionnaire/";
+            }
+
+            return $options[$optionName];
+        }
+	}
 
 	public function trackerCPTs() {
 		return array(
@@ -636,7 +618,7 @@ class Tracker {
 		);
 	}
 
-	function plugin_add_settings_link( $links ) {
+	public function pluginAddSettingsLink( $links ) {
 
 		$settings_link = sprintf( '<a href="options-general.php?page=e20r_tracker_opt_page">%s</a>', __( 'Settings', 'e20r-tracker' ) );
 		array_push( $links, $settings_link );
@@ -692,13 +674,13 @@ class Tracker {
 
         }
 
-        E20R_Tracker::dbg("Tracker::setEmptyTitleString() - New title string defined");
+        Utilities::get_instance()->log("New title string defined");
         return $title;
     }
 
     public function validate( $input ) {
 
-        E20R_Tracker::dbg('Tracker::validate() - Running validation: ' . print_r( $input, true ) );
+        Utilities::get_instance()->log('Running validation: ' . print_r( $input, true ) );
 
         $valid = $this->settings;
 
@@ -740,7 +722,7 @@ class Tracker {
          */
 
         unset( $input ); // Free.
-        E20R_Tracker::dbg('Tracker::validate() - Returning validation: ' . print_r( $valid, true ) );
+        Utilities::get_instance()->log('Returning validation: ' . print_r( $valid, true ) );
 
         return $valid;
     }
@@ -841,10 +823,7 @@ class Tracker {
 
         echo "<p>" . __("Configure user session timeout values. 'Extended' is the timeout value that will be used if a user selects 'Remember me' at login.", 'e20r-tracker' ) . "</p><hr/>";
     }
-
-    // URL: "//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css"
-    // URL: "//code.jquery.com/ui/1.11.2/jquery-ui.js"
-
+    
     public function render_program_section_text() {
 
         echo "<p>" . __( "Configure global Eighty / 20 Tracker settings.", "e20r-tracker" ) . "</p><hr/>";
@@ -877,42 +856,93 @@ class Tracker {
         echo $html;
     }
 
+    /**
+     * Register admin page (menus) for the Tracker & Articles/Assignments/Activitiese/etc
+     */
     public function registerAdminPages() {
 
        
         global $e20rAdminPage;
         global $ClientInfoPage;
+        global $ClientSettingsPage;
+        
+        Utilities::get_instance()->log("Loading E20R Tracker Admin Menu");
 
-        E20R_Tracker::dbg("Tracker::registerAdminPages() - Loading E20R Tracker Admin Menu");
+        $e20rAdminPage = add_menu_page(
+                __('Tracker', "e20r-tracker"),
+                __( 'Tracker','e20r-tracker'),
+                'manage_options',
+                'e20r-tracker-info',
+                array( Client::getInstance(), 'renderClientPage' ),
+                'dashicons-admin-generic',
+                '71.1'
+            );
 
-        $e20rAdminPage = add_menu_page( __('E20R Tracker', "e20r-tracker"), __( 'E20R Tracker','e20r-tracker'), 'manage_options', 'e20r-tracker-info', array( Client::getInstance(), 'render_client_page' ), 'dashicons-admin-generic', '71.1' );
-        $ClientInfoPage = add_submenu_page( 'e20r-tracker-info', __( 'Client Info','e20r-tracker'), __( "Coaching Page" ,'e20r-tracker'), 'manage_options', 'e20r-client-info', array( Client::getInstance(), 'render_client_page' ));
-
-        $ProgramPage = add_menu_page( 'E20R Programs', __( 'E20R Programs','e20r-tracker'), 'manage_options', 'e20r-tracker-programs', null, 'dashicons-admin-generic', '71.2' );
-        $Articles = add_menu_page( 'E20R Articles', __( 'E20R Articles','e20r-tracker'), 'manage_options', 'e20r-tracker-articles', null, 'dashicons-admin-generic', '71.3' );
-        $e20rActivities = add_menu_page( 'E20R Activities', __( 'E20R Actvities','e20r-tracker'), 'manage_options', 'e20r-tracker-activities', null, 'dashicons-admin-generic', '71.4' );
+        $ClientInfoPage = add_submenu_page(
+                'e20r-tracker-info',
+                __( 'Client Info','e20r-tracker'),
+                __( "Coaching Page" ,'e20r-tracker'),
+                'edit_users',
+                'e20r-client-info',
+                array( Client::getInstance(), 'renderClientPage' )
+                );
+        $ClientSettingsPage = add_submenu_page(
+                'e20r-tracker-info',
+                __('Client Settings', 'e20r-tracker'),
+                __('Client Settings', 'e20r-tracker'),
+                'edit_users',
+                'e20r-client-settings',
+                array( Client::getInstance(), 'renderClientSettingsPage')
+                );
+        
+       $Articles = add_menu_page(
+               __( 'Tracker Articles','e20r-tracker'),
+               __( 'Tracker Articles','e20r-tracker'),
+               'manage_options',
+               'e20r-tracker-articles',
+               null,
+               'dashicons-admin-generic',
+               '71.3'
+               );
+      
     }
 
+    /**
+     * Metabox for the Girth Types editor page
+     */
     public function renderGirthTypesMetabox() {
 
-        add_meta_box('e20r_tracker_girth_types_meta', __('Sort order for Girth Type', 'e20r-tracker'), array(&$this, "build_girthTypesMeta"), 'e20r_girth_types', 'side', 'high');
+        add_meta_box(
+                'e20r_tracker_girth_types_meta',
+                __('Sort order for Girth Type', 'e20r-tracker'),
+                array(&$this, "build_girthTypesMeta"),
+                'e20r_girth_types',
+                'side',
+                'high'
+                );
     }
 
+    /**
+     * Meta box to configure the Girth sort order (order of display)
+     *
+     * @param $object
+     * @param $box
+     */
     public function build_girthTypesMeta( $object, $box ) {
 
         global $post;
 
         $sortOrder = get_post_meta( $post->ID, 'e20r_girth_type_sortorder', true);
-        E20R_Tracker::dbg("post-meta sort Order: {$sortOrder}");
+        Utilities::get_instance()->log("post-meta sort Order: {$sortOrder}");
         ob_start();
         ?>
         <div class="submitbox" id="e20r-girth-type-postmeta">
             <div id="minor-publishing">
                 <div id="e20r-tracker-postmeta">
-                    <?php E20R_Tracker::dbg("Loading metabox for Girth Type postmeta"); ?>
+                    <?php Utilities::get_instance()->log("Loading metabox for Girth Type postmeta"); ?>
                     <?php wp_nonce_field('e20r-tracker-post-meta', 'e20r-girth-type-sortorder-nonce'); ?>
                     <label for="e20r-sort-order"><?php _e("Sort Order", "e20r-tracker"); ?></label>
-                    <input type="text" name="e20r_girth_order" id="e20r-sort-order" value="<?php echo $sortOrder; ?>">
+                    <input type="text" name="e20r_girth_order" id="e20r-sort-order" value="<?php esc_attr_e( $sortOrder ); ?>">
                 </div>
             </div>
         </div>
@@ -933,11 +963,11 @@ class Tracker {
 
         $dateArr = array();
 
-        E20R_Tracker::dbg("Tracker::datesForMeasurements(): {$startDate}, {$weekdayNumber}");
+        Utilities::get_instance()->log("Tracker::datesForMeasurements(): {$startDate}, {$weekdayNumber}");
 
         if ( ( $startDate != null ) && ( strtotime( $startDate ) ) ) {
 
-            E20R_Tracker::dbg("Tracker::datesForMeasurements() - Received a valid date value: {$startDate}");
+            Utilities::get_instance()->log("Received a valid date value: {$startDate}");
             $baseDate = " {$startDate}";
         }
 	    else {
@@ -945,11 +975,11 @@ class Tracker {
 		    $baseDate = " " . date('Y-m-d', current_time('timestamp') );
 	    }
 
-	    E20R_Tracker::dbg("Tracker::datesForMeasurements() - Using {$baseDate} as 'base date'");
+	    Utilities::get_instance()->log("Using {$baseDate} as 'base date'");
 
         if ( ! $weekdayNumber ) {
 
-            E20R_Tracker::dbg("Tracker::datesForMeasurements() - Using program value");
+            Utilities::get_instance()->log("Using program value");
             // $options = get_option( $this->setting_name );
             // $weekdayNumber = $options['measurement_day'];
             $weekdayNumber = $currentProgram->measurement_day;
@@ -995,7 +1025,7 @@ class Tracker {
 
     public function show_sortOrderSettings( $object, $box ) {
 
-        E20R_Tracker::dbg("Loading metabox to order girth types");
+        Utilities::get_instance()->log("Loading metabox to order girth types");
 
         global $post;
 
@@ -1006,8 +1036,7 @@ class Tracker {
 
         $girthTypes = $e20rMeasurements->getGirthTypes();
 
-        E20R_Tracker::dbg("Have fetched " . count($girthTypes) . " girth types from db");
-        ?>
+        Utilities::get_instance()->log("Have fetched " . count($girthTypes) . " girth types from db"); ?>
         <div class="submitbox" id="e20r-girth_type-postmeta">
                 <div id="minor-publishing">
                     <div id="e20r-girth_type-order">
@@ -1015,16 +1044,19 @@ class Tracker {
                             <table id="post-meta-table">
                                 <thead>
                                     <tr id="post-meta-header">
-                                        <td class="left_col">Order</td>
-                                        <td class="right_col">Girth Measurement</td>
+                                        <td class="left_col"><?php _e( 'Order', 'e20r-tracker' ); ?></td>
+                                        <td class="right_col"><?php _e( 'Girth Measurement', 'e20r-tracker' ); ?></td>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ( $girthTypes as $gObj ) {
-                                        E20R_Tracker::dbg("Object info: " . print_r( $gObj, true)); ?>
+                                    <?php foreach ( $girthTypes as $gObj ) { ?>
                                         <tr class="post-meta-row">
-                                            <td class="left_col e20r_order"><input type="text" name="e20r_girth_order[]"id="e20r-<?php echo $gObj->type; ?>-order" value="<?php echo $gObj->sortOrder; ?>"></td>
-                                            <td class="right_col e20r_girthType"><input type="text" name="e20r_girth_type[]" id="e20r-<?php echo $gObj->type; ?>-order" value="<?php echo $gObj->type; ?>"></td>
+                                            <td class="left_col e20r_order">
+                                                <input type="text" name="e20r_girth_order[]"id="e20r-<?php esc_attr_e( $gObj->type ); ?>-order" value="<?php esc_attr_e( $gObj->sortOrder ); ?>" />
+                                            </td>
+                                            <td class="right_col e20r_girthType">
+                                                <input type="text" name="e20r_girth_type[]" id="e20r-<?php esc_attr_e( $gObj->type ); ?>-order" value="<?php esc_attr_e( $gObj->type ); ?>" />
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -1037,88 +1069,6 @@ class Tracker {
         <?php
     }
 
-	/**
-     * Should the User ID have access to the post ID provided
-     *
-     * @param int $userId
-     * @param int $postId
-     *
-     * @return bool
-     */
-    public function hasAccess( $userId, $postId ) {
-
-        $Article = Article::getInstance();
-        $Program = Program::getInstance();
-
-        global $currentArticle;
-        
-        $retVal = false;
-        $saved = $currentArticle;
-
-        E20R_Tracker::dbg("Tracker::hasAccess() - Checking {$userId}'s access to {$postId}" );
-
-        if ( user_can( $userId, 'publish_posts' ) && ( is_preview() ) ) {
-
-            E20R_Tracker::dbg("Tracker::hasAccess() - Post #{$postId} is a preview for {$userId}. Granting editor/admin access to the preview");
-            return true;
-        }
-
-        E20R_Tracker::dbg("Tracker::hasAccess() - Checking whether to use PMPro's pmpro_has_membership_access() function" );
-
-        if ( function_exists( 'pmpro_has_membership_access' ) ) {
-
-            E20R_Tracker::dbg("Tracker::hasAccess() - Preferring to use access check as provided by PMPro");
-            $levels = pmpro_getMembershipLevelsForUser( $userId );
-            $result = pmpro_has_membership_access( $postId, $userId, true ); //Using true to return all level IDs that have access to the sequence
-
-            E20R_Tracker::dbg("Tracker::hasAccess() - Checking if post {$postId} is accessible by {$userId}: " . print_r($result, true));
-
-            if ( $result[0] ) {
-
-                E20R_Tracker::dbg("Tracker::hasAccess() - Does user {$userId} have access to this post {$postId}? " . ( $result[0] == 1 ? 'yes' : 'no' ));
-
-                $filterVal = apply_filters('pmpro_has_membership_access_filter', $result[0], get_post($postId), get_user_by( 'id', $userId ), $levels );
-                $retVal = ( $filterVal == 1 ? true : false );
-
-                E20R_Tracker::dbg( "Tracker::hasAccess() - After filter of access value for {$userId}: " . ( $retVal == true ? 'yes' : 'no' ));
-            }
-        }
-        else {
-            E20R_Tracker::dbg("Tracker::hasAccess() - No membership access function found for Paid Memberships Pro");
-        }
-
-        $current_delay = $this->getDelay( 'now', $userId );
-        $found = false;
-
-        $programId = $Program->getProgramIdForUser( $userId );
-
-        $articles = $Article->findArticles( 'post_id', $postId, $programId, $comp = '=' );
-        // E20R_Tracker::dbg( $articles);
-
-        // if (!empty( $articles ) && ( 1 == count($articles ) ) ) {
-        if ( !empty( $articles ) ) {
-            
-            $found = $this->get_closest_release_day( $current_delay, $articles );
-
-            // E20R_Tracker::dbg( $found );
-
-            if ( !is_null($found) && ( $found->release_day <= $current_delay ) ) {
-                E20R_Tracker::dbg("Tracker::hasAccess() - User {$userId} in program {$programId} has access to {$postId} because {$found->release_day} <= {$current_delay}");
-                $retVal = $retVal && true;
-            }
-            else {
-
-                $retVal = false;
-            }
-
-        }
-
-        $currentArticle = $saved;
-        
-        E20R_Tracker::dbg("Tracker::hasAccess() - Returning " . ( $retVal ? 'true' : 'false' ) . " to calling function: " . $this->whoCalledMe() );
-        return $retVal;
-    }
-
     public function getDelay( $delayVal = 'now', $userId = null ) {
 
         global $current_user;
@@ -1127,34 +1077,34 @@ class Tracker {
         // We've been given a numeric value so assuming it's the delay.
         if ( is_numeric( $delayVal ) ) {
 
-            E20R_Tracker::dbg("Tracker::getDelay() - Numeric delay value specified. Returning: {$delayVal}");
+            Utilities::get_instance()->log("Numeric delay value specified. Returning: {$delayVal}");
             return $delayVal;
         }
 
         if ( !isset($currentProgram->startdate) || false === ( $startDate = strtotime( $currentProgram->startdate ) ) ) {
-            E20R_Tracker::dbg("Unable to configure startdate for currentProgram (" . isset($currentProgram->id) && !empty($currentProgram->id) ? $currentProgram->id : 'None' . ")");
+            Utilities::get_instance()->log("Unable to configure startdate for currentProgram (" . isset($currentProgram->id) && !empty($currentProgram->id) ? $currentProgram->id : 'None' . ")");
             return false;
         }
 
-	    E20R_Tracker::dbg("Tracker::getDelay() - Based on startdate of {$currentProgram->startdate}...");
+	    Utilities::get_instance()->log("Based on startdate of {$currentProgram->startdate}...");
 
 	    if ( $this->validateDate( $delayVal ) ) {
 
-            E20R_Tracker::dbg("Tracker::getDelay() - {$delayVal} is a date.");
+            Utilities::get_instance()->log("{$delayVal} is a date.");
 		    $delay = Time_Calculations::daysBetween( $startDate, strtotime( $delayVal ), get_option('timezone_string') );
 
-		    E20R_Tracker::dbg("Tracker::getDelay() - Given a date {$delayVal} and returning {$delay} days since {$currentProgram->startdate}");
+		    Utilities::get_instance()->log("Given a date {$delayVal} and returning {$delay} days since {$currentProgram->startdate}");
 		    return $delay;
 	    }
 
 
         if ( $delayVal == 'now' ) {
-            E20R_Tracker::dbg("Tracker::getDelay() - Calculating delay since startdate (given 'now')...");
+            Utilities::get_instance()->log("Calculating delay since startdate (given 'now')...");
 
             // Calculate the user's current "days in program".
             if ( is_null( $userId ) ) {
 
-	            E20R_Tracker::dbg("Tracker::getDelay() - Using current_user->ID for userid: {$current_user->ID}");
+	            Utilities::get_instance()->log("Using current_user->ID for userid: {$current_user->ID}");
                 $userId = $current_user->ID;
             }
 
@@ -1162,7 +1112,7 @@ class Tracker {
 
             // $delay = ($delay == 0 ? 1 : $delay);
 
-            E20R_Tracker::dbg("Tracker::getDelay() - Days since startdate is: {$delay}...");
+            Utilities::get_instance()->log("Days since startdate is: {$delay}...");
 
             return $delay;
         }
@@ -1176,7 +1126,7 @@ class Tracker {
 		return $d && ( $d->format('Y-m-d') == $date );
 	}
 
-    private function get_closest_release_day($search, $posts) {
+    public function get_closest_release_day($search, $posts) {
 
         $closest = null;
 
@@ -1191,6 +1141,58 @@ class Tracker {
         return $closest;
     }
 
+    public function getDateFromDelay( $rDelay = "now", $userId = null ) {
+
+        global $current_user;
+        $Program = Program::getInstance();
+        global $currentProgram;
+
+        if ( is_null( $userId ) ) {
+            $userId = $current_user->ID;
+        }
+
+        Utilities::get_instance()->log("Received Delay value of {$rDelay} from calling function: " . $this->whoCalledMe() );
+        $startTS = $Program->startdate( $userId );
+
+        if ( 0 == $rDelay ) {
+
+            $delay = 0;
+        }
+        elseif ( "now" == $rDelay ) {
+
+            Utilities::get_instance()->log("Calculating 'now' based on current time and startdate for the user. Got delay value of {$rDelay}");
+            $delay = Time_Calculations::daysBetween( $startTS, current_time('timestamp') );
+        }
+        else {
+
+            $delay = ($rDelay);
+            Utilities::get_instance()->log("Adjusting delay value: {$rDelay} => {$delay}");
+        }
+
+
+        Utilities::get_instance()->log("user w/id {$userId} has a startdate timestamp of {$startTS}");
+
+        if ( ! $startTS ) {
+
+            Utilities::get_instance()->log("Tracker::getDateFromDelay( {$delay} ) -> No startdate found for user with ID of {$userId}");
+            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
+        }
+
+        $sDate = date('Y-m-d', $startTS );
+        Utilities::get_instance()->log("Tracker::getDateFromDelay( {$delay} ) -> Startdate found for user with ID of {$userId}: {$sDate}");
+
+        $rDate = date( 'Y-m-d', strtotime( "{$sDate} +{$delay} days") );
+
+        Utilities::get_instance()->log("Tracker::getDateFromDelay( {$delay} ) -> Startdate ({$sDate}) + delay ({$delay}) days = date: {$rDate}");
+
+        if ( $delay < 0 ) {
+            Utilities::get_instance()->log("Tracker::getDateFromDelay( {$delay} ) -> Returning 'startdate' as the correct date.");
+            $rDate = $sDate;
+        }
+
+        return $rDate;
+    }
+
     public function whoCalledMe() {
 
         $trace=debug_backtrace();
@@ -1203,62 +1205,9 @@ class Tracker {
         return $trace;
     }
 
-    public function getDateFromDelay( $rDelay = "now", $userId = null ) {
-
-        global $current_user;
-        $Program = Program::getInstance();
-        global $currentProgram;
-
-        if ( is_null( $userId ) ) {
-            $userId = $current_user->ID;
-        }
-
-        E20R_Tracker::dbg("Tracker::getDateFromDelay() - Received Delay value of {$rDelay} from calling function: " . $this->whoCalledMe() );
-        $startTS = $Program->startdate( $userId );
-
-        if ( 0 == $rDelay ) {
-
-            $delay = 0;
-        }
-        elseif ( "now" == $rDelay ) {
-
-            E20R_Tracker::dbg("Tracker::getDateFromDelay() - Calculating 'now' based on current time and startdate for the user. Got delay value of {$rDelay}");
-            $delay = Time_Calculations::daysBetween( $startTS, current_time('timestamp') );
-        }
-        else {
-
-            $delay = ($rDelay);
-            E20R_Tracker::dbg("Tracker::getDateFromDelay() - Adjusting delay value: {$rDelay} => {$delay}");
-        }
-
-
-        E20R_Tracker::dbg("Tracker::getDateFromDelay() - user w/id {$userId} has a startdate timestamp of {$startTS}");
-
-        if ( ! $startTS ) {
-
-            E20R_Tracker::dbg("Tracker::getDateFromDelay( {$delay} ) -> No startdate found for user with ID of {$userId}");
-            return ( date( 'Y-m-d', current_time( 'timestamp' ) ) );
-        }
-
-        $sDate = date('Y-m-d', $startTS );
-        E20R_Tracker::dbg("Tracker::getDateFromDelay( {$delay} ) -> Startdate found for user with ID of {$userId}: {$sDate}");
-
-        $rDate = date( 'Y-m-d', strtotime( "{$sDate} +{$delay} days") );
-
-        E20R_Tracker::dbg("Tracker::getDateFromDelay( {$delay} ) -> Startdate ({$sDate}) + delay ({$delay}) days = date: {$rDate}");
-
-        if ( $delay < 0 ) {
-            E20R_Tracker::dbg("Tracker::getDateFromDelay( {$delay} ) -> Returning 'startdate' as the correct date.");
-            $rDate = $sDate;
-        }
-
-        return $rDate;
-    }
-
     public function filter_changeConfirmationMessage( $data, $email ) {
 
         global $current_user;
-        global $wpdb;
 
         $Program = Program::getInstance();
         global $currentProgram;
@@ -1290,20 +1239,31 @@ class Tracker {
 
                 $is_in_program = array_intersect( $groups, $levels );
 
-                E20R_Tracker::dbg("Tracker::filter_changeConfirmationMessage() - Info: Today: {$today}, {$available_when}: ");
-                E20R_Tracker::dbg($is_in_program);
+                Utilities::get_instance()->log("Info: Today: {$today}, {$available_when}: " . print_r( $is_in_program, true ));
 
 	            if ( !empty( $is_in_program ) ) {
 
                     if ( strtotime( $currentProgram->startdate )  > strtotime( $today ) ) {
 
-                        $substitute = "Your membership account is active, <strong>but access to the Virtual Private Trainer content - including your daily workout routine - will <em>not</em> be available until Monday {$available_when}</strong>.<br/>In the mean time, why not take a peak in the Help Menu items and read through the Frequently Asked Questions?";
+                        $substitute = sprintf( 'Your membership account is active, %1$sbut access to the Virtual Private Trainer content - including your daily workout routine - will %2$snot%3$s be available until Monday %4$s%5$s.%6$sIn the mean time, why not take a peak in the Help Menu items and read through the Frequently Asked Questions?',
+                        '<strong>',
+                        '<em>',
+                        '</em>',
+                        esc_attr( $available_when ),
+                        '</strong>',
+                        '<br/>'
+                    );
 
                     }else {
-                        $substitute = "Your membership account is now active and you have full access to your Virtual Personal Trainer content. However, we recommend that you <a href=\"https://strongcubedfitness.com/login/\">log in</a> and spend some time reading the Help section (click the \"<a href=\"/faq/\">Help</a>\" menu)";
+                        $substitute = sprintf( __( 'Your membership account is now active and you have full access to your Virtual Personal Trainer content. However, we recommend that you %1$slog in%2$s and spend some time reading the Help section (click the "%3$sHelp%4$s" menu)', 'e20r-tracker' ),
+                        sprintf( '<a href="%1$s">', wp_login_url() ),
+                        '</a>',
+                        '<a href="/faq/">',
+                        '</a>'
+                        );
                     }
 
-                   E20R_Tracker::dbg("Tracker::filter_changeConfirmationMessage() - Sending: {$substitute}");
+                   Utilities::get_instance()->log("Sending: {$substitute}");
 
                     // Replace the message (after filters have been applied)
                     $data['e20r_status'] = $substitute;
@@ -1317,19 +1277,22 @@ class Tracker {
     
     public function isActiveClient( $clientId ) {
 
-        $Program = Program::getInstance();
+        $program = Program::getInstance();
+        
         global $currentProgram;
 
         $retVal = false;
 
-        E20R_Tracker::dbg("Tracker::isActiveClient() - Run checks to see if the client is an active member of the site");
+        Utilities::get_instance()->log("Run checks to see if the client is an active member of the site");
 
-        $programId = $Program->getProgramIdForUser( $clientId );
+        // $programId = $Program->getProgramIdForUser( $clientId );
 
         if ( function_exists( 'pmpro_hasMembershipLevel' ) ) {
 
-            E20R_Tracker::dbg("Tracker::isActiveClient() - Check whether the user {$clientId} belongs to (one of) the program group(s)");
-            $retVal = ( pmpro_hasMembershipLevel( $currentProgram->group, $clientId ) || $retVal );
+            Utilities::get_instance()->log("Check whether the user {$clientId} belongs to (one of) the program group(s)");
+            $level_to_check = !empty($currentProgram->group) ? $currentProgram->group : null;
+            
+            $retVal = ( pmpro_hasMembershipLevel( $level_to_check, $clientId ) && $program->isInProgram( null, $clientId ) );
         }
 
         return $retVal;
@@ -1354,6 +1317,7 @@ class Tracker {
         return false;
     }
 
+    
     public function update_db() {
 
         if ( ( $db_ver = (int)$this->loadOption('e20r_db_version' ) ) < E20R_DB_VERSION ) {
@@ -1362,31 +1326,31 @@ class Tracker {
 
             if ( file_exists( $path ) ) {
 
-                E20R_Tracker::dbg("Tracker::update_db() - Loading: $path ");
+                Utilities::get_instance()->log("Loading: $path ");
                 require( $path );
-                E20R_Tracker::dbg("Tracker::update_db() - DB Upgrade functions loaded");
+                Utilities::get_instance()->log("DB Upgrade functions loaded");
             }
             else {
-                E20R_Tracker::dbg("Tracker::update_db() - ERROR: Can't load DB update script!");
+                Utilities::get_instance()->log("ERROR: Can't load DB update script!");
                 return;
              }
 
 
             $diff = ( E20R_DB_VERSION - $db_ver );
-            E20R_Tracker::dbg("Tracker::update_db() - We've got {$diff} versions to upgrade... {$db_ver} to " . E20R_DB_VERSION );
+            Utilities::get_instance()->log("We've got {$diff} versions to upgrade... {$db_ver} to " . E20R_DB_VERSION );
 
             for ( $i = ($db_ver + 1) ; $i <= E20R_DB_VERSION ; $i++ ) {
 
                 $version = $i;
-                E20R_Tracker::dbg("Tracker::update_db() - Process upgrade function for Version: {$version}");
+                Utilities::get_instance()->log("Process upgrade function for Version: {$version}");
 
                 if ( function_exists("e20r_update_db_to_{$version}" ) ) {
 
-                    E20R_Tracker::dbg("Tracker::update_db() - Function to update version to {$version} is present. Executing...");
+                    Utilities::get_instance()->log("Function to update version to {$version} is present. Executing...");
                     call_user_func( "e20r_update_db_to_{$version}", array( $version ) );
                 }
                 else {
-                    E20R_Tracker::dbg("Tracker::update_db() - No version specific update function for database version: {$version} ");
+                    Utilities::get_instance()->log("No version specific update function for database version: {$version} ");
                 }
             }
         }
@@ -1407,12 +1371,12 @@ class Tracker {
 
         $this->updateSetting( 'e20r_db_version', $e20r_db_version );
 
-        E20R_Tracker::dbg("Tracker::activate() - Should we attempt to unserialize the plugin settings?");
+        Utilities::get_instance()->log("Should we attempt to unserialize the plugin settings?");
         $errors = '';
 
         if ( 0 != E20R_RUN_UNSERIALIZE ) {
 
-            E20R_Tracker::dbg("Tracker::activate() - Attempting to unserialize the plugin program id and article id settings");
+            Utilities::get_instance()->log("Attempting to unserialize the plugin program id and article id settings");
 
             $what = $this->getCPTInfo();
 
@@ -1451,8 +1415,8 @@ class Tracker {
                             $message .= '</p>';
                         $message .= '</div><!-- /.error -->';
 
-                        E20R_Tracker::dbg("Tracker::activate() - Error while unserializing:");
-                        E20R_Tracker::dbg($success);
+                        Utilities::get_instance()->log("Error while unserializing:");
+                        Utilities::get_instance()->log($success);
                     }
 
                     $errors .= $message;
@@ -1462,7 +1426,7 @@ class Tracker {
             $this->updateSetting( 'unserialize_notice', $errors );
 
             $Assignment = Assignment::getInstance();
-            E20R_Tracker::dbg("Tracker::activate() -- Updating assignment programs key to program_ids key. ");
+            Utilities::get_instance()->log("Tracker::activate() -- Updating assignment programs key to program_ids key. ");
             // $Assignment->update_metadata();
         }
 
@@ -1482,7 +1446,7 @@ class Tracker {
 
         if (false === $this->define_Tracker_roles() )
         {
-            E20R_Tracker::dbg("ERROR: Unable to define the required roles for this plugin");
+            Utilities::get_instance()->log("ERROR: Unable to define the required roles for this plugin");
         }
 
         flush_rewrite_rules();
@@ -1497,7 +1461,7 @@ class Tracker {
 
         if ( $current_db_version == E20R_DB_VERSION ) {
 
-            E20R_Tracker::dbg("Tracker::manage_tables() - No change in DB structure. Continuing...");
+            Utilities::get_instance()->log("No change in DB structure. Continuing...");
             return;
         }
 
@@ -1513,7 +1477,7 @@ class Tracker {
             $charset_collate .= " COLLATE {$wpdb->collate}";
         }
 
-        E20R_Tracker::dbg("Tracker::manage_tables() - Loading table SQL...");
+        Utilities::get_instance()->log("Loading table SQL...");
 
         $message_history = "
             CREATE TABLE {$wpdb->prefix}e20r_client_messages (
@@ -1717,6 +1681,7 @@ class Tracker {
                     photo_consent tinyint not null default 0,
                     research_consent tinyint not null default 0,
                     medical_release tinyint not null default 0,
+                    coach_id int null default -1,
                     primary key  (id),
                     index user_id  (user_id),
                     index programstart  (program_start)
@@ -1838,32 +1803,32 @@ class Tracker {
         */
         require_once( ABSPATH . "wp-admin/includes/upgrade.php" );
 
-        E20R_Tracker::dbg('Tracker::manage_tables() - Loading/updating tables in database...');
+        Utilities::get_instance()->log('Loading/updating tables in database...');
         $result = dbDelta( $checkinSql );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Check-in table: ");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Check-in table: ");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $measurementTableSql );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Measurements table: ");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Measurements table: ");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $intakeTableSql );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Client Information table:");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Client Information table:");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $assignmentAsSql );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Assignments table:");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Assignments table:");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $activityTable );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Activity table:");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Activity table:");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $surveyTable );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Survey table:");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Survey table:");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $message_history );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Message history table:");
-        E20R_Tracker::dbg($result);
+        Utilities::get_instance()->log("Message history table:");
+        Utilities::get_instance()->log($result);
         $result = dbDelta( $response_table );
-        E20R_Tracker::dbg("Tracker::manage_tables() - Coach/Client response table:");
-        E20R_Tracker::dbg($result);
-        // E20R_Tracker::dbg("Tracker::manage_tables() - Adding triggers in database");
+        Utilities::get_instance()->log("Coach/Client response table:");
+        Utilities::get_instance()->log($result);
+        // Utilities::get_instance()->log("Adding triggers in database");
         // mysqli_multi_query($wpdb->dbh, $girthTriggerSql );
 
         // IMPORTANT: Always do this in the e20r_update_db_to_*() function!
@@ -1875,7 +1840,7 @@ class Tracker {
 
     public function updateSetting( $name, $value ) {
 
-        E20R_Tracker::dbg("Tracker::updateSetting() - Adding/updating setting: {$name} = {$value}");
+        Utilities::get_instance()->log("Adding/updating setting: {$name} = {$value}");
         $this->settings[$name] = $value;
         update_option( $this->setting_name, $this->settings);
         return true;
@@ -1901,7 +1866,7 @@ class Tracker {
 
         foreach( $cpt_info as $cpt => $data ) {
 
-            E20R_Tracker::dbg("Tracker::getCPTInfo() - Processing {$cpt}");
+            Utilities::get_instance()->log("Processing {$cpt}");
 
             $cpt_info[$cpt] = new \stdClass();
             $cpt_info[$cpt]->keylist = array();
@@ -1939,8 +1904,8 @@ class Tracker {
 
         }
 
-        E20R_Tracker::dbg("Tracker::getCPTInfo() - Config is: ");
-        E20R_Tracker::dbg($cpt_info);
+        Utilities::get_instance()->log("Config is: ");
+        Utilities::get_instance()->log($cpt_info);
 
         return $cpt_info;
     }
@@ -1963,7 +1928,7 @@ class Tracker {
 
         if ( 1 != $run_unserialize ) {
 
-            E20R_Tracker::dbg("Tracker::unserialize_settings() - Not being asked to convert serialized metadata.");
+            Utilities::get_instance()->log("Not being asked to convert serialized metadata.");
             return;
         }
 
@@ -1982,60 +1947,60 @@ class Tracker {
         $serialized_post_list = array();
         $unserialized_post_list = array();
 
-        E20R_Tracker::dbg("Tracker::unserialize_settings() - Converting from {$from_key} to {$to_key} for type {$post_type}");
+        Utilities::get_instance()->log("Converting from {$from_key} to {$to_key} for type {$post_type}");
 
         foreach ($posts_array as $serialized_post) {
 
             $serialized_post_id = $serialized_post->ID;
             $serialized_postmeta = get_post_meta( $serialized_post_id, $from_key, true );
 
-            E20R_Tracker::dbg("Tracker::unserialize_settings() - Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
+            Utilities::get_instance()->log("Processing: {$serialized_post->ID} which contains " . gettype($serialized_postmeta));
 
 
             if ( "delete" == $to_key ) {
 
-                E20R_Tracker::dbg("Tracker::unserialize_settings() - WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
+                Utilities::get_instance()->log("WARNING: Deleting metadata for {$serialized_post->ID}/{$from_key} ");
                 delete_post_meta( $serialized_post_id, $from_key );
             }
             else {
 
                 if ( !is_array( $serialized_postmeta ) ) {
 
-                    E20R_Tracker::dbg( "Tracker::unserialize_settings() - Value isn't actually serialized: {$serialized_postmeta}");
+                    Utilities::get_instance()->log( "Value isn't actually serialized: {$serialized_postmeta}");
                     $serialized_postmeta = array( $serialized_postmeta );
                 }
 
                 if ( is_array( $serialized_postmeta ) ) {
 
-                    E20R_Tracker::dbg("Tracker::unserialize_settings() - serialized postmeta IS an array.");
-                    E20R_Tracker::dbg($serialized_postmeta);
+                    Utilities::get_instance()->log("serialized postmeta IS an array.");
+                    Utilities::get_instance()->log($serialized_postmeta);
 
                     delete_post_meta( $serialized_post_id, $to_key );
 
                     foreach ( $serialized_postmeta as $k => $val ) {
 
-                        E20R_Tracker::dbg("Tracker::unserialize_settings() - Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
+                        Utilities::get_instance()->log("Update {$serialized_post_id} with key: {$from_key} to {$to_key} -> {$val} ");
 
                         if ( 0 !== $val ) {
 
                             add_post_meta( $serialized_post_id, $to_key, $val);
                         }
                         else {
-                            E20R_Tracker::dbg("Tracker::unserialize_settings() - Zero value for {$to_key}. Won't save it");
+                            Utilities::get_instance()->log("Zero value for {$to_key}. Won't save it");
                             unset( $serialized_postmeta[$k] );
                         }
                     }
 
-                    E20R_Tracker::dbg("Tracker::unserialize_settings() - From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
+                    Utilities::get_instance()->log("From {$serialized_post_id}/{$from_key}, delete " . gettype( $serialized_postmeta) );
 
                     $serialized_post_list[] = $serialized_post_id;
                 }
 
                 $unserialized_postmeta = get_post_meta( $serialized_post_id, $to_key );
 
-                // E20R_Tracker::dbg("Tracker::unserialize_settings() - Because this is a simulation, the following data is wrong... ");
-                E20R_Tracker::dbg("Tracker::unserialize_settings() - Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
-                E20R_Tracker::dbg($unserialized_postmeta);
+                // Utilities::get_instance()->log("Because this is a simulation, the following data is wrong... ");
+                Utilities::get_instance()->log("Still processing: {$serialized_post->ID}, but now with key {$to_key} which contains: ");
+                Utilities::get_instance()->log($unserialized_postmeta);
 
 
                 if ( is_array( $serialized_postmeta ) && ( is_array($unserialized_postmeta) ) ) {
@@ -2051,7 +2016,7 @@ class Tracker {
                 }
 
                 if ( empty( $cmp )  ) {
-                        E20R_Tracker::dbg("Tracker::unserialize_settings() - {$serialized_post_id} was unserialized and saved.");
+                        Utilities::get_instance()->log("{$serialized_post_id} was unserialized and saved.");
                     $unserialized_post_list[] = $serialized_post_id;
 
                 }
@@ -2077,20 +2042,20 @@ class Tracker {
         $roles_set = $this->loadOption('roles_are_set');
         $roles = $this->add_default_roles(array());
 
-        E20R_Tracker::dbg("Tracker::define_Tracker_roles() - Processing " . count($roles) . " roles:");
+        Utilities::get_instance()->log("Processing " . count($roles) . " roles:");
         foreach ( $roles as $key => $user_role ) {
 
             foreach ( $wp_roles->get_names() as $role_name => $display_name) {
 
                 if ( $role_name === $user_role['role'] ) {
-                    E20R_Tracker::dbg("Tracker::define_Tracker_roles() - Removing pre-existing role definition: {$role_name}");
+                    Utilities::get_instance()->log("Removing pre-existing role definition: {$role_name}");
                     $wp_roles->remove_role($role_name);
                 }
             }
 
-            E20R_Tracker::dbg("Tracker::define_Tracker_roles() - Adding role definition for {$user_role['role']} => {$user_role['label']}");
+            Utilities::get_instance()->log("Adding role definition for {$user_role['role']} => {$user_role['label']}");
             if (! $wp_roles->add_role( $user_role['role'], $user_role['label'], $user_role['permissions'] ) ) {
-                E20R_Tracker::dbg("Tracker::define_Tracker_roles() - Error adding {$key} -> '{$user_role['role']}' role!");
+                Utilities::get_instance()->log("Error adding {$key} -> '{$user_role['role']}' role!");
                 return false;
             }
         }
@@ -2105,9 +2070,10 @@ class Tracker {
         foreach( $admins as $admin ) {
 
             if ( !in_array( $roles['coach']['role'], (array) $admin->roles ) ) {
-                E20R_Tracker::dbg("Tracker::define_Tracker_roles() - User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
+                Utilities::get_instance()->log("User {$admin->ID} is not (yet) defined as a coach, but is an admin!");
                 $admin->add_role( $roles['coach']['role'] );
-                E20R_Tracker::dbg("Tracker::define_Tracker_roles() - Added 'coach' role to {$admin->ID}");
+                wp_cache_flush();
+                Utilities::get_instance()->log("Added 'coach' role to {$admin->ID}");
             }
         }
 
@@ -2170,7 +2136,7 @@ class Tracker {
 
         $options = get_option( $this->setting_name );
 
-        E20R_Tracker::dbg("Tracker::deactivate() - Current options: " . print_r( $options, true ) );
+        Utilities::get_instance()->log("Current options: " . print_r( $options, true ) );
 
         $tables = array(
             $wpdb->prefix . 'e20r_checkin',
@@ -2189,14 +2155,14 @@ class Tracker {
 
             if ( $options['purge_tables'] == 1 ) {
 
-                E20R_Tracker::dbg("Tracker::deactivate() - Truncating {$tblName}" );
+                Utilities::get_instance()->log("Truncating {$tblName}" );
                 $sql = "TRUNCATE TABLE {$tblName}";
                 $wpdb->query( $sql );
             }
 
             if ( $options['delete_tables'] == 1 ) {
 
-                E20R_Tracker::dbg( "Tracker::deactivate() - {$tblName} being dropped" );
+                Utilities::get_instance()->log( "{$tblName} being dropped" );
 
                 $sql = "DROP TABLE IF EXISTS {$tblName}";
                 $wpdb->query( $sql );
@@ -2238,7 +2204,7 @@ class Tracker {
                     error_log("Tracker - Unable to remove requested file: {$file}");
                 }
                 else {
-                    E20R_Tracker::dbg("Tracker::remove_old_files() - Removed: {$file}");
+                    Utilities::get_instance()->log("Removed: {$file}");
                 }
             }
         }
@@ -2247,7 +2213,7 @@ class Tracker {
     /**
      * Configure & display the icon for the Tracker (in the Dashboard)
      */
-    function post_type_icon() {
+    public function post_type_icon() {
         ?>
         <style>
 /*          @font-face {
@@ -2305,10 +2271,10 @@ class Tracker {
 
     public function getUserList( $level = null ) {
 
-        E20R_Tracker::dbg("Tracker::getUserList() - Called by: " . $this->whoCalledMe() );
+        Utilities::get_instance()->log("Called by: " . $this->whoCalledMe() );
         $levels = array_keys( $this->getMembershipLevels( $level, false ) );
 
-        E20R_Tracker::dbg("Tracker::getUserList() - Users being loaded for the following level(s): " . print_r( $levels, true ) );
+        Utilities::get_instance()->log("Users being loaded for the following level(s): " . print_r( $levels, true ) );
 
         return $this->model->loadUsers( $levels );
     }
@@ -2321,20 +2287,20 @@ class Tracker {
 
             if ( is_numeric( $level ) ) {
 
-                E20R_Tracker::dbg("Tracker::getLevelList() - Requested ID: {$level}");
+                Utilities::get_instance()->log("Requested ID: {$level}");
                 $tmp = pmpro_getLevel( $level );
                 $name = $tmp->name;
-                E20R_Tracker::dbg("Tracker::getLevelList() - Level Name: {$name}");
+                Utilities::get_instance()->log("Level Name: {$name}");
             }
 
             $allLevels = pmpro_getAllLevels( $onlyVisible, true );
             $levels    = array();
 
             if ( ! empty( $name ) ) {
-                E20R_Tracker::dbg("Tracker::getLevelList() - Supplied name for level: {$name}");
+                Utilities::get_instance()->log("Supplied name for level: {$name}");
                 $name = str_replace( '+', '\+', $name);
                 $pattern = "/{$name}/i";
-                E20R_Tracker::dbg("Tracker::getLevelList() - Pattern for level: {$pattern}");
+                Utilities::get_instance()->log("Pattern for level: {$pattern}");
             }
 
             foreach ( $allLevels as $level ) {
@@ -2353,7 +2319,7 @@ class Tracker {
 
             asort( $levels );
 
-            // E20R_Tracker::dbg("Levels fetched: " . print_r( $levels, true ) );
+            // Utilities::get_instance()->log("Levels fetched: " . print_r( $levels, true ) );
 
             return $levels;
         }
@@ -2370,35 +2336,18 @@ class Tracker {
             ?>
             <div class="error">
             <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') && !class_exists('E20R\Sequences\Sequence\Sequence_Controller' ) ) : ?>
-                <?php E20R_Tracker::dbg("Tracker::Error -  The The Sequences plugin is not installed"); ?>
+                <?php Utilities::get_instance()->log("Tracker::Error -  The The Sequences plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20r-tracker' ); ?></p>
             <?php endif; ?>
             </div><?php
         }
     }
-/*
-    public function getLevelIdForUser( $userId = null ) {
 
-        $Program = Program::getInstance();
-
-        $level_id = null;
-
-        if ( is_null( $userId ) ) {
-
-            global $current_user;
-            $userId = $current_user->ID;
-        }
-
-        $program_id = $Program->getProgramIdForUser( $userId );
-
-        return $program_id;
-    }
-*/
 	public function getGroupIdForUser( $userId = null ) {
 
 		$group_id = null;
 
-		E20R_Tracker::dbg("Tracker::getGroupIdForUser() - Get membership/group data for {$userId}");
+		Utilities::get_instance()->log("Get membership/group data for {$userId}");
 
 		if ( is_null( $userId ) ) {
 
@@ -2408,12 +2357,12 @@ class Tracker {
 
 		$user = new \WP_User($userId);
 
-		// E20R_Tracker::dbg("Tracker::getGroupIdForUser() - User object: " . print_r( $user, true));
+		// Utilities::get_instance()->log("User object: " . print_r( $user, true));
 
 		foreach( (array) $user->roles as $role ) {
 
 			if ( false !== strpos( $role, 'e20r_tracker_exp') ) {
-				E20R_Tracker::dbg("Tracker::getGroupIdForUser() - Returning the tracker role/group for {$userId}: {$role}");
+				Utilities::get_instance()->log("Returning the tracker role/group for {$userId}: {$role}");
 				$group_id = $role;
 			}
 		}
@@ -2423,17 +2372,17 @@ class Tracker {
 			$roles = apply_filters('e20r-tracker-configured-roles', array() );
 			$group_id = $roles['beginner']['role'];
 
-			E20R_Tracker::dbg("Tracker::getGroupIdForUser() - Assigning default group for the current user ID ({$userId}): {$group_id}");
+			Utilities::get_instance()->log("Assigning default group for the current user ID ({$userId}): {$group_id}");
 		}
 /*
 		if ( function_exists( 'pmpro_getMembershipLevelForUser' ) ) {
 
-			E20R_Tracker::dbg("Tracker::getGroupIdForUser() - Using Paid Memberships Pro for group/level management for {$userId}");
+			Utilities::get_instance()->log("Using Paid Memberships Pro for group/level management for {$userId}");
 			$obj = pmpro_getMembershipLevelForUser( $userId );
 
 			$group_id = isset( $obj->ID ) ? $obj->ID : 0;
 
-			E20R_Tracker::dbg("Tracker::getGroupIdForUser() - Returning group ID of {$group_id} for {$userId}");
+			Utilities::get_instance()->log("Returning group ID of {$group_id} for {$userId}");
 		}
 */
 		return $group_id;
@@ -2453,7 +2402,7 @@ class Tracker {
 
         if (true === $dripfeed_exists ) {
 
-            E20R_Tracker::dbg("Tracker::getDripFeedDelay() - Found the PMPro Sequence Drip Feed plugin");
+            Utilities::get_instance()->log("Found the PMPro Sequence Drip Feed plugin");
             
             if ( class_exists('\PMProSequence')) {
                 $sequenceIds = \PMProSequence::sequences_for_post( $postId );
@@ -2486,11 +2435,11 @@ class Tracker {
 
                 unset($seq);
 */
-                E20R_Tracker::dbg("Tracker::getDripFeedDelay() - Delay details: " . print_r( $details, true  ) );
+                Utilities::get_instance()->log("Delay details: " . print_r( $details, true  ) );
 
                 if ( $id != false ) {
 
-                    E20R_Tracker::dbg("Tracker::getDripFeedDelay() - Returning {$details[0]->delay}");
+                    Utilities::get_instance()->log("Returning {$details[0]->delay}");
                     return $details[0]->delay;
                 }
             }
@@ -2513,7 +2462,7 @@ class Tracker {
 
 	        if ( stripos( $key, 'zip' ) ) {
 
-		        E20R_Tracker::dbg("Tracker::setFormatForRecord() - Field contains Zip...");
+		        Utilities::get_instance()->log("Field contains Zip...");
 
 		        $varFormat = '%s';
 	        }
@@ -2528,7 +2477,7 @@ class Tracker {
             }
             else {
 
-                E20R_Tracker::dbg("Tracker::setFormatForRecord() - Invalid data type for {$key}/{$val} pair");
+                Utilities::get_instance()->log("Invalid data type for {$key}/{$val} pair");
                 throw new \Exception( "The value submitted for persistant storage as {$key} is of an invalid/unknown type" );
             }
         }
@@ -2548,25 +2497,25 @@ class Tracker {
     private function setFormat( $value ) {
 
         if ( ! is_numeric( $value ) ) {
-            // E20R_Tracker::dbg( "setFormat() - {$value} is NOT numeric" );
+            // Utilities::get_instance()->log( "setFormat() - {$value} is NOT numeric" );
 
             if ( ctype_alpha( $value ) ) {
-                // E20R_Tracker::dbg( "setFormat() - {$value} is a string" );
+                // Utilities::get_instance()->log( "setFormat() - {$value} is a string" );
                 return '%s';
             }
 
             if ( strtotime( $value ) ) {
-                // E20R_Tracker::dbg( "setFormat() - {$value} is a date (treating it as a string)" );
+                // Utilities::get_instance()->log( "setFormat() - {$value} is a date (treating it as a string)" );
                 return '%s';
             }
 
             if ( is_string( $value ) ) {
-                // E20R_Tracker::dbg( "setFormat() - {$value} is a string" );
+                // Utilities::get_instance()->log( "setFormat() - {$value} is a string" );
                 return '%s';
             }
 
             if (is_null( $value )) {
-                // E20R_Tracker::dbg( "setFormat() - it's a NULL value");
+                // Utilities::get_instance()->log( "setFormat() - it's a NULL value");
                 return '%s';
             }
         }
@@ -2576,7 +2525,7 @@ class Tracker {
 		        return '%d';
 	        }
 
-            // E20R_Tracker::dbg( "setFormat() - .{$value}. IS numeric" );
+            // Utilities::get_instance()->log( "setFormat() - .{$value}. IS numeric" );
 
             if ( filter_var( $value, FILTER_VALIDATE_FLOAT) !== false ) {
                 return '%f';
@@ -2588,7 +2537,7 @@ class Tracker {
 		    return '%d';
 	    }
 
-	    E20R_Tracker::dbg("Tracker::setFormat() - Value: {$value} doesn't have a recognized format..? " . gettype($value) );
+	    Utilities::get_instance()->log("Value: {$value} doesn't have a recognized format..? " . gettype($value) );
         return '%s';
     }
 
@@ -2669,7 +2618,7 @@ class Tracker {
         
         if ( !empty( $notice ) ) {
 
-            E20R_Tracker::dbg("Tracker::convert_postmeta_notice() - Loading error message");
+            Utilities::get_instance()->log("Loading error message");
             echo $notice;
             $this->updateSetting('unserialize_notice', null);
         }

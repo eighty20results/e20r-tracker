@@ -1,18 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 11/1/14
- * Time: 5:38 PM
- */
+namespace E20R\Tracker\Models;
 
-class e20rMeasurementModel {
+use E20R\Tracker\Controllers\Tracker;
+use E20R\Tracker\Controllers\Program;
+use E20R\Tracker\Controllers\Client;
+use E20R\Utilities\Utilities;
+
+class Measurement_Model {
 
     private $client_id = null;
     private $programId = null;
-
-    private $measured_items = array();
-
+    
     public $all = array();
     public $byDate = array();
 	
@@ -25,9 +23,8 @@ class e20rMeasurementModel {
     private static $instance = null;
 
     public function __construct( $user_id = null ) {
-
-        global $wpdb;
-        $e20rTables = e20rTables::getInstance();
+    	
+        $Tables = Tables::getInstance();
 
         global $current_user;
 
@@ -39,22 +36,25 @@ class e20rMeasurementModel {
 
 		    $this->client_id = $user_id;
             $this->programId = 0;
-		    // $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
+		    // $this->programId = $Program->getProgramIdForUser( $this->client_id );
 
-		    dbg( "e20rMeasurementModel::construct() - For user_id: {$user_id}" );
+		    Utilities::get_instance()->log( "e20rMeasurementModel::construct() - For user_id: {$user_id}" );
 	    }
 	    
 	    try {
-		    $this->table  = $e20rTables->getTable( 'measurements' );
-		    $this->fields = $e20rTables->getFields( 'measurements' );
-	    } catch ( Exception $e ) {
-	    	dbg("Error configuring measurement table: " . $e->getMessage() );
+		    $this->table  = $Tables->getTable( 'measurements' );
+	    } catch ( \Exception $e ) {
+	    	Utilities::get_instance()->log("Error configuring measurement table: " . $e->getMessage() );
 	    	return false;
 	    }
+	
+	    $this->fields = $Tables->getFields( 'measurements' );
+	    
+	    return $this;
     }
 
 	/**
-	 * @return e20rMeasurementModel
+	 * @return Measurement_Model
 	 */
 	static function getInstance() {
 
@@ -64,14 +64,23 @@ class e20rMeasurementModel {
 
 		return self::$instance;
 	}
-
+	
+	/**
+	 * @param $articleId
+	 * @param $programId
+	 * @param $user_id
+	 * @param $date
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
     public function checkCompletion( $articleId, $programId, $user_id, $date ) {
 
         global $wpdb;
 
         $nextDay = date( 'Y-m-d', strtotime( $date . '+ 1 day') );
 
-        dbg( "e20rMeasurementModel::checkCompletion() - Day: {$date} -> next day: {$nextDay}");
+        Utilities::get_instance()->log( "Measurement_Model::checkCompletion() - Day: {$date} -> next day: {$nextDay}");
 
         $sql = $wpdb->prepare(
             "SELECT id,
@@ -99,13 +108,10 @@ class e20rMeasurementModel {
                 $nextDay
         );
 
-	    /*
-        dbg("e20rMeasurementModel::checkCompletion() - SQL: ");
-        dbg($sql);
-		*/
         $results = $wpdb->get_results( $sql );
 
-        dbg("e20rMeasurementModel::checkCompletion() - Returned " . count( $results ) . " records");
+        Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Returned " . count( $results ) . " records");
+        
         $completionStatus = false;
         $girth_compl = false;
         $weight_compl = false;
@@ -113,9 +119,8 @@ class e20rMeasurementModel {
 
         if ( is_wp_error( $results ) ) {
 
-            dbg("e20rMeasurementModel::checkCompletion() - Error searching database: " . $wpdb->print_error() );
-            throw new Exception( "Error searching database: " . $wpdb->print_error() );
-            return false;
+            Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Error searching database: " . $wpdb->print_error() );
+            throw new \Exception( "Error searching database: " . $wpdb->print_error() );
         }
 
         if ( ! empty( $results ) ) {
@@ -123,26 +128,26 @@ class e20rMeasurementModel {
             foreach( $results as $res ) {
 
 	            /*
-                dbg("e20rMeasurementModel::checkCompletion() - Returned Data: ");
-                dbg($res);
+                Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Returned Data: ");
+                Utilities::get_instance()->log($res);
 				*/
                 if ( $res->completed >= TOTAL_GIRTH_MEASUREMENTS ) {
 
                     $girth_compl = true;
-                    dbg("e20rMeasurementModel::checkCompletion() - Have all girth measurements.");
+                    Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Have all girth measurements.");
                 }
 
                 $completionPct = ( $res->completed / TOTAL_GIRTH_MEASUREMENTS );
 
                 if ( ! empty( $res->weight ) ) {
 
-                    dbg("e20rMeasurementModel::checkCompletion() - Recorded weight.");
+                    Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Recorded weight.");
                     $weight_compl = true;
                 }
 
                 if ( !empty( $res->girth ) && ( $girth_compl ) ) {
 
-                    dbg("e20rMeasurementModel::checkCompletion() - Updating total Girth for user {$user_id} on {$date}");
+                    Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Updating total Girth for user {$user_id} on {$date}");
                     $this->setTotalGirth( $res->id );
                 }
             }
@@ -150,7 +155,7 @@ class e20rMeasurementModel {
             $completionStatus = ( $girth_compl && $weight_compl );
         }
 
-        dbg("e20rMeasurementModel::checkCompletion() - Completion Status: {$completionStatus} and percentage: {$completionPct}");
+        Utilities::get_instance()->log("Measurement_Model::checkCompletion() - Completion Status: {$completionStatus} and percentage: {$completionPct}");
         return array( 'status' => $completionStatus, 'percent' => ( $completionPct * 100));
     }
 
@@ -163,7 +168,7 @@ class e20rMeasurementModel {
 
 	    if ( WP_DEBUG == true ) {
 
-		    dbg("e20rMeasurementModel::getMeasurements() - DEBUG is enabled. Clear transient data");
+		    Utilities::get_instance()->log("Measurement_Model::getMeasurements() - DEBUG is enabled. Clear transient data");
 		    $this->setFreshClientData();
 	    }
 
@@ -171,9 +176,9 @@ class e20rMeasurementModel {
             $this->loadAll();
 
         }
-        catch( Exception $e ) {
-            dbg("e20rMeasurementModel::getMeasurements() - Error loading all data: " . $e->getMessage() );
-            return false;
+        catch( \Exception $e ) {
+            Utilities::get_instance()->log("Measurement_Model::getMeasurements() - Error loading all data: " . $e->getMessage() );
+            return array();
         }
 
         return $this->all;
@@ -188,20 +193,25 @@ class e20rMeasurementModel {
 
 	    if ( WP_DEBUG == true ) {
 
-		    dbg("e20rMeasurementModel::getByDate() - DEBUG is enabled. Clear transient data");
+		    Utilities::get_instance()->log("Measurement_Model::getByDate() - DEBUG is enabled. Clear transient data");
 		    $this->setFreshClientData();
 	    }
 
-        dbg("e20rMeasurementModel::getByDate() - Fetching data for {$date}");
-        $this->loadByDate( $date );
+        Utilities::get_instance()->log("Measurement_Model::getByDate() - Fetching data for {$date}");
+	    try {
+		    $this->loadByDate( $date );
+	    } catch( \Exception $exception ) {
+	    	Utilities::get_instance()->log("Unable to load data based on a date ({$date}). Error: " . $exception->getMessage() );
+		    $this->loadNullMeasurement( $date );
+	    }
 
         if ( $date != 'all' ) {
 
-            dbg("e20rMeasurementModel::getByDate() - Returning data for {$date} only");
+            Utilities::get_instance()->log("Measurement_Model::getByDate() - Returning data for {$date} only");
             return ( array_key_exists( $date, $this->byDate ) ? $this->byDate[ $date ] : $this->loadNullMeasurement( $date ) );
         }
         else {
-	        dbg("e20rMeasurementModel::getByDate() - Returning NULL data for {$date}");
+	        Utilities::get_instance()->log("Measurement_Model::getByDate() - Returning NULL data for {$date}");
             return (empty( $this->byDate ) ? $this->loadNullMeasurement( $date ) : $this->byDate );
         }
 
@@ -214,27 +224,25 @@ class e20rMeasurementModel {
 
     public function setUser( $userId ) {
 
-        $e20rProgram = e20rProgram::getInstance();
-        $e20rTables = e20rTables::getInstance();
+        $Program = Program::getInstance();
+        $Tables = Tables::getInstance();
 
         $this->client_id = $userId;
-        $this->programId = $e20rProgram->getProgramIdForUser( $this->client_id );
+        $this->programId = $Program->getProgramIdForUser( $this->client_id );
 
         // Update tables (account for possible beta group data).
-        $e20rTables->init( $this->client_id );
-
-        $this->table = $e20rTables->getTable( 'measurements', true );
-        $this->fields = $e20rTables->getFields( 'measurements', true );
-/*
+        $Tables->init( $this->client_id );
+	    
         try {
-            $this->loadAll();
+	        $this->table = $Tables->getTable( 'measurements', true );
+        } catch( \Exception $exception ) {
+        	Utilities::get_instance()->log("Unable to locate the Measurements table in the database. Error: " . $exception->getMessage() );
+        	$this->fields = null;
+        	return false;
         }
-        catch ( Exception $e ) {
-
-            dbg("e20rMeasurementModel::setUser() - Error loading all data for {$this->client_id}: " . $e->getMessage() );
-            return;
-        }
-*/
+        $this->fields = $Tables->getFields( 'measurements', true );
+	    
+        return $this->client_id;
     }
 
     /**
@@ -248,36 +256,45 @@ class e20rMeasurementModel {
     }
 
     private function record2Array( $record ) {
-        dbg("e20rMeasurementModel::record2Array() - Converting from stdClass: " . print_r( $record, true ) );
+        Utilities::get_instance()->log("Measurement_Model::record2Array() - Converting from stdClass: " . print_r( $record, true ) );
         return json_decode(json_encode($record), true);
+        
     }
-
+	
+	/**
+	 * @param $rec
+	 * @param $user_id
+	 * @param $date
+	 *
+	 * @return bool
+	 * @throws \Exception
+	 */
     public function saveRecord( $rec, $user_id, $date ) {
 
         global $wpdb;
-        $e20rProgram = e20rProgram::getInstance();
-        $e20rTracker = e20rTracker::getInstance();
-        $e20rClient = e20rClient::getInstance();
+        $Program = Program::getInstance();
+        $Tracker = Tracker::getInstance();
 
         if (! is_array( $rec ) ) {
 
-            dbg("e20rMeasurementModel::saveRecord() - Received data is in object format. Converting... ");
+            Utilities::get_instance()->log("Measurement_Model::saveRecord() - Received data is in object format. Converting... ");
             $rec = $this->record2Array( $rec );
-            dbg("e20rMeasurementModel::saveRecord() - Converted from stdClass: " . print_r( $rec, true ) );
+            Utilities::get_instance()->log("Measurement_Model::saveRecord() - Converted from stdClass: " . print_r( $rec, true ) );
         }
 
         $record = $rec;
         unset($rec); // Free memory
 
-        $format = $e20rTracker->setFormatForRecord( $record );
-        $programId = $e20rProgram->getProgramIdForUser( $user_id );
+        $format = $Tracker->setFormatForRecord( $record );
+        $programId = $Program->getProgramIdForUser( $user_id );
 
         // $insert_formats = implode( ', ', array_values( $format ) );
         // $insert_fields = implode( ', ', array_keys( $record ) );
+	    $existing = $this->hasExistingData( $date, $programId, $user_id );
+	    
+        if ( !empty( $existing ) ) {
 
-        if ( $existing = $this->hasExistingData( $date, $programId, $user_id ) ) {
-
-            dbg("e20rMeasurementModel::saveRecord() - Found existing record for same user/date/article");
+            Utilities::get_instance()->log("Measurement_Model::saveRecord() - Found existing record for same user/date/article");
             $record[$this->fields['id']] = $existing->{$this->fields['id']};
 
             // $insert_sql = "INSERT INTO {$this->table} ( {$insert_fields} ) VALUES ( {$insert_formats} );";
@@ -285,12 +302,11 @@ class e20rMeasurementModel {
 
         }
 
-        dbg("e20rMeasurementModel::saveRecord() - Updating record");
+        Utilities::get_instance()->log("Measurement_Model::saveRecord() - Updating record");
         if ( $wpdb->replace( $this->table, $record, $format ) === false ) {
 
-            dbg("e20rMeasurementModel::saveRecord() - Unable to save database record: " . $wpdb->print_error() );
-            throw new Exception("Unable to save record to database: " . $wpdb->print_error() );
-            return false;
+            Utilities::get_instance()->log("Measurement_Model::saveRecord() - Unable to save database record: " . $wpdb->print_error() );
+            throw new \Exception("Unable to save record to database: " . $wpdb->print_error() );
         }
 
         return true;
@@ -298,20 +314,28 @@ class e20rMeasurementModel {
 
     public function setFreshClientData() {
 
-        $e20rClient = e20rClient::getInstance();
+        $Client = Client::getInstance();
 
         // Make sure new data is accurately reflected to user(s).
         delete_transient("e20r_byDate_client_measurements_{$this->client_id}");
         delete_transient("e20r_all_client_measurements_{$this->client_id}");
 	    delete_transient("e20r_datelist_client_measurements_{$this->client_id}");
 
-        $e20rClient->scriptsLoaded = false;
+        $Client->scriptsLoaded = false;
 
     }
-
+	
+	/**
+	 * @param      $when
+	 * @param      $programId
+	 * @param null $userId
+	 *
+	 * @return array|bool|null|object
+	 * @throws \Exception
+	 */
     private function hasExistingData( $when, $programId, $userId = null ) {
 
-        dbg("e20rMeasurementModel::hasExistingData() - Checking data for {$userId}/{$this->client_id} on {$when}");
+        Utilities::get_instance()->log("Measurement_Model::hasExistingData() - Checking data for {$userId}/{$this->client_id} on {$when}");
 
         global $wpdb;
 
@@ -334,18 +358,17 @@ class e20rMeasurementModel {
                         $programId
                     );
 
-//        dbg("e20rMeasurementModel::hasExistingData() - SQL: ");
-//        dbg($sql);
+//        Utilities::get_instance()->log("Measurement_Model::hasExistingData() - SQL: ");
+//        Utilities::get_instance()->log($sql);
 
         $existing = $wpdb->get_row( $sql );
 
         if ( is_wp_error( $existing ) ) {
-            dbg("e20rMeasurementModel::hasExistingData - Error searching database: " . $wpdb->print_error() );
-            throw new Exception( "Error searching database: " . $wpdb->print_error() );
-            return false;
+            Utilities::get_instance()->log("Measurement_Model::hasExistingData - Error searching database: " . $wpdb->print_error() );
+            throw new \Exception( "Error searching database: " . $wpdb->print_error() );
         }
 
-        dbg("e20rMeasurementModel::hasExistingData - We found " . count($existing) . " records in the database for {$this->client_id} on {$when} 00:00:00");
+        Utilities::get_instance()->log("Measurement_Model::hasExistingData - We found " . count($existing) . " records in the database for {$this->client_id} on {$when} 00:00:00");
 
         if ( empty( $existing ) ) {
             return false;
@@ -364,16 +387,15 @@ class e20rMeasurementModel {
      * @param $user_id
      *
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function saveField( $form_key, $value, $articleID, $programId, $when, $user_id ) {
-
-        $e20rClient = e20rClient::getInstance();
-        $e20rTracker = e20rTracker::getInstance();
+    	
+        $Tracker = Tracker::getInstance();
 
         if ( $this->client_id == 0 ) {
 
-            throw new Exception( "User is not logged in" );
+            throw new \Exception( "User is not logged in" );
         }
 
         if ( $this->client_id !== $user_id ) {
@@ -381,15 +403,13 @@ class e20rMeasurementModel {
             $this->client_id = $user_id;
         }
 
-        dbg("e20rMeasurementModel::saveField - Received variables: {$form_key}, {$value}, {$articleID}, {$programId}, {$when}");
+        Utilities::get_instance()->log("Measurement_Model::saveField - Received variables: {$form_key}, {$value}, {$articleID}, {$programId}, {$when}");
 
         global $wpdb;
 
-        $varFormat = false;
-
         if ( ( $existing = $this->hasExistingData( $when, $programId, $user_id ) ) !== false ) {
 
-            dbg("e20rMeasurementModel::saveField - Assuming we have to include existing data when updating the database");
+            Utilities::get_instance()->log("Measurement_Model::saveField - Assuming we have to include existing data when updating the database");
 
             $data = array(
                 $this->fields['id']            => $existing->{$this->fields['id']},
@@ -399,16 +419,16 @@ class e20rMeasurementModel {
                 $this->fields['recorded_date'] => "{$when} 00:00:00",
             );
 
-            dbg("e20rMeasurementModel::saveField - Updating existing data to the database." );
+            Utilities::get_instance()->log("Measurement_Model::saveField - Updating existing data to the database." );
 
             foreach ( $existing as $key => $val ) {
 
-                dbg("e20rMeasurementModel::saveField() - Key: {$key} => Val: {$val}");
+                Utilities::get_instance()->log("Measurement_Model::saveField() - Key: {$key} => Val: {$val}");
 
                 if ( $key != $this->fields[ $form_key ]) {
 
                     if ( ( $key != 'essay1' ) && ( $val === null ) ) {
-                        // dbg("Skipping {$key}");
+                        // Utilities::get_instance()->log("Skipping {$key}");
                         continue;
                     }
 
@@ -416,13 +436,13 @@ class e20rMeasurementModel {
                 }
                 else {
 
-                    dbg("e20rMeasurementModel::saveField - Updating {$this->fields[$form_key]} entry in DB: " . $value );
+                    Utilities::get_instance()->log("Measurement_Model::saveField - Updating {$this->fields[$form_key]} entry in DB: " . $value );
                     $data = array_merge( $data, array( $this->fields[ $form_key ] => ( !empty($value) ? $value : '' ) ) );
 
                 }
 
             }
-            // dbg("Data to update: " . print_r( $data, true));
+            // Utilities::get_instance()->log("Data to update: " . print_r( $data, true));
 
         }
         else {
@@ -436,15 +456,12 @@ class e20rMeasurementModel {
         }
 
         // Define/prepare the format for the supplied data
-        $format = $e20rTracker->setFormatForRecord( $data );
-
-//        dbg("e20rMeasurementModel::saveField - Data to 'replace': " . print_r( $data, true ) );
-//        dbg("e20rMeasurementModel::saveField - formats for Data to 'replace': " . print_r( $format, true ) );
-
+        $format = $Tracker->setFormatForRecord( $data );
+        
         if ( $wpdb->replace( $this->table, $data, $format ) === false ) {
 
-            dbg("e20rMeasurementModel::saveField - Error updating database: " . $wpdb->print_error() );
-            throw new Exception( "Error updating database: " . $wpdb->print_error() );
+            Utilities::get_instance()->log("Measurement_Model::saveField - Error updating database: " . $wpdb->print_error() );
+            throw new \Exception( "Error updating database: " . $wpdb->print_error() );
         }
 
         // Clear transients so the DB record gets loaded on next refresh
@@ -464,12 +481,12 @@ class e20rMeasurementModel {
 
         $retArr = array();
 
-	    // dbg("e20rMeasurementModel::remap_fields() - Loading for fields:");
-	    // dbg($this->fields);
+	    // Utilities::get_instance()->log("Measurement_Model::remap_fields() - Loading for fields:");
+	    // Utilities::get_instance()->log($this->fields);
 
         foreach ( $data as $record ) {
 
-            $tmp = new stdClass();
+            $tmp = new \stdClass();
             $tmp->id = $record->{$this->fields['id']};
             $tmp->user_id = $record->{$this->fields['user_id']};
             $tmp->article_id = $record->{$this->fields['article_id']};
@@ -501,10 +518,15 @@ class e20rMeasurementModel {
 
         return $retArr;
     }
-
+	
+	/**
+	 * @param $when
+	 *
+	 * @throws \Exception
+	 */
     private function loadByDate( $when ) {
 
-	    $e20rTracker = e20rTracker::getInstance();
+	    $Tracker = Tracker::getInstance();
 	    global $e20rMeasurementDate;
 
 	    if ( false === ( $this->all = get_transient( "e20r_datelist_client_measurements_{$this->client_id}" ) ) ) {
@@ -512,23 +534,23 @@ class e20rMeasurementModel {
 		    if ( ( ! in_array( $when, array( 'current', 'last_week', 'next' ) ) ) &&
 		         ( strtotime( $when ) !== false ) ) {
 
-			    dbg( "e20rMeasurementModel::loadByDate() - Specified an actual date value ({$when})" );
+			    Utilities::get_instance()->log( "Measurement_Model::loadByDate() - Specified an actual date value ({$when})" );
 			    $date = $when;
 		    }
 		    elseif ( $when == 'all' ) {
 
-			    dbg( "e20rMeasurementModel::loadByDate() - Specified all" );
+			    Utilities::get_instance()->log( "Measurement_Model::loadByDate() - Specified all" );
 			    $date = null;
 		    }
 		    else {
 
-			    dbg( "e20rMeasurements::loadByDate() - Specified an relative date value ({$when})" );
+			    Utilities::get_instance()->log( "e20rMeasurements::loadByDate() - Specified an relative date value ({$when})" );
 
-			    $mDates = $e20rTracker->datesForMeasurements( $e20rMeasurementDate );
+			    $mDates = $Tracker->datesForMeasurements( $e20rMeasurementDate );
 			    $date   = $mDates[ $when ];
 		    }
 
-		    dbg( "MeasurementModel::loadByDate() - Loading fresh copy if byDate version of measurements" );
+		    Utilities::get_instance()->log( "MeasurementModel::loadByDate() - Loading fresh copy if byDate version of measurements" );
 
 		    global $wpdb;
 
@@ -545,19 +567,17 @@ class e20rMeasurementModel {
 			    $this->programId,
 			    $date . ' 00:00:00' );
 
-		    // dbg("MeasurementModel::loadByDate() - SQL: {$sql}" );
+		    // Utilities::get_instance()->log("MeasurementModel::loadByDate() - SQL: {$sql}" );
 
 		    $results = $wpdb->get_results( $sql );
 
 		    if ( is_wp_error( $results ) ) {
 
-			    dbg( "MeasurementModel::loadByDate() - Error loading from database: " . $wpdb->print_error() );
-			    throw new Exception( "Error loading by date: " . $wpdb->print_error() );
-
-			    return false;
+			    Utilities::get_instance()->log( "MeasurementModel::loadByDate() - Error loading from database: " . $wpdb->print_error() );
+			    throw new \Exception( "Error loading by date: " . $wpdb->print_error() );
 		    }
 
-		    dbg( "MeasurementModel::loadByDate() - loaded " . count( $results ) . " records" );
+		    Utilities::get_instance()->log( "MeasurementModel::loadByDate() - loaded " . count( $results ) . " records" );
 
 		    if (empty($results)) {
 			    $ts = strtotime($when);
@@ -576,20 +596,22 @@ class e20rMeasurementModel {
 
     /**
      * Loads all recorded measurements for the user from the database
+     *
+     * @throws \Exception
      */
     private function loadAll() {
 
 
         if ( false === ( $this->all = get_transient( "e20r_all_client_measurements_{$this->client_id}" ) ) ) {
 
-            dbg("e20rMeasurementModel::loadAll() - Loading ALL client measurements for user_id {$this->client_id} from the database");
+            Utilities::get_instance()->log("Measurement_Model::loadAll() - Loading ALL client measurements for user_id {$this->client_id} from the database");
 
             // Not stored yet, so grab the data from the DB and store it.
             global $wpdb;
 
             if ( $this->programId === null  ) {
 
-	            dbg("e20rMeasurementModel::loadAll() - Not using Program ID to locate data: {$this->table}");
+	            Utilities::get_instance()->log("Measurement_Model::loadAll() - Not using Program ID to locate data: {$this->table}");
                 $sql = $wpdb->prepare(
                     "
                       SELECT *
@@ -602,7 +624,7 @@ class e20rMeasurementModel {
             }
             else {
 
-	            dbg("e20rMeasurementModel::loadAll() - Using Program ID to identify data: {$this->table}");
+	            Utilities::get_instance()->log("Measurement_Model::loadAll() - Using Program ID ({$this->programId}) to identify data: {$this->table}");
                 $sql = $wpdb->prepare(
                     "
                       SELECT *
@@ -616,17 +638,16 @@ class e20rMeasurementModel {
                 );
             }
 
-            dbg("e20rMeasurementModel::loadAll() - SQL: " . $sql );
+            Utilities::get_instance()->log("Measurement_Model::loadAll() - SQL: " . $sql );
 
             $results = $wpdb->get_results( $sql );
 
-            dbg("e20rMeasurementModel::loadAll() - loaded " . count($results) . " records");
+            Utilities::get_instance()->log("Measurement_Model::loadAll() - loaded " . count($results) . " records");
 
 	        if ( is_wp_error( $results ) ) {
 
-		        dbg("e20rMeasurementModel::loadAll() - Error loading from database: " . $wpdb->print_error() );
-		        throw new Exception( "Error loading from database: " . $wpdb->print_error() );
-		        return false;
+		        Utilities::get_instance()->log("Measurement_Model::loadAll() - Error loading from database: " . $wpdb->print_error() );
+		        throw new \Exception( "Error loading from database: " . $wpdb->print_error() );
 	        }
 
             if ( ! empty( $results ) ) {
@@ -634,7 +655,7 @@ class e20rMeasurementModel {
                 $this->all = $this->remap_fields( $results );
             }
             else {
-                throw new Exception("Warning: No data found for user_id {$this->client_id}");
+                throw new \Exception("Warning: No data found for user_id {$this->client_id}");
             }
 
             set_transient( "e20r_all_client_measurements_{$this->client_id}", $this->all, 600 );
@@ -656,42 +677,42 @@ class e20rMeasurementModel {
 	    $row = $wpdb->get_row( $SQL );
 
 	    if ( ! empty( $row ) ) {
-		    dbg( "e20rMeasurementModel::setTotalGirth() - Updating the total GIRTH value in the database" );
+		    Utilities::get_instance()->log( "Measurement_Model::setTotalGirth() - Updating the total GIRTH value in the database" );
 		    $wpdb->update(
 			    $this->table,
 			    array( $this->fields['girth'] => ( $row->neck + $row->shoulder + $row->chest + $row->arm + $row->waist + $row->hip + $row->thigh + $row->calf ) ),
 			    array( $this->fields['id'] => $recordId ), array( '%f', ) );
 
 	    } else {
-		    dbg( "e20rMeasurementModel::setTotalGirth() - This doesn't really make sense.. We've just inserted this record and now it's not here?!?" );
+		    Utilities::get_instance()->log( "Measurement_Model::setTotalGirth() - This doesn't really make sense.. We've just inserted this record and now it's not here?!?" );
 	    }
 
     }
 
     private function loadNullMeasurement( $when ) {
 
-        dbg("MeasurementsModel_loadNullMeasurement() - Loading empty measurement info");
+        Utilities::get_instance()->log("MeasurementsModel_loadNullMeasurement() - Loading empty measurement info");
 
-        $e20rTables = e20rTables::getInstance();
+        $Tables = Tables::getInstance();
 
-        $fields = $e20rTables->getFields('measurements');
+        $fields = $Tables->getFields('measurements');
 
-        // dbg("MeasurementsModel_loadNullMeasurement() - Fields: " . print_r($fields, true));
+        // Utilities::get_instance()->log("MeasurementsModel_loadNullMeasurement() - Fields: " . print_r($fields, true));
 
-        $nullMeasurement = new stdClass();
+        $nullMeasurement = new \stdClass();
 
         foreach( $fields as $field => $val ) {
             $nullMeasurement->{$field} = 0;
         }
 
-        dbg("MeasurementsModel_loadNullMeasurement() - Returning empty record for {$when}" );
+        Utilities::get_instance()->log("MeasurementsModel_loadNullMeasurement() - Returning empty record for {$when}" );
 
         if ( $when != 'all' ) {
 
             return array( $when => $nullMeasurement );
         }
         else {
-            dbg("MeasurementsModel_loadNullMeasurement() - Returning empty record for ALL!" );
+            Utilities::get_instance()->log("MeasurementsModel_loadNullMeasurement() - Returning empty record for ALL!" );
             return array( $nullMeasurement );
         }
     }

@@ -18,7 +18,7 @@ use E20R\Tracker\Controllers\Assignment;
 use E20R\Tracker\Controllers\Action;
 use E20R\Tracker\Controllers\Program;
 use E20R\Tracker\Controllers\Tracker;
-use E20R\Tracker\Controllers\E20R_Tracker;
+use E20R\Utilities\Utilities;
 
 class  Article_Model extends Settings_Model {
 	
@@ -42,7 +42,7 @@ class  Article_Model extends Settings_Model {
 			parent::__construct( 'article', self::post_type );
 		} catch ( \Exception $exception ) {
 			
-			E20R_Tracker::dbg( "Error instantiating the Article Model class: " . $exception->getMessage() );
+			Utilities::get_instance()->log( "Error instantiating the Article Model class: " . $exception->getMessage() );
 			
 			return false;
 		}
@@ -79,24 +79,24 @@ class  Article_Model extends Settings_Model {
 		
 		foreach ( $result as $k => $data ) {
 			
-			E20R_Tracker::dbg( " Article_Model::find() - Drop setting is: " . ( $dont_drop ? "Don't Drop" : 'Drop' ) );
-			E20R_Tracker::dbg( " Article_Model::find() - Survey setting is: " . ( $data->is_survey ? "Survey" : 'Not a survey' ) );
+			Utilities::get_instance()->log( " Article_Model::find() - Drop setting is: " . ( $dont_drop ? "Don't Drop" : 'Drop' ) );
+			Utilities::get_instance()->log( " Article_Model::find() - Survey setting is: " . ( $data->is_survey ? "Survey" : 'Not a survey' ) );
 			$allow_drop = ! $dont_drop;
 			
-			if ( true == $allow_drop && true == $data->is_survey ) {
+			if ( !$dont_drop && true == $data->is_survey ) {
 				$allow_drop = false;
 			}
 			
 			if ( ( empty( $data->release_day ) || ( - 9999 == $data->release_day ) ) && ( true === $allow_drop ) ) {
 				
 				// Dropping articles containing the "Always released" indicator ( -9999 )
-				E20R_Tracker::dbg( " Article_Model::find() - Dropping article {$data->id} since it's a 'default' article" );
+				Utilities::get_instance()->log( " Article_Model::find() - Dropping article {$data->id} since it's a 'default' article" );
 				unset( $result[ $k ] );
 			}
 			
 			if ( ( false === $dont_drop ) && ( $data->release_day > $member_days ) ) {
 				
-				E20R_Tracker::dbg( " Article_Model::find() - Dropping article {$data->id} since it's availability {$data->release_day} is after the current delay value for this user" );
+				Utilities::get_instance()->log( " Article_Model::find() - Dropping article {$data->id} since it's availability {$data->release_day} is after the current delay value for this user" );
 				unset( $result[ $k ] );
 			}
 		}
@@ -117,31 +117,32 @@ class  Article_Model extends Settings_Model {
 					'key'     => "_e20r-article-{$key}",
 					'value'   => $value,
 					'compare' => $comp,
-					'type'    => $type,
+					/* 'type'    => $type, */
 				),
 				array(
 					'key'     => "_e20r-article-program_ids",
 					'value'   => $programId,
 					'compare' => '=',
 				),
-				array(
-					'key'     => "_e20r-article-release_day",
-					'value'   => - 9999,
-					'compare' => '!=',
-				),
-				array(
-					'key'     => "_e20r-article-release_day",
-					'value'   => 0,
-					'compare' => '!=',
-				),
-			
 			),
 		);
 		
+		if ( $key !== 'release_day' ) {
+			$args['meta_query'][] = array(
+				'key'     => "_e20r-article-release_day",
+				'value'   => - 9999,
+				'compare' => '!=',
+			);
+			$args['meta_query'][] = array(
+					'key'     => "_e20r-article-release_day",
+					'value'   => 0,
+					'compare' => '!=',
+				);
+		}
+		
 		$a_list = $this->loadForQuery( $args );
 		
-		E20R_Tracker::dbg( " Article_Model()::findClosestArticle() - List of articles:" );
-		E20R_Tracker::dbg( $a_list );
+		Utilities::get_instance()->log( " Article_Model()::findClosestArticle() - List of articles:" . print_r( $a_list, true ) );
 		
 		return $a_list;
 	}
@@ -152,7 +153,7 @@ class  Article_Model extends Settings_Model {
 		
 		$query = new \WP_Query( $args );
 		
-		E20R_Tracker::dbg( " Article_Model::loadForQuery() - Returned articles: {$query->post_count}" );
+		Utilities::get_instance()->log( " Article_Model::loadForQuery() - Returned articles: {$query->post_count}" );
 		
 		while ( $query->have_posts() ) {
 			
@@ -174,14 +175,14 @@ class  Article_Model extends Settings_Model {
 		global $currentArticle;
 		
 		if ( -9999 === $id ) {
-			E20R_Tracker::dbg( " Article_Model::loadSettings() - Loading default for the NULL article ID (-9999)" );
+			Utilities::get_instance()->log( " Article_Model::loadSettings() - Loading default for the NULL article ID (-9999)" );
 			$currentArticle = $this->defaultSettings();
 			
 			return $currentArticle;
 		}
 		
 		if ( isset(  $currentArticle->loaded ) && ( true === $currentArticle->loaded && $currentArticle->id === $id ) ) {
-			E20R_Tracker::dbg("Returning cached values for the Article");
+			Utilities::get_instance()->log("Returning cached values for the Article");
 			return $currentArticle;
 		}
 		
@@ -201,12 +202,12 @@ class  Article_Model extends Settings_Model {
 			
 			$currentArticle->assignment_ids = array();
 		} else {
-			E20R_Tracker::dbg( " Article_Model::loadSettings() - Found configured assignments." );
+			Utilities::get_instance()->log( " Article_Model::loadSettings() - Found configured assignments." );
 			foreach ( $currentArticle->assignment_ids as $k => $assignmentId ) {
 				
 				if ( empty( $assignmentId ) ) {
 					
-					E20R_Tracker::dbg( " Article_Model::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $assignmentId ) ? 'null' : $assignmentId );
+					Utilities::get_instance()->log( " Article_Model::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $assignmentId ) ? 'null' : $assignmentId );
 					unset( $currentArticle->assignment_ids[ $k ] );
 				}
 			}
@@ -217,12 +218,12 @@ class  Article_Model extends Settings_Model {
 			
 			$currentArticle->action_ids = array();
 		} else {
-			E20R_Tracker::dbg( " Article_Model::loadSettings() - Found configured actions." );
+			Utilities::get_instance()->log( " Article_Model::loadSettings() - Found configured actions." );
 			foreach ( $currentArticle->action_ids as $k => $checkinId ) {
 				
 				if ( empty( $checkinId ) ) {
 					
-					E20R_Tracker::dbg( " Article_Model::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $checkinId ) ? 'null' : $checkinId );
+					Utilities::get_instance()->log( " Article_Model::loadSettings() - Removing empty assignment key #{$k} with value " . empty( $checkinId ) ? 'null' : $checkinId );
 					unset( $currentArticle->action_ids[ $k ] );
 				}
 			}
@@ -275,7 +276,7 @@ class  Article_Model extends Settings_Model {
 		$defaults->prefix          = "Lesson";
 		$defaults->complete        = false;
 		
-		// E20R_Tracker::dbg(" Article_Model::defaultSettings() - Defaults loaded");
+		// Utilities::get_instance()->log(" Article_Model::defaultSettings() - Defaults loaded");
 		return $defaults;
 	}
 	
@@ -296,11 +297,11 @@ class  Article_Model extends Settings_Model {
 		}
 		
 		if ( is_null( $last_day ) || ! is_numeric( $last_day ) ) {
-			E20R_Tracker::dbg( " Article_Model::load_for_archive() - No 'last-day' variable provided. Using user information" );
+			Utilities::get_instance()->log( " Article_Model::load_for_archive() - No 'last-day' variable provided. Using user information" );
 			$last_day = ( $Tracker->getDelay( 'now', $user_id ) - 1 );
 		}
 		
-		E20R_Tracker::dbg( " Article_Model::load_for_article() - Last day of archive is: {$last_day}" );
+		Utilities::get_instance()->log( " Article_Model::load_for_article() - Last day of archive is: {$last_day}" );
 		
 		if ( ! isset( $currentProgram->id ) || ( isset( $currentProgram->id ) && ( $program_id != $currentProgram->id ) ) ) {
 			
@@ -327,20 +328,20 @@ class  Article_Model extends Settings_Model {
 		
 		$list = parent::find( $key, $value, $programId, $comp, $order, $type );
 		
-		E20R_Tracker::dbg( " Article_Model::findArticle() - Loaded " . count( $list ) . " articles" );
+		Utilities::get_instance()->log( " Article_Model::findArticle() - Loaded " . count( $list ) . " articles" );
 		
 		foreach ( $list as $a ) {
 			
 			if ( ( - 9999 != $a->release_day ) && ( $programId !== - 1 ) ) {
 				
-				E20R_Tracker::dbg( " Article_Model::findArticle() - Returning {$a->id} because it matches program ID {$programId}" );
+				Utilities::get_instance()->log( " Article_Model::findArticle() - Returning {$a->id} because it matches program ID {$programId}" );
 				$article[] = $a;
 			}
 			
 			/*            if ( ( !is_null( $multi ) ) &&
 							( ( $programId !== -1 ) && ( isset( $a->programs ) && in_array( $programId, $a->programs ) ) ) ) {
 
-							E20R_Tracker::dbg( " Article_Model::findArticle() - Returning more than one article for program ID == {$programId}" );
+							Utilities::get_instance()->log( " Article_Model::findArticle() - Returning more than one article for program ID == {$programId}" );
 							$article[] = $a;
 						}
 			*/
@@ -356,7 +357,7 @@ class  Article_Model extends Settings_Model {
 	/**
 	 * Save the Article Settings to the metadata table.
 	 *
-	 * @param $settings - Array of settings for the specific article.
+	 * @param array $settings - Array of settings for the specific article.
 	 *
 	 * @return bool - True if successful at updating article settings
 	 */
@@ -369,7 +370,7 @@ class  Article_Model extends Settings_Model {
 		
 		$defaults = self::defaultSettings();
 		
-		E20R_Tracker::dbg( " Article_Model::saveSettings() - Saving article Metadata" );
+		Utilities::get_instance()->log( " Article_Model::saveSettings() - Saving article Metadata" );
 		
 		$error = false;
 		
@@ -381,43 +382,41 @@ class  Article_Model extends Settings_Model {
 			
 			if ( 'post_id' == $key ) {
 				
-				E20R_Tracker::dbg( " Article_Model::saveSettings() - Saving the article ID with the post " );
+				Utilities::get_instance()->log( " Article_Model::saveSettings() - Saving the article ID with the post " );
 				update_post_meta( $settings->{$key}, '_e20r-article-id', $articleId );
 			}
 			
 			// if ( 'assignments' == $key ) {
 			if ( ( 'assignment_ids' == $key ) || ( 'action_ids' == $key ) ) {
 				
-				E20R_Tracker::dbg( " Article_Model::saveSettings() - Processing assignments (include program info):" );
-				E20R_Tracker::dbg( $settings->{$key} );
+				Utilities::get_instance()->log( " Article_Model::saveSettings() - Processing assignments (include program info):" );
+				Utilities::get_instance()->log( $settings->{$key} );
 				
 				foreach ( $settings->{$key} as $k => $id ) {
 					
 					if ( empty( $id ) || ( 0 == $id ) ) {
 						
-						E20R_Tracker::dbg( " Article_Model::saveSettings() - Removing empty assignment key #{$k} with value {$id}" );
+						Utilities::get_instance()->log( " Article_Model::saveSettings() - Removing empty assignment key #{$k} with value {$id}" );
 						unset( $settings->{$key}[ $k ] );
 					}
 					
-					E20R_Tracker::dbg( " Article_Model::saveSettings() - Adding program IDs for assignment {$id}" );
+					Utilities::get_instance()->log( " Article_Model::saveSettings() - Adding program IDs for assignment {$id}" );
 					
 					if ( ( 'assignment_ids' == $key ) && ( ! $Assignment->addPrograms( $id, $settings->program_ids ) ) ) {
 						
-						E20R_Tracker::dbg( " Article_Model::saveSettings() - ERROR: Unable to save program list for assignment {$id}" );
-						E20R_Tracker::dbg( $settings->program_ids );
+						Utilities::get_instance()->log( " Article_Model::saveSettings() - ERROR: Unable to save program list for assignment {$id}: " . print_r( $settings->program_ids, true ) );
 					}
 					
 					if ( ( 'action_ids' == $key ) && ( ! $Action->addPrograms( $id, $settings->program_ids ) ) ) {
 						
-						E20R_Tracker::dbg( " Article_Model::saveSettings() - ERROR: Unable to save program list for action #{$id}" );
-						E20R_Tracker::dbg( $settings->program_ids );
+						Utilities::get_instance()->log( " Article_Model::saveSettings() - ERROR: Unable to save program list for action #{$id}: " . print_r( $settings->program_ids, true )  );
 					}
 				}
 			}
 			
 			if ( false === $this->settings( $articleId, 'update', $key, $settings->{$key} ) ) {
 				
-				E20R_Tracker::dbg( " Article_Model::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for article definition with ID: {$articleId}" );
+				Utilities::get_instance()->log( " Article_Model::saveSettings() - ERROR saving {$key} setting ({$settings->{$key}}) for article definition with ID: {$articleId}" );
 				
 				$error = true;
 			}
@@ -426,6 +425,9 @@ class  Article_Model extends Settings_Model {
 		return ( ! $error );
 	}
 	
+	/**
+	 * Register the E20R Article post type
+	 */
 	public static function registerCPT() {
 		
 		$labels =  array(
@@ -465,7 +467,7 @@ class  Article_Model extends Settings_Model {
 		);
 		
 		if ( is_wp_error($error) ) {
-			E20R_Tracker::dbg('ERROR: Failed to register e20r_articles CPT: ' . $error->get_error_message);
+			Utilities::get_instance()->log('ERROR: Failed to register e20r_articles CPT: ' . $error->get_error_message);
 		}
 	}
 }

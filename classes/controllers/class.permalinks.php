@@ -47,16 +47,32 @@ class Permalinks {
 	 * Load hooks for this class
 	 */
 	public function loadHooks() {
-	
+		
+		add_action( 'init', array( $this, 'addEndpoint' ), 10 );
+		add_action( 'init', array( $this, 'addRewriteTags' ), 10);
+		
+		add_filter( 'post_link', array( $this, 'processPostLink' ), 10, 3 );
+		add_filter( 'query_vars', array( $this, 'addQueryVars' ), 10, 1 );
 	}
 	
-	public function add_query_vars( $vars ) {
+	/**
+	 * Query variables that can/may be present
+	 *
+	 * @param string[] $vars
+	 *
+	 * @return string[]
+	 */
+	public function addQueryVars( $vars ) {
 		
 		$vars[] = "article_date";
 		
 		return $vars;
 	}
-	public function add_endpoint() {
+	
+	/**
+	 * Add the end-point for the article_date parameter
+	 */
+	public function addEndpoint() {
 		
 		add_rewrite_rule(
 			'^([^/]*)/([0-9]{4}-[0-9]{2}-[0-9]{2})/?$',
@@ -65,12 +81,24 @@ class Permalinks {
 		);
 	}
 	
-	public function add_rewrite_tags() {
+	/**
+	 * Support the article_date rewrite tag
+	 */
+	public function addRewriteTags() {
 		
 		add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})');
 	}
 	
-	public function process_post_link( $permalink, $post, $leavename ) {
+	/**
+	 * Process the permalink type containing the %article_date% (eg YYYY-MM-DD formatted dates)
+	 *
+	 * @param $permalink
+	 * @param $post
+	 * @param $leavename
+	 *
+	 * @return string
+	 */
+	public function processPostLink( $permalink, $post, $leavename ) {
 		
 		global $currentArticle;
 		global $current_user;

@@ -1,14 +1,20 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: sjolshag
- * Date: 12/8/14
- * Time: 2:52 PM
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * License Information:
+ *  the GPL v2 license(?)
  */
 
-if ( ! class_exists( 'e20rTables' ) ):
+namespace E20R\Tracker\Models;
 
-class e20rTables {
+use E20R\Utilities\Utilities;
+use E20R\Tracker\Controllers\Tracker;
+
+if ( ! class_exists( 'E20R\Tracker\Models\Tables' ) ):
+
+class Tables {
 
     protected $tables = null;
     protected $oldTables = null;
@@ -20,15 +26,15 @@ class e20rTables {
 
     public function __construct() {
 
-        if ( ! function_exists( 'in_betagroup' ) ) {
+        if ( ! method_exists( 'E20R\\Tracker\\Controllers\\Tracker', 'in_betagroup' ) ) {
 
-            dbg( "Error: in_betagroup function is missing!" );
+            Utilities::get_instance()->log( "Error: in_betagroup function is missing!" );
             wp_die( "Critical plugin functionality is missing: in_betagroup()" );
         }
     }
 
 	/**
-	 * @return e20rTables
+	 * @return Tables
 	 */
 	static function getInstance() {
 
@@ -42,11 +48,15 @@ class e20rTables {
     public function init( $user_id = null ) {
 
         if ( ! function_exists( 'get_user_by' ) ) {
-            dbg("e20rTables::init() - Wordpress not fully loaded yet...");
+            Utilities::get_instance()->log("Tables::init() - Wordpress not fully loaded yet...");
             return;
         }
-
-        dbg("e20rTables::constructor() - Initializing the e20rTables() class");
+	    
+        if ( ! is_user_logged_in() ) {
+        	return;
+        }
+        
+        Utilities::get_instance()->log("Tables::constructor() - Initializing the Tables() class");
         global $wpdb, $current_user;
 
         if ( $user_id === null ) {
@@ -54,18 +64,18 @@ class e20rTables {
             $user_id = $current_user->ID;
         }
 
-        $this->inBeta = in_betagroup( $user_id );
+        $this->inBeta = Tracker::in_betagroup( $user_id );
 
-        $this->tables = new stdClass();
+        $this->tables = new \stdClass();
 
         /* The database tables used by this plugin */
         $this->tables->action        = $wpdb->prefix . 'e20r_checkin';
         $this->tables->response      = $wpdb->prefix . 'e20r_response';
-        $this->tables->assignments   = $wpdb->prefix . 'e20r_assignments';
+        $this->tables->assignments   = $wpdb->prefix . Assignment_Model::post_type;
         $this->tables->measurements  = $wpdb->prefix . 'e20r_measurements';
         $this->tables->client_info   = $wpdb->prefix . 'e20r_client_info';
-        $this->tables->program       = $wpdb->prefix . 'e20r_programs';
-        $this->tables->workout       = $wpdb->prefix . 'e20r_workout';
+        $this->tables->program       = $wpdb->prefix . Program_Model::post_type;
+        $this->tables->workout       = $wpdb->prefix . Workout_Model::post_type;
         $this->tables->surveys       = $wpdb->prefix . 'e20r_surveys';
         $this->tables->message_history = $wpdb->prefix . 'e20r_client_messages';
         // $this->tables->appointments  = $wpdb->prefix . 'app_appointments';
@@ -75,7 +85,7 @@ class e20rTables {
 
 	    if ( ( $this->inBeta ) ) {
 
-            dbg("User $user_id IS in the beta group");
+            Utilities::get_instance()->log("User $user_id IS in the beta group");
             $this->tables->assignments  = "{$wpdb->prefix}s3f_nourishAssignments";
             $this->tables->compliance   = "{$wpdb->prefix}s3f_nourishHabits";
             $this->tables->surveys      = "{$wpdb->prefix}e20r_Surveys";
@@ -401,7 +411,8 @@ class e20rTables {
             'more_info' => 'more_info',
             'photo_consent' => 'photo_consent',
             'research_consent' => 'research_consent',
-            'medical_release' => 'medical_release'
+            'medical_release' => 'medical_release',
+	        'coach_id'  => 'coach_id',
         );
     }
 
@@ -447,7 +458,7 @@ class e20rTables {
                 break;
 
 	        default:
-		        dbg("e20rTables::loadFields() - No fields to load for {$name}");
+		        Utilities::get_instance()->log("Tables::loadFields() - No fields to load for {$name}");
         }
     }
 	
@@ -456,7 +467,7 @@ class e20rTables {
 	 * @param bool $force
 	 *
 	 * @return string|null
-	 * @throws Exception
+	 * @throws \Exception
 	 */
     public function getTable( $name = null, $force = false  ) {
 
@@ -465,7 +476,7 @@ class e20rTables {
         }
 
         if ( empty ( $this->tables->{$name} ) ) {
-            throw new Exception( __( "The {$name} table is not defined", "e20r-tracker" ) );
+            throw new \Exception( __( "The {$name} table is not defined", "e20r-tracker" ) );
         }
 
         return $this->tables->{$name};

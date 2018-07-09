@@ -12,6 +12,7 @@ namespace E20R\Tracker\Controllers;
 use E20R\Tracker\Models\Exercise_Model;
 use E20R\Tracker\Views\Exercise_View;
 use E20R\Tracker\Models\Workout_Model;
+use E20R\Utilities\Utilities;
 
 class Exercise extends Settings {
 	
@@ -34,7 +35,7 @@ class Exercise extends Settings {
 	
 	public function __construct() {
 		
-		E20R_Tracker::dbg( "Exercise::__construct() - Initializing Exercise class" );
+		Utilities::get_instance()->log( "Initializing Exercise class" );
 		
 		$this->model = new Exercise_Model();
 		$this->view  = new Exercise_View();
@@ -63,7 +64,7 @@ class Exercise extends Settings {
 		
 		$typeStr = $this->model->get_activity_type( $typeId );
 		
-		E20R_Tracker::dbg( "Exercise::getExerciseType( {$typeId} ) - Returning type of: {$typeStr}" );
+		Utilities::get_instance()->log( "Exercise::getExerciseType( {$typeId} ) - Returning type of: {$typeStr}" );
 		
 		return $typeStr;
 	}
@@ -91,10 +92,10 @@ class Exercise extends Settings {
 			if ( is_array( $arr ) ) {
 				
 				if ( count( $arr ) == 1 ) {
-					E20R_Tracker::dbg( "Exercise::set_currentExercise() - Loading new exercise definition." );
+					Utilities::get_instance()->log( "Loading new exercise definition." );
 					$currentExercise = $arr[0];
 				} else {
-					E20R_Tracker::dbg( "Exercise::set_currentExercise() - Error: Incorrect number of exercises returned! " );
+					Utilities::get_instance()->log( "Error: Incorrect number of exercises returned! " );
 					$currentExercise = null;
 				}
 			}
@@ -146,7 +147,7 @@ class Exercise extends Settings {
 	 */
 	public function shortcode_exercise( $attributes = null ) {
 		
-		E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Loading shortcode data for the exercise." );
+		Utilities::get_instance()->log( "Loading shortcode data for the exercise." );
 		
 		if ( ! is_user_logged_in() ) {
 			
@@ -167,12 +168,12 @@ class Exercise extends Settings {
 		}
 		
 		if ( isset( $config->id ) && ( ! is_null( $config->id ) ) ) {
-			E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Using ID to locate exercise: {$config->id}" );
+			Utilities::get_instance()->log( "Using ID to locate exercise: {$config->id}" );
 			$exInfo = $this->model->findExercise( 'id', $config->id );
 		}
 		
 		if ( isset( $config->shortcode ) && ( ! is_null( $config->shortcode ) ) ) {
-			E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Using shortcode to locate exercise: {$config->shortcode}" );
+			Utilities::get_instance()->log( "Using shortcode to locate exercise: {$config->shortcode}" );
 			$exInfo = $this->model->findExercise( 'shortcode', $config->shortcode );
 		}
 		
@@ -184,21 +185,21 @@ class Exercise extends Settings {
 			
 			if ( isset( $ex->id ) && ( ! is_null( $ex->id ) ) ) {
 				
-				E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Loading exercise info: {$ex->id}" );
+				Utilities::get_instance()->log( "Loading exercise info: {$ex->id}" );
 				$this->init( $ex->id );
 				
 				if ( $config->display != 'new' ) {
 					
-					E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Printing with old layout" );
+					Utilities::get_instance()->log( "Printing with old layout" );
 					return $this->view->view_exercise_as_row();
 				} else {
-					E20R_Tracker::dbg( "Exercise::shortcode_exercise() - Printing with NEW layout" );
+					Utilities::get_instance()->log( "Printing with NEW layout" );
 					return $this->view->view_exercise_as_columns();
 					
 				}
 				
 			} else {
-				E20R_Tracker::dbg( "Exercise::shortcode_exercise() - No exercise found to display!" );
+				Utilities::get_instance()->log( "No exercise found to display!" );
 				return null;
 			}
 		}
@@ -215,7 +216,7 @@ class Exercise extends Settings {
 		
 		add_meta_box( 'postexcerpt', __( 'Exercise Summary' ), 'post_excerpt_meta_box', Exercise::post_type, 'normal', 'high' );
 		
-		E20R_Tracker::dbg( "Exercise::addMeta_Settings() - Loading settings metabox for exercise page" );
+		Utilities::get_instance()->log( "Loading settings metabox for exercise page" );
 		$data = $this->model->find( 'id', $post->ID );
 		$this->view->viewSettingsBox( $data[0], $this->model->get_activity_types() );
 		
@@ -225,7 +226,7 @@ class Exercise extends Settings {
 		
 		if ( Exercise::post_type == $post->post_type ) {
 			
-			E20R_Tracker::dbg( 'Exercise::changeSetParentType() - linking ourselves to Workouts only' );
+			Utilities::get_instance()->log( 'linking ourselves to Workouts only' );
 			$args['post_type'] = Workout_Model::post_type;
 		}
 		
@@ -246,13 +247,13 @@ class Exercise extends Settings {
 	
 	public function col_content( $colName, $post_ID ) {
 		
-		E20R_Tracker::dbg( "Exercise::col_content() - ID: {$post_ID}" );
+		Utilities::get_instance()->log( "ID: {$post_ID}" );
 		
 		if ( $colName == 'ex_shortcode' ) {
 			
 			$shortcode = $this->model->getSetting( $post_ID, 'shortcode' );
 			
-			E20R_Tracker::dbg( "Exercise::col_content() - Used in shortcode: {$shortcode}" );
+			Utilities::get_instance()->log( "Used in shortcode: {$shortcode}" );
 			
 			if ( $shortcode ) {
 				

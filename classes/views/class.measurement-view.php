@@ -24,10 +24,9 @@ use E20R\Utilities\Utilities;
  * Class Measurement_View
  *
  * @package E20R\Tracker\Views
- *
  */
-class Measurement_View {
-
+class Measurement_View extends Settings_View {
+    
     private $id;
     private $when;
 
@@ -54,6 +53,12 @@ class Measurement_View {
 	    return self::$instance;
 	}
 
+	/**
+     * Initialize this view
+     * @param null|string $when
+     * @param null|array $data
+     * @param null|int $who
+     */
     public function init( $when = null, $data = null, $who = null ) {
 
         $this->id = $who;
@@ -62,9 +67,6 @@ class Measurement_View {
     }
 
     public function startProgressForm( $articleId, $programId ) {
-
-        // $this->load_scripts();
-
         ob_start(); ?>
         <div id="saturday-progress-container" class="progress-container clearfix">
             <h3><?php printf( __( 'Your Weekly Progress %1$sUpdate%2$s', 'e20r-tracker' ), '<span>', '</span>' ); ?></h3>
@@ -445,7 +447,7 @@ class Measurement_View {
         wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-clients-nonce', 'mv' , true ); ?>
         <input type="hidden" id="tracker-user-profile-page" name="tracker-user-profile-page" value="1" /><?php
         if ( $withModal ) { ?>
-        <!-- <div class="modal">--><!-- At end of form --><!--</div>--><?php
+        <div class="modal"><!-- At end of form --></div><?php
         }
 
         $html = ob_get_clean();

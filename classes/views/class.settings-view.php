@@ -1,4 +1,6 @@
 <?php
+namespace E20R\Tracker\Views;
+
 /**
  * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
  * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
@@ -8,7 +10,7 @@
  */
 
 
-class e20rSettingsView {
+class Settings_View {
 
     protected $cpt_slug;
     protected $type;
@@ -24,7 +26,7 @@ class e20rSettingsView {
     }
 
 	/**
-	 * @return e20rSettingsView
+	 * @return  Settings_View
 	 */
 	static function getInstance() {
 
@@ -44,7 +46,7 @@ class e20rSettingsView {
 
         if ( !empty( $this->error ) ) {
 
-            ?><div class="message error"><p><?php echo $this->error; ?></p></div><?php
+            ?><div class="message error"><p><?php echo( $this->error ); ?></p></div><?php
         }
     }
     /**
@@ -58,7 +60,7 @@ class e20rSettingsView {
     protected function buildInput( $type, $name, $data, $style = null ) {
         ?>
         <td class="text-input">
-            <input <?php echo ( !is_null( $style ) ? 'style="'.$style.'"': null ); ?> type="<?php echo $type; ?>" id="e20r-setting-input-<?php echo $name; ?>" name="e20r-setting-input-<?php echo $name; ?>" value="<?php echo $data; ?>">
+            <input <?php echo ( !is_null( $style ) ? sprintf( 'style="%s"', $style ) : null ); ?> type="<?php esc_attr_e( $type ); ?>" id="e20r-setting-input-<?php esc_attr_e( $name ); ?>" name="e20r-setting-input-<?php esc_attr_e(  $name ); ?>" value="<?php esc_attr_e( $data ); ?>">
         </td>
         <?php
     }
@@ -79,14 +81,14 @@ class e20rSettingsView {
             foreach( $data as $k => $v ) {
                 $selected = ( in_array( $v, $comparison ) ? ' selected="selected"' : null );
                 ?>
-                <option value="<?php echo $k; ?>" <?php echo $selected; ?>>
-                    <?php echo $v; ?>
+                <option value="<?php esc_attr_e( $k ); ?>" <?php echo $selected; ?>>
+                    <?php esc_attr_e( $v ); ?>
                 </option>
             <?php
             }
             ?>
             <script type="text/javascript">
-                jQuery("#e20r-setting-select-<?php echo $name; ?>").select2({
+                jQuery("#e20r-setting-select-<?php esc_attr_e( $name ); ?>").select2({
                     placeholder: "Click to select",
                     allowClear: true
                 });

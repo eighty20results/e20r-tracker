@@ -1327,13 +1327,12 @@ class Assignment_Model extends Settings_Model {
 			return false;
 		}
 		
-		Utilities::get_instance()->log( "Attempting to add response to {$reply_table}" );
-		Utilities::get_instance()->log( $data );
-		Utilities::get_instance()->log( $format );
+		Utilities::get_instance()->log( "Attempting to add response to {$reply_table}: " .print_r( $data, true ) );
+		Utilities::get_instance()->log( print_r( $format, true ) );
 		
 		if ( false === $wpdb->insert( $reply_table, $data, $format ) ) {
 			
-			Utilities::get_instance()->log( "ERROR: Unable to save response data: " . $wpdb->last_error . ' for query: ' . $wpdb->last_query );
+			Utilities::get_instance()->log( "ERROR: Unable to save response data: {$wpdb->last_error} for query: " . $wpdb->last_query );
 			
 			return false;
 		}
