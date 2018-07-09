@@ -68,6 +68,10 @@ class Dashboard_Button {
 		$user_program_id = $Program->getProgramIdForUser( $current_user->ID );
 		$dashboard_url   = get_permalink( $Program->getValue( $user_program_id, 'dashboard_page_id' ) );
 		
+		if ( empty( $user_program_id ) ) {
+			return;
+		}
+		
 		if ( ! empty( $css_class ) ) {
 			$classes = array_map( 'trim', explode( ',', $atts['css_class'] ) );
 		}
