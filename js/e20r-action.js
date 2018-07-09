@@ -9,17 +9,6 @@
  */
 
 jQuery.noConflict();
-
-/*
-jQuery(document).on({
-    ajaxStart: function () {
-        $body.addClass("loading");
-    },
-    ajaxStop: function () {
-        $body.removeClass("loading");
-    }
-});
-*/
 jQuery(document).ready(function ($) {
 
     var $body = $("body");
@@ -1180,9 +1169,10 @@ jQuery(document).ready(function ($) {
         return;
     }
 
-    if ($('#e20r-article-assignment').length > 0) {
+    var art_assignment = $('#e20r-article-assignment');
+    if (art_assignment.length > 0) {
 
-        $(e20rDailyProgress.init($('#e20r-article-assignment')));
+        $(e20rDailyProgress.init(art_assignment));
     }
 
     if ($("#e20r-daily-progress").length > 0) {

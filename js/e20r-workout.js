@@ -558,21 +558,17 @@ var e20rActivityView = {
 
 };
 
-jQuery(document).ready( function(){
+jQuery(document).ready( function($){
 
     console.log("Loaded user script for the workout tracking form");
 
-    if ( jQuery('#e20r-daily-activity-page').length ) {
+    if ( $('#e20r-daily-activity-page').length ) {
 
-        console.log("Hide the header for the [e20r_activity] shortcode page");
-        jQuery('header.entry-header').hide();
+        window.console.log("Hide the header for the [e20r_activity] shortcode page");
+        $('header.entry-header').hide();
     }
 
     e20rActivity.init();
-
-});
-
-jQuery(document).ready(function($) {
 
     $('.e20r-faq-question').unbind().on('click', function(){
 

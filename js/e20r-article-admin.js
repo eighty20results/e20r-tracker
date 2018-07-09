@@ -6,7 +6,7 @@
  *  the GPL v2 license(?)
  */
 
-jQuery(document).ready( function(){
+jQuery(document).ready(function () {
 
     jQuery('#e20r-assignments-id').select2();
     jQuery('#e20r-article-post_id').select2();
@@ -14,7 +14,7 @@ jQuery(document).ready( function(){
     jQuery('#e20r-article-program_ids').select2();
     jQuery('#e20r-article-activity_id').select2();
 
-    jQuery(document).on('change', '#e20r-article-post_id', function() {
+    jQuery(document).on('change', '#e20r-article-post_id', function () {
 
         jQuery.ajax({
             url: ajaxurl,
@@ -26,40 +26,36 @@ jQuery(document).ready( function(){
                 'post_ID': jQuery('#e20r-article-post_id').find('option:selected').val(),
                 'e20r-tracker-article-settings-nonce': jQuery('#e20r-tracker-article-settings-nonce').val()
             },
-            success: function( $response ) {
+            success: function ($response) {
 
-                console.log("Received from e20r_getDelayValue: ", $response );
+                console.log("Received from e20r_getDelayValue: ", $response);
 
-                if ( $response.data.nodelay !== false ) {
-                    console.log("No delay specified. Exiting!");
-                    return false;
-                }
-
-                if ( $response.data.delay > 0 ) {
+                if ($response.data.delay > 0) {
 
                     console.log("Got delay value from back-end: " + $response.data.delay);
                     jQuery('#e20r-article-release_day').val($response.data.delay);
                 }
 
-                if ( $response.data.summary.length > 0 ) {
+                // Add the excerpt if available
+                if ($response.data.summary.length > 0) {
 
-                    window.console.log("Got a summary text from the back-end" );
+                    window.console.log("Got a summary text from the back-end");
+                    var ex_element = jQuery('textarea#excerpt');
+                    var excerpt = ex_element.val().trim();
+                    window.console.log(excerpt);
 
-                    var excerpt = jQuery('textarea#excerpt').val().trim();
-                    window.console.log( excerpt );
-
-                    if ( excerpt.length === 0 ) {
-                        window.console.log("Setting the Excerpt to: " + $response.data.summary );
-                        jQuery('textarea#excerpt').val( $response.data.summary );
+                    if (excerpt.length === 0) {
+                        window.console.log("Setting the Excerpt to: " + $response.data.summary);
+                        ex_element.val($response.data.summary);
                     }
                 }
             },
-            error: function( $response, $errString, $errType ) {
-                console.log($errString + ' error returned from e20r_getDelayValue action: ' + $errType );
+            error: function ($response, $errString, $errType) {
+                console.log($errString + ' error returned from e20r_getDelayValue action: ' + $errType);
 
                 var $msg;
 
-                if ( 'timeout' === $errString ) {
+                if ('timeout' === $errString) {
 
                     $msg = "Error: Timeout while the server was processing data.\n\n";
                 }
@@ -70,16 +66,16 @@ jQuery(document).ready( function(){
                 $string += "please contact Technical Support by using our Contact form ";
                 $string += "at the top of this page.";
 
-                alert( $msg + $string );
+                alert($msg + $string);
             }
         });
 
     });
 });
 
-function e20r_assignmentEdit( assignmentId, orderNum ) {
+function e20r_assignmentEdit(assignmentId, orderNum) {
 
-    console.log("AssignmentId to edit: " + assignmentId );
+    console.log("AssignmentId to edit: " + assignmentId);
     jQuery('#new-assignments').focus();
     jQuery('#e20r-add-assignment-id').val(assignmentId).trigger("change");
     jQuery('#e20r-add-assignment-order_num').val(orderNum);
@@ -87,9 +83,9 @@ function e20r_assignmentEdit( assignmentId, orderNum ) {
 
 }
 
-function e20r_assignmentRemove( assignmentId ) {
+function e20r_assignmentRemove(assignmentId) {
 
-    console.log("AssignmentId to remove: " + assignmentId );
+    console.log("AssignmentId to remove: " + assignmentId);
     var saveBtn = jQuery('#e20r-article-assignment-save');
 
     if ('' == jQuery('#e20r-assignments-id').val() || undefined != saveBtn.attr('disabled'))
@@ -101,7 +97,7 @@ function e20r_assignmentRemove( assignmentId ) {
 
     wp.ajax.send({
         url: e20r_tracker.ajaxurl,
-        type:'POST',
+        type: 'POST',
         timeout: e20r_tracker.timeout,
         dataType: 'JSON',
         data: {
@@ -110,7 +106,7 @@ function e20r_assignmentRemove( assignmentId ) {
             'e20r-assignment-id': assignmentId,
             'e20r-article-id': jQuery('#post_ID').val()
         },
-        success: function( resp ){
+        success: function (resp) {
             // console.log("success() - Returned data: ", resp );
 
             if (resp) {
@@ -121,12 +117,12 @@ function e20r_assignmentRemove( assignmentId ) {
             }
 
         },
-        error: function(jqxhr, $errString, $errType){
+        error: function (jqxhr, $errString, $errType) {
             // console.log("error() - Returned data: ", jqxhr );
             console.log("Error String: " + $errString + " and errorType: " + $errType);
 
         },
-        complete: function(response) {
+        complete: function (response) {
 
             // Re-enable save button
             saveBtn.removeAttr('disabled');
@@ -137,7 +133,7 @@ function e20r_assignmentRemove( assignmentId ) {
 
 function e20r_assignmentSave() {
 
-    console.log("Save assignment to article" );
+    console.log("Save assignment to article");
 
     var saveBtn = jQuery('#e20r-article-assignment-save');
 
@@ -146,7 +142,7 @@ function e20r_assignmentSave() {
 
     var $assignmentId = jQuery('#e20r-add-assignment-id').find("option:selected").val();
 
-    if ( $assignmentId == 0 ) {
+    if ($assignmentId === 0) {
         return false;
     }
 
@@ -155,11 +151,11 @@ function e20r_assignmentSave() {
     saveBtn.empty().append(e20r_tracker.lang.saving);
 
     var resp = null;
-    
+
     //pass field values to AJAX service and refresh table above - Timeout is 5 seconds
     wp.ajax.send({
         url: e20r_tracker.ajaxurl,
-        type:'POST',
+        type: 'POST',
         timeout: e20r_tracker.timeout,
         dataType: 'JSON',
         data: {
@@ -170,16 +166,16 @@ function e20r_assignmentSave() {
             'e20r-assignment-order_num': jQuery('#e20r-add-assignment-order_num').val(),
             'e20r-article-id': jQuery('#post_ID').val()
         },
-        success: function( resp ){
-            console.log("success() - Returned data: ", resp );
+        success: function (resp) {
+            console.log("success() - Returned data: ", resp);
 
-            if ( resp.reload == true ) {
+            if (resp.reload === true) {
 
                 location.reload();
             }
             else {
 
-                if (resp.html != '') {
+                if (resp.html !== '') {
                     // console.log('Entry added to sequence & refreshing metabox content');
 
                     var mBox = jQuery('#e20r-assignment-settings');
@@ -190,8 +186,8 @@ function e20r_assignmentSave() {
                 }
             }
         },
-        error: function(jqxhr, $errString, $errType){
-            console.log("error() - Returned data: ", jqxhr );
+        error: function (jqxhr, $errString, $errType) {
+            console.log("error() - Returned data: ", jqxhr);
             console.log("Error String: " + $errString + " and errorType: " + $errType);
 
             /*
@@ -200,7 +196,7 @@ function e20r_assignmentSave() {
                 // pmpro_seq_setErroMsg(resp.data);
             } */
         },
-        complete: function(response) {
+        complete: function (response) {
 
             // Re-enable save button
             saveBtn.empty().append(e20r_tracker.lang.save);

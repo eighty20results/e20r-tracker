@@ -135,7 +135,6 @@ var e20rClientAssignment = {
             event.preventDefault();
 
             jQuery("form#e20r-start").submit();
-            return;
         });
 
         jQuery(".e20r-assignment-reply-link").unbind('click').on('click', function () {
@@ -189,8 +188,13 @@ var e20rClientAssignment = {
             }, 4000);
 
 
-            assignments.goTo(1);
-            messages_tab.goTo(1);
+            if ( typeof assignments !== 'undefined' ) {
+                assignments.goTo(1);
+            }
+
+            if ( typeof messages_tab !== 'undefined' ) {
+                messages_tab.goTo(1);
+            }
 
             jQuery('tr.e20r-messages-new:first').focus();
         });
@@ -348,7 +352,7 @@ var e20rClientAssignment = {
 
         var message_history = message_content.find('div.e20r-message-history-message');
 
-        var message_ids = new Array();
+        var message_ids = {};
 
         message_history.each(function () {
             window.console.log("message_history entry: ", this);
@@ -371,7 +375,7 @@ var e20rClientAssignment = {
             button = jQuery(button);
         }
 
-        var message_ids = new Array();
+        var message_ids = {};
         message_ids.push(button.closest('.e20r-message-history-unread, .e20r-message-history').find('input[name^="e20r-message-id"]').val());
 
         if (message_ids.length !== 0) {
@@ -695,7 +699,7 @@ var e20rClientAssignment = {
 
         var $page_element_id = 'div#e20r-' + $pagename;
         var lnk_array = link.attr('href').split('/');
-        var page_num = lnk_array[(lnk_array.length - 2)];
+        var page_num = lnk_array[(lnk_array.length - 1)];
 
         var data = {
             action: "e20r_paginate_" + $pagename,
