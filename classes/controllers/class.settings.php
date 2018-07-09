@@ -270,8 +270,8 @@ class Settings {
 			$id = $feedId;
 		}
 		
-		if ( class_exists( 'E20R\\Sequences\\Sequence\\Sequence_Controller' ) ) {
-			return Sequence\Sequence_Controller::all_sequences( 'publish' );
+		if ( class_exists( '\E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+			return \E20R\Sequences\Sequence\Sequence_Controller::all_sequences( 'publish' );
 		}
 		
 		if ( class_exists( 'E20R\\Sequences\\Data\\Model' ) ) {
