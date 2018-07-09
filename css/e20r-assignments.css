@@ -255,6 +255,15 @@ div.e20r-tracker-new-message-alert-txt a {
 
 div.e20r-tracker-new-message-alert-txt li {
     padding-bottom: 10px;
+    list-style: none;
+}
+#e20r-assignment_answer_list .a.next.page-numbers,
+#e20r-assignment_answer_list .a.prev.page-numbers {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+    transition: none !important;
+    box-shadow: none !important;
 }
 button#e20r-new-message-dismiss-button {
     margin: auto;
@@ -341,4 +350,9 @@ div.e20r-message-from-self {
 }
 .pagination .current {
     color:#000;
+}
+.assignment-inputs .select2-container {
+    min-width: 75px;
+    max-width: 300px;
+    width: 90%;
 }

@@ -97,7 +97,7 @@ tr.e20r-client-message-history-entry td {
     font-size: 14px;
     font-weight: bold;
     width: 350px;
-    top: -22px;
+    top: -5px;
     left: 0;
     margin-left: 10px;
     text-align: left;
@@ -189,3 +189,4 @@ input#e20r-send-email-message {
 }
 .fa-stack br { display: none; }
 table#new-assignments td { vertical-align: middle; }
+.program-inputs .select2-container { min-width: 75px; max-width: 300px; width: 90%; }
