@@ -2329,13 +2329,13 @@ class Tracker {
 
     public function dependency_warnings() {
 
-        if ( ( !class_exists('PMProSequence') &&
-        !class_exists('E20R\Sequences\Sequence\Controller') ) &&
-        !class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) && is_admin()) {
+        if ( ( !class_exists('\PMProSequence') &&
+        !class_exists('\E20R\Sequences\Sequence\Controller') ) &&
+        !class_exists( '\E20R\Sequences\Sequence\Sequence_Controller' ) && is_admin()) {
 
             ?>
             <div class="error">
-            <?php if ( !class_exists('PMProSequence') && !class_exists('E20R\Sequences\Sequence\Controller') && !class_exists('E20R\Sequences\Sequence\Sequence_Controller' ) ) : ?>
+            <?php if ( !class_exists('\PMProSequence') && !class_exists('\E20R\Sequences\Sequence\Controller') && !class_exists('\E20R\Sequences\Sequence\Sequence_Controller' ) ) : ?>
                 <?php Utilities::get_instance()->log("Tracker::Error -  The The Sequences plugin is not installed"); ?>
                 <p><?php _e( "Eighty / 20 Tracker - Missing dependency: Sequences plugin", 'e20r-tracker' ); ?></p>
             <?php endif; ?>
@@ -2396,7 +2396,7 @@ class Tracker {
             $dripfeed_exists = true;
         }
 
-        if ( class_exists( 'E20R\Sequences\Sequence\Controller') || class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+        if ( class_exists( '\E20R\Sequences\Sequence\Controller') || class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
             $dripfeed_exists = true;
         }
 
@@ -2408,12 +2408,12 @@ class Tracker {
                 $sequenceIds = \PMProSequence::sequences_for_post( $postId );
             }
 
-            if ( class_exists('E20R\Sequences\Sequence\Controller') ) {
-                $sequenceIds = Sequence\Controller::sequences_for_post( $postId );
+            if ( class_exists('\E20R\Sequences\Sequence\Controller') ) {
+                $sequenceIds = \E20R\Sequences\Sequence\Controller::sequences_for_post( $postId );
             }
 
-            if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
-                $sequenceIds = E20R\Sequences\Sequence\Sequence_Controller::sequences_for_post( $postId );
+            if ( class_exists( '\E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+                $sequenceIds = \E20R\Sequences\Sequence\Sequence_Controller::sequences_for_post( $postId );
             }
             
             foreach ($sequenceIds as $id ) {
@@ -2422,12 +2422,12 @@ class Tracker {
                     $details = \PMProSequence::post_details( $id, $postId );
                 }
 
-                if ( class_exists('E20R\Sequences\Sequence\Controller')) {
-                    $details = Sequence\Controller::post_details( $id, $postId );
+                if ( class_exists('\E20R\Sequences\Sequence\Controller')) {
+                    $details = \E20R\Sequences\Sequence\Controller::post_details( $id, $postId );
                 }
 
-                if ( class_exists( 'E20R\Sequences\Sequence\Sequence_Controller' ) ) {
-                    $details = E20R\Sequences\Sequence\Sequence_Controller::post_details( $id, $postId );
+                if ( class_exists( '\E20R\Sequences\Sequence\Sequence_Controller' ) ) {
+                    $details = \E20R\Sequences\Sequence\Sequence_Controller::post_details( $id, $postId );
                 }
 /*
                 $seq->get_options( $id );
