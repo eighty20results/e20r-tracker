@@ -40,6 +40,9 @@ Fix: (P1) issue with codetabs in e20r_profile shortcode on small screens (doesn'
 
 11/23/2015:
 
+06/29/2018:
+
+Fix: Anonymize old client records (make them 'unidentifiable')
 
 == Completed / Fixed ==
 

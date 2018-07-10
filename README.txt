@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
-Tested up to: 4.9.3
-Stable tag: 2.3.2
+Tested up to: 4.9.7
+Stable tag: 3.0.3
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,22 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 3.0.3 ==
+
+* BUG FIX: JavaScript errors
+
+== 3.0.2 ==
+
+* BUG FIX: Couldn't locate Drip Feed plugin (E20R Sequences)
+
+== 3.0.1 ==
+
+* BUG FIX: Missing JavaScript for Progress Measurements
+
+== 3.0 ==
+
+* ENHANCEMENT: Completely rewrote plugin and updated support for new encryption library, etc, etc, etc.
 
 == 2.3.2 ==
 
