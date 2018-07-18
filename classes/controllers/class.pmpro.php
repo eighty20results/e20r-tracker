@@ -76,39 +76,28 @@ class PMPro {
 	/**
 	 * Configure the member's program on checkout
 	 *
-	 * @param bool         $confirmed
-	 * @param \MemberOrder $order
+	 * @param int       $level_id
+	 * @param int       $user_id
+	 * @param \stdClass $cancel_level
 	 *
 	 * @return bool
 	 */
-	public function setMemberProgram( $confirmed, $order ) {
+	public function setMemberProgram( $level_id, $user_id, $cancel_level ) {
 		
-		if ( class_exists( '\E20R\Tracker\Controllers\Program' ) && true === $confirmed ) {
-			
-			$Program = Program::getInstance();
-			$utils   = Utilities::get_instance();
-			
-			$utils->log( "Set the program and start date for user with ID {$order->user_id}" );
-			
-			if ( empty( $order->user_id ) ) {
-				$utils->log( "No user ID configured!?!" );
-				
-				return $confirmed;
-			}
-			
-			$user_level = pmpro_getMembershipLevelForUser( $order->user_id );
-			
-			$Program->setProgramForUser( $user_level->startdate, $order->membership_id, $user_level );
-		}
+		$utils   = Utilities::get_instance();
+		$Program = Program::getInstance();
 		
-		return $confirmed;
+		$utils->log( "Set the program and start date for user with ID: {$user_id}" );
+		$user_level = pmpro_getMembershipLevelForUser( $user_id );
+		
+		$Program->setProgramForUser( date( 'Y-m-d H:i:s', $user_level->startdate ), $user_id, $user_level );
 	}
 	
 	/**
 	 * Set startdate for client/member when signing up for the VPT program
 	 *
-	 * @param string $startdate
-	 * @param int $userId
+	 * @param string    $startdate
+	 * @param int       $userId
 	 * @param \stdClass $levelObj
 	 *
 	 * @return false|string
@@ -120,6 +109,7 @@ class PMPro {
 		
 		if ( 2 != $levelObj->id ) {
 			$utils->log( "Not processing a VPT membership level" );
+			
 			return $startdate;
 		}
 		
