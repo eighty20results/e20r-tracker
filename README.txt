@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
 Tested up to: 4.9.7
-Stable tag: 3.0.3
+Stable tag: 3.1.4
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,32 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 3.1.4 ==
+
+* BUG FIX: Didn't use the Gravity Forms API to remove the entry data for the user
+
+== 3.1.3 ==
+
+* BUG FIX: Didn't handle new users saving their survey
+* BUG FIX: Didn't load GF save hooks
+* BUG FIX: PHP Warnings when user doesn't specify how many hours/week they train
+* BUG FIX: PHP Warnings when assigning a coach after the interview
+
+== 3.1.2 ==
+
+* BUG FIX: Didn't load hooks for Gravity Form processing
+
+== 3.1.1 ==
+
+* BUG FIX: Set program for user whenever the membership level changes
+
+== 3.1 ==
+
+* BUG FIX: Didn't set the new member(s) start date and program on checkout
+* BUG FIX: Didn't set program for member when checkout is complete
+* BUG FIX: Didn't adjust startdate for member when checkout is complete
+* ENHANCEMENT: Remove unneeded Debug information
 
 == 3.0.3 ==
 

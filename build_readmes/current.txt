@@ -1,1 +1,1 @@
-BUG FIX: JavaScript errors
+BUG FIX: Didn't use the Gravity Forms API to remove the entry data for the user
