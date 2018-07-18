@@ -474,6 +474,7 @@ class GF_Integration {
 		
 		global $wpdb;
 		
+		// TODO: Use GFAPI to remove entry from DB
 		// Prepare variables.
 		$lead_id                = $entry['id'];
 		$lead_table             = \RGFormsModel::get_lead_table_name();
@@ -481,7 +482,22 @@ class GF_Integration {
 		$lead_detail_table      = \RGFormsModel::get_lead_details_table_name();
 		$lead_detail_long_table = \RGFormsModel::get_lead_details_long_table_name();
 		
-		Utilities::get_instance()->log( "Removing entries from the lead_detail_long_table" );
+		Utilities::get_instance()->log( "Removing user supplied data from Gravity Forms" );
+		
+		if ( ! class_exists( '\GFAPI' ) ) {
+			Utilities::get_instance()->log("Cannot find Gravity Forms API class!");
+			return false;
+		}
+		
+		$status = \GFAPI::delete_entry($lead_id );
+		
+		if ( is_wp_error( $status ) ) {
+			Utilities::get_instance()->log("Error deleting GF Form Entry (ID: {$lead_id}): " . $status->get_error_message() );
+			return false;
+		}
+		
+		return true;
+		/*
 		// Delete from lead detail long.
 		$sql = $wpdb->prepare( "DELETE FROM $lead_detail_long_table WHERE lead_detail_id IN(SELECT id FROM $lead_detail_table WHERE lead_id = %d)", $lead_id );
 		$wpdb->query( $sql );
@@ -502,8 +518,9 @@ class GF_Integration {
 		Utilities::get_instance()->log( "Removing entries from any addons" );
 		// Finally, ensure everything is deleted (like stuff from Addons).
 		\GFAPI::delete_entry( $lead_id );
-		
 		return true;
+		*/
+		
 	}
 	
 	
