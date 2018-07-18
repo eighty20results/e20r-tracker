@@ -162,7 +162,13 @@ class Tracker_Crypto {
 			
 			try {
 				
-				$key = Key::loadFromAsciiSafeString( get_user_meta( $userId, 'e20r_user_key', true ) );
+				$safe_key = get_user_meta( $userId, 'e20r_user_key', true );
+				
+				if ( !empty( $safe_key ) ) {
+					$key = Key::loadFromAsciiSafeString( $safe_key );
+				} else {
+					$key = null;
+				}
 				
 			} catch ( BadFormatException $exception ) {
 				
