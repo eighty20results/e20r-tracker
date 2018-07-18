@@ -353,7 +353,7 @@ class Tracker {
 	
 	public function loadWPLoadedHooks() {
 
-        add_action( 'wp', array( GF_Integration::getInstance() ,'loadHooks') );
+        add_action( 'wp_loaded', array( GF_Integration::getInstance() ,'loadHooks'), 99 );
         add_filter( 'auth_cookie_expiration', array( Tracker_Access::getInstance(), 'login_timeout'), 100, 3 );
         
         add_action( 'wp_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'loadHooks') );
@@ -395,7 +395,7 @@ class Tracker {
         add_action( 'wp_ajax_e20r_manage_option_list', array( Assignment::getInstance(), 'manage_option_list') );
         
         Utilities::get_instance()->log("Loading Short Codes");
-        add_action( 'wp', array( Shortcodes::getInstance(), 'loadHooks' ) );
+        add_action( 'wp_loaded', array( Shortcodes::getInstance(), 'loadHooks' ) );
 	}
 	
 	public function loadAllHooks() {
@@ -439,8 +439,8 @@ class Tracker {
                 return;
             }
             
-            add_action( 'init', array( $this, 'loadWPLoadedHooks' ), -1 );
-            add_action( 'wp', array( $this, 'loadContentHooks' ), -1 );
+            add_action( 'init', array( $this, 'loadWPLoadedHooks' ), 5 );
+            add_action( 'wp', array( $this, 'loadContentHooks' ), 5 );
             
             if ( is_admin() ) {
                 
