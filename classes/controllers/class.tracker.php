@@ -321,8 +321,8 @@ class Tracker {
         add_filter( 'pmpro_email_data', array( $this, 'filter_changeConfirmationMessage' ), 10, 2 );
         add_filter( "pmpro_has_membership_access_filter", array( Tracker_Access::getInstance(), "admin_access_filter" ), 10, 3);
         
-        add_action( 'pmpro_checkout_confirmed', array( PMPro::getInstance(), 'setMemberProgram' ), 10, 2 );
-        add_filter( 'pmpro_checkout_start_date', array( PMPro::getInstance(), 'setVPTProgramStartDate' ), 10, 3 );
+        add_action( 'pmpro_after_change_membership_level', array( PMPro::getInstance(), 'setMemberProgram' ), 10, 3 );
+        add_filter( 'pmpro_checkout_start_date', array( PMPro::getInstance(), 'setVPTProgramStartDate' ), 99, 3 );
         
         // add_filter( 'pmpro_after_change_membership_level', array( $this, 'setUserProgramStart') );
         global $pagenow;
