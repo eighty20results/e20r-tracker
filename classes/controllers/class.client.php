@@ -362,6 +362,10 @@ class Client {
 		$user_roles = apply_filters( 'e20r-tracker-configured-roles', array() );
 		$el_score   = 0;
 		
+		if ( !isset( $data['exercise_hours_per_week'])) {
+		    $data['exercise_hours_per_week'] = 0;
+        }
+        
 		Utilities::get_instance()->log( print_r( $data, true) );
 		
 		switch ( $data['exercise_level'] ) {
@@ -1201,7 +1205,7 @@ class Client {
 			
 			if ( ( false !== $client_list ) && ( ! empty( $client_list ) ) ) {
 				
-				$coaches[ $cId ] = count( $client_list[ $program_id ] );
+				$coaches[ $cId ] = count( $client_list );
 			} else if ( empty( $cId ) ) {
 				$coaches[ - 1 ] = 0;
 			} else {
