@@ -443,12 +443,12 @@ class Program extends Settings {
 			return $startdate;
 		}
 		
-		Utilities::get_instance()->log( "Program::setProgramForUser() - Called from: " . $Tracker->whoCalledMe() );
-		Utilities::get_instance()->log( "Program::setProgramForUser() - Locating programs from membership id # {$membership_id} on behalf of user {$user_id}" );
+		Utilities::get_instance()->log( "Called from: " . $Tracker->whoCalledMe() );
+		Utilities::get_instance()->log( "Locating programs from membership id # {$membership_id} on behalf of user {$user_id}" );
 		
 		if ( false === ( $pId = $this->model->findByMembershipId( $membership_id ) ) ) {
 			
-			Utilities::get_instance()->log( "Program::setProgramForUser() - ERROR: No program IDs returned!" );
+			Utilities::get_instance()->log( "ERROR: No program IDs returned!" );
 			
 			$addr = get_option( 'admin_email' );
 			
@@ -463,11 +463,11 @@ class Program extends Settings {
 			
 		}
 		
-		Utilities::get_instance()->log( "Program::setProgramForUser() - Returned groups/membership IDs: " . print_r( $pId, true ) );
+		Utilities::get_instance()->log( "Returned groups/membership IDs: " . print_r( $pId, true ) );
 		
 		if ( is_array( $pId ) ) {
 			
-			Utilities::get_instance()->log( "Program::setProgramForUser() - ERROR: More than one program ID associated with membership!" );
+			Utilities::get_instance()->log( "ERROR: More than one program ID associated with membership!" );
 			$addr = get_option( 'admin_email' );
 			
 			$subj = "Error: Unexpected program definition(s)";
@@ -501,11 +501,11 @@ class Program extends Settings {
 			return $startdate;
 		}
 		
-		Utilities::get_instance()->log( "Program::setProgramForUser() - Testing whether to add user to program list" );
+		Utilities::get_instance()->log( "Testing whether to add user to program list" );
 		
 		if ( empty( $currentProgram->id ) || ( $pId != $currentProgram->id ) ) {
 			
-			Utilities::get_instance()->log( "Program::setProgramForUser() - Configure program ({$pId}) for new user/member" );
+			Utilities::get_instance()->log( "Configure program ({$pId}) for new user/member" );
 			$this->model->loadSettings( $pId );
 			$startTS = $this->startdate( $user_id, $pId, false );
 			
@@ -519,7 +519,7 @@ class Program extends Settings {
 		
 		if ( ! in_array( $user_id, $currentProgram->users ) ) {
 			
-			Utilities::get_instance()->log( "Program::setProgramForUser() - Adding user to the program 'users' list" );
+			Utilities::get_instance()->log( "Adding user to the program 'users' list" );
 			$this->model->set( 'users', $currentProgram->users, $currentProgram->id );
 		}
 		
