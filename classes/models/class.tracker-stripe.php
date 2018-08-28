@@ -87,9 +87,8 @@ class Tracker_Stripe {
             Utilities::get_instance()->log( "Stripe class is loaded" );
 
             try {
-                // Stripe::setApiKey( pmpro_getOption( "stripe_secretkey" ) );
                 // Use test key & test user.
-                Stripe::setApiKey( "sk_test_J57vfoBXUGCNnJWY6gwuVt8I" );
+		Stripe::setApiKey( pmpro_getOption( "stripe_secretkey" ) );             
             }
             catch ( \Exception $e ) {
 
