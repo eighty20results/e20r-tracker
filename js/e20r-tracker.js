@@ -549,8 +549,8 @@ var Tooltip = {
         var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
 
         if (usesBase64) {
-            if (!Base64) {
-                jQuery.getScript('//javascriptbase64.googlecode.com/files/base64.js');
+            if (!base64) {
+                jQuery.getScript('//strongcubedfitness.com/wp-content/plugins/e20r-tracker/js/libraries/Base64.min.js');
             }
         }
 

@@ -1,4 +1,12 @@
-
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * Version 2.0
+ *
+ * License Information:
+ *  the GPL v2 license
+ */
 div.first-column {
     float: left;
     /* text-align: right; */
@@ -34,6 +42,7 @@ table.e20r-measurement-table.e20r-resp-table th {
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
 }
+.e20r-activity-overview-table .e20r-exercise-row { border-bottom: 4px solid #333; }
 .e20r-faq-container .e20r-activity-overview-table {
     border: none;
 }
@@ -446,6 +455,9 @@ img.e20r-front-page-arrow {
 .e20r-activity-overview-table .e20r-exercise-row {
     width: 100%;
 }
+.e20r-exercise-row.e20r-exercise-tracking-row:last-of-type {
+    /* border-bottom: none; */
+}
 .e20r-activity-overview-table .fullwidth {
     width: 100%;
     float: initial;
@@ -463,17 +475,39 @@ img.e20r-front-page-arrow {
 }
 .e20r-activity-tracking-next a,
 .e20r-activity-tracking-next a:visited {
-    color: #004cff;
+    transition: none;
+    -webkit-transition: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    /* color: #004cff; */
     font-weight: 700;
 }
 .e20r-activity-tracking-next a:hover {
     font-weight: initial;
-    color: #004cff;
+    /* color: #004cff; */
 }
 .top-link {
     margin-right: 5%;
 }
-
+.e20r-show-description-link {
+    margin: 20px 0;
+}
+.e20r-exercise-table-header.e20r-exercise-detail-row-1 {
+    width: 100%;
+}
+.e20r-exercise-title {
+    border-bottom: 2px solid lightgray;
+    width: 100%;
+}
+h4.e20r-exercise-title-h4 {
+    display: inline-block;
+    font-size: 1.75em;
+    float: left;
+}
+.e20r-exercise-title div.e20r-exercise-details {
+    display: inline-block;
+    float: right;
+}
 @media screen and (max-width: 1024px ) {
     table.e20r-measurement-table.e20r-resp-table {width:100%;}
     .e20r-measurement-table.e20r-resp-table thead {display: none;}

@@ -1,3 +1,12 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * Version 2.0
+ *
+ * License Information:
+ *  the GPL v2 license
+ */
 .progress-container {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
@@ -24,10 +33,18 @@ div.e20r-as-cards div.e20r-action-activity-banner > h3 span {
     font-weight: normal;
     color: #fff;
 }
+div.e20r-as-cards .e20r-left-button {
+    float: left;
+}
+div.e20r-as-cards .e20r-right-button {
+    float: right !important;
+}
+/*
 div.e20r-as-cards div.e20r-activity-card,
 div.e20r-as-cards div.e20r-action-card {
     float: left;
 }
+*/
 div.e20r-as-cards .e20r-action-activity,
 div.e20r-as-cards .e20r-action-lesson,
 div.e20r-as-cards .e20r-activity-card,
@@ -38,36 +55,47 @@ div.e20r-as-cards .e20r-action-card {
     max-height: 15.75em;
     min-height: 15.75em;
     padding: 5px 10px 5px 10px;
-    float: left;
+    vertical-align: text-top;
+    /* float: left; */
     width: 100%;
     max-width: 300px;
     margin: .4rem 0.2rem .4rem 0.2rem;
 }
+div.e20r-as-cards .e20r-action-activity-banner {
+    margin-left: auto;
+    margin-right: auto;
+}
 div.e20r-as-cards .e20r-action-activity-banner.today {
-    clear: both;
+    /* clear: both; */
+    display: flex;
     border: none;
     width: 100%;
-    max-width: 650px;
-    min-width: 315px;
+    /* max-width: 650px; */
+    /* min-width: 315px; */
     background: #b9b8b8;
     color: #FFF;
     padding: 10px;
-    vertical-align: middle;
+    /* vertical-align: middle; */
 }
 div.e20r-as-cards .e20r-action-activity {
-    background-color: #00a000;
+    background-color: #ffa000;
+    text-align: left;
 }
 div.e20r-as-cards .e20r-action-lesson {
     background-color: #00b5ff;
+    text-align: left;
 }
 div.e20r-as-cards .e20r-action-card {
-    background-color: #ffa000;
+    background-color: #00a000;
+    text-align: left;
 }
 div.e20r-as-cards .e20r-activity-card {
     background: #a000ff;
+    text-align: left;
 }
 div.e20r-as-cards .e20r-action-activity h4,
-div.e20r-as-cards .e20r-activity-card legend,
+div.e20r-as-cards .e20r-activity-card h4,
+div.e20r-as-cards .e20r-activity-card h4,
 div.e20r-as-cards .e20r-action-card h4,
 div.e20r-as-cards .e20r-action-lesson h4,
 h2.e20r-card-header {
@@ -75,10 +103,19 @@ h2.e20r-card-header {
     font-weight: 600;
     line-height: 1.2;
     margin: 0 0 10px;
-    padding-top: 10px;
+    padding: 5px 0;
     color: #FFF;
     clear: both;
-    height: 2em;
+    height: 1.7em;
+    font-size: 1em;
+}
+.e20r-action-activity-banner #e20r-action-daynav {
+    display: flex;
+    width: 100%;
+    border: none;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 40px;
 }
 /*
 div.e20r-as-cards .e20r-activity-card legend,
@@ -90,7 +127,7 @@ div.e20r-as-cards .e20r-action-activity p,
 div.e20r-as-cards .e20r-action-card p,
 div.e20r-as-cards .e20r-activity-card p,
 div.e20r-as-cards .e20r-action-lesson p {
-    color: #e5e5e5;
+    color: #fff;
     font-weight: 500;
     padding-top: 2em;
     font-size: 1.0rem !important;
@@ -101,6 +138,8 @@ div.e20r-as-cards .e20r-action-lesson > a {
 }
 div.e20r-as-cards a#e20r-activity-read-lnk,
 div.e20r-as-cards a#e20r-action-read-lnk {
+    -webkit-box-shadow: none;
+    box-shadow: none;
     color: #fff;
     font-weight: 700;
     text-decoration: initial;
@@ -118,20 +157,54 @@ div.e20r-as-cards a#e20r-action-read-lnk:after {
 div.e20r-as-cards p.e20r-descr-text,
 div.e20r-as-cards p.e20r-card-description {
     margin: auto;
+/*
     width: 98%;
     height: 50%;
+*/
     overflow: hidden;
 }
-div.e20r-as-cards .e20r-daily-action-row {
+/*div.e20r-as-cards .e20r-daily-action-row {
     clear: both;
+}
+*/
+.e20r-action-yesterday-nav:before {
+    content: "\00AB";
+    font-size: 100%;
+    vertical-align: middle;
+    color: #FFF;
+    padding-left: 0.2em;
+    text-decoration: none;
+}
+.e20r-action-tomorrow-nav:after {
+    content: "\00BB";
+    font-size: 100%;
+    vertical-align: middle;
+    padding-left: 0.2em;
+    color: #FFF;
+    text-decoration: none;
+}
+#e20r-action-yesterday-lnk {
+    color: #fff;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    margin-left: 0.4em;
+}
+#e20r-action-tomorrow-lnk {
+    color: #fff;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    margin-right: 0.4em;
 }
 div.e20r-as-cards div.e20r-action-notes {
     background: #fafafa;
     margin: 10px 0 10px 0;
-    max-width: 650px;
+    /* max-width: 650px; */
     width: 100%;
+    text-align: center;
 }
-div.e20r-as-cards fieldset.notes { padding: 0 4px; }
+div.e20r-as-cards div.e20r-action-notes p {
+    text-align: left;
+}
 div.e20r-as-cards fieldset.notes legend {
     margin-bottom: 12px;
     font-size: 13px;
@@ -148,13 +221,13 @@ div.e20r-as-cards fieldset.notes p {
 
 div.e20r-as-cards fieldset.notes #note-textarea {
     width: 100%;
-    max-width: 616px;
     font-family: sans-serif;
     font-size: 16px;
     line-height: 22px;
     height: 72px;
+    padding: 0;
     overflow: auto;
-    display: block;
+    display: inline;
     resize: vertical;
 }
 div.e20r-as-cards fieldset.notes #note-display {
@@ -167,8 +240,10 @@ div.e20r-as-cards fieldset.notes #note-display {
     background-size: 72px 72px;
     font-size: 16px;
     line-height: 22px;
+    /*
     padding-top: 25px;
     padding-left: 35px;
+    */
 }
 div.e20r-as-cards fieldset.notes #note-display > div {
     width: 100%;
@@ -242,7 +317,10 @@ div.e20r-as-cards .toggle-btn:hover {
 }
 div.e20r-as-cards .e20r-toggle-button-group {
     width: 100%;
-    display: inline-block;
+    display: flex;
+    text-align: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
     position: absolute;
     bottom: 5%;
     left: 0;
@@ -261,7 +339,7 @@ div.e20r-as-cards .e20r-toggle-button-group div {
     margin: 5px 5px;
 }
 div.e20r-as-cards .e20r-toggle-button-group div label {
-    position: absolute;
+    /* position: absolute; */
     z-index: 0;
     padding: 0;
     text-align: center;

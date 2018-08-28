@@ -1,1 +1,1 @@
-Fix: Namespace use by new Sequences plugin.
+BUG FIX: Didn't use the Gravity Forms API to remove the entry data for the user

@@ -1,3 +1,12 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * Version 2.0
+ *
+ * License Information:
+ *  the GPL v2 license
+ */
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
    with position:fixed. Width, height, top and left speak
@@ -88,7 +97,7 @@ tr.e20r-client-message-history-entry td {
     font-size: 14px;
     font-weight: bold;
     width: 350px;
-    top: -22px;
+    top: -5px;
     left: 0;
     margin-left: 10px;
     text-align: left;
@@ -179,3 +188,5 @@ input#e20r-send-email-message {
     color: #FFF !important;
 }
 .fa-stack br { display: none; }
+table#new-assignments td { vertical-align: middle; }
+.program-inputs .select2-container { min-width: 75px; max-width: 300px; width: 90%; }

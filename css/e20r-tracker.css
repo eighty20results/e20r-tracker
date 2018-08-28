@@ -1,3 +1,12 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * Version 2.0
+ *
+ * License Information:
+ *  the GPL v2 license
+ */
 @font-face {
     font-family: 'ElegantIcons';
     src:url('fonts/ElegantIcons.eot');
@@ -81,6 +90,8 @@ div#e20r-progress-achievements {
     max-width: 940px;
     min-width:300px;
     width: 97%;
+    margin-left: auto;
+    margin-right: auto;
 }
 .e20r-confirmation-background {
     background-color: rgba( 0, 76, 255, 0.2);
@@ -99,7 +110,7 @@ div#e20r-progress-achievements {
     left: 50%;
 }
 */
-div#e20r-assignment-answer-list {
+div#e20r-assignment_answer_list {
     margin-left: auto;
     margin-right: auto;
 }
@@ -172,37 +183,7 @@ table.jqplot-table-legend td {
     padding: 0;
 }
 /********************* For the Client Girth/Weight Graph Table & the Backend UI *******/
-.e20r-button {
-    display: inline-block;
-    margin: 0 10px 0 0;
-    color: #004CFF;
-    padding: 8px 15px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;
-    text-transform: none;
-    font-weight: bold;
-    font-size: initial;
-    /* font-variant: small-caps; */
-    text-align: center;
-    text-decoration: none;
-    box-shadow: none;
-    /* background: #666; */
-    background-image: -webkit-linear-gradient(#FFF, #E5E5E5);
-    background-image: -moz-linear-gradient(#FFF, #E5E5E5);
-    background-image: -o-linear-gradient(#FFF, #E5E5E5);
-    background-image: linear-gradient(#FFF, #E5E5E5);
-    border: 1px solid #C5C5C5;
-    text-shadow: none;
-}
-.e20r-button:hover {
-    color: #FFF !important;
-    box-shadow: none;
-    /* background: #000; */
-    background-image: -webkit-linear-gradient(#E5E5E5, #004CFF);
-    background-image: -moz-linear-gradient(#E5E5E5, #004CFF);
-    background-image: -o-linear-gradient(#E5E5E5, #004CFF);
-    background-image: linear-gradient(#E5E5E5, #004CFF);
-}
+/*
 .gform_button,
 input[type="button"],
 input[type="reset"],
@@ -253,6 +234,7 @@ input:hover[type="submit"],
     background-image: -o-linear-gradient(#E5E5E5, #004CFF);
     background-image: linear-gradient(#E5E5E5, #004CFF);
 }
+*/
 .e20r-admin-hr {
     width: 90%;
 }
@@ -631,7 +613,8 @@ div#inner-tabs div.inner-tab {
 }
 #saturday-progress-container #e20r-progress-canvas img#weekly-alarm-clock {
     float: left;
-    width: 45%;
+    width: auto;
+    max-height: 200px;
 }
 .e20r-weekly-progress-reminder-text {
     float: left;
@@ -641,7 +624,6 @@ div#inner-tabs div.inner-tab {
 .e20r-weekly-progress-reminder-text h4 {
     font-size: 22px;
     margin-top: 8px;
-    height: 28px;
     line-height: 30px;
 }
 .e20r-weekly-progress-reminder-text p {
@@ -761,6 +743,7 @@ div#inner-tabs div.inner-tab {
     display: block;
     float: left;
     margin-bottom: 10px;
+    max-width: 120px;
 }
 .measurement-field-container.active {
     background: rgba(255, 184, 77, 0.3);
@@ -838,6 +821,7 @@ div#inner-tabs div.inner-tab {
     font-size: 14px;
     float: right;
     margin-right: 12px;
+    width: auto;
 }
 .measurement-saved-container.active { display: block; }
 /** Internet Explorer specific - *sigh* **/
@@ -858,7 +842,7 @@ div#inner-tabs div.inner-tab {
 }
 .browserIE .measurement-saved-container span.value { margin-top: 0; }
 .browserIE .measurement-saved-container span.unit { margin-top: 4px; }
-.browserIE .measurement-saved-container button.edit { margin-top: 1px; }
+.browserIE .measurement-saved-container button.edit { margin-top: 1px; width: auto; }
 .browserIE .content fieldset legend { margin-left: -6px; }
 /** TODO: Include depending on how we manage picture uploads **/
 .browserIE #photo-upload-table .photo-upload-container .title {
@@ -1142,6 +1126,8 @@ a.load_progress_data {
     min-width: 80%;
     width: 95%;
     max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
     /* z-index: 100; */
     padding: 30px 14px 14px 14px;
     /* display: none; */
@@ -1154,9 +1140,10 @@ a.load_progress_data {
     width: 350px;
     top: 0;
     left: 0;
+    margin: 0;
     margin-left: 10px;
     text-align: left;
-    padding: 10px;
+    padding: 5px 0 0 10px;
 }
 .e20r-measurements-container h4:after {
     content: "";
@@ -1260,7 +1247,7 @@ div.photo-overlay span.value {
 .quick-nav a {
     color: #004C00;
     text-decoration: none;
-    font-size: 0.6rem;
+    /* font-size: 0.6rem; */
 }
 .quick-nav table th.rotate {
     /* Something you can count on */
@@ -1337,7 +1324,6 @@ div.timeagosize {
     position: relative;
     left: 0;
     min-width: 300px;
-    max-width: 700px;
 }
 #e20r-workout-settings .sub-table th {
     text-align: left;
@@ -1356,22 +1342,22 @@ td.e20r-group-header {
 .progress-container {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
-    background: #004CFF;
+    background: #b9b8b8;
     border: 1px solid #c5c5c5;
     padding: 14px;
-    margin-top: 10px;
+    /* margin-top: 10px; */
 }
 .progress-container > h3 {
     color: #FFF;
     font-size: 20px !important;
     font-weight: bold;
-    /* margin: 0 !important; */
+    margin: 0 0 0.3em 0 !important;
 }
 .progress-container > h3 span { font-weight: normal; }
 .progress-container p { color: #33383a; }
 .progress-container hr {
     border: none;
-    border-bottom: 1px solid #dceef4;
+    /* border-bottom: 1px solid #dceef4; */
     height: 1px;
     margin-top: 11px;
     margin-bottom: 13px;
@@ -1469,7 +1455,7 @@ td.e20r-group-header {
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li {
     white-space: nowrap;
 }
-#e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; }
+/* #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li:first-child { border-top: 1px solid #efefef; } */
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li.active {
     background: #fffdc0;
     border-bottom: 1px solid #c9c89a;
@@ -1485,7 +1471,6 @@ td.e20r-group-header {
     margin-left: 20px;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li label {
-    float: left;
     margin-left: 4px;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you ul > li input[type=radio] {
@@ -1499,20 +1484,26 @@ td.e20r-group-header {
     padding: 4px 4px;
     font-size: 0.75rem;
     letter-spacing: normal;
+    max-width: 200px;
+    width: 50%;
+    min-width: 200px;
 }
-#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes { padding: 0 4px; }
+#e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes { padding: 0 4px; display: block; }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes legend {
     margin-bottom: 12px;
     font-size: 13px;
+    border: none !important;
     text-transform: uppercase;
     font-family: sans-serif;
     color: rgba(0, 72, 0, 0.75);
     font-weight: normal;
+    flex: 1;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes p {
     margin-bottom: 8px;
     max-width: 616px;
     color: #333333;
+    flex: 1;
 }
 
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.notes #note-textarea {
@@ -1624,30 +1615,26 @@ td.e20r-group-header {
     margin-left: auto;
     margin-right: auto;
 }
+/*
 div#e20r-daily-progress #e20r-action-daynav {
     display: flex;
     width: 100%;
     border: 1px solid #c4c5c5;
     border-radius: 5px;
-    background-color: #FFF;
     margin-left: auto;
     margin-right: auto;
     line-height: 40px;
-    padding: 10px 0 10px 0;
+    padding: 0 10px 0 10px;
 }
+*/
 .e20r-action-yesterday-nav {
     flex: 1;
     font-size: 15px;
-    text-decoration: underline;
     font-variant: small-caps;
     font-weight: bold;
-    color: #004CFF;
+    color: #FFF;
     float: left;
     text-align: left;
-    padding-left: 25px;
-    margin-left: 5px;
-    margin-right: 5px;
-
 }
 /* #e20r-action-yesterday-nav > a {
     text-decoration: none !important;
@@ -1655,42 +1642,52 @@ div#e20r-daily-progress #e20r-action-daynav {
 .e20r-action-tomorrow-nav {
     flex: 1;
     font-size: 15px;
-    text-decoration: underline;
     font-weight: bold;
     font-variant: small-caps;
-    color: #004CFF;
-    padding-right: 25px;
-    margin-left: 5px;
-    margin-right: 5px;
+    color: #FFF;
     float: right;
     text-align: right;
 }
 .e20r-action-current {
     flex: 1;
-    color: #5c5c5c;
+    color: #FFF;
+    font-size: 1.2rem;
     font-style: italic;
+    font-weight: 800;
     text-align: center;
     font-variant: small-caps;
     text-decoration: initial;
-    font-size: 0.8rem;
     margin-left: 5px;
     margin-right: 5px;
 }
+.profile-tab > #e20r-daily-progress { border: none; }
 /* #e20r-action-tomorrow-nav > a {
     text-decoration: none !important;
 }*/
 div#e20r-action-content {
+    display: inline-block;
     width: 100%;
     margin: 0 auto;
-    padding-bottom: 10px;
-    padding-top: 10px;
+    /* padding-bottom: 10px; */
+    /* padding-top: 10px;*/
 }
 .e20r-as-dashboard div.e20r-action-activity,
 .e20r-as-dashboard div.e20r-action-lesson {
-    padding: 20px;
+    padding: 0 20px;
     margin-left: auto;
     margin-right: auto;
     width: 99%;
+    flex: 1;
+}
+p.e20r-descr-link > br {
+    content: " ";
+}
+
+#e20r-daily-progress p.e20r-descr-link {
+    margin: 0;
+    padding: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 }
 #e20r-daily-action-container div.e20r-content-cell {
     width: 50%;
@@ -1739,7 +1736,7 @@ body.loading .modal {
 .e20r-arrow {
     font-size: 18px;
     text-decoration: none !important;
-    vertial-align: middle;
+    vertical-align: middle;
 }
 .date-past-future {
     -moz-border-radius: 6px;
@@ -1756,7 +1753,7 @@ body.loading .modal {
     background-image: url(../img/small-calendar.png);
 }
 .date-past-future .li { line-height: 150%; }
-.date-past-future { margin-bottom: 16px; }
+.date-past-future { margin-bottom: 8px; }
 .e20r-select2-container {
     width: 100%;
     vertical-align: baseline;
@@ -1984,7 +1981,7 @@ blockquote > div:before {
 blockquote:before {
     font: bold 45px/1px Times, serif;
     color: #004DFF;
-    /* position: absolute; */
+    position: absolute;
 }
 blockquote:before {
     content: "\201C ";
@@ -1993,6 +1990,7 @@ blockquote:before {
 .nourish_hide {
     display: none !important;
 }
+/*
 .e20r-coaching-presale input.button {
     width: 100%;
     margin: 0 auto;
@@ -2018,6 +2016,7 @@ blockquote:before {
 .e20r-presale-table {
     border: 1px solid #b5b5b5;
 }
+*/
 ::-webkit-input-placeholder {
     color:    #b5b5b5;
     opacity:  1;
@@ -2345,12 +2344,16 @@ tr.e20r-client-list-row > tbody {
 }
 .e20r-strong-text {
     color: black;
+    font-weight: 900;
+    font-size: 120%;
 }
 .e20r-weak-text {
-    color: #777;
+    color: #333;
+    font-weight: 600;
 }
 .e20r-weakest-text {
-    color: #ccc;
+    color: #666;
+    font-weight: normal;
 }
 .e20r-followup-normal {
     background-color: rgba( 0, 76, 0, 0.1);
@@ -2401,19 +2404,49 @@ div.e20r-boxes .window {
 div.e20r-boxes div.e20r-footer-placement {
     position: absolute;
     left: 50%;
-    bottom: 0;
-    width: 100%;
+    bottom: 15px;
+    /* width: 100%; */
+}
+div.e20r-footer-button-div a.button {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    color: #333 !important;
+    font-size: 20px;
+    padding: 10px 20px 10px 20px;
+    text-decoration: none;
+    background-color: rgba( 0, 77, 0, 0.3) !important;
+    border: 2px solid rgb(0, 77, 0) !important;
+    background-image: initial !important;
+}
+div.e20r-footer-button-div a.button.disagree {
+    background-color: rgba( 157, 0, 0, 0.3 ) !important;
+    border: 2px solid rgba( 157, 0, 0, 1.0 ) !important;
+    color: #333;
+}
+div.e20r-footer-button-div a.button.disagree:hover {
+    background-color: rgba( 157, 0, 0, 1.0 ) !important;
+    color: #FFF;
+}
+div.e20r-footer-button-div a.button:hover {
+    text-decoration: none;
+    background-color: rgba( 0, 77, 0, 1.0) !important;
+    color: #FFF !important;
+}
+div.e20r-boxes div.e20r-footer-placement div.e20r-footer-button-div {
+    float: left;
+    bottom: -10px;
+    position: relative;
+}
+div.e20r-footer-button-div a.button.secondary.agree {
+    background: lightgray;
+    color: #444;
 }
 div.e20r-boxes .button {
     padding:10px;
     margin: 5px;
 }
 div.e20r-boxes .secondary:hover {
-    background-image: -webkit-linear-gradient( #9C0000, #9C0000 );
-    background-image: -moz-linear-gradient( #9C0000, #9C0000 );
-    background-image: -o-linear-gradient( #9C0000, #9C0000 );
-    background-image: linear-gradient( #9C0000, #9C0000 );
-    color: #FFF;
 }
 div.e20r-boxes div.e20r-dialog {
     max-width: 750px;
@@ -2507,11 +2540,16 @@ div.e20r-popupfoot {
 */
 .e20r-daily-action-row {
     width: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    /* padding: 0 3%; */
 }
 #e20r-daily-action-container div.e20r-activity-card,
 #e20r-daily-action-container div.e20r-action-card {
     float: left;
-    width: 49%;
+    width: 46%;
 }
 #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you > div {
     width: 100%;
@@ -2552,6 +2590,10 @@ div.e20r-popupfoot {
 }
 div.e20r-message-content p {
     text-align: left;
+}
+.e20r-date-header {
+    font-weight: normal;
+    font-size: 1em;
 }
 @media screen and (max-width:1040px), screen and (min-width:380px) {
     .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
@@ -2611,11 +2653,13 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         margin-right: 2%;
         height: 184px;
+        border: none !important;
         font-size: 1rem;
     }
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 1rem;
         margin-left: 2%;
+        border: none !important;
         height: 184px;
     }
 }
@@ -2650,6 +2694,7 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.workout {
         width: 100%;
         margin-right: 2%;
+        border: none !important;
         height: 184px;
         font-size: 0.8rem;
         min-width: 260px;
@@ -2657,6 +2702,7 @@ div.e20r-message-content p {
     #e20r-daily-action-container #e20r-daily-action-canvas fieldset.did-you.habit {
         font-size: 0.8rem;
         width: 100%;
+        border: none !important;
         height: 184px;
         min-width: 260px;
     }
@@ -2700,7 +2746,7 @@ div.e20r-message-content p {
         height: 38px;
         line-height: 40px;
         color: #FFF;
-        background: #004CFF;
+        background: #b9b8b8;
         border-bottom: 1px solid #cccccc;
     }
     /* .colorbox-guide-container table.e20r-help-items {
@@ -2760,8 +2806,6 @@ div.e20r-message-content p {
         font-size: 1rem;
     }
     #saturday-progress-container #e20r-progress-canvas {
-        -moz-border-radius: 6px;
-        -webkit-border-radius: 6px;
         background: #FFF;
         min-height: 300px;
         padding: 14px;
@@ -2841,11 +2885,12 @@ div.e20r-message-content p {
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
-        margin: 0 0 15px;
+        margin: 0 0 15px !important;
     }
     #saturday-progress-container.progress-container > h3 span {
         font-size: 100%;
         font-weight: normal;
+        color: #f5f5f5;
     }
     #saturday-progress-container legend {
         float: left;
@@ -2907,6 +2952,18 @@ div.e20r-message-content p {
     }
 }
 @media screen and (max-width: 533px) {
+
+    #saturday-progress-container #e20r-progress-canvas img#weekly-alarm-clock {
+        float: left;
+        width: auto;
+        height: 100px;
+    }
+
+    #saturday-progress-container #e20r-progress-canvas .e20r-weekly-progress-reminder-text {
+        float: left;
+        width: 95%;
+    }
+
     .ct-flatbox.ct-pag-hor.ct-pag-top>.ct-viewport {
         padding: 5px !important;
     }
@@ -2957,7 +3014,7 @@ div.e20r-message-content p {
         height: 25px;
         line-height: 26px;
         color: #FFF;
-        background: #004CFF;
+        background: #b9b8b8;
         border-bottom: 1px solid #cccccc;
     }
     /* .colorbox-guide-container table.e20r-help-items {
@@ -3035,8 +3092,12 @@ div.e20r-message-content p {
         -moz-border-radius: 6px;
         -webkit-border-radius: 6px;
         border-radius: 6px;
+        /*
         background: rgba( 0, 76, 255, 0.95 );
         border: 1px solid rgb( 0, 76, 255);
+        */
+        background: #b9b8b8;
+        border: 1px solid #c5c5c5;
         padding: 14px;
         /* max-width: 95%; */
         width: 100%;
@@ -3072,11 +3133,12 @@ div.e20r-message-content p {
         font-size: 20px !important;
         line-height: 50% !important;
         font-weight: bold;
-        margin: 0 0 15px;
+        margin: 0 0 15px !important;
     }
     #saturday-progress-container.progress-container > h3 span {
         font-size: 90%;
         font-weight: normal;
+        color: #f5f5f5;
     }
     table.e20r-progress-form textarea.e20r-note {
         margin: 0;
@@ -3137,6 +3199,7 @@ div.e20r-message-content p {
         float: left;
         margin-left: 12px;
         margin-bottom: 5px;
+        width: auto;
     }
     .measurement-field-container label {
         -moz-border-radius: 3px;
@@ -3214,7 +3277,6 @@ div.e20r-message-content p {
     .e20r-weekly-progress-reminder-text h4 {
         font-size: 18px;
         margin-top: 8px;
-        height: 22px;
         line-height: 22px;
     }
 }
