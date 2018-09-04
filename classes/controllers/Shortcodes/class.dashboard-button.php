@@ -76,8 +76,8 @@ class Dashboard_Button {
 			$classes = array_map( 'trim', explode( ',', $atts['css_class'] ) );
 		}
 		
-		echo '<div style="width: 100%;">';
-		echo '<div style="min-width: 200px; max-width: 500px; width: 90%; margin-left: auto; margin-right: auto; text-align: center;">';
+		printf( '<div style="width: 100%;">' );
+		printf( '<div style="min-width: 200px; max-width: 500px; width: 90%; margin-left: auto; margin-right: auto; text-align: center;">' );
 		
 		printf(
 			'<a href="%1$s" title="%2$s">%3$s</a>',
@@ -89,7 +89,8 @@ class Dashboard_Button {
 				$atts['button_text']
 			)
 		);
-		echo '</div>';
-		echo '</div>';
+		
+		printf( '</div>' );
+		printf( '</div>' );
 	}
 }
