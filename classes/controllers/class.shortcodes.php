@@ -21,7 +21,6 @@
 
 namespace E20R\Tracker\Controllers;
 
-
 use E20R\Tracker\Controllers\Shortcodes\Activity;
 use E20R\Tracker\Controllers\Shortcodes\Activity_Archive;
 use E20R\Tracker\Controllers\Shortcodes\Article_Archive;
@@ -33,14 +32,30 @@ use E20R\Tracker\Controllers\Shortcodes\Profile;
 use E20R\Tracker\Controllers\Shortcodes\Progress_Overview;
 use E20R\Tracker\Controllers\Shortcodes\Weekly_Progress;
 
+/**
+ * Class Shortcodes
+ * @package E20R\Tracker\Controllers
+ *
+ * @since v3.2 - ENHANCEMENT: Fixed PHPDoc blocks and supports the refactored short code handlers
+ */
 class Shortcodes {
 	
+	/**
+	 * Instance of the ShortCodes controller class
+	 *
+	 * @var null|Shortcodes
+	 */
 	private static $instance = null;
 	
+	/**
+	 * Shortcodes constructor.
+	 */
 	private function __construct() {
 	}
 	
 	/**
+	 * Instantiates or returns the Shortcodes controller class
+	 *
 	 * @return Shortcodes|null
 	 */
 	public static function getInstance() {
@@ -53,7 +68,7 @@ class Shortcodes {
 	}
 	
 	/**
-	 * Load Shortcode hooks
+	 * Load Short Code hooks
 	 */
 	public function loadHooks() {
 		
