@@ -51,6 +51,31 @@ class Workout extends Settings {
 		return self::$instance;
 	}
 	
+	/**
+	 * Return the View class for the Workout Controller
+	 *
+	 * @return Workout_View|null
+	 */
+	public function getViewClass() {
+		return $this->view;
+	}
+	
+	/**
+	 * Return the Model class for the Workout Controller
+	 *
+	 * @return Workout_Model|null
+	 */
+	public function getModelClass() {
+		return $this->model;
+	}
+	
+	/**
+	 * Returns the workout/activity for the specified identifier
+	 *
+	 * @param string|int $identifier
+	 *
+	 * @return array|mixed
+	 */
 	public function getActivity( $identifier ) {
 		
 		Utilities::get_instance()->log( "Loading Activity data for {$identifier}" );
@@ -546,128 +571,6 @@ class Workout extends Settings {
 	}
 	
 	/**
-	 * For the e20r_activity_archive shortcode.
-	 *
-	 * @param null $attributes
-	 *
-	 * @return string
-	 * @since 0.8.0
-	 */
-	public function shortcode_act_archive( $attributes = null ) {
-		
-		Utilities::get_instance()->log( "Loading shortcode data for the activity archive." );
-		
-		global $current_user;
-		global $currentProgram;
-		
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-		}
-		
-		$config                    = new \stdClass();
-		$config->userId            = $current_user->ID;
-		$config->programId         = $currentProgram->id;
-		$config->expanded          = false;
-		$config->show_tracking     = 0;
-		$config->phase             = 0;
-		$config->print_only        = null;
-		$config->activity_override = false;
-		
-		$tmp = shortcode_atts( array(
-			'period'     => 'current',
-			'print_only' => null,
-		), $attributes );
-		
-		foreach ( $tmp as $key => $val ) {
-			
-			if ( ! empty( $val ) ) {
-				$config->{$key} = $val;
-			}
-		}
-		
-		// Valid "false" responses for print_only atribute can include: array( 'no', 'false', 'null', '0', 0, false, null );
-		$true_responses = array( 'yes', 'true', '1', 1, true );
-		
-		if ( in_array( $config->print_only, $true_responses ) ) {
-			Utilities::get_instance()->log( "User requested the archive be printed (i.e. include all unique exercises for the week)" );
-			$config->print_only = true;
-		} else {
-			Utilities::get_instance()->log( "User did NOT request the archive be printed" );
-			$config->print_only = false;
-		}
-		
-		if ( 'current' == $config->period ) {
-			$period = E20R_CURRENT_WEEK;
-		}
-		
-		if ( 'previous' == $config->period ) {
-			$period = E20R_PREVIOUS_WEEK;
-		}
-		
-		if ( 'next' == $config->period ) {
-			$period = E20R_UPCOMING_WEEK;
-		}
-		
-		Utilities::get_instance()->log( "Period set to {$config->period}." );
-		
-		$activities = $this->getActivityArchive( $current_user->ID, $currentProgram->id, $period );
-		
-		Utilities::get_instance()->log( "Check whether we're generating the list of exercises for print only: " . ( $config->print_only ? 'Yes' : 'No' ) );
-		
-		if ( true === $config->print_only ) {
-			
-			Utilities::get_instance()->log( "User requested this activity archive be printed. Listing unique exercises." );
-			
-			$printable         = array();
-			$already_processed = array();
-			
-			foreach ( $activities as $key => $workout ) {
-				
-				if ( 'header' !== $key && ( ! in_array( $workout->id, $already_processed ) ) ) {
-					
-					$routine = new \stdClass();
-					
-					if ( ( 0 == $config->phase ) || ( $config->phase < $workout->phase ) ) {
-						
-						$routine->phase = $workout->phase;
-						Utilities::get_instance()->log( "Setting phase number for the archive: {$config->phase}." );
-					}
-					
-					$routine->id          = $workout->id;
-					$routine->name        = $workout->title;
-					$routine->description = $workout->excerpt;
-					$routine->started     = $workout->startdate;
-					$routine->ends        = $workout->enddate;
-					$routine->days        = $workout->days;
-					
-					$list = array();
-					
-					foreach ( $workout->groups as $grp ) {
-						
-						Utilities::get_instance()->log( "Adding " . count( $grp->exercises ) . " to list of exercises for routine # {$routine->id}" );
-						$list = array_merge( $list, $grp->exercises );
-					}
-					
-					$routine->exercises = array_unique( $list, SORT_NUMERIC );
-					
-					Utilities::get_instance()->log( "Total number of exercises for  routine #{$routine->id}: " . count( $routine->exercises ) );
-					$already_processed[] = $routine->id;
-					$printable[]         = $routine;
-				}
-			}
-			
-			Utilities::get_instance()->log( "Will display " . count( $printable ) . " workouts and their respective exercises for print" );
-			
-			return $this->view->display_printable_list( $printable, $config );
-		}
-		
-		Utilities::get_instance()->log( "Grabbed activity count: " . count( $activities ) );
-		
-		return $this->view->displayArchive( $activities, $config );
-	}
-	
-	/**
 	 *
 	 * Returns an archive of activities based on the requested period.
 	 * Currently supports previous, current and next week constants.
@@ -849,66 +752,6 @@ class Workout extends Settings {
 		
 		// Return the hash of activities to the calling function.
 		return $activities;
-	}
-	
-	public function shortcode_activity( $attributes = null ) {
-		
-		Utilities::get_instance()->log( "Loading shortcode data for the activity." );
-		Utilities::get_instance()->log( print_r( $_REQUEST, true ) );
-		
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-		}
-		
-		$config                = new \stdClass();
-		$config->show_tracking = true;
-		$config->display_type  = 'row';
-		$config->print_only    = null;
-		
-		$tmp = shortcode_atts( array(
-			'activity_id'   => null,
-			'show_tracking' => true,
-			'display_type'  => 'row', // Valid types: 'row', 'column', 'print'
-		), $attributes );
-		
-		foreach ( $tmp as $key => $val ) {
-			
-			if ( ( 'activity_id' == $key ) && ( ! is_null( $val ) ) ) {
-				$val = array( $val );
-			}
-			
-			if ( ! is_null( $val ) ) {
-				// Utilities::get_instance()->log("Setting {$key} to {$val}");
-				$config->{$key} = $val;
-			}
-		}
-		
-		if ( false === in_array( strtolower( $config->show_tracking ), array( 'yes', 'no', 'true', 'false', 1, 0 ) ) ) {
-			
-			Utilities::get_instance()->log( "User didn't specify a valid show_tracking value in the shortcode!" );
-			
-			return sprintf( '<div class="error">%s</div>', __( 'Incorrect show_tracking value in the e20r_activity shortcode! (Valid values are: "yes", "no", "true", "false", "1", "0")', 'e20r-tracker' ) );
-		}
-		
-		
-		if ( ! in_array( $config->display_type, array( 'row', 'column', 'print' ) ) ) {
-			
-			Utilities::get_instance()->log( "User didn't specify a valid display_type in the shortcode!" );
-			
-			return sprintf( '<div class="error">%s</div>', __( 'Incorrect display_type value in the e20r_activity shortcode! (Valid values are "row", "column", "print")', 'e20r-tracker' ) );
-		}
-		
-		$config->show_tracking = in_array( strtolower( $config->show_tracking ), array( 'yes', 'true', 1 ) );
-		
-		if ( 'print' === $config->display_type ) {
-			
-			$config->print_only = true;
-		}
-		
-		Utilities::get_instance()->log( "Value of show_tracking is: {$config->show_tracking} -> " . ( $config->show_tracking ? 'true' : 'false' ) );
-		
-		return $this->prepare_activity( $config );
 	}
 	
 	/**
