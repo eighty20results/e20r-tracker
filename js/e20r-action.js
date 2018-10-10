@@ -198,7 +198,7 @@ jQuery(document).ready(function ($) {
                         console.log("index: ", index);
 
                         if (null !== $(ul).data('activeIndex')
-                            && index == $(ul).data('activeIndex'))
+                            && index === $(ul).data('activeIndex'))
                             return false;
 
                         console.log("activeIndex..??");
