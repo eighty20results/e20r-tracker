@@ -13,12 +13,14 @@ namespace E20R\Tracker\Controllers;
 use E20R\Tracker\Models\ Article_Model;
 use E20R\Tracker\Models\Assignment_Model;
 use E20R\Tracker\Models\Action_Model;
+use E20R\Tracker\Models\Exercise_Model;
 use E20R\Tracker\Models\Measurement_Model;
 use E20R\Tracker\Models\Program_Model;
 use E20R\Tracker\Models\Workout_Model;
 
 use E20R\Tracker\Models\Client_Model;
 use E20R\Tracker\Views\Action_View;
+use E20R\Tracker\Views\Exercise_View;
 use E20R\Tracker\Views\Measurement_View;
 use E20R\Tracker\Views\Program_View;
 use E20R\Tracker\Views\Assignment_View;
@@ -33,13 +35,14 @@ class Settings {
 	
 	private static $instance = null;
 	/**
-	 * @var null|Program_Model|Client_Model|Measurement_Model|Workout_Model|Assignment_Model| Article_Model|Action_Model
+	 * @var null|Program_Model|Client_Model|Exercise_Model|Measurement_Model|Workout_Model|Assignment_Model| Article_Model|Action_Model
 	 */
 	protected $model;
 	/**
-	 * @var null|Program_View|Action_View|Measurement_View|Workout_View|Assignment_View|Article_View|Action_View
+	 * @var null|Program_View|Action_View|Exercise_View|Measurement_View|Workout_View|Assignment_View|Article_View|Action_View
 	 */
 	protected $view;
+	
 	protected $cpt_slug;
 	protected $type;
 	
@@ -48,8 +51,8 @@ class Settings {
 	 *
 	 * @param null|string                                                                                                  $type
 	 * @param null|string                                                                                                  $cpt_slug
-	 * @param null|Program_Model|Client_Model|Measurement_Model|Workout_Model|Assignment_Model| Article_Model|Action_Model $model
-	 * @param null|Program_View|Action_View|Measurement_View|Workout_View|Assignment_View|Article_View|Action_View         $view
+	 * @param null|Program_Model|Client_Model|Exercise_Model|Measurement_Model|Workout_Model|Assignment_Model| Article_Model|Action_Model $model
+	 * @param null|Program_View|Action_View|Exercise_View|Measurement_View|Workout_View|Assignment_View|Article_View|Action_View         $view
 	 */
 	protected function __construct( $type = null, $cpt_slug = null, $model = null, $view = null ) {
 		
@@ -58,6 +61,24 @@ class Settings {
 		
 		$this->model = $model;
 		$this->view  = $view;
+	}
+	
+	/**
+	 * Return the Model class for the specific Settings child class
+	 *
+	 * @return Action_Model|Article_Model|Assignment_Model|Client_Model|Exercise_Model|Measurement_Model|Program_Model|Workout_Model|null
+	 */
+	public function getModelClass() {
+		return $this->model;
+	}
+	
+	/**
+	 * Return the View class for the specific Settings child class
+	 *
+	 * @return Action_View|Article_View|Assignment_View|Exercise_View|Measurement_View|Program_View|Workout_View|null
+	 */
+	public function getViewClass() {
+		return $this->view;
 	}
 	
 	/**
