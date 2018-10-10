@@ -103,6 +103,23 @@ class Client {
 	}
 	
 	/**
+     * Return the Model class for the Client Controller
+     *
+	 * @return Client_Model|null
+	 */
+	public function getModelClass() {
+	    return $this->model;
+    }
+	
+	/**
+     * Return the View class for the Client Controller
+     *
+	 * @return Client_Views|null
+	 */
+    public function getViewClass() {
+	    return $this->view;
+    }
+	/**
 	 * Get or instantiate the Client class
 	 *
 	 * @return Client
@@ -701,7 +718,7 @@ class Client {
 	/**
 	 * Deny access to Coaching page (backend) if not a registered coach
 	 */
-	private function setNotCoachMsg() {
+	public function setNotCoachMsg() {
 		
 		$Tracker = Tracker::getInstance();
 		
@@ -1966,152 +1983,6 @@ class Client {
 	}
 	
 	/**
-	 * Short Code Handler: Client Profile page(s)
-	 *
-	 * @param null|array  $atts
-	 * @param null|string $content
-	 *
-	 * @return null|string
-	 */
-	public function shortcode_clientProfile( $atts = null, $content = null ) {
-		
-		Utilities::get_instance()->log( "Loading shortcode data for the client profile page." );
-		// Utilities::get_instance()->log($content);
-		
-		global $current_user;
-		
-		$Program      = Program::getInstance();
-		$Action       = Action::getInstance();
-		$Assignment   = Assignment::getInstance();
-		$Workout      = Workout::getInstance();
-		$Article      = Article::getInstance();
-		$Measurements = Measurements::getInstance();
-		
-		global $currentArticle;
-		
-		$html = null;
-		
-		if ( ! is_user_logged_in() || ( ! $this->hasDataAccess( $current_user->ID ) ) ) {
-			
-			auth_redirect();
-		} else {
-			
-			$user_id = $current_user->ID;
-			$Program->getProgramIdForUser( $user_id );
-		}
-		
-		/* Load views for the profile page tabs */
-		$config = $Action->configure_dailyProgress();
-		
-		$code_atts = shortcode_atts( array(
-			'use_cards' => false,
-		), $atts );
-		
-		foreach ( $code_atts as $key => $val ) {
-			
-			Utilities::get_instance()->log( "e20r_profile shortcode --> Key: {$key} -> {$val}" );
-			$config->{$key} = $val;
-		}
-		
-		if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
-			
-			Utilities::get_instance()->log( "User requested card based dashboard: {$config->use_cards}" );
-			$config->use_cards = true;
-		}
-		
-		if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
-			
-			Utilities::get_instance()->log( "User requested old-style dashboard: {$config->use_cards}" );
-			$config->use_cards = false;
-		}
-		
-		if ( ! isset( $config->use_cards ) ) {
-			$config->use_cards = false;
-		}
-		
-		if ( $this->completeInterview( $config->userId ) ) {
-			$interview_descr = 'Saved interview';
-		} else {
-			
-			$interview_descr = '<div style="color: darkred; text-decoration: underline; font-weight: bolder;">' . __( "Please complete interview", "e20r-tracker" ) . '</div>';
-		}
-		
-		$interview_html = '<div id="e20r-profile-interview">' . $this->view_interview( $config->userId ) . '</div>';
-		$interview      = array( $interview_descr, $interview_html );
-		
-		if ( ! $currentArticle->is_preview_day ) {
-			
-			Utilities::get_instance()->log( "Configure user specific data" );
-			
-			$this->model->setUser( $config->userId );
-			// $this->setClient($user_id);
-			
-			$dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-			// $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
-			
-			Utilities::get_instance()->log( "Loading progress data..." );
-			$measurements = $Measurements->getMeasurement( 'all', false );
-			
-			if ( true === $this->completeInterview( $config->userId ) ) {
-				$measurement_view = $Measurements->showTableOfMeasurements( $config->userId, $measurements, $dimensions, true, false );
-			} else {
-				$measurement_view = '<div class="e20r-progress-no-measurement">' . $Program->incompleteIntakeForm() . '</div>';
-			}
-			
-			$assignments  = $Assignment->listUserAssignments( $config->userId );
-			$activities   = $Workout->listUserActivities( $config->userId );
-			$achievements = $Action->listUserAchievements( $config->userId );
-			
-			$progress = array(
-				'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
-				'Assignments'  => '<div id="e20r-progress-assignments"><br/>' . $assignments . '</div>',
-				'Activities'   => '<div id="e20r-progress-activities">' . $activities . '</div>',
-				'Achievements' => '<div id="e20r-progress-achievements">' . $achievements . '</div>',
-			);
-			
-			$dashboard = array(
-				'Your dashboard',
-				'<div id="e20r-daily-progress">' . $Action->dailyProgress( $config ) . '</div>',
-			);
-			/*
-                       $activity = array(
-                           'Your activity',
-                           '<div id="e20r-profile-activity">' . $Workout->prepare_activity( $config ) . '</div>'
-                       );
-            */
-			$progress_html = array(
-				'Your progress',
-				'<div id="e20r-profile-status">' . $Measurements->showProgress( $progress, null, false ) . '</div>',
-			);
-			
-			$tabs = array(
-				'Home'      => $dashboard,
-//                'Activity'          => $activity,
-				'Progress'  => $progress_html,
-				'Interview' => $interview,
-			);
-		} else {
-			
-			$lesson_prefix = preg_replace( '/\[|\]/', '', $currentArticle->prefix );
-			$lesson        = array(
-				'Your ' . lcfirst( $lesson_prefix ),
-				'<div id="e20r-profile-lesson">' . $Article->load_lesson( $config->articleId ) . '</div>',
-			);
-			
-			$tabs = array(
-				$lesson_prefix => $lesson,
-				'Interview'    => $interview,
-			);
-		}
-		
-		$html = $this->view->viewClientProfile( $tabs );
-		Utilities::get_instance()->log( "Display the HTML for the e20r_profile short code: " . strlen( $html ) );
-		
-		return $html;
-		
-	}
-	
-	/**
 	 * Does the $client_id have the permission to access data
 	 *
 	 * @param int $client_id
@@ -2224,90 +2095,5 @@ class Client {
 		Utilities::get_instance()->log( "Returning HTML" );
 		
 		return $content;
-	}
-	
-	/**
-	 * Generate the front-end "Coaching" page list of clients (and their status)
-	 *
-	 * @param null|array $attributes
-	 *
-	 * @return string
-	 */
-	public function shortcode_clientList( $attributes = null ) {
-		
-		Utilities::get_instance()->log( "Loading shortcode for the coach list of clients" );
-		
-		$Program = Program::getInstance();
-		$Access  = Tracker_Access::getInstance();
-		
-		global $currentProgram;
-		global $current_user;
-		
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-			wp_die();
-		}
-		
-		if ( ( ! $Access->is_a_coach( $current_user->ID ) ) ) {
-			
-			$this->setNotCoachMsg();
-			wp_die();
-		}
-		
-		$client_list = $this->model->get_clients( $current_user->ID );
-		$list        = array();
-		
-		foreach ( $client_list as $pId => $clients ) {
-			
-			foreach ( $clients as $k => $client ) {
-				
-				// $Program->getProgramIdForUser( $client->ID );
-				// $Program->setProgram( $pId );
-				
-				$coach = $this->model->get_coach( $client->ID );
-				
-				$client->status                = new \stdClass();
-				$client->status->program_id    = $Program->getProgramIdForUser( $client->ID );
-				$client->status->program_start = $Program->getProgramStart( $client->status->program_id, $client->ID );
-				$client->status->coach         = array( $currentProgram->id => key( $coach ) );
-				$client->status->recent_login  = get_user_meta( $client->ID, '_e20r-tracker-last-login', true );
-				$mHistory                      = $this->model->load_message_history( $client->ID );
-				
-				$client->status->total_messages = count( $mHistory );
-				
-				if ( ! empty( $mHistory ) ) {
-					
-					krsort( $mHistory );
-					reset( $mHistory );
-					
-					Utilities::get_instance()->log( "Sorted message history for user {$client->ID}" );
-					$when = key( $mHistory );
-					$msg  = isset( $mHistory[ $when ] ) ? $mHistory[ $when ] : null;
-					
-					$client->status->last_message        = array( $when => $msg->topic );
-					$client->status->last_message_sender = $msg->sender_id;
-				} else {
-					$client->status->last_message        = array( 'empty' => __( 'No message sent via this website', "e20r-tracker" ) );
-					$client->status->last_message_sender = null;
-				}
-				
-				Utilities::get_instance()->log( "Most recent message: " . print_r( $client->status->last_message, true ) );
-				
-				if ( ! isset( $list[ $currentProgram->id ] ) ) {
-					
-					$list[ $currentProgram->id ] = array();
-				}
-				
-				$list[ $pId ][ $k ] = $client;
-			}
-		}
-		
-		Utilities::get_instance()->log( "Showing client information" );
-		
-		// Utilities::get_instance()->log($list);
-		
-		return $this->view->displayClientList( $list );
-		
 	}
 }
