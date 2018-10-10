@@ -44,6 +44,17 @@ class Exercise extends Settings {
 	}
 	
 	/**
+	 * Load the config for the Exercise
+	 *
+	 * @param int|null $exercise_id
+	 *
+	 * @return bool|mixed|\stdClass|void
+	 */
+	public function init( $exercise_id ) {
+		parent::init( $exercise_id );
+	}
+	
+	/**
 	 * @return Exercise
 	 */
 	static function getInstance() {
@@ -136,75 +147,6 @@ class Exercise extends Settings {
 			"addMeta_Settings",
 		), Exercise::post_type, 'normal', 'high' );
 		
-	}
-	
-	/**
-	 * Process the Exercise shortcode
-	 *
-	 * @param null|array $attributes
-	 *
-	 * @return string|null
-	 */
-	public function shortcode_exercise( $attributes = null ) {
-		
-		Utilities::get_instance()->log( "Loading shortcode data for the exercise." );
-		
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-		}
-		
-		$config = new \stdClass();
-		
-		$tmp = shortcode_atts( array(
-			'id'        => null,
-			'display'   => 'row',
-			'shortcode' => null,
-		), $attributes );
-		
-		foreach ( $tmp as $key => $val ) {
-			
-			$config->{$key} = $val;
-		}
-		
-		if ( isset( $config->id ) && ( ! is_null( $config->id ) ) ) {
-			Utilities::get_instance()->log( "Using ID to locate exercise: {$config->id}" );
-			$exInfo = $this->model->findExercise( 'id', $config->id );
-		}
-		
-		if ( isset( $config->shortcode ) && ( ! is_null( $config->shortcode ) ) ) {
-			Utilities::get_instance()->log( "Using shortcode to locate exercise: {$config->shortcode}" );
-			$exInfo = $this->model->findExercise( 'shortcode', $config->shortcode );
-		}
-		
-		if ( empty( $exInfo ) ) {
-			return __( 'The administrator did not indicate which exercise to show', 'e20r-tracker' );
-		}
-		
-		foreach ( $exInfo as $ex ) {
-			
-			if ( isset( $ex->id ) && ( ! is_null( $ex->id ) ) ) {
-				
-				Utilities::get_instance()->log( "Loading exercise info: {$ex->id}" );
-				$this->init( $ex->id );
-				
-				if ( $config->display != 'new' ) {
-					
-					Utilities::get_instance()->log( "Printing with old layout" );
-					return $this->view->view_exercise_as_row();
-				} else {
-					Utilities::get_instance()->log( "Printing with NEW layout" );
-					return $this->view->view_exercise_as_columns();
-					
-				}
-				
-			} else {
-				Utilities::get_instance()->log( "No exercise found to display!" );
-				return null;
-			}
-		}
-		
-		return null;
 	}
 	
 	public function addMeta_Settings() {
