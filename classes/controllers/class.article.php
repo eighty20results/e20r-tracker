@@ -25,21 +25,66 @@ use E20R\Utilities\Utilities;
  */
 class Article extends Settings {
 	
+	/**
+     * Instance of the class
+     *
+	 * @var null|Article
+	 */
 	private static $instance = null;
+	
+	/**
+     * The ID of the current article
+     *
+	 * @var int $articleId
+	 */
 	protected $articleId;
+	
+	/**
+     * Model class for the Article
+     *
+	 * @var null|Article_Model
+	 */
 	protected $model;
+	
+	/**
+	 * @var Article_View|null
+	 */
 	protected $view;
 	
+	/**
+	 * Article constructor.
+	 */
 	public function __construct() {
 		
 		Utilities::get_instance()->log( "Initializing Article class" );
 		
-		$this->model = new Article_Model();
+		try {
+			$this->model = new Article_Model();
+		} catch ( \Exception $exception ) {
+		    Utilities::get_instance()->log("Exception while loading the Article Model class: " . $exception->getMessage() );
+		    $this->model = null;
+        }
+        
 		$this->view  = new Article_View();
 		
 		parent::__construct( 'article', Article_Model::post_type, $this->model, $this->view );
 	}
 	
+	/**
+	 * @return null|Article_Model
+	 */
+	public function getModelClass() {
+	    
+	    return $this->model;
+    }
+	
+	/**
+	 * @return Article_View
+	 */
+    public function getViewClass() {
+	    return $this->view;
+    }
+    
 	/**
 	 * Return the active instance of this class
 	 *
@@ -216,73 +261,6 @@ class Article extends Settings {
 	}
 	
 	/**
-	 * Generate an archive of Articles
-	 *
-	 * @param null|array $attr
-	 */
-	public function article_archive_shortcode( $attr = null ) {
-		
-		$Client = Client::getInstance();
-		global $currentClient;
-		global $current_user;
-		
-		$Client->setClient( $current_user->ID );
-		$articles = $this->get_article_archive( $currentClient->user_id );
-		$cards    = array();
-		
-		foreach ( $articles as $article ) {
-			
-			$cards[] = $this->get_card_info( $article, $currentClient->user_id );
-			Utilities::get_instance()->log( "Received " . count( $cards ) . " cards for day # {$article->release_day}" );
-		}
-		
-		Utilities::get_instance()->log( print_r( $cards, true ) );
-	}
-	
-	/**
-	 * Load and return the article archive available for the specified user ID (or the current user)
-	 *
-	 * @param int|null $user_id
-	 *
-	 * @return array|bool
-	 */
-	public function get_article_archive( $user_id = null ) {
-		
-		$Program = Program::getInstance();
-		global $currentProgram;
-		
-		if ( is_null( $user_id ) ) {
-			
-			global $currentClient;
-			global $current_user;
-			
-			if ( ! isset( $currentClient->user_id ) ) {
-				
-				$Client = Client::getInstance();
-				$Client->setClient( $current_user->ID );
-				$Client->init();
-			}
-			
-			$user_id = $currentClient->user_id;
-		}
-		
-		Utilities::get_instance()->log( "Loading article archive for user {$user_id}" );
-		
-		$Program->getProgramIdForUser( $user_id );
-		
-		// The archive goes up to (but doesn't include) the current day.
-		$up_to = ( $currentProgram->active_delay - 1 );
-		
-		$archive = $this->model->load_for_archive( $up_to );
-		
-		Utilities::get_instance()->log( "Returned " . count( $archive ) . " articles for archive for user {$user_id} with a last-day value of {$currentProgram->active_delay}" );
-		
-		return $archive;
-		
-		// $Tracker->get_closest_release_day( $array, $day );
-	}
-	
-	/**
 	 * Get the data for the dashboard card for the specified user/article/type combination
 	 *
 	 * @param \stdClass $article
@@ -339,7 +317,9 @@ class Article extends Settings {
 			$cards['lesson'] = $lessons;
 		}
 		
-		
+		/**
+		 * Load the user's activity info
+		 */
 		if ( isset( $article->activity_id ) && ( ! empty( $article->activity_id ) ) ) {
 			
 			if ( ! is_array( $article->activity_id ) ) {
@@ -358,7 +338,9 @@ class Article extends Settings {
 			$cards['activity'] = $activities;
 		}
 		
-		
+		/**
+		 * Load actions (for action cards)
+		 */
 		if ( isset( $article->action_ids ) && ( ! empty( $article->action_ids ) ) ) {
 			
 			$Action = Action::getInstance();
@@ -427,6 +409,8 @@ class Article extends Settings {
 	}
 	
 	/**
+     * TODO: Create feedback for the cards (so users can enter comments/feedback for themselves)
+     *
 	 * @param \stdClass $article
 	 * @param int       $type
 	 * @param int       $userId
@@ -673,9 +657,10 @@ class Article extends Settings {
 	/**
 	 * Return the activity for the specified user and article combination
 	 *
-	 * @param $articleId - The ID of the article containing the workout/activity for this lesson.
+	 * @param int $articleId - The ID of the article containing the workout/activity for this lesson.
+     * @param int|null $userId
 	 *
-	 * @returns int - The post ID for the activity/workout.
+	 * @return bool|int - The post ID for the activity/workout.
 	 */
 	public function getActivity( $articleId, $userId = null ) {
 		
@@ -1800,246 +1785,5 @@ class Article extends Settings {
 		$estimated_time .= '</strong>';
 		
 		return $estimated_time;
-	}
-	
-	/**
-     * Display article summary (short code)
-     *
-	 * @param null $attributes
-	 *
-	 * @return null|string
-	 */
-	public function shortcode_article_summary( $attributes = null ) {
-		
-		$Program = Program::getInstance();
-		$Tracker = Tracker::getInstance();
-		
-		global $currentProgram;
-		global $currentArticle;
-		
-		global $current_user;
-		global $post;
-		
-		$html       = null;
-		$article    = null;
-		$article_id = null;
-		
-		$for_date = $Tracker->sanitize( get_query_var( 'article_date' ) );
-		Utilities::get_instance()->log( "Loading article summary based on shortcode: {$for_date}" );
-		
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-			wp_die();
-		}
-		
-		if ( ! empty( $_REQUEST ) && ( isset( $_REQUEST['e20r-checkin-nonce'] ) ) ) {
-			
-			Utilities::get_instance()->log( "Checking for valid check-in Nonce" );
-			check_ajax_referer( 'e20r-checkin-data', 'e20r-checkin-nonce' );
-			
-			$article_id = isset( $_REQUEST['article-id'] ) ? $Tracker->sanitize( $_REQUEST['article-id'] ) : null;
-			$for_date   = isset( $_REQUEST['for-date'] ) ? $Tracker->sanitize( $_REQUEST['for-date'] ) : null;
-			$program_id = isset( $_REQUEST['program-id'] ) ? $Tracker->sanitize( $_REQUEST['program-id'] ) : null;
-		}
-		
-		if ( ! empty( $_REQUEST ) && ( isset( $_REQUEST['e20r-action-nonce'] ) ) ) {
-			
-			Utilities::get_instance()->log( "Checking for valid action Nonce (from dashboard)" );
-			check_ajax_referer( 'e20r-action-data', 'e20r-action-nonce' );
-			
-			$article_id = isset( $_REQUEST['article-id'] ) ? $Tracker->sanitize( $_REQUEST['article-id'] ) : null;
-			$for_date   = isset( $_REQUEST['for-date'] ) ? $Tracker->sanitize( $_REQUEST['for-date'] ) : null;
-			$program_id = isset( $_REQUEST['program-id'] ) ? $Tracker->sanitize( $_REQUEST['program-id'] ) : null;
-			Utilities::get_instance()->log( "Checking for valid action Nonce (from dashboard)" );
-		}
-		
-		if ( empty( $program_id ) ) {
-			
-			Utilities::get_instance()->log( "Loading program info for user {$current_user->ID}" );
-			$Program->getProgramIdForUser( $current_user->ID );
-		} else {
-			Utilities::get_instance()->log( "Loading program config for {$program_id}" );
-			$Program->init( $program_id );
-		}
-		
-		if ( ! empty( $for_date ) ) {
-			
-			Utilities::get_instance()->log( "Received date: {$for_date} and will calculate # of days from that" );
-			$days_since_start = Time_Calculations::daysBetween( strtotime( $currentProgram->startdate ), strtotime( $for_date ) );
-		} else {
-			$days_since_start = $Tracker->getDelay( 'now', $current_user->ID );
-		}
-		
-		Utilities::get_instance()->log( "using delay value of: {$days_since_start}" );
-		
-		if ( is_null( $article_id ) ) {
-			
-			global $post;
-			
-			$articles = $this->model->find( 'post_id', $post->ID, $currentProgram->id );
-			
-			Utilities::get_instance()->log( "Found " . count( $articles ) . " for this post ID ({$post->ID})" );
-			
-			foreach ( $articles as $a ) {
-				
-				if ( $a->release_day == $days_since_start ) {
-					
-					Utilities::get_instance()->log( "Found article {$a->id} and release day {$a->release_day}" );
-					$currentArticle = $a;
-					break;
-				}
-			}
-			
-			if ( ! isset( $currentArticle->id ) || ( $currentArticle->id == 0 ) ) {
-				Utilities::get_instance()->log( "No article ID specified by calling post/page. Not displaying anything" );
-				
-				return false;
-			}
-		}
-		
-		Utilities::get_instance()->log( "Loading article summary shortcode for: {$currentArticle->id}" );
-		
-		// $program_id = $Program->getProgramIdForUser($current_user->ID);
-		// $days_since_start = $Tracker->getDelay('now', $current_user->ID);
-		
-		if ( ! isset( $currentArticle->id ) ) { // || !empty( $article_id ) && ( $article_id != $currentArticle->id )
-			
-			$articles = $this->model->find( 'id', $article_id, $currentProgram->id );
-			Utilities::get_instance()->log( "Found " . count( $articles ) . " article(s) with post ID {$post->ID}" );
-			$article        = array_pop( $articles );
-			$article_id     = $article->id;
-			$currentArticle = $article;
-		}
-		
-		if ( ! isset( $currentArticle->id ) && ( ! is_null( $article_id ) ) ) {
-			
-			Utilities::get_instance()->log( "Configure article settings (not needed?) " );
-			$this->init( $article_id );
-		}
-		
-		$defaults          = $this->model->defaultSettings();
-		$days_of_summaries = ( ! isset( $currentArticle->max_summaries ) || is_null( $currentArticle->max_summaries ) ? $defaults->max_summaries : $currentArticle->max_summaries );
-		$title             = null;
-		
-		$tmp = shortcode_atts( array(
-			'days'  => $days_of_summaries,
-			'title' => null,
-		), $attributes );
-		
-		Utilities::get_instance()->log( "Article # {$currentArticle->id} needs to locate {$tmp['days']} or {$days_of_summaries} days worth of articles to pull summaries from, ending on day # {$currentArticle->release_day}" );
-		
-		if ( isset( $tmp['title'] ) && ! empty( $tmp['title'] ) ) {
-			$title = $tmp['title'];
-		}
-		
-		if ( $days_of_summaries != $tmp['days'] ) {
-			
-			$days_of_summaries = $tmp['days'];
-		}
-		
-		$start_day = ( $currentArticle->release_day - $days_of_summaries );
-		$gt_days   = ( $currentArticle->release_day - $days_of_summaries );
-		
-		$start_TS = strtotime( "{$currentProgram->startdate} +{$start_day} days" );
-		
-		Utilities::get_instance()->log( "Searching for articles with release_day between start: {$start_day} and end: {$currentArticle->release_day}" );
-		
-		$history = $this->find( 'release_day', array(
-			( $start_day - 1 ),
-			$currentArticle->release_day,
-		), $currentProgram->id, 'BETWEEN' );
-		
-		Utilities::get_instance()->log( "Fetched " . count( $history ) . " articles to pull summaries from" );
-		
-		$summary = array();
-		
-		foreach ( $history as $k => $a ) {
-			
-			$new = array(
-				'title'   => null,
-				'summary' => null,
-				'day'     => null,
-			);
-			
-			if ( ! empty( $a->post_id ) ) {
-				
-				$p   = get_post( $a->post_id );
-				$art = get_post( $a->id );
-				
-				Utilities::get_instance()->log( "Loading data for post {$a->post_id} vs {$p->ID}" );
-				
-				$new['day']   = $a->release_day;
-				$new['title'] = $p->post_title;
-				
-				if ( ! empty( $art->post_content ) ) {
-					
-					Utilities::get_instance()->log( "Using the article description." );
-					$new['summary'] = wp_kses_allowed_html( $art->post_content );
-					
-				} else if ( ! empty( $art->post_excerpt ) ) {
-					
-					Utilities::get_instance()->log( "Using the article summary." );
-					$new['summary'] = $art->post_excerpt;
-					
-				} else if ( ! empty( $p->post_excerpt ) ) {
-					
-					Utilities::get_instance()->log( "Using the post excerpt." );
-					$new['summary'] = $p->post_excerpt;
-				} else {
-					
-					Utilities::get_instance()->log( "Using the post summary." );
-					$new['summary'] = $p->post_content;
-					$new['summary'] = wp_trim_words( $new['summary'], 30, " [...]" );
-				}
-				
-				Utilities::get_instance()->log( "Current day: {$currentArticle->release_day} + Last release day to include: {$gt_days}." );
-				
-				if ( ( $new['day'] > $gt_days ) ) {
-					
-					if ( ( $a->measurement_day != true ) && ( $a->summary_day != true ) ) {
-						
-						Utilities::get_instance()->log( "Adding {$new['title']} (for day# {$new['day']}) to list of posts to summarize" );
-						$summary[ $a->release_day ] = $new;
-					}
-				}
-				
-				$new = array();
-				$a   = null;
-				wp_reset_postdata();
-			}
-		}
-		
-		ksort( $summary );
-		
-		Utilities::get_instance()->log( "Original prefix of {$currentArticle->prefix}" );
-		$prefix = lcfirst( preg_replace( '/\[|\]/', '', $currentArticle->prefix ) );
-		Utilities::get_instance()->log( "Scrubbed prefix: {$prefix}" );
-		// Utilities::get_instance()->log($summary);
-		
-		$summary_post = get_post( $currentArticle->id );
-		$info         = null;
-		
-		wp_reset_postdata();
-		
-		if ( ! empty( $summary_post->post_content ) ) {
-			
-			$info = wpautop( $summary_post->post_content_filtered );
-		}
-		
-		// Since we're saving the array using the delay day as the key we'll have to do some jumping through hoops
-		// to get the right key for the last day in the list.
-		$k_array          = array_keys( $summary );
-		$last_day_key     = count( $summary ) > 0 ? $k_array[ ( count( $summary ) - 1 ) ] : 0;
-		$last_day_summary = isset( $summary[ $last_day_key ] ) ? $summary[ $last_day_key ] : null;
-		$end_day          = ! empty( $last_day_summary['day'] ) ? $last_day_summary['day'] : 7;
-		
-		Utilities::get_instance()->log( "Using end day for summary period: {$end_day}" );
-		
-		$end_TS = strtotime( "{$currentProgram->startdate} +{$end_day} days", current_time( 'timestamp' ) );
-		
-		$html = $this->view->view_article_history( $prefix, $title, $summary, $start_TS, $end_TS, $info );
-		
-		return $html;
 	}
 }
