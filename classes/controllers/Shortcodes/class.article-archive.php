@@ -58,8 +58,11 @@ class Article_Archive {
 	 * Generate an archive of Articles
 	 *
 	 * @param null|array $attr
+	 * @param string $content
+	 *
+	 * @return string
 	 */
-	public function loadShortcode( $attr = null ) {
+	public function loadShortcode( $attr = null, $content = '' ) {
 		
 		$Client = Client::getInstance();
 		$Article = Article::getInstance();
@@ -70,15 +73,18 @@ class Article_Archive {
 		$Client->setClient( $current_user->ID );
 		
 		$articles = $this->get_article_archive( $currentClient->user_id );
-		$cards    = array();
+		$daily_cards    = array();
 		
 		foreach ( $articles as $article ) {
 			
-			$cards[] = $Article->get_card_info( $article, $currentClient->user_id );
-			Utilities::get_instance()->log( "Received " . count( $cards ) . " cards for day # {$article->release_day}" );
+			$daily_cards[$article->release_day] = $Article->get_card_info( $article, $currentClient->user_id );
+			Utilities::get_instance()->log( "Received " . count( $daily_cards ) . " cards for day # {$article->release_day}" );
 		}
 		
-		Utilities::get_instance()->log( print_r( $cards, true ) );
+		Utilities::get_instance()->log( print_r( $daily_cards, true ) );
+		
+		// TODO: Process the daily cards an place them in a grid...
+		return $content;
 	}
 	
 	/**
