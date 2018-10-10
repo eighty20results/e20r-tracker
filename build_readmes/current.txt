@@ -1,1 +1,43 @@
-Fix erroneous static startdate in getExerciseHistory()
+ENHANCEMENT: Updated Utilities module
+ENHANCEMENT: Remove Stripe API interface
+ENHANCEMENT: Use printf() for output/html
+ENHANCEMENT: Refactor the [weekly_progress] shortcode
+ENHANCEMENT: Refactor the [progress_overview] shortcode
+ENHANCEMENT: Refactor the [e20r_activity_archive] shortcode
+ENHANCEMENT: Refactor the [e20r_activity] shortcode
+ENHANCEMENT: Refactor the [e20r_article_archive] shortcode
+ENHANCEMENT: Refactor the [e20r_article_summary] shortcode
+ENHANCEMENT: Refactor the [e20r_client_overview] shortcode
+ENHANCEMENT: Refactor the [daily_progress] shortcode
+ENHANCEMENT: Refactor the [e20r_exercise] shortcode
+ENHANCEMENT: Refactor the [e20r_profile] shortcode
+ENHANCEMENT: Fixed PHPDoc blocks and supports the refactored short code handlers
+ENHANCEMENT: Loading refactored shortcode processing from a single source
+ENHANCEMENT: WPCS formatting of Action() class
+ENHANCEMENT: Moved shortcode handler for daily_progress to own short code class
+ENHANCEMENT: Create list of daily cards for processing on archive page/template
+ENHANCEMENT: WPCS formatting of Article() controller class
+ENHANCEMENT: Added PHPDoc comments
+ENHANCEMENT: Add getModel() and getView() classes to return Article model/views
+ENHANCEMENT: Move article_summary short code to Shortcodes\Article_Summary()
+ENHANCEMENT: Add PHPDoc blocks for variables in the Tracker() class
+ENHANCEMENT: Add PHPDoc blocks for some of the methods in the Tracker() class
+ENHANCEMENT: WPCS formatting
+ENHANCEMENT: Use printf() for settings page rendering functions
+ENHANCEMENT: Standard yes/no select options (looped)
+ENHANCEMENT: Add getViewClass() and getModelClass() methods to Workout() controller
+ENHANCEMENT: Move Activity Archive shortcode handler to Shortcodes\Activity_Archive() class
+ENHANCEMENT: Add PHPDoc blocks for more methods in Workout() class
+ENHANCEMENT: Add getViewClass() and getModelClass() methods to Settings() controller
+ENHANCEMENT: Add getViewClass() and getModelClass() methods to Measurements() controller
+ENHANCEMENT: Move Progress Overview shortcode to own Shortcodes\Progress_Overview() class
+ENHANCEMENT: Add getViewClass() and getModelClass() methods to Workout() controller
+ENHANCEMENT: Moved e20r_profile short code handler to own Shortcodes\Profile() class
+ENHANCEMENT: Moved Exercise short code handler to own ShortCodes\Exercise() class
+BUG FIX: Fatal error in setNotCoachMsg() method
+BUG FIX: Had no way to init (load) the Exercise info
+BUG FIX: Clean up PHPDoc block for Article::getActivity() method
+BUG FIX: Remove need for freestanding %article_date% variable in default WP permalink settings (breaks Gutenberg)
+BUG FIX: Fix the License stub for the Tracker() class
+BUG FIX: Add permalink updates when activating the plugin
+BUG FIX: Avoid type coercion in e20r-action.js script

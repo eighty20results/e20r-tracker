@@ -177,7 +177,7 @@ var e20rAssignments = {
         event.preventDefault();
 
         // Set nonce value and operation for the AJAX action
-        var $serialized_data = "action=manage_option_list&e20r-assignment-question_id=" + jQuery("#post_ID").val() + "&";
+        var $serialized_data = "action=e20r_manage_option_list&e20r-assignment-question_id=" + jQuery("#post_ID").val() + "&";
         $serialized_data += "operation=" + $operation + "&";
         $serialized_data += jQuery("form#post").find('input[id^="e20r-"],select[id^="e20r-"],input[class^="e20r-"],select[class^="e20r-"]').serialize();
 
@@ -213,7 +213,7 @@ var e20rAssignments = {
         jQuery.ajax({
             url: ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_tracker.timeout,
             dataType: 'JSON',
             data: $serialized_data,
             success: function ( $response ) {

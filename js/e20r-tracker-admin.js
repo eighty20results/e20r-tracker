@@ -12,6 +12,7 @@ var $old_Description;
 var $old_membershipId;
 */
 jQuery.noConflict();
+
 jQuery(document).ready( function($) {
 
     console.log("WP-Admin script for E20R Tracker loaded");
@@ -26,26 +27,25 @@ jQuery(document).ready( function($) {
     var $measureBtn = $("#e20r-client-measurements");
     var $loadBtn = $("#e20r-load-data");
 
-    var $loadItem = $("#e20r-load-checkin-items");
+    var $loadItem = $("#e20r-load-action-items");
     var $spinner = $('#e20r-postmeta-setprogram').find('e20r_spinner');
-
 
     $(document).on('click', '#e20r-new-group-button', function() {
 
         $.ajax({
             url: ajaxurl,
             type: 'POST',
-            timeout: 10000,
+            timeout: e20r_tracer.timeout,
             dataType: 'JSON',
             data: {
-                action: 'addWorkoutGroup',
+                action: 'e20r_addWorkoutGroup',
                 'e20r-tracker-workout-settings-nonce': $('#e20r-tracker-workout-settings-nonce').val(),
                 'post_ID': $('#post_ID').val()
             },
             error: function($response, $errString, $errType) {
 
                 console.log("From server: ", $response );
-                console.log("Error String: " + $errString + " and errorType: " + $errType + " from updateUnitTypes()");
+                console.log("Error String: " + $errString + " and errorType: " + $errType + " from e20r_addWorkoutGroup()");
 
                 var $msg = '';
 
@@ -62,7 +62,6 @@ jQuery(document).ready( function($) {
 
                 alert( $msg + $string + "\n\n" + $response.data );
 
-                return;
             },
             success: function( $retVal ) {
 
@@ -129,7 +128,7 @@ jQuery(document).ready( function($) {
             'exercise-type': $exType.find("option:selected").val(),
             'exercise-reps': $exReps.val(),
             'exercise-rest': $exRest.val()
-        }
+        };
 
         console.log("Action data: ", $data );
 
@@ -151,13 +150,13 @@ jQuery(document).ready( function($) {
 
     /*********************************************************/
 
-    $(document).on("click", "#e20r-load-checkin-items", function() {
+    $(document).on("click", "#e20r-load-action-items", function() {
 
         $loadItem.prop('disabled', true);
-        jQuery('#spin-for-checkin-item').show();
+        jQuery('#spin-for-action-item').show();
 
         loadCheckinItem( $('#e20r_checkin_items').find('option:selected').val() );
-        jQuery('#spin-for-checkin-item').show();
+        jQuery('#spin-for-action-item').show();
         $loadItem.prop('disabled', false);
     });
 
@@ -209,6 +208,56 @@ jQuery(document).ready( function($) {
     });
 
 
+    $(document).on( "click", '.e20r-faq-question', function() {
+
+        console.log("Configure event(s) for the Activity container");
+
+        // $(this).unbind().on('click', function(){
+
+        $('button.e20r-workout-statistics-loader').each( function() {
+
+            var $loadBtn = jQuery(this);
+
+            jQuery.bindEvents({
+                self: progMeasurements,
+                elem: $loadBtn,
+                events: {
+                    click: function(self, e) {
+                        console.log("Loading statistics for exercise", this);
+
+                        var $exercise_id = $loadBtn.closest('.e20r-exercise-statistics').find('.e20r-workout-statistics-exercise_id').val();
+                        var $client_id = jQuery('#user_id').val();
+                        var $graph = $loadBtn.closest('.e20r-exercise-statistics').find('div#exercise_stats_' + $exercise_id );
+
+                        console.log("Exercise Id: " + $exercise_id + " and client id: " + $client_id, $graph);
+                        progMeasurements.loadActivityStats( $client_id, $exercise_id, $graph );
+                    }
+                }
+            });
+        });
+
+        console.log("Opening activity info in back-end");
+        var $this_heading = $(this);
+        var $module = $this_heading.closest('.e20r-faq-container');
+        var $content = $module.find('.e20r-faq-answer-container');
+
+        if ( $content.is( ':animated' ) ) {
+            return;
+        }
+
+        $content.slideToggle( 700, function() {
+
+            if ( $module.hasClass('e20r-toggle-close') ) {
+
+                $module.removeClass('e20r-toggle-close').addClass('e20r-toggle-open');
+            }
+            else {
+
+                $module.removeClass('e20r-toggle-open').addClass('e20r-toggle-close');
+            }
+        });
+        //});
+    });
 /*    $('input:checkbox').change( function() {
 
         console.log("Processing the list of programs.")
@@ -223,7 +272,7 @@ jQuery(document).ready( function($) {
     $(document).on( "click", '#e20r-add-new-item', function() {
 
         $('.add-new').hide();
-        $('#add-new-checkin-item').show();
+        $('#add-new-action-item').show();
 
     });
 
@@ -291,7 +340,7 @@ function saveItem( $valueArray ) {
         timeout: 5000,
         dataType: 'JSON',
         data: {
-            action: 'save_item_data',
+            action: 'e20r_save_item_data',
             e20r_tracker_edit_nonce: $valueArray['nonce'],
             e20r_checkin_item_id:  $valueArray['id'],
             e20r_checkin_item_order: $valueArray['order'],
@@ -313,7 +362,7 @@ function saveItem( $valueArray ) {
             // Refresh the sequence post list (include the new post.
             if ( data.data !== '' ) {
                 console.dir( data );
-                jQuery('#e20r-checkin-items').html(data.data);
+                jQuery('#e20r-action-items').html(data.data);
                 console.log("Data returned from save checkin item functionality");
             }
 
@@ -625,7 +674,7 @@ function loadCheckinItem( $itemId ) {
         timeout: 5000,
         dataType: 'JSON',
         data: {
-            action: 'get_checkinItem',
+            action: 'e20r_get_checkinItem',
             e20r_tracker_checkin_items_nonce: jQuery('#e20r_tracker_checkin_items_nonce').val(),
             hidden_e20r_checkin_item_id: $itemId
         },
@@ -638,7 +687,7 @@ function loadCheckinItem( $itemId ) {
 
             // Refresh the sequence post list (include the new post.
             if (data.data !== '') {
-                jQuery('#edit-checkin-items').html(data.data);
+                jQuery('#edit-action-items').html(data.data);
             }
         }
     });

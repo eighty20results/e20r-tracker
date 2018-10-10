@@ -1,10 +1,10 @@
 === E20R Tracker ===
 Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
-Requires at least: 3.7
-Requires PHP 5.2 or later.
-Tested up to: 4.2.4
-Stable tag: 0.9.24
+Requires at least: 4.7
+Requires PHP 5.6 or later.
+Tested up to: 4.9.8
+Stable tag: 3.2
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -21,6 +21,17 @@ During its development, we discovered a side-benefit which also allows us to man
 * Add translation support to all english messages & javascript alerts. (Very partially done).
 
 == Additional Info One ==
+
+=== Shortcode: [e20r_profile] ===
+    Show a tabbed view of daily progress page, current progress overview pages, and the Welcome Interview.
+
+Arguments:
+    ** use_cards
+        *** Description: The layout type to use. Setting this to true, yes, or 1 gives a card based dashboard.
+            Not including it or using false, no, or 1, displays the old-style dashboard view.
+        *** Type: text
+        *** Values: yes, true, 1, no, false, 0
+        *** Default: false (when not specified)
 
 === Shortcode: [weekly_progress] ===
     Shows a weekly progress capture form. The form requests input in terms of weight, girth measurements,
@@ -58,6 +69,13 @@ Arguments:
         *** Type: text
         *** Values: assignment, action, show_assignments
         *** Default: action (when not specified)
+
+    ** use_cards
+        *** Description: The layout type to use. Setting this to true, yes, or 1 gives a card based dashboard.
+            Not including it or using false, no, or 1, displays the old-style dashboard view.
+        *** Type: text
+        *** Values: yes, true, 1, no, false, 0
+        *** Default: false (when not specified)
 
 === Shortcode: [progress_overview] ===
     Shows a progress overview (summary) for the user. Includes Measurements, Assignment input, Achievements summary and Workout history.
@@ -103,6 +121,1565 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 3.2 ==
+
+* ENHANCEMENT: Updated Utilities module
+* ENHANCEMENT: Remove Stripe API interface
+* ENHANCEMENT: Use printf() for output/html
+* ENHANCEMENT: Refactor the [weekly_progress] shortcode
+* ENHANCEMENT: Refactor the [progress_overview] shortcode
+* ENHANCEMENT: Refactor the [e20r_activity_archive] shortcode
+* ENHANCEMENT: Refactor the [e20r_activity] shortcode
+* ENHANCEMENT: Refactor the [e20r_article_archive] shortcode
+* ENHANCEMENT: Refactor the [e20r_article_summary] shortcode
+* ENHANCEMENT: Refactor the [e20r_client_overview] shortcode
+* ENHANCEMENT: Refactor the [daily_progress] shortcode
+* ENHANCEMENT: Refactor the [e20r_exercise] shortcode
+* ENHANCEMENT: Refactor the [e20r_profile] shortcode
+* ENHANCEMENT: Fixed PHPDoc blocks and supports the refactored short code handlers
+* ENHANCEMENT: Loading refactored shortcode processing from a single source
+* ENHANCEMENT: WPCS formatting of Action() class
+* ENHANCEMENT: Moved shortcode handler for daily_progress to own short code class
+* ENHANCEMENT: Create list of daily cards for processing on archive page/template
+* ENHANCEMENT: WPCS formatting of Article() controller class
+* ENHANCEMENT: Added PHPDoc comments
+* ENHANCEMENT: Add getModel() and getView() classes to return Article model/views
+* ENHANCEMENT: Move article_summary short code to Shortcodes\Article_Summary()
+* ENHANCEMENT: Add PHPDoc blocks for variables in the Tracker() class
+* ENHANCEMENT: Add PHPDoc blocks for some of the methods in the Tracker() class
+* ENHANCEMENT: WPCS formatting
+* ENHANCEMENT: Use printf() for settings page rendering functions
+* ENHANCEMENT: Standard yes/no select options (looped)
+* ENHANCEMENT: Add getViewClass() and getModelClass() methods to Workout() controller
+* ENHANCEMENT: Move Activity Archive shortcode handler to Shortcodes\Activity_Archive() class
+* ENHANCEMENT: Add PHPDoc blocks for more methods in Workout() class
+* ENHANCEMENT: Add getViewClass() and getModelClass() methods to Settings() controller
+* ENHANCEMENT: Add getViewClass() and getModelClass() methods to Measurements() controller
+* ENHANCEMENT: Move Progress Overview shortcode to own Shortcodes\Progress_Overview() class
+* ENHANCEMENT: Add getViewClass() and getModelClass() methods to Workout() controller
+* ENHANCEMENT: Moved e20r_profile short code handler to own Shortcodes\Profile() class
+* ENHANCEMENT: Moved Exercise short code handler to own ShortCodes\Exercise() class
+* BUG FIX: Fatal error in setNotCoachMsg() method
+* BUG FIX: Had no way to init (load) the Exercise info
+* BUG FIX: Clean up PHPDoc block for Article::getActivity() method
+* BUG FIX: Remove need for freestanding %article_date% variable in default WP permalink settings (breaks Gutenberg)
+* BUG FIX: Fix the License stub for the Tracker() class
+* BUG FIX: Add permalink updates when activating the plugin
+* BUG FIX: Avoid type coercion in e20r-action.js script
+
+== 3.1.4 ==
+
+* BUG FIX: Didn't use the Gravity Forms API to remove the entry data for the user
+
+== 3.1.3 ==
+
+* BUG FIX: Didn't handle new users saving their survey
+* BUG FIX: Didn't load GF save hooks
+* BUG FIX: PHP Warnings when user doesn't specify how many hours/week they train
+* BUG FIX: PHP Warnings when assigning a coach after the interview
+
+== 3.1.2 ==
+
+* BUG FIX: Didn't load hooks for Gravity Form processing
+
+== 3.1.1 ==
+
+* BUG FIX: Set program for user whenever the membership level changes
+
+== 3.1 ==
+
+* BUG FIX: Didn't set the new member(s) start date and program on checkout
+* BUG FIX: Didn't set program for member when checkout is complete
+* BUG FIX: Didn't adjust startdate for member when checkout is complete
+* ENHANCEMENT: Remove unneeded Debug information
+
+== 3.0.3 ==
+
+* BUG FIX: JavaScript errors
+
+== 3.0.2 ==
+
+* BUG FIX: Couldn't locate Drip Feed plugin (E20R Sequences)
+
+== 3.0.1 ==
+
+* BUG FIX: Missing JavaScript for Progress Measurements
+
+== 3.0 ==
+
+* ENHANCEMENT: Completely rewrote plugin and updated support for new encryption library, etc, etc, etc.
+
+== 2.3.2 ==
+
+* ENHANCEMENT/FIX: Border between exercise entries one workout page
+* BUG FIX: Removed extra border for exercise tracking table
+
+== 2.3.1 ==
+
+* BUG FIX: Would show tracking info regardless of setting in shortcode
+
+== 2.3 ==
+
+* BUG FIX: Incorrectly formatted HTML when hiding the Tracking functionality for Workouts
+
+== 2.2 ==
+
+* BUG FIX: Didn't hide the 'Track Next' button on the Workout page
+* BUG FIX: Would show button to send user to tracking fields when tracking is disabled
+
+== 2.1 ==
+
+* ENHANCEMENT: Actually activate the show/hide for the exercise description & video
+* BUG FIX: Didn't load the article when specified in the [e20r_activity] shortcode
+* BUG FIX: Didn't always honor the 'show tracking' attribute for the shortcode
+
+== 2.0 ==
+
+* ENHANCEMENT: Clean up documentation fo e20rTracker::is_a_coach() method and simplify the function
+* ENHANCEMENT: Only load User notes if the user looking isn't a coach.
+* ENHANCEMENT: Minor nit to simplify user action/activity check-in
+* ENHANCEMENT: Hide any row/cell underlines/borders in the Action/Activity/Measurement results table
+* ENHANCEMENT: Add license and re-run the YUI Compressor for the CSS files
+* ENHANCEMENT: WordPress Code Style applied
+* ENHANCEMENT: Add proper yesterday/tomorrow navigation bar for Card based Dashboard
+* ENHANCEMENT: Refactor the ActionView class
+* ENHANCEMENT: Trigger ajax status modal in Dashboard
+* ENHANCEMENT: Show overlay during AJAX operations on Dashboard page
+* ENHANCEMENT: Included minified files in commit
+* ENHANCEMENT: Enable toggle for showing/hiding the exercise video and description
+* ENHANCEMENT: Use $_REQUEST array (not $_POST)
+* ENHANCEMENT: More obvious separation between Training Routine Groups
+* ENHANCEMENT: Add override (query parameter: e20r_confirmed_coach_override -> accepts 0 or 1 ) to let coach see Daily Progress Notes for a member/user
+* ENHANCEMENT/FIX: Display Card based dashboard correctly
+* ENHANCEMENT/FIX: Include fewer words to not overflow on the Lesson/Reminder card
+* ENHANCEMENT/FIX: Add dependency handling for CSS files
+* ENHANCEMENT/FIX: Don't show 'Edit' for the notes if the active user is a coach
+* ENHANCEMENT/FIX: Print the workout being displayed on the page
+* ENHANCEMENT/FIX: Styling for the compressed workout/info page(s)
+* ENHANCEMENT/FIX: Improved documentation for the ActionView class
+* BUG FIX: Didn't generate the proper dynamic CSS for the User notes field
+* BUG FIX: Get rid of unneeded lines (<hr> elements) for the daily assignment shortcode
+* BUG FIX: Didn't save action & activity status in Card mode
+* BUG FIX: Better size the overlay for the text notes after they've been saved
+* BUG FIX: Didn't correctly load the e20rCheckingEvent() 'class'
+* BUG FIX: Didn't load action and assignment JavaScript on an e20r_articles post
+* BUG FIX: Typo in CSS for the arrow(s)
+* BUG FIX: PHP Warning messages when displaying/printing workout page
+* BUG FIX: Hide the exercise video/description toggle button when printing.
+
+== 1.7.4 ==
+
+* BUG FIX: Didn't account for all versions of E20R Sequences
+
+== 1.7.3 ==
+
+* BUG FIX: Didn't load Yoast summary/exerpt for Article
+* BUG FIX: Didn't return correct value for the level info
+* BUG FIX: Didn't account for all versions of E20R Sequences
+* BUG FIX: Didn't fetch Sequence info from older versions of E20R Sequences
+
+== 1.7.2 ==
+
+* BUG FIX: Duplicate keys for field definition in e20rTables
+* BUG FIX: Didn't translate exception message
+* BUG FIX: Didn't catch exception from table configuration
+* BUG FIX: Not returning value when throwing exception
+* BUG FIX: Error/Warning messages aren't always translatable
+* BUG FIX: Didn't use the right function to sanitize text (wp_unslash())
+* BUG FIX: Didn't always terminate after sending JSON message
+* BUG FIX: Didn't catch saveField() exceptions
+* BUG FIX: Didn't catch setFormatForRecord() exceptions
+* BUG FIX: Not all error/warning messages are translatable
+* ENHANCEMENT: Update PHPDoc documentation
+
+== 1.7.1 ==
+
+* BUG FIX: Incorrect dependency warning for certain versions of E20R Sequences
+
+== 1.7.0 ==
+
+* BUG FIX: Incorrect HTML (didn't terminate element) in meta box for AssignmentsView
+* BUG FIX: Didn't escape output in all cases for the AssignmentsView
+* BUG FIX: Returned incorrect info if the user had never logged in
+* BUG FIX: Fatal error in viewCompliance() method
+* BUG FIX: Didn't escape DB values
+* BUG FIX: Reply button didn't work on the Coaching page in wp-admin
+* BUG FIX: Didn't exit after returning JSON status in Assignments class
+* BUG FIX: Wouldn't return appropriate value when loading all programs/users
+* BUG FIX: Too many variables in the load_clientDetail() method call
+* BUG FIX: Didn't load JS for admin pages
+* BUG FIX: Sometimes would select the incorrect start date for the program or user
+* BUG FIX: Didn't escape output consistently in ActionView
+* BUG FIX: Not all strings are translatable in ActionView
+* BUG FIX: Invalid HTML in select2 drop-down in ActionView
+* BUG FIX: Don't show user notes in dashboard for coach(es)
+* BUG FIX: Didn't load select2 styles on some admin pages
+* BUG FIX: Ensure we load admin stuff on our admin pages (only)
+* ENHANCEMENT/FIX: Avoid PHP Notice
+* ENHANCEMENT: Removing unused code
+* ENHANCEMENT: Make more text translatable
+* ENHANCEMENT: Clean up debug output
+* ENHANCEMENT: Renamed the Sequence_Controller class to Controller in the E20R\Sequences\Sequence\ namespace
+* ENHANCEMENT: Fix translatable text and escape variables on page(s)
+* ENHANCEMENT: Show measurements in most recent first order
+* ENHANCEMENT: Escape variables on print
+* ENHANCEMENT: Be explicit about the field to order the data by
+* ENHANCEMENT: Set constant for the Select2 library version to use
+* ENHANCEMENT: More standardize weight of text on Client status page
+* ENHANCEMENT: PHPDoc for view and model variable in e20rSettings class
+* ENHANCEMENT: Reduce the debug logging footprint
+* ENHANCEMENT: More logical weighting of text on Client summary page (bolder = less recent interactions)
+* ENHANCEMENT: Unslash output for titles/textareas, etc in AssignmentsView
+* ENHANCEMENT: Unslash text proactively in ActionView
+* ENHANCEMENT: Set script type and language for select2 init.
+* ENHANCEMENT: Better formatting for the 'you don't have javascript enabled' warning.
+
+== 1.6.12 ==
+
+* ENHANCEMENT/FIX: Using Sequence_Controller class for E20R Sequences
+* ENHANCEMENT/FIX: Disable loading TouchPunch jQuery library
+* ENHANCEMENT/FIX: Error when using CodeTabs library in certain situations
+* ENHANCEMENT/FIX: Could sometimes pass check for intake interview w/o a completed interview
+* ENHANCEMENT/FIX: Size of input field on Measurement page was inconsistent between themes
+* ENHANCEMENT/FIX: Would wrap text/radio field incorrectly on dashboard page
+
+== 1.6.11 ==
+
+* ENHANCEMENT: Better stepping for girth/weight graphs
+* BUG/FIX: Load minified CSS files when not running in debug mode
+
+== 1.6.10 ==
+
+* BUG/FIX: Measurement handling errors & refactor to use standard jQuery behaviors
+* BUG/FIX: Button spacing for Measurements page
+* ENHANCEMENT: Transitioning away from embedded JavaScript on Measurements page
+
+== 1.6.9 ==
+
+* ENHANCEMENT: Grammar in summary page/shortcode
+
+== 1.6.8 ==
+
+* BUG/FIX: Crash when attempting to execute test functionality
+* BUG/FIX: Plugin crashed intermittently
+* BUG/FIX: Upgrades/Updates to Database would fail
+* ENHANCEMENT: Refactoring
+
+== 1.6.7 ==
+
+* BUG/FIX: Timing issue when loading Progress form
+
+== 1.6.6 ==
+
+* BUG/FIX: Couldn't navigate back or forwards on dashboard
+
+== 1.6.5 ==
+
+* BUG/FIX: Not all text is/was translatable
+* BUG/FIX: Didn't make sure there was an actual post to process
+* BUG/FIX: Translation slug
+
+== 1.6.3 ==
+
+* BUG/FIX: Didn't properly set the Exerpt/Article Summary
+
+== 1.6.2 ==
+
+* ENHANCEMENT: Automatically load the Yoast meta description to the 'article summary' field
+
+== 1.6.1 ==
+
+* BUG/FIX: Resize Daily Progress content windows
+* BUG/FIX: wp_mkdir_p() would fail to create debug directory
+
+== 1.6.0 ==
+
+* ENHANCEMENT: Use singleton pattern to speed up plugin load time
+* ENHANCEMENT: Transition to e20r-tracker as translation slug
+
+== 1.5.68 ==
+
+* BUG: Didn't escape the activity excerpt properly
+
+== 1.5.67 ==
+
+* BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)
+
+== 1.5.66 ==
+
+* BUG/FIX: Didn't always show the questions and proper paragraph text for assignment(s)
+* ENH: Prevent direct execution of class file
+
+== 1.5.65 ==
+
+* BUG/FIX: Didn't flag the delay value for the assignment correctly
+* BUG/FIX: Avoid PHP Warnings during summary post display
+* ENH: Remove debug data
+* ENH: Only include the Post summary header if there are posts to summarize
+
+== 1.5.64 ==
+
+* ENH/FIX: Didn't include all settings for Assignment answer display/save.
+* ENH/FIX: Escape more of the assignment output forms
+
+== 1.5.63 ==
+
+* BUG/FIX: Remind Me button didn't work
+* BUG/FIX: Error when there's no measurement graph/data to plot
+* FIX/ENH: Width of header for Assignments
+* ENH/FIX: Colors and positioning for Fix/Remind buttons on pop-up
+
+== 1.5.62 ==
+
+* BUG/FIX: Add delay to measurement data loader
+
+== 1.5.61 ==
+
+* ENH: Sort Assignments progress list by most recent first
+* ENH: Add infrastructure to support pagination for assignment progress page
+* ENH: Update/modernize plugin build script
+* ENH: Pagination for assignment status page
+* BUG: Would attempt to use DateTime class method on null/string
+* BUG: Fix JS bug when attempting to bind for pagination
+* BUG/FIX: Notice when attempting to access empty data object
+* BUG/FIX: Program ID wasn't always configured correctly
+* BUG/FIX: Correctly identify the article for the measurement page
+* BUG/FIX: Return the user to the Dashboard after completing the measurements
+* BUG/FIX: Buttons size on measurement(s) page
+* ENH: Styling for pagination links/buttons
+* BUG/FIX: Error while showing 'loading' page
+* ENH: Replace 'Return to Lesson' with 'Return to Dashboard'
+* ENH/FIX: Allow user to get a single Program setting (getValue())
+* BUG/FIX: Load program/day specific article for measurements
+* ENH: Remove 'Page'
+* ENH: Improved styling for Pagination text on Assignment Progress
+* ENH/FIX: Clean up styling for pagination links
+* BUG/FIX: Handle cases where no image is uploaded for user
+* ENH/FIX: Button width on measurements page
+* BUG/FIX: Hide top level navigation for now
+* BUG/FIX: Agree/Disagree buttons on pop-up overlay
+* FIX: Removed debug output
+* BUG/FIX: Set the currentArticle global
+* BUG/FIX/WORKAROUND: Handle uploaded images if/when needed
+
+== 1.5.60 ==
+
+* BUG: Error loading required JavaScript
+* BUG: Didn't always save the assignmnet data correctly
+* BUG: Multi-select responses weren't decoded properly
+* BUG: Undefined property warning
+* BUG: Invalid message body error
+
+== 1.5.59 ==
+
+* FIX: Removed wp.heartbeat dependency
+
+== 1.5.58 ==
+
+* BUG: Dependency caused required library to not load
+* REFACTOR: Removed stale code & regenerated .min. file
+
+== 1.5.57 ==
+
+* BUG: Edit button width & placement on dashboard page.
+* BUG: Didn't save changes to yes/no responses correctly
+* ENH: Base64 library update
+* ENH: Load minified JS & CSS files if not running w/WP_DEBUG.
+
+== 1.5.56 ==
+
+* FIX: Base64 library went missing. Now using local version of it.
+
+== 1.5.55 ==
+
+* FIX: Didn't check whether the client ID and program ID were configured before attempting to load client data
+* FIX: Didn't return the correct value if the Membership Level wasn't set for the user.
+* FIX: Didn't always handle AJAX based actions when configuring the program start date for the user(s).
+* FIX: Increase AJAX timeout value to 30 seconds
+* FIX: Restore old behavior for assignment_info record ID
+* FIX: Didn't always verify that the data existed.
+* FIX: Verify that user ID & program ID is defined before attempting to load data for user in program
+* FIX: Would sometimes incorrectly drop the Welcome Survey article.
+* FIX: Didn't always handle surveys correctly while loading data
+* ENH: Load tabs for Coach view on click (speed up page loading).
+* ENH: Using polling for messages rather than heartbeat (reduce server load) - every 300 seconds.
+
+== 1.5.54 ==
+
+* BUG: Weekly Progress Update dialog didn't display properly in all standard screen sizes
+
+== 1.5.53 ==
+
+* BUG: Would sometimes show the wrong workout level to a user in the archives
+
+== 1.5.52 ==
+
+* ENHANCEMENT: Documentation for loadSettings()
+* ENHANCEMENT: Fix debug output for constructor() method
+* ENHANCEMENT: (optional) Future use of $delay value in e20rProgram::init() method
+* ENHANCEMENT: Fix debug output
+* ENHANCEMENT/BUG: Add permissions to role definitions
+* ENHANCEMENT/BUG: Use WP Roles to grant/deny group access
+* BUG: Couldn't figure out the correct startdate for the user/program because the program wasn't initiated yet
+* BUG: Wouldn't set correct startdate for user when using navigation in dashboard
+* BUG: Fix syntax error/parser error
+* BUG: Would sometimes fail to drop invalid (unexpected) articles
+* BUG: Ensure that only articles w/a valid release day are used (valid values: 1 - infinite)
+* BUG: Would sometimes incorrectly assume the currentProgram object was configured
+* BUG: Would set default access permissions to 'all users' or 'all groups' if none was specified
+* BUG: Would sometimes override appropriate group access level (deny what should be permitted)
+* BUG: Could occasionally reset login timestamps for users
+* BUG: Didn't correctly load E20R Tracker roles on activation
+* BUG: Debug output for prepare_activity()
+* REFACTOR: Remove stale code
+* REFACTOR: e20rTracker.php
+
+== 1.5.51 ==
+
+* FIX: Didn't center the pop-up on large/multiple screens
+* FIX: Didn't include 'upcoming week' as a valid period
+* FIX: Button positioning for Interview pop-over
+
+== 1.5.50 ==
+
+* FIX: Correctly identified the selected option for user group permission
+* FIX: Remove static getExerciseLevels() function - now using the 'e20r-tracker-configured-roles' filter instead (more flexible)
+* BUG: Assignment Model didn't include the ID of the post/record when loading the assignment settings.
+* ENHANCEMENT/FIX: Use new role-based member groups for activity/workout.
+* ENHANCEMENT/FIX: Allow caller-defined sort order (ASC/DESC) for assignments
+* ENHANCEMENT/FIX: Allow caller-defined ordering of settings when loading all settings
+* ENHANCEMENT/FIX: Automatically upgrade/transition an activity to the new role based group/intentsity settings when loading settings.
+* ENHANCEMENT/FIX: Use new role-based Exercise level definitions to select member groups for activity
+* ENHANCEMENT/FIX: Moved definition of roles to plugin activation.
+* ENHANCEMENT/FIX: Handle unlimited role definitions during activation (defined by Workout/exercise levels)
+* ENHANCEMENT: Validate user's Exercise Experience level on login
+* ENHANCEMENT: Use 'e20r-tracker-configured-roles' filter to define user/coach roles
+* ENHANCEMENT: check_role_setting() for user ID to make sure the user has a valid exercise experience role in the system (defaults to 'beginner')
+* ENHANCEMENT: add_default_roles() is the default filter for defining Exercise level roles on the system (array of arrays)
+* ENHANCEMENT: Use the default definitions when setting/processing exercise experience level roles
+* ENHANCEMENT: Use the default exercise level definitions when doing a user search for the available coaches
+* ENHANCEMENT: Lowering the threshold for when we get insistent on completing the Welcome interview
+* ENHANCEMENT: Use the 'e20r-tracker-configured-roles' filter for program definition metabox
+* ENHANCEMENT: Use the 'e20r-tracker-configured-roles' filter for Workout definition metabox
+* ENHANCEMENT: Use 'e20r-tracker-configured-roles' filtered roles/labels for group membership
+* ENHANCEMENT: Define exercise levels/exercise roles to determine group/intensity for workout
+* ENHANCEMENT: Fixed translation issue for assigned user group selection
+* ENHANCEMENT: Automatically assign exercise level based on customer's Welcome interview
+* ENHANCEMENT: Use roles defined in WorkoutModel class
+* ENHANCEMENT: Convert workout definition to use Exercise level roles
+* ENHANCEMENT: Add support for 3 exercise experience roles (New, Intermediate, Experienced)
+* ENHANCEMENT: Manually set exercise experience level in user profile
+* REFACTOR: Remove stale code
+* REFACTOR: Removed unused variable(s) & cleaned up duplicate DEBUG info
+* REFACTOR: Remove old (stale) code from plugin
+* REFACTOR: Clean up duplicate DEBUG info
+* NIT: Removed FixMe
+* NIT: Add DEBUG output for Exercise Experience level validation
+
+== 1.5.48 ==
+
+* FIX: Updated version number to v1.5.48
+* FIX: Cleaned up layout of 'Notes' field
+* FIX: Remove borders for <hr> in the progress update container
+* FIX: Removed border(s) for the notes headline.
+* FIX: Removed borders under the 'did-you' fields on the daily progress page
+* FIX: Load the article defined for the Welcome Survey
+* FIX: Didn't always save sanitized text for survey entries.
+* FIX: Didn't select the correct survey type when the user edited/added/updated their welcome survey from the Dashboard.
+* FIX: Add article ID when looking for pre-existing survey results.
+* FIX: Add support for Likert fields in Gravity Forms surveys/questionnaires.
+* FIX: Alignment in New Assignment metabox
+* FIX: Check validity of the assigned startdate when returning the delay value for the current/specified user ID
+* FIX: Initialize the Program ID variable
+* FIX: Include the shortname in the program definition (settings)
+* FIX: Didn't return false if there were no settings
+* FIX: Didn't properly show the selected/assigned male or female coach.
+* FIX: Avoid PHP warnings
+* FIX: Return explicit false if program ID for a user isn't located
+* FIX: Use Membership level to assign program for new user on checkout
+* FIX: Set startdate for user's membership based on program they've signed up for
+* FIX: Escape attributes
+* ENHANCEMENT: Add action description for video
+* ENHANCEMENT: Removed confusing date/day-since-start option in Activity setup
+* ENHANCEMENT: Changed the log-file size during debug operations
+* REFACTOR: Reorder functions
+
+== 1.5.47 ==
+
+* ENH: Support shortcodes in exercise descriptions
+
+== 1.5.46 ==
+
+* FIX: Remove button definition CSS
+
+== 1.5.45 ==
+
+* FIX: Sort by check-in type
+* FIX: Properly sort Assignments by assignment day number
+* FIX: Wouldn't allow admins/editors to duplicate posts unless they also were a coach.
+* FIX: PHP Notice in error log: Undefined variable
+
+== 1.5.44 ==
+
+* FIX: Didn't load the Weekly Progress page
+* FIX: Didn't always save the measurement on blur
+* FIX: Only load minified JS scripts when the system is running w/o DEBUG enabled
+* FIX: Set a specific variable to indicate that the interview is complete for JS
+* FIX: Meaning on interview_complete (was interview_incomplete) inverted
+* FIX: Set the 'Null' for a field to 0 if there's no data
+* FIX: Didn't always load the correct survey type for the page/shortcode
+* FIX: Submit form and prevent ourselves from following link
+* FIX: Use PHP 5.x style constructors
+* ENH: Start working on underscore.js based front-end JavaScript templates
+* ENH: Remove whitespace
+* ENH: Add debug info for whenever we have to load NULL measurement records
+* ENH: Return a NULL record if there's no data in the DB
+* ENH: Make debug info more specific
+* ENH: Enable the exception for an empty field
+* ENH: Updated the plugin upgrade library
+
+== 1.5.43 ==
+
+* Fix: Various nits in CSS
+* Fix: Simplify path to debug log
+* Fix: Sometimes would clobber existing function definition
+* Fix: Didn't always return correct access permissions for pmpro protected content
+* Enh: Start investigation into using underscore.js templates for front-end.
+* Enh: Add e20rActivityView function to manage template(s) and workout timer/wizard
+* Enh: Add initial outline for showing activity as wizard/on-screen timer
+* Enh: Started working on on-screen countdown/wizard for workout/activity
+
+== 1.5.41 ==
+
+* Fix: Handle unexpected date format(s) for start & end date settings in metabox
+* Rename archive tags for CPTs
+* Fix: Would include daily message when front-end scripts to handle/manage it wasn't available.
+
+== 1.5.40 ==
+
+* Fix: Would sometimes generate PHP warning message
+* Fix: Would sometimes attempt to access the wrong namespace (and exit ungracefully)
+
+== 1.5.39 ==
+
+* Fix: Would sometimes trigger PHP warning message while processing prerequisite javascripts on page load
+* Fix: Didn't always return a valid assignment ID
+* Fix: Didn't always return the correct program information on init()
+* Fix: Would not always display the article summary
+
+== 1.5.38 ==
+
+* Fix: Didn't always load the correct values for the program_ids setting
+* Fix: Change label for Activity settings
+* Fix: Return empty array of program_ids for workout/activity if none is specified
+* Fix: Didn't always show duplicate link to users with the correct privileges.
+* Fix: Didn't always save the program ID(s) that a post_type belonged to (Article/Activity/Action/etc)
+* Fix: Sometimes would include a weird program name/id
+* Fix: Doesn't always save the Program id the workout belongs to
+* Fix: Possible warning during DEBUG logging
+* Fix: Don't use the article's editor content (post_content) in the summary. Enh: Allow user to specify a title for the article_summary shortcode.
+* Enh: Allow user to specify title for Article history/summary shortcode
+* Enh: Allow user to specify title for Article history/summary shortcode
+* Add support for an HTML/Text field to be displayed in the Assignment (daily_progress shortcode)
+* Add support for HTML/Text only entry in Assignment (daily_progress shortcode)
+* Add support for explicitly excluding content from the kit
+* Allow use of article description as the content for the weekly reminder text.
+
+
+== 1.5.36 ==
+
+* Fix: Couldn't always save a note in the Dashboard
+* Enh: Expand .gitignore to exclude composer content
+
+== 1.5.35 ==
+
+* Fix: Namespace use by new Sequences plugin.
+
+== 1.5.34 ==
+
+* Fix: Reformat nav bar on dashboard
+* Fix: Use 3 character day name in nav labels
+* Enh: Add 'current day' label in navigation box for dashboard
+* Refactor: e20rAction class & remove old code
+
+== 1.5.33 ==
+
+* Fix: Wouldn't update/save activity check-in consistently
+* Add error correction for assignment_id value(s)
+* Refactor link for excerpts
+* Remove unused debug output.
+
+== 1.5.32 ==
+
+* Fix: Simplified test for whether to run content filter
+* Fix: Didn't include 'lesson complete' info in post/page on load.
+* Fix: Reordered message banners
+* Fix: Make constructor PHP 5 compliant (and ready for PHP 7)
+* Fix: Wouldn't always handle buffering correctly for measurement alerts
+* Fix: Didn't always display the expected activity for the day the user had navigated to
+* Refactor: Clean up comments and removed code
+* Refactor: e20rArticleView class
+
+== 1.5.31 ==
+
+* Force redirect to use POST method for data.
+* Add debug for POST on submit/click for daily workout/activity.
+
+== 1.5.30 ==
+
+* Select the correct name for the hidden activity ID input field
+* Fix: Get the URL constant for the activity url to redirect to
+* Rename the input field for the activity
+* Fix: Would not show the correct unit type (seconds) when using AMRAP and time based sets
+
+== 1.5.29 ==
+
+* Fix: Didn't show time designation when using AMRAP type exercises
+
+== 1.5.28 ==
+
+* Make frame for progress container gray
+* Refactored Controller for Articles
+* Fix: Didn't show 'Weekly Status Update' on pages/posts for days where status update was requested and not complete
+* Fix: Order message notification, weekly status update, and other alerts to top of page/post
+* Fix: Would sometimes change the existing article during access check. Refactored code
+* Initial commit for new(ish) autogrow implementation
+
+== 1.5.26 ==
+
+* Fix: Would not load all required scripts for the daily_progress short code
+* Fix: Handle default style (already included by Wordpress) dependencies
+* Fix thickbox css load
+
+== 1.5.25 ==
+
+* Fix paths to jQuery.ui.touch-punch plug-in
+
+== 1.5.24 ==
+
+* Load local touch-punch plugin for jQuery.ui
+* Force regneration of minified file & initial commit
+* Initial commit for locally loaded jQuery.ui touch-punch plug-in.
+
+== 1.5.23 ==
+
+* Fix: Would not save assignments answers
+* Refactored e20r-assignments.js
+
+== 1.5.22 ==
+
+* Fix: The label for the tempo wasn't being printed
+* Fix: Init of the speed types for the Workout/Activity model
+* Fix: Spacing for text when printing exercise description(s)
+* Refactor obsolete CSS and JavaScript files
+* Changelog and version number updates
+
+
+== 1.5.20 ==
+
+* Load the correct icon for active.png
+
+== 1.5.19 ==
+
+* Didn't always load assignments related CSS & JavaScript for daily_progress shortcode
+
+== 1.5.18 ==
+
+* Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
+* Add list of actions to default check-in structure if the check-in type is an action
+* Update debug text to help clarify status
+* Modify loading behavior (try to avoid heartbeats causing loading screen to pop up)
+* Fix typo in error message during check-in save operation
+* Fix URL to access new message from client in alert email
+
+== 1.5.17 ==
+
+* Rename e20rActionModel::loadUserCheckin() to e20rActionModel::get_user_checkin()
+* Couldn't handle situations where the card setting was empty (i.e. default value)
+* Add preventDefault() for day/date navigation in dashboard (ensure the browser doesn't actually follow the link back to the dashboard)
+
+== 1.5.16 ==
+
+* Wouldn't send e-mail alerts when client responded to coach.
+* Would inadvertently return the first message as the last
+
+== 1.5.15 ==
+
+* Send e-mail notice if user sends a message to their coach.
+* Remove inactive (no longer member) clients from list of clients to display in drop-down
+* Used wrong identifier in get_user_by()
+* Only attempt to update the login timestamp if the User ID is something other than 0
+* Didn't properly account for cases where the user's login timestamp wasn't correctly recorded.
+* Didn't include the date when displaying message summary in thickbox
+* Don't include timestamp (avoid UTC/TZ issues)
+* Include instant(ish) messaing history in back-end sorted message-history page/tab
+* Add method for extracting the Assignment question based on assignment_id value
+* Sort based on 'sent' attribute in array(s)
+
+== 1.5.14 ==
+
+* Update version number (1.5.14)
+* Add update functionality for v11 of the DB tables
+* Would sometimes fail to display the profile/daily progress check-in content.
+* Not displaying e20r_profile when some of the expected check-in definitions for the article are missing
+* Showing 'day in the past' warning when some of the expected check-in definitions for the article are missing
+* Tweak border & font weight for inner tabs when displaying measurements, etc.
+* Add debug for unread message count Correctly handle show/hide of new message alert on page load.
+* Load new message alert to post if daily_progress shortcode is present in content
+* Incorrect use of currentArticle->id before the article had been initialized/loaded
+* Use new load_user_assignment_info() so we include message history as well
+* Add AJAX handler for message status updates
+* Add AJAX handler to save message replies from front/back-end
+* Add AJAX handler to return assignment list (HTML, including messages & history) for a specific client ID
+* Include controller functions for heartbeat handling and identifying how many new messages a client has
+* Would return a positive message count for user, even when all messages were either read or archived has_unread_messages() included messages sent from the current user when looking for new messages
+* thread_is_archvied() would include messages sent from the current user when reporting that a message wasn't archived
+* Include recipient_id when looking up message history
+* Include the new_message_warning() HTML in the content whenever we're looking at a page/post with a e20r_profile, e20_progress_overview or e20r_activity_archive shortcode.
+* Working to isolate issue where profile isn't displaying if there isn't at least one action, activity and check-in included for dailyProgress in the article definition
+* Process message history and insert in the Assignments list (feedback goes with assignments, for now(?))
+* Refactor and move to e20r-assignments CSS file
+* Refactor and handle message transmission/reception better
+* Force initial heartbeat within 2 seconds of page loading.
+* Add e20r_response fields to better manage to/from of messages
+* Add support for archiving a message (by the recipient)
+* Remove invalid null entries for settings that are arrays.
+* Add handling for e20r_response table (messages between clients & coaches)
+* Simplify loading of user assignment data & have it include any messages.
+* Add formatting for message alert, history & transmission
+* Add heartbeat handling so we can use the heartbeat to update new message status on front
+* Add AJAX handler to reload assignment list on progress page/tabs
+* Load e20r-assignments.js for back-end (handle messages)
+* Add autoGrown for message input
+* Include assignments scripts (message handling) to list of scripts to load for e20r_profile and progress_overview shortcodes
+* Clean up unused code from load_frontend_scripts()
+* Add handler for assignments to load_frontend_scripts()
+* Add thickbox support to progress overview in load_frontend_scripts()
+* Add e20r_response table to database & ensure client ID and recipient ID are indexed
+* Add alert for new coach messages to pages with progress overview and profile view
+* Refactored is_user_logged_in() for daily_progress shortcode
+* Add basic handler for coach/client messaging AJAX
+* Commented out the saveAssignment_callback() (apparantly unused?) function.
+* Add handler for client/coach messaging system
+* Init the e20rClientAssignment class when the AJAX load of the assignments table has been completed (if applicable)
+* Fix color management for back-end buttons
+* Format size of feedback textarea
+* Add feedback messages/buttons for assignments
+* Add AJAX handler for assignment replies/feedback
+* Load assignments JavaScript in back-end to handle submitting/reading new assinment feedback
+* Add 'read' flag in e20r_response table
+* Return result of dbDelta() for the e20r_response table
+* Add coach specific feedback buttons for assignments table.
+* Update response table definition
+* Move response fields out of assignments table, use response_id for the assignment and save response data in its own table (e20r_responses).
+* Add response table definition
+* Add response fields to e20r_assignments table
+
+== 1.5.13 ==
+
+* Didn't use specified post_id when looking up a post for the card configuration
+* Rename loadWorkoutData() to load_activity();
+* Didn't always include the exercise ID when saving workout record.
+* Rename loadWorkoutData() to load_activity();
+
+== 1.5.12 ==
+
+* Properly align text in email display when showing the sent email message
+* Remove old HTML Escape content in emails being sent to clients
+* Escape subject line (strip slashes, etc)
+
+== 1.5.11 ==
+
+* Transition to new class name for check-in actions
+* Fix JavaScript error in daily_checkin and e20r_profile shortcodes
+* If we have nothing to convert, exit from the conversion function early.
+* Rename e20rCheckin* classes to e20rAction*
+* Rename e20rCheckin variable to e20rAction (and currentCheckin to currentAction)
+* From Custom Post Type e20r_checkins to e20r_actions
+* Transition from *-checkin_ids to *-action_ids as meta data tag for articles
+* Only change the startdate to that of the user's program start if we're not in the back-end and we're not processing for another user (i.e. a coach looking up data for a user)
+* Correctly format the start/end date for a program if the startdate/enddate variables are configured
+* Add constants for feedback types on cards
+* Add hook for e20r_article_archive shortcode
+* Whitespace clean-up Remove unneeded loop in load_for_archive()
+* Remove unused variable ($gv)
+* Use autoloader for classes
+
+== 1.5.10 ==
+
+* Not all instances of the getArticles() arguments were correct after the refactoring in v1.5.9
+* Change when we load the font awesome library in wp-admin/
+
+== 1.5.9 ==
+
+* Need to account for new find() argument order Removed unused variables from scope
+* More precise debug info to help locate problems
+* Would sometimes add the program ID to the search when searching for explicit post IDs
+* Let filter override class name for dialog class
+
+== 1.5.8 ==
+
+* Remove old add_popup_overlay from e20rArticleView class
+* Add formatting for pop-up dialog for incomplete interviews
+* Fix formatting on small screens when using default (old) daily checking page.
+* Add debug for record_login function
+* Fix uninitialized variable warning
+* Add load_for_archive() which returns an array of all articles w/post_id & release_day values available to the user at this time
+* Add more infrastructure for generating archive of articles (not yet implemented)
+* Removed old pop-up warning from contentFilter() and moved it to the ClientView class.
+* Don't attempt to add date variable to permalink if user isn't logged in
+* Add pop-up warning to profiles where the user hasn't completed the Client Interview within two weeks of starting the program
+* Add a functional 'incomplete interview' pop-over warning for end-users when accessing their profile page
+* Reordered arguments for find*() functions
+* Removed unused variable
+* Reorder hooks & load only what's needed based on users login status.
+* Simplify nopriv AJAX response (always an error if the action is one of ours)
+* Update all AJAX action names to add the e20r_ prefix
+* Update URL for fontawesome
+* Redirect to login page if user isn't logged in & is attempting to access one of our shortcodes
+* Would sometimes attempt to display dependency warning to users while they weren't on the dashboard page
+* Changed order for find() functions
+* Didn't redirect to login page if user who isn't logged in attempted to view the profile page.
+* Add e20r prefix to all AJAX calls
+* Add getters and setters for active_delay and previous_delay settings. Remove unused code
+* Don't save active_delay and previous_delay settings values
+* Remove inactive code from saveSettings();
+* Set active_delay and previous_delay to settings.
+* $active_delay is always the current delay value for the current active user.
+* Prevent XSS vector when manipulating permalinks
+
+== 1.5.7 ==
+
+* Attempt to shorten the amount of time spent loading data and leverage cached data instead.
+* Added the date of the post/article as part of the URL, using it in article_summary shortcode
+* Skip loading of scripts & styles when doing AJAX calls
+* Fix debug output in hasAccess()
+* Remove clearfix class for day navigation bar
+* Add day value as hidden input field for card based dashboard
+* Always include today's 'release_day' for the user in the action and activity check-in dashboard
+* Add filters that allow us to add date(s) to posts that have articles defined for them (used to help process shortcodes, etc)
+* Added article_date query variable
+* Added rewrite tag for article_date variable
+* Adding rewrite rule to process date values when available
+
+== 1.5.6 ==
+
+* Didn't include the shortcode attribute (days) override in e20r_article_summary shortcode
+* Didn't always load post summaries when using the e20r_article_summary shortcode
+* Remove inner border for activity archive
+* Remove the clearfix class from the day navigation bar in the traditional dashboard view
+
+== 1.5.5 ==
+
+* Respect dont_drop setting in e20rArticleModel::find()
+* Don't drop future articles if we're processing the activity archives
+* Archive page should not include tracking fields in display
+* Hide buttons and tracking fields in activity definition on request (set $hide_print to true)
+* Archive page didn't correctly format all of the layout on display
+
+== 1.5.4 ==
+
+* Fix warning during debug output
+* Would sometimes generate warning while loading daily_progress shortcode
+* Refactor for formatting purposes
+* Removed clearfix from date navigation bar
+
+== 1.5.3 ==
+
+* Didn't always respect the article Id passed to the releaseDate function.
+* Fix whitescreen of death (undefined method)
+
+== 1.5.2 ==
+
+* Would sometimes allow access to articles that were scheduled for a future date because the post in the article is a repeating posts that the user currently _does_ have access to (with a different Article ID)
+* Add pmpro_has_membership_access_filter processing back to has_access() function
+* Don't ignore current user 'days since start' (delay) value vs article release_date when checking for access and PMPro is installed
+* Find the closest release day to a specified key (delay) value for articles.
+* Add current day's delay value to the navigation $_REQUEST[]
+* Clarify debug info
+
+== 1.5.1 ==
+
+* Add clearfix so layout of page is correct.
+* Don't throw warning when user isn't logged in and we're sending email messages.
+
+== 1.5.0 ==
+
+* Limit size of the traditional daily check-in dashboard to 720px max width
+* Lesson and activity summary boxes weren't formatted correctly
+* Increase size of font for check-in text
+* Double size of empty note textarea
+* Use class names for activity & lesson cards
+* Fix how shortcode_dailyProgress() handles arguments/attributes
+* Set use_cards in config variable while preserving any passed values
+* Fix shortcode attribute handling for the e20r_profile shortcode
+* Update function name in debug output for shortcode_clientProfile() function
+* Make sure the correct style is applied to the specified layout for the action & activity lesson/summary cards/dashboard entries
+* Include hidden variable for layout style in both layout options
+* For card based layout, move the notes section to the bottom of the list for the day.
+* Fix line-width for activity check-in
+* Whitespace removal
+* Add update_period setting for config (to be used by the card display)
+* Add support for capturing status of card based dashboard (yes or no) from $_POST
+* Select the type of display for the dashboard ('cards' or 'old-style' dashboards)
+* Use cards setting for 'getExcerpt()' function
+* Initial commit the minimized article-summary css file
+* Add formatting for navigation to next trackable exercise/activity
+* Display navigation link as a button Set location for navigation link/button
+* Transition fully to a print friendly activity page.
+* Adding support for configuring data to be used by the card-based dashboard display
+* Handle card based display(s) in excerpts
+* Add formatting to the link for the excerpt (allow displaying links as buttons, for instance)
+* Fix warning when displaying user information.
+* Add update_period setting for config (to be used by the card display)
+* Add support for capturing status of card based dashboard (yes or no) from $_POST
+* Select the type of display for the dashboard ('cards' or 'old-style' dashboards)
+* Use cards setting for 'getExcerpt()' function
+* Add support for use_cards attribute in e20r_profile shortcode.
+* Always use card layout for action & activity display (text lesson info)
+* Initial commit of new autogrowtextarea.js plugin for jQuery (used for Notes field on daily update page)
+* Initial commit to support future 'card based' dashboard layouts
+* Add support for passing whether to use action/activity cards vs the current dashboard layout
+* Didn't always save the note entered (in spite of what the feedback to the user was - yes, we lied!)
+* Fix size calculations for note overlay
+* Refactor the Notes class (make it more of a class!)
+* Add clearfix class
+* Fix margin for check-in fieldsets (daily activity)
+* Fix issue(s) with notes area on daily check-in page
+* Allow using a 'card' view for actions/activities (load CSS file for cards)
+* Upgrade to autoResize by @jevin on https://github.com/jevin/Autogrow-Textarea for notes area on dashboard page.
+* Notes section would indicate 'saved' even when the save failed.
+* Fix typo for jQuery()
+* Hide navigation buttons Force hide elements while printing
+* Simplify navigation between input fields for activity overview (daily activity view).
+* Fix for handling for edit button during activity & action check-in pane in dashboard
+* Avoid double events on click in dashboard
+* Remove unneeded debug logging to console
+* Refactor for style compliance
+* Adding infrastructure for displaying dashboard as cards of 'stuff' rather than a check-in/lesson configuration (old-style) triggered by 'use_cards' attribute in shortcode
+* Refactor how the dashboard is created/generated
+* Fixed issue where activity check-ins didn't quite work (highlight of completed activity check-in)
+* Remove link symbol (too broadly applied)
+
+== 1.4.8 ==
+
+* Limit link character to the pages where the link symbol should exist (i.e. not menus, back-end, etc)
+
+== 1.4.7 ==
+
+* Fix Phase description
+* Refactor formatting for printable activity/activity summary pages.
+
+== 1.4.6 ==
+
+* Add print icon to daily activity page
+* Hide title on print page(s) for activities on load
+* Add support for clicking print icon to print daily activity page.
+* Hide printer icon when page is too small (i.e. on phone)
+* Tentative CSS support for down arrow (to indicate scroll direction for additional content)
+* Hide printer icon on page being printed
+* Remove all navigation and header elements when printing the page
+
+== 1.4.5 ==
+
+* Transition to .clear-after class (from .clearfix)
+* Refactor @media screen formatting Add new group handling/formatting
+* Make the new-group print independent
+* Make new exercise header bar visible on screen & print
+* Add link symbol for <a href>
+* Make weight/rep updates work in printable view.
+* Refactor CSS for print formatting
+* Refactor for Wordpress formatted file(s)
+* Fix formatting for saved data in weight/rep table inputs
+* Fix small-screen video size (Phone in Portrait mode)
+* Set font/display for 'print_only' attribute based displays while @media == screen
+
+== 1.4.4 ==
+
+* Handle multiple variable values for shortcode attributes in the affirmative (and return error message(s) if input isn't supported/understood)
+* Support print mode for [e20r_activity] Start escaping variables in HTML form(s)
+* Remove @media print formatting from the activities.css file and place it in print.css instead
+* Partially duplicate e20r_activity HTML in support of the display_printable_activity() view
+* Escape most attributes in web form(s) for activity.
+* Support display_type='print' for the [e20r_activity] shortcode
+* Add @media print formatting for individual activity listing (i.e. when e20r_activity shortcode has display_type='print')
+* Update background picture for the gender selector page CSS.
+* Updated dimensions of alert.png image
+* Refactor @media screen entries
+* Remove HTML element styling & place in .css file.
+
+== 1.4.3 ==
+
+* Fix formatting for weekly progress reminder
+
+== 1.4.2 ==
+
+* Move styles from HTML to css for weekly progress reminder
+* Make text translatable for the weekly progress reminder
+* Update formatting for weekly progress reminder.
+
+== 1.4.1 ==
+
+* Add e20rTracker formatting for gravity forms.
+* Refactor & format to comply w/Wordpress standards
+* Support a printable format for the activity display.
+* Fix formatting for links on printed pages.
+* Add initial framework for printable activity display
+* Add support for a show_reps setting in view_exercise_as_*() functions.
+* Add print_only attribute to activity archive shortcode
+* Use summary of activity list if user requests a printable list of activities
+* Remove unused variables from shortcode_activity()
+* Add 'display_type' attribute to e20r_activity shortcode.
+* Load print specific CSS file separately
+* Fix issue when loading css & javascript for exercise shortcode
+* Add print_only attribute to activity archive shortcode
+* Allow summary of activity list if user request printable list of activities
+* Remove unused variables from shortcode_activity()
+* Add 'display_type' attribute to e20r_activity shortcode.
+* Split print specific CSS to its own CSS file
+* Add print specific CSS for exercises and activities.
+* Add support for a printable list of activity descriptions as part of the e20r_activity_archive shortcode
+* Fix error message when there are no activities found for the specified period
+* Differentiate between upcoming weeks and current/previous weeks in archive display.
+* Include minified file in repo.
+* Update to reflect page dimensions for print view.
+* Refactor file to use Wordpress formatting
+* Refactor video content view
+* Split old-style (row based) and new-style (column based) exercise views.
+* Add support for old style or new-style display of exercise information in print_exercise( $show, $display )
+* Add support for specifying display type in e20r_exercise shortcode (i.e. 'display='column|row'')
+* Separate CSS for exercise display out from overall activity display.
+
+== 1.4 ==
+
+* Make sure the 'Assignment Complete' logic works for cases when posts are being repeated on different days in contentFilter()
+* e20r_article_summary shortcode would sometimes cause page to go blank
+* Return the date of the last post included in the post summary list, not the date of the article generating the list.
+* Fix padding/spacing for article summary date values
+* Make heading for the article summary list match the formatting for the [daily_progress type='assignment'] formatting.
+
+== 1.3.9 ==
+
+* Add support in article definition for summary_day and max_summaries settings. summary_day is boolean, max_summaries is numeric.
+* New shortcode: [e20r_article_summary days=''] - Generates a summary of articles for the specified # of days. #of days can be configured in the shortcode, or in the article that defines the lesson/reminder/action/activity.
+* Only trim the excerpt if the content is being pulled from the post itself.
+* Avoid warning message due to incorrect array element address assumption.
+* Refactor loadAllHooks()
+* Load article summary specific CSS file for article summary pages/posts. (in e20r-article-summary.css)
+* Remove shortcode_check() as it’s now inactive.
+* Add support for editor in e20_articles CPT definition
+* Fix issue where dates on dashboard navigation was “off-by-one”.
+* Fix cases where the activity archive would be empty due to timezone confusions.
+* Rename debug for prepare_activity() function in e20rWorkout.php
+* Reformatted e20rArticleModel.php
+* Add display/view for article summary shortcode.
+* Refactor the metabox for the article settings.
+* Add onClick() event for “Read more” link for lesson/reminder/post/page on daily progress dashboard.
+* Pass article ID and other config information to e20r_article_summary shortcode.
+* Avoid duplicate event handler actions in onClick() events for daily progress dashboard.
+
+== 1.3.7 ==
+
+* Load FontAwesome from CDN (used by plugin for wp-admin icons)
+* Removed debug output
+* Add CSS for pop-up overlay
+* Move pop-up for interview completion to e20rArticle classes.
+* Add pop-up overlay view (can contain custom message and client related info).
+* Load timeout value for back-end client info page.
+* Add interview_complete boolean for front-end scripts
+* Removed check of whether to skip the Intake form ( It's always loaded as part of the profile page so redirection, etc should be handled there )
+* Added content filter check for whether Welcome interview is complete. If not, load NAG screen.
+* Wouldn't load user info on back-end due to variable mismatch
+* Made timeout variable for jQuery.ajax() calls more generic
+* Add Pop-Up management functions (Init, open/close, etc).
+* Didn't always return the correct date for getDateForPost()
+* Make sure we test for a type specific value when checking the user's ID.
+
+== 1.3.6 ==
+
+* Add debug output to completeInterview()
+* Add caching of interview completion status
+* Move loading of client interview data to the model class (out of the controller class)
+* Rename loadClientInterviewData to load_interview_data_for_client()
+* Return debug output if the client interview form ID isn't available/not configured.
+* Updated issues list
+
+== 1.3.5 ==
+
+* Change version number (1.3.5)
+* Refactored for style
+* Removed some variable dumps in debug output
+
+== 1.3.4 ==
+
+* Updated minified CSS files for font-awesome fix.
+* Ensure program ID is loaded for the requested user when loading client data.
+* Remove (likely) unneeded access check for post->ID and user ID.
+* Filter for hasAccess value (PMPro related) broke Gravity Forms load.
+* Add fontawesome CSS fix
+
+== 1.3.3 ==
+
+* Didn't always handle next/previous week for activity archive
+* Sometimes cause warning while checking for e20r_client_overview shortcode
+* Use new static function sequences_for_post() to obtain list of PMPro Sequences associated with the post id
+* Use new static function post_details() to obtain sequence configuration for post_id from PMPro Sequences
+* Use new all_sequences() static PMPro Sequences function to obtain list of available sequences
+* Remove superfluous load of Font-Awesome css file
+
+== 1.3.2 ==
+
+* Configure default/global timeout setting for AJAX operations (currently 12 seconds)
+* Load jqPlot whenever it's needed
+* Clean up naming for javascript files
+* Include complete setting
+* Fix debug message
+* Add fontawesome icons to admin pages.
+
+== 1.3.1 ==
+
+* Load client-detail page the same way from both e20r_client_overview short-code and directly from the /wp-admin menu.
+
+== 1.3 ==
+
+* Use timestamp (not formatted date) for message history
+* Fix get_clients() to it uses the coach specific program/client list usermeta setting (e20r-tracker-client-program-list), now returns an array of programs w/lists of clients coached by that coach for the program(s)
+* Enh: Add get_program_name( $id ) to return the name of the program specified as an ID
+* Enh: get_program_start( $program_id, $user_id) to configure & return the startdate for a specific users program.
+* Enh: get_coaches_for_program() - Grab all program coaches and their display names.
+* Enh: setProgram( $program_id ) to load a program's settings
+* Enh: Load the client detail /wp-admin/ page from the e20r_client_overview shortcode.
+* Enh: Add short code for list based client overview (a coach specific page summarizing status of client & linking to client details)
+* Make contentFilter() a little more readable & optimized.
+* View timestamp version of send time for client message as date/time.
+* Add view for e20r_client_overview short code
+* Fix viewLevelSelect() so it supports the selection of a specified level ID
+* Fix viewMemberSelect() so it supports the selection of the $currentClient->user_id on load
+* Didn't always load the users for the specified level to the back-end client detail page.
+* Add support for pre-selected user ID/membership level in viewClientAdminPage()
+* Load client data by passing $_GET variables to the 'e20r-client-data' admin page ('e20r-client-id' and 'e20r-level-id')
+* Complete support for e20r_client_overview shortcode for system coaches.
+* Add support for the e20r_client_overview shortcode
+* Refactor CSS load for the weeky_progress shortcode
+* Only load the jqplot scripts if they're needed.
+* Add support for a global 'getLevelIdForUser()' function (returns the program ID the user is a member of).
+* Add formatting for new client overview short code (reserved for coaches)
+* Make labels in back-end for user profile more descriptive Didn't consider that the data about the users coach is passed as an array ( ID => name )
+* Assign and save a program coach to a user when in the back-end user profile view if the user doesn't already have a coach but is a member of a program.
+* Save the client assignment details for the coach ID
+* Whitespace clean-up
+* Fix typo in meta-key finding a coach based on a list of programs
+* Assign a coach to the user whenever the welcome interview is being saved.
+* Add function to handle coach assignment based on the pool of coaches (and how 'loaded' they are) for the gender (if appropriate) of the client.
+* Allow reuse of the 'user isn't a coach' error message for /wp-admin/
+* Assign programs for the user to be a coach for in user profile view (/wp-admin/)
+* Rename view_userProfile to better document its purpose. Enh: Allow admin to configure the programs this user is a coach for
+* Add coach_id to the client settings/profile Fix load_client_settings() so it uses the $clientId variable it's been passed (can't count on $currentClient to be populated already) Add get_coach() function to load coach information for specified client id in program_id
+* Fix activity archive time calculations to make sense regardless of day of the week they're being requested.
+* Return no activities if the request is for the next week of activities and the current day of the week isn't Saturday or Sunday.
+* Only process the unsorted/sorted articles if the count of activities is != 0.
+* Fix warning/reminder about future activities & include probable visibility date(s)
+* Enh: Allow bucketing of coaches for male and female clients in the program as part of the program definition.
+* Whitespace fixes
+* Rename wp-admin profile views
+* Assign & save the coach for the user (in wp-admin/users.php view).
+* Rename views used on the user profile page(s).
+* Add coach information to the profile page for the user(s).
+* Fix colspans
+* Support multiple male & female coaches per program
+* Handle arrays of coaches (male & female) on load/save.
+* Add support for listing male/female coaches to the program definition (used when assigning coaches when the client completes their welcome interview).
+* Change 'lesson' to whatever the $currentArticle->prefix value is set to (Lesson/Reminder/whatever)
+* Convert ID to class for e20r-assignment-complete div to allow two instances of the banner (top & bottom of page/post).
+* Insert hidden or visible 'assignment complete' banner at top of article/post depending on $currentArticle->complete setting (i.e. whether the assignment is completed or not).
+* Clean up the text for the incomplete interview information note.
+* Update incomplete interview text for sub-header & make it translatable.
+
+== 1.2.11 ==
+
+* Fix hasAccess() so it respects the access permissions from the drip-feed plugin.
+* Transition back to minified scripts
+
+== 1.2.10 ==
+
+* Fix lookup of e20r_progress constant (for when in wp-admin).
+* Only load status tabs if on a page where the tabs elements exist (i.e. not a daily_progress assignments page).
+* Fix daily_progress javascript to allow navigating to next/previous days in dashboard.
+* Don't process content filter for article if running on page with e20r_profile short code
+* Clean up comments
+* Fix article look-up when article ID or delay is defined in $_POST variable.
+* Don't process content filter for article if running on page with e20r_profile short code
+* Update formatting for edit buttons in check-in
+* Make 'Incomplete Interview' text more visible (bolder)
+* Load minified e20r-progress-measurements.js script
+* Fix text color for primary-button in back-end (Send Message)
+
+== 1.2.8 ==
+
+* Load codetabs for back-end as well.
+* Show progress info correctly on both front & back-end
+* Fix tab formatting for back-end client info page
+
+== 1.2.7 ==
+
+* Clear progress overview info from profile tabs where it's not supposed to appear.
+* Include minified .js file for progress-measurements info
+* Fix path to image(s) in post_type_icon()
+
+== 1.2.6 ==
+
+* Fix group tempo setting in backend
+
+== 1.2.5 ==
+
+* Add e20r_exercises to list of CPTs that can be duplicated.
+
+== 1.2.4 ==
+
+* Fix button coloring for presale button(s)
+
+== 1.2.3 ==
+
+* Only load scripts that are needed for the e20r_profile shortcode.
+* Always load minified CSS & Javascript.
+* Add minified CSS to repository
+
+== 1.2.2 ==
+
+* Include refactored images
+
+== 1.2.1 ==
+
+* Fix syntax error in e20r-progress-measurements.js
+
+== 1.2 ==
+
+* Remove commented out tabs functionality.
+* Fix display when nesting profile and status tabs.
+* Fix codetabs() padding for smaller screens when using flatbox layout.
+* Make survey forms responsive
+* Comment out codetabs() from #inner-tabs
+* Remove all traces of zozoTabs() (defunct)
+* Make sure we only load the e20rCheckinEvent() class once.
+* Add codetabs() javascript tabs
+* Add CSS for codetabs() javascript tabs
+* Refactor e20r_profile page display to simplify (minimize) load of unnecessary data.
+* Refactor loading for css, prerequisite & script (javascript) for short_codes.
+* Load both codetabs() and jquery.ui.tabs() scripts for profile & progress_overview shortcodes.
+* Use codetabs() for progresss_overview (i.e. #status-tabs) tabs Use jquery.ui.tabs() for the Weight & Girth graph (#inner-tabs) tabs
+* Refactor code for #inner-tabs
+* Use relative positioning of quote character in <blockquote>
+* Force red warning box around e20r-paragraphs.
+* Configure profile-tabs and status-tabs on init. Use codetabs() to manage profile & status tabs.
+* Use e20r_progress variable/object on load (if available)
+* Fix warnings in loadClientInterviewData()
+* Check whether interview is complete & select corresponding description for the Interview tab in e20r_profile shortcode.
+* Limit tabs on e20r_profile shortcode to the dashboard, the progress overview and the interview info.
+* Refactor /images/ to /img/ Add debug info for progress_overview shortcode
+* Incorrectly defaulted to a specific user ID when loading user activities.
+* Fix possible corruption when loading the type of a workout group.
+* Load activity info/settings independently of short code (so it can be used in other short_codes as well)
+* Change how front-end scripts & css is loaded for the variou short_codes.
+* Return if the user hasn't defined an activity (prevent 'dummy' activities from being displayed)
+* Add label for interview completion (warning/informational) when listing the interview info
+* Fix issue where plural was incorrect for estimated times to read between whole minutes.
+* Fix warning for articleId Fix warning for show_tracking Fix warning/corruption for group_tempo setting(s)
+* Refactor /images/ to /img/
+* Load content for e20r_profile tabs as well as tab heading & descriptive text.
+* Don't use the modal div in the profile-tabs (it's included in the dashboard already)
+* Remove unused code
+* Add debug output to help identify issues with workout intensity type/speed
+* Fix the url constant (make it consistently 'ajaxurl')
+* Fix button styles
+* Make sure the layering (z-index) is correct for button vs floating theme menu
+* Add formatting for the zozoui tabs and the standard jquery UI Tabs
+* Refactor to concentrate javascript & CSS load functions
+* Make the 'release day' column sortable in the edit.php screen for the e20r_assignments post type.
+* Move the column management functions to the e20r_assignments class file.
+* Add support for using zozoui tabs
+* Support loading the welcome interview survey if the user is on the e20r_profile page/short code.
+* Refactored path to images for plugin.
+* Renamed images directory to img/
+* Check that the post status for the activity is one of the defined statuses we require.
+* Add warning icon
+* Add warning/message dialog for interview page(s)
+* Fix formatting for tabs
+* Formatting updates to lesson display in e20r_profile shortcode.
+* Reformat date info (excludes year) for when post was released (for the current user ID)
+* Remove author link
+* Refactor e20r_profile processing to avoid unneeded activity during preview lessons/reminders
+* Add article ID as hidden field for workout(s)
+* Add validity check for an array of database fields to enter into the checkin table.
+* Add function to save array of data to check-in table.
+* Fix translation for Dashboard error/warning messages
+* When user clicks 'Activity complete' button, save the activity check-in too.
+* Add support for saving an activity status from the front-end to the check-in table in the database.
+* Support saving a check-in whenever the user clicks the 'Activity complete' button on the front end
+* Include the article id in the workout definition
+* Add ability to return a short_name for a specified check-in ID
+* Support saving (replacing) a check-in of a specific type.
+* Function to fetch the short_name for the specified article and check-in type.
+* Remove unused functionality
+* Add support for e20r_profile shortcode
+* Add e20r_profile shortcode hook
+* Include progress javascript files when using the e20r_profile shortcode
+* Differentiate between when the e20r_profile shortcode loads the progress info and when the progress_overview shortcode does so.
+* View for tabs when using the e20r_profile shortcode
+* Simplify isNourishClient() test (nobody is a nourish client from a data collection perspective)
+* Load client specific data if the currentClient info isn't already loaded in loadClientInterviewData()
+* Define a common dailyProgress configuration function
+* Simplify shortcode processing for dailyProgress by using shared configuration function.
+* Various formatting for e20r_profile shortcode
+* Let admin select page to display for 'contact the coach' information/forms/feedback
+* Let admin select page to display to manage membership account data
+* Let user defined whether to show the modal 'loading' feedback or not as part of the tabbed progress overview view
+* Add formatting for whenever we display the incompleteIntakeForm() content/page.
+* Add show_progress() function to load tabbed progress overview view from external class/service.
+* Add support for defining a 'Contact the coach' page/post
+* Add support for defining a 'Your Account Information' page/post (contains membership plugin profile info & billing info, for instance)
+* Add support for loading a lesson/reminder/post for an article (to a 3rd party entity)
+* Add support for indicating an article that's part of the 'preparation sequence' for a program
+
+== 1.1.21 ==
+
+* Fixed a 'No Interview' redirect loop
+
+== 1.1.20 ==
+
+* Whitespace changes to force minification
+* Save updated/changed weight/length unit setting
+* If the welcome interview is incomplete, redirect the user to a page describing the problem.
+* Configure user settings before changing & updating weight/length unit info.
+* If the welcome interview is incomplete, redirect the user to a page describing the problem.
+* Fix layout for weight/length unit change
+* Support cancel option for weight/length unit change
+* Fix typo in weight units setting
+* Return true if there is no data to convert in updateMeasurementsForType()
+* Add default conversion factors between same unit types
+* Add 'incomplete interview description' page setting
+* Add debug info for interview_complete() function
+* Fix warning message during load of weekly progress related data to front-end.
+* Load bare minimum of the client data for front-end JavaScript.
+* Add ability to only load the basic client data rather than the full survey.
+* getDateForPost() assumed calculations start on day 1 (they start on day 0)
+* Support returning HTML for incomplete measurements page if interview isn't completed yet.
+* Make text translatable.
+* Force setting of program startdate on init (allows startdate to be set by users startdate if needed)
+* Removed init of article object when loading program (Should be handled in Article class).
+* Added support for how to handle incomplete intake form(s).
+* Adds descriptive page for whenever the user hasn't completed the intake form(s)
+* Add support for simplified minimum DB load on init of e20rClient class.
+* Incorrect date calculated when looking for activities based on delay values.
+* Remove empty & unused function
+* Fix variable init
+
+== 1.1.19 ==
+
+* Make sure $currentProgram gets initiated.
+* Remove defunct statistics tab.
+* Added debug output to show end of achievement list.
+* Didn't terminate div & caused issues w/showing achievements (4th tab)
+* Fix non-object warning when displaying username
+* Fixes following JSHint run
+
+== 1.1.18 ==
+
+* Fix the unprivileged ajax call error info
+
+== 1.1.17 ==
+
+* Redirect to log-in URL if ajax call returns error code 3 (Not logged in)
+* Add login_url constant for client checkin page
+* Return error message to front end when user isn't logged in.
+* Fix copyright notice in license
+* Correct Text Domain
+
+== 1.1.16 ==
+
+* Fix formatting for datetimepicker() info in Client Message schedule fields
+* Configure allowed times for the Client message scheduling datetimepicker() fields
+* Add a group tempo setting of 'Varying'
+
+== 1.1.15 ==
+
+* get_user_by() calls to lower case 'id'
+* Don't use deprecated 'id' when getting the id from the WP_User object
+* Fix deprecated 'id' use for $current_user
+* Use user_id when indicating the $currentClient's ID
+
+== 1.1.14 ==
+
+* Use received variable values when updating message history table, not globals
+* Save program ID in $email_args array for use when updating message history.
+
+== 1.1.13 ==
+
+* Use $currentUser->id in place of $clientId (which could be empty?)
+* Use 'ID' in get_user_by()
+
+== 1.1.12 ==
+
+* Attempt to fix array passing to send_email_to_client when scheduling message.
+* Add help text for 'send on date/time'.
+* Change type of input field for datetimepicker() field
+* Fix loading datepicker() in back-end
+* Add error handling to time conversion for entered schedule
+
+== 1.1.11 ==
+
+* Add hook for scheduled client messages by coaches
+* Add datetimepicker jQuery-ui library
+* Add CSS for datetimepicker functionality.
+* Add support for scheduled messages to clients by a coach.
+* Remove extra debug info
+* Add scheduling of email message to coaching clients by the coach(es)
+* Support scheduling messages to clients by the coaches.
+* Use UTC when calculating auth timeout values (keep it consistent)
+* Load change & click events after updating the program list using AJAX.
+* Add bind function for member select dialogs
+* Now filtering Coaching page's client info by program name & not membership level
+* Add support for loading programs in an array (programID => program name)
+* Add support for loading users belonging to the specified programID
+* Handle special program IDs (-1= All, 0 = None)
+* Load users for a program (not membership level) on coaching page.
+* Fix label for drop-down when loading members belonging to the same program ID
+* Fix typo in headline for Coaching page
+* Use Wordpress timezone setting for last_login()
+* Use currentUser->user_id rather than clientId
+* Set timezone for auth cookie calculations
+
+== 1.1.10 ==
+
+* Would allow users to see all content in program(s) if their membership start date wasn't configured.
+* Filter to set UNIX epoch timestamp for program start date ('e20r-tracker-program-start-timestamp')
+
+== 1.1.9 ==
+
+* Add language (i18n) info to plugin header.
+* Add license text to e20r-tracker.php file.
+* Add debug info for auth_timeout_reset() function Clean up login_timeout() function
+
+== 1.1.8 ==
+
+* Reload the updated message history after successfully sending a new message.
+* Renaming 'Client Info'  to 'Coach's page'
+* Left align heading on message history tab
+* Add formatting for client message history tab on Coaching page
+* Add e20r_client_messages table definition.
+* Add client message history support for Coach's page.
+* Record message information when sending from Coaching page
+* Support fetching message history by AJAX call
+* Show table of sent messages for a specific client.
+* Record the fact that v10 of the DB adds the e20r_message_history table.
+* Rename convert_postmeta_notice() to display_admin_notice().
+* Add support for fetching message history from Coach interface
+* Fix logic error in how manage_tables() works (to make sure it updates table structures if needed)
+* Add e20r_client_messages table & add sender_id column
+* Print status from dbDelta() in manage_tables().
+* ClientModel - Record and retrieve messages sent from the Coach interface
+* Add support for message history in Coach interface
+* Typo in function name when configuring the currentProject in listUserAccomplishments().
+* Add message history table to DB
+
+== 1.1.7 ==
+
+* Test whether the clientId variable was received. If not, try to load it from the page.
+* Load client specific exercise statistics on /wp-admin/e20r-client-info page.
+
+== 1.1.6 ==
+
+* Move click event for Statistics button in Activity overview to apply to both front & back end.
+* Fix last login warning for client data page in wp-admin/
+
+== 1.1.5 ==
+
+* Fix warning message (syntax was odd) Only show date when there's a last_login recorded.
+* Actually display the last login info on the client detail page
+* Fix buffering for admin interface.
+* Correctly save the error notice option (don't sanitize the HTML)
+* Clean up convert_postmeta_notice
+* Remove debug info
+* Show admin error notice if user who isn't a coach is attempting to access the client data.
+* Add unbind to .on event.
+* Fix ability to open/close activities in wp-admin
+* Make activity set/group boxes flexible & aligned.
+
+== 1.1.4 ==
+
+* Fix the interview completion check.
+* Add expiry for whether to allow editing the Program welcome interview survey.
+* Check client_info table to see if the interview was completed or not.
+
+== 1.1.3 ==
+
+* Remove unused styles
+* Add background image for gender selector landing page info (proprietary)
+* Make headline location for gender selector landing page info relative
+* Add Facebook app page styles for gender selection landing page.
+
+== 1.1.2 ==
+
+* Saving options sometimes caused the DB updater to run
+* Incorrect default timeout values when logging in caused really long sessions to be allowed.
+* Reset long sessions to correct timeouts for the user.
+* Redirect to login page if user isn't logged in and attempts to load a page containing one of our short codes.
+* Fix validation of settings on save.
+* Remove program specific settings from settings page
+* Remove the lesson (drip-feed) render function for settings.
+
+== 1.1.1 ==
+
+* Update DB version number to 9 (from 7)
+* Clean up DB updates, etc.
+
+== 1.1 ==
+
+* Style the Welcome Interview (e20r-confirmation-background) confirmation information
+* Fix style of multi-select in interview forms
+* Show color coded warning in the client info tab in wp-admin if user hasn't logged in for a while
+* Didn't include ID of existing record so would save a new one when saving to e20r_client_info table.
+* Record the  current timestamp for a user upon login
+* Only skip actually empty entries when loading the client Interview data.
+* Don't process multiselect fields for Yes/No substitution
+* Show the actual value if the saved data is set to the number 0.
+* Correct how we escape content in an input or textarea.
+* Correct how we display escaped content in a textarea.
+* Force a page ID (Set to -9999) if no page is found.
+* Hook into the wp_login action to save user login timestamp.
+* Fix test for encrypted survey data in decryptData()
+* Force last login time to be set for all users on activation
+
+== 1.0.1 ==
+
+* Fix constructor for e20rTracker class
+* Set currentProgram->id before attempting to use it in model
+* Test whether global variable is set before trying to use it.
+* Make client message UI translatable.
+* Set 'From' to 'Coach <name>'
+* Don't set program when User ID = 0 (not logged in).
+* Fix warning message about uninitialized variable.
+
+== 1.0 ==
+
+* Release v1.0
+* Fix issue where activity settings didn't always get loaded correctly.
+* Use the post content TinyMCE editor for the activity description.
+* Saving the activity description twice in the DB
+* Fix formatting when displaying e20r_exercise description
+* Fix formatting when displaying e20r_workout description
+
+== 0.9.26 ==
+
+* Set/Group listing has ugly wrap in activity progress overview.
+* Fixed issue where the workout history would include workouts for the program that ocurred before the program started (shouldn't happen unless we're forcing it, but worth fixing)
+* Force resize/redraw of charts/graphs when the tabs for the progress overview page is clicked.
+* Fix issue where a hidden plot was attempted redrawn causing errors.
+* Set link for quick-nav class to blue and underlined.
+* Added styling fixes for responsive e20r-measurement-table
+* Made measurements history table responsive and translatable.
+* Return 'No answer recorded' for ranking fields if no answer is present.
+* Remove debug output
 
 == 0.9.25 ==
 

@@ -38,10 +38,19 @@ jQuery(document).ready( function(){
 
         exInfo.fadeToggle();
 
-        if ( ( exTrack.length != 0 ) && ( exTrack.hasClass('startHidden') ) ) {
+        if ( ( exTrack.length !== 0 ) && ( exTrack.hasClass('startHidden') ) ) {
             exTrack.fadeToggle();
         }
+    });
 
+    jQuery( '.e20r-exercise-info-toggle' ).unbind('click').on('click', function( ev ) {
+
+        ev.preventDefault();
+
+        var exercise_info = jQuery( this ).closest('.e20r-exercise-detail-row-3');
+
+        exercise_info.find( 'div.e20r-exercise-video-column').toggle();
+        exercise_info.find( 'div.e20r-exercise-description').toggle();
     });
 });
 
@@ -68,8 +77,8 @@ function setRespTable() {
     for (var i = 0; i < headers.length; i++) {
         headertext[i]=[];
         for (var j = 0, headrow; headrow = headers[i].rows[0].cells[j]; j++) {
-            var current = headrow;
-            headertext[i].push(current.textContent.replace(/\r?\n|\r/,""));
+
+            headertext[i].push(headrow.textContent.replace(/\r?\n|\r/,""));
         }
     }
 

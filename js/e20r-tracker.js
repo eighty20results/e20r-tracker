@@ -4,11 +4,11 @@ jQuery.noConflict();
 
 var $body = jQuery("body");
 
-jQuery(document).on({
+/*jQuery(document).on({
     ajaxStart: function() { $body.addClass("loading");   },
     ajaxStop: function() { $body.removeClass("loading"); }
 });
-
+*/
 (function() {
 
     // prevent double loading
@@ -29,11 +29,11 @@ jQuery(document).on({
 
     String.prototype.strip = function() {
         return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-    }
+    };
 
     String.prototype.title = function() {
         return (this+'').replace(/^(.)|\s(.)/g, function ( $1 ) { return $1.toUpperCase( ); } );
-    }
+    };
 
     // deprecate this ASAP
     Array.prototype.find = function(x) {
@@ -43,11 +43,11 @@ jQuery(document).on({
                 return i;
 
         return -1;
-    }
+    };
 
     window.bool = function(expr) {
         return !!expr;
-    }
+    };
 
     window.boolNotNull = function(expr) {
         if (expr === null || expr === undefined) {
@@ -55,23 +55,23 @@ jQuery(document).on({
         }
 
         return bool(expr);
-    }
+    };
 
     window.int = function(x) {
         return Math.floor(Number(x));
-    }
+    };
 
     window.float = function(x) {
         return Number(x);
-    }
+    };
 
     window.isArray = function(a) {
         return jQuery.isArray(a);
-    }
+    };
 
     window.titleCase = function(a) {
         return String(a).replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-    }
+    };
 
     window.round = function(n, precision) {
         precision = precision || 0;
@@ -79,7 +79,7 @@ jQuery(document).on({
         var magnitude = Math.pow(10, precision);
 
         return Math.round(n * magnitude) / magnitude;
-    }
+    };
 
     jQuery.fn.log = function (msg) {
         console.log("%s: %o", msg, this);
@@ -99,7 +99,7 @@ jQuery(document).on({
 
     window.construct = function(obj) {
         function Constructor_() {
-            for (k in obj) {
+            for ( var k in obj) {
                 this[k] = obj[k];
             }
 
@@ -124,7 +124,7 @@ jQuery(document).on({
         $.fn.child = $.fn.children;
     })(jQuery);
 
-    ;(function($) {
+    (function($) {
         $.fn.positionAtOffset = function(elem, moveLeft, moveTop) {
             moveLeft = moveLeft || 0;
             moveTop = moveTop || 0;
@@ -141,7 +141,7 @@ jQuery(document).on({
     })(jQuery);
 
     // Event System
-    ;(function($) {
+    (function($) {
         jQuery.bindEvents = function(events, self, elem) {
             if (undefined === self) { // using verbose call method $.bindEvents({ /* opts */ })
                 var opts = events;
@@ -164,7 +164,7 @@ jQuery(document).on({
     })(jQuery);
 
     /* Functions as Values */
-    ;(function($) {
+    (function($) {
         var methods = ['html', 'text', 'val', 'parent', 'parents', 'next', 'nextAll', 'find', 'add', 'prev', 'prevAll', 'siblings', 'scrollLeft', 'scrollTop', 'height', 'width', 'css', 'attr'];
 
         // make sure this plugin hasn't already run... this would cause endless recursion
@@ -205,7 +205,7 @@ jQuery(document).on({
     })(jQuery);
 
     // body class browser
-    ;(function($) {
+    (function($) {
         // Checks the browser and adds classes to the body to reflect it.
 
         $(document).ready(function(){
@@ -321,7 +321,9 @@ jQuery(document).on({
      * @example $.cookie('the_cookie');
      * @desc Get the value of a cookie.
      *
-     * @param String name The name of the cookie.
+     * @param name The name of the cookie.
+     * @param value - Value of the cookie
+     * @param options - Options for the cookie
      * @return The value of the cookie.
      * @type String
      *
@@ -535,7 +537,7 @@ var Tooltip = {
 
         if (jQuery('#tooltip').length == 0) {
             jQuery('body')
-                .prepend('<div id="tooltip" />');
+                .prepend('<div id="tooltip" ></div>');
         }
 
         var $tooltipHandles = jQuery('.tooltip-handle');
@@ -547,8 +549,8 @@ var Tooltip = {
         var usesBase64 = ($tooltipHandles.filter('.base64').length >= 1);
 
         if (usesBase64) {
-            if (!Base64) {
-                jQuery.getScript('//javascriptbase64.googlecode.com/files/base64.js');
+            if (!base64) {
+                jQuery.getScript('//strongcubedfitness.com/wp-content/plugins/e20r-tracker/js/libraries/Base64.min.js');
             }
         }
 
@@ -594,7 +596,7 @@ var Tooltip = {
             }
 
             $tooltip
-                .html(tooltipHtml)
+                .html(tooltipHtml);
 
             if ( (tooltipPosX + 200) > jQuery(window).width()
                 || opts.pos == 'left')

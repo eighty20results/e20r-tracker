@@ -1,3 +1,12 @@
+/**
+ * Created by Eighty / 20 Results, owned by Wicked Strong Chicks, LLC.
+ * Developer: Thomas Sjolshagen <thomas@eigthy20results.com>
+ *
+ * Version 2.0
+ *
+ * License Information:
+ *  the GPL v2 license
+ */
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
    with position:fixed. Width, height, top and left speak
@@ -11,7 +20,7 @@
     left:       0;
     height:     100%;
     width:      100%;
-    background: rgba( 255, 255, 255, .8 ) url('../images/saving.gif') 50% 50% no-repeat;
+    background: rgba( 255, 255, 255, .8 ) url('../img/saving.gif') 50% 50% no-repeat;
 }
 /* When the body has the loading class, we turn
    the scrollbar off with overflow:hidden */
@@ -68,3 +77,116 @@ th.e20r-label {
     background-color: #c5c5c5;
     font-weight: bold;
 }
+table.e20r-client-message-history-table {
+    width: 100%;
+    border: 1px solid #d3d3d3;
+}
+table.e20r-client-message-history-table th {
+    text-align: left;
+    border-top: none;
+}
+.e20r-client-message-history-table tbody {
+    border: none;
+}
+tr.e20r-client-message-history-entry td {
+    padding: 5px 0 10px 10px;
+}
+.wp-admin .e20r-measurements-container h4 {
+    position: absolute;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    width: 350px;
+    top: -5px;
+    left: 0;
+    margin-left: 10px;
+    text-align: left;
+    padding: 10px;
+}
+.wp-admin #status-tabs {
+    position: relative;
+    padding: .2em;
+    zoom: 1;
+    border-radius: 4px;
+    border: 1px solid #aaaaaa;
+    color: #222222;
+}
+.wp-admin #status-tabs.ui-tabs-nav {
+    font-size: 0.7rem;
+}
+.wp-admin .e20r-measurements-container {
+    margin-top: 20px;
+}
+.wp-admin div#status-tabs {
+    font-size: 0.7rem;
+}
+.wp-admin #status-tabs .ui-tabs-panel {
+    background-color: #FFF;
+}
+.ui-tabs.ui-tabs-vertical {
+    padding: 0;
+    width: 42em;
+}
+.ui-tabs.ui-tabs-vertical .ui-widget-header {
+    border: none;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav {
+    float: left;
+    width: 10em;
+    background: #FFF;
+    border-radius: 4px 0 0 4px;
+    border-right: 1px solid gray;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav li {
+    clear: left;
+    width: 100%;
+    margin: 0.2em 0;
+    border: 1px solid gray;
+    border-width: 1px 0 1px 1px;
+    border-radius: 4px 0 0 4px;
+    overflow: hidden;
+    position: relative;
+    right: -2px;
+    z-index: 2;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav li a {
+    display: block;
+    width: 100%;
+    padding: 0.6em 1em;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav li a:hover {
+    cursor: pointer;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active {
+    margin-bottom: 0.2em;
+    padding-bottom: 0;
+    border-right: 1px solid white;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-nav li:last-child {
+    margin-bottom: 10px;
+}
+.ui-tabs.ui-tabs-vertical .ui-tabs-panel {
+    float: left;
+    width: 28em;
+    border-left: 1px solid gray;
+    border-radius: 0;
+    position: relative;
+    left: -1px;
+}
+.wp-admin #status-tabs .ui-tabs-nav {
+    border: none;
+    background: transparent;
+    border-width: 0px 0px 1px 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+}
+.wp-admin #status-tabs .ui-tabs-panel {
+    margin: 1.1em 0.2em 0.2em 0.2em;
+}
+input#e20r-send-email-message {
+    color: #FFF !important;
+}
+.fa-stack br { display: none; }
+table#new-assignments td { vertical-align: middle; }
+.program-inputs .select2-container { min-width: 75px; max-width: 300px; width: 90%; }
