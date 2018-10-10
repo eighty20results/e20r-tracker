@@ -48,11 +48,11 @@ class Permalinks {
 	 */
 	public function loadHooks() {
 		
-		add_action( 'init', array( $this, 'addEndpoint' ), 10 );
+		add_action( 'init', array( $this, 'addRewriteRule' ), 10 );
 		add_action( 'init', array( $this, 'addRewriteTags' ), 10);
 		
 		add_filter( 'post_link', array( $this, 'processPostLink' ), 10, 3 );
-		add_filter( 'query_vars', array( $this, 'addQueryVars' ), 10, 1 );
+		// add_filter( 'query_vars', array( $this, 'addQueryVars' ), 10, 1 );
 	}
 	
 	/**
@@ -72,13 +72,15 @@ class Permalinks {
 	/**
 	 * Add the end-point for the article_date parameter
 	 */
-	public function addEndpoint() {
+	public function addRewriteRule() {
 		
 		add_rewrite_rule(
 			'^([^/]*)/([0-9]{4}-[0-9]{2}-[0-9]{2})/?$',
-			'index.php?pagename=$matches[1]&article_date',
+			'index.php?pagename=$matches[1]&article_date=$matches[2]',
 			'top'
 		);
+		
+		// add_rewrite_endpoint( 'article_date',EP_PERMALINK );
 	}
 	
 	/**
@@ -86,7 +88,7 @@ class Permalinks {
 	 */
 	public function addRewriteTags() {
 		
-		add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})');
+		add_rewrite_tag('%article_date%', '([0-9]{4}-[0-9]{2}-[0-9]{2})/$');
 	}
 	
 	/**
