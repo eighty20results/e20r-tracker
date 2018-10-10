@@ -284,10 +284,10 @@ class Action extends Settings {
 		$Program = Program::getInstance();
 		$Tracker = Tracker::getInstance();
 		$Access  = Tracker_Access::getInstance();
-		$Client = Client::getInstance();
+		$Client  = Client::getInstance();
 		
 		// $config = new \stdClass();
-  
+		
 		if ( $userId != $current_user->ID ) {
 			
 			Utilities::get_instance()->log( "Validate that the current user has rights to access this data!" );
@@ -321,13 +321,13 @@ class Action extends Settings {
 		
 		foreach ( $program_actions as $program_action ) {
 			
-		    $program_action = $Client->updateForClientInfo( $program_action );
-		    
+			$program_action = $Client->updateForClientInfo( $program_action );
+			
 			$dates['min'] = $program_action->startdate;
 			$dates['max'] = $program_action->enddate;
 			
-			$start      = $Tracker->getDelay( $program_action->startdate, $userId );
-			$end        = $Tracker->getDelay( $program_action->enddate, $userId );
+			$start = $Tracker->getDelay( $program_action->startdate, $userId );
+			$end   = $Tracker->getDelay( $program_action->enddate, $userId );
 			
 			$find_range = array( $start, $end );
 			
@@ -336,9 +336,9 @@ class Action extends Settings {
 			
 			$recent_article = $Article->findArticlesNear( 'release_day', $end, $programId );
 			
-			if ( isset($recent_article[0]) && $end > $recent_article[0]->release_day ) {
+			if ( isset( $recent_article[0] ) && $end > $recent_article[0]->release_day ) {
 				
-			    $end = $recent_article[0]->release_day;
+				$end = $recent_article[0]->release_day;
 			}
 			
 			$action_days = ( $end - $start );
@@ -474,7 +474,7 @@ class Action extends Settings {
 		$Tracker = Tracker::getInstance();
 		$Program = Program::getInstance();
 		
-		Utilities::get_instance()->log( "Content of POST variable:" . print_r( $_POST, true ));
+		Utilities::get_instance()->log( "Content of POST variable:" . print_r( $_POST, true ) );
 		
 		$data = array(
 			'user_id'            => $current_user->ID,
@@ -632,7 +632,7 @@ class Action extends Settings {
 				$answer['id'] = $recordIds[ $key ];
 			}
 			
-			Utilities::get_instance()->log( 'Answer Provided: ' . print_r( $answer, true ));
+			Utilities::get_instance()->log( 'Answer Provided: ' . print_r( $answer, true ) );
 			
 			Utilities::get_instance()->log( "Saving answer to question # {$answer['question_id']}" );
 			$new     = $Assignment->saveAssignment( $answer );
@@ -683,7 +683,7 @@ class Action extends Settings {
 		}
 		
 		$Article = Article::getInstance();
-		$Access = Tracker_Access::getInstance();
+		$Access  = Tracker_Access::getInstance();
 		
 		global $currentArticle;
 		
@@ -694,7 +694,7 @@ class Action extends Settings {
 			Utilities::get_instance()->log( "Need to load a new article (by delay)" );
 			
 			$articles = $Article->findArticles( 'release_day', $config->delay, $config->programId );
-			Utilities::get_instance()->log( "Found " . count( $articles ) . " articles for program {$config->programId} and with a release day of {$config->delay}". print_r( $articles, true ) );
+			Utilities::get_instance()->log( "Found " . count( $articles ) . " articles for program {$config->programId} and with a release day of {$config->delay}" . print_r( $articles, true ) );
 			
 			if ( is_array( $articles ) && ( 1 == count( $articles ) ) ) {
 				
@@ -798,7 +798,7 @@ class Action extends Settings {
 		$config->post_id       = null;
 		
 		if ( isset( $currentArticle->id ) && ( $post->ID == $currentArticle->post_id ) ) {
-			Utilities::get_instance()->log( "Article data already loaded: {$currentArticle->post_id} vs {$post->ID} -> " .print_r( $currentArticle, true ) );
+			Utilities::get_instance()->log( "Article data already loaded: {$currentArticle->post_id} vs {$post->ID} -> " . print_r( $currentArticle, true ) );
 			$article_configured = true;
 		}
 		
@@ -939,7 +939,7 @@ class Action extends Settings {
 	/**
 	 * Generate the Daily Progress page for the Tracker
 	 *
-	 * @param array $config
+	 * @param \stdClass $config
 	 *
 	 * @return null|string
 	 */
@@ -948,7 +948,6 @@ class Action extends Settings {
 		$Tracker    = Tracker::getInstance();
 		$Article    = Article::getInstance();
 		$Assignment = Assignment::getInstance();
-		$Workout    = Workout::getInstance();
 		global $currentArticle;
 		
 		Utilities::get_instance()->log( "Start of dailyProgress(): " . $Tracker->whoCalledMe() );
@@ -1360,76 +1359,6 @@ class Action extends Settings {
 		}
 		
 		return $view;
-	}
-	
-	/**
-	 * Process the Daily Progress short-code
-	 *
-	 * @param null|array $attrs
-	 *
-	 * @return string
-	 */
-	public function shortcode_dailyProgress( $attrs = null ) {
-		
-		/**
-		 * Send 'em to the login page...
-		 */
-		if ( ! is_user_logged_in() ) {
-			
-			auth_redirect();
-		}
-		
-		Utilities::get_instance()->log( "Processing the daily_progress short code" );
-		
-		// Configure the daily progress page for today's actions/assignments/activities
-		$config = $this->configure_dailyProgress();
-		
-		// Process the short code
-		$code_atts = shortcode_atts( array(
-			'type'      => 'action',
-			'use_cards' => false,
-		), $attrs );
-		
-		// Add shortcode settings to the $config object
-		foreach ( $code_atts as $key => $val ) {
-			
-			Utilities::get_instance()->log( "daily_progress shortcode --> Key: {$key} -> {$val}" );
-			$config->{$key} = $val;
-		}
-		
-		// Should we use the grid of cards, or the old table?
-		if ( in_array( strtolower( $config->use_cards ), array( 'yes', 'true', '1' ) ) ) {
-			
-			Utilities::get_instance()->log( "User requested card based dashboard: {$config->use_cards}" );
-			$config->use_cards = true;
-		} else if ( in_array( strtolower( $config->use_cards ), array( 'no', 'false', '0' ) ) ) {
-			
-			Utilities::get_instance()->log( "User requested old-style dashboard: {$config->use_cards}" );
-			$config->use_cards = false;
-		}
-		
-		// Nothing explicit stated in the shortcode so going for the default
-		if ( ! isset( $config->use_cards ) ) {
-			$config->use_cards = false;
-		}
-		
-		Utilities::get_instance()->log( "Config is currently: " . print_r( $config, true ) );
-		/*
-				if ($config->type == 'assignment') {
-		
-					Utilities::get_instance()->log("Finding article info by post_id: {$post->ID}");
-					$articles = $Article->findArticles('post_id', $post->ID, $config->programId);
-				}
-		*/
-		Utilities::get_instance()->log( "Article ID is currently set to: {$config->articleId}" );
-		
-		// Load the daily progress HTML and return it (shortcode)
-		ob_start(); ?>
-        <div id="e20r-daily-progress">
-			<?php echo $this->dailyProgress( $config ); ?>
-        </div>
-		<?php
-		return ob_get_clean();
 	}
 	
 	/**
