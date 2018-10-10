@@ -45,6 +45,24 @@ class Measurements {
 	}
 	
 	/**
+	 * Returns the instantiated Model for the Measurements Controller
+	 *
+	 * @return Measurement_Model|null
+	 */
+	public function getModelClass() {
+		return $this->model;
+	}
+	
+	/**
+	 * Returns the instantiated View for the Measurements Controller
+	 *
+	 * @return Measurement_View|null
+	 */
+	public function getViewClass() {
+		return $this->view;
+	}
+	
+	/**
 	 * Return the ID of the user for whom we're processing measurements
 	 *
 	 * @return int|null
@@ -457,79 +475,6 @@ class Measurements {
         exit;
     }
 
-    public function shortcodeProgressOverview( $attributes ) {
-
-	    if (! is_user_logged_in()) {
-
-		    auth_redirect();
-	    }
-
-        global $current_user;
-	    global $currentClient;
-	    
-        $Tracker = Tracker::getInstance();
-        $Client = Client::getInstance();
-	    $Action = Action::getInstance();
-	    $Assignment = Assignment::getInstance();
-	    $Workout = Workout::getInstance();
-        $Program = Program::getInstance();
-
-        Utilities::get_instance()->log("Loading shortcode processor: " . $Tracker->whoCalledMe() );
-
-        if ( $current_user->ID == 0 ) {
-            Utilities::get_instance()->log("User Isn't logged in! Redirect immediately");
-            auth_redirect();
-        }
-
-        $dimensions = array( 'width' => '500', 'height' => '270', 'htype' => 'px', 'wtype' => 'px' );
-        $pDimensions = array( 'width' => '90', 'height' => '1024', 'htype' => 'px', 'wtype' => '%' );
-
-        // Load javascript for the progress overview.
-        extract( shortcode_atts( array(
-            'something' => 0,
-        ), $attributes ) );
-
-        if ( $Client->hasDataAccess( $current_user->ID ) ) {
-
-            $this->id = $current_user->ID;
-            $Program->getProgramIdForUser( $this->id );
-            Utilities::get_instance()->log( "User {$this->id} has access." );
-        }
-        else {
-            Utilities::get_instance()->log( "Logged in user ID does not have access to progress data" );
-            return null;
-        }
-
-        
-        Utilities::get_instance()->log("Configure user specific data");
-	    $this->model->setUser( $this->id );
-	    
-	    if ( empty($currentClient) || ( $this->id !== $currentClient->user_id || empty( $currentClient->program_id ) ) ) {
-		    Utilities::get_instance()->log("Have to update the currentClient info!");
-		    $Client->setClient( $this->id );
-	    }
-	    
-        Utilities::get_instance()->log("Loading progress data... for {$this->id}");
-        $measurements = $this->getMeasurement( 'all', false );
-
-        if ( true === $Client->completeInterview( $this->id ) ) {
-
-            $measurement_view = $this->view->viewTableOfMeasurements( $this->id, $measurements, $dimensions, null, true );
-        }
-        else {
-            $measurement_view = '<div class="e20r-progress-no-measurement">' . $Program->incompleteIntakeForm() . '</div>';
-        }
-
-        $tabs = array(
-            'Measurements' => '<div id="e20r-progress-measurements">' . $measurement_view . '</div>',
-            'Assignments' => '<div id="e20r-progress-assignments">' . $Assignment->listUserAssignments() . '</div>',
-            'Activities' => '<div id="e20r-progress-activities">' . $Workout->listUserActivities() . '</div>',
-            'Achievements' => '<div id="e20r-progress-achievements">' . $Action->listUserAchievements() . '</div>',
-        );
-	    
-        return $this->view->viewTabbedProgress( $tabs, $pDimensions, true );
-    }
-
     /**
      * Loads the view for the users progress overview (used by profile & progress_overview shortcodes)
      *
@@ -537,7 +482,7 @@ class Measurements {
      * @param array|null $dimensions - Array containing dimensions (not used)
      * @param bool $modal
      *
-     * @returns string - HTML containing progress view w/tabs.
+     * @return string - HTML containing progress view w/tabs.
      *
      */
     public function showProgress( $progress_data, $dimensions = null, $modal = true ) {
@@ -548,102 +493,6 @@ class Measurements {
     public function showTableOfMeasurements( $clientId = null, $measurements, $dimensions = null, $tabbed = true, $admin = true ) {
 
         return $this->view->viewTableOfMeasurements( $clientId, $measurements, $dimensions, $tabbed, $admin );
-    }
-    
-    public function shortcodeWeeklyProgress( $attributes ) {
-
-	    if (! is_user_logged_in()) {
-
-		    auth_redirect();
-	    }
-
-        global $e20r_plot_jscript;
-        global $current_user;
-        
-        $Article = Article::getInstance();
-        $Tracker = Tracker::getInstance();
-        $Client = Client::getInstance();
-        $Program = Program::getInstance();
-
-        global $currentClient;
-        global $currentArticle;
-
-        global $e20rMeasurementDate;
-
-        Utilities::get_instance()->log("Loading shortcode processor: " . $Tracker->whoCalledMe() );
-
-        $e20r_plot_jscript = true;
-
-        Utilities::get_instance()->log("Request: " . print_r( $_POST, true ) );
-
-        $mDate = ( isset( $_POST['e20r-progress-form-date'] ) ? ( strtotime( $_POST['e20r-progress-form-date'] ) ? sanitize_text_field( $_POST['e20r-progress-form-date'] ) : null ) : null );
-        $articleId = isset( $_POST['e20r-progress-form-article'] ) ? intval( $_POST['e20r-progress-form-article'] ) : null;
-
-        // Get current article ID if it's not set as part of the $_POST variable.
-	    if ( empty( $articleId ) ) {
-	    	$delay = $Tracker->getDelay();
-	    	$program  = $Program->getProgramIdForUser( $current_user->ID );
-	    	$currentArticle = $Article->findArticles( 'release_day', $delay, $program )[0];
-
-	    	Utilities::get_instance()->log("Current Article: " . print_r( $currentArticle, true ));
-	    	$articleId = $currentArticle->id;
-
-	    	Utilities::get_instance()->log("Article ID is now: {$articleId}");
-	    }
-
-        if ( $mDate ) {
-
-            $e20rMeasurementDate = $mDate;
-            Utilities::get_instance()->log( "Date to measure for requested: {$mDate}" );
-            $this->setMeasurementDate( $mDate );
-        }
-
-        /*
-        $day = 0;
-        $from_programstart = 1;
-        $use_article_id = 1;
-        */
-        $demo_form = 0;
-
-        extract( shortcode_atts( array(
-            'day' => 0,
-            'from_programstart' => 1,
-            'use_article_id' => 1,
-            'demo_form' => 0,
-        ), $attributes ) );
-
-        if ( $demo_form == 1 ) {
-
-            global $e20rExampleProgress;
-            $e20rExampleProgress = true; // TODO: Do something if it's an example progress form.
-        }
-        
-
-        // TODO: Does user have permission...?
-        try {
-
-            Utilities::get_instance()->log("Loading the measurement data for {$this->measurementDate}");
-            $this->init( $this->measurementDate, $this->id );
-
-            if ( !is_object( $currentClient ) || ( isset( $currentClient->loadedDefaults) && (false == $currentClient->loadedDefaults) ) ||
-                ( true == $currentClient->loadedDefaults ) ) {
-
-                Utilities::get_instance()->log("Loading the Client class()");
-                $Client->loadClientInfo( $this->id );
-            }
-
-            if ( $this->loadData( $this->measurementDate ) == false ) {
-                Utilities::get_instance()->log("Error loading data for (user: {$current_user->ID}) for {$this->measurementDate}");
-            }
-
-            Utilities::get_instance()->log("Loading progress form for {$this->measurementDate} by {$this->id}");
-            return $this->loadEditProgress( $articleId );
-	        
-        }
-        catch ( \Exception $e ) {
-            Utilities::get_instance()->log("Error displaying weekly progress form: " . $e->getMessage() );
-            return sprintf( __( "Error displaying weekly progress form. Error message: %s", "e20r-tracker" ), $e->getMessage() );
-        }
     }
     
     public function loadData( $when = 'all') {
@@ -788,7 +637,7 @@ class Measurements {
         return ( empty( $retVal ) ? $data : $retVal );
     }
 
-    private function loadEditProgress( $articleId = CONST_NULL_ARTICLE ) {
+    public function loadEditProgress( $articleId = CONST_NULL_ARTICLE ) {
 	
 	    global $current_user;
 	    
