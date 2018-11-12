@@ -24,6 +24,7 @@ namespace E20R\Tracker\Controllers;
 
 use E20R\Sequences\Sequence as Sequence;
 use E20R\Tracker\Models\Article_Model;
+use E20R\Tracker\Models\Exercise_Model;
 use E20R\Tracker\Models\GF_Integration;
 use E20R\Tracker\Models\Workout_Model;
 use E20R\Tracker\Models\Tracker_Model;
@@ -583,14 +584,37 @@ class Tracker {
 			
 			add_action( 'current_screen', array( $this, 'current_screen_hooks' ), 10 );
 			
-			add_action( 'save_post', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'save_post', array( Program::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'save_post', array( Exercise::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'save_post', array( Workout::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'save_post', array( Action::getInstance(), 'saveSettings' ), 10, 20 );
-			add_action( 'save_post', array( Article::getInstance(), 'saveSettings' ), 10, 20 );
-			add_action( 'save_post', array( Assignment::getInstance(), 'saveSettings' ), 10, 20 );
+			add_action( 'save_post_' . Tracker_Model::post_type, array(
+				Tracker_Model::getInstance(),
+				'saveSettings',
+			), 10, 2 );
+			add_action( 'save_post_' . Program_Model::post_type, array(
+				Program::getInstance(),
+				'saveSettings',
+			), 10, 2 );
+			add_action( 'save_post_' . Exercise_Model::post_type, array(
+				Exercise::getInstance(),
+				'saveSettings',
+			), 10, 2 );
+			add_action( 'save_post_' . Workout_Model::post_type, array(
+				Workout::getInstance(),
+				'saveSettings',
+			), 10, 2 );
+			add_action( 'save_post_' . Action_Model::post_type, array(
+				Action::getInstance(),
+				'saveSettings',
+			), 10, 20 );
+			add_action( 'save_post_' . Article_Model::post_type, array(
+				Article::getInstance(),
+				'saveSettings',
+			), 10, 20 );
+			add_action( 'save_post_' . Assignment_Model::post_type, array(
+				Assignment::getInstance(),
+				'saveSettings',
+			), 10, 20 );
 			
+			/*
+			 *  Unnecessary to have bost save_post and post_updated actions that do the same thing!
 			add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
 			add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10, 2 );
 			add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10, 2 );
@@ -598,6 +622,7 @@ class Tracker {
 			add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10, 2 );
 			add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10, 2 );
 			add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10, 2 );
+			*/
 			
 			add_action( 'add_meta_boxes_e20r_articles', array( Article::getInstance(), 'editor_metabox_setup' ) );
 			add_action( 'add_meta_boxes_e20r_assignments', array( Assignment::getInstance(), 'editor_metabox_setup' ) );
@@ -1017,15 +1042,15 @@ class Tracker {
 	}
 	
 	public function render_purge_checkbox() {
-	 
+		
 		$options = get_option( $this->setting_name );
 		$pVal    = isset( $options['purge_tables'] ) ? $options['purge_tables'] : false;
 		
 		printf(
-		        '<input type="checkbox" name="%1$s[purge_tables]" value="1" %2$s>',
-            esc_html( $this->setting_name ),
+			'<input type="checkbox" name="%1$s[purge_tables]" value="1" %2$s>',
+			esc_html( $this->setting_name ),
 			checked( 1, $pVal, false )
-        );
+		);
 	}
 	
 	public function render_login_section_text() {
@@ -2858,7 +2883,7 @@ class Tracker {
 	 * @access private
 	 */
 	public function sort_descending( $a, $b ) {
-	 
+		
 		if ( $a->sent == $b->sent ) {
 			return 0;
 		}
