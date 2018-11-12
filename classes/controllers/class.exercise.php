@@ -50,7 +50,7 @@ class Exercise extends Settings {
 	 *
 	 * @return bool|mixed|\stdClass|void
 	 */
-	public function init( $exercise_id ) {
+	public function init( $exercise_id = null ) {
 		parent::init( $exercise_id );
 	}
 	
