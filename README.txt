@@ -3,8 +3,8 @@ Contributors: eighty20results
 Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
-Tested up to: 4.9.8
-Stable tag: 3.2
+Tested up to: 5.0
+Stable tag: 3.3
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,18 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 3.3 ==
+
+* BUG FIX: Loop because we didn't deactivate save_post and post_updated action before calling wp_update_post()
+* BUG FIX: Loop due to sync of excerpt for post/article when saving (need to fix)
+* BUG FIX: Should return the articleID and not false if problems during save action in Article controller
+* BUG FIX: Didn't escape return values before displaying on front end
+* BUG FIX: Loaded all settings for Activities when all we need is ID and Post title (contributed to gateway timeout bug)
+* BUG FIX: Didn't include argument count for post_updated actions
+* BUG FIX: Too much overhead when loading Workouts (activities) on Activity editor page
+* BUG FIX: Caused loop when saving/updating a linked post for an article
+* BUG FIX: Don't have both save_post and update_post action that triggers same functionality
 
 == 3.2 ==
 
