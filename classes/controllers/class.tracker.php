@@ -587,42 +587,40 @@ class Tracker {
 			add_action( 'save_post_' . Tracker_Model::post_type, array(
 				Tracker_Model::getInstance(),
 				'saveSettings',
-			), 10, 2 );
+			), 10, 1 );
 			add_action( 'save_post_' . Program_Model::post_type, array(
 				Program::getInstance(),
 				'saveSettings',
-			), 10, 2 );
+			), 10, 1 );
 			add_action( 'save_post_' . Exercise_Model::post_type, array(
 				Exercise::getInstance(),
 				'saveSettings',
-			), 10, 2 );
-			add_action( 'save_post_' . Workout_Model::post_type, array(
-				Workout::getInstance(),
-				'saveSettings',
-			), 10, 2 );
+			), 10, 1 );
 			add_action( 'save_post_' . Action_Model::post_type, array(
 				Action::getInstance(),
 				'saveSettings',
-			), 10, 20 );
+			), 10, 1 );
 			add_action( 'save_post_' . Article_Model::post_type, array(
 				Article::getInstance(),
 				'saveSettings',
-			), 10, 20 );
+			), 10, 1 );
 			add_action( 'save_post_' . Assignment_Model::post_type, array(
 				Assignment::getInstance(),
 				'saveSettings',
-			), 10, 20 );
+			), 10, 1 );
+			add_action( 'save_post_' . Workout_Model::post_type, array(
+				Workout::getInstance(),
+				'saveSettings',
+			), 10, 1 );
 			
-			/*
-			 *  Unnecessary to have bost save_post and post_updated actions that do the same thing!
-			add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10, 2 );
-			add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10, 2 );
-			*/
+			
+			add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10, 1 );
+			add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10, 1 );
 			
 			add_action( 'add_meta_boxes_e20r_articles', array( Article::getInstance(), 'editor_metabox_setup' ) );
 			add_action( 'add_meta_boxes_e20r_assignments', array( Assignment::getInstance(), 'editor_metabox_setup' ) );
