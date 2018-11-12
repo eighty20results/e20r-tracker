@@ -553,14 +553,17 @@ class Workout extends Settings {
 		
 	}
 	
-	public function getActivities( $aIds = null ) {
+	public function getActivities( $aIds = null, $settings_page = false  ) {
 
 //        global $currentProgram;
 		
-		if ( empty( $aIds ) ) {
+		if ( empty( $aIds ) && true === $settings_page ) {
+			Utilities::get_instance()->log( 'Loading all activities from DB for Settings Page' );
+			$activities = $this->model->find( 'id', 'any', - 1,  'LIKE', 'DESC',  'numeric', true  ); // Will return all of the defined activities
+		} else if (empty( $aIds ) && false === $settings_page) {
 			Utilities::get_instance()->log( 'Loading all activities from DB' );
-			$activities = $this->model->find( 'id', 'any' ); // Will return all of the defined activities
-		} else {
+			$activities = $this->model->find( 'id', 'any'  );
+        } else {
 			Utilities::get_instance()->log( 'Loading specific activity from DB' );
 			$activities = $this->model->find( 'id', $aIds );
 		}
