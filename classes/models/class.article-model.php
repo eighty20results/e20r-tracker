@@ -281,8 +281,8 @@ class  Article_Model extends Settings_Model {
 		
 		// Check if the post_id has defined excerpt we can use for this article.
 		/**
-		 * FIXME: Not able to update current article excerpt based on post exerpt (if it exists)!
-		
+		 * BUG FIX: Caused loop when saving/updating a linked post for an article
+		 */
 		if ( isset( $currentArticle->post_id ) && ( ! empty( $currentArticle->post_id ) ) ) {
 			
 			$post = get_post( $currentArticle->post_id );
@@ -297,17 +297,19 @@ class  Article_Model extends Settings_Model {
 				
 				Utilities::get_instance()->log("Remove save_post and post_updated actions");
 				
-				remove_action( 'save_post', array( $this, 'saveSettings' ), 10 );
+				// remove_action( 'save_post', array( $this, 'saveSettings' ), 10 );
+		        remove_action( 'save_post_' . self::post_type , array( $this, 'saveSettings' ), 10 );
 				remove_action( 'post_updated', array( $this, 'saveSettings' ), 10 );
 				
 				wp_update_post( $article );
 				
-				add_action( 'save_post', array( $this, 'saveSettings' ), 10, 2 );
+				// add_action( 'save_post', array( $this, 'saveSettings' ), 10, 2 );
+		        add_action( 'save_post_' . self::post_type , array( $this, 'saveSettings' ), 10 );
 				add_action( 'post_updated', array( $this, 'saveSettings' ), 10,2  );
 			}
 			
 		}
-		*/
+		/* */
 		$currentArticle->loaded = true;
 		
 		return $currentArticle;
