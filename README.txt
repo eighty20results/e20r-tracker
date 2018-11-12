@@ -4,7 +4,7 @@ Tags: content management, fitness, nutrition coaching, tracking
 Requires at least: 4.7
 Requires PHP 5.6 or later.
 Tested up to: 5.0
-Stable tag: 3.3
+Stable tag: 3.4
 License: GPLv2
 
 A platform for managing nutrition and fitness coaching programs. Use with the Paid Memberships Pro and PMPro Seuqences plugins.
@@ -121,6 +121,16 @@ Arguments:
         *** Default: N/A
 
 == ChangeLog ==
+
+== 3.4 ==
+
+* BUG FIX: PHP Warning - function argument warning for Exercise::init()
+* BUG FIX: Workout::saveSettings() Returned false when it should attempt to return the post ID
+* BUG FIX: Didn't save linked post info
+* BUG FIX: Revert deactivation of update_post action handlers
+* BUG FIX: Use first argument only from update_post action (post id)
+* BUG FIX: PHP Notice in Article::saveSettings()
+* BUG FIX: Didn't ensure the user was (still) logged in when saving the CPT settings
 
 == 3.3 ==
 

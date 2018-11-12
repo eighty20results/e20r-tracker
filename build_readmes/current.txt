@@ -1,9 +1,7 @@
-BUG FIX: Loop because we didn't deactivate save_post and post_updated action before calling wp_update_post()
-BUG FIX: Loop due to sync of excerpt for post/article when saving (need to fix)
-BUG FIX: Should return the articleID and not false if problems during save action in Article controller
-BUG FIX: Didn't escape return values before displaying on front end
-BUG FIX: Loaded all settings for Activities when all we need is ID and Post title (contributed to gateway timeout bug)
-BUG FIX: Didn't include argument count for post_updated actions
-BUG FIX: Too much overhead when loading Workouts (activities) on Activity editor page
-BUG FIX: Caused loop when saving/updating a linked post for an article
-BUG FIX: Don't have both save_post and update_post action that triggers same functionality
+BUG FIX: PHP Warning - function argument warning for Exercise::init()
+BUG FIX: Workout::saveSettings() Returned false when it should attempt to return the post ID
+BUG FIX: Didn't save linked post info
+BUG FIX: Revert deactivation of update_post action handlers
+BUG FIX: Use first argument only from update_post action (post id)
+BUG FIX: PHP Notice in Article::saveSettings()
+BUG FIX: Didn't ensure the user was (still) logged in when saving the CPT settings
