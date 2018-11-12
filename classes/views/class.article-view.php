@@ -310,7 +310,7 @@ class Article_View extends Settings_View {
             <?php wp_nonce_field( 'e20r-tracker-data', 'e20r-tracker-article-settings-nonce' ); ?>
             <div class="e20r-editform">
                 <input type="hidden" name="hidden-e20r-article-id" id="hidden-e20r-article-id"
-                       value="<?php echo $post->ID; ?>">
+                       value="<?php esc_attr_e( $post->ID ); ?>">
                 <table class="e20r-article-settings wp-list-table widefat">
                     <thead>
                     <tr>
@@ -320,7 +320,7 @@ class Article_View extends Settings_View {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="<?php echo $settings->id; ?>" class="checkin-inputs">
+                    <tr id="<?php  esc_attr_e( $settings->id ); ?>" class="checkin-inputs">
                         <td style="width: 50%;">
                             <select class="select2-container" id="e20r-article-post_id" name="e20r-article-post_id">
                                 <option value="0">None</option>
@@ -495,26 +495,28 @@ class Article_View extends Settings_View {
 			                    $Workout = Workout::getInstance();
 
 			                    Utilities::get_instance()->log(" Load all defined activities");
-			                    $activities = $Workout->getActivities();
+			                    /**
+								 * @var \WP_Post[] $activities
+ 								 */
+			                    $activities = $Workout->getActivities( null, true );
 
 			                    foreach( $activities as $activity ) {
 
-				                    Utilities::get_instance()->log(" Activity definition: {$activity->id}");
+				                    Utilities::get_instance()->log(" Activity definition: {$activity->ID}");
 				                    // Utilities::get_instance()->log($activity);
 
 				                    if ( is_array( $settings->activity_id ) ) {
 
-					                    $selected = in_array( $activity->id, $settings->activity_id ) ? 'selected="selected"' : null;
+					                    $selected = in_array( $activity->ID, $settings->activity_id ) ? 'selected="selected"' : null;
 				                    }
 				                    else {
 
-					                    $selected = ( $activity->id == $settings->activity_id ? 'selected="selected"' : null );
+					                    $selected = ( $activity->ID == $settings->activity_id ? 'selected="selected"' : null );
 				                    }
 
 				                    ?>
-				                    <option value="<?php echo $activity->id; ?>"<?php echo $selected; ?>><?php echo $activity->title; ?></option><?php
-			                    }
-			                    ?>
+				                    <option value="<?php esc_attr_e( $activity->ID ); ?>"<?php echo $selected; ?>><?php esc_attr_e(  $activity->post_title ); ?></option><?php
+			                    } ?>
 		                    </select>
 	                    </td>
                     </tr>
