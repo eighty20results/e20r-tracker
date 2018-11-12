@@ -63,6 +63,32 @@ class Workout_Model extends Settings_Model {
 		return $this;
 	}
 	
+	public function find( $key, $value, $programId = - 1, $comp = 'LIKE', $order = 'DESC', $dataType = 'numeric', $settings_page = false ) {
+		
+		if ( empty( $aIds ) && true === $settings_page ) {
+			Utilities::get_instance()->log( 'Loading all activities from DB (without settings)' );
+			
+			$args = array(
+				'posts_per_page' => - 1,
+				'post_type'      => $this->cpt_slug,
+				'post_status'    => apply_filters( 'e20r-tracker-model-data-status', array(
+					'publish',
+					'draft',
+					'future',
+				) ),
+				'order'          => $order,
+			);
+			
+			$activity_query = new \WP_Query( $args );
+			$activities = $activity_query->get_posts();
+			
+		} else {
+			Utilities::get_instance()->log( 'Loading activities/activity from DB' );
+			$activities = parent::find( $key, $value, $programId, $comp, $order, $dataType );
+		}
+		
+		return $activities;
+	}
 	/**
 	 * Return or instantiate the Workout_Model class
 	 *
