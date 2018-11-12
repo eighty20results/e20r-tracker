@@ -396,7 +396,7 @@ class Workout extends Settings {
 		
 		if ( ( ! isset( $post->post_type ) ) || ( $post->post_type != Workout_Model::post_type ) ) {
 			
-			Utilities::get_instance()->log( "Not a e20r_workout CPT: " );
+			Utilities::get_instance()->log( "Not a e20r_workout CPT..." );
 			
 			return $post_id;
 		}
@@ -405,7 +405,7 @@ class Workout extends Settings {
 			
 			Utilities::get_instance()->log( "No post ID supplied" );
 			
-			return false;
+			return $post_id;
 		}
 		
 		if ( wp_is_post_revision( $post_id ) ) {
