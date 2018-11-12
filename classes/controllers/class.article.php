@@ -1034,7 +1034,7 @@ class Article extends Settings {
 			
 			Utilities::get_instance()->log( "No article ID supplied" );
 			
-			return false;
+			return $articleId;
 		}
 		
 		if ( is_null( $settings ) && ( ( ! isset( $post->post_type ) ) || ( $post->post_type !== $this->cpt_slug ) ) ) {
@@ -1048,7 +1048,7 @@ class Article extends Settings {
 			
 			Utilities::get_instance()->log( "No post ID supplied" );
 			
-			return false;
+			return $articleId;
 		}
 		
 		if ( wp_is_post_revision( $articleId ) ) {
