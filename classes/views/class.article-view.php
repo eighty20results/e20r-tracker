@@ -297,6 +297,10 @@ class Article_View extends Settings_View {
 
         $savePost = $post;
 
+        if ( ! is_user_logged_in() ) {
+		    return false;
+        }
+        
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
         }
@@ -530,10 +534,11 @@ class Article_View extends Settings_View {
     }
 
     public function viewSettings_Checkin( $data ) {
-
-        global $post;
-        $Tracker = Tracker::getInstance();
-
+        
+        if ( ! is_user_logged_in() ) {
+		    return false;
+        }
+        
         if ( ! current_user_can( 'edit_posts' ) ) {
             return false;
         }

@@ -451,8 +451,7 @@ class  Article_Model extends Settings_Model {
 			// if ( 'assignments' == $key ) {
 			if ( ( 'assignment_ids' == $key ) || ( 'action_ids' == $key ) ) {
 				
-				Utilities::get_instance()->log( " Article_Model::saveSettings() - Processing assignments (include program info):" );
-				Utilities::get_instance()->log( $settings->{$key} );
+				Utilities::get_instance()->log( " Article_Model::saveSettings() - Processing assignments (include program info): " . print_r( $settings->{$key}, true ) );
 				
 				foreach ( $settings->{$key} as $k => $id ) {
 					

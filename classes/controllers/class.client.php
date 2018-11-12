@@ -887,6 +887,10 @@ class Client {
 		$Program = Program::getInstance();
 		$utils   = Utilities::get_instance();
 		
+		if ( !is_user_logged_in() ) {
+		    return false;
+        }
+        
 		if ( ! current_user_can( 'edit_user' ) ) {
 			return false;
 		}
@@ -1357,6 +1361,10 @@ class Client {
 		
 		$utils = Utilities::get_instance();
 		
+		if ( ! is_user_logged_in() ) {
+		    return false;
+        }
+        
 		if ( ! current_user_can( 'edit_user' ) ) {
 			return false;
 		}

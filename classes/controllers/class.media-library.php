@@ -222,6 +222,10 @@ class Media_Library {
 		
 		Utilities::get_instance()->log( "Do we remove tab(s) from the media uploader?" );
 		
+		if ( ! is_user_logged_in() ) {
+			return $strings;
+		}
+		
 		if ( current_user_can( 'edit_posts' ) ) {
 			
 			Utilities::get_instance()->log( "User is an administrator/contributor so don't remove anything." );
