@@ -1130,7 +1130,7 @@ class Article extends Settings {
 				
 				if ( empty( $tmp ) ) {
 					
-					$tmp = $defaults->{$field};
+					$tmp = isset( $defaults->{$field} ) ? $defaults->{$field} : $tmp;
 				}
 				
 				$settings->{$field} = $tmp;
