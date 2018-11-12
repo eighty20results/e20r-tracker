@@ -30,7 +30,7 @@ class Action_Model extends Settings_Model {
 	 */
 	private static $instance = null;
 	/**
-	 * @var array $settings;
+	 * @var array $settings ;
 	 */
 	private $settings;
 	
@@ -48,20 +48,6 @@ class Action_Model extends Settings_Model {
 		}
 		
 		return $this;
-	}
-	
-	/**
-	 * Return or instantiate the Action_Model class
-	 *
-	 * @return Action_Model
-	 */
-	static function getInstance() {
-		
-		if ( is_null( self::$instance ) ) {
-			self::$instance = new self;
-		}
-		
-		return self::$instance;
 	}
 	
 	/**
@@ -132,7 +118,15 @@ class Action_Model extends Settings_Model {
 			$update['ID']        = $p->ID;
 			$update['post_type'] = Action_Model::post_type;
 			
+			Utilities::get_instance()->log("Remove save_post and post_updated actions");
+			
+			remove_action( 'save_post', array( self::getInstance(), 'saveSettings' ), 10 );
+			remove_action( 'post_updated', array( self::getInstance(), 'saveSettings' ), 10 );
+			
 			wp_update_post( $update );
+			
+			add_action( 'save_post', array( self::getInstance(), 'saveSettings' ), 10, 2  );
+			add_action( 'post_updated', array( self::getInstance(), 'saveSettings' ), 10, 2 );
 		}
 		
 		global $wpdb;
@@ -171,11 +165,25 @@ class Action_Model extends Settings_Model {
 	}
 	
 	/**
+	 * Return or instantiate the Action_Model class
+	 *
+	 * @return Action_Model
+	 */
+	static function getInstance() {
+		
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self;
+		}
+		
+		return self::$instance;
+	}
+	
+	/**
 	 * Replace the key (post meta key) for the record/type
 	 *
 	 * @param \stdClass $record
-	 * @param string $old
-	 * @param string $new
+	 * @param string    $old
+	 * @param string    $new
 	 *
 	 * @return bool
 	 */
@@ -775,7 +783,7 @@ class Action_Model extends Settings_Model {
 		
 		if ( ! empty( $result ) ) {
 			
-			Utilities::get_instance()->log( "Action_Model::exists() - Got a result returned: " . print_r( $result, true ));
+			Utilities::get_instance()->log( "Action_Model::exists() - Got a result returned: " . print_r( $result, true ) );
 			
 			return $result;
 		}
