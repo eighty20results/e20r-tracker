@@ -36,7 +36,7 @@ class  Article_Model extends Settings_Model {
 	protected $id;
 	
 	// protected $settings;
-
+	
 	public function __construct() {
 		try {
 			parent::__construct( 'article', self::post_type );
@@ -62,6 +62,53 @@ class  Article_Model extends Settings_Model {
 		return self::$instance;
 	}
 	
+	/**
+	 * Register the E20R Article post type
+	 */
+	public static function registerCPT() {
+		
+		$labels = array(
+			'name'               => __( 'Articles', 'e20r-tracker' ),
+			'singular_name'      => __( 'Article', 'e20r-tracker' ),
+			'slug'               => self::post_type,
+			'add_new'            => __( 'New Article', 'e20r-tracker' ),
+			'add_new_item'       => __( 'New Tracker Article', 'e20r-tracker' ),
+			'edit'               => __( 'Edit Article', 'pmprosequence' ),
+			'edit_item'          => __( 'Edit Tracker Article', 'e20r-tracker' ),
+			'new_item'           => __( 'Add New', 'e20r-tracker' ),
+			'view'               => __( 'View Articles', 'e20r-tracker' ),
+			'view_item'          => __( 'View This Article', 'e20r-tracker' ),
+			'search_items'       => __( 'Search Articles', 'e20r-tracker' ),
+			'not_found'          => __( 'No Articles Found', 'e20r-tracker' ),
+			'not_found_in_trash' => __( 'No Articles Found In Trash', 'e20r-tracker' ),
+		);
+		
+		$error = register_post_type( self::post_type,
+			array(
+				'labels'             => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
+				'public'             => true,
+				'show_ui'            => true,
+				'menu_icon'          => '',
+				// 'show_in_menu' => true,
+				'publicly_queryable' => true,
+				'hierarchical'       => true,
+				'supports'           => array( 'title', 'excerpt', 'editor' ),
+				'can_export'         => true,
+				'show_in_nav_menus'  => false,
+				'show_in_menu'       => 'e20r-tracker-articles',
+				'rewrite'            => array(
+					'slug'       => apply_filters( 'e20r-tracker-article-cpt-slug', 'tracker-articles' ),
+					'with_front' => false,
+				),
+				'has_archive'        => apply_filters( 'e20r-tracker-article-cpt-archive-slug', 'tracker-articles-archive' ),
+			)
+		);
+		
+		if ( is_wp_error( $error ) ) {
+			Utilities::get_instance()->log( 'ERROR: Failed to register e20r_articles CPT: ' . $error->get_error_message );
+		}
+	}
+	
 	public function find( $key, $value, $programId = - 1, $comp = 'LIKE', $order = 'DESC', $dont_drop = false, $dataType = 'numeric' ) {
 		
 		$Tracker = Tracker::getInstance();
@@ -83,7 +130,7 @@ class  Article_Model extends Settings_Model {
 			Utilities::get_instance()->log( " Article_Model::find() - Survey setting is: " . ( $data->is_survey ? "Survey" : 'Not a survey' ) );
 			$allow_drop = ! $dont_drop;
 			
-			if ( !$dont_drop && true == $data->is_survey ) {
+			if ( ! $dont_drop && true == $data->is_survey ) {
 				$allow_drop = false;
 			}
 			
@@ -134,10 +181,10 @@ class  Article_Model extends Settings_Model {
 				'compare' => '!=',
 			);
 			$args['meta_query'][] = array(
-					'key'     => "_e20r-article-release_day",
-					'value'   => 0,
-					'compare' => '!=',
-				);
+				'key'     => "_e20r-article-release_day",
+				'value'   => 0,
+				'compare' => '!=',
+			);
 		}
 		
 		$a_list = $this->loadForQuery( $args );
@@ -174,15 +221,16 @@ class  Article_Model extends Settings_Model {
 		
 		global $currentArticle;
 		
-		if ( -9999 === $id ) {
+		if ( - 9999 === $id ) {
 			Utilities::get_instance()->log( " Article_Model::loadSettings() - Loading default for the NULL article ID (-9999)" );
 			$currentArticle = $this->defaultSettings();
 			
 			return $currentArticle;
 		}
 		
-		if ( isset(  $currentArticle->loaded ) && ( true === $currentArticle->loaded && $currentArticle->id === $id ) ) {
-			Utilities::get_instance()->log("Returning cached values for the Article");
+		if ( isset( $currentArticle->loaded ) && ( true === $currentArticle->loaded && $currentArticle->id === $id ) ) {
+			Utilities::get_instance()->log( "Returning cached values for the Article" );
+			
 			return $currentArticle;
 		}
 		
@@ -232,6 +280,9 @@ class  Article_Model extends Settings_Model {
 		
 		
 		// Check if the post_id has defined excerpt we can use for this article.
+		/**
+		 * FIXME: Not able to update current article excerpt based on post exerpt (if it exists)!
+		
 		if ( isset( $currentArticle->post_id ) && ( ! empty( $currentArticle->post_id ) ) ) {
 			
 			$post = get_post( $currentArticle->post_id );
@@ -243,11 +294,20 @@ class  Article_Model extends Settings_Model {
 			if ( ! empty( $post->post_excerpt ) && ( empty( $article->post_excerpt ) ) ) {
 				
 				$article->post_excerpt = $post->post_excerpt;
+				
+				Utilities::get_instance()->log("Remove save_post and post_updated actions");
+				
+				remove_action( 'save_post', array( $this, 'saveSettings' ), 10 );
+				remove_action( 'post_updated', array( $this, 'saveSettings' ), 10 );
+				
 				wp_update_post( $article );
+				
+				add_action( 'save_post', array( $this, 'saveSettings' ), 10, 2 );
+				add_action( 'post_updated', array( $this, 'saveSettings' ), 10,2  );
 			}
 			
 		}
-		
+		*/
 		$currentArticle->loaded = true;
 		
 		return $currentArticle;
@@ -283,7 +343,7 @@ class  Article_Model extends Settings_Model {
 	public function load_for_archive( $last_day = null, $order = 'ASC', $program_id = - 1 ) {
 		
 		$Program = Program::getInstance();
-		$Tracker     = Tracker::getInstance();
+		$Tracker = Tracker::getInstance();
 		
 		global $currentClient;
 		global $currentProgram;
@@ -409,7 +469,7 @@ class  Article_Model extends Settings_Model {
 					
 					if ( ( 'action_ids' == $key ) && ( ! $Action->addPrograms( $id, $settings->program_ids ) ) ) {
 						
-						Utilities::get_instance()->log( " Article_Model::saveSettings() - ERROR: Unable to save program list for action #{$id}: " . print_r( $settings->program_ids, true )  );
+						Utilities::get_instance()->log( " Article_Model::saveSettings() - ERROR: Unable to save program list for action #{$id}: " . print_r( $settings->program_ids, true ) );
 					}
 				}
 			}
@@ -423,51 +483,5 @@ class  Article_Model extends Settings_Model {
 		}
 		
 		return ( ! $error );
-	}
-	
-	/**
-	 * Register the E20R Article post type
-	 */
-	public static function registerCPT() {
-		
-		$labels =  array(
-			'name' => __( 'Articles', 'e20r-tracker'  ),
-			'singular_name' => __( 'Article', 'e20r-tracker' ),
-			'slug' =>  self::post_type,
-			'add_new' => __( 'New Article', 'e20r-tracker' ),
-			'add_new_item' => __( 'New Tracker Article', 'e20r-tracker' ),
-			'edit' => __( 'Edit Article', 'pmprosequence' ),
-			'edit_item' => __( 'Edit Tracker Article', 'e20r-tracker'),
-			'new_item' => __( 'Add New', 'e20r-tracker' ),
-			'view' => __( 'View Articles', 'e20r-tracker' ),
-			'view_item' => __( 'View This Article', 'e20r-tracker' ),
-			'search_items' => __( 'Search Articles', 'e20r-tracker' ),
-			'not_found' => __( 'No Articles Found', 'e20r-tracker' ),
-			'not_found_in_trash' => __( 'No Articles Found In Trash', 'e20r-tracker' ),
-		);
-		
-		$error = register_post_type( self::post_type,
-			array( 'labels' => apply_filters( 'e20r-tracker-article-cpt-labels', $labels ),
-			       'public' => true,
-			       'show_ui' => true,
-			       'menu_icon' => '',
-				// 'show_in_menu' => true,
-				   'publicly_queryable' => true,
-				   'hierarchical' => true,
-				   'supports' => array('title', 'excerpt', 'editor' ),
-				   'can_export' => true,
-				   'show_in_nav_menus' => false,
-				   'show_in_menu' => 'e20r-tracker-articles',
-				   'rewrite' => array(
-					   'slug' => apply_filters('e20r-tracker-article-cpt-slug', 'tracker-articles'),
-					   'with_front' => false,
-				   ),
-				   'has_archive' => apply_filters('e20r-tracker-article-cpt-archive-slug', 'tracker-articles-archive'),
-			)
-		);
-		
-		if ( is_wp_error($error) ) {
-			Utilities::get_instance()->log('ERROR: Failed to register e20r_articles CPT: ' . $error->get_error_message);
-		}
 	}
 }
