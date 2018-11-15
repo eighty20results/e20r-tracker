@@ -2,7 +2,7 @@
 #
 short_name="e20r-tracker"
 remote_server="eighty20results.com"
-include=(classes css img js languages ${short_name}.php e20r_db_update.php README.txt)
+include=(blocks classes css img js languages ${short_name}.php e20r_db_update.php README.txt)
 exclude=(vendor *.yml *.phar composer.*)
 build=(classes/plugin-updates/vendor/*.php)
 plugin_path="${short_name}"
