@@ -37,6 +37,8 @@ use E20R\Utilities\Utilities;
 
 class Tracker {
 	
+    const plugin_slug = 'e20r-tracker';
+    
 	/**
 	 * Instance of this class (Tracker)
 	 *
@@ -433,10 +435,12 @@ class Tracker {
 	 */
 	public function loadWPLoadedHooks() {
 		
+	    Utilities::get_instance()->log("Trigger hook loader...");
+	    
 		add_action( 'wp_loaded', array( GF_Integration::getInstance(), 'loadHooks' ), 99 );
 		add_filter( 'auth_cookie_expiration', array( Tracker_Access::getInstance(), 'login_timeout' ), 100, 3 );
 		
-		add_action( 'wp_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'loadHooks' ) );
+		add_action( 'wp_enqueue_scripts', array( Tracker_Scripts::getInstance(), 'loadHooks' ), 10 );
 		add_action( 'e20r_schedule_email_for_client', array( Client::getInstance(), 'send_email_to_client' ), 10, 2 );
 		
 		add_action( 'wp_ajax_e20r_addAssignment', array( Article::getInstance(), 'add_assignment_callback' ) );
@@ -514,6 +518,7 @@ class Tracker {
 			add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles' ), 5, 1 );
 			
 			add_action( 'plugins_loaded', array( Permalinks::getInstance(), 'loadHooks' ), 99 );
+			add_action( 'plugins_loaded', array( Load_Blocks::getInstance(), 'loadBlockHooks' ), 100 );
 			
 			add_action( 'init', array( $this, 'update_db' ), 7 );
 			add_action( 'init', array( $this, "dependency_warnings" ), 10 );
@@ -528,6 +533,7 @@ class Tracker {
 			add_action( "init", 'E20R\Tracker\Models\Tracker_Model::registerCPT', 16 );
 			
 			add_action( 'init', array( Tracker_Access::getInstance(), 'auth_timeout_reset' ), 10 );
+			
 			
 			// add_action( 'heartbeat_received', array( Assignment::getInstance(), 'heartbeat_received'), 10, 2);
 			// add_filter( 'heartbeat_send', array( Assignment::getInstance(), 'heartbeat_send'), 10, 2 );
@@ -547,7 +553,7 @@ class Tracker {
 				return;
 			}
 			
-			add_action( 'init', array( $this, 'loadWPLoadedHooks' ), 5 );
+			add_action( 'plugins_loaded', array( $this, 'loadWPLoadedHooks' ), 99 );
 			add_action( 'wp', array( $this, 'loadContentHooks' ), 5 );
 			
 			if ( is_admin() ) {
@@ -995,12 +1001,12 @@ class Tracker {
 			esc_html( $this->setting_name )
 		);
 		
-		foreach ( $this->yesno_selects as $counter => $label ) {
+		foreach ( $this->yesno_selects as $value => $label ) {
 			
 			printf(
 				'<option value="%1$d" %2$s>%3$s</option>',
-				$counter,
-				selected( 0, $encrypted, false ),
+				$value,
+				selected( $value, $encrypted, false ),
 				$label
 			);
 		}
