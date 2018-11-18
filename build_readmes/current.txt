@@ -1,7 +1,3 @@
-BUG FIX: PHP Warning - function argument warning for Exercise::init()
-BUG FIX: Workout::saveSettings() Returned false when it should attempt to return the post ID
-BUG FIX: Didn't save linked post info
-BUG FIX: Revert deactivation of update_post action handlers
-BUG FIX: Use first argument only from update_post action (post id)
-BUG FIX: PHP Notice in Article::saveSettings()
-BUG FIX: Didn't ensure the user was (still) logged in when saving the CPT settings
+BUG FIX: Updating CPT caused filter/action loop.
+ENHANCEMENT: Using static method Tracker::add_save_actions()
+ENHANCEMENT: Using static method Tracker::remove_save_actions()
