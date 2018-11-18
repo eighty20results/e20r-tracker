@@ -297,15 +297,9 @@ class  Article_Model extends Settings_Model {
 				
 				Utilities::get_instance()->log("Remove save_post and post_updated actions");
 				
-				// remove_action( 'save_post', array( $this, 'saveSettings' ), 10 );
-		        remove_action( 'save_post_' . self::post_type , array( $this, 'saveSettings' ), 10 );
-				remove_action( 'post_updated', array( $this, 'saveSettings' ), 10 );
-				
+				Tracker::remove_save_actions();
 				wp_update_post( $article );
-				
-				// add_action( 'save_post', array( $this, 'saveSettings' ), 10, 2 );
-		        add_action( 'save_post_' . self::post_type , array( $this, 'saveSettings' ), 10 );
-				add_action( 'post_updated', array( $this, 'saveSettings' ), 10,2  );
+				Tracker::add_save_actions();
 			}
 			
 		}

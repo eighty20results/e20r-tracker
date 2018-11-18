@@ -263,7 +263,9 @@ class Assignment_Model extends Settings_Model {
 		}
 		
 		$assignment     = $this->defaultSettings();
+		Tracker::remove_save_actions();
 		$assignment->id = wp_insert_post( $postDef );
+		Tracker::add_save_actions();
 		
 		if ( 0 != $assignment->id ) {
 			

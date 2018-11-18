@@ -891,7 +891,10 @@ class Article extends Settings {
 				$post->post_title = "Please update this title before updating";
 			}
 			
+			$Tracker::remove_save_actions();
 			$articleId  = wp_insert_post( $post );
+			$Tracker::add_save_actions();
+			
 			$reloadPage = true;
 		}
 		

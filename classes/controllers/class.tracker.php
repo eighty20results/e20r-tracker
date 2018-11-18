@@ -259,7 +259,9 @@ class Tracker {
 			
 			Utilities::get_instance()->log( "Content for new post: " . print_r( $new_post, true ) );
 			
+			self::remove_save_actions();
 			$new_id = wp_insert_post( $new_post, true );
+			self::add_save_actions();
 			
 			if ( is_wp_error( $new_id ) ) {
 				Utilities::get_instance()->log( "Error: {$new_id}" );
@@ -518,7 +520,7 @@ class Tracker {
 			add_filter( 'e20r-tracker-configured-roles', array( $this, 'add_default_roles' ), 5, 1 );
 			
 			add_action( 'plugins_loaded', array( Permalinks::getInstance(), 'loadHooks' ), 99 );
-			add_action( 'plugins_loaded', array( Load_Blocks::getInstance(), 'loadBlockHooks' ), 100 );
+			// add_action( 'plugins_loaded', array( Load_Blocks::getInstance(), 'loadBlockHooks' ), 100 );
 			
 			add_action( 'init', array( $this, 'update_db' ), 7 );
 			add_action( 'init', array( $this, "dependency_warnings" ), 10 );
@@ -590,43 +592,7 @@ class Tracker {
 			
 			add_action( 'current_screen', array( $this, 'current_screen_hooks' ), 10 );
 			
-			add_action( 'save_post_' . Tracker_Model::post_type, array(
-				Tracker_Model::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Program_Model::post_type, array(
-				Program::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Exercise_Model::post_type, array(
-				Exercise::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Action_Model::post_type, array(
-				Action::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Article_Model::post_type, array(
-				Article::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Assignment_Model::post_type, array(
-				Assignment::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			add_action( 'save_post_' . Workout_Model::post_type, array(
-				Workout::getInstance(),
-				'saveSettings',
-			), 10, 1 );
-			
-			
-			add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10, 1 );
-			add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10, 1 );
+			self::add_save_actions();
 			
 			add_action( 'add_meta_boxes_e20r_articles', array( Article::getInstance(), 'editor_metabox_setup' ) );
 			add_action( 'add_meta_boxes_e20r_assignments', array( Assignment::getInstance(), 'editor_metabox_setup' ) );
@@ -695,6 +661,91 @@ class Tracker {
 		}
 	}
 	
+	/**
+	 * Remove all save/update actions for the post types in E20R-Tracker
+	 */
+	public static function remove_save_actions() {
+		
+		remove_action( 'save_post_' . Tracker_Model::post_type, array(
+			Tracker_Model::getInstance(),
+			'saveSettings',
+		), 10 );
+		remove_action( 'save_post_' . Program_Model::post_type, array(
+			Program::getInstance(),
+			'saveSettings',
+		), 10);
+		remove_action( 'save_post_' . Exercise_Model::post_type, array(
+			Exercise::getInstance(),
+			'saveSettings',
+		), 10 );
+		remove_action( 'save_post_' . Action_Model::post_type, array(
+			Action::getInstance(),
+			'saveSettings',
+		), 10 );
+		remove_action( 'save_post_' . Article_Model::post_type, array(
+			Article::getInstance(),
+			'saveSettings',
+		), 10 );
+		remove_action( 'save_post_' . Assignment_Model::post_type, array(
+			Assignment::getInstance(),
+			'saveSettings',
+		), 10 );
+		remove_action( 'save_post_' . Workout_Model::post_type, array(
+			Workout::getInstance(),
+			'saveSettings',
+		), 10 );
+		
+		remove_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10 );
+		remove_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10 );
+    }
+    
+	/**
+	 * Add all post save actions for the Tracker plugin
+	 */
+	public static function add_save_actions() {
+	 
+		add_action( 'save_post_' . Tracker_Model::post_type, array(
+			Tracker_Model::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Program_Model::post_type, array(
+			Program::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Exercise_Model::post_type, array(
+			Exercise::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Action_Model::post_type, array(
+			Action::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Article_Model::post_type, array(
+			Article::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Assignment_Model::post_type, array(
+			Assignment::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		add_action( 'save_post_' . Workout_Model::post_type, array(
+			Workout::getInstance(),
+			'saveSettings',
+		), 10, 1 );
+		
+		add_action( 'post_updated', array( Tracker_Model::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Program::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Exercise::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Workout::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Action::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Article::getInstance(), 'saveSettings' ), 10, 1 );
+		add_action( 'post_updated', array( Assignment::getInstance(), 'saveSettings' ), 10, 1 );
+    }
 	/**
 	 * Load duplicate links on Edit page
 	 *
